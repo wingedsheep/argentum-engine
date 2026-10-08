@@ -182,7 +182,6 @@ object FilterQueryLanguage {
             // Mana value comparisons
             "ManaValueAtLeast" -> "mv>=${element["min"]?.jsonPrimitive?.int}"
             "ManaValueAtMost" -> "mv<=${element["max"]?.jsonPrimitive?.int}"
-            "ManaValueAtMostX" -> "mv<=X"
             "ManaValueEquals" -> "mv=${element["value"]?.jsonPrimitive?.int}"
 
             // Power comparisons

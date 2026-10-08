@@ -4628,8 +4628,9 @@
                         }
                     },
                     "then": {
-                        "type": "SkipNextStepOrPhase",
-                        "part": "DRAW_STEP"
+                        "type": "SkipStepOrPhaseEffect",
+                        "part": "DRAW_STEP",
+                        "duration": "NEXT"
                     }
                 }
             }
@@ -7648,7 +7649,12 @@
                                 "filter": {
                                     "cardPredicates": [
                                         "IsCreature",
-                                        "ManaValueEqualsX"
+                                        {
+                                            "type": "CompareNumericProperty",
+                                            "property": "MANA_VALUE",
+                                            "operator": "EQ",
+                                            "amount": "XValue"
+                                        }
                                     ]
                                 }
                             },
@@ -17376,7 +17382,12 @@
                                                     "IsCreature"
                                                 ]
                                             },
-                                            "ManaValueEqualsX"
+                                            {
+                                                "type": "CompareNumericProperty",
+                                                "property": "MANA_VALUE",
+                                                "operator": "EQ",
+                                                "amount": "XValue"
+                                            }
                                         ]
                                     }
                                 },
@@ -17412,7 +17423,12 @@
                             "filter": {
                                 "cardPredicates": [
                                     "IsNonland",
-                                    "ManaValueEqualsX"
+                                    {
+                                        "type": "CompareNumericProperty",
+                                        "property": "MANA_VALUE",
+                                        "operator": "EQ",
+                                        "amount": "XValue"
+                                    }
                                 ]
                             }
                         },

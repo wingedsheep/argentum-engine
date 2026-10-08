@@ -25,14 +25,14 @@ data class LegalActionTargetInfo(
     val targetZone: String? = null,
     /**
      * True when this target requirement filters by "mana value X or less"
-     * (CardPredicate.ManaValueAtMostX). The client must re-filter [validTargets]
+     * (`manaValueAtMostX()`). The client must re-filter [validTargets]
      * by the chosen X after X selection — the engine builds [validTargets]
      * permissively because X is unbound at legal-action enumeration time.
      */
     val xConstrainsManaValue: Boolean = false,
     /**
      * True when this target requirement filters by "mana value X" *exactly*
-     * (CardPredicate.ManaValueEqualsX). The equality sibling of [xConstrainsManaValue]: the client
+     * (`manaValueEqualsX()`). The equality sibling of [xConstrainsManaValue]: the client
      * narrows [validTargets] to cards whose mana value equals the chosen X after X selection
      * (Likeness Looter, Rydia, Summoner of Mist).
      */
@@ -84,7 +84,7 @@ data class LegalActionInfo(
     val xConstrainsTargetManaValue: Boolean = false,
     /**
      * True when the (single) target requirement filters by "mana value X" *exactly*
-     * (CardPredicate.ManaValueEqualsX — Likeness Looter). For multi-requirement abilities the
+     * (`manaValueEqualsX()` — Likeness Looter). For multi-requirement abilities the
      * per-requirement flag on [LegalActionTargetInfo.xConstrainsManaValueExactly] is used instead.
      * The client narrows [validTargets] to cards whose mana value equals the chosen X.
      */

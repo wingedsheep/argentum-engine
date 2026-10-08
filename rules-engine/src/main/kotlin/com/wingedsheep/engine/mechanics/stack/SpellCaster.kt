@@ -395,12 +395,11 @@ internal class SpellCaster(
         // other caller — a synthesized cast that pays no mana cost at all — CR 107.3b is directly
         // on point: "the only legal choice for X is 0."
         //
-        // Binding it here rather than leaving null is load-bearing, not cosmetic: the resolution-time
-        // `CardPredicate.ManaValueAtMostX` fails *open* on an unbound X — deliberately, so an X spell
-        // is still offered during legal-action enumeration, which runs before X is chosen. Left null
-        // all the way to resolution, "each creature with mana value X or less" matches *every*
-        // creature, and Day of Black Sun cast for X=0 wipes the board. It is also what puts the
-        // "(X=0)" in the game log's cast line, which is otherwise silently absent.
+        // Binding it here rather than leaving null is load-bearing, not cosmetic: an X comparison
+        // left unbound all the way to resolution matches *nothing* (it fails open only during
+        // legal-action enumeration), so Day of Black Sun cast for X=0 would destroy no 0-drops. It
+        // is also what puts the "(X=0)" in the game log's cast line, which is otherwise silently
+        // absent.
         return xValue ?: run {
             val castCost = faceIndex
                 ?.let { cardRegistry.getCard(cardComponent.cardDefinitionId)?.cardFaces?.getOrNull(it)?.manaCost }

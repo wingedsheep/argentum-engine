@@ -22,6 +22,10 @@ import kotlinx.serialization.Serializable
  *   (Elenda, Saint of Dusk — hexproof from instants).
  * @property nonColors Colors whose *complement* this permanent is hexproof from — "nongreen"
  *   (Thrun, Breaker of Silence), projected as `HEXPROOF_FROM_NON_<COLOR>`.
+ * @property monocolored "Hexproof from monocolored" (CR 105.2a), projected as
+ *   `HEXPROOF_FROM_MONOCOLORED`.
+ * @property multicolored "Hexproof from multicolored" (Niv-Mizzet, Guildpact; CR 105.2b), projected
+ *   as `HEXPROOF_FROM_MULTICOLORED`.
  */
 @Serializable
 data class HexproofFromComponent(
@@ -32,5 +36,7 @@ data class HexproofFromComponent(
      * Source-kind qualities — "hexproof from activated and triggered abilities" (Volatile
      * Stormdrake), projected as `HEXPROOF_FROM_SOURCEKIND_<KIND>`.
      */
-    val sourceKinds: Set<com.wingedsheep.engine.mechanics.targeting.SourceKind> = emptySet()
+    val sourceKinds: Set<com.wingedsheep.engine.mechanics.targeting.SourceKind> = emptySet(),
+    val monocolored: Boolean = false,
+    val multicolored: Boolean = false,
 ) : Component

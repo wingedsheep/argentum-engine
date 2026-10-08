@@ -85,67 +85,67 @@ data class PayAnyAmountOfLifeAsEntersEffect(
 }
 
 /**
- * [target] skips their **next** instance of [part] — a one-shot marker consumed by the step it
- * skips. "You skip your next draw step" (Elfhame Sanctuary, Fasting), "that player skips their next
- * untap step" (Shisato, Whispering Hunter; Yosei, the Morning Star).
- *
- * A skipped step is proceeded past as though it didn't exist (CR 500.11): nothing phases in or out
- * in a skipped untap step and no permanent of any type untaps — wider than [SkipUntapEffect], which
- * only keeps creatures and/or lands tapped during an untap step that still happens — and "until
- * your next untap step" effects wait for the first untap step that isn't skipped (CR 614.10a).
- * Two untap-step skips on the same player skip the next two untap steps.
- *
- * Only [TurnPart.UNTAP_STEP] and [TurnPart.DRAW_STEP] have a "next one" marker; the
- * until-end-of-turn sibling is [SkipStepOrPhaseThisTurnEffect], the standing one
- * [com.wingedsheep.sdk.scripting.SkipStepOrPhase], and "skip the combat phases of your next turn"
- * is [SkipCombatPhasesEffect].
+ * How long a [SkipStepOrPhaseEffect] lasts.
  */
-@SerialName("SkipNextStepOrPhase")
 @Serializable
-data class SkipNextStepOrPhaseEffect(
+enum class SkipDuration {
+    /**
+     * A one-shot marker consumed by the next instance of the part — "you skip your next draw step"
+     * (Elfhame Sanctuary, Fasting), "that player skips their next untap step" (Shisato, Whispering
+     * Hunter; Yosei, the Morning Star). Only [TurnPart.UNTAP_STEP] and [TurnPart.DRAW_STEP] have one.
+     */
+    NEXT,
+
+    /**
+     * Every instance of the part for the rest of this turn — Fatespinner's "the player skips each
+     * instance of the chosen step or phase this turn" — so a second main phase or an additional
+     * combat phase created later in the turn is skipped too.
+     */
+    THIS_TURN,
+}
+
+/**
+ * [target] skips [part] for [duration]: their next one ([SkipDuration.NEXT]) or every one left this
+ * turn ([SkipDuration.THIS_TURN]).
+ *
+ * A skipped step or phase is proceeded past as though it didn't exist (CR 500.11 / 614.10): no
+ * player receives priority in it and no "at the beginning of ..." ability triggers for it. In a
+ * skipped untap step nothing phases in or out and no permanent of any type untaps — wider than
+ * [SkipUntapEffect], which only keeps creatures and/or lands tapped during an untap step that still
+ * happens — and "until your next untap step" effects wait for the first untap step that isn't
+ * skipped (CR 614.10a). Two next-untap-step skips on the same player skip the next two untap steps.
+ * Per CR 614.10 a step already under way can no longer be skipped.
+ *
+ * The standing "skip your X" of a permanent is [com.wingedsheep.sdk.scripting.SkipStepOrPhase];
+ * "skip the combat phases of your next turn" is [SkipCombatPhasesEffect].
+ */
+@SerialName("SkipStepOrPhaseEffect")
+@Serializable
+data class SkipStepOrPhaseEffect(
     val part: TurnPart,
+    val duration: SkipDuration,
     val target: EffectTarget = EffectTarget.Controller
 ) : Effect {
     init {
-        require(part in SUPPORTED) { "SkipNextStepOrPhase supports only $SUPPORTED, not $part" }
+        if (duration == SkipDuration.NEXT) {
+            require(part in NEXT_SUPPORTED) { "A next-instance skip supports only $NEXT_SUPPORTED, not $part" }
+        }
     }
 
-    override val description: String = when (target) {
-        EffectTarget.Controller -> "You skip your next ${part.displayName}"
-        else -> "${target.description.replaceFirstChar { it.uppercase() }} skips their next ${part.displayName}"
+    override val description: String = run {
+        val what = when (duration) {
+            SkipDuration.NEXT -> "next ${part.displayName}"
+            SkipDuration.THIS_TURN -> "each ${part.displayName} this turn"
+        }
+        when (target) {
+            EffectTarget.Controller -> "You skip ${if (duration == SkipDuration.NEXT) "your " else ""}$what"
+            else -> "${target.description.replaceFirstChar { it.uppercase() }} skips ${if (duration == SkipDuration.NEXT) "their " else ""}$what"
+        }
     }
 
     companion object {
         /** The parts that have a one-shot "skip your next …" marker in the engine. */
-        val SUPPORTED: Set<TurnPart> = setOf(TurnPart.UNTAP_STEP, TurnPart.DRAW_STEP)
-    }
-}
-
-/**
- * The target player skips **every** instance of [part] for the rest of this turn — Fatespinner's
- * "the player skips each instance of the chosen step or phase this turn".
- *
- * The duration is what separates this from the "skip your *next* X" family
- * ([SkipNextStepOrPhaseEffect], [SkipCombatPhasesEffect]): those are one-shot markers consumed by the
- * first occurrence, this one stands until end of turn, so a second main phase or an additional
- * combat phase created later in the turn is skipped too. [TurnPart] is the granularity printed
- * cards use, so "main phase" is one value covering both main phases (CR 505.1) and "combat phase"
- * is one value covering all five combat steps.
- *
- * Skipping is faithful to CR 500.11 / 614.10 — the engine proceeds past the step or phase as though
- * it didn't exist, so no player receives priority in it and no "at the beginning of ..." ability
- * triggers for it. Per CR 614.10 a step already under way can no longer be skipped; applying this
- * during a player's upkeep (Fatespinner's trigger) reaches everything after the upkeep.
- */
-@SerialName("SkipStepOrPhaseThisTurn")
-@Serializable
-data class SkipStepOrPhaseThisTurnEffect(
-    val part: TurnPart,
-    val target: EffectTarget = EffectTarget.PlayerRef(Player.TargetPlayer)
-) : Effect {
-    override val description: String = when (target) {
-        EffectTarget.Controller -> "You skip each ${part.displayName} this turn"
-        else -> "${target.description.replaceFirstChar { it.uppercase() }} skips each ${part.displayName} this turn"
+        val NEXT_SUPPORTED: Set<TurnPart> = setOf(TurnPart.UNTAP_STEP, TurnPart.DRAW_STEP)
     }
 }
 
@@ -1230,7 +1230,7 @@ data class TheRingTemptsYouEffect(
  * "Choose a number, then [effect]." The controller is prompted for an integer in
  * [[minValue], [maxValue]]; the chosen number is stamped onto the effect context (as the
  * X value) and [then] is executed once. Atomic effects and filters read the chosen number
- * via [com.wingedsheep.sdk.scripting.predicates.CardPredicate.ManaValueEqualsX] so the same
+ * via `manaValueEqualsX()` so the same
  * combinator works for any "choose a number, act on objects with that mana value" card (Void).
  *
  * Compose [then] with [CompositeEffect] when several effects key off the chosen number.

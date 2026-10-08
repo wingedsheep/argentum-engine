@@ -1018,7 +1018,9 @@ class CastZoneResolver(
                 // --- Combinators ---
                 is CardPredicate.Or -> predicate.predicates.any { matchesCardPredicate(card, it, state, grantingSourceId) }
                 is CardPredicate.And -> predicate.predicates.all { matchesCardPredicate(card, it, state, grantingSourceId) }
-                is CardPredicate.Not -> !matchesCardPredicate(card, predicate.predicate, state, grantingSourceId)
+                is CardPredicate.Not ->
+                    !com.wingedsheep.engine.handlers.predicates.LiveBattlefieldPredicates.answerableOnlyLive(predicate.predicate) &&
+                        !matchesCardPredicate(card, predicate.predicate, state, grantingSourceId)
                 // Predicates that can't be judged from a card's static characteristics alone —
                 // they need runtime/interaction context (a chosen value, another entity, X, a
                 // pipeline variable/stored group, the recipient/source of an effect), or describe
@@ -1062,8 +1064,6 @@ class CastZoneResolver(
                 is CardPredicate.NameEqualsChosenComponent,
                 is CardPredicate.CardTypeEqualsChosenComponent,
                 is CardPredicate.NameNotSharedWithControlledRoom,
-                is CardPredicate.ManaValueEqualsX,
-                is CardPredicate.ManaValueAtMostX,
                 is CardPredicate.ManaValueAtMostEntity,
                 is CardPredicate.ManaValueAtMostEntityManaSpent,
                 is CardPredicate.ManaValueAtMostColorsSpent,

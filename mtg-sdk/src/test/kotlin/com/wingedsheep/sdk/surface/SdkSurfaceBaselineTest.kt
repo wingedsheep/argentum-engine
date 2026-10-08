@@ -58,6 +58,15 @@ class SdkSurfaceBaselineTest : FunSpec({
         }
     }
 
+    test("[added] lines are sorted by name") {
+        // Sorted, not appended, so parallel PRs each adding a type insert at different places in
+        // the file instead of all colliding at its end.
+        val names = baseline.added.map { it.substringBefore(" — ").trim() }
+        if (names != names.sorted()) {
+            error("Keep the [added] lines in ${Baseline.PATH} sorted by name:\n" + names.sorted().joinToString("\n") { "  $it" })
+        }
+    }
+
     test("every [added] line names the first card, two closest types and why not those") {
         val bad = baseline.added.filter { line ->
             val parts = line.split(" — ").map { it.trim() }

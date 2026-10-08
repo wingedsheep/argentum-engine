@@ -963,7 +963,7 @@ cast action advertises the first selection cost as `additionalCostInfo` and the 
 - `Costs.additional.PayXLife(minCount = 0)` — "as an additional cost to cast this spell, pay X life."
   The caster declares X at cast time (capped at their current life total) and X is fed to the spell's
   effects through the resolution **X value** — i.e. read it with `DynamicAmount.XValue` and filter with
-  `CardPredicate.ManaValueAtMostX` / `manaValueAtMostX()` (Vicious Rivalry: "pay X life; destroy all
+  `manaValueAtMostX()` (Vicious Rivalry: "pay X life; destroy all
   artifacts and creatures with mana value X or less"). A card using this cost must **not** also have an
   `{X}` in its mana cost — both write the same X slot. The client shows a numeric X picker (no target
   step); the AI declares X = 0 by default.
@@ -1325,7 +1325,7 @@ serialized shape; the facade for each is:
 | `ShuffleLibraryEffect` | `Effects.ShuffleLibrary` |
 | `SkipCombatPhasesEffect` | `Effects.SkipCombatPhases` |
 | `SkipUntapEffect` | `Effects.SkipUntap` |
-| `SkipNextStepOrPhaseEffect` | `Effects.SkipNextStepOrPhase(part, target)` |
+| `SkipStepOrPhaseEffect` | `Effects.SkipNextStepOrPhase(part, target)` / `Effects.SkipStepOrPhaseThisTurn(part, target)` |
 | `TakeExtraTurnEffect` | `Effects.TakeExtraTurn` |
 | `TapUntapEffect` | `Effects.Tap(target)` / `Effects.Untap(target)` |
 | `TauntEffect` | `Effects.Taunt` |
@@ -2930,10 +2930,10 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
 - `Effects.SkipNextTurn(target = Controller, count = Fixed(1))` (`SkipNextTurnEffect`) — target skips their next `count` turns. `count` is a `DynamicAmount`, so it can read a pipeline value (e.g. a coin-flip tally via `DynamicAmount.VariableReference`). Skips accumulate on a `SkipNextTurnComponent(turns)`, decremented one turn per the player's turn-start; a resolved count of 0 is a no-op. Used by Lethal Vapors (one turn) and **Ral Zarek, Guest Lecturer** (skip N turns where N = heads).
 - `Effects.FlipCoins(count, storeHeadsAs = "heads")` (`FlipCoinsEffect`) — flip `count` coins and store the number of heads under `storeHeadsAs` in the pipeline (`storedNumbers`) so a later sub-effect in the same composite can scale off it via `DynamicAmount.VariableReference`. The general "flip N coins, count heads" primitive (CR 705); unlike `FlipCoinEffect` (branch on win/lose) and `FlipTwoCoinsEffect` (branch on combined outcome) it only tallies. Each flip emits a `CoinFlipEvent`. **Ral Zarek, Guest Lecturer**'s ultimate composes `FlipCoins(5, "heads")` then `SkipNextTurn(target, count = VariableReference("heads"))`.
 - `Effects.FlipCoinsUntilLoss(storeWinsAs = "wins")` (`FlipCoinsUntilLossEffect`) — `FlipCoins`'s open-ended sibling: flip one coin at a time until the flipper *loses* a flip or answers "stop flipping", then store how many flips they won under `storeWinsAs`. The run length is discovered rather than given, and the order within an iteration is flip → check → ask, so the stop question only ever follows a *won* flip ("after each flip, you choose whether to continue flipping"). Losing the first flip stores 0, and since an unread pipeline number reads as 0, a card gating payoffs on "if you win one or more flips" needs no separate "this has no effect" branch — that sentence *is* the absence of every payoff. Deliberately **not** a `RepeatWhile` over `FlipCoinEffect`: a repeat condition is asked unconditionally after each body (so it can't stop *because* a flip was lost) and the repeat loop restarts each iteration from the pristine pre-loop context (so a running tally couldn't survive the prompt). The tally rides `FlipCoinsUntilLossContinuation` instead and is published once, when the run ends. Unlike `FlipCoins`, where the whole batch is one flip event, each coin here is its own flip — so a "the first time you flip one or more coins each turn" replacement (Edgar, King of Figaro) covers only the first coin. Bounded by `GameLimits.MAX_COIN_FLIPS_PER_EFFECT` as a backstop against a forced-win static plus an always-continue automated answer. **Fiery Gambit** composes `FlipCoinsUntilLoss("fieryGambitWins")` with three cumulative `Gate.WhenCondition(Compare(VariableReference("fieryGambitWins"), GTE, Fixed(n)))` tiers.
-- `Effects.SkipNextStepOrPhase(part, target = Controller)` (`SkipNextStepOrPhaseEffect`, `part` = `TurnPart.UNTAP_STEP` | `DRAW_STEP`; other parts are rejected at construction) — a one-shot marker: the target skips their **next** instance of `part`, consumed by the step it skips.
+- `Effects.SkipNextStepOrPhase(part, target = Controller)` (`SkipStepOrPhaseEffect(part, SkipDuration.NEXT, target)`, `part` = `TurnPart.UNTAP_STEP` | `DRAW_STEP`; other parts are rejected at construction) — a one-shot marker: the target skips their **next** instance of `part`, consumed by the step it skips.
   - `DRAW_STEP` adds the `SkipDrawStepComponent` marker consumed by `DrawPhaseManager.performDrawStep` (Elfhame Sanctuary's "you skip your draw step this turn", Fasting).
   - `UNTAP_STEP` skips the player's entire next untap step (CR 500.11): nothing of theirs phases or untaps — every permanent type, not just the creatures/lands `SkipUntap` holds — and their own "next untap step" markers (`SkipUntap`, exert, `Duration.UntilAfterAffectedControllersNextUntap`) wait for the first step that isn't skipped. Stacks: two skips skip the next two untap steps (CR 614.10a). Adds to a counted `SkipNextUntapStepComponent`, consumed in `TurnManager.finishUntapStep`. Shisato, Whispering Hunter: `Effects.SkipNextStepOrPhase(TurnPart.UNTAP_STEP, EffectTarget.PlayerRef(Player.TriggeringPlayer))`; Yosei, the Morning Star.
-- `Effects.SkipStepOrPhaseThisTurn(part, target)` (`SkipStepOrPhaseThisTurnEffect`, `part` = `TurnPart.DRAW_STEP` |
+- `Effects.SkipStepOrPhaseThisTurn(part, target)` (`SkipStepOrPhaseEffect(part, SkipDuration.THIS_TURN, target)`, `part` = `TurnPart.DRAW_STEP` |
   `MAIN_PHASE` | `COMBAT_PHASE`; `UNTAP_STEP` exists for the one-shot and standing forms) — the target skips **every** instance of that part of the turn for the rest of
   this turn. The **duration** is what separates it from the one-shot `SkipNextStepOrPhase` / `SkipCombatPhases`
   markers above, which are consumed by the first occurrence: this one stands until end-of-turn cleanup drops
@@ -3911,7 +3911,7 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   `ChooseColorsThen(ChangeColorToChosen(creature)) then DrawCards(1)`.
 - `Effects.ChooseNumberThen(then, minValue=0, maxValue=16, prompt)` — pick a number in `[minValue, maxValue]`,
   then run `then` once with the chosen number exposed via the effect context as **X**. Atomic effects and filters
-  under `then` read it through `ManaValueEqualsX` (`.manaValueEqualsX()`). Compose with `CompositeEffect` for
+  under `then` read it through `.manaValueEqualsX()`. Compose with `CompositeEffect` for
   multi-step cards (Void: destroy all artifacts/creatures with that mana value, then a target player reveals their
   hand and discards all nonland cards with that mana value).
   The `maxValue` overload accepts a `DynamicAmount`, evaluated once before the chosen
@@ -5718,8 +5718,9 @@ This is the player-arm prerequisite for the planned composable mixed `TargetUnio
   makes it an illegal target from then on.
 - `.power(n)` / `.minPower(n)` / `.maxPower(n)` — P/T comparator.
 - `.manaValue(n)` / `.manaValueAtMost(n)` / `.manaValueAtLeast(n)` — mana-value comparator.
-- `.manaValueAtMostX()` — mana value ≤ the X chosen for the source spell/ability.
-- `.manaValueEqualsX()` — mana value **exactly equal** to the X chosen for the source spell/ability (the chosen
+- `.manaValueAtMostX()` — `compareNumericProperty(MANA_VALUE, LTE, XValue)`: mana value ≤ the X chosen for the
+  source spell/ability.
+- `.manaValueEqualsX()` — `compareNumericProperty(MANA_VALUE, EQ, XValue)`: mana value **exactly equal** to the X chosen for the source spell/ability (the chosen
   number, or the X paid in an `{X}…` mana cost).
   Available on both the object-filter builders and on `TargetFilter` (mirrors `.manaValueAtMostX()`). Used by Void
   (`Effects.ChooseNumberThen`), Repeal (`{X}{U}` — return target nonland permanent with mana value X), and by
@@ -5758,9 +5759,11 @@ This is the player-arm prerequisite for the planned composable mixed `TargetUnio
   `EntityProperty(Self, Power)`. Checks at target selection and again at resolution; a departed
   activated-ability source uses its frozen departure snapshot, including after a blink. With
   `amount = XValue` it compares against the X chosen for the source spell/ability (`.powerEqualsX()`,
-  `.powerAtLeastX()`, `.toughnessAtMostX()` are the spelled-out forms); while that X is still unbound —
-  legal-action enumeration runs before the player picks it — such a comparison matches **permissively**,
-  like `.manaValueEqualsX()`, and the chosen X is enforced at validation and at the CR 608.2b re-check.
+  `.powerAtLeastX()`, `.toughnessAtMostX()`, `.manaValueAtMostX()`, `.manaValueEqualsX()` are the spelled-out
+  forms); while that X is still unbound — legal-action enumeration runs before the player picks it — such a
+  comparison matches **permissively**, and the chosen X is enforced at validation and at the CR 608.2b
+  re-check. An X still unbound **during a resolution** matches **nothing**, so a lost X can't turn an
+  X-filtered `DestroyAll` into a board wipe.
   Any other unbound dynamic reference follows normal amount semantics (zero). These context-dependent predicates
   do not match historical cast records or standalone trigger/snapshot filters without a value context.
 - `.powerAtMostEntity(ref)` / `.powerLessThanEntity(ref)` — power ≤ (resp. **strictly** <) a referenced
@@ -5852,7 +5855,7 @@ This is the player-arm prerequisite for the planned composable mixed `TargetUnio
 - `CardPredicate.ManaValueEqualsDynamic(amount)` / `PowerEqualsDynamic(amount)` /
   `ToughnessEqualsDynamic(amount)` — *exact* equality against a resolved `DynamicAmount`, the
   open-ended siblings of the fixed `ManaValueEquals`/`PowerEquals`/`ToughnessEquals` and the cast-`{X}`
-  `ManaValueEqualsX` / `.powerEqualsX()`. They resolve the amount the same way `.manaValueAtMostDynamic`
+  `.manaValueEqualsX()` / `.powerEqualsX()`. They resolve the amount the same way `.manaValueAtMostDynamic`
   resolves its cap (controller/source from the predicate context, fails closed with no controller, and
   `false` in the layer-projection / cost-calculation / cast-record paths). An object with **no** power
   or toughness — a noncreature spell — never matches the two P/T forms rather than reading the missing
@@ -5900,7 +5903,8 @@ This is the player-arm prerequisite for the planned composable mixed `TargetUnio
   spell/ability. Zero Point Ballad's wipe (`Creature.toughnessAtMostX()`); Expel the Interlopers ("Choose a
   number between 0 and 10. Destroy all creatures with power greater than or equal to the chosen number" —
   `Effects.ChooseNumberThen(then = Effects.DestroyAll(GameObjectFilter.Creature.powerAtLeastX()), minValue = 0, maxValue = 10)`,
-  the chosen number stamped as X). Layer projection / trigger matching / cost calculation report `false`.
+  the chosen number stamped as X). Layer projection / trigger matching / cost calculation report `false`; an
+  X still unbound at resolution matches nothing (see `.compareNumericProperty`).
 - `.tapped()` / `.untapped()` — tap state.
 - `.activatedThisTurn()` — `StatePredicate.ActivatedThisTurn`: one of the permanent's activated abilities
   (loyalty, mana, crew/saddle or any other) was activated this turn. Stamped at activation on
@@ -9735,8 +9739,8 @@ staticAbility {
     skips) or spends exactly one pending skip. Captures skip status before phasing/untapping, including
     across serialized untap continuations; a source phasing in during a real untap cannot retroactively
     skip it or preserve its durations.
-  The one-shot counterparts are `Effects.SkipNextStepOrPhase` and `Effects.SkipStepOrPhaseThisTurn`, both
-  spent by the step they skip.
+  The resolving counterparts are `Effects.SkipNextStepOrPhase` (spent by the step it skips) and
+  `Effects.SkipStepOrPhaseThisTurn` (dropped at end of turn) — one `SkipStepOrPhaseEffect` over a `SkipDuration`.
 - `NoMaximumHandSize` — controller has no hand-size limit *while this permanent is on the
   battlefield*. (Thought Vessel, Reliquary Tower) For a one-shot resolution effect that confers a
   *permanent, player-scoped* "no maximum hand size for the rest of the game" (survives the source

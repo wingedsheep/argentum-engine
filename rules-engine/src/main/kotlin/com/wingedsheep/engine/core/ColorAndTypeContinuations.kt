@@ -31,7 +31,7 @@ data class ChooseColorThenContinuation(
  * The resumer stamps the chosen number onto [baseContext] as the X value and dispatches
  * [then] through the standard effect runner, so any composition of atomic effects and
  * filters can read it via `EffectContext.xValue` /
- * [com.wingedsheep.sdk.scripting.predicates.CardPredicate.ManaValueEqualsX] (Void).
+ * `manaValueEqualsX()` (Void).
  */
 @Serializable
 data class ChooseNumberThenContinuation(

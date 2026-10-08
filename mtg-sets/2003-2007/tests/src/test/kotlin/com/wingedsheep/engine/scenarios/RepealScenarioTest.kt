@@ -13,7 +13,7 @@ import com.wingedsheep.engine.core.Outcome
 
 /**
  * Repeal: {X}{U} — return target nonland permanent with mana value X to its owner's hand, then
- * draw a card. Exercises CardPredicate.ManaValueEqualsX target restriction with X bound from the
+ * draw a card. Exercises `manaValueEqualsX()` target restriction with X bound from the
  * spell's {X}{U} mana cost.
  */
 class RepealScenarioTest : FunSpec({

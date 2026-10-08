@@ -45,9 +45,9 @@ sealed interface ProtectionScope {
 
     /**
      * From monocolored — matches a source with exactly one color (CR 105.2a), the twin of
-     * [Multicolored]. Engine-wired for granted *hexproof* (Dragonfire Blade, via
-     * [GrantHexproofFromToGroup]) and for player protection; creature *protection* from
-     * monocolored is not projected.
+     * [Multicolored]. Engine-wired for *hexproof*, printed ([KeywordAbility.Hexproof]) or granted
+     * (Dragonfire Blade, via [GrantHexproofFromToGroup]), and for player protection; creature
+     * *protection* from monocolored is not projected, and [KeywordAbility.Protection] rejects it.
      */
     @SerialName("ProtectionScope.Monocolored")
     @Serializable

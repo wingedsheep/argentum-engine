@@ -109,8 +109,9 @@ data class GrantHexproofFromOwnColorsToGroup(
  *
  * - `ProtectionScope.Monocolored` — Dragonfire Blade ("Equipped creature ... has hexproof from
  *   monocolored"; exactly one color, CR 105.2a).
- * - `ProtectionScope.Multicolored` — Niv-Mizzet, Guildpact, printed on the permanent itself, so
- *   its filter is `GroupFilter.source()` (two or more colors, CR 105.2b).
+ *
+ * A permanent's own printed "hexproof from [quality]" is [KeywordAbility.Hexproof] instead (Niv-Mizzet,
+ * Guildpact: `keywordAbility(KeywordAbility.Hexproof(ProtectionScope.Multicolored))`).
  *
  * Realized as the same projected `HEXPROOF_FROM_*` keyword a printed
  * [KeywordAbility.Hexproof] uses, so every targeting site that reads printed hexproof-from reads

@@ -1,6 +1,6 @@
 # SDK surface baseline — every concrete leaf of every sealed SDK family. Read by SdkSurfaceBaselineTest.
 #
-# A new leaf fails that test until it has a line here, under [added], in this shape:
+# A new leaf fails that test until it has a line here, under [added] (kept sorted by name), in this shape:
 #
 #   Name — Family — first card — Closest1, Closest2 — why neither can take the axis
 #
@@ -144,10 +144,8 @@ CardPredicate.ManaValueAtMostColorsSpent — CardPredicate
 CardPredicate.ManaValueAtMostDynamic — CardPredicate
 CardPredicate.ManaValueAtMostEntity — CardPredicate
 CardPredicate.ManaValueAtMostEntityManaSpent — CardPredicate
-CardPredicate.ManaValueAtMostX — CardPredicate
 CardPredicate.ManaValueEquals — CardPredicate
 CardPredicate.ManaValueEqualsDynamic — CardPredicate
-CardPredicate.ManaValueEqualsX — CardPredicate
 CardPredicate.ManaValueIsEven — CardPredicate
 CardPredicate.ManaValueIsOdd — CardPredicate
 CardPredicate.NameEquals — CardPredicate
@@ -866,7 +864,6 @@ SetLifeTotalEffect — Effect
 ShuffleLibraryEffect — Effect
 SkipCombatPhasesEffect — Effect
 SkipNextTurnEffect — Effect
-SkipStepOrPhaseThisTurnEffect — Effect
 SkipUntapEffect — Effect
 StoreCardNameEffect — Effect
 StoreNumberEffect — Effect
@@ -1628,8 +1625,8 @@ WardCost.PlayerCounters — WardCost
 WardCost.Sacrifice — WardCost
 
 [added]
-GrantHexproofFromToGroup — StaticAbility — Niv-Mizzet, Guildpact — GrantHexproofFromOwnColorsToGroup, GrantProtectionFromChosenColorToGroup — replaces the Monocolored/Multicolored pair with a ProtectionScope axis; OwnColors' quality varies per creature (a scope can't say "its own colors") and ChosenColor reads a chosen-color component and grants protection, not hexproof
+GrantHexproofFromToGroup — StaticAbility — Dragonfire Blade — GrantHexproofFromOwnColorsToGroup, GrantProtectionFromChosenColorToGroup — replaces the Monocolored/Multicolored pair with a ProtectionScope axis; OwnColors' quality varies per creature (a scope can't say "its own colors") and ChosenColor reads a chosen-color component and grants protection, not hexproof
 ProtectionScope.Monocolored — ProtectionScope — Dragonfire Blade — ProtectionScope.Multicolored, ProtectionScope.Colors — the quality GrantHexproofFromToGroup needed; Multicolored is its complement and Colors(all five) would also match multicolored objects, so neither says "exactly one color"
-SkipNextStepOrPhaseEffect — Effect — Fasting — SkipStepOrPhaseThisTurnEffect, SkipNextTurnEffect — replaces SkipNextDrawStep/SkipNextUntapStep with a TurnPart axis; ThisTurn is a standing skip of every instance until end of turn rather than a one-shot marker consumed by the next instance (and supports different parts), and SkipNextTurn skips a whole turn
-SkipStepOrPhase — StaticAbility — Stasis — SkipNextStepOrPhaseEffect, UntapLimitPerStep — replaces SkipUntapStep/SkipDrawStep with a TurnPart axis; the effect is a one-shot resolution-time marker while this is a standing static read every turn, and UntapLimitPerStep limits what untaps in a step that still happens
+SkipStepOrPhase — StaticAbility — Stasis — SkipStepOrPhaseEffect, UntapLimitPerStep — replaces SkipUntapStep/SkipDrawStep with a TurnPart axis; the effect is a one-shot resolution-time marker while this is a standing static read every turn, and UntapLimitPerStep limits what untaps in a step that still happens
+SkipStepOrPhaseEffect — Effect — Fasting — SkipCombatPhasesEffect, SkipNextTurnEffect — replaces SkipNextDrawStep/SkipNextUntapStep/SkipStepOrPhaseThisTurn with a TurnPart axis and a SkipDuration (next instance / rest of this turn); SkipCombatPhases skips the combat phases of the player's *next turn*, a turn-scoped marker no TurnPart duration says, and SkipNextTurn skips a whole turn
 TriggeringEntityWas — Condition — Infernal Vessel — EntityMatches, SacrificedPermanentHadSubtype — replaces TriggeringEntityHadSubtype/HadCardType with a filter; EntityMatches(TriggeringEntity) reads the card in its new zone, not its last-known types (Infernal Vessel would loop), and SacrificedPermanentHadSubtype reads the sacrifice-cost snapshot, not the trigger's

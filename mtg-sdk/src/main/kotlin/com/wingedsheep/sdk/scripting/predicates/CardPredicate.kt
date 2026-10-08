@@ -444,28 +444,7 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
         override val description: String = "with mana value $max or less"
     }
 
-    /**
-     * Mana value exactly equal to the number chosen for the source spell/ability.
-     * Resolves against [PredicateContext.xValue] at evaluation time. Used by effects
-     * that "choose a number" and then act on objects with that mana value (Void). When
-     * the chosen number is unbound, nothing matches.
-     */
-    @SerialName("ManaValueEqualsX")
-    @Serializable
-    data object ManaValueEqualsX : CardPredicate {
-        override val description: String = "with mana value equal to the chosen number"
-    }
 
-    /**
-     * Mana value at most the X chosen for the source spell/ability.
-     * Resolves against [PredicateContext.xValue] at evaluation time, so it works
-     * both at cast-time target validation and at resolution-time legality re-check.
-     */
-    @SerialName("ManaValueAtMostX")
-    @Serializable
-    data object ManaValueAtMostX : CardPredicate {
-        override val description: String = "with mana value X or less"
-    }
 
     @SerialName("ManaValueAtLeast")
     @Serializable
@@ -547,7 +526,7 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
      * the predicate is checked, comparing against the card's mana value.
      *
      * The sibling fixed/entity-derived caps cover their narrow cases ([ManaValueAtMost] = a constant,
-     * [ManaValueAtMostX] = the cast {X}, [ManaValueAtMostEntity] / [ManaValueAtMostEntityManaSpent] /
+     * `manaValueAtMostX()` = the cast {X}, [ManaValueAtMostEntity] / [ManaValueAtMostEntityManaSpent] /
      * [ManaValueAtMostColorsSpent] = values read off a referenced entity). This variant is the
      * open-ended one for any other dynamic source — e.g. Moseo, Vein's New Dean: "return … a creature
      * card with mana value X or less …, where X is the amount of life you gained this turn"
@@ -567,7 +546,7 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
     /**
      * Mana value *exactly* equal to a [DynamicAmount] resolved when the predicate is checked — the
      * equality sibling of [ManaValueAtMostDynamic], and the open-ended counterpart of the fixed
-     * [ManaValueEquals] / cast-{X} [ManaValueEqualsX].
+     * [ManaValueEquals] / cast-{X} `manaValueEqualsX()`.
      *
      * Used by **Talion, the Kindly Lord** with `DynamicAmount.CastChoice(ChoiceSlot.CHOSEN_NUMBER)`
      * to read the number chosen as it entered ("a spell with mana value … equal to the chosen
@@ -848,12 +827,13 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
      * property). The general form of every "power / toughness / mana value compared with N" filter.
      *
      * With [amount] = [DynamicAmount.XValue] it reads the X chosen for the source spell/ability —
-     * "creature with power X" (Ent-Draught Basin, `EQ`), "power greater than or equal to the chosen
-     * number" (Expel the Interlopers, `GTE` after `ChooseNumberThen` stamps X), "toughness X or
-     * less" (Zero Point Ballad, `LTE`). While X is still unbound (legal-action enumeration runs
-     * before the player picks it) such a comparison matches permissively, like
-     * [ManaValueEqualsX] / [ManaValueAtMostX]; the chosen X is enforced at activation/cast-time
-     * validation and at the CR 608.2b resolution re-check.
+     * "creature with power X" (Ent-Draught Basin, `EQ`), "mana value X or less" (`manaValueAtMostX()`,
+     * `LTE`), "power greater than or equal to the chosen number" (Expel the Interlopers, `GTE` after
+     * `ChooseNumberThen` stamps X). While X is still unbound during legal-action enumeration (before
+     * the player picks it) such a comparison matches permissively, so the action is offered; the
+     * chosen X is enforced at activation/cast-time validation and at the CR 608.2b resolution
+     * re-check. An X still unbound *during a resolution* matches nothing, so a lost X can't turn
+     * "destroy each creature with power X or greater" into a board wipe.
      */
     @SerialName("CompareNumericProperty")
     @Serializable
@@ -1174,8 +1154,10 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
      *
      * Names are compared exactly and read through the projection on both sides (falling back to
      * the card's own name), so a Layer 3 name-changing effect (Witness Protection, Honest Work) is
-     * respected. A nameless object never shares a name (CR 201.2). Outside a controller's scope it
-     * never matches — so the [Not] form matches.
+     * respected. A nameless object — a face-down permanent (CR 708.2a) — never shares a name
+     * (CR 201.2a). Outside a controller's scope it never matches — so the [Not] form matches. Only
+     * the live evaluator can answer it; matchers without a battlefield in scope (layer projection,
+     * cast permissions, cast records) fail closed on both it and its [Not] form.
      */
     @SerialName("SharesNameWithPermanentYouControl")
     @Serializable

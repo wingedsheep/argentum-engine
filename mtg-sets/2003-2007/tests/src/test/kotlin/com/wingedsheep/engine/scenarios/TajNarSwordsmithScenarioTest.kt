@@ -21,7 +21,7 @@ import com.wingedsheep.engine.core.Outcome
  *  card with mana value X or less, put that card onto the battlefield, then shuffle."
  *
  * The interesting part is that the chosen X has to flow from the payment gate into the *library
- * filter* — `CardPredicate.ManaValueAtMostX` reads it off the resolution context — so the tests
+ * filter* — `manaValueAtMostX()` reads it off the resolution context — so the tests
  * pin both sides of the bound: an Equipment within X is offered, one above X is not.
  *
  * Bonesplitter is {1} (mana value 1); Fireshrieker is {3} (mana value 3).

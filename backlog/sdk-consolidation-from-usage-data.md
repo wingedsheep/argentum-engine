@@ -315,13 +315,24 @@ by an alpha-equivalent golden re-bless, as #2348 was.
        line, with detail moved into KDoc. Do that as entries are touched, or as part of the review's §6
        catalog split.
   7. Retired:
-     - the X predicates;
+     - the X predicates, mana value included (`ManaValueEqualsX` / `ManaValueAtMostX`), all now
+       `CompareNumericProperty(…, XValue)` — permissive while X is unbound during enumeration, matching
+       nothing when X is unbound inside a resolution;
      - the life conditions: `AnOpponentLifeAtMost`, `EachPlayerLifeAtMost`, and their unlisted
        sibling `APlayerLifeAtMost`;
-     - the skip trio, now `SkipNextStepOrPhaseEffect` / `SkipStepOrPhase` over `TurnPart`;
+     - the skip effects, now one `SkipStepOrPhaseEffect(part, duration)` over `TurnPart` and
+       `SkipDuration` (next instance / rest of this turn), and the standing `SkipStepOrPhase` static;
      - the hexproof-from pair, now `GrantHexproofFromToGroup(ProtectionScope)`;
      - `TriggeringEntityHad*`, now an LKI-reading `TriggeringEntityWas(filter)`;
      - two of the three name predicates, now `SharesNameWithPermanentYouControl(filter, excludeSelf)`.
+
+     Games persisted before this read through `RetiredSdkTypeLift`, which rewrites each retired
+     discriminator to its current shape.
+
+     **Next fossils, not yet folded:** `ManaValueEqualsDynamic` / `ManaValueAtMostDynamic` /
+     `PowerEqualsDynamic` / `PowerAtMostDynamic` / `ToughnessEqualsDynamic` are `CompareNumericProperty`
+     over a `DynamicAmount` too. Fold them after checking their no-controller, no-power and
+     layer-projection answers match `CompareNumericProperty`'s.
 
      **Left on purpose:** `NameNotSharedWithControlledRoom`. It compares against the unlocked door
      names of Rooms, which isn't the same as "shares a name with a permanent matching a filter".

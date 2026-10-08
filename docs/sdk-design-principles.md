@@ -45,7 +45,7 @@ neighbours, so "I didn't find one" isn't an answer.
 
 **A new general primitive deletes what it subsumes.** When the type or axis you add makes an older,
 narrower type expressible — `CompareNumericProperty` over the X-specific power predicates, a
-filter-taking predicate over three name-specific ones — migrate the old type's cards and delete it **in
+filter-taking predicate over two name-specific ones — migrate the old type's cards and delete it **in
 the same PR**. A subsumed type left behind is a fossil: the next author finds it first, copies it, and
 the long tail grows back. `just sdk-tail` lists fossil candidates.
 

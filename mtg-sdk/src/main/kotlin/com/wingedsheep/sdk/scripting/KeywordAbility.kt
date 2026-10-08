@@ -124,6 +124,12 @@ sealed interface KeywordAbility {
     @SerialName("Protection")
     @Serializable
     data class Protection(val scope: ProtectionScope) : KeywordAbility {
+        init {
+            // Monocolored exists for hexproof (CR 105.2a); protection from monocolored has no
+            // engine reading, so it fails here rather than printing text nothing enforces.
+            require(scope != ProtectionScope.Monocolored) { "Protection from monocolored is not supported" }
+        }
+
         override val keyword: Keyword? = when (scope) {
             is ProtectionScope.EachOpponent -> Keyword.PROTECTION_FROM_EACH_OPPONENT
             else -> null

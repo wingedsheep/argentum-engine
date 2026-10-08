@@ -1031,9 +1031,6 @@ internal class AffectsFilterResolver(
         }
         is CardPredicate.ManaValueEquals -> card.manaValue == predicate.value
         is CardPredicate.ManaValueAtMost -> card.manaValue <= predicate.max
-        // ManaValueAtMostX / ManaValueEqualsX are resolution-time only; layer-projection has no chosen-number context.
-        CardPredicate.ManaValueAtMostX -> false
-        CardPredicate.ManaValueEqualsX -> false
         is CardPredicate.ManaValueAtLeast -> card.manaValue >= predicate.min
         // Entity-relative — layer-projection has no trigger/source context for filter purposes here.
         is CardPredicate.ManaValueAtMostEntity -> false
@@ -1068,14 +1065,14 @@ internal class AffectsFilterResolver(
         // Room-name distinctness is a resolution-time search filter, not a continuous/static
         // affects-filter concern.
         CardPredicate.NameNotSharedWithControlledRoom -> false
-        // Likewise "no other permanent you control shares this name" — a targeting restriction
-        // evaluated against live battlefield state, not a static affects-filter.
         is CardPredicate.OriginallyPrintedInSet ->
             card.originalSetCode?.equals(predicate.setCode, ignoreCase = true) == true
         is CardPredicate.HasBasicLandType -> if (isFaceDown) false else subtypes.any { it.equals(predicate.landType, ignoreCase = true) }
         is CardPredicate.And -> predicate.predicates.all { matchesCardPredicateForProjection(it, card, container, projected, types, subtypes, colors, keywords, isFaceDown) }
         is CardPredicate.Or -> predicate.predicates.any { matchesCardPredicateForProjection(it, card, container, projected, types, subtypes, colors, keywords, isFaceDown) }
-        is CardPredicate.Not -> !matchesCardPredicateForProjection(predicate.predicate, card, container, projected, types, subtypes, colors, keywords, isFaceDown)
+        is CardPredicate.Not ->
+            !com.wingedsheep.engine.handlers.predicates.LiveBattlefieldPredicates.answerableOnlyLive(predicate.predicate) &&
+                !matchesCardPredicateForProjection(predicate.predicate, card, container, projected, types, subtypes, colors, keywords, isFaceDown)
         CardPredicate.ToughnessGreaterThanPower -> {
             val power = projected?.power ?: card.baseStats?.basePower ?: 0
             val toughness = projected?.toughness ?: card.baseStats?.baseToughness ?: 0

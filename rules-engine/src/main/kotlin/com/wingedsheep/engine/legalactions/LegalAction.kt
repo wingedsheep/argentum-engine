@@ -38,7 +38,7 @@ data class LegalAction(
     val targetRequirements: List<TargetInfo>? = null,
     /**
      * True when the (single) target requirement filters by "mana value X or less"
-     * (i.e. the requirement's filter contains [CardPredicate.ManaValueAtMostX]).
+     * (i.e. the requirement's filter contains `manaValueAtMostX()`).
      *
      * The enumerator builds [validTargets] permissively because X is unbound at
      * enumeration time. The client must re-filter [validTargets] by the chosen X
@@ -49,7 +49,7 @@ data class LegalAction(
     val xConstrainsTargetManaValue: Boolean = false,
     /**
      * True when the (single) target requirement filters by "mana value X" *exactly* (i.e. the
-     * requirement's filter contains [CardPredicate.ManaValueEqualsX] — Likeness Looter, Rydia,
+     * requirement's filter contains `manaValueEqualsX()` — Likeness Looter, Rydia,
      * Summoner of Mist). The equality sibling of [xConstrainsTargetManaValue]: the enumerator is
      * likewise permissive at X-unbound, and the client narrows [validTargets] to cards whose mana
      * value *equals* the chosen X. For multi-requirement abilities, see
@@ -307,12 +307,12 @@ data class TargetInfo(
     /** A target in this slot must differ from every target chosen for an earlier slot. */
     val mustDifferFromEarlier: Boolean = false,
     /**
-     * True when this requirement's filter contains [CardPredicate.ManaValueAtMostX].
+     * True when this requirement's filter contains `manaValueAtMostX()`.
      * The client re-filters [validTargets] by the chosen X after X selection.
      */
     val xConstrainsManaValue: Boolean = false,
     /**
-     * True when this requirement's filter contains [CardPredicate.ManaValueEqualsX].
+     * True when this requirement's filter contains `manaValueEqualsX()`.
      * The client narrows [validTargets] to cards whose mana value *equals* the chosen X
      * after X selection (Likeness Looter, Rydia, Summoner of Mist).
      */

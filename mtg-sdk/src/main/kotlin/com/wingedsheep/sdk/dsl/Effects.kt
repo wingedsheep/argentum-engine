@@ -220,7 +220,8 @@ import com.wingedsheep.sdk.scripting.effects.PreventionDirection
 import com.wingedsheep.sdk.scripting.effects.PreventionScope
 import com.wingedsheep.sdk.scripting.effects.PreventionSourceFilter
 import com.wingedsheep.sdk.scripting.effects.HijackNextTurnEffect
-import com.wingedsheep.sdk.scripting.effects.SkipNextStepOrPhaseEffect
+import com.wingedsheep.sdk.scripting.effects.SkipDuration
+import com.wingedsheep.sdk.scripting.effects.SkipStepOrPhaseEffect
 import com.wingedsheep.sdk.scripting.effects.SkipNextTurnEffect
 import com.wingedsheep.sdk.scripting.effects.ChooseActionEffect
 import com.wingedsheep.sdk.scripting.effects.EffectChoice
@@ -3735,7 +3736,7 @@ object Effects {
     /**
      * Choose a number, then run [then] with the chosen number exposed via the effect
      * context (as X). Atomic effects and filters under [then] read it through
-     * [com.wingedsheep.sdk.scripting.predicates.CardPredicate.ManaValueEqualsX] (via
+     * `manaValueEqualsX()` (via
      * `GameObjectFilter`/`GroupFilter` `manaValueEqualsX()`). Compose with [Composite]
      * for multi-step cards (Void: destroy all, then reveal & discard). [minValue]/[maxValue]
      * bound the legal choice.
@@ -5784,7 +5785,7 @@ object Effects {
     fun SkipNextStepOrPhase(
         part: com.wingedsheep.sdk.core.TurnPart,
         target: EffectTarget = EffectTarget.Controller
-    ): Effect = SkipNextStepOrPhaseEffect(part, target)
+    ): Effect = SkipStepOrPhaseEffect(part, SkipDuration.NEXT, target)
 
     /**
      * The target player skips **every** instance of [part] for the rest of this turn — the
@@ -5795,7 +5796,7 @@ object Effects {
     fun SkipStepOrPhaseThisTurn(
         part: com.wingedsheep.sdk.core.TurnPart,
         target: EffectTarget = EffectTarget.PlayerRef(com.wingedsheep.sdk.scripting.references.Player.TargetPlayer)
-    ): Effect = com.wingedsheep.sdk.scripting.effects.SkipStepOrPhaseThisTurnEffect(part, target)
+    ): Effect = SkipStepOrPhaseEffect(part, SkipDuration.THIS_TURN, target)
 
     /**
      * Each player exiles the top card of their library; the player who exiled the greatest mana

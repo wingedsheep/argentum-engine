@@ -1181,9 +1181,8 @@ data class LegendRuleDoesNotApplyTo(
  * A turn-based read rather than a continuous-projection effect: the engine scans the battlefield
  * (and granted statics) as the step begins, resolving [player] from each source's controller, and
  * proceeds past the step as though it didn't exist (CR 500.11). [ConditionalStaticAbility] and
- * [CompositeStaticAbility] wrappers are unwrapped. Unlike the one-shot
- * [com.wingedsheep.sdk.scripting.effects.SkipNextStepOrPhaseEffect] marker and
- * [com.wingedsheep.sdk.scripting.effects.SkipStepOrPhaseThisTurnEffect], it is never consumed.
+ * [CompositeStaticAbility] wrappers are unwrapped. Unlike the one-shot and this-turn
+ * [com.wingedsheep.sdk.scripting.effects.SkipStepOrPhaseEffect], it is never consumed.
  *
  * Only [com.wingedsheep.sdk.core.TurnPart.UNTAP_STEP] and
  * [com.wingedsheep.sdk.core.TurnPart.DRAW_STEP] have a standing reader.

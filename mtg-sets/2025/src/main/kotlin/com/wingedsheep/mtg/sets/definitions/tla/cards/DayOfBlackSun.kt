@@ -16,7 +16,7 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * Destroy those creatures.
  *
  * X is the {X} in the mana cost; it is surfaced to resolution as the spell's X value, so the
- * group filter ([CardPredicate.ManaValueAtMostX] via [GameObjectFilter.manaValueAtMostX]) matches
+ * group filter ([GameObjectFilter.manaValueAtMostX]) matches
  * "creatures with mana value X or less" (cf. Vicious Rivalry's board wipe). The abilities are
  * stripped first via [Effects.ForEachInGroup] (the group is snapshotted before any sub-effect
  * applies), which removes indestructible/regeneration/etc. before [Effects.DestroyAll] resolves

@@ -1336,7 +1336,12 @@
                         "filter": {
                             "cardPredicates": [
                                 "IsArtifact",
-                                "ManaValueAtMostX"
+                                {
+                                    "type": "CompareNumericProperty",
+                                    "property": "MANA_VALUE",
+                                    "operator": "LTE",
+                                    "amount": "XValue"
+                                }
                             ]
                         }
                     },

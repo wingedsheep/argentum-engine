@@ -4665,7 +4665,12 @@
                                 "filter": {
                                     "cardPredicates": [
                                         "IsArtifact",
-                                        "ManaValueEqualsX"
+                                        {
+                                            "type": "CompareNumericProperty",
+                                            "property": "MANA_VALUE",
+                                            "operator": "EQ",
+                                            "amount": "XValue"
+                                        }
                                     ]
                                 }
                             },
@@ -6675,7 +6680,12 @@
                             "baseFilter": {
                                 "cardPredicates": [
                                     "IsArtifact",
-                                    "ManaValueAtMostX"
+                                    {
+                                        "type": "CompareNumericProperty",
+                                        "property": "MANA_VALUE",
+                                        "operator": "LTE",
+                                        "amount": "XValue"
+                                    }
                                 ],
                                 "controllerPredicate": "OwnedByYou"
                             },

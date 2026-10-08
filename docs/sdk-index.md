@@ -8,7 +8,656 @@ called before adding one (`docs/sdk-design-principles.md`, "Extend before you ad
 reach these through facades (`Effects.*`, `Conditions.*`, `Filters.*`, …); the long-form
 catalog with authoring notes is [`card-sdk-language-reference.md`](card-sdk-language-reference.md).
 
-Families: [Effect](#effect) (378) · [StaticAbility](#staticability) (188) · [CardPredicate](#cardpredicate) (112) · [Condition](#condition) (111) · [EventPattern](#eventpattern) (101) · [StatePredicate](#statepredicate) (90) · [DynamicAmount](#dynamicamount) (59) · [ReplacementEffect](#replacementeffect) (52) · [KeywordAbility](#keywordability) (41) · [EffectTarget](#effecttarget) (32) · [AbilityCost](#abilitycost) (28) · [Player](#player) (27) · [CostReductionSource](#costreductionsource) (26) · [ManaRestriction](#manarestriction) (23) · [CostAtom](#costatom) (22) · [Duration](#duration) (21) · [CardSource](#cardsource) (20) · [SpellCastPredicate](#spellcastpredicate) (18) · [ControllerPredicate](#controllerpredicate) (16) · [EntityNumericProperty](#entitynumericproperty) (16) · [AdditionalCost](#additionalcost) (15) · [ProtectionScope](#protectionscope) (14) · [CostModification](#costmodification) (12) · [ActivationRestriction](#activationrestriction) (11) · [TargetRequirement](#targetrequirement) (11) · [ManaColorSet](#manacolorset) (10) · [ManaSymbol](#manasymbol) (9) · [SelectionRestriction](#selectionrestriction) (9) · [SpellCostTarget](#spellcosttarget) (9) · [SuccessCriterion](#successcriterion) (9) · [WardCost](#wardcost) (9) · [Gate](#gate) (7) · [AttackPredicate](#attackpredicate) (6) · [CollectionFilter](#collectionfilter) (6) · [MayPlayExpiry](#mayplayexpiry) (6) · [SelectionMode](#selectionmode) (6) · [CastRestriction](#castrestriction) (5) · [Format](#format) (5) · [IterationSpace](#iterationspace) (5) · [Scope](#scope) (5) · [AmountFilter](#amountfilter) (4) · [CounterDestination](#counterdestination) (4) · [DelayedTriggerExpiry](#delayedtriggerexpiry) (4) · [ManaSpellRider](#manaspellrider) (4) · [NumberProperty](#numberproperty) (4) · [PayCost](#paycost) (4) · [PreventionSourceFilter](#preventionsourcefilter) (4) · [Recipient](#recipient) (4) · [CardMeasure](#cardmeasure) (3) · [CharacteristicValue](#characteristicvalue) (3) · [CostGating](#costgating) (3) · [CounterCondition](#countercondition) (3) · [CounterTarget](#countertarget) (3) · [DamageType](#damagetype) (3) · [FeasibilityCheck](#feasibilitycheck) (3) · [TimingRule](#timingrule) (3) · [CardDestination](#carddestination) (2) · [CounterTargetSource](#countertargetsource) (2) · [PlayerRankMetric](#playerrankmetric) (2) · [RepeatCondition](#repeatcondition) (2) · [RetargetChooser](#retargetchooser) (2) · [DamagePredicate](#damagepredicate) (1) · [PlotCostTarget](#plotcosttarget) (1) · [UnlockCostTarget](#unlockcosttarget) (1)
+Families:
+
+- [AbilityCost](#abilitycost)
+- [ActivationRestriction](#activationrestriction)
+- [AdditionalCost](#additionalcost)
+- [AmountFilter](#amountfilter)
+- [AttackPredicate](#attackpredicate)
+- [CardDestination](#carddestination)
+- [CardMeasure](#cardmeasure)
+- [CardPredicate](#cardpredicate)
+- [CardSource](#cardsource)
+- [CastRestriction](#castrestriction)
+- [CharacteristicValue](#characteristicvalue)
+- [CollectionFilter](#collectionfilter)
+- [Condition](#condition)
+- [ControllerPredicate](#controllerpredicate)
+- [CostAtom](#costatom)
+- [CostGating](#costgating)
+- [CostModification](#costmodification)
+- [CostReductionSource](#costreductionsource)
+- [CounterCondition](#countercondition)
+- [CounterDestination](#counterdestination)
+- [CounterTarget](#countertarget)
+- [CounterTargetSource](#countertargetsource)
+- [DamagePredicate](#damagepredicate)
+- [DamageType](#damagetype)
+- [DelayedTriggerExpiry](#delayedtriggerexpiry)
+- [Duration](#duration)
+- [DynamicAmount](#dynamicamount)
+- [Effect](#effect)
+- [EffectTarget](#effecttarget)
+- [EntityNumericProperty](#entitynumericproperty)
+- [EventPattern](#eventpattern)
+- [FeasibilityCheck](#feasibilitycheck)
+- [Format](#format)
+- [Gate](#gate)
+- [IterationSpace](#iterationspace)
+- [KeywordAbility](#keywordability)
+- [ManaColorSet](#manacolorset)
+- [ManaRestriction](#manarestriction)
+- [ManaSpellRider](#manaspellrider)
+- [ManaSymbol](#manasymbol)
+- [MayPlayExpiry](#mayplayexpiry)
+- [NumberProperty](#numberproperty)
+- [PayCost](#paycost)
+- [Player](#player)
+- [PlayerRankMetric](#playerrankmetric)
+- [PlotCostTarget](#plotcosttarget)
+- [PreventionSourceFilter](#preventionsourcefilter)
+- [ProtectionScope](#protectionscope)
+- [Recipient](#recipient)
+- [RepeatCondition](#repeatcondition)
+- [ReplacementEffect](#replacementeffect)
+- [RetargetChooser](#retargetchooser)
+- [Scope](#scope)
+- [SelectionMode](#selectionmode)
+- [SelectionRestriction](#selectionrestriction)
+- [SpellCastPredicate](#spellcastpredicate)
+- [SpellCostTarget](#spellcosttarget)
+- [StatePredicate](#statepredicate)
+- [StaticAbility](#staticability)
+- [SuccessCriterion](#successcriterion)
+- [TargetRequirement](#targetrequirement)
+- [TimingRule](#timingrule)
+- [UnlockCostTarget](#unlockcosttarget)
+- [WardCost](#wardcost)
+
+## AbilityCost
+
+- `AbilityCost.Atom(atom: CostAtom)` — A single shared payable thing — see CostAtom.
+- `AbilityCost.AttachedPermanentManaCost` — Pay the mana cost of the permanent this Aura/Equipment is attached to — Merseine's "Pay enchanted creature's mana cost: Remove a net counter from this Aura." Lowered to a plain Atom mana cost again…
+- `AbilityCost.Blight(amount: Int)` — Blight N: put N -1/-1 counters on a creature you control.
+- `AbilityCost.Composite(costs: List<AbilityCost>)` — Multiple costs combined
+- `AbilityCost.Craft(filter: GameObjectFilter, minCount: Int, maxCount: Int?, slots: List<GameObjectFilter>)` — Craft materials (CR 702.167a).
+- `AbilityCost.DiscardHand` — Discard your entire hand
+- `AbilityCost.DiscardLastDrawnThisTurn` — Discard the specific card the controller drew most recently this turn (CR 121 "draws").
+- `AbilityCost.DiscardSelf` — Discard self (the card with this ability) - used for cycling
+- `AbilityCost.DiscardX(filter: GameObjectFilter)` — Discard X cards, where X is the ability's X value — "{4}{B}{B}{B}, Discard X cards: …" (Gix, Yawgmoth Praetor).
+- `AbilityCost.Exert` — Exert this permanent (CR 701.43a) — choose to have it not untap during your next untap step.
+- `AbilityCost.ExileGrantingPermanent` — Exile the permanent that granted this activated ability to the source.
+- `AbilityCost.ExileSelf` — Exile self (the permanent with this ability)
+- `AbilityCost.ExileXFromGraveyard(filter: GameObjectFilter)` — Exile X cards from graveyard, where X is the ability's X value.
+- `AbilityCost.Forage` — Forage: exile three cards from your graveyard or sacrifice a Food.
+- `AbilityCost.Free` — No cost ({0}) — the ability is free to activate
+- `AbilityCost.Loyalty(change: Int)` — Loyalty cost for planeswalker abilities
+- `AbilityCost.LoyaltyX` — A variable negative loyalty cost (−X), chosen when the ability is activated.
+- `AbilityCost.PayXLife` — Pay X life, where X is the value chosen for the ability's `{X}` mana cost.
+- `AbilityCost.RemoveAllCounters(counterType: CounterType, fromGrantingPermanent: Boolean)` — Remove every counterType counter from a permanent as part of the activation cost — "Remove all +1/+1 counters from Molten Hydra" on the ability's own source, or, with fromGrantingPermanent, "Remove…
+- `AbilityCost.ReturnSelfToHand` — Return self to its owner's hand — "Return this land to its owner's hand" as part of an activation cost (Maze's End).
+- `AbilityCost.SacrificeChosenCreatureType` — Sacrifice a creature of the type chosen when this permanent entered the battlefield.
+- `AbilityCost.SacrificeGrantingPermanent` — Sacrifice the permanent that granted this activated ability to the source.
+- `AbilityCost.SacrificeSelf` — Sacrifice self (the permanent with this ability)
+- `AbilityCost.Tap` — Tap the permanent ({T})
+- `AbilityCost.TapAttachedCreature` — Tap the creature this aura is attached to ({T} enchanted creature)
+- `AbilityCost.TapGrantingPermanent` — Tap the permanent that granted this activated ability to the source — the third member of the granter-cost family alongside ExileGrantingPermanent and SacrificeGrantingPermanent, and the granter-sc…
+- `AbilityCost.TapXPermanents(filter: GameObjectFilter)` — Tap a variable number of permanents you control, where the count equals the ability's X value.
+- `AbilityCost.Untap` — Untap the permanent ({Q})
+
+## ActivationRestriction
+
+- `ActivationRestriction.All(restrictions: List<ActivationRestriction>)` — Composite restriction requiring multiple conditions.
+- `ActivationRestriction.AnyPlayerMay` — Any player may activate this ability, not just the controller.
+- `ActivationRestriction.BeforeStep(step: Step)` — Restrict activation to before a specific step.
+- `ActivationRestriction.ControlledSinceYourMostRecentTurn` — Restrict activation to when the source has been under the activating player's control continuously since the beginning of their most recent turn — i.e. the "summoning sickness" condition (CR 302.6)…
+- `ActivationRestriction.DuringPhase(phase: Phase)` — Restrict activation to during a specific phase.
+- `ActivationRestriction.DuringStep(step: Step)` — Restrict activation to during a specific step.
+- `ActivationRestriction.MaxPerTurn(count: Int)` — Restrict activation to at most count times per turn.
+- `ActivationRestriction.Once` — Restrict activation to only once ever (for the lifetime of the permanent).
+- `ActivationRestriction.OncePerTurn` — Restrict activation to once per turn.
+- `ActivationRestriction.OnlyDuringYourTurn` — Restrict activation to only during your turn.
+- `ActivationRestriction.OnlyIfCondition(condition: Condition)` — Restrict activation based on a game condition.
+
+## AdditionalCost
+
+- `AdditionalCost.Atom(atom: CostAtom)` — A single shared payable thing — see CostAtom.
+- `AdditionalCost.Behold(filter: GameObjectFilter, count: Int, storeAs: String)` — Behold: choose a matching permanent you control or reveal a matching card from your hand.
+- `AdditionalCost.BlightOrPay(blightAmount: Int, alternativeManaCost: String)` — Blight N or pay additional mana: the caster must either put N -1/-1 counters on a creature they control, or pay extra mana on top of the spell's base mana cost.
+- `AdditionalCost.BlightVariable(minCount: Int)` — Blight X (variable): the caster declares X at cast time, puts X -1/-1 counters on a creature they control, and X is exposed to the spell's effects via `DynamicAmount.CastChoice(ChoiceSlot.BLIGHT_AM…
+- `AdditionalCost.Choice(options: List<AdditionalCost>, choiceSlot: ChoiceSlot?)` — Cost-vs-cost: the caster chooses **exactly one** of options and pays it — "as an additional cost to cast this spell, discard a card **or** sacrifice a permanent" (Souls of the Lost).
+- `AdditionalCost.ChooseEntity(zoneFilters: Map<Zone, GameObjectFilter>, storeAs: String, captureSnapshot: Boolean, descriptionOverride: String?)` — Choose one entity from any of the zones declared in zoneFilters, applying the matching filter for that zone, without moving it.
+- `AdditionalCost.Composite(steps: List<AdditionalCost>)` — A composite additional cost that groups multiple atomic costs into a single logical cost.
+- `AdditionalCost.ExileFromStorage(from: String, linkToSource: Boolean)` — Exile cards from a named pipeline collection and optionally link them to the source spell/permanent via LinkedExileComponent.
+- `AdditionalCost.ExileVariableCards(minCount: Int, filter: GameObjectFilter, fromZone: CostZone)` — Exile a variable number of cards from a zone as an additional cost.
+- `AdditionalCost.Forage` — Forage: exile three cards from your graveyard or sacrifice a Food.
+- `AdditionalCost.OrPay(cost: AdditionalCost, alternativeManaCost: String)` — Pay cost, **or** pay alternativeManaCost on top of the spell's mana cost — the whole "do X or pay {N}" shape, parameterized by the cost on the non-mana leg.
+- `AdditionalCost.PayLifeEqualToManaValueOfSpell` — Pay life equal to the mana value of the spell being cast.
+- `AdditionalCost.PayLifePerTarget(amountPerTarget: Int)` — Pay amountPerTarget life for each target chosen by this spell.
+- `AdditionalCost.PayXLife(minCount: Int)` — Pay X life (variable): the caster declares X at cast time and pays X life as an additional cost.
+- `AdditionalCost.SacrificeCreaturesForCostReduction(filter: GameObjectFilter, costReductionPerCreature: Int)` — Sacrifice any number of permanents matching the given filter as an additional cost.
+
+## AmountFilter
+
+- `AmountFilter.Any`
+- `AmountFilter.AtLeast(value: Int)`
+- `AmountFilter.AtMost(value: Int)`
+- `AmountFilter.Exactly(value: Int)`
+
+## AttackPredicate
+
+- `AttackPredicate.Alone` — The attacker is the only declared attacker this combat.
+- `AttackPredicate.AttackedAlongsideGreaterPower` — The attacker was declared as attacking **and** at least one *other* declared attacker has strictly greater **projected** power than the attacker's own projected power.
+- `AttackPredicate.AttackerCountAtLeast(n: Int)` — At least n creatures total were declared as attackers this combat (counting the attacker the trigger fires for).
+- `AttackPredicate.DefenderIsBattle` — The attacker was declared as attacking a **battle** — the defender-kind sibling of DefenderIsPlayer (CR 508.1: an attacker is declared as attacking a player, planeswalker, or battle).
+- `AttackPredicate.DefenderIsPlayer` — The attacker was declared as attacking a **player** — not a planeswalker or a battle.
+- `AttackPredicate.FirstTimeEachTurn` — The attacker is attacking *for the first time this turn* — it had not been declared as an attacker in any earlier combat phase this turn.
+
+## CardDestination
+
+- `CardDestination.ToZone(zone: Zone, player: Player, placement: ZonePlacement)` — Move cards to a specific zone.
+- `CardDestination.ToZoneExiledFrom(fallback: Zone)` — Each card goes back to **the zone it was exiled from** — the "return it to its previous zone" half of an exile-until (CR 610.3: "A second one-shot effect is created immediately after the specified…
+
+## CardMeasure
+
+- `CardMeasure.ColoredManaSymbols(colors: List<Color>)` — How many mana symbols of colors appear in the card's **printed** mana cost — Baron Helmut Zemo's "fifteen or more black mana symbols among their mana costs".
+- `CardMeasure.DistinctCardTypes` — How many distinct card types (CR 205.2a; on a graveyard card: artifact, battle, creature, enchantment, instant, kindred, land, planeswalker, sorcery; never supertypes or subtypes) appear **among**…
+- `CardMeasure.ManaValue` — The card's mana value (CR 202.3) — the measure collect evidence N uses ("with total mana value N or greater", CR 701.59a).
+
+## CardPredicate
+
+- `CardPredicate.AbilitySourceMatches(subfilter: GameObjectFilter)` — Matches an **activated or triggered ability on the stack** whose *source* (CR 113.7 — the object that generated it) matches subfilter.
+- `CardPredicate.And(predicates: List<CardPredicate>)`
+- `CardPredicate.BasePowerEquals(value: Int)` — **Base** power exactly equal to value — "a creature with base power 1" (Rapid Augmenter, Zinnia, Valley's Voice).
+- `CardPredicate.BaseToughnessEquals(value: Int)` — The toughness sibling of BasePowerEquals — "base toughness 1" (Sword of the Squeak).
+- `CardPredicate.CardTypeEqualsChosenComponent(slot: ChoiceSlot)` — Matches cards whose **card type** equals a card type **durably chosen by the source permanent** as it entered — read from that permanent's com.wingedsheep.engine.state.components.battlefield.CastCh…
+- `CardPredicate.ColoredManaSymbolsAtLeast(colors: List<Color>, min: Int)` — Matches an object whose printed mana cost contains at least min mana symbols of colors — "a noncreature spell with one or more blue mana symbols in its mana cost" (Namor the Sub-Mariner) with the d…
+- `CardPredicate.CompareNumericProperty(property: CardNumericProperty, operator: ComparisonOperator, amount: DynamicAmount)` — Compares this object's numeric property with a late-bound amount (including another entity's property).
+- `CardPredicate.ConvokedSource` — Matches a permanent that **convoked** the source object (CR 702.51c) — "each creature that convoked it" (Zephyr Singer).
+- `CardPredicate.CouldEnchant(reference: EffectTarget.SingleEntity)` — An Aura card whose printed "Enchant …" restriction (com.wingedsheep.sdk.model.CardScript.auraTarget) the referenced permanent satisfies — "search your library for an Aura card that could enchant it…
+- `CardPredicate.CouldProduceColorlessMana` — Matches a land one of whose mana abilities could produce colorless mana ({C}) — Wastes, an Eldrazi Temple, a land granted "{T}: Add {C}".
+- `CardPredicate.DoesNotShareCreatureTypeWithPermanentYouControl(filter: GameObjectFilter)` — Matches creature cards that share **no** creature type with any permanent the evaluating player controls matching filter.
+- `CardPredicate.DoesNotShareLandTypeWithPermanentYouControl(filter: GameObjectFilter)` — Matches cards that share **no** land type with any permanent the evaluating player controls matching filter.
+- `CardPredicate.HasActivatedAbility` — Matches a permanent or graveyard card that has at least one intrinsic activated ability of any kind — mana, loyalty, or otherwise — activatable from the battlefield.
+- `CardPredicate.HasAdventure` — The card has an Adventure (com.wingedsheep.sdk.model.CardLayout.ADVENTURE) — i.e. it is an adventurer card, regardless of which face it currently shows.
+- `CardPredicate.HasAnyOfSubtypes(subtypes: List<Subtype>)` — Matches cards with any one of the given subtypes (OR logic).
+- `CardPredicate.HasBasicLandType(landType: String)` — Matches basic land types: Plains, Island, Swamp, Mountain, Forest
+- `CardPredicate.HasChosenColor` — Matches cards whose colors include the color chosen during this effect's resolution (e.g. via ChooseColorThenEffectcom.wingedsheep.sdk.scripting.effects.ChooseColorThenEffect).
+- `CardPredicate.HasChosenSubtype` — Matches creatures that have the subtype chosen on the source permanent (CastChoicesComponent)
+- `CardPredicate.HasColor(color: Color)`
+- `CardPredicate.HasCycling` — Matches a card with a cycling ability — plain cycling or any typecycling variant (typecycling is a variant of cycling, CR 702.29e).
+- `CardPredicate.HasExactlyColors(count: Int)` — Exactly count colors (CR 105.2).
+- `CardPredicate.HasKeyword(keyword: Keyword)`
+- `CardPredicate.HasNoAbilities` — Matches a card whose Oracle rules-text box is empty.
+- `CardPredicate.HasNonManaActivatedAbility` — Matches a permanent that has at least one intrinsic activated ability that isn't a mana ability (and isn't a loyalty ability).
+- `CardPredicate.HasSubtype(subtype: Subtype)`
+- `CardPredicate.HasSubtypeFromVariable(variableName: String)` — Matches cards that have a subtype matching a value stored in chosenValuesvariableName
+- `CardPredicate.HasSubtypeInEachStoredGroup(groupName: String)` — Matches cards that share at least one subtype with **each** subtype group stored under the named key in the pipeline's `storedSubtypeGroups` map.
+- `CardPredicate.HasSubtypeInStoredList(listName: String)` — Matches cards that have a subtype matching any string in storedStringListslistName
+- `CardPredicate.HasXInManaCost` — Matches a card whose printed mana cost contains an {X} symbol (e.g. "a card with {X} in its mana cost", Paradox Surveyor).
+- `CardPredicate.IsActivatedAbility` — Matches only activated abilities on the stack (not triggered abilities or spells).
+- `CardPredicate.IsActivatedOrTriggeredAbility` — Matches activated or triggered abilities on the stack (not spells).
+- `CardPredicate.IsArtifact`
+- `CardPredicate.IsBasicLand`
+- `CardPredicate.IsBattle`
+- `CardPredicate.IsColored` — One or more colors (the complement of IsColorless).
+- `CardPredicate.IsColorless`
+- `CardPredicate.IsCreature`
+- `CardPredicate.IsDoubleFaced` — The card is a **double-faced card** (CR 712.1) — it has a card face on each side rather than a Magic card back.
+- `CardPredicate.IsEnchantment`
+- `CardPredicate.IsInstant`
+- `CardPredicate.IsLand`
+- `CardPredicate.IsLegendary`
+- `CardPredicate.IsMonocolored`
+- `CardPredicate.IsMulticolored`
+- `CardPredicate.IsNonartifact`
+- `CardPredicate.IsNoncreature`
+- `CardPredicate.IsNonenchantment`
+- `CardPredicate.IsNonland`
+- `CardPredicate.IsNonlegendary`
+- `CardPredicate.IsNontoken`
+- `CardPredicate.IsPermanent` — Matches creature, artifact, enchantment, planeswalker, land
+- `CardPredicate.IsPlaneswalker`
+- `CardPredicate.IsSnow` — Snow supertype (CR 205.4g) — "snow land", "snow permanent", "snow spell".
+- `CardPredicate.IsSorcery`
+- `CardPredicate.IsToken`
+- `CardPredicate.IsTriggeredAbility` — Matches only triggered abilities on the stack (not activated abilities or spells).
+- `CardPredicate.ManaCostPayableWithManaSpent` — The card's mana cost could be paid by some amount of, or all of, the mana spent to activate the resolving ability (or cast the resolving spell) — Illusionary Mask's "a creature card in your hand wh…
+- `CardPredicate.ManaValueAtLeast(min: Int)`
+- `CardPredicate.ManaValueAtMost(max: Int)`
+- `CardPredicate.ManaValueAtMostColorsSpent(reference: EffectTarget.SingleEntity)` — Mana value at most the number of distinct *colors* of mana spent to cast a referenced entity (0–5).
+- `CardPredicate.ManaValueAtMostDynamic(amount: DynamicAmount)` — Mana value at most a resolved DynamicAmount.
+- `CardPredicate.ManaValueAtMostEntity(reference: EffectTarget.SingleEntity)` — Mana value at most that of a referenced entity.
+- `CardPredicate.ManaValueAtMostEntityManaSpent(reference: EffectTarget.SingleEntity)` — Mana value at most the amount of mana actually spent to cast a referenced entity.
+- `CardPredicate.ManaValueEquals(value: Int)`
+- `CardPredicate.ManaValueEqualsDynamic(amount: DynamicAmount)` — Mana value *exactly* equal to a DynamicAmount resolved when the predicate is checked — the equality sibling of ManaValueAtMostDynamic, and the open-ended counterpart of the fixed ManaValueEquals /…
+- `CardPredicate.ManaValueIsEven`
+- `CardPredicate.ManaValueIsOdd`
+- `CardPredicate.NameEquals(name: String)`
+- `CardPredicate.NameEqualsChosen(variableName: String)` — Matches cards whose name equals the value stored in `chosenValuesvariableName` — a card name chosen earlier in the pipeline (via com.wingedsheep.sdk.scripting.effects.OptionType.CARD_NAME or com.wi…
+- `CardPredicate.NameEqualsChosenComponent(slot: ChoiceSlot)` — Matches cards whose name equals a name **durably chosen by the source permanent** as it entered — read from that permanent's com.wingedsheep.engine.state.components.battlefield.CastChoicesComponent…
+- `CardPredicate.NameNotSharedWithControlledRoom` — Matches a card whose name is **not** shared with any Room the evaluating player controls (CR 709).
+- `CardPredicate.Not(predicate: CardPredicate)`
+- `CardPredicate.NotColor(color: Color)`
+- `CardPredicate.NotKeyword(keyword: Keyword)`
+- `CardPredicate.NotOfSourceChosenType` — Matches creatures that are NOT of the type chosen on the source permanent
+- `CardPredicate.NotSubtype(subtype: Subtype)`
+- `CardPredicate.Or(predicates: List<CardPredicate>)`
+- `CardPredicate.OriginallyPrintedInSet(setCode: String)` — Matches cards *originally printed* in the given set — i.e. whose canonical com.wingedsheep.sdk.model.CardDefinition.setCode equals setCode (case-insensitive), regardless of which printing is actual…
+- `CardPredicate.PowerAtLeast(min: Int)`
+- `CardPredicate.PowerAtMost(max: Int)`
+- `CardPredicate.PowerAtMostDynamic(amount: DynamicAmount)` — Power at most a DynamicAmount resolved when the predicate is checked — the power sibling of ManaValueAtMostDynamic and the open-ended counterpart of the fixed PowerAtMost ("power X or less, where X…
+- `CardPredicate.PowerAtMostEntity(reference: EffectTarget.SingleEntity)` — Power less than or equal to the projected power of a referenced entity.
+- `CardPredicate.PowerEquals(value: Int)`
+- `CardPredicate.PowerEqualsDynamic(amount: DynamicAmount)` — Power *exactly* equal to a DynamicAmount resolved when the predicate is checked — the dynamic counterpart of PowerEquals.
+- `CardPredicate.PowerGreaterThanBase` — Projected power strictly greater than the object's own base power — "a creature with power greater than its base power" (Kutzil, Malamet Exemplar; the Malamet cycle).
+- `CardPredicate.PowerGreaterThanEntity(reference: EffectTarget.SingleEntity)` — Power strictly greater than the projected power of a referenced entity.
+- `CardPredicate.PowerLessThanEntity(reference: EffectTarget.SingleEntity)` — Power strictly less than the projected power of reference (e.g. "a creature with lesser power" than the source — Rangers of Ithilien).
+- `CardPredicate.PowerOrToughnessAtLeast(min: Int)` — Power or toughness is at least the given value (OR logic)
+- `CardPredicate.PowerOrToughnessAtMost(max: Int)` — Power or toughness is at most the given value (OR logic)
+- `CardPredicate.SharesCardTypeWith(entity: EffectTarget.SingleEntity)` — Matches objects that share a **card type** with the referenced entity — "that shares a card type with it" (Confusion in the Ranks).
+- `CardPredicate.SharesCardTypeWithLinkedExile` — Matches objects that share a card type with **any** card exiled with the asking ability's source — "shares a card type with a card exiled with this creature" (Cemetery Illuminator).
+- `CardPredicate.SharesChosenColorWithSource` — Matches objects whose color set includes the color chosen on the source permanent (read from its CastChoicesComponent).
+- `CardPredicate.SharesColorWith(entity: EffectTarget.SingleEntity)` — Matches objects that share a color with the referenced entity
+- `CardPredicate.SharesColorWithPermanentYouControl(filter: GameObjectFilter)` — Matches objects that share a color with at least one permanent the evaluating player controls matching filter.
+- `CardPredicate.SharesColorWithRecipient` — Matches objects that share a color with the recipient of the in-flight damage, and are not that recipient.
+- `CardPredicate.SharesCreatureTypeWith(entity: EffectTarget.SingleEntity)` — Matches creatures that share a creature subtype with the referenced entity
+- `CardPredicate.SharesCreatureTypeWithSource` — Matches spells that share a creature subtype with the source permanent's projected types
+- `CardPredicate.SharesCreatureTypeWithTriggeringEntity` — Matches creatures that share a creature subtype with the triggering entity
+- `CardPredicate.SharesManaValueWith(entity: EffectTarget.SingleEntity)` — Matches objects whose mana value **equals** the referenced entity's mana value — "that shares a mana value with the exiled card" (Thought Prison).
+- `CardPredicate.SharesNameWith(entity: EffectTarget.SingleEntity)` — Matches objects whose name **equals** the referenced entity's name — "a land with the same name as the exiled card" (Extraplanar Lens).
+- `CardPredicate.SharesNameWithLinkedExile` — Matches objects whose **name** equals that of **any** card exiled with the asking ability's source — "spells with the same name as a card exiled with Circu" (Circu, Dimir Lobotomist).
+- `CardPredicate.SharesNameWithPermanentYouControl(filter: GameObjectFilter, excludeSelf: Boolean)` — Matches objects whose name equals that of at least one permanent the evaluating player controls matching filter.
+- `CardPredicate.TargetsMatching(subfilter: GameObjectFilter)` — Matches a spell or ability on the stack at least one of whose chosen targets matches subfilter.
+- `CardPredicate.TargetsPlayer(player: Player)` — Matches a spell or ability on the stack at least one of whose chosen targets is a player that player names, read relative to the filter's chooser — the player half of TargetsMatching, which skips p…
+- `CardPredicate.TotalPowerAndToughnessAtMost(max: Int)` — Total power and toughness (sum) is at most the given value
+- `CardPredicate.ToughnessAtLeast(min: Int)`
+- `CardPredicate.ToughnessAtMost(max: Int)`
+- `CardPredicate.ToughnessEquals(value: Int)`
+- `CardPredicate.ToughnessEqualsDynamic(amount: DynamicAmount)` — Toughness *exactly* equal to a DynamicAmount resolved when the predicate is checked — the dynamic counterpart of ToughnessEquals.
+- `CardPredicate.ToughnessGreaterThanPower` — Toughness is strictly greater than power
+
+## CardSource
+
+- `CardSource.AttachedTo(host: EffectTarget, filter: GameObjectFilter)` — Permanents attached to a host entity (resolved from an EffectTarget) that match filter.
+- `CardSource.BattlefieldMatching(filter: GameObjectFilter, player: Player, excludeSelf: Boolean, includeAttachments: Boolean, excludeTriggering: Boolean, excludeChosenTargets: Boolean)` — All permanents on the battlefield matching a filter (any controller by default).
+- `CardSource.BottomOfLibrary(count: DynamicAmount, player: Player)` — Bottom N cards of a player's library — "puts the bottom card of their library into their graveyard" (Cellar Door).
+- `CardSource.ChosenTargets` — The spell or ability's resolved targets, taken from EffectContext.targets.
+- `CardSource.ControlledPermanents(player: Player, filter: GameObjectFilter)` — Permanents controlled by a player (uses projected state to respect control-changing effects).
+- `CardSource.CraftedMaterials` — The cards exiled to Craft the source permanent (its com.wingedsheep.engine.state.components.battlefield.CraftedFromExiledComponent), filtered to those still in exile.
+- `CardSource.CreaturesThatSaddledSource` — The creatures that saddled the effect's source this turn (CR 702.171c) — the union of every creature tapped to pay a Saddle ability's cost on this Mount, read off the source's `CrewSaddleContributo…
+- `CardSource.EnteredViaThisResolution` — Every permanent that was put onto the battlefield by *this* resolving spell or ability, read off the `EnteredViaAbilityComponent(sourceId == context.sourceId)` stamp left by a MoveCollectionEffect…
+- `CardSource.ExiledAsCost` — The cards exiled to pay the ability's *activation cost* — the exile counterpart of TappedAsCost, read from `EffectContext.exiledAsCostCards`, which the activation records at cost-payment time (CR 6…
+- `CardSource.FromLinkedExile(count: Int?)`
+- `CardSource.FromMultipleZones(zones: List<Zone>, player: Player, filter: GameObjectFilter)` — Cards from multiple zones matching an optional filter.
+- `CardSource.FromVariable(variableName: String)` — Read cards from a previously stored collection variable.
+- `CardSource.FromZone(zone: Zone, player: Player, filter: GameObjectFilter, excludeSacrificedThisWay: Boolean)` — Cards from a specific zone matching an optional filter.
+- `CardSource.LastKnownCombatPairedWithSource` — The creatures that were blocking, or blocked by, the effect's source at the moment the source last left the battlefield (CR 509 combat pairing, captured as last-known information).
+- `CardSource.LastKnownEquipmentAttachedToSource` — The Equipment that was attached to the effect's source the moment a self-sacrifice / self-exile cost moved it off the battlefield (CR 113.7a last-known information).
+- `CardSource.Self` — The ability's own source card (com.wingedsheep.sdk.scripting.references sourceId).
+- `CardSource.SourceLinkedBattlefield(key: String)` — Still-current battlefield objects recorded by this source's original battlefield visit.
+- `CardSource.TappedAsCost` — Permanents that were tapped as part of the ability's activation cost.
+- `CardSource.TopOfLibrary(count: DynamicAmount, player: Player, isMill: Boolean, isScry: Boolean)` — Top N cards of a player's library.
+- `CardSource.TriggeringEntity` — The entity that caused the trigger to fire (`EffectContext.triggeringEntityId`) — the gatherable counterpart of com.wingedsheep.sdk.scripting.targets.EffectTarget.TriggeringEntity.
+
+## CastRestriction
+
+- `CastRestriction.All(restrictions: List<CastRestriction>)` — Composite restriction requiring multiple conditions.
+- `CastRestriction.OnlyDuringPhase(phase: Phase)` — Restrict casting to a specific phase.
+- `CastRestriction.OnlyDuringStep(step: Step)` — Restrict casting to a specific step.
+- `CastRestriction.OnlyIfCondition(condition: Condition)` — Restrict casting based on a game condition.
+- `CastRestriction.TimingRequirement(timing: TimingRule)` — Restrict casting based on timing rules (instant speed vs sorcery speed).
+
+## CharacteristicValue
+
+- `CharacteristicValue.Dynamic(source: DynamicAmount)` — A dynamic value determined by game state.
+- `CharacteristicValue.DynamicWithOffset(source: DynamicAmount, offset: Int)` — A dynamic value with a fixed offset.
+- `CharacteristicValue.Fixed(value: Int)` — A fixed integer value.
+
+## CollectionFilter
+
+- `CollectionFilter.ExcludeEntity(entity: EffectTarget.SingleEntity)` — Exclude the entity referenced by entity from the collection.
+- `CollectionFilter.ExcludeOtherCollection(otherCollectionName: String)` — Exclude all entities present in another stored collection — i.e., set difference.
+- `CollectionFilter.GreatestManaValue` — Keep only the cards with the greatest mana value in the collection.
+- `CollectionFilter.GreatestPower` — Keep only creatures with the greatest power in the collection.
+- `CollectionFilter.LeastToughness` — Keep only creatures with the least toughness in the collection.
+- `CollectionFilter.SharesSubtypeWithSacrificed` — Keep only entities that share at least one subtype with the sacrificed creature.
+
+## Condition
+
+- `APlayerControlsMostOfSubtype(subtype: Subtype)` — Condition: "If a player controls more subtype creatures than each other player" Used by Thoughtbound Primoc and similar Onslaught "tribal war" cards.
+- `AllConditions(conditions: List<Condition>)` — Condition: All of the sub-conditions must be met (AND)
+- `AnotherPermanentWithSameNameAsTarget(targetIndex: Int)` — Condition: "if another permanent with the same name as target is on the battlefield".
+- `AnyCondition(conditions: List<Condition>)` — Condition: Any of the sub-conditions must be met (OR)
+- `AnyEnteredOrWasCastFromExile` — Condition: "if one or more of them entered from exile or was cast from exile." The batch-enters, any-of counterpart of com.wingedsheep.sdk.scripting.conditions.TriggeringEntityEnteredOrWasCastFromG…
+- `AnyPlayerDealtCombatDamageThisTurnAtLeast(amount: Int)` — Condition: "a player was dealt amount or more combat damage this turn" — true when ANY single player (existential, including you) has accumulated at least amount combat damage this turn.
+- `BeforeAttackersDeclaredThisTurn` — Condition: "before attackers are declared" this turn — the game hasn't yet reached the declare attackers step of the turn's first combat phase (Master Warcraft's ruling: with several combat phases,…
+- `BlightWasPaid` — Condition: "If this spell's blight additional cost was paid" Used for Lorwyn Eclipsed cards (e.g., Cinder Strike) where the effect changes based on whether the optional Blight additional cost was a…
+- `CastChoiceIs(slot: ChoiceSlot, value: String)` — Condition: the value locked in for slot equals value (compared as text).
+- `CastChoiceMade(slot: ChoiceSlot)` — Condition: a value was locked in for slot when the source was cast / as it entered.
+- `CastTimeFlagSet(flag: String)` — Condition: the named cast-time capture flag was true *as the source spell was cast* (CR 601.2i).
+- `CollectionContainsMatch(collection: String, filter: GameObjectFilter)` — Condition: "if a card in the named collection matches filter" Checks whether any entity in a stored pipeline collection matches the given filter.
+- `CollectionSharesCardType(collection: String)` — Condition: "if two cards in the named collection share a card type".
+- `ColorIsMostCommon(color: Color)` — Condition: "As long as color is the most common color among all permanents, or is tied for most common".
+- `Compare(left: DynamicAmount, operator: ComparisonOperator, right: DynamicAmount)` — Generic numeric comparison condition.
+- `ControlledCreatureDiedThisTurnCondition` — Intervening-if condition (Rule 603.4): "if a creature died under your control this turn".
+- `ControllerTurnsTakenAtMost(threshold: Int)` — Condition: "it's threshold or less of the controller's turn of the game".
+- `CounterPutOnPermanentYouControlledThisTurn(counterType: CounterType?, player: Player)` — Condition: "if a counterType counter was put on a permanent under player's control this turn" — Fairgrounds Trumpeter's end-step gate.
+- `CounterRemovedFromPermanentYouControlledThisTurn(counterType: CounterType?, player: Player)` — Condition: "if a counterType counter was removed from a permanent player controlled this turn" — the first half of Churning Reservoir's activation gate.
+- `CreatureDiedThisTurnCondition` — Intervening-if condition (Rule 603.4): "if a creature died this turn".
+- `CreatureWithSubtypeDiedThisTurn(subtype: String, present: Boolean)` — Condition: "if a creature with (or without) the subtype subtype died this turn".
+- `EnchantedCreatureHasSubtype(subtype: Subtype)` — Condition: "If enchanted creature is a subtype" Used by auras like Lavamancer's Skill that have different effects based on the creature type of the enchanted creature.
+- `EnchantedCreatureIsLegendary` — Condition: "If enchanted creature is legendary" Used by auras whose continuous effects apply only while the enchanted creature has the legendary supertype.
+- `EntityMatches(entity: EffectTarget, filter: GameObjectFilter)` — Condition: "the entity matches filter".
+- `Escaped` — Condition: "if it escaped" (CR 702.138b — a spell or permanent "escaped" if that spell, or the spell that became that permanent as it resolved, was cast from a graveyard with an escape ability).
+- `ExiledAsCostHadSubtype(subtype: String)` — Condition: "if the exiled creature was a subtype" — reads what an **exile additional cost** (`Costs.additional.ExileCards`) just ate, for either a spell (Soul Exchange's "Put a +2/+2 counter on tha…
+- `Exists(player: Player, zone: Zone, filter: GameObjectFilter, negate: Boolean, excludeSelf: Boolean)` — Generic zone-presence condition.
+- `IsDay` — Condition: "if it's day" (CR 731).
+- `IsFirstCombatPhaseOfTurn` — Condition: "If it's the first combat phase of the turn." True while the active player is in a combat phase that is *not* an extra combat phase inserted by com.wingedsheep.sdk.scripting.effects.AddC…
+- `IsFirstEndStepOfTurn` — Condition: "If it's the first end step of the turn." True while the active player is in an end step that is *not* an extra end step inserted by com.wingedsheep.sdk.scripting.effects.AddAdditionalEn…
+- `IsFirstSpellPaidWithTreasureManaCastThisTurn` — Condition: "if this is the first spell you've cast this turn that mana from a Treasure was spent to cast." Used by Rain of Riches.
+- `IsInPhase(phases: List<Phase>, yoursOnly: Boolean)` — Condition: "If the current phase matches any of the listed phases" When `yoursOnly = true` (default), also requires that it's the controller's turn — i.e. "your main phase" means it's both your tur…
+- `IsInStep(steps: List<Step>, yoursOnly: Boolean)` — Condition: "If the current step matches any of the listed steps." When `yoursOnly = true` (default), also requires that it's the controller's turn — i.e. "your end step" means it's both your turn A…
+- `IsNight` — Condition: "if it's night" (CR 731) — the mirror of IsDay.
+- `IsNotYourTurn` — Condition: "If it's not your turn"
+- `IsOpponentsTurn` — Condition: "If it's an opponent's turn" — the active player is one of the controller's opponents.
+- `IsPlayersTurn(player: Player)` — Condition: "If it's player's turn" — the Player-parametric form of IsYourTurn, for a turn check relative to a player other than the ability's controller.
+- `IsYourTurn` — Condition: "If it's your turn"
+- `ManaSpentToCastIncludes(requiredWhite: Int, requiredBlue: Int, requiredBlack: Int, requiredRed: Int, requiredGreen: Int, requiredColorless: Int)` — Condition: "If {W}{W} was spent to cast it" (mana-spent gating) Used for Lorwyn Incarnation cycle (Catharsis, Deceit, Emptiness, etc.) where ETB triggers are gated on specific mana colors spent to…
+- `MayhemCostWasPaid` — Condition: "If this spell's Mayhem cost was paid" (CR 702.187, Marvel's Spider-Man).
+- `NoManaSpentToCast` — Condition: "if it wasn't cast or no mana was spent to cast it" — the standard free-cast payoff clause (Freestrider Commando, Satoru, the Infiltrator, etc.).
+- `NoManaSpentToCastEntered` — Condition: "if none of them were cast or no mana was spent to cast them" — the batch-enters variant of NoManaSpentToCast, evaluated over the permanents a batch trigger captured (the `PermanentsEnte…
+- `NotCondition(condition: Condition)` — Condition: The sub-condition must NOT be met
+- `NumberMatches(amount: DynamicAmount, property: NumberProperty)` — Unary numeric-predicate condition: evaluates amount and tests whether the resulting number satisfies property.
+- `OpponentSpellOnStack` — Condition: "If an opponent has cast a spell (it's on the stack)" Used for Portal counterspells like Mystic Denial that can only be cast in response to an opponent's spell.
+- `PermanentEnteredFaceDownThisTurn(player: Player)` — Resolution condition: "if a permanent entered the battlefield face down under player's control this turn".
+- `PermanentLeftBattlefieldThisTurn(player: Player)` — Intervening-if condition: "if a permanent player controlled left the battlefield this turn".
+- `PermanentTypeEnteredBattlefieldThisTurn(cardType: CardType, player: Player)` — Condition: "If a permanent of cardType entered the battlefield under player's control this turn." Pure event tracker — the permanent does not need to still be on the battlefield, still be of that t…
+- `PermanentWithCounterPutIntoGraveyardThisTurn(counterType: CounterType?)` — Condition: "if a permanent with a counterType counter on it was put into a graveyard this turn" — the second half of Churning Reservoir's activation gate.
+- `PlayerActivatedExhaustAbilitiesThisTurn(player: Player, atLeast: Int)` — Condition: "as long as player has activated atLeast or more exhaust abilities this turn" (CR 702.177).
+- `PlayerAttackedPlayerThisTurn(attacker: Player, defender: Player)` — Condition: "If attacker attacked defender this turn" (CR 508.6) — i.e. attacker declared one or more creatures as attackers whose defending player was defender (the player itself, or the controller…
+- `PlayerAttackedWithCreaturesThisTurn(player: Player, filter: GameObjectFilter, atLeast: Int)` — Condition: "If player attacked with atLeast or more creatures matching filter this turn".
+- `PlayerCastSpellsThisTurn(player: Player, filter: GameObjectFilter, atLeast: Int, fromZone: Zone?, fromZoneOtherThan: Zone?)` — Condition: "If player has cast atLeast or more spells matching filter this turn".
+- `PlayerCommittedCrimeThisTurn(player: Player)` — Condition: "If player has committed a crime this turn" (CR Outlaws of Thunder Junction — a player commits a crime as they cast a spell, activate an ability, or put a triggered ability on the stack…
+- `PlayerControlsMostPermanents(player: Player, filter: GameObjectFilter)` — True when player controls the most permanents matching filter, or is tied for the most, among all players (their count ≥ every player's).
+- `PlayerDrewCardsThisTurn(player: Player, atLeast: Int)` — Condition: "as long as player has drawn atLeast or more cards this turn".
+- `PlayerHasCitysBlessing(player: Player)` — Intervening-if / static condition: "if player has the city's blessing".
+- `PlayerHasEnduringStory(player: Player)` — Intervening-if / static condition: "if player has an enduring story".
+- `PlayerHasMostLife(player: Player)` — True when player has the most life, or is tied for the most life, among all players (their life total ≥ every player's).
+- `PlayerPlayedLandThisTurn(player: Player, fromZone: Zone?, fromZoneOtherThan: Zone?)` — Condition: "if player has played a land this turn" (CR 305.1 special land-play action), reading the per-player `LandsPlayedThisTurnComponent` provenance recorded by `PlayLandHandler`.
+- `PlayerTurnedPermanentFaceUpThisTurn(player: Player)` — Resolution condition: "if player turned a permanent face up this turn".
+- `PutCounterKindOnCreatureThisTurn(counterType: CounterType?, player: Player)` — Condition: "as long as player has put one or more counterType counters on a creature this turn" — Sigardian Paladin's trample-and-lifelink gate.
+- `RingHasTemptedPlayerAtLeast(times: Int, player: Player)` — Intervening-if / resolution condition: "if the Ring has tempted player times or more times this game" (CR 701.54).
+- `SacrificedPermanentHadSubtype(subtype: String)` — Condition: "If a subtype was sacrificed this way" Checks whether any permanent sacrificed as part of the cost had the given subtype (using projected subtypes snapshotted at time of sacrifice).
+- `SacrificedPermanentWasLegendary` — Condition: "If the sacrificed permanent was legendary." Reads `EffectContext.sacrificedPermanents` (snapshots captured at cost-payment time or by a same-spell sacrifice effect like a symmetric edic…
+- `SacrificedPermanentWasSuspected` — Condition: "If the sacrificed creature was suspected." (CR 701.60a) The suspect sibling of SacrificedPermanentWasLegendary, reading the same `EffectContext.sacrificedPermanents` snapshots — here th…
+- `SneakCostWasPaid` — Condition: "If this spell's sneak cost was paid" (CR 702.190).
+- `SourceAbilityResolvedNTimesThisTurn(count: Int)` — Condition: "if this is the Nth time this ability has resolved this turn" Checks the AbilityResolutionCountThisTurnComponent on the source entity.
+- `SourceCastForImpending` — Condition: "If this permanent's impending cost was paid" (CR 702.176a).
+- `SourceChosenModeIs(modeId: String)` — Condition: "If the chosen mode is modeId".
+- `SourceDealtDamageToPlayerThisTurn(player: Player)` — Condition: the effect's source dealt damage — combat or noncombat — to player this turn.
+- `SourceForetoldOnPriorTurn` — Gate condition for the cast-from-exile permission granted by foretell (CR 702.143).
+- `SourceInZone(zones: Set<Zone>)` — Condition: "if this is in zones" — where the ability's source object sits *right now*.
+- `SourceIsBlockingOrBlockedBySubtype(subtypes: List<String>)` — Condition: "as long as it's blocking or blocked by a creature of one of subtypes".
+- `SourceIsModified` — Condition: "As long as this permanent is modified" Per CR 700.4, a permanent is modified if it has one or more counters on it, one or more Equipment attached, or is enchanted by one or more Auras i…
+- `SourceIsRingBearer` — Condition: "if this creature is your Ring-bearer" (CR 701.54e).
+- `SourcePlottedOnPriorTurn` — Gate condition for the cast-from-exile permission granted by plot.
+- `SourceReturnedAsEnchantment` — Condition: "this permanent returned via its Enduring ability" (Duskmourn Glimmer cycle).
+- `TargetIsCreatureCard(index: Int)` — Condition: "if the target is a creature card" — tests the *underlying card's* card type, reading the base com.wingedsheep.sdk.model.CardDefinition characteristics rather than projected state.
+- `TargetIsPlayer(targetIndex: Int)` — Condition: "if target is a player".
+- `TargetIsSource(targetIndex: Int)` — Condition: "if target is this permanent (the source)".
+- `TargetIsSpellOnStack(index: Int)` — Condition: the chosen target at index is a **spell on the stack** (a `ChosenTarget.Spell`), as opposed to a permanent on the battlefield.
+- `TargetIsTapped(targetIndex: Int)` — Condition: "if target is tapped".
+- `TargetMarkedDamageExceedsToughness(targetIndex: Int)` — Condition: "if excess damage was dealt this way" — true when the target creature's marked damage now strictly exceeds its (projected) toughness.
+- `TargetSharesMostCommonColor(targetIndex: Int)` — Condition: "if target shares a color with the most common color among all permanents or a color tied for most common".
+- `ThisAbilityActivatedThisTurnAtLeast(count: Int)` — True when the activated ability currently resolving has been activated at least count times this turn, counting the activation that is resolving right now.
+- `TriggeringEntityEnteredOrWasCastFromGraveyard` — Condition: "if it entered or was cast from a graveyard".
+- `TriggeringEntityHadCounters` — Condition: "if it had counters on it" (intervening-if for dies/leaves triggers).
+- `TriggeringEntityHadMinusOneMinusOneCounter` — Condition: "if it had a -1/-1 counter on it" (intervening-if for dies/leaves triggers).
+- `TriggeringEntityWas(filter: GameObjectFilter)` — Condition: "if it was filter" — an intervening-if for dies/leaves triggers that matches the triggering permanent's **last-known** type line (CR 603.10, 608.2h): the projected card types and subtype…
+- `TriggeringEntityWasCast` — Condition: "if you cast it" referring to the *triggering* entity (not the ability's source).
+- `TriggeringEntityWasHistoric` — Condition: "if it was historic" (legendary, artifact, or Saga).
+- `TriggeringEntityWasNotPutByThisSource` — Condition: "if it wasn't put onto the battlefield with this ability".
+- `TriggeringPlayerIs(player: Player)` — Condition: "the player who triggered this ability is player".
+- `TriggeringSpellCastWithoutPayingMana` — Condition: "if no mana was spent to cast it" — about the TRIGGERING spell (the triggering-entity counterpart of NoManaSpentToCast, which reads the ability source's own cast record).
+- `TriggeringSpellHasSingleTarget` — Condition: "with a single target" — true iff the triggering spell or ability has exactly one target chosen.
+- `TriggeringSpellManaSpentAtLeast(amount: Int)` — Condition: "if at least amount mana was spent to cast it" — about the TRIGGERING spell.
+- `VoidCondition` — Condition: "if a nonland permanent left the battlefield this turn or a spell was warped this turn".
+- `WasCast` — Condition: "If you cast this spell" (from any zone).
+- `WasCastFromHand` — Condition: "If you cast this spell from your hand" Used for Phage the Untouchable's ETB trigger condition.
+- `WasCastFromZone(zone: Zone)` — Condition: "If this spell was cast from zone" Used for flashback spells and other zone-dependent effects.
+- `WasKicked` — Condition: "If this spell was kicked" Used for kicker spells like Shivan Fire where the effect changes based on whether the kicker cost was paid.
+- `WaterbendWasPaid` — Condition: "If this spell's additional cost was paid" — for the optional spell-level **waterbend** additional cost (Avatar: The Last Airbender).
+- `WebSlungCostWasPaid` — Condition: "If this spell was cast using web-slinging" (CR 702.188).
+- `YouChoseOtherCreatureAsRingBearer` — Condition: "if you chose a creature other than this as your Ring-bearer" (CR 701.54a).
+- `YouControlMostOfChosenType(chosenValueKey: String)` — Condition: "If you control more creatures of the chosen type than each other player" Used by Peer Pressure-style effects where a creature type is chosen via ChooseOptionEffect and stored in EffectC…
+- `YouControlSource` — Condition: "If you control this permanent" Checks whether the effect's controllerId matches the source's controller.
+- `YouDiscardedThisCardThisTurn` — Gate condition for the Mayhem keyword's cast-from-graveyard permission (CR 702.187b).
+- `YouSacrificedPermanentThisWay` — Condition: "If you sacrificed a permanent this way." Reads `EffectContext.sacrificedPermanents` and matches when at least one snapshot was controlled by the source's controller at the moment of sac…
+- `YouWereAttackedThisStep` — Condition: "If you've been attacked this step" Used for cards like Defiant Stand and Harsh Justice that can only be cast during the declare attackers step if you've been attacked.
+- `YouWonTheClash` — Condition: **"if you won"** — the rider on a *"Whenever you clash"* triggered ability (CR 701.30d: a player wins a clash if the card they revealed has a higher mana value than every other card reve…
+
+## ControllerPredicate
+
+- `ControllerPredicate.And(predicates: List<ControllerPredicate>)`
+- `ControllerPredicate.ControlledByActivePlayer` — Controlled by the active player (the player whose turn it is).
+- `ControllerPredicate.ControlledByAny` — Controlled by any player (no restriction)
+- `ControllerPredicate.ControlledByDefendingPlayer` — Any defending player during combat, relative to the active player and attack mode.
+- `ControllerPredicate.ControlledByOpponent` — Controlled by an opponent of the ability's controller
+- `ControllerPredicate.ControlledByReferencedPlayer(target: EffectTarget)` — Controlled by the player referenced by an explicit EffectTarget.
+- `ControllerPredicate.ControlledByTargetOpponent` — Controlled by the targeted opponent
+- `ControllerPredicate.ControlledByTargetPlayer` — Controlled by the targeted player
+- `ControllerPredicate.ControlledByTriggeringPlayer` — Controlled by the player associated with the current trigger — the damaged player for a combat/damage trigger, the event's player otherwise (resolved from the effect context's `triggeringPlayerId`,…
+- `ControllerPredicate.ControlledByYou` — Controlled by the ability's controller
+- `ControllerPredicate.Not(predicate: ControllerPredicate)`
+- `ControllerPredicate.Or(predicates: List<ControllerPredicate>)`
+- `ControllerPredicate.OwnedByOpponent` — Owned by an opponent
+- `ControllerPredicate.OwnedByTargetPlayer` — Owned by the targeted player (the spell/ability's "target player").
+- `ControllerPredicate.OwnedByTriggeringPlayer` — Owned by the player associated with the current trigger — the damaged player for a combat/damage trigger, the event's player otherwise (resolved from the effect context's `triggeringPlayerId`).
+- `ControllerPredicate.OwnedByYou` — Owned by the ability's controller
+
+## CostAtom
+
+- `CostAtom.CollectEvidence(amount: DynamicAmount, linkToSource: Boolean)` — Collect evidence amount — exile any number of cards from your graveyard with total mana value amount or greater (CR 701.59a, Murders at Karlov Manor).
+- `CostAtom.Discard(count: Int, filter: GameObjectFilter, random: Boolean)` — Discard count cards matching filter.
+- `CostAtom.DiscardHand` — Discard your entire hand — "unless its controller discards their hand" (Perplex).
+- `CostAtom.ExileFrom(zone: Zone, filter: GameObjectFilter, count: Int, anyPlayersZone: Boolean, singleZone: Boolean, excludeSelf: Boolean)` — Exile count cards matching filter from zone.
+- `CostAtom.ExileFromGraveyardForTotal(filter: GameObjectFilter, measure: CardMeasure, minTotal: Int, excludeSelf: Boolean)` — Exile **any number** of cards matching filter from your graveyard whose combined measure is minTotal or more — the unnamed, filtered generalization of the shape CollectEvidence names: a variable-si…
+- `CostAtom.ExileTopOfLibrary(count: Int)` — Exile the top count cards of your library — Arc-Slogger's "{R}, Exile the top ten cards of your library".
+- `CostAtom.Mana(cost: ManaCost)` — Pay a mana cost.
+- `CostAtom.Mill(count: Int)` — Mill count cards — put that many cards from the top of your library into your graveyard (CR 701.17a).
+- `CostAtom.PayLife(amount: Int)` — Pay amount life (CR 119.4 — payable only while life total ≥ amount).
+- `CostAtom.PayPlayerCounters(counterType: CounterType, amount: DynamicAmount)` — Pay counters from the paying player, before the spell or ability resolves.
+- `CostAtom.PutCountersOnPermanent(counterType: CounterType, count: Int, filter: GameObjectFilter)` — Put count counters of counterType on a permanent matching filter that the *payer* controls — the selected-permanent sibling of PutCountersOnSelf.
+- `CostAtom.PutCountersOnSelf(counterType: CounterType, count: Int)` — Put count counters of counterType on the permanent the cost belongs to — "Put a page counter on this artifact" (Mazemind Tome), the *accruing* mirror of RemoveCounters with `self = true`.
+- `CostAtom.PutFromHandOnTopOfLibrary(count: Int, filter: GameObjectFilter)` — Put count cards matching filter from your hand on top of your library — "Put a card from your hand on top of your library: Return this creature to its owner's hand." (Leashling).
+- `CostAtom.RemoveCounters(counterType: CounterType?, count: DynamicAmount, filter: GameObjectFilter, self: Boolean)` — Remove count counter(s) from among permanents matching filter you control, or from this permanent when self is true.
+- `CostAtom.ReturnToHand(filter: GameObjectFilter, count: Int, youControl: Boolean)` — Return count permanents matching filter to their owner's hand.
+- `CostAtom.RevealFromHand(filter: GameObjectFilter, count: Int)` — Reveal count cards matching filter from your hand (the cards stay in hand).
+- `CostAtom.RevealNotedCreatureType` — "Reveal the creature type you chose" — turn the source permanent's *secret* noted creature type (see com.wingedsheep.sdk.scripting.effects.NoteCreatureTypeEffect with `secret = true`) into public i…
+- `CostAtom.Sacrifice(filter: GameObjectFilter, count: Int, excludeSelf: Boolean, distinctNames: Boolean)` — Sacrifice count permanents matching filter.
+- `CostAtom.SacrificeAll(filter: GameObjectFilter)` — Sacrifice **every** permanent you control matching filter — "as an additional cost to cast this spell, sacrifice all creatures you control" (Soulblast).
+- `CostAtom.TapPermanents(count: Int, filter: GameObjectFilter, excludeSelf: Boolean, sharedCreatureType: Boolean)` — Tap count untapped permanents matching filter you control.
+- `CostAtom.Unattach` — Unattach the ability's source from the permanent it is attached to (CR 701.3d) — "Unattach this Equipment" (Sunforger).
+- `CostAtom.VariablePermanents(filter: GameObjectFilter, minCount: Int, excludeSelf: Boolean, action: PermanentCostAction, xMeasure: VariableCostMeasure, minMeasure: Int)` — Put one or more permanents matching filter you control into another zone — a *variable-count* cost: the payer chooses how many (at least minCount).
+
+## CostGating
+
+- `CostGating.None` — No extra restriction — the modifier applies to every matching cast.
+- `CostGating.NthOfTypePerTurn(n: Int)` — Modifier applies only when the matching spell being cast is the Nth such spell the casting player has cast this turn (1-indexed; counts itself).
+- `CostGating.OnlyIf(condition: Condition)` — Modifier applies only while condition holds at cast time.
+
+## CostModification
+
+- `CostModification.IncreaseColored(symbols: String)` — Add specific colored mana symbols to the cost (e.g. `"{W}"`), a colored tax effect.
+- `CostModification.IncreaseColoredPerUnit(symbols: String, countSource: CostReductionSource)` — Add symbols to the cost once per unit of countSource — the tax mirror of ReduceColoredPerUnit, reading the same CostReductionSource vocabulary.
+- `CostModification.IncreaseGeneric(amount: Int)` — Increase generic mana by a fixed amount (tax effect).
+- `CostModification.IncreaseGenericBy(source: CostReductionSource)` — Increase generic mana by a dynamic amount sourced from the game state — the tax mirror of ReduceGenericBy, reading the same CostReductionSource vocabulary.
+- `CostModification.IncreaseGenericIfAnyTargetMatches(amount: Int, filter: GameObjectFilter)` — Increase generic mana by a fixed amount if the spell targets any object matching the filter.
+- `CostModification.IncreaseGenericPerOtherSpellThisTurn(amountPerSpell: Int)` — Damping-Sphere-style scaling tax: increase by `amountPerSpell` for each spell the casting player has already cast this turn.
+- `CostModification.IncreaseLife(amount: Int)` — Pay amount additional life as part of the casting cost (CR 601.2f).
+- `CostModification.ReduceColored(symbols: String)` — Remove specific colored mana symbols from the cost (e.g. `"{W}{B}"`).
+- `CostModification.ReduceColoredIfAnyTargetMatches(symbols: String, filter: GameObjectFilter)` — Remove specific colored mana symbols from the cost if the spell targets any object matching filter.
+- `CostModification.ReduceColoredPerUnit(symbols: String, countSource: CostReductionSource)` — Remove `symbols` per unit of countSource.
+- `CostModification.ReduceGeneric(amount: Int)` — Reduce generic mana by a fixed amount.
+- `CostModification.ReduceGenericBy(source: CostReductionSource)` — Reduce generic mana by a dynamic amount sourced from the game state.
+
+## CostReductionSource
+
+- `CostReductionSource.ArtifactsYouControl` — Reduces cost by number of artifacts you control.
+- `CostReductionSource.AttachedPermanentProperty(property: EntityNumericProperty)` — Reduces cost by a numeric property of the permanent the *reducing ability's own source* is attached to — "{X} less to cast, where X is equipped creature's power" (Glamdring, Foe-hammer).
+- `CostReductionSource.CardTypesInYourGraveyard(amountPerType: Int)` — Reduces cost by amountPerType for each *card type* among the cards in the caster's graveyard — Emrakul, the Promised End ("This spell costs {1} less to cast for each card type among cards in your g…
+- `CostReductionSource.CardsInGraveyardAndExileMatchingFilter(filter: GameObjectFilter, amountPerCard: Int)` — Reduces cost by 1 for each card you own in exile and in your graveyard matching the filter.
+- `CostReductionSource.CardsInGraveyardMatchingFilter(filter: GameObjectFilter, amountPerCard: Int)` — Reduces cost by 1 for each card in your graveyard matching the filter.
+- `CostReductionSource.ChosenTargetsBeyondTheFirst` — The number of targets the spell has beyond the first — "for each target beyond the first" (Officious Interrogation, and the classic Phyrexian Purge / Fireball wording).
+- `CostReductionSource.ColorsAmongPermanentsYouControl` — Vivid - reduces cost by number of colors among permanents you control.
+- `CostReductionSource.CreaturesThatAttackedThisTurn(amountPerCreature: Int)` — Reduces cost by amountPerCreature for each creature that was declared as an attacker this turn — by ANY player, not just the caster ("for each creature that attacked this turn" is not controller-sc…
+- `CostReductionSource.CreaturesYouControl` — Reduces cost by number of creatures you control.
+- `CostReductionSource.DifferentlyNamedPermanentsYouControl(filter: GameObjectFilter)` — Reduces cost by the number of differently named permanents the caster controls matching a filter.
+- `CostReductionSource.Dynamic(amount: DynamicAmount)` — Reduces cost by an arbitrary DynamicAmount, evaluated at cast time with the permanent that carries the ModifySpellCost as the amount's *source* — "{X} less to cast, where X is `<amount>`".
+- `CostReductionSource.Fixed(amount: Int)` — Reduces cost by a fixed amount.
+- `CostReductionSource.FixedIfAnyTargetMatches(amount: Int, filter: GameObjectFilter)` — Reduces cost by a fixed amount if the spell targets any object matching the filter.
+- `CostReductionSource.FixedIfControlFilter(amount: Int, filter: GameObjectFilter)` — Reduces cost by a fixed amount if you control a permanent matching the filter.
+- `CostReductionSource.FixedIfCreatureAttackingYou(amount: Int)` — Reduces cost by a fixed amount if a creature is currently attacking the caster.
+- `CostReductionSource.FixedIfCreatureDiedThisTurn(amount: Int)` — Reduces cost by a fixed amount if a creature died this turn under *any* player's control — the morbid family's cost-reduction shape ("This spell costs {3} less to cast if a creature died this turn"…
+- `CostReductionSource.FixedIfVoid(amount: Int)` — Reduces cost by a fixed amount if the Void condition is met this turn — i.e., a nonland permanent left the battlefield this turn or a spell was warped this turn.
+- `CostReductionSource.GreatestPropertyAmongPermanentsYouControl(property: EntityNumericProperty, filter: GameObjectFilter)` — Reduces cost by the greatest value of a numeric property among permanents the caster controls matching a filter — "{X} less, where X is the greatest <property> among <filter> you control".
+- `CostReductionSource.PermanentsOnBattlefieldMatching(filter: GameObjectFilter)` — Reduces cost by the number of permanents on the battlefield matching a filter, regardless of who controls them.
+- `CostReductionSource.PermanentsSacrificedThisTurn(amountPerPermanent: Int)` — Reduces cost by amountPerPermanent for each permanent sacrificed this turn — by ANY player, not just the caster (the wording is "for each permanent sacrificed this turn", which is not controller-sc…
+- `CostReductionSource.PermanentsWithCounterYouControl(filter: GameObjectFilter, counterType: CounterType)` — Reduces cost by number of permanents you control matching a filter that have a specific counter.
+- `CostReductionSource.PermanentsYouControlMatching(filter: GameObjectFilter)` — Reduces cost by the number of permanents the caster controls matching a filter.
+- `CostReductionSource.SharedCardTypesWithLinkedExile(amountPerType: Int)` — Reduces cost by amountPerType for each *card type* the spell being cast shares with the cards exiled with the reducing permanent — Cemetery Prowler ("Spells you cast cost {1} less to cast for each…
+- `CostReductionSource.TotalPowerYouControl` — Reduces cost by total power of creatures you control.
+- `CostReductionSource.TotalPropertyAmongPermanentsYouControl(property: EntityNumericProperty, filter: GameObjectFilter)` — Reduces cost by the *sum* of a numeric property over the permanents the caster controls matching a filter — "{X} less, where X is the total <property> of <filter> you control".
+- `CostReductionSource.YourSpeed` — Reduces cost by your speed, 0–4 (CR 702.179) — "Noncreature spells you cast cost {X} less to cast, where X is your speed" (Samut, the Driving Force).
+
+## CounterCondition
+
+- `CounterCondition.Always` — No condition — always counter.
+- `CounterCondition.UnlessPaysDynamic(amount: DynamicAmount, onPaid: Effect?)` — Counter unless controller pays a dynamic generic mana cost.
+- `CounterCondition.UnlessPaysMana(cost: ManaCost, onPaid: Effect?)` — Counter unless controller pays a fixed mana cost.
+
+## CounterDestination
+
+- `CounterDestination.Exile(grantFreeCast: Boolean)` — Spell is exiled instead of going to graveyard.
+- `CounterDestination.Graveyard` — Spell goes to owner's graveyard (default).
+- `CounterDestination.Hand` — Spell is put into its owner's **hand** instead of their graveyard — Remand's "put it into its owner's hand instead of into that player's graveyard".
+- `CounterDestination.Library(positions: List<LibraryChoicePosition>)` — Spell is put into its owner's **library** instead of their graveyard.
+
+## CounterTarget
+
+- `CounterTarget.Ability` — Counter an activated or triggered ability (removed from stack, no zone change).
+- `CounterTarget.Spell` — Counter a spell (goes to graveyard/exile).
+- `CounterTarget.SpellOrAbility` — Counter a spell or an activated/triggered ability.
+
+## CounterTargetSource
+
+- `CounterTargetSource.Chosen` — Uses a chosen target from context.targets (normal targeting).
+- `CounterTargetSource.TriggeringEntity` — Uses context.triggeringEntityId (for triggered abilities like Decree of Silence).
+
+## DamagePredicate
+
+- `DamagePredicate.SourceSoleTargetIsRecipient` — The damage source has exactly one chosen target, and that target is this damage recipient.
+
+## DamageType
+
+- `DamageType.Any`
+- `DamageType.Combat`
+- `DamageType.NonCombat`
+
+## DelayedTriggerExpiry
+
+- `DelayedTriggerExpiry.EndOfCombat` — Remove the delayed trigger when the current combat phase ends — the scope of a "this combat" rider, which EndOfTurn is too coarse for once a turn has more than one combat phase.
+- `DelayedTriggerExpiry.EndOfTurn` — Remove the delayed trigger at the end of the current turn.
+- `DelayedTriggerExpiry.Never` — Never expire on a turn boundary — the delayed trigger persists across turns until it fires (pair with `fireOnce = true`) or the game ends.
+- `DelayedTriggerExpiry.UntilControllersNextTurn` — Remove the delayed trigger after the untap step of its **controller's** next turn — the delayed-trigger analogue of com.wingedsheep.sdk.scripting.Duration.UntilYourNextTurn, and expired on the same…
+
+## Duration
+
+- `Duration.EndOfCombat` — Effect lasts until end of combat.
+- `Duration.EndOfTurn` — Effect lasts until end of turn.
+- `Duration.EndOfYourNextTurn` — Effect lasts through the *whole* of your next turn, ending during that turn's cleanup step (CR 514.2, the same moment an "until end of turn" effect ends) — "until the end of your next turn".
+- `Duration.NextUse(sourceDescription: String)` — Effect is consumed the first time its replacement effect is applied or end of turn if not consumed.
+- `Duration.Permanent` — Effect is permanent (static abilities, auras while attached).
+- `Duration.UntilAfterAffectedControllersNextUntap` — Effect lasts through the affected entity's controller's next untap step, then expires.
+- `Duration.UntilCondition(conditionDescription: String)` — Effect lasts until a condition is met.
+- `Duration.UntilNextEndStep` — Effect lasts until the beginning of the next end step (the *next* one — never the end step it was created in).
+- `Duration.UntilPhase(phase: String)` — Effect lasts until a specific phase.
+- `Duration.UntilSourceCastFromExile` — Effect lasts until the effect's source *card* is cast from exile — "Target land gains '{T}: Add {C}{C}' until this card is cast from exile" (Emrakul, the Exigent Doom), where the card exiled itself…
+- `Duration.UntilYourNextTurn` — Effect lasts until the beginning of your next turn.
+- `Duration.UntilYourNextUpkeep` — Effect lasts until the beginning of your next upkeep.
+- `Duration.WhileAffectedHasCounter(counterType: CounterType)` — Effect lasts for as long as each affected permanent has at least one counter of counterType on it (CR 611.2b "for as long as …").
+- `Duration.WhileAffectedTapped` — Effect lasts for as long as each *affected* permanent remains tapped (CR 611.2b "for as long as it remains tapped") — the affected-object mirror of WhileSourceTapped: the gate watches the permanent…
+- `Duration.WhileControlledByController` — Effect lasts for as long as the effect's controller controls the affected object — it ends the moment that object's controller becomes a different player ("for as long as you control it").
+- `Duration.WhileSourceAttachedToAffected` — Effect lasts for as long as the effect's source (an Aura/Equipment) remains attached to the affected permanent (CR 611.2b "for as long as …").
+- `Duration.WhileSourceOnBattlefield(sourceDescription: String)` — Effect lasts while the source permanent is on the battlefield.
+- `Duration.WhileSourceTapped(sourceDescription: String)` — Effect lasts while the source permanent remains tapped.
+- `Duration.WhileSourceTappedAndAffectedPowerAtMostSource(sourceDescription: String)` — Effect lasts while the source permanent remains tapped AND each affected entity's projected power stays less than or equal to the source's projected power.
+- `Duration.WhileYouControlSource(sourceDescription: String)` — Effect lasts for as long as the effect's controller controls the *source* permanent — mirror of WhileControlledByController, but the gate watches the source's controller rather than the affected ob…
+- `Duration.WhileYouControlSourceAndSourceTapped(sourceDescription: String)` — Effect lasts for as long as its controller controls the source **and** the source remains tapped — the conjunction of WhileYouControlSource and WhileSourceTapped.
+
+## DynamicAmount
+
+- `DynamicAmount.Add(left: DynamicAmount, right: DynamicAmount)` — Add two dynamic amounts.
+- `DynamicAmount.AggregateBattlefield(player: Player, filter: GameObjectFilter, aggregation: Aggregation, property: CardNumericProperty?, excludeSelf: Boolean, counterType: CounterType?, excludeTriggeringEntity: Boolean)` — Generic battlefield aggregation primitive.
+- `DynamicAmount.AggregateZone(player: Player, zone: Zone, filter: GameObjectFilter, aggregation: Aggregation, property: CardNumericProperty?)` — Generic zone aggregation primitive.
+- `DynamicAmount.CardTypeEnteredUnderControlThisTurn(player: Player, cardType: CardType)` — The number of cardType permanents that entered the battlefield under player's control this turn — the card-type sibling of SubtypeEnteredUnderControlThisTurn over the same per-player entry log (Mal…
+- `DynamicAmount.CardsCycledThisGame(player: Player, cardName: String?)` — How many times a player has cycled a card this game — every cycling activation, typecycling included (CR 702.29f), counted when the card is discarded to pay the cost.
+- `DynamicAmount.CastChoice(slot: ChoiceSlot)` — A *numeric* value locked in for a com.wingedsheep.sdk.scripting.ChoiceSlot as this object was cast, read off the *current object* regardless of zone — the sibling of CastX for the other cast-choice…
+- `DynamicAmount.CastX` — The value of `{X}` this object was cast with, read off the *current object* regardless of what zone it is in.
+- `DynamicAmount.Conditional(condition: Condition, ifTrue: DynamicAmount, ifFalse: DynamicAmount)` — Conditional amount: evaluates to one of two amounts based on a condition.
+- `DynamicAmount.ContextProperty(key: ContextPropertyKey)` — A value pulled from the current resolution context — trigger payload, additional-cost accumulator, target list, or a linked-exile pile attached to the source permanent.
+- `DynamicAmount.Count(player: Player, zone: Zone, filter: GameObjectFilter)` — Count game objects in a zone matching a unified filter.
+- `DynamicAmount.CountPlayersWith(scope: Player, condition: Condition)` — Count of players in scope for whom condition evaluates to true.
+- `DynamicAmount.CountersRemovedAsCost` — The number of counters the resolving activated ability's costs removed — "the number of aim counters removed this way" (Hankyu), "the number of +1/+1 counters removed this way" (Molten Hydra).
+- `DynamicAmount.CraftedMaterialsColorCount` — Number of colors (0–5) among the cards exiled to craft the source permanent.
+- `DynamicAmount.CraftedMaterialsTotalManaValue` — Total mana value of the cards exiled to craft the source permanent.
+- `DynamicAmount.CraftedMaterialsTotalPower` — Total printed power of the cards exiled to craft the source permanent (CR 702.167c).
+- `DynamicAmount.CreaturesThatCrewedOrSaddledThisTurn` — Number of distinct creatures that crewed (CR 702.122) or saddled (CR 702.171) the source permanent this turn.
+- `DynamicAmount.CreaturesWithSubtypeDiedThisTurn(subtype: Subtype, player: Player)` — The number of creatures with subtype that died (were put into a graveyard from the battlefield) this turn while under player's control.
+- `DynamicAmount.DevotionTo(colors: List<Color>, player: Player)` — A player's **devotion** to one or more colors (CR 700.5): the number of mana symbols of colors among the mana costs of permanents that player controls.
+- `DynamicAmount.DistinctCardTypesInCollections(collections: List<String>)` — Number of distinct *card types* among the cards in the named pipeline collections (the union of every collection, de-duplicated by card type).
+- `DynamicAmount.DistinctColorsManaSpent` — The number of distinct *colors* of mana spent to cast the source spell (0–5).
+- `DynamicAmount.DistinctEntitiesInCollections(collections: List<String>)` — Number of *distinct* entities across several named pipeline collections.
+- `DynamicAmount.Divide(numerator: DynamicAmount, denominator: DynamicAmount, roundUp: Boolean)` — Divide one dynamic amount by another, with configurable rounding.
+- `DynamicAmount.EntityProperty(entity: EffectTarget.SingleEntity, numericProperty: EntityNumericProperty)` — Read a numeric property from a referenced entity.
+- `DynamicAmount.Fixed(amount: Int)` — Fixed amount (for consistency in the type system).
+- `DynamicAmount.GraveyardRelativeCount(entity: EffectTarget.SingleEntity, above: Boolean, filter: GameObjectFilter)` — Count matching cards above or below a current object in its graveyard.
+- `DynamicAmount.GreatestAmongPlayers(players: Player, inner: DynamicAmount)` — The largest value inner takes when measured **once per player** in players — Oracle's "the greatest number of X a player controls / an opponent controls / has".
+- `DynamicAmount.IfPositive(amount: DynamicAmount)` — Take the maximum of zero and the amount (clamp negative to zero).
+- `DynamicAmount.LargestSharedCreatureTypeCount(player: Player)` — The size of the largest creature-type tribe among the creatures player controls — i.e. "the greatest number of creatures you control that have a creature type in common." For every creature type pr…
+- `DynamicAmount.LastKnownDamageDealtToSource` — The total damage dealt to the ability's source this turn, read as last-known information — "where X is the amount of damage dealt to it this turn" (Tangled Colony).
+- `DynamicAmount.LastKnownSourceCounters(counterType: CounterType?)` — The number of counters matching counterType the *source* of the current ability had as it last existed on the battlefield (CR 113.7a / 608.2h last-known information).
+- `DynamicAmount.LeastAmongPlayers(players: Player, inner: DynamicAmount)` — The smallest value inner takes when measured **once per player** in players — Oracle's "the number of lands controlled by the player who controls the fewest" (Balance).
+- `DynamicAmount.LifeTotal(player: Player)` — Life total of a specific player.
+- `DynamicAmount.ManaSpentFromSubtype(subtype: Subtype)` — The number of mana units produced by a source with subtype that were spent to cast the current spell — e.g. Bat Colony's "create a 1/1 black Bat with flying for each mana from a Cave spent to cast…
+- `DynamicAmount.ManaSpentOnX(color: Color)` — The amount of mana of a specific color that was spent on the `{X}` portion of the current spell or activated ability.
+- `DynamicAmount.ManaValueSumOfCollection(collectionName: String)` — Sum of the mana values of *every* card in a named pipeline collection.
+- `DynamicAmount.Max(left: DynamicAmount, right: DynamicAmount)` — Maximum of two amounts.
+- `DynamicAmount.Min(left: DynamicAmount, right: DynamicAmount)` — Minimum of two amounts.
+- `DynamicAmount.Multiply(amount: DynamicAmount, multiplier: Int)` — Multiply a dynamic amount by a fixed multiplier.
+- `DynamicAmount.PermanentsSacrificedThisWay` — Number of permanents sacrificed by the current resolving effect ("this way").
+- `DynamicAmount.PlayerCount(scope: Player)` — How many players are in scope — "for each opponent", "for each other player", "the number of players in the game".
+- `DynamicAmount.PlayerCounterCount(counterType: CounterType, player: Player)` — How many counters of counterType a player currently has — the player-scoped sibling of EntityProperty's com.wingedsheep.sdk.scripting.values.EntityNumericProperty.CounterCount (which reads one obje…
+- `DynamicAmount.Power(base: Int, exponent: DynamicAmount)` — Raise a fixed base to the power of a dynamic exponent (`base^exponent`).
+- `DynamicAmount.SnowManaSpent` — The amount of mana from snow sources spent to cast the current spell — the "{S} spent" of CR 107.4h, which counts snow mana spent on *any* part of the cost, not only on `{S}` pips.
+- `DynamicAmount.Speed(player: Player)` — A player's **speed** (Aetherdrift, CR 702.179) — the 0–4 designation that "Start your engines!" begins and the inherent speed trigger raises.
+- `DynamicAmount.SpellsCastLastTurn` — The total number of spells cast during the immediately preceding turn.
+- `DynamicAmount.SpellsCastThisTurn(player: Player, filter: GameObjectFilter, excludeSelf: Boolean, fromZone: Zone?, countDistinctCardTypes: Boolean, beforeTriggeringSpell: Boolean)` — Counts the spells a player has cast this turn, optionally filtered and optionally excluding the currently-resolving spell itself.
+- `DynamicAmount.StartingLifeTotal(player: Player)` — The starting life total of a player (e.g., 20 in standard, 40 in commander).
+- `DynamicAmount.StationCharge` — The number of charge counters a Station ability puts on its permanent: the power of the creature tapped to pay the station cost (CR 702.184a — "equal to the tapped creature's power").
+- `DynamicAmount.StoredCardManaValue(collectionName: String)` — Mana value of a card stored in a named collection.
+- `DynamicAmount.Subtract(left: DynamicAmount, right: DynamicAmount)` — Subtract one dynamic amount from another.
+- `DynamicAmount.SubtypeEnteredUnderControlThisTurn(player: Player, subtypes: Set<Subtype>, excludeTriggeringEntity: Boolean)` — The number of permanents with **any** of subtypes that entered the battlefield under player's control this turn (counting even those that have since left or changed type — the entry event is what's…
+- `DynamicAmount.TotalManaSpent` — The total amount of mana paid from the pool to cast the current spell.
+- `DynamicAmount.TotalPowerSacrificedThisWay` — Total power of the permanents sacrificed by the current resolving effect ("their total power").
+- `DynamicAmount.TurnTracking(player: Player, tracker: TurnTracker)` — Reads a per-player turn-tracking counter.
+- `DynamicAmount.UnlockedDoors(player: Player, distinctNames: Boolean)` — The number of unlocked doors among Rooms controlled by player (CR 709.5).
+- `DynamicAmount.UnspentMana(player: Player)` — The total amount of unspent mana currently in a player's mana pool (all colours plus colorless plus any restricted-mana entries — the pool's `total`).
+- `DynamicAmount.VariableReference(variableName: String)` — Reference to a stored variable by name.
+- `DynamicAmount.XValue` — The X value of the spell (from mana cost).
+- `DynamicAmount.YourLifeTotal` — Your current life total.
 
 ## Effect
 
@@ -361,9 +1010,8 @@ Families: [Effect](#effect) (378) · [StaticAbility](#staticability) (188) · [C
 - `SetLifeTotalEffect(amount: DynamicAmount, target: EffectTarget)` — Set a player's life total to a specific amount.
 - `ShuffleLibraryEffect(target: EffectTarget)` — Shuffle a player's library.
 - `SkipCombatPhasesEffect(target: EffectTarget)` — Target player skips their combat phases during their next turn.
-- `SkipNextStepOrPhaseEffect(part: TurnPart, target: EffectTarget)` — target skips their **next** instance of part — a one-shot marker consumed by the step it skips.
 - `SkipNextTurnEffect(target: EffectTarget, count: DynamicAmount)` — Target player skips their next count turns.
-- `SkipStepOrPhaseThisTurnEffect(part: TurnPart, target: EffectTarget)` — The target player skips **every** instance of part for the rest of this turn — Fatespinner's "the player skips each instance of the chosen step or phase this turn".
+- `SkipStepOrPhaseEffect(part: TurnPart, duration: SkipDuration, target: EffectTarget)` — target skips part for duration: their next one (SkipDuration.NEXT) or every one left this turn (SkipDuration.THIS_TURN).
 - `SkipUntapEffect(target: EffectTarget, affectsCreatures: Boolean, affectsLands: Boolean)` — Target player's creatures and lands don't untap during their next untap step.
 - `StoreCardNameEffect(from: String, storeAs: String)` — Read the name of the first card in a stored collection and store it under storeAs in pipeline `chosenValues`.
 - `StoreNumberEffect(name: String, amount: DynamicAmount)` — Evaluate a DynamicAmount once and store it in pipeline `storedNumbers` under name.
@@ -390,6 +1038,611 @@ Families: [Effect](#effect) (378) · [StaticAbility](#staticability) (188) · [C
 - `WinGameEffect(target: EffectTarget, message: String?)` — Target player wins the game.
 - `WithManaAbilitySourcesEffect(effect: Effect, sources: GameObjectFilter, player: EffectTarget)` — Restrict one player's activated mana-ability sources while a nested instruction executes.
 - `WithManaSpendingObligationsEffect(effect: Effect, player: EffectTarget)` — Require each activated mana ability during an instruction to contribute mana to its payments.
+
+## EffectTarget
+
+- `EffectTarget.AffectedEntity` — AFFECTED ENTITY: the permanent a continuous effect is being applied to during state projection — the creature an Aura's static bonus lands on, one member of a lord's group.
+- `EffectTarget.AmassedArmy` — AMASSED ARMY: the Army chosen by the most recent Amass step in the resolving pipeline — "the amassed Army", whether or not it received counters (CR 701.47c).
+- `EffectTarget.AttachedToTriggeringPermanent` — ATTACHED-TO TRIGGERING PERMANENT: the permanent that the triggering attachment (Aura/ Equipment) became attached to — or, for the unattach mirror, came off of.
+- `EffectTarget.BoundVariable(name: String)` — NAMED TARGET BINDING: Refers to a cast-time target by name rather than positional index.
+- `EffectTarget.ChosenCreature` — CHOSEN CREATURE: Refers to the creature chosen when this permanent entered the battlefield.
+- `EffectTarget.ContextTarget(index: Int)` — TARGET BINDING: Refers to a specific target selection from the declaration phase.
+- `EffectTarget.Controller` — The controller of the source ability
+- `EffectTarget.ControllerOfDamageSource` — CONTROLLER OF DAMAGE SOURCE: the controller of the source dealing the damage currently being processed.
+- `EffectTarget.ControllerOfPipelineTarget(collectionName: String, index: Int)` — CONTROLLER OF PIPELINE TARGET: Refers to the controller of an entity stored in a pipeline collection.
+- `EffectTarget.ControllerOfTriggeringEntity` — CONTROLLER OF TRIGGERING ENTITY: Refers to the controller/owner of the entity that caused the trigger to fire.
+- `EffectTarget.DiscardedAsCost(index: Int)` — DISCARDED AS COST: a card discarded to pay this spell's additional cost (`Costs.additional.DiscardCards(...)`) or this activated ability's cost (`Costs.Discard(...)`), by index.
+- `EffectTarget.EachDamagedBySourceThisGame` — MULTI-ENTITY REFERENCE: every **opponent and planeswalker the effect's source has dealt damage to this game** — The Fallen's "each opponent and planeswalker it has dealt damage to this game".
+- `EffectTarget.EnchantedCreature` — The creature enchanted by this aura
+- `EffectTarget.EnchantedPermanent` — The permanent this aura/equipment is attached to, regardless of its type.
+- `EffectTarget.EquippedCreature` — The creature this equipment is attached to
+- `EffectTarget.FilteredTarget(filter: TargetFilter)` — FILTERED TARGET: Refers to a target matching a composable filter.
+- `EffectTarget.GrantingSource` — The permanent whose static ability granted the currently-resolving ability — the Equipment/Aura/permanent bearing the `GrantActivatedAbility` (or gained-abilities) static, as opposed to Self, which…
+- `EffectTarget.GroupRef(filter: GroupFilter)` — GROUP REFERENCE: Refers to a group of permanents for mass effects.
+- `EffectTarget.IterationEntity` — ITERATION ENTITY: the object a `ForEach` loop over a group or a collection is currently visiting — "each creature you control gets +2/+1" is `ForEachInGroup(creatures you control, ModifyStats(2, 1,…
+- `EffectTarget.LibraryTop(player: Player)` — The current top card of a player's library; absent when that library is empty.
+- `EffectTarget.LinkedExiledCard(index: Int)` — LINKED EXILED CARD: a card exiled *with* the source permanent — its `LinkedExileComponent`, the pile every imprint / "exiled with this" mechanic writes (CR 607 linked abilities), which on Mirrodin'…
+- `EffectTarget.PipelineTarget(collectionName: String, index: Int)` — PIPELINE TARGET: an entity recorded in the resolution pipeline's stored collections — a target selected mid-resolution by `SelectTargetEffect`, or an entity an additional-cost step recorded under i…
+- `EffectTarget.PlayerRef(player: Player)` — PLAYER REFERENCE: Refers to a player or set of players.
+- `EffectTarget.RevealedAsCost(index: Int)` — REVEALED AS COST: a card revealed from hand to pay this spell's additional reveal cost (`Costs.additional.RevealFromHand(...)`, alone or as the leg of `RevealFromHandOrPay`), by index — "the reveal…
+- `EffectTarget.RingBearer(player: Player)` — RING-BEARER: a player's designated Ring-bearer (CR 701.54) — the creature carrying that player's Ring-bearer designation, on the battlefield under their control.
+- `EffectTarget.SacrificedAsCost(index: Int)` — SACRIFICED AS COST: a permanent sacrificed to pay this spell/ability's cost, by index — "the sacrificed creature".
+- `EffectTarget.Self` — The source of the resolving ability — the permanent (or spell) it belongs to.
+- `EffectTarget.SpecificEntity(entityId: EntityId)` — SPECIFIC ENTITY: Refers to a specific entity by ID.
+- `EffectTarget.TappedAsCost(index: Int)` — TAPPED AS COST: a permanent tapped to pay this activation's cost — the tap counterpart of SacrificedAsCost, reading `EffectContext.tappedPermanents`.
+- `EffectTarget.TargetController` — The controller of the target (used for effects like "its controller gains 4 life").
+- `EffectTarget.TargetingSource` — TARGETING SOURCE: "that spell or ability" in a becomes-the-target trigger — the object on the stack that did the targeting, not the permanent it targeted (that one is TriggeringEntity).
+- `EffectTarget.TriggeringEntity` — TRIGGERING ENTITY: Refers to the entity that caused the trigger to fire.
+
+## EntityNumericProperty
+
+- `EntityNumericProperty.AttachmentCount(kind: AttachmentKind)` — The number of permanents attached to this entity, optionally narrowed to a single AttachmentKind.
+- `EntityNumericProperty.BasePower` — The entity's printed **base** power — its power before counters, Auras, Equipment, anthems, and any other continuous modification.
+- `EntityNumericProperty.BaseToughness` — The entity's printed **base** toughness — the toughness sibling of BasePower.
+- `EntityNumericProperty.BlockerCount`
+- `EntityNumericProperty.ColorCount` — The number of distinct colors this entity has, read from projected state when available (so layer-5 color-changing effects are honored).
+- `EntityNumericProperty.ColoredManaSymbolCount(colors: List<Color>)` — The number of mana symbols of colors in **this one entity's** printed mana cost — `{1}{U}{U}` counts 2 blue, `{U/R}{R}` counts 1 blue.
+- `EntityNumericProperty.CounterCount(counterType: CounterType?)` — The number of counterType counters on the entity — of every kind when `null`.
+- `EntityNumericProperty.DamageDealtThisTurn` — Actual damage dealt by this object this turn, after prevention and replacement effects.
+- `EntityNumericProperty.ExcessMarkedDamage` — The excess damage (CR 120.4a) currently marked on this entity: `max(0, marked − toughness)`, read from post-damage state.
+- `EntityNumericProperty.KeywordValue(keyword: Keyword)` — The total N across this entity's instances of a numeric keyword ("bushido N", "toxic N") — Takeno, Samurai General's "for each point of bushido it has".
+- `EntityNumericProperty.ManaSpent` — Total mana actually paid from the pool to cast a spell on the stack.
+- `EntityNumericProperty.ManaValue`
+- `EntityNumericProperty.Power`
+- `EntityNumericProperty.SubtypeCount` — The number of distinct subtypes this entity has, read from projected state when available (so layer-4 type-changing effects, including Changeling, are honored).
+- `EntityNumericProperty.Toughness`
+- `EntityNumericProperty.ValueChosenAsEntered` — The number the entity's controller chose as it entered the battlefield — Nameless Race's "the life paid as it entered", read back by its characteristic-defining power and toughness.
+
+## EventPattern
+
+- `EventPattern.AbilityActivatedEvent(player: Player, targetMatch: Recipient?, sourceFilter: GameObjectFilter?, requireNoTapInCost: Boolean, requireExhaust: Boolean, excludeManaAbilities: Boolean, includeManaAbilities: Boolean, requireLoyalty: Boolean, minLoyaltyRemoved: Int)` — When a player activates an activated ability.
+- `EventPattern.AbilityTriggeredEvent(player: Player, requireAttackCause: Boolean, sourceFilter: GameObjectFilter?)` — When a triggered ability is put onto the stack (CR 603.3), scoped by whose ability it is and — optionally — by what caused it to trigger.
+- `EventPattern.AnyOf(events: List<EventPattern>)` — Matches when any constituent event pattern matches.
+- `EventPattern.AttackEvent(filter: GameObjectFilter?, requires: Set<AttackPredicate>)` — When a creature attacks.
+- `EventPattern.BecameMonstrousEvent(filter: GameObjectFilter)` — When a permanent becomes monstrous (CR 701.37b) — a monstrosity ability resolved on a permanent that wasn't yet monstrous.
+- `EventPattern.BecameRenownedEvent(filter: GameObjectFilter)` — When a permanent becomes renowned (CR 702.112b) — a renown trigger resolved on it.
+- `EventPattern.BecameSaddledEvent(filter: GameObjectFilter, firstTimeEachTurn: Boolean)` — When a permanent becomes saddled (CR 702.171b) — a Saddle ability resolved on it.
+- `EventPattern.BecomesAttachedEvent(attachmentFilter: GameObjectFilter, attachmentController: Player, attachedToFilter: GameObjectFilter)` — When an Aura, Equipment, or Fortification becomes attached to a permanent or player (CR 603.2f — "becomes" triggers fire only at the moment of attaching, not on a state that already exists, and not…
+- `EventPattern.BecomesBlockedEvent(filter: GameObjectFilter?)` — When a creature becomes blocked.
+- `EventPattern.BecomesPlottedEvent` — When this card becomes plotted (Outlaws of Thunder Junction).
+- `EventPattern.BecomesTargetEvent(targetFilter: GameObjectFilter, byYou: Boolean, byOpponent: Boolean, firstTimeEachTurn: Boolean, includeSpellTargets: Boolean, spellsOnly: Boolean, includePlayerTargets: Boolean, abilitiesOnly: Boolean, sourceFilter: GameObjectFilter?, backupAbilitiesOnly: Boolean, targetsOnlyIt: Boolean)` — When a permanent (or, opt-in, a spell on the stack or a player) becomes the target of a spell or ability.
+- `EventPattern.BecomesUnattachedEvent(attachmentFilter: GameObjectFilter, attachmentController: Player, unattachedFromFilter: GameObjectFilter)` — When an Aura, Equipment, or Fortification becomes **unattached** from a permanent — the mirror of BecomesAttachedEvent.
+- `EventPattern.BecomesUnblockedEvent` — When this attacking creature reaches the end of the Declare Blockers step with no blockers assigned to it (CR 509.3g — "attacks and isn't blocked").
+- `EventPattern.BendPerformedEvent(player: Player, types: Set<BendType>)` — Whenever player performs one of the four elemental bending keyword actions in types (CR 701.65b Airbend / 701.66b Earthbend / 701.67c Waterbend / 702.189b Firebending).
+- `EventPattern.BlockEvent(filter: GameObjectFilter?, attackerFilter: GameObjectFilter?, minBlockedAttackers: Int, batch: Boolean)` — When a creature blocks.
+- `EventPattern.BlocksOrBecomesBlockedByEvent(partnerFilter: GameObjectFilter?, oncePerCombat: Boolean)` — When this creature blocks or becomes blocked by a creature matching partnerFilter.
+- `EventPattern.CardPlayedFromPermissionEvent` — When a card is played (cast as a spell or played as a land) using a specific "you may play this card" permission — i.e. an impulse-style "exile … you may play that card this turn" grant.
+- `EventPattern.CardRevealedFromDrawEvent(cardFilter: GameObjectFilter?)` — When a card is revealed from the first draw of a turn.
+- `EventPattern.CardsLeftYourGraveyardEvent(filter: GameObjectFilter)` — Whenever one or more cards matching filter leave your graveyard.
+- `EventPattern.CardsPutIntoExileEvent(fromZones: Set<Zone>, filter: GameObjectFilter, includeTokens: Boolean)` — Whenever one or more cards matching filter are put into exile from any of fromZones.
+- `EventPattern.CardsPutIntoGraveyardFromLibraryEvent(filter: GameObjectFilter)` — Whenever one or more cards matching filter are put into your graveyard from your library.
+- `EventPattern.CardsPutIntoYourGraveyardEvent(filter: GameObjectFilter, firstTimeEachTurn: Boolean)` — Whenever one or more cards matching filter are put into your graveyard from anywhere.
+- `EventPattern.CaseSolvedEvent(player: Player)` — Whenever player solves a Case (CR 719.3a) — fires as that Case's "To solve" trigger resolves and the designation is stamped, which is exactly what the printed ruling for Case File Auditor says ("tr…
+- `EventPattern.CastThisSpellEvent` — When you cast this spell — a "cast trigger" (CR 603.2) that fires on the spell's *own* cast while it is on the stack; the ability travels with the spell.
+- `EventPattern.ChampionedEvent` — When a permanent is championed with this permanent (CR 702.72c) — "a permanent is 'championed' by another permanent if the latter exiles the former as the direct result of a champion ability." Mist…
+- `EventPattern.ClashedEvent(player: Player, requireWin: Boolean)` — Whenever player clashes (CR 701.30) — "Whenever you clash, …" (Entangling Trap, Rebellion of the Flamekin) and, with requireWin, "Whenever you clash **and win**, …" (Sylvan Echoes).
+- `EventPattern.CommitCrimeEvent(player: Player)` — When a player commits a crime (Outlaws of Thunder Junction).
+- `EventPattern.ConnivedEvent(filter: GameObjectFilter?)` — Whenever a permanent matching filter connives (CR 701.50).
+- `EventPattern.ControlChangeEvent(direction: ControlChangeDirection, requireOpponent: Boolean)` — When control of a permanent changes, in a given direction relative to the ability's controller (CR 800.4 / 720).
+- `EventPattern.CounterPlacementEvent(counterType: CounterType?, recipient: Recipient)` — When counters would be placed on a permanent.
+- `EventPattern.CounterSpellEvent(counterer: Player)` — When a spell or ability controlled by counterer would counter a spell.
+- `EventPattern.CountersPlacedEvent(counterType: CounterType?, filter: GameObjectFilter, firstTimeEachTurn: Boolean, placedBy: Player?, batch: Boolean, includePlayers: Boolean, recipient: Player?)` — When one or more counters of a specific type are placed on a permanent.
+- `EventPattern.CountersRemovedEvent(counterType: CounterType?, filter: GameObjectFilter, lastRemoved: Boolean, byDamagePrevention: Boolean)` — When one or more counters of a specific type are **removed** from a permanent — the mirror of CountersPlacedEvent.
+- `EventPattern.CreatureDealtDamageBySourceDiesEvent(sourceFilter: GameObjectFilter?, dyingFilter: GameObjectFilter?)` — Whenever a creature dealt damage this turn by a matching source dies.
+- `EventPattern.CreatureTurnedFaceUpEvent(player: Player, filter: GameObjectFilter)` — When a creature is turned face up.
+- `EventPattern.CreaturesAttackYouEvent(minAttackers: Int, includePlaneswalkersYouControl: Boolean)` — When one or more creatures attack the trigger's controller (the player).
+- `EventPattern.CreaturesAttackYourOpponentEvent(minAttackers: Int)` — When one or more creatures attack a player who is an opponent of the trigger's controller.
+- `EventPattern.CreaturesYouControlDiedEvent(filter: GameObjectFilter, excludeSelf: Boolean)` — Whenever one or more creatures you control die.
+- `EventPattern.CrewsEvent` — Whenever this creature crews a Vehicle.
+- `EventPattern.CycleEvent(player: Player)` — When a card is cycled.
+- `EventPattern.DamageEvent(recipient: Recipient, source: GameObjectFilter, damageType: DamageType, amount: AmountFilter)` — When damage would be dealt (used by replacement effects).
+- `EventPattern.DamagePreventedEvent` — When a "prevent the next damage from a chosen source" shield prevents damage this way (Deflecting Palm, New Way Forward).
+- `EventPattern.DamageReceivedEvent(source: GameObjectFilter?, recipient: GameObjectFilter?)` — When a permanent is dealt damage.
+- `EventPattern.DealsDamageEvent(damageType: DamageType, recipient: Recipient, sourceFilter: GameObjectFilter?, requires: Set<DamagePredicate>, requireExcess: Boolean, batch: Boolean)` — When a source deals damage.
+- `EventPattern.DiscardEvent(player: Player, cardFilter: GameObjectFilter?, batch: Boolean)` — When a player would discard a card.
+- `EventPattern.DiscoveredEvent(player: Player)` — Whenever player discovers (CR 701.57).
+- `EventPattern.DoorUnlockedEvent(player: Player)` — A door of a Room becomes unlocked (CR 709.5h).
+- `EventPattern.DrawCardsEvent(player: Player, amount: Int)` — When a player would draw one or more cards.
+- `EventPattern.DrawEvent(player: Player, exceptFirstInDrawStep: Boolean)` — When a player draws a card.
+- `EventPattern.EvidenceCollectedEvent(player: Player)` — Whenever player collects evidence (CR 701.59).
+- `EventPattern.ExertedAsItAttacksEvent` — "When you do" after "you may exert this creature as it attacks" (CR 701.43d) — the triggered ability linked to com.wingedsheep.sdk.scripting.ExertAsItAttacks (CR 607.2h).
+- `EventPattern.ExpendEvent(threshold: Int, player: Player)` — When you expend N — i.e., you spend your Nth total mana to cast spells during a turn.
+- `EventPattern.ExploitedEvent(player: Player, requireNontokenExploited: Boolean)` — Whenever a creature exploits a creature (CR 702.110b) — a creature "exploits a creature" when the controller of its exploit ability sacrifices a creature as that ability resolves.
+- `EventPattern.ExploredEvent(filter: GameObjectFilter?, revealedType: ExploreReveal)` — Whenever a permanent matching filter explores (CR 701.44), optionally gated by whether the revealed card was a land (revealedType).
+- `EventPattern.ExtraTurnEvent(player: Player)` — When a player would take an extra turn.
+- `EventPattern.ForagedEvent(player: Player)` — Whenever player forages — CR 701.59a, "Exile three cards from your graveyard or sacrifice a Food." The sibling of EvidenceCollectedEvent in every respect that matters, and modelled on it deliberately.
+- `EventPattern.GiftGivenEvent(player: Player)` — When a player gives a gift (Bloomburrow gift mechanic).
+- `EventPattern.InvestigatedEvent(player: Player, firstTimeEachTurn: Boolean)` — Whenever player investigates — CR 701.16a, "create a Clue token".
+- `EventPattern.LandPlayedEvent(fromZoneOtherThan: Zone?, player: Player)` — Whenever player plays a land (CR 305.1 — the special land-play action).
+- `EventPattern.LandTappedForMana(player: Player, landFilter: GameObjectFilter?)` — When a player taps a land for mana (a land's mana ability resolves).
+- `EventPattern.LeaveBattlefieldWithoutDyingEvent(filter: GameObjectFilter, excludeSelf: Boolean)` — Whenever one or more creatures you control leave the battlefield without dying.
+- `EventPattern.LifeGainEvent(player: Player, firstTimeEachTurn: Boolean)` — When a player would gain life.
+- `EventPattern.LifeLossEvent(player: Player)` — When a player would lose life.
+- `EventPattern.LifePaymentEvent(player: Player)` — When a player would **pay** life — life spent to satisfy a cost (CR 118.8), as opposed to life lost to damage or to a "loses N life" effect.
+- `EventPattern.ManifestedDreadEvent(player: Player)` — Whenever a player manifests dread (CR 701.60).
+- `EventPattern.MillEvent(player: Player)` — When a player would mill one or more cards (CR 701.13).
+- `EventPattern.NthCardDrawnEvent(nthCard: Int, player: Player)` — Fires on a `CardsDrawnEvent` when the drawing player's per-turn draw count crosses the specified threshold (CR 121.2 — each card drawn is an individual draw, so a single multi-card draw fires at mo…
+- `EventPattern.NthSpellCastEvent(nthSpell: Int, player: Player, spellFilter: GameObjectFilter?)` — When a player casts their Nth spell in a turn.
+- `EventPattern.OneOrMoreDealCombatDamageToPlayerEvent(sourceFilter: GameObjectFilter, orBattle: Boolean)` — Whenever one or more creatures matching sourceFilter you control deal combat damage to a player.
+- `EventPattern.OneOrMoreDealCombatDamageToYouEvent(sourceFilter: GameObjectFilter)` — Whenever one or more creatures matching sourceFilter deal combat damage to *you* (the trigger's controller).
+- `EventPattern.OpponentsDealtCombatDamageEvent` — Whenever one or more of *your opponents* (the trigger controller's opponents, CR 102.3) are dealt combat damage.
+- `EventPattern.PermanentsEnteredEvent(filter: GameObjectFilter, excludeSource: Boolean)` — Whenever one or more permanents matching a filter you control enter the battlefield.
+- `EventPattern.PermanentsSacrificedEvent(filter: GameObjectFilter, sacrificedBy: Player, perPermanent: Boolean)` — Whenever you sacrifice one or more permanents matching a filter.
+- `EventPattern.PhasesInEvent(filter: GameObjectFilter?)` — When a permanent phases in (Rule 702.26).
+- `EventPattern.PlayerLostGameEvent(player: Player)` — When a player loses the game (CR 104.3 — life 0, drawing from an empty library, poison, commander damage, or a "loses the game" effect).
+- `EventPattern.ProliferatedEvent(player: Player)` — Whenever a player proliferates (CR 701.34) — "Whenever you proliferate, …" (Scheming Aspirant, Ezuri, Stalker of Spheres, Voidwing Hybrid from the graveyard).
+- `EventPattern.RingTemptedEvent(player: Player, requireBearerChosen: Boolean)` — Whenever the Ring tempts a player (CR 701.54d).
+- `EventPattern.RoomFullyUnlockedEvent(player: Player)` — Whenever a player fully unlocks a Room (Duskmourn mechanic).
+- `EventPattern.SaddlesEvent` — Whenever this creature saddles a Mount.
+- `EventPattern.SagaChapterResolvedEvent(player: Player, finalChapterOnly: Boolean)` — Whenever a Saga chapter ability resolves.
+- `EventPattern.ScriedEvent(player: Player)` — Whenever a player scries (CR 701.22).
+- `EventPattern.ScriedOrSurveiledEvent(player: Player)` — Whenever a player scries **or** surveils (CR 701.22 / 701.25) — the combined look-at-top trigger used by "Whenever you scry or surveil, …" (Matoya, Archon Elder).
+- `EventPattern.ScryEvent(player: Player)` — When a player would scry a number of cards (CR 701.22).
+- `EventPattern.SearchLibraryEvent(player: Player)` — Whenever player searches their library (CR 701.23).
+- `EventPattern.ShuffleLibraryEvent(player: Player)` — Whenever a spell or ability causes player to shuffle their library (CR 701.24).
+- `EventPattern.SpellCastEvent(spellFilter: GameObjectFilter, player: Player, requires: Set<SpellCastPredicate>)` — When a spell is cast.
+- `EventPattern.SpellCopiedEvent(spellFilter: GameObjectFilter, player: Player)` — When a spell is copied — "whenever you copy an instant or sorcery spell".
+- `EventPattern.SpellOrAbilityOnStackEvent` — When a spell or ability is put onto the stack.
+- `EventPattern.StateConditionMetEvent` — Synthetic "trigger" event used to wrap a StateTriggeredAbility's effect into a TriggeredAbility when the engine enqueues a state trigger onto the stack (CR 603.8).
+- `EventPattern.StepEvent(step: Step, player: Player)` — At the beginning of a step.
+- `EventPattern.SurveiledEvent(player: Player)` — Whenever a player surveils (CR 701.25).
+- `EventPattern.TapEvent(filter: GameObjectFilter?, batch: Boolean, tapper: Player?, reason: TapReason?, firstTimeEachTurn: Boolean)` — When a permanent becomes tapped.
+- `EventPattern.TargetsChosenEvent(player: Player)` — When a player chooses one or more targets.
+- `EventPattern.TokenCreationEvent(controller: Player, tokenFilter: GameObjectFilter?)` — When tokens would be created.
+- `EventPattern.TrainedEvent` — When a creature trains (CR 702.149c) — "'When this creature trains' means 'When a resolving training ability puts one or more +1/+1 counters on this creature.'" The training payoff of Savior of Oll…
+- `EventPattern.TransformEvent(intoBackFace: Boolean?, filter: GameObjectFilter)` — When a permanent transforms (CR 701.27).
+- `EventPattern.TurnBeginEvent(player: Player)` — Replacement-only interception before a turn begins; separate from beginning a step.
+- `EventPattern.TurnFaceUpEvent` — When a permanent is turned face up.
+- `EventPattern.UntapEvent(filter: GameObjectFilter?, batch: Boolean)` — When a permanent becomes untapped.
+- `EventPattern.YouAttackEvent(minAttackers: Int, attackerFilter: GameObjectFilter?, player: Player)` — When you attack with at least minAttackers creatures.
+- `EventPattern.ZoneChangeEvent(filter: GameObjectFilter, from: Zone?, to: Zone?, excludeTo: Zone?, excludeSacrifice: Boolean, requireCraftMaterial: Boolean)` — When an object changes zones.
+
+## FeasibilityCheck
+
+- `FeasibilityCheck.CanPayMana(cost: ManaCost)` — The player can pay cost right now — from floating mana or untapped mana sources.
+- `FeasibilityCheck.ControlsPermanentMatching(filter: GameObjectFilter, count: Int)` — The player controls at least count permanents matching filter.
+- `FeasibilityCheck.HasCardsInZone(zone: Zone, filter: GameObjectFilter, count: Int)` — The player has at least count cards in zone matching filter.
+
+## Format
+
+- `Format.Commander(commanderDamageThreshold: Int, deckSize: Int, startingLife: Int, startingHandSize: Int, alwaysDivertToCommand: Boolean)` — Commander, at any table size.
+- `Format.MomirBasic(startingLife: Int, startingHandSize: Int, avatarCardName: String, eligibleCreatureNames: List<String>)` — Momir Basic — the classic Vanguard format (<https://mtg.fandom.com/wiki/Momir>).
+- `Format.Standard`
+- `Format.TeamVsTeam(startingLife: Int, startingHandSize: Int, commanderDamageThreshold: Int?, deckSize: Int?, alwaysDivertToCommand: Boolean)` — Team vs. Team — the general N-per-team multiplayer variant (CR 808).
+- `Format.TwoHeadedGiant(startingLife: Int, startingHandSize: Int, poisonThreshold: Int)` — Two-Headed Giant — the 2v2 team variant (CR 810).
+
+## Gate
+
+- `Gate.DoAction(action: Effect, successCriterion: SuccessCriterion)` — Not a decision — an *action-outcome* gate.
+- `Gate.MayDecide(prompt: String?, hint: String?, dynamicHint: DynamicHint?, sourceRequiredZone: Zone?, inlineOnTrigger: Boolean, feasibility: FeasibilityCheck?, choiceLabels: ChoiceLabels?)` — Pure yes/no — "You may then." The decision-maker chooses whether GatedEffect.then happens at all.
+- `Gate.MayPay(cost: Effect)` — Optionally pay a cost — "You may cost.
+- `Gate.MayPayAnyAmountOfLife` — Optionally pay a *variable* amount of life — "You may pay any amount of life.
+- `Gate.MayPayX` — Optionally pay a *variable* amount of generic mana — "You may pay {X}.
+- `Gate.OnceEachTurn(abilityId: AbilityId, spend: Boolean)` — Not a decision — a **per-turn action budget**.
+- `Gate.WhenCondition(condition: Condition)` — Not a decision — a state test.
+
+## IterationSpace
+
+- `IterationSpace.Collection(collection: String)` — Iterate the entities in a named pipeline collection.
+- `IterationSpace.ColorsOf(source: EffectTarget.SingleEntity)` — Iterate the colors of a referenced entity in canonical WUBRG order, exposing the current color through the chosen-color context — the same channel `ChooseColorThen` feeds — so per-color atoms (`Gra…
+- `IterationSpace.Group(filter: GroupFilter, noRegenerate: Boolean)` — Iterate battlefield permanents matching filter, snapshotted before any iteration runs (simultaneous semantics — entities destroyed during iteration stay in the list).
+- `IterationSpace.Players(players: Player)` — Iterate players matching players (e.g. `Player.Each`, `Player.EachOpponent`, `Player.ActivePlayerFirst`).
+- `IterationSpace.Targets` — Iterate the targets chosen for the spell/ability.
+
+## KeywordAbility
+
+- `KeywordAbility.Affinity(forType: CardType)` — Affinity for a card type.
+- `KeywordAbility.AffinityForSubtype(forSubtype: Subtype)` — Affinity for a creature subtype.
+- `KeywordAbility.Bestow(cost: ManaCost, additionalCost: AdditionalCost?)`
+- `KeywordAbility.Casualty(threshold: Int)` — Casualty N (CR 702.153).
+- `KeywordAbility.Cleave(cost: ManaCost)` — Cleave cost (CR 702.148, Innistrad: Crimson Vow).
+- `KeywordAbility.Conspire` — Conspire.
+- `KeywordAbility.Cycling(cost: ManaCost, searchFilter: GameObjectFilter?, displayPrefix: String)` — Cycling and its typed variants.
+- `KeywordAbility.Dash(cost: ManaCost)` — Dash with a mana cost (CR 702.109, Khans of Tarkir).
+- `KeywordAbility.Devour(multiplier: Int, sacrificeFilter: GameObjectFilter, variant: String)` — Devour (CR 702.82) and variants.
+- `KeywordAbility.Disguise(disguiseCost: PayCost, faceUpEffect: Effect?, costReduction: CostReductionSource?)` — Disguise with a cost to turn face up (CR 702.168).
+- `KeywordAbility.Disturb(cost: ManaCost)` — Disturb cost (CR 702.146a).
+- `KeywordAbility.Dredge(amount: Int)` — Optional draw replacement from the graveyard (Comprehensive Rules 702.52).
+- `KeywordAbility.Emerge(cost: ManaCost, from: GameObjectFilter?)` — Emerge cost (CR 702.119, Eldritch Moon).
+- `KeywordAbility.Escape(cost: ManaCost, additionalCost: AdditionalCost?)` — Escape (CR 702.138, Theros Beyond Death).
+- `KeywordAbility.Evoke(cost: ManaCost)` — Evoke with a mana cost.
+- `KeywordAbility.Flashback(cost: ManaCost, additionalCost: AdditionalCost?, condition: Condition?)` — Flashback with a mana cost and an optional additional cost.
+- `KeywordAbility.Foretell(cost: ManaCost)` — Foretell (CR 702.143, Kaldheim).
+- `KeywordAbility.Gift(kind: GiftKind)` — Gift a kind (CR 702.174, Bloomburrow).
+- `KeywordAbility.Harmonize(cost: ManaCost)` — Harmonize with a mana cost (Tarkir: Dragonstorm).
+- `KeywordAbility.Hexproof(scope: ProtectionScope)` — Hexproof from a quality.
+- `KeywordAbility.Impending(time: Int, cost: ManaCost)` — Impending N—cost (CR 702.175, Duskmourn: House of Horror).
+- `KeywordAbility.Increment` — Increment (Secrets of Strixhaven).
+- `KeywordAbility.Madness(cost: ManaCost)` — Madness cost (CR 702.35).
+- `KeywordAbility.Mayhem(cost: ManaCost)` — Mayhem cost (CR 702.187, Marvel's Spider-Man).
+- `KeywordAbility.Miracle(cost: ManaCost)` — Miracle {cost} (CR 702.94).
+- `KeywordAbility.Morph(morphCost: PayCost, faceUpEffect: Effect?)` — Morph with a cost to turn face up.
+- `KeywordAbility.Ninjutsu(cost: ManaCost)` — Ninjutsu cost (CR 702.49).
+- `KeywordAbility.Numeric(keyword: Keyword, n: Int, onceEachTurn: Boolean)` — A keyword parameterized by a single integer.
+- `KeywordAbility.OptionalAdditionalCost(manaCost: ManaCost?, additionalCost: AdditionalCost?, multi: Boolean, displayPrefix: String, keyword: Keyword?, branchesEffect: Boolean, grantsFlashTiming: Boolean, declaredSlot: ChoiceSlot)` — **Optional additional cost paid at cast time.** Generalises Kicker, Multikicker, Offspring, Bargain, and the pre-kicker "pay {N} more to cast as though it had flash" pattern (Ghitu Fire et al.).
+- `KeywordAbility.Overload(cost: ManaCost)` — Overload cost (CR 702.96).
+- `KeywordAbility.Plot(cost: ManaCost)` — Plot (CR 718, Outlaws of Thunder Junction).
+- `KeywordAbility.Protection(scope: ProtectionScope)` — Protection from a quality.
+- `KeywordAbility.Prototype(cost: ManaCost, power: Int, toughness: Int)` — Prototype cost — power/toughness (CR 702.160, 718).
+- `KeywordAbility.Simple(keyword: Keyword)` — Simple keyword with no parameters.
+- `KeywordAbility.Sneak(cost: ManaCost)` — Sneak cost (CR 702.190, Teenage Mutant Ninja Turtles).
+- `KeywordAbility.Splice(cost: ManaCost, onto: Subtype)` — Splice onto onto cost (CR 702.47, Champions of Kamigawa).
+- `KeywordAbility.Suspend(cost: ManaCost, timeCounters: Int)` — Printed Suspend (CR 702.62, Time Spiral).
+- `KeywordAbility.Variable(keyword: Keyword, label: String)` — A numeric keyword whose count is determined dynamically rather than by a fixed integer — e.g. "Mobilize X, where X is the number of creature cards in your graveyard" (Avenger of the Fallen).
+- `KeywordAbility.Ward(cost: WardCost)` — Ward with a configurable cost.
+- `KeywordAbility.Warp(cost: ManaCost, additionalCost: AdditionalCost?, fromGraveyard: Boolean)` — Warp with a mana cost and an optional additional cost.
+- `KeywordAbility.WebSlinging(cost: ManaCost)` — Web-slinging cost (CR 702.188, Marvel's Spider-Man).
+
+## ManaColorSet
+
+- `ManaColorSet.AmongCardsInGraveyard(filter: GameObjectFilter)` — The union of colors among the cards in your graveyard matching filter (read from each card's base colors — graveyard cards aren't projected).
+- `ManaColorSet.AmongLinkedExiledCards` — The union of colors among the cards currently exiled *with* the source permanent — the cards recorded in its `LinkedExileComponent` (set by `MoveToZoneEffect(linkToSource = true)`) that are still i…
+- `ManaColorSet.AmongPermanents(filter: GameObjectFilter)` — The union of colors of permanents matching filter (resolved via projected state — type/color-changing effects are honored).
+- `ManaColorSet.AnyColor` — All five colors.
+- `ManaColorSet.ColorsOf(entity: EffectTarget)` — The colors of one object — entity resolved against the running effect: a pipeline-gathered card (`EffectTarget.PipelineTarget`), a target, the source (`EffectTarget.Self`).
+- `ManaColorSet.CommanderIdentity` — The union of color identities of every commander registered to the controller (Partner / Background sum their identities).
+- `ManaColorSet.LandsCouldProduce(scope: LandControllerScope)` — The union of colors that any land in the given scope could produce (CR 106.7 / Fellwar Stone rulings).
+- `ManaColorSet.SourceChosenColor` — The single color recorded on the source permanent's `CastChoicesComponent` (set when it entered the battlefield, e.g., via `EntersWithChoice(COLOR)`).
+- `ManaColorSet.Specific(colors: Set<Color>)` — A fixed, hand-authored set of colors (e.g., `{R}{G}` for Mossfire Valley).
+- `ManaColorSet.Union(members: List<ManaColorSet>)` — The union of several pools — the player picks one color from any of them.
+
+## ManaRestriction
+
+- `ManaRestriction.AbilityActivationOnly` — "Spend this mana only to activate an ability." Any activated ability of any source qualifies — unlike CardTypeSpellsOrAbilitiesOnly, which ties abilities to a card type.
+- `ManaRestriction.AllOf(restrictions: List<ManaRestriction>)` — Conjunction of restrictions — the mana is spendable only in a context that satisfies *every* one of restrictions.
+- `ManaRestriction.AnyOf(restrictions: List<ManaRestriction>)` — "Spend this mana only to A, B, or C." Disjunction of restrictions — the mana is spendable in any context that satisfies *any* of the restrictions.
+- `ManaRestriction.AnySpend` — No restriction — this mana satisfies any spend context.
+- `ManaRestriction.CannotCastSpellsFromHand` — "This mana can't be spent to cast spells from your hand" (Heartwood Crafter).
+- `ManaRestriction.CannotCastSpellsOtherThan(cardTypes: Set<CardType>)` — "This mana can't be spent to cast a non-cardTypes spell" (Hydraulic Helper: "{T}: Add {U}.
+- `ManaRestriction.CardTypeSpellsOrAbilitiesOnly(cardType: CardType, allowSpells: Boolean, allowAbilities: Boolean, negated: Boolean)` — "Spend this mana only to cast cardType spells or activate abilities of [cardType sources]." Parameterized over card type so the same restriction shape covers Steelswarm Operator (artifact), hypothe…
+- `ManaRestriction.CastFromExileOnly`
+- `ManaRestriction.CastFromNonHandOnly` — "Spend this mana only to cast a spell from anywhere other than your hand." Used by Mm'menon, the Right Hand's granted artifact ability.
+- `ManaRestriction.ColorlessSpellsOnly` — "Spend this mana only to cast colorless spells." A spell is colorless when its colors are empty (CR 105.2c) — a devoid spell, an artifact with no colored symbols, and a face-down spell (CR 708.2) a…
+- `ManaRestriction.CostsContainingXOnly` — "Spend this mana only on costs that contain {X}." Satisfied by casting a spell whose mana cost contains {X}, and by activating an ability whose mana cost contains {X} — both are costs, so unlike Sp…
+- `ManaRestriction.CreatureSpellsOnly` — "Spend this mana only to cast creature spells."
+- `ManaRestriction.EquipAbilityActivationOnly` — "Spend this mana only to activate equip abilities." Satisfied only by paying the cost of an **equip** ability (CR 702.6a — "Cost: Attach this permanent to target creature you control.
+- `ManaRestriction.FaceDownSpellsOnly` — "Spend this mana only to cast face-down spells." Satisfied by casting a card face down for its morph (CR 702.37a) or disguise (CR 702.168a) cost — a spell with no name and no characteristics but "2…
+- `ManaRestriction.InstantOrSorceryOnly` — "Spend this mana only to cast instant or sorcery spells."
+- `ManaRestriction.KickedSpellsOnly` — "Spend this mana only to cast kicked spells."
+- `ManaRestriction.LegendarySpellsOnly` — "Spend this mana only to cast legendary spells." Matches spells with the Legendary supertype (Great Hall of the Citadel, Delighted Halfling).
+- `ManaRestriction.SpellsOnly` — "Spend this mana only to cast spells." Any spell qualifies; ability activations and special actions (turning a permanent face up, unlocking a door) don't.
+- `ManaRestriction.SpellsWithManaValueAtLeast(minManaValue: Int, orXInCost: Boolean, creatureOnly: Boolean)` — "Spend this mana only to cast spells with mana value minManaValue or greater or spells with {X} in their mana costs." Parameterized over the threshold and the two optional clauses printed alongside…
+- `ManaRestriction.SubtypeSpellsOnly(subtypes: Set<String>)` — "Spend this mana only to cast a spell that has any of the given subtypes." Generalizes SubtypeSpellsOrAbilitiesOnly to a *set* of subtypes joined by OR, for cards whose mana is usable on more than…
+- `ManaRestriction.SubtypeSpellsOrAbilitiesOnly(subtype: String, creatureOnly: Boolean)` — "Spend this mana only to cast a spell of the specified subtype (or, when creatureOnly is false, also to activate an ability of a source of that subtype)." The subtype is baked at the moment the man…
+- `ManaRestriction.TurnPermanentsFaceUpOnly` — "Spend this mana only to turn permanents face up." Satisfied by the turn-face-up special action (disguise/morph face-up, CR 707.9 / 702.37e), not by spell casts or ability activations.
+- `ManaRestriction.UnlockDoorOnly` — "Spend this mana only to unlock a door." Satisfied by the unlock-a-door special action (CR 709.5e), not by spell casts or ability activations.
+
+## ManaSpellRider
+
+- `ManaSpellRider.CopySpellWhenSpent(spellFilter: GameObjectFilter)` — "When that mana is spent to cast a spellFilter spell, copy that spell and you may choose new targets for the copy." (Pyromancer's Goggles, with `spellFilter = GameObjectFilter.InstantOrSorcery.with…
+- `ManaSpellRider.GrantsKeywordWhenSpent(keyword: String, spellFilter: GameObjectFilter, duration: Duration)` — "If that mana is spent on a spellFilter spell, it gains keyword until end of turn." (Carnelian Orb of Dragonkind, with `spellFilter = GameObjectFilter.Creature.withSubtype("Dragon")` and `keyword =…
+- `ManaSpellRider.MakesSpellUncounterable(spellFilter: GameObjectFilter)` — "That spell can't be countered." (Cavern of Souls, with the default spellFilter.) "If that mana is spent on an instant or sorcery spell, that spell can't be countered." (Boseiju, Who Shelters All,…
+- `ManaSpellRider.ScryOnSharedTypeWithCommander(amount: Int)` — "When that mana is spent to cast a creature spell that shares a creature type with your commander, scry amount." (Path of Ancestry) On consumption the cast pipeline checks the spell's projected cre…
+
+## ManaSymbol
+
+- `ManaSymbol.Colored(color: Color)`
+- `ManaSymbol.Colorless`
+- `ManaSymbol.Generic(amount: Int)`
+- `ManaSymbol.Hybrid(color1: Color, color2: Color)` — Hybrid mana symbol - can be paid with either of two colors.
+- `ManaSymbol.HybridPhyrexian(color1: Color, color2: Color)` — Hybrid Phyrexian mana symbol — can be paid with one mana of either color or 2 life (CR 107.4f).
+- `ManaSymbol.MonocolorHybrid(generic: Int, color: Color)` — Monocolored hybrid ("twobrid") mana symbol - can be paid with either generic generic mana OR a single mana of color.
+- `ManaSymbol.Phyrexian(color: Color)` — Phyrexian mana symbol - can be paid with colored mana or 2 life.
+- `ManaSymbol.Snow` — The snow mana symbol `{S}` (CR 107.4h): a one-mana cost payable only with mana of any type produced by a snow source.
+- `ManaSymbol.X`
+
+## MayPlayExpiry
+
+- `MayPlayExpiry.EndOfTurn` — Permission ends at the cleanup step of the current turn.
+- `MayPlayExpiry.Permanent` — Permission persists for as long as the card remains exiled.
+- `MayPlayExpiry.UntilControllerStep(step: Step, includeCurrentTurn: Boolean)` — Permission ends at the controller's next step.
+- `MayPlayExpiry.UntilSourceExilesAnother` — Permission persists indefinitely — across turns, and it survives the granting source leaving play (the permission's lifecycle is owned by the game state, not the source) — EXCEPT that it is revoked…
+- `MayPlayExpiry.WhileSourceOnBattlefield(sourceDescription: String)` — Permission lasts for as long as the **granting permanent stays on the battlefield** — regardless of who controls it, and regardless of who holds the permission.
+- `MayPlayExpiry.WhileYouControlSource(sourceDescription: String)` — Permission lasts for as long as the grant's controller controls the **granting permanent** — "you may cast it for as long as you control this creature" (Taster of Wares).
+
+## NumberProperty
+
+- `NumberProperty.Even` — An even number (0 is even).
+- `NumberProperty.MultipleOf(divisor: Int)` — A multiple of divisor (0 counts as a multiple of every nonzero divisor).
+- `NumberProperty.Odd` — An odd number.
+- `NumberProperty.Prime` — A prime number (CR has no notion of this — it's a card-defined property; 0 and 1 are not prime).
+
+## PayCost
+
+- `PayCost.Atom(atom: CostAtom)` — A single shared payable thing — see CostAtom.
+- `PayCost.Choice(options: List<PayCost>)` — Choose one of several costs to pay.
+- `PayCost.DynamicLife(amount: DynamicAmount)` — Pay a life amount computed when the cost is offered rather than written on the card as a number — "unless they pay life equal to its mana value" (Wand of Ith).
+- `PayCost.OwnManaCost` — Pay the mana cost of the permanent the cost applies to (its own mana cost).
+
+## Player
+
+- `Player.ActivePlayerFirst` — All players in APNAP order (active player first, then turn order)
+- `Player.AnOpponent` — A genuinely non-targeted "an opponent" — used only where the printed text has a single opponent act without targeting them (a chooser: "an opponent chooses a creature type", "choose ...
+- `Player.Any` — Any player (for matching/filtering)
+- `Player.BoundVariable(name: String)` — The player chosen for the target declared as name — the player-typed reading of a named target handle (com.wingedsheep.sdk.scripting.targets.EffectTarget.BoundVariable).
+- `Player.Candidate` — The player currently being considered as a target (CR 115).
+- `Player.ChosenOpponent` — The opponent locked into the source's com.wingedsheep.sdk.scripting.ChoiceSlot.OPPONENT slot (set by an `EntersWithChoice(ChoiceType.OPPONENT, …)` replacement effect).
+- `Player.ContextPlayer(index: Int)` — A player from the context (for multi-target spells)
+- `Player.ControllerOf(targetDescription: String)` — Controller of a permanent (used with EffectTarget)
+- `Player.ControllerOfAffectedEntity` — Controller of the permanent a continuous effect is currently modifying — "enchanted creature gets -X/-0, where X is the number of cards in **its controller's** graveyard" (Disturbing Conversion).
+- `Player.ControllerOfIterationEntity` — Controller of the entity the enclosing `ForEachInGroup` is currently iterating over — "for each attacking red creature, … unless **its controller** pays {2}{R}" (Heroism, Tidal Flats).
+- `Player.ControllerOfSource` — The controller of the effect's **source** — read off the source permanent rather than off the resolution context's `controllerId`.
+- `Player.ControllerOfTargetingSource` — The controller of the spell or ability that **targeted** the source — the other end of a "becomes the target of a spell or ability" trigger.
+- `Player.ControllerOfTriggeringEntity` — The controller of the **triggering entity** — the player half of com.wingedsheep.sdk.scripting.targets.EffectTarget.ControllerOfTriggeringEntity, for the places that take a Player reference rather…
+- `Player.DefendingPlayer` — The defending player, per CR 802.2a: the specific player the ability's source is attacking, determined per attacking creature — never "the opponent" via turn order.
+- `Player.Each` — All players
+- `Player.EachDefendingPlayer` — All defending players in the current combat, in APNAP order, including those with no attackers assigned and before attackers are declared.
+- `Player.EachOpponent` — All opponents
+- `Player.EachTargetedPlayer` — **Every** player among the spell or ability's chosen targets — "those players" after "choose any number of target players" (Officious Interrogation).
+- `Player.EnchantedPlayer` — The player enchanted by the source Aura — read from the source's com.wingedsheep.engine.state.components.battlefield.AttachedToComponent target id when it is a player.
+- `Player.InCollection(collection: String)` — "Those players" — every player recorded in the pipeline collection collection (written by com.wingedsheep.sdk.scripting.effects.StorePlayerEffect), iterated in APNAP order (CR 101.4) and skipping a…
+- `Player.OwnerOf(targetDescription: String)` — Owner of a permanent (used with EffectTarget)
+- `Player.OwnerOfSource` — The owner of the effect's **source** — the card the ability is printed on, not whoever currently controls it.
+- `Player.OwnersOfLinkedExile` — The distinct owners of the cards currently in the effect source's *linked-exile pile* (the source's com.wingedsheep.engine.state.components.battlefield.LinkedExileComponent, populated by com.winged…
+- `Player.TargetOpponent` — A targeted opponent (resolved at effect execution)
+- `Player.TargetPlayer` — A targeted player (resolved at effect execution)
+- `Player.TriggeringPlayer` — The player from the trigger context (e.g., player dealt combat damage)
+- `Player.You` — The controller of the ability/effect
+
+## PlayerRankMetric
+
+- `PlayerRankMetric.CreaturesOfSubtype(subtype: Subtype)` — How many creatures of subtype each player controls.
+- `PlayerRankMetric.LifeTotal` — Each player's life total.
+
+## PlotCostTarget
+
+- `PlotCostTarget.YouPlotFromHand` — Cards the source's controller plots from their hand (the printed Plot keyword cost).
+
+## PreventionSourceFilter
+
+- `PreventionSourceFilter.AnySource` — Any damage source.
+- `PreventionSourceFilter.Chosen(eligible: GameObjectFilter)` — The controller chooses one damage source at resolution among permanents and spells matching eligible — "a source of your choice" (Samite Ministration), "an artifact source of your choice" (Circle o…
+- `PreventionSourceFilter.Matching(filter: GameObjectFilter)` — Only damage from sources matching filter, evaluated against projected state whenever damage would be dealt — "by creatures" (Ethereal Haze), "by attacking creatures" (Heavy Fog), "by non-Soldier cr…
+- `PreventionSourceFilter.ThisSource` — Only damage dealt by the effect's own source — "~ deals 2 damage to that player.
+
+## ProtectionScope
+
+- `ProtectionScope.ActivatedAbilities` — From activated abilities — only the targeting leg applies, since an ability never deals damage, blocks, or enchants on its own (its *source* does).
+- `ProtectionScope.CardType(cardType: String)` — Protection from a card type — "from creatures".
+- `ProtectionScope.Color(color: Color)` — Protection / hexproof from a single color.
+- `ProtectionScope.Colors(colors: Set<Color>)` — Protection from multiple colors — "from white and from blue".
+- `ProtectionScope.EachOpponent` — Protection from each of the controller's opponents (Rule 702.16e).
+- `ProtectionScope.Everything` — Protection from everything (Rule 702.16i).
+- `ProtectionScope.Monocolored` — From monocolored — matches a source with exactly one color (CR 105.2a), the twin of Multicolored.
+- `ProtectionScope.Multicolored` — From multicolored — matches a source with two or more colors (CR 105.2b: a multicolored object has two or more colors).
+- `ProtectionScope.NonColor(color: Color)` — The complement of a single color — "from nongreen".
+- `ProtectionScope.PermanentsCastThisTurn` — From permanents that were cast this turn — a battlefield source that entered this turn by resolving as a cast spell (not a copy, a token, or a permanent put onto the battlefield), and hasn't left s…
+- `ProtectionScope.Spells` — From spells — the quality of *being a spell* (CR 702.16a: the quality "can be any characteristic value or information").
+- `ProtectionScope.Subtype(subtype: String)` — Protection from a creature subtype — "from Goblins".
+- `ProtectionScope.Supertype(supertype: String)` — Protection from a supertype — "from legendary creatures" (Tsabo Tavoc).
+- `ProtectionScope.TriggeredAbilities` — From triggered abilities — the triggered twin of ActivatedAbilities.
+
+## Recipient
+
+- `Recipient.AnotherPlayer` — "Another player" — any player other than the observing ability's controller.
+- `Recipient.AnyOf(options: List<Recipient>)` — Any of options — the heterogeneous "player or object" unions.
+- `Recipient.Object(filter: GameObjectFilter)` — An object (a permanent, or a spell for an ability's target) matching filter.
+- `Recipient.Player(player: Player)` — A player named by a com.wingedsheep.sdk.scripting.references.Player reference.
+
+## RepeatCondition
+
+- `RepeatCondition.PlayerChooses(decider: EffectTarget, prompt: String, yesText: String, noText: String)` — A player decides each iteration whether to repeat.
+- `RepeatCondition.WhileCondition(condition: Condition)` — Repeat while a game-state condition is true (checked after each body execution).
+
+## ReplacementEffect
+
+- `CapCounterPlacementThisTurn(amount: Int, appliesTo: EventPattern)` — Cap a counter placement at amount and lock the recipient out of further counters of that kind for the rest of the turn — "If you would get one or more poison counters, instead you get one poison co…
+- `CapDamage(maxAmount: Int, appliesTo: EventPattern)` — Cap damage at a maximum amount.
+- `CreateAdditionalToken(additionalTokenType: String, additionalTokenCount: Int, inheritTapped: Boolean, appliesTo: EventPattern, restrictions: List<Condition>)` — When a player would create one or more tokens matching appliesTo, also create additionalTokenCount predefined token(s) of a *different* type (additionalTokenType).
+- `DamageCantBePrevented(appliesTo: EventPattern)` — Damage can't be prevented.
+- `DoubleCounterPlacement(placedByYou: Boolean, appliesTo: EventPattern)` — Double the number of counters placed.
+- `DoubleDamage(restrictions: List<Condition>, appliesTo: EventPattern, multiplier: Int)` — Double damage dealt.
+- `EntersAsCopy(optional: Boolean, copyFilter: GameObjectFilter, copyFromZone: Zone, filterByTotalManaSpent: Boolean, additionalSubtypes: List<String>, additionalColors: Set<Color>, additionalKeywords: List<Keyword>, nameOverride: String?, powerOverride: Int?, toughnessOverride: Int?, exileCopiedCard: Boolean, tappedIfCopied: Boolean, additionalCounters: DynamicAmount?, exceptions: CopyExceptions, duration: Duration, appliesTo: EventPattern)` — Enter the battlefield as a copy of a card or permanent.
+- `EntersTapped(unlessCondition: Condition?, payLifeCost: Int?, appliesTo: EventPattern)`
+- `EntersUntapped(appliesTo: EventPattern)` — "Permanents matching appliesTo enter the battlefield untapped" — the inverse of EntersTapped.
+- `EntersWithChoice(choiceType: ChoiceType, chooser: Player, allowedCreatureTypes: List<String>?, modeOptions: List<ModeOption>, minValue: Int, maxValue: Int, cardNamePool: CardNamePool, lookAtOpponentHand: Boolean, excludedColors: Set<Color>, appliesTo: EventPattern)` — As this permanent enters, make a choice.
+- `EntersWithCounters(counterType: CounterType, count: Int, selfOnly: Boolean, condition: Condition?, otherOnly: Boolean, appliesTo: EventPattern)` — Permanent/creature enters with counters.
+- `EntersWithDevour(multiplier: Int, sacrificeFilter: GameObjectFilter, counterType: CounterType, variant: String, appliesTo: EventPattern)` — Devour (CR 702.82) and its variants.
+- `EntersWithDynamicCounters(counterType: CounterType, count: DynamicAmount, otherOnly: Boolean, appliesTo: EventPattern, activeZones: Set<Zone>)` — Permanent/creature enters with a dynamic number of counters.
+- `EntersWithExileCounters(filter: GameObjectFilter, sourceZone: Zone, maxCards: DynamicAmount, counterType: CounterType, countersPerCard: Int, appliesTo: EventPattern)` — As this permanent enters, its controller may exile up to maxCards matching cards from their sourceZone.
+- `EntersWithKeywords(keywords: List<Keyword>, condition: Condition?, selfOnly: Boolean, appliesTo: EventPattern)` — Permanent enters the battlefield with keywords (CR 614.1c) — the keyword counterpart of EntersWithCounters.
+- `EntersWithRevealCounters(filter: GameObjectFilter, revealSource: Zone, counterType: CounterType, countersPerReveal: Int, appliesTo: EventPattern)` — As this creature enters, you may reveal any number of cards from a zone that match a filter.
+- `ExileCounteredSpellInstead(then: Effect?, appliesTo: EventPattern)` — "If a spell or ability you control would counter a spell, instead exile that spell and you may play that card without paying its mana cost." — Guile.
+- `HalveDamage(restrictions: List<Condition>, appliesTo: EventPattern)` — Halve damage dealt, **rounded down** — the dividing mirror of DoubleDamage.
+- `HealOtherDamage(appliesTo: EventPattern)` — The damage is still dealt in full, but as part of the same replacement all *other* damage already marked on the recipient is **healed** (CR 701.69a: "If an effect states that damage already dealt t…
+- `LifeLossFloor(floor: Int, restrictions: List<Condition>, appliesTo: EventPattern)` — Floor the resulting life total when a player would lose life from damage.
+- `ModifyCounterPlacement(modifier: Int, appliesTo: EventPattern, placedByYou: Boolean)` — Add additional counters when counters are placed.
+- `ModifyDamageAmount(modifier: Int, dynamicModifier: DynamicAmount?, restrictions: List<Condition>, appliesTo: EventPattern)` — Modify damage dealt by an additive amount — either a fixed modifier or, when dynamicModifier is supplied, an amount computed at damage time against the replacement's *source* permanent.
+- `ModifyDrawAmount(modifier: Int, multiplier: Int, restrictions: List<Condition>, appliesTo: EventPattern.DrawCardsEvent)` — Modify the number of cards a draw event draws — `(count * multiplier) + modifier`, clamped to ≥ 0 — optionally gated by additional restrictions.
+- `ModifyKeywordAction(prefixEffect: Effect, appliesTo: EventPattern)` — Insert an extra effect *in front of* a keyword action (CR 614).
+- `ModifyLifeGain(multiplier: Int, modifier: Int, appliesTo: EventPattern, restrictions: List<Condition>)` — Modify life gain amount.
+- `ModifyLifeLoss(multiplier: Int, modifier: Int, restrictions: List<Condition>, appliesTo: EventPattern)` — Modify life loss amount.
+- `ModifyMillAmount(modifier: Int, restrictions: List<Condition>, appliesTo: EventPattern)` — Modify how many cards a player mills (CR 701.13).
+- `ModifyScryAmount(modifier: Int, restrictions: List<Condition>, appliesTo: EventPattern)` — Modify how many cards a player scries (CR 701.22) — the scry twin of ModifyMillAmount.
+- `ModifyTokenCount(modifier: Int, appliesTo: EventPattern)` — Modify the number of tokens created by a fixed amount.
+- `MultiplyTokenCreation(factor: Int, appliesTo: EventPattern)` — Double the number of tokens created.
+- `OnEnterRun(effect: Effect, appliesTo: EventPattern)` — Generic "as ~ enters the battlefield, run effect" replacement.
+- `OptionalEffectDiscardDestination(destination: CardDestination.ToZone, appliesTo: EventPattern.DiscardEvent)` — Optional destination replacement for a discard caused by a resolving effect, never a cost.
+- `OptionalSkipTurnWith(effect: Effect, appliesTo: EventPattern.TurnBeginEvent, restrictions: List<Condition>)` — Replace a turn with nothing, then perform effect first in the next turn that actually occurs.
+- `PermanentsEnterTapped(appliesTo: EventPattern, condition: Condition?)` — "Permanents matching appliesTo enter the battlefield tapped" — the global/group counterpart of the self-only EntersTapped.
+- `PreventDamage(amount: Int?, restrictions: List<Condition>, appliesTo: EventPattern, onPrevented: Effect?)` — Prevent damage.
+- `PreventDamageByRemovingCounter(counterType: CounterType, removalAmount: CounterRemovalAmount, requiresCounter: Boolean, appliesTo: EventPattern)` — Prevent damage that would be dealt to this permanent and remove one counter of counterType from it — the printed twin of the shield counter's prevention half (CR 122.1c).
+- `PreventDamagePerCounter(counterType: CounterType, appliesTo: EventPattern.DamageEvent)` — Remove a counter from the damaged permanent for each point of matching damage and prevent that point.
+- `PreventDraw(appliesTo: EventPattern)` — Prevent drawing (with optional replacement).
+- `PreventExtraTurns(appliesTo: EventPattern)` — Prevent extra turns from being taken.
+- `PreventLifeGain(appliesTo: EventPattern)` — Prevent life gain.
+- `RedirectDamage(redirectTo: EffectTarget, appliesTo: EventPattern, condition: Condition?)` — Redirect damage to another target.
+- `RedirectZoneChange(newDestination: Zone, appliesTo: EventPattern, linkToSource: Boolean, selfOnly: Boolean, shuffleIntoLibrary: Boolean, reveal: Boolean, requiredCause: ZoneChangeCause)` — Redirect a zone change to a different destination.
+- `RedirectZoneChangeWith(newDestination: Zone, additionalEffect: Effect, selfOnly: Boolean, linkToSource: Boolean, appliesTo: EventPattern)` — Redirect a zone change to a different destination AND execute an additional effect.
+- `RepeatKeywordAction(times: Int, appliesTo: EventPattern)` — Perform a keyword action (CR 701) times times instead of once (CR 614.1a) — "If you would proliferate, proliferate twice instead." The sibling of ModifyKeywordAction: that one puts an extra effect…
+- `ReplaceDamageWithCounters(counterType: CounterType, sacrificeThreshold: Int?, appliesTo: EventPattern, counterRecipient: DamageCounterRecipient, damagedPlayerMills: Boolean)` — Replace damage with counters (CR 614.1a — an "instead" effect, so the damage is never dealt and nothing that keys on damage being dealt sees it; notably *not* a prevention effect, so it still appli…
+- `ReplaceDamageWithMill(appliesTo: EventPattern)` — Prevent matched damage and, instead, each opponent of this permanent's controller mills that many cards.
+- `ReplaceDrawWith(replacementEffect: Effect, optional: Boolean, appliesTo: EventPattern, restrictions: List<Condition>)` — Replace drawing with another effect.
+- `ReplaceLifeGainWith(replacementEffect: Effect, appliesTo: EventPattern.LifeGainEvent, restrictions: List<Condition>)` — Replace a life-gain event with an effect, without gaining life or using the stack.
+- `ReplaceLifePaymentWithLibraryExile(appliesTo: EventPattern)` — A life *payment* becomes an exile of that many cards off the top of the payer's library, so long as the library is deep enough to cover it.
+- `ReplaceTokenCreationWithAttachedCopy(optional: Boolean, oncePerTurn: Boolean, attachmentVerb: String, appliesTo: EventPattern)` — Replace token creation with creating token copies of the permanent this source is attached to.
+- `ReplaceTokenCreationWithToken(token: Effect, appliesTo: EventPattern)` — "If one or more filtered tokens would be created under your control, that many token are created instead." Substitutes a *different* token for every token of the creation event the appliesTo filter…
+- `SetMinimumDamage(minAmount: Int, dynamicMinimum: DynamicAmount?, appliesTo: EventPattern)` — Raise damage to a minimum amount — the floor mirror of CapDamage.
+
+## RetargetChooser
+
+- `RetargetChooser.Controller` — The controller of the effect changes the targets (e.g., "you may change the target").
+- `RetargetChooser.OwnerOfStored(collectionName: String)` — The owner of the single card in pipeline collection collectionName changes the targets — e.g. the card left after `FilterCollection(GreatestManaValue)` over each player's revealed top card (Psychic…
+
+## Scope
+
+- `Scope.AttachedTo`
+- `Scope.Battlefield`
+- `Scope.Self`
+- `Scope.SoulbondPair` — The source **and** the creature it is soulbond-paired with (CR 702.95b) — the "both creatures" / "each of those creatures" of a soulbond payoff (Lightning Mauler's "as long as this creature is pair…
+- `Scope.Specific(entityId: EntityId)`
+
+## SelectionMode
+
+- `SelectionMode.All` — Select all cards (no choice needed).
+- `SelectionMode.ChooseAnyNumber` — Player may select any number of cards (0 to the full collection size).
+- `SelectionMode.ChooseExactly(count: DynamicAmount)` — Player must choose exactly N cards.
+- `SelectionMode.ChooseSpell` — Choose at most one spell, testing the filter against the face that will be cast.
+- `SelectionMode.ChooseUpTo(count: DynamicAmount)` — Player may choose up to N cards.
+- `SelectionMode.Random(count: DynamicAmount)` — Randomly select N cards (no player choice — engine picks randomly).
+
+## SelectionRestriction
+
+- `SelectionRestriction.MaxAffordablePayment(manaPerSelected: Int, payer: Player)` — The selection is capped at the number of cards payer can afford to pay manaPerSelected generic mana for: `floor(availableMana / manaPerSelected)`, where available mana counts floating mana plus unt…
+- `SelectionRestriction.OnePerBasicLandType` — At most one land of each basic land type (Plains/Island/Swamp/Mountain/Forest) may be selected.
+- `SelectionRestriction.OnePerCardName` — At most one card of each name may be selected.
+- `SelectionRestriction.OnePerCardType` — At most one card of each card type may be selected.
+- `SelectionRestriction.OnePerColor(matchControllerPermanentColors: Boolean)` — At most one card of each colour may be selected.
+- `SelectionRestriction.OnePerPower` — At most one card of each power may be selected.
+- `SelectionRestriction.ReducedMinimumIfMatches(reducedMinimum: Int, filter: GameObjectFilter, requiredMatches: Int)` — Allows a selection to satisfy a lower minimum when the chosen cards include requiredMatches cards matching filter.
+- `SelectionRestriction.TotalManaValueAtMost(max: Int, maxAmount: DynamicAmount?)` — The sum of selected cards' mana values must not exceed the cap.
+- `SelectionRestriction.TotalPowerAtMost(max: Int)` — The sum of selected creatures' **projected** power must not exceed max.
+
+## SpellCastPredicate
+
+- `SpellCastPredicate.AnyOf(options: List<SpellCastPredicate>)` — Any of options — the heterogeneous "player or object" unions.
+- `SpellCastPredicate.CastAsAdventure` — The spell was cast **as an Adventure** (CR 715.3) — "Whenever you cast an Adventure spell" (Chancellor of Tales).
+- `SpellCastPredicate.CastAsPrepareSpell` — The spell was cast **as a prepare spell** (CR 722.3c) — "Whenever you cast a prepared spell" (Codie, Ravenous Codex).
+- `SpellCastPredicate.CastFromZone(zone: Zone)` — The spell was cast from this zone (e.g. HAND for "from your hand").
+- `SpellCastPredicate.CastFromZoneOtherThan(zone: Zone)` — The spell was cast from a zone *other than* zone — the negation of CastFromZone.
+- `SpellCastPredicate.HasXInCost` — The spell has `{X}` in its printed mana cost (CR 107.3) — "Whenever you cast a spell with {X} in its mana cost, …" (Geometer's Arthropod).
+- `SpellCastPredicate.IsCard` — The spell cast is a **card**, not a copy — "whenever a player casts an instant or sorcery *card*" (Eye of the Storm).
+- `SpellCastPredicate.IsModal` — The spell was modal — at least one mode was chosen at cast time (rules 700.2).
+- `SpellCastPredicate.NotOwnedByController` — The just-cast spell is **owned by a player other than the one who cast it** — the card's owner (CR 108.3, fixed at game start) differs from its caster.
+- `SpellCastPredicate.PaidWithManaFromCardType(cardType: CardType, atLeast: Int)` — At least atLeast mana produced by a source of card type cardType was spent on the cast — Inga and Esika's "if three or more mana from creatures was spent to cast it" is `PaidWithManaFromCardType(Ca…
+- `SpellCastPredicate.PaidWithManaFromSource` — Mana produced by the trigger's own source permanent was spent on the cast — "Whenever you cast a … spell using mana produced by this" (Tecutlan, the Searing Rift / Barracks of the Thousand / The My…
+- `SpellCastPredicate.PaidWithManaFromSubtype(subtype: Subtype)` — Mana produced by a permanent with this subtype was spent on the cast — Treasure (Alchemist's Talent, Rain of Riches), Cave, or any other producing-source subtype.
+- `SpellCastPredicate.SpellMatches(filter: GameObjectFilter)` — The spell itself matches filter — the same test as com.wingedsheep.sdk.scripting.EventPattern.SpellCastEvent.spellFilter, as a predicate so it can sit inside AnyOf: "an Equipment spell **or** a spe…
+- `SpellCastPredicate.TargetsMatching(filter: GameObjectFilter)` — The spell was cast with at least one chosen target matching filter ("a spell that targets a creature you don't control" — Legolas, Master Archer).
+- `SpellCastPredicate.TargetsOnlySource` — The spell was cast targeting the trigger's own source permanent and **nothing else** — every instance of the word "target" on the spell points at the source ("a spell that targets only this creatur…
+- `SpellCastPredicate.TargetsOpponent` — The spell was cast with at least one chosen target that is an **opponent** of the trigger's controller — "a spell that targets an opponent" (Danitha, Spear of Agony).
+- `SpellCastPredicate.TargetsSource` — The spell was cast targeting the trigger's own source permanent ("a spell that targets this creature" — Legolas, Master Archer).
+- `SpellCastPredicate.WasKicked` — The spell was cast with kicker (CR 702.32).
+
+## SpellCostTarget
+
+- `SpellCostTarget.AnyCaster(filter: GameObjectFilter)` — Spells matching the filter cast by any player (global tax effect).
+- `SpellCostTarget.FaceDownYouCast` — Face-down (morph) creature spells the source's controller casts.
+- `SpellCostTarget.MorphActivation` — The morph (turn face-up) activated cost, applied globally.
+- `SpellCostTarget.OpponentsCast(filter: GameObjectFilter)` — Spells matching filter cast by an **opponent** of the source's controller, from any zone — "Noncreature spells your opponents cast cost {1} more to cast" (Thalia, the Survivor).
+- `SpellCostTarget.OpponentsCastFromZones(zones: Set<Zone>, filter: GameObjectFilter)` — Spells opponents of the source's controller cast **from one of zones**, matching filter (default: any spell).
+- `SpellCostTarget.OpponentsCastTargeting(targetFilter: GroupFilter)` — Spells opponents of the source's controller cast that target one or more permanents matching targetFilter relative to the source.
+- `SpellCostTarget.SelfCast` — Self-reduction on the spell card itself — applies when this card is cast.
+- `SpellCostTarget.YouCast(filter: GameObjectFilter)` — Spells the source's controller casts that match the filter.
+- `SpellCostTarget.YouCastFromZones(zones: Set<Zone>, filter: GameObjectFilter)` — Spells the source's controller casts **from one of zones**, matching filter (default: any spell).
+
+## StatePredicate
+
+- `StatePredicate.ActivatedThisTurn` — One of its activated abilities was activated this turn — loyalty, mana, crew or any other (Cut Short's "planeswalker that was activated this turn").
+- `StatePredicate.And(predicates: List<StatePredicate>)`
+- `StatePredicate.AttachedTo(filter: GameObjectFilter)` — Attached to a permanent that matches filter.
+- `StatePredicate.AttachedToCardType(cardType: CardType)` — Attached to a permanent whose card matches the given top-level type.
+- `StatePredicate.AttackedABattleThisTurn` — Was declared as attacking a **battle** at least once during the current turn — "as long as it attacked a battle this turn" (War Historian).
+- `StatePredicate.AttackedLastTurn` — Was declared as an attacker during its controller's **most recent own turn** — "it attacked during your last turn".
+- `StatePredicate.AttackedThisCombat` — Was declared as an attacker at least once during the current combat (CR 508.1).
+- `StatePredicate.AttackedThisTurn` — Was declared as an attacker at least once during the current turn (set during the declare-attackers step, CR 508.1).
+- `StatePredicate.BecameTappedOnlyOnceThisTurn` — This permanent has **become tapped exactly once so far this turn** — the live, state-side reading of "if it's the first time that creature has become tapped this turn" (Captain America, Living Lege…
+- `StatePredicate.BlockedOrWasBlockedByEntityThisTurn(reference: EffectTarget.SingleEntity)` — This creature blocked, or was blocked by, the creature reference names at some point during the current turn — "destroy all creatures that blocked or were blocked by **it** this turn" (Gaze of the…
+- `StatePredicate.BlockedOrWasBlockedByLegendaryThisTurn` — This creature blocked, or was blocked by, a legendary creature at some point during the current turn.
+- `StatePredicate.BlockedThisCombat` — Was declared as a blocker at least once during the current combat (CR 509.1).
+- `StatePredicate.BlockedThisTurn` — Was declared as a blocker at least once **this turn** (CR 509.1).
+- `StatePredicate.ControlledSinceTurnBegan` — Controlled by its current controller without interruption since this turn began, regardless of haste.
+- `StatePredicate.ControllerControls(filter: GameObjectFilter)` — The candidate's *controller* controls at least one permanent matching filter — "target creature whose controller controls an Island" (Seasinger).
+- `StatePredicate.ControllerDealtCombatDamageBySourceThisTurn` — Controlled by a player the effect's *source* dealt combat damage to this turn — the mirror of DealtCombatDamageToSourceControllerThisTurn.
+- `StatePredicate.CouldNotHaveAttackedThisTurn` — The creature **couldn't have been declared as an attacker** this turn — the "except for creatures that couldn't attack" clause of Season of the Witch, which spares a creature that had no choice in…
+- `StatePredicate.CreatedBySource` — A token that was *created by the effect's source permanent* — its provenance creator id (the `CreatedByComponent` stamped when a `CreateTokenEffect` with `stampCreator = true` made it) equals the s…
+- `StatePredicate.CrewedOrSaddledBySourceThisTurn` — Vehicle/Mount that was crewed (CR 702.122) or saddled (CR 702.171) *by* the effect's source creature this turn — i.e. the source was one of the creatures tapped to pay this permanent's Crew/Saddle…
+- `StatePredicate.CrewedOrSaddledSourceThisTurn` — Creature that crewed (CR 702.122) or saddled (CR 702.171) the effect's source permanent this turn — i.e. one of the creatures tapped to pay that permanent's Crew/Saddle cost.
+- `StatePredicate.DealtCombatDamageToSourceControllerThisTurn` — Dealt combat damage *this turn* to the player who controls the effect's source.
+- `StatePredicate.DealtDamageToSourceControllerThisTurn` — Dealt damage — combat or noncombat — *this turn* to the player who controls the effect's source: the any-damage sibling of DealtCombatDamageToSourceControllerThisTurn.
+- `StatePredicate.EnteredThisTurn` — Entered the battlefield this turn (has summoning sickness if creature)
+- `StatePredicate.ExiledWithSource` — The candidate card is one this effect's source permanent exiled — i.e. its entity id is recorded in the source's `LinkedExileComponent` (the same linkage set by `RedirectZoneChange(linkToSource = t…
+- `StatePredicate.HasAnyCounter` — Has any counter of any type
+- `StatePredicate.HasCounter(counterType: CounterType, minCount: Int)` — Has at least minCount counters of the specified type.
+- `StatePredicate.HasDealtCombatDamageToPlayer` — Has dealt combat damage to a player (ever, since entering the battlefield)
+- `StatePredicate.HasDealtDamage(thisTurnOnly: Boolean, combatOnly: Boolean)` — This permanent has *dealt* damage — the active voice, mirroring WasDealtDamageThisTurn's passive one.
+- `StatePredicate.HasDisguiseAbility` — Has a **disguise** ability (CR 702.168) — the printed keyword, read off the card definition, so it answers the same in every zone.
+- `StatePredicate.HasGreatestManaValueAmongAllCreatures` — Has the greatest mana value among *all* creatures on the battlefield (global scope, both players), not just the ones its controller controls.
+- `StatePredicate.HasGreatestPower` — Has the greatest power among creatures its controller controls
+- `StatePredicate.HasLeastManaValueAmong(candidates: GameObjectFilter)` — Has the least mana value among battlefield permanents matching candidates.
+- `StatePredicate.HasLeastPower` — Has the least power among creatures its controller controls
+- `StatePredicate.HasLeastPowerAmongAllCreatures` — Has the least power among *all* creatures on the battlefield (global scope, both players), not just the ones its controller controls.
+- `StatePredicate.HasLockedDoor` — A Room permanent (CR 709.5) that currently has at least one locked door — i.e. at least one half without its "unlocked" designation (CR 709.5c).
+- `StatePredicate.HasManaAbility` — A battlefield permanent currently has a mana ability, whether or not it can be activated.
+- `StatePredicate.HasMorphAbility` — Has a morph ability (has MorphDataComponent)
+- `StatePredicate.HasSingleTarget` — A spell or ability on the stack with exactly one chosen target — the "with a single target" qualifier (Hydroelectric Specimen's "target instant or sorcery spell with a single target").
+- `StatePredicate.InSameBandAsSource` — In the same combat band as the effect's source — i.e. the source creature itself, or a creature sharing the source's band id (CR 702.22).
+- `StatePredicate.InZone(zone: Zone)` — The object is in zone *right now* — a zone-agnostic, current-location test.
+- `StatePredicate.IsAttachedToBySource` — The candidate permanent is the permanent the effect's source is attached to — i.e. the creature/permanent enchanted or equipped by the source (read from the source's `AttachedToComponent`).
+- `StatePredicate.IsAttachedToSource` — The candidate is an Aura/Equipment currently *attached to* the effect's source permanent — the mirror of IsAttachedToBySource.
+- `StatePredicate.IsAttacking`
+- `StatePredicate.IsAttackingABattle` — Attacking a **battle** rather than a player or planeswalker (Rampaging Geoderm: "If it's attacking a battle, put a +1/+1 counter on it instead").
+- `StatePredicate.IsAttackingAlone` — Attacking, and no other creature is attacking (CR 506.5 — "a creature is attacking alone if it's attacking but no other creatures are").
+- `StatePredicate.IsAttackingAnOpponent` — Attacking one of *your* opponents — the player, not their planeswalkers or battles (Oviya, Automech Artisan: "Each creature that's attacking one of your opponents has trample").
+- `StatePredicate.IsAttackingDefenderOf(reference: EffectTarget.SingleEntity)` — Attacking the player, planeswalker, or battle defended by the reference's controller/team.
+- `StatePredicate.IsAttackingEnchantedPlayer` — Attacking the player the asking ability's *source* is attached to — "creatures attacking enchanted player" (Curse of Hospitality).
+- `StatePredicate.IsAttackingYouOrYourPlaneswalkers`
+- `StatePredicate.IsBlocked` — Attacker with blocked status, even after all its blockers leave combat
+- `StatePredicate.IsBlocking`
+- `StatePredicate.IsBlockingEntity(reference: EffectTarget.SingleEntity)` — Blocking the creature reference names, read live from combat state (CR 509) — "each creature blocking **it**", where "it" is a role the ability names rather than its source or a loop variable: Ib H…
+- `StatePredicate.IsBlockingIterationEntity` — Blocking the entity an enclosing `ForEachInGroup` is iterating over — "creatures you control blocking **that creature**" (Tidal Flats), where "that creature" is the loop's current attacker rather t…
+- `StatePredicate.IsBlockingSource` — Creature that is blocking the effect's source — i.e. a blocker whose blocked-attacker set contains the source entity supplied in the evaluation context.
+- `StatePredicate.IsCombatPairedWithSource` — Creature that is blocking the effect's source **or** being blocked by it — the live CR 509 pairing in either direction, read off the blocked-attacker sets rather than a snapshot.
+- `StatePredicate.IsCommander` — Is a **commander** — any player's (CR 903.3).
+- `StatePredicate.IsEnchanted` — Has at least one Aura attached — the MTG adjective "enchanted" (CR 303.4: an Aura *enchants* the permanent it's attached to).
+- `StatePredicate.IsEnchantedByAura(auraController: ControllerPredicate)` — Has at least one attached Aura whose *controller* satisfies auraController — the narrower "enchanted by Auras you control" (Archon of the Wild Rose) as opposed to plain IsEnchanted, which is agnost…
+- `StatePredicate.IsEquipped` — Has at least one Equipment attached
+- `StatePredicate.IsFaceDown` — Is face-down (morph, manifest)
+- `StatePredicate.IsFaceUp` — Is face-up (not face-down)
+- `StatePredicate.IsGrantingPermanent` — The candidate permanent is the *granting permanent* of the ability being resolved — the Equipment/Aura/permanent whose static ability granted the currently-resolving activated or triggered ability…
+- `StatePredicate.IsModified` — Has an Equipment attached, an Aura attached, or any counter (MTG "modified" definition)
+- `StatePredicate.IsMonstrous` — Permanent that currently has the monstrous designation (CR 701.37b, Theros).
+- `StatePredicate.IsOnBattlefield` — The object is on the battlefield *right now*.
+- `StatePredicate.IsPaired` — Is soulbond-**paired** with another creature (CR 702.95b).
+- `StatePredicate.IsPrepared` — The permanent is prepared (Secrets of Strixhaven prepare): it has a castable copy of its prepare spell in exile.
+- `StatePredicate.IsProtectedBy(protector: ControllerPredicate)` — A battle whose protector (CR 310.9) satisfies protector — the battle's analogue of the controller predicate.
+- `StatePredicate.IsRenowned` — Permanent that currently has the renowned designation (CR 702.112b, Magic Origins).
+- `StatePredicate.IsRingBearer` — Is its controller's Ring-bearer (CR 701.54).
+- `StatePredicate.IsSaddled` — Permanent that is currently saddled (CR 702.171b).
+- `StatePredicate.IsSolved` — Permanent that currently has the solved designation (CR 719.3b, Murders at Karlov Manor).
+- `StatePredicate.IsSource` — The candidate permanent IS the effect's source permanent itself.
+- `StatePredicate.IsSuspected` — Permanent that is currently suspected (CR 701.60a, Murders at Karlov Manor).
+- `StatePredicate.IsTapped`
+- `StatePredicate.IsTransformed` — Is a **transformed permanent** (CR 701.27g): a nonmodal double-faced permanent on the battlefield with its back face up — a Siege cast transformed, a werewolf flipped at night, a saga that exiled i…
+- `StatePredicate.IsUnblocked` — Attacker with unblocked status after blockers are declared
+- `StatePredicate.IsUntapped`
+- `StatePredicate.IsWarpExiled` — Card in exile that was put there by the delayed triggered ability of a warp keyword (CR 702.185b).
+- `StatePredicate.Not(predicate: StatePredicate)`
+- `StatePredicate.NotTargetedByAbilityFromSameNamedSource` — The candidate object (a spell or permanent) is **not** currently the target of an ability on the stack whose source is *another* permanent sharing the effect source's name.
+- `StatePredicate.Or(predicates: List<StatePredicate>)`
+- `StatePredicate.PutIntoGraveyardFromBattlefieldThisTurn` — This card is currently in a graveyard *and* was put there from the battlefield during the current turn.
+- `StatePredicate.PutIntoGraveyardThisTurn` — This card is currently in a graveyard *and* was put there during the current turn, from any zone — the battlefield, but equally the library (mill), the hand (discard), or the stack (a countered or…
+- `StatePredicate.ReceivedCounterThisTurn(counterType: CounterType?, placedByController: Boolean)` — One or more counters were put on this permanent during the current turn — the filter-level form of "…that you've put one or more +1/+1 counters on this turn".
+- `StatePredicate.SharesNameWithSpellCastThisTurn` — Shares a name with a spell cast by any player during the current turn.
+- `StatePredicate.WasCastForWarp` — Permanent on the battlefield that was cast for its warp cost (CR 702.185).
+- `StatePredicate.WasCastFromZone(zone: Zone)` — A spell on the stack whose cast-origin zone is zone — reads the `SpellOnStackComponent.castFromZone` the engine stamps when the spell is put on the stack (HAND for a normal cast; GRAVEYARD/EXILE/CO…
+- `StatePredicate.WasDealtDamageBySourceThisTurn` — Was dealt damage this turn by the effect's *source* — the recipient-side view of the source's per-turn damaged-creature record (the same record `Triggers` "a creature dealt damage by this creature…
+- `StatePredicate.WasDealtDamageThisTurn` — Has been dealt damage this turn
 
 ## StaticAbility
 
@@ -582,938 +1835,17 @@ Families: [Effect](#effect) (378) · [StaticAbility](#staticability) (188) · [C
 - `UntapSelfDuringOtherUntapSteps` — Untap only the source permanent itself during each other player's untap step.
 - `WinCoinFlips(firstFlipEachTurn: Boolean)` — The controller wins the coin flips they make — their flips "come up heads and you win those flips" (CR 705.3, an effect that dictates the result of a flip).
 
-## CardPredicate
+## SuccessCriterion
 
-- `CardPredicate.AbilitySourceMatches(subfilter: GameObjectFilter)` — Matches an **activated or triggered ability on the stack** whose *source* (CR 113.7 — the object that generated it) matches subfilter.
-- `CardPredicate.And(predicates: List<CardPredicate>)`
-- `CardPredicate.BasePowerEquals(value: Int)` — **Base** power exactly equal to value — "a creature with base power 1" (Rapid Augmenter, Zinnia, Valley's Voice).
-- `CardPredicate.BaseToughnessEquals(value: Int)` — The toughness sibling of BasePowerEquals — "base toughness 1" (Sword of the Squeak).
-- `CardPredicate.CardTypeEqualsChosenComponent(slot: ChoiceSlot)` — Matches cards whose **card type** equals a card type **durably chosen by the source permanent** as it entered — read from that permanent's com.wingedsheep.engine.state.components.battlefield.CastCh…
-- `CardPredicate.ColoredManaSymbolsAtLeast(colors: List<Color>, min: Int)` — Matches an object whose printed mana cost contains at least min mana symbols of colors — "a noncreature spell with one or more blue mana symbols in its mana cost" (Namor the Sub-Mariner) with the d…
-- `CardPredicate.CompareNumericProperty(property: CardNumericProperty, operator: ComparisonOperator, amount: DynamicAmount)` — Compares this object's numeric property with a late-bound amount (including another entity's property).
-- `CardPredicate.ConvokedSource` — Matches a permanent that **convoked** the source object (CR 702.51c) — "each creature that convoked it" (Zephyr Singer).
-- `CardPredicate.CouldEnchant(reference: EffectTarget.SingleEntity)` — An Aura card whose printed "Enchant …" restriction (com.wingedsheep.sdk.model.CardScript.auraTarget) the referenced permanent satisfies — "search your library for an Aura card that could enchant it…
-- `CardPredicate.CouldProduceColorlessMana` — Matches a land one of whose mana abilities could produce colorless mana ({C}) — Wastes, an Eldrazi Temple, a land granted "{T}: Add {C}".
-- `CardPredicate.DoesNotShareCreatureTypeWithPermanentYouControl(filter: GameObjectFilter)` — Matches creature cards that share **no** creature type with any permanent the evaluating player controls matching filter.
-- `CardPredicate.DoesNotShareLandTypeWithPermanentYouControl(filter: GameObjectFilter)` — Matches cards that share **no** land type with any permanent the evaluating player controls matching filter.
-- `CardPredicate.HasActivatedAbility` — Matches a permanent or graveyard card that has at least one intrinsic activated ability of any kind — mana, loyalty, or otherwise — activatable from the battlefield.
-- `CardPredicate.HasAdventure` — The card has an Adventure (com.wingedsheep.sdk.model.CardLayout.ADVENTURE) — i.e. it is an adventurer card, regardless of which face it currently shows.
-- `CardPredicate.HasAnyOfSubtypes(subtypes: List<Subtype>)` — Matches cards with any one of the given subtypes (OR logic).
-- `CardPredicate.HasBasicLandType(landType: String)` — Matches basic land types: Plains, Island, Swamp, Mountain, Forest
-- `CardPredicate.HasChosenColor` — Matches cards whose colors include the color chosen during this effect's resolution (e.g. via ChooseColorThenEffectcom.wingedsheep.sdk.scripting.effects.ChooseColorThenEffect).
-- `CardPredicate.HasChosenSubtype` — Matches creatures that have the subtype chosen on the source permanent (CastChoicesComponent)
-- `CardPredicate.HasColor(color: Color)`
-- `CardPredicate.HasCycling` — Matches a card with a cycling ability — plain cycling or any typecycling variant (typecycling is a variant of cycling, CR 702.29e).
-- `CardPredicate.HasExactlyColors(count: Int)` — Exactly count colors (CR 105.2).
-- `CardPredicate.HasKeyword(keyword: Keyword)`
-- `CardPredicate.HasNoAbilities` — Matches a card whose Oracle rules-text box is empty.
-- `CardPredicate.HasNonManaActivatedAbility` — Matches a permanent that has at least one intrinsic activated ability that isn't a mana ability (and isn't a loyalty ability).
-- `CardPredicate.HasSubtype(subtype: Subtype)`
-- `CardPredicate.HasSubtypeFromVariable(variableName: String)` — Matches cards that have a subtype matching a value stored in chosenValuesvariableName
-- `CardPredicate.HasSubtypeInEachStoredGroup(groupName: String)` — Matches cards that share at least one subtype with **each** subtype group stored under the named key in the pipeline's `storedSubtypeGroups` map.
-- `CardPredicate.HasSubtypeInStoredList(listName: String)` — Matches cards that have a subtype matching any string in storedStringListslistName
-- `CardPredicate.HasXInManaCost` — Matches a card whose printed mana cost contains an {X} symbol (e.g. "a card with {X} in its mana cost", Paradox Surveyor).
-- `CardPredicate.IsActivatedAbility` — Matches only activated abilities on the stack (not triggered abilities or spells).
-- `CardPredicate.IsActivatedOrTriggeredAbility` — Matches activated or triggered abilities on the stack (not spells).
-- `CardPredicate.IsArtifact`
-- `CardPredicate.IsBasicLand`
-- `CardPredicate.IsBattle`
-- `CardPredicate.IsColored` — One or more colors (the complement of IsColorless).
-- `CardPredicate.IsColorless`
-- `CardPredicate.IsCreature`
-- `CardPredicate.IsDoubleFaced` — The card is a **double-faced card** (CR 712.1) — it has a card face on each side rather than a Magic card back.
-- `CardPredicate.IsEnchantment`
-- `CardPredicate.IsInstant`
-- `CardPredicate.IsLand`
-- `CardPredicate.IsLegendary`
-- `CardPredicate.IsMonocolored`
-- `CardPredicate.IsMulticolored`
-- `CardPredicate.IsNonartifact`
-- `CardPredicate.IsNoncreature`
-- `CardPredicate.IsNonenchantment`
-- `CardPredicate.IsNonland`
-- `CardPredicate.IsNonlegendary`
-- `CardPredicate.IsNontoken`
-- `CardPredicate.IsPermanent` — Matches creature, artifact, enchantment, planeswalker, land
-- `CardPredicate.IsPlaneswalker`
-- `CardPredicate.IsSnow` — Snow supertype (CR 205.4g) — "snow land", "snow permanent", "snow spell".
-- `CardPredicate.IsSorcery`
-- `CardPredicate.IsToken`
-- `CardPredicate.IsTriggeredAbility` — Matches only triggered abilities on the stack (not activated abilities or spells).
-- `CardPredicate.ManaCostPayableWithManaSpent` — The card's mana cost could be paid by some amount of, or all of, the mana spent to activate the resolving ability (or cast the resolving spell) — Illusionary Mask's "a creature card in your hand wh…
-- `CardPredicate.ManaValueAtLeast(min: Int)`
-- `CardPredicate.ManaValueAtMost(max: Int)`
-- `CardPredicate.ManaValueAtMostColorsSpent(reference: EffectTarget.SingleEntity)` — Mana value at most the number of distinct *colors* of mana spent to cast a referenced entity (0–5).
-- `CardPredicate.ManaValueAtMostDynamic(amount: DynamicAmount)` — Mana value at most a resolved DynamicAmount.
-- `CardPredicate.ManaValueAtMostEntity(reference: EffectTarget.SingleEntity)` — Mana value at most that of a referenced entity.
-- `CardPredicate.ManaValueAtMostEntityManaSpent(reference: EffectTarget.SingleEntity)` — Mana value at most the amount of mana actually spent to cast a referenced entity.
-- `CardPredicate.ManaValueAtMostX` — Mana value at most the X chosen for the source spell/ability.
-- `CardPredicate.ManaValueEquals(value: Int)`
-- `CardPredicate.ManaValueEqualsDynamic(amount: DynamicAmount)` — Mana value *exactly* equal to a DynamicAmount resolved when the predicate is checked — the equality sibling of ManaValueAtMostDynamic, and the open-ended counterpart of the fixed ManaValueEquals /…
-- `CardPredicate.ManaValueEqualsX` — Mana value exactly equal to the number chosen for the source spell/ability.
-- `CardPredicate.ManaValueIsEven`
-- `CardPredicate.ManaValueIsOdd`
-- `CardPredicate.NameEquals(name: String)`
-- `CardPredicate.NameEqualsChosen(variableName: String)` — Matches cards whose name equals the value stored in `chosenValuesvariableName` — a card name chosen earlier in the pipeline (via com.wingedsheep.sdk.scripting.effects.OptionType.CARD_NAME or com.wi…
-- `CardPredicate.NameEqualsChosenComponent(slot: ChoiceSlot)` — Matches cards whose name equals a name **durably chosen by the source permanent** as it entered — read from that permanent's com.wingedsheep.engine.state.components.battlefield.CastChoicesComponent…
-- `CardPredicate.NameNotSharedWithControlledRoom` — Matches a card whose name is **not** shared with any Room the evaluating player controls (CR 709).
-- `CardPredicate.Not(predicate: CardPredicate)`
-- `CardPredicate.NotColor(color: Color)`
-- `CardPredicate.NotKeyword(keyword: Keyword)`
-- `CardPredicate.NotOfSourceChosenType` — Matches creatures that are NOT of the type chosen on the source permanent
-- `CardPredicate.NotSubtype(subtype: Subtype)`
-- `CardPredicate.Or(predicates: List<CardPredicate>)`
-- `CardPredicate.OriginallyPrintedInSet(setCode: String)` — Matches cards *originally printed* in the given set — i.e. whose canonical com.wingedsheep.sdk.model.CardDefinition.setCode equals setCode (case-insensitive), regardless of which printing is actual…
-- `CardPredicate.PowerAtLeast(min: Int)`
-- `CardPredicate.PowerAtMost(max: Int)`
-- `CardPredicate.PowerAtMostDynamic(amount: DynamicAmount)` — Power at most a DynamicAmount resolved when the predicate is checked — the power sibling of ManaValueAtMostDynamic and the open-ended counterpart of the fixed PowerAtMost ("power X or less, where X…
-- `CardPredicate.PowerAtMostEntity(reference: EffectTarget.SingleEntity)` — Power less than or equal to the projected power of a referenced entity.
-- `CardPredicate.PowerEquals(value: Int)`
-- `CardPredicate.PowerEqualsDynamic(amount: DynamicAmount)` — Power *exactly* equal to a DynamicAmount resolved when the predicate is checked — the dynamic counterpart of PowerEquals.
-- `CardPredicate.PowerGreaterThanBase` — Projected power strictly greater than the object's own base power — "a creature with power greater than its base power" (Kutzil, Malamet Exemplar; the Malamet cycle).
-- `CardPredicate.PowerGreaterThanEntity(reference: EffectTarget.SingleEntity)` — Power strictly greater than the projected power of a referenced entity.
-- `CardPredicate.PowerLessThanEntity(reference: EffectTarget.SingleEntity)` — Power strictly less than the projected power of reference (e.g. "a creature with lesser power" than the source — Rangers of Ithilien).
-- `CardPredicate.PowerOrToughnessAtLeast(min: Int)` — Power or toughness is at least the given value (OR logic)
-- `CardPredicate.PowerOrToughnessAtMost(max: Int)` — Power or toughness is at most the given value (OR logic)
-- `CardPredicate.SharesCardTypeWith(entity: EffectTarget.SingleEntity)` — Matches objects that share a **card type** with the referenced entity — "that shares a card type with it" (Confusion in the Ranks).
-- `CardPredicate.SharesCardTypeWithLinkedExile` — Matches objects that share a card type with **any** card exiled with the asking ability's source — "shares a card type with a card exiled with this creature" (Cemetery Illuminator).
-- `CardPredicate.SharesChosenColorWithSource` — Matches objects whose color set includes the color chosen on the source permanent (read from its CastChoicesComponent).
-- `CardPredicate.SharesColorWith(entity: EffectTarget.SingleEntity)` — Matches objects that share a color with the referenced entity
-- `CardPredicate.SharesColorWithPermanentYouControl(filter: GameObjectFilter)` — Matches objects that share a color with at least one permanent the evaluating player controls matching filter.
-- `CardPredicate.SharesColorWithRecipient` — Matches objects that share a color with the recipient of the in-flight damage, and are not that recipient.
-- `CardPredicate.SharesCreatureTypeWith(entity: EffectTarget.SingleEntity)` — Matches creatures that share a creature subtype with the referenced entity
-- `CardPredicate.SharesCreatureTypeWithSource` — Matches spells that share a creature subtype with the source permanent's projected types
-- `CardPredicate.SharesCreatureTypeWithTriggeringEntity` — Matches creatures that share a creature subtype with the triggering entity
-- `CardPredicate.SharesManaValueWith(entity: EffectTarget.SingleEntity)` — Matches objects whose mana value **equals** the referenced entity's mana value — "that shares a mana value with the exiled card" (Thought Prison).
-- `CardPredicate.SharesNameWith(entity: EffectTarget.SingleEntity)` — Matches objects whose name **equals** the referenced entity's name — "a land with the same name as the exiled card" (Extraplanar Lens).
-- `CardPredicate.SharesNameWithLinkedExile` — Matches objects whose **name** equals that of **any** card exiled with the asking ability's source — "spells with the same name as a card exiled with Circu" (Circu, Dimir Lobotomist).
-- `CardPredicate.SharesNameWithPermanentYouControl(filter: GameObjectFilter, excludeSelf: Boolean)` — Matches objects whose name equals that of at least one permanent the evaluating player controls matching filter.
-- `CardPredicate.TargetsMatching(subfilter: GameObjectFilter)` — Matches a spell or ability on the stack at least one of whose chosen targets matches subfilter.
-- `CardPredicate.TargetsPlayer(player: Player)` — Matches a spell or ability on the stack at least one of whose chosen targets is a player that player names, read relative to the filter's chooser — the player half of TargetsMatching, which skips p…
-- `CardPredicate.TotalPowerAndToughnessAtMost(max: Int)` — Total power and toughness (sum) is at most the given value
-- `CardPredicate.ToughnessAtLeast(min: Int)`
-- `CardPredicate.ToughnessAtMost(max: Int)`
-- `CardPredicate.ToughnessEquals(value: Int)`
-- `CardPredicate.ToughnessEqualsDynamic(amount: DynamicAmount)` — Toughness *exactly* equal to a DynamicAmount resolved when the predicate is checked — the dynamic counterpart of ToughnessEquals.
-- `CardPredicate.ToughnessGreaterThanPower` — Toughness is strictly greater than power
-
-## Condition
-
-- `APlayerControlsMostOfSubtype(subtype: Subtype)` — Condition: "If a player controls more subtype creatures than each other player" Used by Thoughtbound Primoc and similar Onslaught "tribal war" cards.
-- `AllConditions(conditions: List<Condition>)` — Condition: All of the sub-conditions must be met (AND)
-- `AnotherPermanentWithSameNameAsTarget(targetIndex: Int)` — Condition: "if another permanent with the same name as target is on the battlefield".
-- `AnyCondition(conditions: List<Condition>)` — Condition: Any of the sub-conditions must be met (OR)
-- `AnyEnteredOrWasCastFromExile` — Condition: "if one or more of them entered from exile or was cast from exile." The batch-enters, any-of counterpart of com.wingedsheep.sdk.scripting.conditions.TriggeringEntityEnteredOrWasCastFromG…
-- `AnyPlayerDealtCombatDamageThisTurnAtLeast(amount: Int)` — Condition: "a player was dealt amount or more combat damage this turn" — true when ANY single player (existential, including you) has accumulated at least amount combat damage this turn.
-- `BeforeAttackersDeclaredThisTurn` — Condition: "before attackers are declared" this turn — the game hasn't yet reached the declare attackers step of the turn's first combat phase (Master Warcraft's ruling: with several combat phases,…
-- `BlightWasPaid` — Condition: "If this spell's blight additional cost was paid" Used for Lorwyn Eclipsed cards (e.g., Cinder Strike) where the effect changes based on whether the optional Blight additional cost was a…
-- `CastChoiceIs(slot: ChoiceSlot, value: String)` — Condition: the value locked in for slot equals value (compared as text).
-- `CastChoiceMade(slot: ChoiceSlot)` — Condition: a value was locked in for slot when the source was cast / as it entered.
-- `CastTimeFlagSet(flag: String)` — Condition: the named cast-time capture flag was true *as the source spell was cast* (CR 601.2i).
-- `CollectionContainsMatch(collection: String, filter: GameObjectFilter)` — Condition: "if a card in the named collection matches filter" Checks whether any entity in a stored pipeline collection matches the given filter.
-- `CollectionSharesCardType(collection: String)` — Condition: "if two cards in the named collection share a card type".
-- `ColorIsMostCommon(color: Color)` — Condition: "As long as color is the most common color among all permanents, or is tied for most common".
-- `Compare(left: DynamicAmount, operator: ComparisonOperator, right: DynamicAmount)` — Generic numeric comparison condition.
-- `ControlledCreatureDiedThisTurnCondition` — Intervening-if condition (Rule 603.4): "if a creature died under your control this turn".
-- `ControllerTurnsTakenAtMost(threshold: Int)` — Condition: "it's threshold or less of the controller's turn of the game".
-- `CounterPutOnPermanentYouControlledThisTurn(counterType: CounterType?, player: Player)` — Condition: "if a counterType counter was put on a permanent under player's control this turn" — Fairgrounds Trumpeter's end-step gate.
-- `CounterRemovedFromPermanentYouControlledThisTurn(counterType: CounterType?, player: Player)` — Condition: "if a counterType counter was removed from a permanent player controlled this turn" — the first half of Churning Reservoir's activation gate.
-- `CreatureDiedThisTurnCondition` — Intervening-if condition (Rule 603.4): "if a creature died this turn".
-- `CreatureWithSubtypeDiedThisTurn(subtype: String, present: Boolean)` — Condition: "if a creature with (or without) the subtype subtype died this turn".
-- `EnchantedCreatureHasSubtype(subtype: Subtype)` — Condition: "If enchanted creature is a subtype" Used by auras like Lavamancer's Skill that have different effects based on the creature type of the enchanted creature.
-- `EnchantedCreatureIsLegendary` — Condition: "If enchanted creature is legendary" Used by auras whose continuous effects apply only while the enchanted creature has the legendary supertype.
-- `EntityMatches(entity: EffectTarget, filter: GameObjectFilter)` — Condition: "the entity matches filter".
-- `Escaped` — Condition: "if it escaped" (CR 702.138b — a spell or permanent "escaped" if that spell, or the spell that became that permanent as it resolved, was cast from a graveyard with an escape ability).
-- `ExiledAsCostHadSubtype(subtype: String)` — Condition: "if the exiled creature was a subtype" — reads what an **exile additional cost** (`Costs.additional.ExileCards`) just ate, for either a spell (Soul Exchange's "Put a +2/+2 counter on tha…
-- `Exists(player: Player, zone: Zone, filter: GameObjectFilter, negate: Boolean, excludeSelf: Boolean)` — Generic zone-presence condition.
-- `IsDay` — Condition: "if it's day" (CR 731).
-- `IsFirstCombatPhaseOfTurn` — Condition: "If it's the first combat phase of the turn." True while the active player is in a combat phase that is *not* an extra combat phase inserted by com.wingedsheep.sdk.scripting.effects.AddC…
-- `IsFirstEndStepOfTurn` — Condition: "If it's the first end step of the turn." True while the active player is in an end step that is *not* an extra end step inserted by com.wingedsheep.sdk.scripting.effects.AddAdditionalEn…
-- `IsFirstSpellPaidWithTreasureManaCastThisTurn` — Condition: "if this is the first spell you've cast this turn that mana from a Treasure was spent to cast." Used by Rain of Riches.
-- `IsInPhase(phases: List<Phase>, yoursOnly: Boolean)` — Condition: "If the current phase matches any of the listed phases" When `yoursOnly = true` (default), also requires that it's the controller's turn — i.e. "your main phase" means it's both your tur…
-- `IsInStep(steps: List<Step>, yoursOnly: Boolean)` — Condition: "If the current step matches any of the listed steps." When `yoursOnly = true` (default), also requires that it's the controller's turn — i.e. "your end step" means it's both your turn A…
-- `IsNight` — Condition: "if it's night" (CR 731) — the mirror of IsDay.
-- `IsNotYourTurn` — Condition: "If it's not your turn"
-- `IsOpponentsTurn` — Condition: "If it's an opponent's turn" — the active player is one of the controller's opponents.
-- `IsPlayersTurn(player: Player)` — Condition: "If it's player's turn" — the Player-parametric form of IsYourTurn, for a turn check relative to a player other than the ability's controller.
-- `IsYourTurn` — Condition: "If it's your turn"
-- `ManaSpentToCastIncludes(requiredWhite: Int, requiredBlue: Int, requiredBlack: Int, requiredRed: Int, requiredGreen: Int, requiredColorless: Int)` — Condition: "If {W}{W} was spent to cast it" (mana-spent gating) Used for Lorwyn Incarnation cycle (Catharsis, Deceit, Emptiness, etc.) where ETB triggers are gated on specific mana colors spent to…
-- `MayhemCostWasPaid` — Condition: "If this spell's Mayhem cost was paid" (CR 702.187, Marvel's Spider-Man).
-- `NoManaSpentToCast` — Condition: "if it wasn't cast or no mana was spent to cast it" — the standard free-cast payoff clause (Freestrider Commando, Satoru, the Infiltrator, etc.).
-- `NoManaSpentToCastEntered` — Condition: "if none of them were cast or no mana was spent to cast them" — the batch-enters variant of NoManaSpentToCast, evaluated over the permanents a batch trigger captured (the `PermanentsEnte…
-- `NotCondition(condition: Condition)` — Condition: The sub-condition must NOT be met
-- `NumberMatches(amount: DynamicAmount, property: NumberProperty)` — Unary numeric-predicate condition: evaluates amount and tests whether the resulting number satisfies property.
-- `OpponentSpellOnStack` — Condition: "If an opponent has cast a spell (it's on the stack)" Used for Portal counterspells like Mystic Denial that can only be cast in response to an opponent's spell.
-- `PermanentEnteredFaceDownThisTurn(player: Player)` — Resolution condition: "if a permanent entered the battlefield face down under player's control this turn".
-- `PermanentLeftBattlefieldThisTurn(player: Player)` — Intervening-if condition: "if a permanent player controlled left the battlefield this turn".
-- `PermanentTypeEnteredBattlefieldThisTurn(cardType: CardType, player: Player)` — Condition: "If a permanent of cardType entered the battlefield under player's control this turn." Pure event tracker — the permanent does not need to still be on the battlefield, still be of that t…
-- `PermanentWithCounterPutIntoGraveyardThisTurn(counterType: CounterType?)` — Condition: "if a permanent with a counterType counter on it was put into a graveyard this turn" — the second half of Churning Reservoir's activation gate.
-- `PlayerActivatedExhaustAbilitiesThisTurn(player: Player, atLeast: Int)` — Condition: "as long as player has activated atLeast or more exhaust abilities this turn" (CR 702.177).
-- `PlayerAttackedPlayerThisTurn(attacker: Player, defender: Player)` — Condition: "If attacker attacked defender this turn" (CR 508.6) — i.e. attacker declared one or more creatures as attackers whose defending player was defender (the player itself, or the controller…
-- `PlayerAttackedWithCreaturesThisTurn(player: Player, filter: GameObjectFilter, atLeast: Int)` — Condition: "If player attacked with atLeast or more creatures matching filter this turn".
-- `PlayerCastSpellsThisTurn(player: Player, filter: GameObjectFilter, atLeast: Int, fromZone: Zone?, fromZoneOtherThan: Zone?)` — Condition: "If player has cast atLeast or more spells matching filter this turn".
-- `PlayerCommittedCrimeThisTurn(player: Player)` — Condition: "If player has committed a crime this turn" (CR Outlaws of Thunder Junction — a player commits a crime as they cast a spell, activate an ability, or put a triggered ability on the stack…
-- `PlayerControlsMostPermanents(player: Player, filter: GameObjectFilter)` — True when player controls the most permanents matching filter, or is tied for the most, among all players (their count ≥ every player's).
-- `PlayerDrewCardsThisTurn(player: Player, atLeast: Int)` — Condition: "as long as player has drawn atLeast or more cards this turn".
-- `PlayerHasCitysBlessing(player: Player)` — Intervening-if / static condition: "if player has the city's blessing".
-- `PlayerHasEnduringStory(player: Player)` — Intervening-if / static condition: "if player has an enduring story".
-- `PlayerHasMostLife(player: Player)` — True when player has the most life, or is tied for the most life, among all players (their life total ≥ every player's).
-- `PlayerPlayedLandThisTurn(player: Player, fromZone: Zone?, fromZoneOtherThan: Zone?)` — Condition: "if player has played a land this turn" (CR 305.1 special land-play action), reading the per-player `LandsPlayedThisTurnComponent` provenance recorded by `PlayLandHandler`.
-- `PlayerTurnedPermanentFaceUpThisTurn(player: Player)` — Resolution condition: "if player turned a permanent face up this turn".
-- `PutCounterKindOnCreatureThisTurn(counterType: CounterType?, player: Player)` — Condition: "as long as player has put one or more counterType counters on a creature this turn" — Sigardian Paladin's trample-and-lifelink gate.
-- `RingHasTemptedPlayerAtLeast(times: Int, player: Player)` — Intervening-if / resolution condition: "if the Ring has tempted player times or more times this game" (CR 701.54).
-- `SacrificedPermanentHadSubtype(subtype: String)` — Condition: "If a subtype was sacrificed this way" Checks whether any permanent sacrificed as part of the cost had the given subtype (using projected subtypes snapshotted at time of sacrifice).
-- `SacrificedPermanentWasLegendary` — Condition: "If the sacrificed permanent was legendary." Reads `EffectContext.sacrificedPermanents` (snapshots captured at cost-payment time or by a same-spell sacrifice effect like a symmetric edic…
-- `SacrificedPermanentWasSuspected` — Condition: "If the sacrificed creature was suspected." (CR 701.60a) The suspect sibling of SacrificedPermanentWasLegendary, reading the same `EffectContext.sacrificedPermanents` snapshots — here th…
-- `SneakCostWasPaid` — Condition: "If this spell's sneak cost was paid" (CR 702.190).
-- `SourceAbilityResolvedNTimesThisTurn(count: Int)` — Condition: "if this is the Nth time this ability has resolved this turn" Checks the AbilityResolutionCountThisTurnComponent on the source entity.
-- `SourceCastForImpending` — Condition: "If this permanent's impending cost was paid" (CR 702.176a).
-- `SourceChosenModeIs(modeId: String)` — Condition: "If the chosen mode is modeId".
-- `SourceDealtDamageToPlayerThisTurn(player: Player)` — Condition: the effect's source dealt damage — combat or noncombat — to player this turn.
-- `SourceForetoldOnPriorTurn` — Gate condition for the cast-from-exile permission granted by foretell (CR 702.143).
-- `SourceInZone(zones: Set<Zone>)` — Condition: "if this is in zones" — where the ability's source object sits *right now*.
-- `SourceIsBlockingOrBlockedBySubtype(subtypes: List<String>)` — Condition: "as long as it's blocking or blocked by a creature of one of subtypes".
-- `SourceIsModified` — Condition: "As long as this permanent is modified" Per CR 700.4, a permanent is modified if it has one or more counters on it, one or more Equipment attached, or is enchanted by one or more Auras i…
-- `SourceIsRingBearer` — Condition: "if this creature is your Ring-bearer" (CR 701.54e).
-- `SourcePlottedOnPriorTurn` — Gate condition for the cast-from-exile permission granted by plot.
-- `SourceReturnedAsEnchantment` — Condition: "this permanent returned via its Enduring ability" (Duskmourn Glimmer cycle).
-- `TargetIsCreatureCard(index: Int)` — Condition: "if the target is a creature card" — tests the *underlying card's* card type, reading the base com.wingedsheep.sdk.model.CardDefinition characteristics rather than projected state.
-- `TargetIsPlayer(targetIndex: Int)` — Condition: "if target is a player".
-- `TargetIsSource(targetIndex: Int)` — Condition: "if target is this permanent (the source)".
-- `TargetIsSpellOnStack(index: Int)` — Condition: the chosen target at index is a **spell on the stack** (a `ChosenTarget.Spell`), as opposed to a permanent on the battlefield.
-- `TargetIsTapped(targetIndex: Int)` — Condition: "if target is tapped".
-- `TargetMarkedDamageExceedsToughness(targetIndex: Int)` — Condition: "if excess damage was dealt this way" — true when the target creature's marked damage now strictly exceeds its (projected) toughness.
-- `TargetSharesMostCommonColor(targetIndex: Int)` — Condition: "if target shares a color with the most common color among all permanents or a color tied for most common".
-- `ThisAbilityActivatedThisTurnAtLeast(count: Int)` — True when the activated ability currently resolving has been activated at least count times this turn, counting the activation that is resolving right now.
-- `TriggeringEntityEnteredOrWasCastFromGraveyard` — Condition: "if it entered or was cast from a graveyard".
-- `TriggeringEntityHadCounters` — Condition: "if it had counters on it" (intervening-if for dies/leaves triggers).
-- `TriggeringEntityHadMinusOneMinusOneCounter` — Condition: "if it had a -1/-1 counter on it" (intervening-if for dies/leaves triggers).
-- `TriggeringEntityWas(filter: GameObjectFilter)` — Condition: "if it was filter" — an intervening-if for dies/leaves triggers that matches the triggering permanent's **last-known** type line (CR 603.10, 608.2h): the projected card types and subtype…
-- `TriggeringEntityWasCast` — Condition: "if you cast it" referring to the *triggering* entity (not the ability's source).
-- `TriggeringEntityWasHistoric` — Condition: "if it was historic" (legendary, artifact, or Saga).
-- `TriggeringEntityWasNotPutByThisSource` — Condition: "if it wasn't put onto the battlefield with this ability".
-- `TriggeringPlayerIs(player: Player)` — Condition: "the player who triggered this ability is player".
-- `TriggeringSpellCastWithoutPayingMana` — Condition: "if no mana was spent to cast it" — about the TRIGGERING spell (the triggering-entity counterpart of NoManaSpentToCast, which reads the ability source's own cast record).
-- `TriggeringSpellHasSingleTarget` — Condition: "with a single target" — true iff the triggering spell or ability has exactly one target chosen.
-- `TriggeringSpellManaSpentAtLeast(amount: Int)` — Condition: "if at least amount mana was spent to cast it" — about the TRIGGERING spell.
-- `VoidCondition` — Condition: "if a nonland permanent left the battlefield this turn or a spell was warped this turn".
-- `WasCast` — Condition: "If you cast this spell" (from any zone).
-- `WasCastFromHand` — Condition: "If you cast this spell from your hand" Used for Phage the Untouchable's ETB trigger condition.
-- `WasCastFromZone(zone: Zone)` — Condition: "If this spell was cast from zone" Used for flashback spells and other zone-dependent effects.
-- `WasKicked` — Condition: "If this spell was kicked" Used for kicker spells like Shivan Fire where the effect changes based on whether the kicker cost was paid.
-- `WaterbendWasPaid` — Condition: "If this spell's additional cost was paid" — for the optional spell-level **waterbend** additional cost (Avatar: The Last Airbender).
-- `WebSlungCostWasPaid` — Condition: "If this spell was cast using web-slinging" (CR 702.188).
-- `YouChoseOtherCreatureAsRingBearer` — Condition: "if you chose a creature other than this as your Ring-bearer" (CR 701.54a).
-- `YouControlMostOfChosenType(chosenValueKey: String)` — Condition: "If you control more creatures of the chosen type than each other player" Used by Peer Pressure-style effects where a creature type is chosen via ChooseOptionEffect and stored in EffectC…
-- `YouControlSource` — Condition: "If you control this permanent" Checks whether the effect's controllerId matches the source's controller.
-- `YouDiscardedThisCardThisTurn` — Gate condition for the Mayhem keyword's cast-from-graveyard permission (CR 702.187b).
-- `YouSacrificedPermanentThisWay` — Condition: "If you sacrificed a permanent this way." Reads `EffectContext.sacrificedPermanents` and matches when at least one snapshot was controlled by the source's controller at the moment of sac…
-- `YouWereAttackedThisStep` — Condition: "If you've been attacked this step" Used for cards like Defiant Stand and Harsh Justice that can only be cast during the declare attackers step if you've been attacked.
-- `YouWonTheClash` — Condition: **"if you won"** — the rider on a *"Whenever you clash"* triggered ability (CR 701.30d: a player wins a clash if the card they revealed has a higher mana value than every other card reve…
-
-## EventPattern
-
-- `EventPattern.AbilityActivatedEvent(player: Player, targetMatch: Recipient?, sourceFilter: GameObjectFilter?, requireNoTapInCost: Boolean, requireExhaust: Boolean, excludeManaAbilities: Boolean, includeManaAbilities: Boolean, requireLoyalty: Boolean, minLoyaltyRemoved: Int)` — When a player activates an activated ability.
-- `EventPattern.AbilityTriggeredEvent(player: Player, requireAttackCause: Boolean, sourceFilter: GameObjectFilter?)` — When a triggered ability is put onto the stack (CR 603.3), scoped by whose ability it is and — optionally — by what caused it to trigger.
-- `EventPattern.AnyOf(events: List<EventPattern>)` — Matches when any constituent event pattern matches.
-- `EventPattern.AttackEvent(filter: GameObjectFilter?, requires: Set<AttackPredicate>)` — When a creature attacks.
-- `EventPattern.BecameMonstrousEvent(filter: GameObjectFilter)` — When a permanent becomes monstrous (CR 701.37b) — a monstrosity ability resolved on a permanent that wasn't yet monstrous.
-- `EventPattern.BecameRenownedEvent(filter: GameObjectFilter)` — When a permanent becomes renowned (CR 702.112b) — a renown trigger resolved on it.
-- `EventPattern.BecameSaddledEvent(filter: GameObjectFilter, firstTimeEachTurn: Boolean)` — When a permanent becomes saddled (CR 702.171b) — a Saddle ability resolved on it.
-- `EventPattern.BecomesAttachedEvent(attachmentFilter: GameObjectFilter, attachmentController: Player, attachedToFilter: GameObjectFilter)` — When an Aura, Equipment, or Fortification becomes attached to a permanent or player (CR 603.2f — "becomes" triggers fire only at the moment of attaching, not on a state that already exists, and not…
-- `EventPattern.BecomesBlockedEvent(filter: GameObjectFilter?)` — When a creature becomes blocked.
-- `EventPattern.BecomesPlottedEvent` — When this card becomes plotted (Outlaws of Thunder Junction).
-- `EventPattern.BecomesTargetEvent(targetFilter: GameObjectFilter, byYou: Boolean, byOpponent: Boolean, firstTimeEachTurn: Boolean, includeSpellTargets: Boolean, spellsOnly: Boolean, includePlayerTargets: Boolean, abilitiesOnly: Boolean, sourceFilter: GameObjectFilter?, backupAbilitiesOnly: Boolean, targetsOnlyIt: Boolean)` — When a permanent (or, opt-in, a spell on the stack or a player) becomes the target of a spell or ability.
-- `EventPattern.BecomesUnattachedEvent(attachmentFilter: GameObjectFilter, attachmentController: Player, unattachedFromFilter: GameObjectFilter)` — When an Aura, Equipment, or Fortification becomes **unattached** from a permanent — the mirror of BecomesAttachedEvent.
-- `EventPattern.BecomesUnblockedEvent` — When this attacking creature reaches the end of the Declare Blockers step with no blockers assigned to it (CR 509.3g — "attacks and isn't blocked").
-- `EventPattern.BendPerformedEvent(player: Player, types: Set<BendType>)` — Whenever player performs one of the four elemental bending keyword actions in types (CR 701.65b Airbend / 701.66b Earthbend / 701.67c Waterbend / 702.189b Firebending).
-- `EventPattern.BlockEvent(filter: GameObjectFilter?, attackerFilter: GameObjectFilter?, minBlockedAttackers: Int, batch: Boolean)` — When a creature blocks.
-- `EventPattern.BlocksOrBecomesBlockedByEvent(partnerFilter: GameObjectFilter?, oncePerCombat: Boolean)` — When this creature blocks or becomes blocked by a creature matching partnerFilter.
-- `EventPattern.CardPlayedFromPermissionEvent` — When a card is played (cast as a spell or played as a land) using a specific "you may play this card" permission — i.e. an impulse-style "exile … you may play that card this turn" grant.
-- `EventPattern.CardRevealedFromDrawEvent(cardFilter: GameObjectFilter?)` — When a card is revealed from the first draw of a turn.
-- `EventPattern.CardsLeftYourGraveyardEvent(filter: GameObjectFilter)` — Whenever one or more cards matching filter leave your graveyard.
-- `EventPattern.CardsPutIntoExileEvent(fromZones: Set<Zone>, filter: GameObjectFilter, includeTokens: Boolean)` — Whenever one or more cards matching filter are put into exile from any of fromZones.
-- `EventPattern.CardsPutIntoGraveyardFromLibraryEvent(filter: GameObjectFilter)` — Whenever one or more cards matching filter are put into your graveyard from your library.
-- `EventPattern.CardsPutIntoYourGraveyardEvent(filter: GameObjectFilter, firstTimeEachTurn: Boolean)` — Whenever one or more cards matching filter are put into your graveyard from anywhere.
-- `EventPattern.CaseSolvedEvent(player: Player)` — Whenever player solves a Case (CR 719.3a) — fires as that Case's "To solve" trigger resolves and the designation is stamped, which is exactly what the printed ruling for Case File Auditor says ("tr…
-- `EventPattern.CastThisSpellEvent` — When you cast this spell — a "cast trigger" (CR 603.2) that fires on the spell's *own* cast while it is on the stack; the ability travels with the spell.
-- `EventPattern.ChampionedEvent` — When a permanent is championed with this permanent (CR 702.72c) — "a permanent is 'championed' by another permanent if the latter exiles the former as the direct result of a champion ability." Mist…
-- `EventPattern.ClashedEvent(player: Player, requireWin: Boolean)` — Whenever player clashes (CR 701.30) — "Whenever you clash, …" (Entangling Trap, Rebellion of the Flamekin) and, with requireWin, "Whenever you clash **and win**, …" (Sylvan Echoes).
-- `EventPattern.CommitCrimeEvent(player: Player)` — When a player commits a crime (Outlaws of Thunder Junction).
-- `EventPattern.ConnivedEvent(filter: GameObjectFilter?)` — Whenever a permanent matching filter connives (CR 701.50).
-- `EventPattern.ControlChangeEvent(direction: ControlChangeDirection, requireOpponent: Boolean)` — When control of a permanent changes, in a given direction relative to the ability's controller (CR 800.4 / 720).
-- `EventPattern.CounterPlacementEvent(counterType: CounterType?, recipient: Recipient)` — When counters would be placed on a permanent.
-- `EventPattern.CounterSpellEvent(counterer: Player)` — When a spell or ability controlled by counterer would counter a spell.
-- `EventPattern.CountersPlacedEvent(counterType: CounterType?, filter: GameObjectFilter, firstTimeEachTurn: Boolean, placedBy: Player?, batch: Boolean, includePlayers: Boolean, recipient: Player?)` — When one or more counters of a specific type are placed on a permanent.
-- `EventPattern.CountersRemovedEvent(counterType: CounterType?, filter: GameObjectFilter, lastRemoved: Boolean, byDamagePrevention: Boolean)` — When one or more counters of a specific type are **removed** from a permanent — the mirror of CountersPlacedEvent.
-- `EventPattern.CreatureDealtDamageBySourceDiesEvent(sourceFilter: GameObjectFilter?, dyingFilter: GameObjectFilter?)` — Whenever a creature dealt damage this turn by a matching source dies.
-- `EventPattern.CreatureTurnedFaceUpEvent(player: Player, filter: GameObjectFilter)` — When a creature is turned face up.
-- `EventPattern.CreaturesAttackYouEvent(minAttackers: Int, includePlaneswalkersYouControl: Boolean)` — When one or more creatures attack the trigger's controller (the player).
-- `EventPattern.CreaturesAttackYourOpponentEvent(minAttackers: Int)` — When one or more creatures attack a player who is an opponent of the trigger's controller.
-- `EventPattern.CreaturesYouControlDiedEvent(filter: GameObjectFilter, excludeSelf: Boolean)` — Whenever one or more creatures you control die.
-- `EventPattern.CrewsEvent` — Whenever this creature crews a Vehicle.
-- `EventPattern.CycleEvent(player: Player)` — When a card is cycled.
-- `EventPattern.DamageEvent(recipient: Recipient, source: GameObjectFilter, damageType: DamageType, amount: AmountFilter)` — When damage would be dealt (used by replacement effects).
-- `EventPattern.DamagePreventedEvent` — When a "prevent the next damage from a chosen source" shield prevents damage this way (Deflecting Palm, New Way Forward).
-- `EventPattern.DamageReceivedEvent(source: GameObjectFilter?, recipient: GameObjectFilter?)` — When a permanent is dealt damage.
-- `EventPattern.DealsDamageEvent(damageType: DamageType, recipient: Recipient, sourceFilter: GameObjectFilter?, requires: Set<DamagePredicate>, requireExcess: Boolean, batch: Boolean)` — When a source deals damage.
-- `EventPattern.DiscardEvent(player: Player, cardFilter: GameObjectFilter?, batch: Boolean)` — When a player would discard a card.
-- `EventPattern.DiscoveredEvent(player: Player)` — Whenever player discovers (CR 701.57).
-- `EventPattern.DoorUnlockedEvent(player: Player)` — A door of a Room becomes unlocked (CR 709.5h).
-- `EventPattern.DrawCardsEvent(player: Player, amount: Int)` — When a player would draw one or more cards.
-- `EventPattern.DrawEvent(player: Player, exceptFirstInDrawStep: Boolean)` — When a player draws a card.
-- `EventPattern.EvidenceCollectedEvent(player: Player)` — Whenever player collects evidence (CR 701.59).
-- `EventPattern.ExertedAsItAttacksEvent` — "When you do" after "you may exert this creature as it attacks" (CR 701.43d) — the triggered ability linked to com.wingedsheep.sdk.scripting.ExertAsItAttacks (CR 607.2h).
-- `EventPattern.ExpendEvent(threshold: Int, player: Player)` — When you expend N — i.e., you spend your Nth total mana to cast spells during a turn.
-- `EventPattern.ExploitedEvent(player: Player, requireNontokenExploited: Boolean)` — Whenever a creature exploits a creature (CR 702.110b) — a creature "exploits a creature" when the controller of its exploit ability sacrifices a creature as that ability resolves.
-- `EventPattern.ExploredEvent(filter: GameObjectFilter?, revealedType: ExploreReveal)` — Whenever a permanent matching filter explores (CR 701.44), optionally gated by whether the revealed card was a land (revealedType).
-- `EventPattern.ExtraTurnEvent(player: Player)` — When a player would take an extra turn.
-- `EventPattern.ForagedEvent(player: Player)` — Whenever player forages — CR 701.59a, "Exile three cards from your graveyard or sacrifice a Food." The sibling of EvidenceCollectedEvent in every respect that matters, and modelled on it deliberately.
-- `EventPattern.GiftGivenEvent(player: Player)` — When a player gives a gift (Bloomburrow gift mechanic).
-- `EventPattern.InvestigatedEvent(player: Player, firstTimeEachTurn: Boolean)` — Whenever player investigates — CR 701.16a, "create a Clue token".
-- `EventPattern.LandPlayedEvent(fromZoneOtherThan: Zone?, player: Player)` — Whenever player plays a land (CR 305.1 — the special land-play action).
-- `EventPattern.LandTappedForMana(player: Player, landFilter: GameObjectFilter?)` — When a player taps a land for mana (a land's mana ability resolves).
-- `EventPattern.LeaveBattlefieldWithoutDyingEvent(filter: GameObjectFilter, excludeSelf: Boolean)` — Whenever one or more creatures you control leave the battlefield without dying.
-- `EventPattern.LifeGainEvent(player: Player, firstTimeEachTurn: Boolean)` — When a player would gain life.
-- `EventPattern.LifeLossEvent(player: Player)` — When a player would lose life.
-- `EventPattern.LifePaymentEvent(player: Player)` — When a player would **pay** life — life spent to satisfy a cost (CR 118.8), as opposed to life lost to damage or to a "loses N life" effect.
-- `EventPattern.ManifestedDreadEvent(player: Player)` — Whenever a player manifests dread (CR 701.60).
-- `EventPattern.MillEvent(player: Player)` — When a player would mill one or more cards (CR 701.13).
-- `EventPattern.NthCardDrawnEvent(nthCard: Int, player: Player)` — Fires on a `CardsDrawnEvent` when the drawing player's per-turn draw count crosses the specified threshold (CR 121.2 — each card drawn is an individual draw, so a single multi-card draw fires at mo…
-- `EventPattern.NthSpellCastEvent(nthSpell: Int, player: Player, spellFilter: GameObjectFilter?)` — When a player casts their Nth spell in a turn.
-- `EventPattern.OneOrMoreDealCombatDamageToPlayerEvent(sourceFilter: GameObjectFilter, orBattle: Boolean)` — Whenever one or more creatures matching sourceFilter you control deal combat damage to a player.
-- `EventPattern.OneOrMoreDealCombatDamageToYouEvent(sourceFilter: GameObjectFilter)` — Whenever one or more creatures matching sourceFilter deal combat damage to *you* (the trigger's controller).
-- `EventPattern.OpponentsDealtCombatDamageEvent` — Whenever one or more of *your opponents* (the trigger controller's opponents, CR 102.3) are dealt combat damage.
-- `EventPattern.PermanentsEnteredEvent(filter: GameObjectFilter, excludeSource: Boolean)` — Whenever one or more permanents matching a filter you control enter the battlefield.
-- `EventPattern.PermanentsSacrificedEvent(filter: GameObjectFilter, sacrificedBy: Player, perPermanent: Boolean)` — Whenever you sacrifice one or more permanents matching a filter.
-- `EventPattern.PhasesInEvent(filter: GameObjectFilter?)` — When a permanent phases in (Rule 702.26).
-- `EventPattern.PlayerLostGameEvent(player: Player)` — When a player loses the game (CR 104.3 — life 0, drawing from an empty library, poison, commander damage, or a "loses the game" effect).
-- `EventPattern.ProliferatedEvent(player: Player)` — Whenever a player proliferates (CR 701.34) — "Whenever you proliferate, …" (Scheming Aspirant, Ezuri, Stalker of Spheres, Voidwing Hybrid from the graveyard).
-- `EventPattern.RingTemptedEvent(player: Player, requireBearerChosen: Boolean)` — Whenever the Ring tempts a player (CR 701.54d).
-- `EventPattern.RoomFullyUnlockedEvent(player: Player)` — Whenever a player fully unlocks a Room (Duskmourn mechanic).
-- `EventPattern.SaddlesEvent` — Whenever this creature saddles a Mount.
-- `EventPattern.SagaChapterResolvedEvent(player: Player, finalChapterOnly: Boolean)` — Whenever a Saga chapter ability resolves.
-- `EventPattern.ScriedEvent(player: Player)` — Whenever a player scries (CR 701.22).
-- `EventPattern.ScriedOrSurveiledEvent(player: Player)` — Whenever a player scries **or** surveils (CR 701.22 / 701.25) — the combined look-at-top trigger used by "Whenever you scry or surveil, …" (Matoya, Archon Elder).
-- `EventPattern.ScryEvent(player: Player)` — When a player would scry a number of cards (CR 701.22).
-- `EventPattern.SearchLibraryEvent(player: Player)` — Whenever player searches their library (CR 701.23).
-- `EventPattern.ShuffleLibraryEvent(player: Player)` — Whenever a spell or ability causes player to shuffle their library (CR 701.24).
-- `EventPattern.SpellCastEvent(spellFilter: GameObjectFilter, player: Player, requires: Set<SpellCastPredicate>)` — When a spell is cast.
-- `EventPattern.SpellCopiedEvent(spellFilter: GameObjectFilter, player: Player)` — When a spell is copied — "whenever you copy an instant or sorcery spell".
-- `EventPattern.SpellOrAbilityOnStackEvent` — When a spell or ability is put onto the stack.
-- `EventPattern.StateConditionMetEvent` — Synthetic "trigger" event used to wrap a StateTriggeredAbility's effect into a TriggeredAbility when the engine enqueues a state trigger onto the stack (CR 603.8).
-- `EventPattern.StepEvent(step: Step, player: Player)` — At the beginning of a step.
-- `EventPattern.SurveiledEvent(player: Player)` — Whenever a player surveils (CR 701.25).
-- `EventPattern.TapEvent(filter: GameObjectFilter?, batch: Boolean, tapper: Player?, reason: TapReason?, firstTimeEachTurn: Boolean)` — When a permanent becomes tapped.
-- `EventPattern.TargetsChosenEvent(player: Player)` — When a player chooses one or more targets.
-- `EventPattern.TokenCreationEvent(controller: Player, tokenFilter: GameObjectFilter?)` — When tokens would be created.
-- `EventPattern.TrainedEvent` — When a creature trains (CR 702.149c) — "'When this creature trains' means 'When a resolving training ability puts one or more +1/+1 counters on this creature.'" The training payoff of Savior of Oll…
-- `EventPattern.TransformEvent(intoBackFace: Boolean?, filter: GameObjectFilter)` — When a permanent transforms (CR 701.27).
-- `EventPattern.TurnBeginEvent(player: Player)` — Replacement-only interception before a turn begins; separate from beginning a step.
-- `EventPattern.TurnFaceUpEvent` — When a permanent is turned face up.
-- `EventPattern.UntapEvent(filter: GameObjectFilter?, batch: Boolean)` — When a permanent becomes untapped.
-- `EventPattern.YouAttackEvent(minAttackers: Int, attackerFilter: GameObjectFilter?, player: Player)` — When you attack with at least minAttackers creatures.
-- `EventPattern.ZoneChangeEvent(filter: GameObjectFilter, from: Zone?, to: Zone?, excludeTo: Zone?, excludeSacrifice: Boolean, requireCraftMaterial: Boolean)` — When an object changes zones.
-
-## StatePredicate
-
-- `StatePredicate.ActivatedThisTurn` — One of its activated abilities was activated this turn — loyalty, mana, crew or any other (Cut Short's "planeswalker that was activated this turn").
-- `StatePredicate.And(predicates: List<StatePredicate>)`
-- `StatePredicate.AttachedTo(filter: GameObjectFilter)` — Attached to a permanent that matches filter.
-- `StatePredicate.AttachedToCardType(cardType: CardType)` — Attached to a permanent whose card matches the given top-level type.
-- `StatePredicate.AttackedABattleThisTurn` — Was declared as attacking a **battle** at least once during the current turn — "as long as it attacked a battle this turn" (War Historian).
-- `StatePredicate.AttackedLastTurn` — Was declared as an attacker during its controller's **most recent own turn** — "it attacked during your last turn".
-- `StatePredicate.AttackedThisCombat` — Was declared as an attacker at least once during the current combat (CR 508.1).
-- `StatePredicate.AttackedThisTurn` — Was declared as an attacker at least once during the current turn (set during the declare-attackers step, CR 508.1).
-- `StatePredicate.BecameTappedOnlyOnceThisTurn` — This permanent has **become tapped exactly once so far this turn** — the live, state-side reading of "if it's the first time that creature has become tapped this turn" (Captain America, Living Lege…
-- `StatePredicate.BlockedOrWasBlockedByEntityThisTurn(reference: EffectTarget.SingleEntity)` — This creature blocked, or was blocked by, the creature reference names at some point during the current turn — "destroy all creatures that blocked or were blocked by **it** this turn" (Gaze of the…
-- `StatePredicate.BlockedOrWasBlockedByLegendaryThisTurn` — This creature blocked, or was blocked by, a legendary creature at some point during the current turn.
-- `StatePredicate.BlockedThisCombat` — Was declared as a blocker at least once during the current combat (CR 509.1).
-- `StatePredicate.BlockedThisTurn` — Was declared as a blocker at least once **this turn** (CR 509.1).
-- `StatePredicate.ControlledSinceTurnBegan` — Controlled by its current controller without interruption since this turn began, regardless of haste.
-- `StatePredicate.ControllerControls(filter: GameObjectFilter)` — The candidate's *controller* controls at least one permanent matching filter — "target creature whose controller controls an Island" (Seasinger).
-- `StatePredicate.ControllerDealtCombatDamageBySourceThisTurn` — Controlled by a player the effect's *source* dealt combat damage to this turn — the mirror of DealtCombatDamageToSourceControllerThisTurn.
-- `StatePredicate.CouldNotHaveAttackedThisTurn` — The creature **couldn't have been declared as an attacker** this turn — the "except for creatures that couldn't attack" clause of Season of the Witch, which spares a creature that had no choice in…
-- `StatePredicate.CreatedBySource` — A token that was *created by the effect's source permanent* — its provenance creator id (the `CreatedByComponent` stamped when a `CreateTokenEffect` with `stampCreator = true` made it) equals the s…
-- `StatePredicate.CrewedOrSaddledBySourceThisTurn` — Vehicle/Mount that was crewed (CR 702.122) or saddled (CR 702.171) *by* the effect's source creature this turn — i.e. the source was one of the creatures tapped to pay this permanent's Crew/Saddle…
-- `StatePredicate.CrewedOrSaddledSourceThisTurn` — Creature that crewed (CR 702.122) or saddled (CR 702.171) the effect's source permanent this turn — i.e. one of the creatures tapped to pay that permanent's Crew/Saddle cost.
-- `StatePredicate.DealtCombatDamageToSourceControllerThisTurn` — Dealt combat damage *this turn* to the player who controls the effect's source.
-- `StatePredicate.DealtDamageToSourceControllerThisTurn` — Dealt damage — combat or noncombat — *this turn* to the player who controls the effect's source: the any-damage sibling of DealtCombatDamageToSourceControllerThisTurn.
-- `StatePredicate.EnteredThisTurn` — Entered the battlefield this turn (has summoning sickness if creature)
-- `StatePredicate.ExiledWithSource` — The candidate card is one this effect's source permanent exiled — i.e. its entity id is recorded in the source's `LinkedExileComponent` (the same linkage set by `RedirectZoneChange(linkToSource = t…
-- `StatePredicate.HasAnyCounter` — Has any counter of any type
-- `StatePredicate.HasCounter(counterType: CounterType, minCount: Int)` — Has at least minCount counters of the specified type.
-- `StatePredicate.HasDealtCombatDamageToPlayer` — Has dealt combat damage to a player (ever, since entering the battlefield)
-- `StatePredicate.HasDealtDamage(thisTurnOnly: Boolean, combatOnly: Boolean)` — This permanent has *dealt* damage — the active voice, mirroring WasDealtDamageThisTurn's passive one.
-- `StatePredicate.HasDisguiseAbility` — Has a **disguise** ability (CR 702.168) — the printed keyword, read off the card definition, so it answers the same in every zone.
-- `StatePredicate.HasGreatestManaValueAmongAllCreatures` — Has the greatest mana value among *all* creatures on the battlefield (global scope, both players), not just the ones its controller controls.
-- `StatePredicate.HasGreatestPower` — Has the greatest power among creatures its controller controls
-- `StatePredicate.HasLeastManaValueAmong(candidates: GameObjectFilter)` — Has the least mana value among battlefield permanents matching candidates.
-- `StatePredicate.HasLeastPower` — Has the least power among creatures its controller controls
-- `StatePredicate.HasLeastPowerAmongAllCreatures` — Has the least power among *all* creatures on the battlefield (global scope, both players), not just the ones its controller controls.
-- `StatePredicate.HasLockedDoor` — A Room permanent (CR 709.5) that currently has at least one locked door — i.e. at least one half without its "unlocked" designation (CR 709.5c).
-- `StatePredicate.HasManaAbility` — A battlefield permanent currently has a mana ability, whether or not it can be activated.
-- `StatePredicate.HasMorphAbility` — Has a morph ability (has MorphDataComponent)
-- `StatePredicate.HasSingleTarget` — A spell or ability on the stack with exactly one chosen target — the "with a single target" qualifier (Hydroelectric Specimen's "target instant or sorcery spell with a single target").
-- `StatePredicate.InSameBandAsSource` — In the same combat band as the effect's source — i.e. the source creature itself, or a creature sharing the source's band id (CR 702.22).
-- `StatePredicate.InZone(zone: Zone)` — The object is in zone *right now* — a zone-agnostic, current-location test.
-- `StatePredicate.IsAttachedToBySource` — The candidate permanent is the permanent the effect's source is attached to — i.e. the creature/permanent enchanted or equipped by the source (read from the source's `AttachedToComponent`).
-- `StatePredicate.IsAttachedToSource` — The candidate is an Aura/Equipment currently *attached to* the effect's source permanent — the mirror of IsAttachedToBySource.
-- `StatePredicate.IsAttacking`
-- `StatePredicate.IsAttackingABattle` — Attacking a **battle** rather than a player or planeswalker (Rampaging Geoderm: "If it's attacking a battle, put a +1/+1 counter on it instead").
-- `StatePredicate.IsAttackingAlone` — Attacking, and no other creature is attacking (CR 506.5 — "a creature is attacking alone if it's attacking but no other creatures are").
-- `StatePredicate.IsAttackingAnOpponent` — Attacking one of *your* opponents — the player, not their planeswalkers or battles (Oviya, Automech Artisan: "Each creature that's attacking one of your opponents has trample").
-- `StatePredicate.IsAttackingDefenderOf(reference: EffectTarget.SingleEntity)` — Attacking the player, planeswalker, or battle defended by the reference's controller/team.
-- `StatePredicate.IsAttackingEnchantedPlayer` — Attacking the player the asking ability's *source* is attached to — "creatures attacking enchanted player" (Curse of Hospitality).
-- `StatePredicate.IsAttackingYouOrYourPlaneswalkers`
-- `StatePredicate.IsBlocked` — Attacker with blocked status, even after all its blockers leave combat
-- `StatePredicate.IsBlocking`
-- `StatePredicate.IsBlockingEntity(reference: EffectTarget.SingleEntity)` — Blocking the creature reference names, read live from combat state (CR 509) — "each creature blocking **it**", where "it" is a role the ability names rather than its source or a loop variable: Ib H…
-- `StatePredicate.IsBlockingIterationEntity` — Blocking the entity an enclosing `ForEachInGroup` is iterating over — "creatures you control blocking **that creature**" (Tidal Flats), where "that creature" is the loop's current attacker rather t…
-- `StatePredicate.IsBlockingSource` — Creature that is blocking the effect's source — i.e. a blocker whose blocked-attacker set contains the source entity supplied in the evaluation context.
-- `StatePredicate.IsCombatPairedWithSource` — Creature that is blocking the effect's source **or** being blocked by it — the live CR 509 pairing in either direction, read off the blocked-attacker sets rather than a snapshot.
-- `StatePredicate.IsCommander` — Is a **commander** — any player's (CR 903.3).
-- `StatePredicate.IsEnchanted` — Has at least one Aura attached — the MTG adjective "enchanted" (CR 303.4: an Aura *enchants* the permanent it's attached to).
-- `StatePredicate.IsEnchantedByAura(auraController: ControllerPredicate)` — Has at least one attached Aura whose *controller* satisfies auraController — the narrower "enchanted by Auras you control" (Archon of the Wild Rose) as opposed to plain IsEnchanted, which is agnost…
-- `StatePredicate.IsEquipped` — Has at least one Equipment attached
-- `StatePredicate.IsFaceDown` — Is face-down (morph, manifest)
-- `StatePredicate.IsFaceUp` — Is face-up (not face-down)
-- `StatePredicate.IsGrantingPermanent` — The candidate permanent is the *granting permanent* of the ability being resolved — the Equipment/Aura/permanent whose static ability granted the currently-resolving activated or triggered ability…
-- `StatePredicate.IsModified` — Has an Equipment attached, an Aura attached, or any counter (MTG "modified" definition)
-- `StatePredicate.IsMonstrous` — Permanent that currently has the monstrous designation (CR 701.37b, Theros).
-- `StatePredicate.IsOnBattlefield` — The object is on the battlefield *right now*.
-- `StatePredicate.IsPaired` — Is soulbond-**paired** with another creature (CR 702.95b).
-- `StatePredicate.IsPrepared` — The permanent is prepared (Secrets of Strixhaven prepare): it has a castable copy of its prepare spell in exile.
-- `StatePredicate.IsProtectedBy(protector: ControllerPredicate)` — A battle whose protector (CR 310.9) satisfies protector — the battle's analogue of the controller predicate.
-- `StatePredicate.IsRenowned` — Permanent that currently has the renowned designation (CR 702.112b, Magic Origins).
-- `StatePredicate.IsRingBearer` — Is its controller's Ring-bearer (CR 701.54).
-- `StatePredicate.IsSaddled` — Permanent that is currently saddled (CR 702.171b).
-- `StatePredicate.IsSolved` — Permanent that currently has the solved designation (CR 719.3b, Murders at Karlov Manor).
-- `StatePredicate.IsSource` — The candidate permanent IS the effect's source permanent itself.
-- `StatePredicate.IsSuspected` — Permanent that is currently suspected (CR 701.60a, Murders at Karlov Manor).
-- `StatePredicate.IsTapped`
-- `StatePredicate.IsTransformed` — Is a **transformed permanent** (CR 701.27g): a nonmodal double-faced permanent on the battlefield with its back face up — a Siege cast transformed, a werewolf flipped at night, a saga that exiled i…
-- `StatePredicate.IsUnblocked` — Attacker with unblocked status after blockers are declared
-- `StatePredicate.IsUntapped`
-- `StatePredicate.IsWarpExiled` — Card in exile that was put there by the delayed triggered ability of a warp keyword (CR 702.185b).
-- `StatePredicate.Not(predicate: StatePredicate)`
-- `StatePredicate.NotTargetedByAbilityFromSameNamedSource` — The candidate object (a spell or permanent) is **not** currently the target of an ability on the stack whose source is *another* permanent sharing the effect source's name.
-- `StatePredicate.Or(predicates: List<StatePredicate>)`
-- `StatePredicate.PutIntoGraveyardFromBattlefieldThisTurn` — This card is currently in a graveyard *and* was put there from the battlefield during the current turn.
-- `StatePredicate.PutIntoGraveyardThisTurn` — This card is currently in a graveyard *and* was put there during the current turn, from any zone — the battlefield, but equally the library (mill), the hand (discard), or the stack (a countered or…
-- `StatePredicate.ReceivedCounterThisTurn(counterType: CounterType?, placedByController: Boolean)` — One or more counters were put on this permanent during the current turn — the filter-level form of "…that you've put one or more +1/+1 counters on this turn".
-- `StatePredicate.SharesNameWithSpellCastThisTurn` — Shares a name with a spell cast by any player during the current turn.
-- `StatePredicate.WasCastForWarp` — Permanent on the battlefield that was cast for its warp cost (CR 702.185).
-- `StatePredicate.WasCastFromZone(zone: Zone)` — A spell on the stack whose cast-origin zone is zone — reads the `SpellOnStackComponent.castFromZone` the engine stamps when the spell is put on the stack (HAND for a normal cast; GRAVEYARD/EXILE/CO…
-- `StatePredicate.WasDealtDamageBySourceThisTurn` — Was dealt damage this turn by the effect's *source* — the recipient-side view of the source's per-turn damaged-creature record (the same record `Triggers` "a creature dealt damage by this creature…
-- `StatePredicate.WasDealtDamageThisTurn` — Has been dealt damage this turn
-
-## DynamicAmount
-
-- `DynamicAmount.Add(left: DynamicAmount, right: DynamicAmount)` — Add two dynamic amounts.
-- `DynamicAmount.AggregateBattlefield(player: Player, filter: GameObjectFilter, aggregation: Aggregation, property: CardNumericProperty?, excludeSelf: Boolean, counterType: CounterType?, excludeTriggeringEntity: Boolean)` — Generic battlefield aggregation primitive.
-- `DynamicAmount.AggregateZone(player: Player, zone: Zone, filter: GameObjectFilter, aggregation: Aggregation, property: CardNumericProperty?)` — Generic zone aggregation primitive.
-- `DynamicAmount.CardTypeEnteredUnderControlThisTurn(player: Player, cardType: CardType)` — The number of cardType permanents that entered the battlefield under player's control this turn — the card-type sibling of SubtypeEnteredUnderControlThisTurn over the same per-player entry log (Mal…
-- `DynamicAmount.CardsCycledThisGame(player: Player, cardName: String?)` — How many times a player has cycled a card this game — every cycling activation, typecycling included (CR 702.29f), counted when the card is discarded to pay the cost.
-- `DynamicAmount.CastChoice(slot: ChoiceSlot)` — A *numeric* value locked in for a com.wingedsheep.sdk.scripting.ChoiceSlot as this object was cast, read off the *current object* regardless of zone — the sibling of CastX for the other cast-choice…
-- `DynamicAmount.CastX` — The value of `{X}` this object was cast with, read off the *current object* regardless of what zone it is in.
-- `DynamicAmount.Conditional(condition: Condition, ifTrue: DynamicAmount, ifFalse: DynamicAmount)` — Conditional amount: evaluates to one of two amounts based on a condition.
-- `DynamicAmount.ContextProperty(key: ContextPropertyKey)` — A value pulled from the current resolution context — trigger payload, additional-cost accumulator, target list, or a linked-exile pile attached to the source permanent.
-- `DynamicAmount.Count(player: Player, zone: Zone, filter: GameObjectFilter)` — Count game objects in a zone matching a unified filter.
-- `DynamicAmount.CountPlayersWith(scope: Player, condition: Condition)` — Count of players in scope for whom condition evaluates to true.
-- `DynamicAmount.CountersRemovedAsCost` — The number of counters the resolving activated ability's costs removed — "the number of aim counters removed this way" (Hankyu), "the number of +1/+1 counters removed this way" (Molten Hydra).
-- `DynamicAmount.CraftedMaterialsColorCount` — Number of colors (0–5) among the cards exiled to craft the source permanent.
-- `DynamicAmount.CraftedMaterialsTotalManaValue` — Total mana value of the cards exiled to craft the source permanent.
-- `DynamicAmount.CraftedMaterialsTotalPower` — Total printed power of the cards exiled to craft the source permanent (CR 702.167c).
-- `DynamicAmount.CreaturesThatCrewedOrSaddledThisTurn` — Number of distinct creatures that crewed (CR 702.122) or saddled (CR 702.171) the source permanent this turn.
-- `DynamicAmount.CreaturesWithSubtypeDiedThisTurn(subtype: Subtype, player: Player)` — The number of creatures with subtype that died (were put into a graveyard from the battlefield) this turn while under player's control.
-- `DynamicAmount.DevotionTo(colors: List<Color>, player: Player)` — A player's **devotion** to one or more colors (CR 700.5): the number of mana symbols of colors among the mana costs of permanents that player controls.
-- `DynamicAmount.DistinctCardTypesInCollections(collections: List<String>)` — Number of distinct *card types* among the cards in the named pipeline collections (the union of every collection, de-duplicated by card type).
-- `DynamicAmount.DistinctColorsManaSpent` — The number of distinct *colors* of mana spent to cast the source spell (0–5).
-- `DynamicAmount.DistinctEntitiesInCollections(collections: List<String>)` — Number of *distinct* entities across several named pipeline collections.
-- `DynamicAmount.Divide(numerator: DynamicAmount, denominator: DynamicAmount, roundUp: Boolean)` — Divide one dynamic amount by another, with configurable rounding.
-- `DynamicAmount.EntityProperty(entity: EffectTarget.SingleEntity, numericProperty: EntityNumericProperty)` — Read a numeric property from a referenced entity.
-- `DynamicAmount.Fixed(amount: Int)` — Fixed amount (for consistency in the type system).
-- `DynamicAmount.GraveyardRelativeCount(entity: EffectTarget.SingleEntity, above: Boolean, filter: GameObjectFilter)` — Count matching cards above or below a current object in its graveyard.
-- `DynamicAmount.GreatestAmongPlayers(players: Player, inner: DynamicAmount)` — The largest value inner takes when measured **once per player** in players — Oracle's "the greatest number of X a player controls / an opponent controls / has".
-- `DynamicAmount.IfPositive(amount: DynamicAmount)` — Take the maximum of zero and the amount (clamp negative to zero).
-- `DynamicAmount.LargestSharedCreatureTypeCount(player: Player)` — The size of the largest creature-type tribe among the creatures player controls — i.e. "the greatest number of creatures you control that have a creature type in common." For every creature type pr…
-- `DynamicAmount.LastKnownDamageDealtToSource` — The total damage dealt to the ability's source this turn, read as last-known information — "where X is the amount of damage dealt to it this turn" (Tangled Colony).
-- `DynamicAmount.LastKnownSourceCounters(counterType: CounterType?)` — The number of counters matching counterType the *source* of the current ability had as it last existed on the battlefield (CR 113.7a / 608.2h last-known information).
-- `DynamicAmount.LeastAmongPlayers(players: Player, inner: DynamicAmount)` — The smallest value inner takes when measured **once per player** in players — Oracle's "the number of lands controlled by the player who controls the fewest" (Balance).
-- `DynamicAmount.LifeTotal(player: Player)` — Life total of a specific player.
-- `DynamicAmount.ManaSpentFromSubtype(subtype: Subtype)` — The number of mana units produced by a source with subtype that were spent to cast the current spell — e.g. Bat Colony's "create a 1/1 black Bat with flying for each mana from a Cave spent to cast…
-- `DynamicAmount.ManaSpentOnX(color: Color)` — The amount of mana of a specific color that was spent on the `{X}` portion of the current spell or activated ability.
-- `DynamicAmount.ManaValueSumOfCollection(collectionName: String)` — Sum of the mana values of *every* card in a named pipeline collection.
-- `DynamicAmount.Max(left: DynamicAmount, right: DynamicAmount)` — Maximum of two amounts.
-- `DynamicAmount.Min(left: DynamicAmount, right: DynamicAmount)` — Minimum of two amounts.
-- `DynamicAmount.Multiply(amount: DynamicAmount, multiplier: Int)` — Multiply a dynamic amount by a fixed multiplier.
-- `DynamicAmount.PermanentsSacrificedThisWay` — Number of permanents sacrificed by the current resolving effect ("this way").
-- `DynamicAmount.PlayerCount(scope: Player)` — How many players are in scope — "for each opponent", "for each other player", "the number of players in the game".
-- `DynamicAmount.PlayerCounterCount(counterType: CounterType, player: Player)` — How many counters of counterType a player currently has — the player-scoped sibling of EntityProperty's com.wingedsheep.sdk.scripting.values.EntityNumericProperty.CounterCount (which reads one obje…
-- `DynamicAmount.Power(base: Int, exponent: DynamicAmount)` — Raise a fixed base to the power of a dynamic exponent (`base^exponent`).
-- `DynamicAmount.SnowManaSpent` — The amount of mana from snow sources spent to cast the current spell — the "{S} spent" of CR 107.4h, which counts snow mana spent on *any* part of the cost, not only on `{S}` pips.
-- `DynamicAmount.Speed(player: Player)` — A player's **speed** (Aetherdrift, CR 702.179) — the 0–4 designation that "Start your engines!" begins and the inherent speed trigger raises.
-- `DynamicAmount.SpellsCastLastTurn` — The total number of spells cast during the immediately preceding turn.
-- `DynamicAmount.SpellsCastThisTurn(player: Player, filter: GameObjectFilter, excludeSelf: Boolean, fromZone: Zone?, countDistinctCardTypes: Boolean, beforeTriggeringSpell: Boolean)` — Counts the spells a player has cast this turn, optionally filtered and optionally excluding the currently-resolving spell itself.
-- `DynamicAmount.StartingLifeTotal(player: Player)` — The starting life total of a player (e.g., 20 in standard, 40 in commander).
-- `DynamicAmount.StationCharge` — The number of charge counters a Station ability puts on its permanent: the power of the creature tapped to pay the station cost (CR 702.184a — "equal to the tapped creature's power").
-- `DynamicAmount.StoredCardManaValue(collectionName: String)` — Mana value of a card stored in a named collection.
-- `DynamicAmount.Subtract(left: DynamicAmount, right: DynamicAmount)` — Subtract one dynamic amount from another.
-- `DynamicAmount.SubtypeEnteredUnderControlThisTurn(player: Player, subtypes: Set<Subtype>, excludeTriggeringEntity: Boolean)` — The number of permanents with **any** of subtypes that entered the battlefield under player's control this turn (counting even those that have since left or changed type — the entry event is what's…
-- `DynamicAmount.TotalManaSpent` — The total amount of mana paid from the pool to cast the current spell.
-- `DynamicAmount.TotalPowerSacrificedThisWay` — Total power of the permanents sacrificed by the current resolving effect ("their total power").
-- `DynamicAmount.TurnTracking(player: Player, tracker: TurnTracker)` — Reads a per-player turn-tracking counter.
-- `DynamicAmount.UnlockedDoors(player: Player, distinctNames: Boolean)` — The number of unlocked doors among Rooms controlled by player (CR 709.5).
-- `DynamicAmount.UnspentMana(player: Player)` — The total amount of unspent mana currently in a player's mana pool (all colours plus colorless plus any restricted-mana entries — the pool's `total`).
-- `DynamicAmount.VariableReference(variableName: String)` — Reference to a stored variable by name.
-- `DynamicAmount.XValue` — The X value of the spell (from mana cost).
-- `DynamicAmount.YourLifeTotal` — Your current life total.
-
-## ReplacementEffect
-
-- `CapCounterPlacementThisTurn(amount: Int, appliesTo: EventPattern)` — Cap a counter placement at amount and lock the recipient out of further counters of that kind for the rest of the turn — "If you would get one or more poison counters, instead you get one poison co…
-- `CapDamage(maxAmount: Int, appliesTo: EventPattern)` — Cap damage at a maximum amount.
-- `CreateAdditionalToken(additionalTokenType: String, additionalTokenCount: Int, inheritTapped: Boolean, appliesTo: EventPattern, restrictions: List<Condition>)` — When a player would create one or more tokens matching appliesTo, also create additionalTokenCount predefined token(s) of a *different* type (additionalTokenType).
-- `DamageCantBePrevented(appliesTo: EventPattern)` — Damage can't be prevented.
-- `DoubleCounterPlacement(placedByYou: Boolean, appliesTo: EventPattern)` — Double the number of counters placed.
-- `DoubleDamage(restrictions: List<Condition>, appliesTo: EventPattern, multiplier: Int)` — Double damage dealt.
-- `EntersAsCopy(optional: Boolean, copyFilter: GameObjectFilter, copyFromZone: Zone, filterByTotalManaSpent: Boolean, additionalSubtypes: List<String>, additionalColors: Set<Color>, additionalKeywords: List<Keyword>, nameOverride: String?, powerOverride: Int?, toughnessOverride: Int?, exileCopiedCard: Boolean, tappedIfCopied: Boolean, additionalCounters: DynamicAmount?, exceptions: CopyExceptions, duration: Duration, appliesTo: EventPattern)` — Enter the battlefield as a copy of a card or permanent.
-- `EntersTapped(unlessCondition: Condition?, payLifeCost: Int?, appliesTo: EventPattern)`
-- `EntersUntapped(appliesTo: EventPattern)` — "Permanents matching appliesTo enter the battlefield untapped" — the inverse of EntersTapped.
-- `EntersWithChoice(choiceType: ChoiceType, chooser: Player, allowedCreatureTypes: List<String>?, modeOptions: List<ModeOption>, minValue: Int, maxValue: Int, cardNamePool: CardNamePool, lookAtOpponentHand: Boolean, excludedColors: Set<Color>, appliesTo: EventPattern)` — As this permanent enters, make a choice.
-- `EntersWithCounters(counterType: CounterType, count: Int, selfOnly: Boolean, condition: Condition?, otherOnly: Boolean, appliesTo: EventPattern)` — Permanent/creature enters with counters.
-- `EntersWithDevour(multiplier: Int, sacrificeFilter: GameObjectFilter, counterType: CounterType, variant: String, appliesTo: EventPattern)` — Devour (CR 702.82) and its variants.
-- `EntersWithDynamicCounters(counterType: CounterType, count: DynamicAmount, otherOnly: Boolean, appliesTo: EventPattern, activeZones: Set<Zone>)` — Permanent/creature enters with a dynamic number of counters.
-- `EntersWithExileCounters(filter: GameObjectFilter, sourceZone: Zone, maxCards: DynamicAmount, counterType: CounterType, countersPerCard: Int, appliesTo: EventPattern)` — As this permanent enters, its controller may exile up to maxCards matching cards from their sourceZone.
-- `EntersWithKeywords(keywords: List<Keyword>, condition: Condition?, selfOnly: Boolean, appliesTo: EventPattern)` — Permanent enters the battlefield with keywords (CR 614.1c) — the keyword counterpart of EntersWithCounters.
-- `EntersWithRevealCounters(filter: GameObjectFilter, revealSource: Zone, counterType: CounterType, countersPerReveal: Int, appliesTo: EventPattern)` — As this creature enters, you may reveal any number of cards from a zone that match a filter.
-- `ExileCounteredSpellInstead(then: Effect?, appliesTo: EventPattern)` — "If a spell or ability you control would counter a spell, instead exile that spell and you may play that card without paying its mana cost." — Guile.
-- `HalveDamage(restrictions: List<Condition>, appliesTo: EventPattern)` — Halve damage dealt, **rounded down** — the dividing mirror of DoubleDamage.
-- `HealOtherDamage(appliesTo: EventPattern)` — The damage is still dealt in full, but as part of the same replacement all *other* damage already marked on the recipient is **healed** (CR 701.69a: "If an effect states that damage already dealt t…
-- `LifeLossFloor(floor: Int, restrictions: List<Condition>, appliesTo: EventPattern)` — Floor the resulting life total when a player would lose life from damage.
-- `ModifyCounterPlacement(modifier: Int, appliesTo: EventPattern, placedByYou: Boolean)` — Add additional counters when counters are placed.
-- `ModifyDamageAmount(modifier: Int, dynamicModifier: DynamicAmount?, restrictions: List<Condition>, appliesTo: EventPattern)` — Modify damage dealt by an additive amount — either a fixed modifier or, when dynamicModifier is supplied, an amount computed at damage time against the replacement's *source* permanent.
-- `ModifyDrawAmount(modifier: Int, multiplier: Int, restrictions: List<Condition>, appliesTo: EventPattern.DrawCardsEvent)` — Modify the number of cards a draw event draws — `(count * multiplier) + modifier`, clamped to ≥ 0 — optionally gated by additional restrictions.
-- `ModifyKeywordAction(prefixEffect: Effect, appliesTo: EventPattern)` — Insert an extra effect *in front of* a keyword action (CR 614).
-- `ModifyLifeGain(multiplier: Int, modifier: Int, appliesTo: EventPattern, restrictions: List<Condition>)` — Modify life gain amount.
-- `ModifyLifeLoss(multiplier: Int, modifier: Int, restrictions: List<Condition>, appliesTo: EventPattern)` — Modify life loss amount.
-- `ModifyMillAmount(modifier: Int, restrictions: List<Condition>, appliesTo: EventPattern)` — Modify how many cards a player mills (CR 701.13).
-- `ModifyScryAmount(modifier: Int, restrictions: List<Condition>, appliesTo: EventPattern)` — Modify how many cards a player scries (CR 701.22) — the scry twin of ModifyMillAmount.
-- `ModifyTokenCount(modifier: Int, appliesTo: EventPattern)` — Modify the number of tokens created by a fixed amount.
-- `MultiplyTokenCreation(factor: Int, appliesTo: EventPattern)` — Double the number of tokens created.
-- `OnEnterRun(effect: Effect, appliesTo: EventPattern)` — Generic "as ~ enters the battlefield, run effect" replacement.
-- `OptionalEffectDiscardDestination(destination: CardDestination.ToZone, appliesTo: EventPattern.DiscardEvent)` — Optional destination replacement for a discard caused by a resolving effect, never a cost.
-- `OptionalSkipTurnWith(effect: Effect, appliesTo: EventPattern.TurnBeginEvent, restrictions: List<Condition>)` — Replace a turn with nothing, then perform effect first in the next turn that actually occurs.
-- `PermanentsEnterTapped(appliesTo: EventPattern, condition: Condition?)` — "Permanents matching appliesTo enter the battlefield tapped" — the global/group counterpart of the self-only EntersTapped.
-- `PreventDamage(amount: Int?, restrictions: List<Condition>, appliesTo: EventPattern, onPrevented: Effect?)` — Prevent damage.
-- `PreventDamageByRemovingCounter(counterType: CounterType, removalAmount: CounterRemovalAmount, requiresCounter: Boolean, appliesTo: EventPattern)` — Prevent damage that would be dealt to this permanent and remove one counter of counterType from it — the printed twin of the shield counter's prevention half (CR 122.1c).
-- `PreventDamagePerCounter(counterType: CounterType, appliesTo: EventPattern.DamageEvent)` — Remove a counter from the damaged permanent for each point of matching damage and prevent that point.
-- `PreventDraw(appliesTo: EventPattern)` — Prevent drawing (with optional replacement).
-- `PreventExtraTurns(appliesTo: EventPattern)` — Prevent extra turns from being taken.
-- `PreventLifeGain(appliesTo: EventPattern)` — Prevent life gain.
-- `RedirectDamage(redirectTo: EffectTarget, appliesTo: EventPattern, condition: Condition?)` — Redirect damage to another target.
-- `RedirectZoneChange(newDestination: Zone, appliesTo: EventPattern, linkToSource: Boolean, selfOnly: Boolean, shuffleIntoLibrary: Boolean, reveal: Boolean, requiredCause: ZoneChangeCause)` — Redirect a zone change to a different destination.
-- `RedirectZoneChangeWith(newDestination: Zone, additionalEffect: Effect, selfOnly: Boolean, linkToSource: Boolean, appliesTo: EventPattern)` — Redirect a zone change to a different destination AND execute an additional effect.
-- `RepeatKeywordAction(times: Int, appliesTo: EventPattern)` — Perform a keyword action (CR 701) times times instead of once (CR 614.1a) — "If you would proliferate, proliferate twice instead." The sibling of ModifyKeywordAction: that one puts an extra effect…
-- `ReplaceDamageWithCounters(counterType: CounterType, sacrificeThreshold: Int?, appliesTo: EventPattern, counterRecipient: DamageCounterRecipient, damagedPlayerMills: Boolean)` — Replace damage with counters (CR 614.1a — an "instead" effect, so the damage is never dealt and nothing that keys on damage being dealt sees it; notably *not* a prevention effect, so it still appli…
-- `ReplaceDamageWithMill(appliesTo: EventPattern)` — Prevent matched damage and, instead, each opponent of this permanent's controller mills that many cards.
-- `ReplaceDrawWith(replacementEffect: Effect, optional: Boolean, appliesTo: EventPattern, restrictions: List<Condition>)` — Replace drawing with another effect.
-- `ReplaceLifeGainWith(replacementEffect: Effect, appliesTo: EventPattern.LifeGainEvent, restrictions: List<Condition>)` — Replace a life-gain event with an effect, without gaining life or using the stack.
-- `ReplaceLifePaymentWithLibraryExile(appliesTo: EventPattern)` — A life *payment* becomes an exile of that many cards off the top of the payer's library, so long as the library is deep enough to cover it.
-- `ReplaceTokenCreationWithAttachedCopy(optional: Boolean, oncePerTurn: Boolean, attachmentVerb: String, appliesTo: EventPattern)` — Replace token creation with creating token copies of the permanent this source is attached to.
-- `ReplaceTokenCreationWithToken(token: Effect, appliesTo: EventPattern)` — "If one or more filtered tokens would be created under your control, that many token are created instead." Substitutes a *different* token for every token of the creation event the appliesTo filter…
-- `SetMinimumDamage(minAmount: Int, dynamicMinimum: DynamicAmount?, appliesTo: EventPattern)` — Raise damage to a minimum amount — the floor mirror of CapDamage.
-
-## KeywordAbility
-
-- `KeywordAbility.Affinity(forType: CardType)` — Affinity for a card type.
-- `KeywordAbility.AffinityForSubtype(forSubtype: Subtype)` — Affinity for a creature subtype.
-- `KeywordAbility.Bestow(cost: ManaCost, additionalCost: AdditionalCost?)`
-- `KeywordAbility.Casualty(threshold: Int)` — Casualty N (CR 702.153).
-- `KeywordAbility.Cleave(cost: ManaCost)` — Cleave cost (CR 702.148, Innistrad: Crimson Vow).
-- `KeywordAbility.Conspire` — Conspire.
-- `KeywordAbility.Cycling(cost: ManaCost, searchFilter: GameObjectFilter?, displayPrefix: String)` — Cycling and its typed variants.
-- `KeywordAbility.Dash(cost: ManaCost)` — Dash with a mana cost (CR 702.109, Khans of Tarkir).
-- `KeywordAbility.Devour(multiplier: Int, sacrificeFilter: GameObjectFilter, variant: String)` — Devour (CR 702.82) and variants.
-- `KeywordAbility.Disguise(disguiseCost: PayCost, faceUpEffect: Effect?, costReduction: CostReductionSource?)` — Disguise with a cost to turn face up (CR 702.168).
-- `KeywordAbility.Disturb(cost: ManaCost)` — Disturb cost (CR 702.146a).
-- `KeywordAbility.Dredge(amount: Int)` — Optional draw replacement from the graveyard (Comprehensive Rules 702.52).
-- `KeywordAbility.Emerge(cost: ManaCost, from: GameObjectFilter?)` — Emerge cost (CR 702.119, Eldritch Moon).
-- `KeywordAbility.Escape(cost: ManaCost, additionalCost: AdditionalCost?)` — Escape (CR 702.138, Theros Beyond Death).
-- `KeywordAbility.Evoke(cost: ManaCost)` — Evoke with a mana cost.
-- `KeywordAbility.Flashback(cost: ManaCost, additionalCost: AdditionalCost?, condition: Condition?)` — Flashback with a mana cost and an optional additional cost.
-- `KeywordAbility.Foretell(cost: ManaCost)` — Foretell (CR 702.143, Kaldheim).
-- `KeywordAbility.Gift(kind: GiftKind)` — Gift a kind (CR 702.174, Bloomburrow).
-- `KeywordAbility.Harmonize(cost: ManaCost)` — Harmonize with a mana cost (Tarkir: Dragonstorm).
-- `KeywordAbility.Hexproof(scope: ProtectionScope)` — Hexproof from a quality.
-- `KeywordAbility.Impending(time: Int, cost: ManaCost)` — Impending N—cost (CR 702.175, Duskmourn: House of Horror).
-- `KeywordAbility.Increment` — Increment (Secrets of Strixhaven).
-- `KeywordAbility.Madness(cost: ManaCost)` — Madness cost (CR 702.35).
-- `KeywordAbility.Mayhem(cost: ManaCost)` — Mayhem cost (CR 702.187, Marvel's Spider-Man).
-- `KeywordAbility.Miracle(cost: ManaCost)` — Miracle {cost} (CR 702.94).
-- `KeywordAbility.Morph(morphCost: PayCost, faceUpEffect: Effect?)` — Morph with a cost to turn face up.
-- `KeywordAbility.Ninjutsu(cost: ManaCost)` — Ninjutsu cost (CR 702.49).
-- `KeywordAbility.Numeric(keyword: Keyword, n: Int, onceEachTurn: Boolean)` — A keyword parameterized by a single integer.
-- `KeywordAbility.OptionalAdditionalCost(manaCost: ManaCost?, additionalCost: AdditionalCost?, multi: Boolean, displayPrefix: String, keyword: Keyword?, branchesEffect: Boolean, grantsFlashTiming: Boolean, declaredSlot: ChoiceSlot)` — **Optional additional cost paid at cast time.** Generalises Kicker, Multikicker, Offspring, Bargain, and the pre-kicker "pay {N} more to cast as though it had flash" pattern (Ghitu Fire et al.).
-- `KeywordAbility.Overload(cost: ManaCost)` — Overload cost (CR 702.96).
-- `KeywordAbility.Plot(cost: ManaCost)` — Plot (CR 718, Outlaws of Thunder Junction).
-- `KeywordAbility.Protection(scope: ProtectionScope)` — Protection from a quality.
-- `KeywordAbility.Prototype(cost: ManaCost, power: Int, toughness: Int)` — Prototype cost — power/toughness (CR 702.160, 718).
-- `KeywordAbility.Simple(keyword: Keyword)` — Simple keyword with no parameters.
-- `KeywordAbility.Sneak(cost: ManaCost)` — Sneak cost (CR 702.190, Teenage Mutant Ninja Turtles).
-- `KeywordAbility.Splice(cost: ManaCost, onto: Subtype)` — Splice onto onto cost (CR 702.47, Champions of Kamigawa).
-- `KeywordAbility.Suspend(cost: ManaCost, timeCounters: Int)` — Printed Suspend (CR 702.62, Time Spiral).
-- `KeywordAbility.Variable(keyword: Keyword, label: String)` — A numeric keyword whose count is determined dynamically rather than by a fixed integer — e.g. "Mobilize X, where X is the number of creature cards in your graveyard" (Avenger of the Fallen).
-- `KeywordAbility.Ward(cost: WardCost)` — Ward with a configurable cost.
-- `KeywordAbility.Warp(cost: ManaCost, additionalCost: AdditionalCost?, fromGraveyard: Boolean)` — Warp with a mana cost and an optional additional cost.
-- `KeywordAbility.WebSlinging(cost: ManaCost)` — Web-slinging cost (CR 702.188, Marvel's Spider-Man).
-
-## EffectTarget
-
-- `EffectTarget.AffectedEntity` — AFFECTED ENTITY: the permanent a continuous effect is being applied to during state projection — the creature an Aura's static bonus lands on, one member of a lord's group.
-- `EffectTarget.AmassedArmy` — AMASSED ARMY: the Army chosen by the most recent Amass step in the resolving pipeline — "the amassed Army", whether or not it received counters (CR 701.47c).
-- `EffectTarget.AttachedToTriggeringPermanent` — ATTACHED-TO TRIGGERING PERMANENT: the permanent that the triggering attachment (Aura/ Equipment) became attached to — or, for the unattach mirror, came off of.
-- `EffectTarget.BoundVariable(name: String)` — NAMED TARGET BINDING: Refers to a cast-time target by name rather than positional index.
-- `EffectTarget.ChosenCreature` — CHOSEN CREATURE: Refers to the creature chosen when this permanent entered the battlefield.
-- `EffectTarget.ContextTarget(index: Int)` — TARGET BINDING: Refers to a specific target selection from the declaration phase.
-- `EffectTarget.Controller` — The controller of the source ability
-- `EffectTarget.ControllerOfDamageSource` — CONTROLLER OF DAMAGE SOURCE: the controller of the source dealing the damage currently being processed.
-- `EffectTarget.ControllerOfPipelineTarget(collectionName: String, index: Int)` — CONTROLLER OF PIPELINE TARGET: Refers to the controller of an entity stored in a pipeline collection.
-- `EffectTarget.ControllerOfTriggeringEntity` — CONTROLLER OF TRIGGERING ENTITY: Refers to the controller/owner of the entity that caused the trigger to fire.
-- `EffectTarget.DiscardedAsCost(index: Int)` — DISCARDED AS COST: a card discarded to pay this spell's additional cost (`Costs.additional.DiscardCards(...)`) or this activated ability's cost (`Costs.Discard(...)`), by index.
-- `EffectTarget.EachDamagedBySourceThisGame` — MULTI-ENTITY REFERENCE: every **opponent and planeswalker the effect's source has dealt damage to this game** — The Fallen's "each opponent and planeswalker it has dealt damage to this game".
-- `EffectTarget.EnchantedCreature` — The creature enchanted by this aura
-- `EffectTarget.EnchantedPermanent` — The permanent this aura/equipment is attached to, regardless of its type.
-- `EffectTarget.EquippedCreature` — The creature this equipment is attached to
-- `EffectTarget.FilteredTarget(filter: TargetFilter)` — FILTERED TARGET: Refers to a target matching a composable filter.
-- `EffectTarget.GrantingSource` — The permanent whose static ability granted the currently-resolving ability — the Equipment/Aura/permanent bearing the `GrantActivatedAbility` (or gained-abilities) static, as opposed to Self, which…
-- `EffectTarget.GroupRef(filter: GroupFilter)` — GROUP REFERENCE: Refers to a group of permanents for mass effects.
-- `EffectTarget.IterationEntity` — ITERATION ENTITY: the object a `ForEach` loop over a group or a collection is currently visiting — "each creature you control gets +2/+1" is `ForEachInGroup(creatures you control, ModifyStats(2, 1,…
-- `EffectTarget.LibraryTop(player: Player)` — The current top card of a player's library; absent when that library is empty.
-- `EffectTarget.LinkedExiledCard(index: Int)` — LINKED EXILED CARD: a card exiled *with* the source permanent — its `LinkedExileComponent`, the pile every imprint / "exiled with this" mechanic writes (CR 607 linked abilities), which on Mirrodin'…
-- `EffectTarget.PipelineTarget(collectionName: String, index: Int)` — PIPELINE TARGET: an entity recorded in the resolution pipeline's stored collections — a target selected mid-resolution by `SelectTargetEffect`, or an entity an additional-cost step recorded under i…
-- `EffectTarget.PlayerRef(player: Player)` — PLAYER REFERENCE: Refers to a player or set of players.
-- `EffectTarget.RevealedAsCost(index: Int)` — REVEALED AS COST: a card revealed from hand to pay this spell's additional reveal cost (`Costs.additional.RevealFromHand(...)`, alone or as the leg of `RevealFromHandOrPay`), by index — "the reveal…
-- `EffectTarget.RingBearer(player: Player)` — RING-BEARER: a player's designated Ring-bearer (CR 701.54) — the creature carrying that player's Ring-bearer designation, on the battlefield under their control.
-- `EffectTarget.SacrificedAsCost(index: Int)` — SACRIFICED AS COST: a permanent sacrificed to pay this spell/ability's cost, by index — "the sacrificed creature".
-- `EffectTarget.Self` — The source of the resolving ability — the permanent (or spell) it belongs to.
-- `EffectTarget.SpecificEntity(entityId: EntityId)` — SPECIFIC ENTITY: Refers to a specific entity by ID.
-- `EffectTarget.TappedAsCost(index: Int)` — TAPPED AS COST: a permanent tapped to pay this activation's cost — the tap counterpart of SacrificedAsCost, reading `EffectContext.tappedPermanents`.
-- `EffectTarget.TargetController` — The controller of the target (used for effects like "its controller gains 4 life").
-- `EffectTarget.TargetingSource` — TARGETING SOURCE: "that spell or ability" in a becomes-the-target trigger — the object on the stack that did the targeting, not the permanent it targeted (that one is TriggeringEntity).
-- `EffectTarget.TriggeringEntity` — TRIGGERING ENTITY: Refers to the entity that caused the trigger to fire.
-
-## AbilityCost
-
-- `AbilityCost.Atom(atom: CostAtom)` — A single shared payable thing — see CostAtom.
-- `AbilityCost.AttachedPermanentManaCost` — Pay the mana cost of the permanent this Aura/Equipment is attached to — Merseine's "Pay enchanted creature's mana cost: Remove a net counter from this Aura." Lowered to a plain Atom mana cost again…
-- `AbilityCost.Blight(amount: Int)` — Blight N: put N -1/-1 counters on a creature you control.
-- `AbilityCost.Composite(costs: List<AbilityCost>)` — Multiple costs combined
-- `AbilityCost.Craft(filter: GameObjectFilter, minCount: Int, maxCount: Int?, slots: List<GameObjectFilter>)` — Craft materials (CR 702.167a).
-- `AbilityCost.DiscardHand` — Discard your entire hand
-- `AbilityCost.DiscardLastDrawnThisTurn` — Discard the specific card the controller drew most recently this turn (CR 121 "draws").
-- `AbilityCost.DiscardSelf` — Discard self (the card with this ability) - used for cycling
-- `AbilityCost.DiscardX(filter: GameObjectFilter)` — Discard X cards, where X is the ability's X value — "{4}{B}{B}{B}, Discard X cards: …" (Gix, Yawgmoth Praetor).
-- `AbilityCost.Exert` — Exert this permanent (CR 701.43a) — choose to have it not untap during your next untap step.
-- `AbilityCost.ExileGrantingPermanent` — Exile the permanent that granted this activated ability to the source.
-- `AbilityCost.ExileSelf` — Exile self (the permanent with this ability)
-- `AbilityCost.ExileXFromGraveyard(filter: GameObjectFilter)` — Exile X cards from graveyard, where X is the ability's X value.
-- `AbilityCost.Forage` — Forage: exile three cards from your graveyard or sacrifice a Food.
-- `AbilityCost.Free` — No cost ({0}) — the ability is free to activate
-- `AbilityCost.Loyalty(change: Int)` — Loyalty cost for planeswalker abilities
-- `AbilityCost.LoyaltyX` — A variable negative loyalty cost (−X), chosen when the ability is activated.
-- `AbilityCost.PayXLife` — Pay X life, where X is the value chosen for the ability's `{X}` mana cost.
-- `AbilityCost.RemoveAllCounters(counterType: CounterType, fromGrantingPermanent: Boolean)` — Remove every counterType counter from a permanent as part of the activation cost — "Remove all +1/+1 counters from Molten Hydra" on the ability's own source, or, with fromGrantingPermanent, "Remove…
-- `AbilityCost.ReturnSelfToHand` — Return self to its owner's hand — "Return this land to its owner's hand" as part of an activation cost (Maze's End).
-- `AbilityCost.SacrificeChosenCreatureType` — Sacrifice a creature of the type chosen when this permanent entered the battlefield.
-- `AbilityCost.SacrificeGrantingPermanent` — Sacrifice the permanent that granted this activated ability to the source.
-- `AbilityCost.SacrificeSelf` — Sacrifice self (the permanent with this ability)
-- `AbilityCost.Tap` — Tap the permanent ({T})
-- `AbilityCost.TapAttachedCreature` — Tap the creature this aura is attached to ({T} enchanted creature)
-- `AbilityCost.TapGrantingPermanent` — Tap the permanent that granted this activated ability to the source — the third member of the granter-cost family alongside ExileGrantingPermanent and SacrificeGrantingPermanent, and the granter-sc…
-- `AbilityCost.TapXPermanents(filter: GameObjectFilter)` — Tap a variable number of permanents you control, where the count equals the ability's X value.
-- `AbilityCost.Untap` — Untap the permanent ({Q})
-
-## Player
-
-- `Player.ActivePlayerFirst` — All players in APNAP order (active player first, then turn order)
-- `Player.AnOpponent` — A genuinely non-targeted "an opponent" — used only where the printed text has a single opponent act without targeting them (a chooser: "an opponent chooses a creature type", "choose ...
-- `Player.Any` — Any player (for matching/filtering)
-- `Player.BoundVariable(name: String)` — The player chosen for the target declared as name — the player-typed reading of a named target handle (com.wingedsheep.sdk.scripting.targets.EffectTarget.BoundVariable).
-- `Player.Candidate` — The player currently being considered as a target (CR 115).
-- `Player.ChosenOpponent` — The opponent locked into the source's com.wingedsheep.sdk.scripting.ChoiceSlot.OPPONENT slot (set by an `EntersWithChoice(ChoiceType.OPPONENT, …)` replacement effect).
-- `Player.ContextPlayer(index: Int)` — A player from the context (for multi-target spells)
-- `Player.ControllerOf(targetDescription: String)` — Controller of a permanent (used with EffectTarget)
-- `Player.ControllerOfAffectedEntity` — Controller of the permanent a continuous effect is currently modifying — "enchanted creature gets -X/-0, where X is the number of cards in **its controller's** graveyard" (Disturbing Conversion).
-- `Player.ControllerOfIterationEntity` — Controller of the entity the enclosing `ForEachInGroup` is currently iterating over — "for each attacking red creature, … unless **its controller** pays {2}{R}" (Heroism, Tidal Flats).
-- `Player.ControllerOfSource` — The controller of the effect's **source** — read off the source permanent rather than off the resolution context's `controllerId`.
-- `Player.ControllerOfTargetingSource` — The controller of the spell or ability that **targeted** the source — the other end of a "becomes the target of a spell or ability" trigger.
-- `Player.ControllerOfTriggeringEntity` — The controller of the **triggering entity** — the player half of com.wingedsheep.sdk.scripting.targets.EffectTarget.ControllerOfTriggeringEntity, for the places that take a Player reference rather…
-- `Player.DefendingPlayer` — The defending player, per CR 802.2a: the specific player the ability's source is attacking, determined per attacking creature — never "the opponent" via turn order.
-- `Player.Each` — All players
-- `Player.EachDefendingPlayer` — All defending players in the current combat, in APNAP order, including those with no attackers assigned and before attackers are declared.
-- `Player.EachOpponent` — All opponents
-- `Player.EachTargetedPlayer` — **Every** player among the spell or ability's chosen targets — "those players" after "choose any number of target players" (Officious Interrogation).
-- `Player.EnchantedPlayer` — The player enchanted by the source Aura — read from the source's com.wingedsheep.engine.state.components.battlefield.AttachedToComponent target id when it is a player.
-- `Player.InCollection(collection: String)` — "Those players" — every player recorded in the pipeline collection collection (written by com.wingedsheep.sdk.scripting.effects.StorePlayerEffect), iterated in APNAP order (CR 101.4) and skipping a…
-- `Player.OwnerOf(targetDescription: String)` — Owner of a permanent (used with EffectTarget)
-- `Player.OwnerOfSource` — The owner of the effect's **source** — the card the ability is printed on, not whoever currently controls it.
-- `Player.OwnersOfLinkedExile` — The distinct owners of the cards currently in the effect source's *linked-exile pile* (the source's com.wingedsheep.engine.state.components.battlefield.LinkedExileComponent, populated by com.winged…
-- `Player.TargetOpponent` — A targeted opponent (resolved at effect execution)
-- `Player.TargetPlayer` — A targeted player (resolved at effect execution)
-- `Player.TriggeringPlayer` — The player from the trigger context (e.g., player dealt combat damage)
-- `Player.You` — The controller of the ability/effect
-
-## CostReductionSource
-
-- `CostReductionSource.ArtifactsYouControl` — Reduces cost by number of artifacts you control.
-- `CostReductionSource.AttachedPermanentProperty(property: EntityNumericProperty)` — Reduces cost by a numeric property of the permanent the *reducing ability's own source* is attached to — "{X} less to cast, where X is equipped creature's power" (Glamdring, Foe-hammer).
-- `CostReductionSource.CardTypesInYourGraveyard(amountPerType: Int)` — Reduces cost by amountPerType for each *card type* among the cards in the caster's graveyard — Emrakul, the Promised End ("This spell costs {1} less to cast for each card type among cards in your g…
-- `CostReductionSource.CardsInGraveyardAndExileMatchingFilter(filter: GameObjectFilter, amountPerCard: Int)` — Reduces cost by 1 for each card you own in exile and in your graveyard matching the filter.
-- `CostReductionSource.CardsInGraveyardMatchingFilter(filter: GameObjectFilter, amountPerCard: Int)` — Reduces cost by 1 for each card in your graveyard matching the filter.
-- `CostReductionSource.ChosenTargetsBeyondTheFirst` — The number of targets the spell has beyond the first — "for each target beyond the first" (Officious Interrogation, and the classic Phyrexian Purge / Fireball wording).
-- `CostReductionSource.ColorsAmongPermanentsYouControl` — Vivid - reduces cost by number of colors among permanents you control.
-- `CostReductionSource.CreaturesThatAttackedThisTurn(amountPerCreature: Int)` — Reduces cost by amountPerCreature for each creature that was declared as an attacker this turn — by ANY player, not just the caster ("for each creature that attacked this turn" is not controller-sc…
-- `CostReductionSource.CreaturesYouControl` — Reduces cost by number of creatures you control.
-- `CostReductionSource.DifferentlyNamedPermanentsYouControl(filter: GameObjectFilter)` — Reduces cost by the number of differently named permanents the caster controls matching a filter.
-- `CostReductionSource.Dynamic(amount: DynamicAmount)` — Reduces cost by an arbitrary DynamicAmount, evaluated at cast time with the permanent that carries the ModifySpellCost as the amount's *source* — "{X} less to cast, where X is `<amount>`".
-- `CostReductionSource.Fixed(amount: Int)` — Reduces cost by a fixed amount.
-- `CostReductionSource.FixedIfAnyTargetMatches(amount: Int, filter: GameObjectFilter)` — Reduces cost by a fixed amount if the spell targets any object matching the filter.
-- `CostReductionSource.FixedIfControlFilter(amount: Int, filter: GameObjectFilter)` — Reduces cost by a fixed amount if you control a permanent matching the filter.
-- `CostReductionSource.FixedIfCreatureAttackingYou(amount: Int)` — Reduces cost by a fixed amount if a creature is currently attacking the caster.
-- `CostReductionSource.FixedIfCreatureDiedThisTurn(amount: Int)` — Reduces cost by a fixed amount if a creature died this turn under *any* player's control — the morbid family's cost-reduction shape ("This spell costs {3} less to cast if a creature died this turn"…
-- `CostReductionSource.FixedIfVoid(amount: Int)` — Reduces cost by a fixed amount if the Void condition is met this turn — i.e., a nonland permanent left the battlefield this turn or a spell was warped this turn.
-- `CostReductionSource.GreatestPropertyAmongPermanentsYouControl(property: EntityNumericProperty, filter: GameObjectFilter)` — Reduces cost by the greatest value of a numeric property among permanents the caster controls matching a filter — "{X} less, where X is the greatest <property> among <filter> you control".
-- `CostReductionSource.PermanentsOnBattlefieldMatching(filter: GameObjectFilter)` — Reduces cost by the number of permanents on the battlefield matching a filter, regardless of who controls them.
-- `CostReductionSource.PermanentsSacrificedThisTurn(amountPerPermanent: Int)` — Reduces cost by amountPerPermanent for each permanent sacrificed this turn — by ANY player, not just the caster (the wording is "for each permanent sacrificed this turn", which is not controller-sc…
-- `CostReductionSource.PermanentsWithCounterYouControl(filter: GameObjectFilter, counterType: CounterType)` — Reduces cost by number of permanents you control matching a filter that have a specific counter.
-- `CostReductionSource.PermanentsYouControlMatching(filter: GameObjectFilter)` — Reduces cost by the number of permanents the caster controls matching a filter.
-- `CostReductionSource.SharedCardTypesWithLinkedExile(amountPerType: Int)` — Reduces cost by amountPerType for each *card type* the spell being cast shares with the cards exiled with the reducing permanent — Cemetery Prowler ("Spells you cast cost {1} less to cast for each…
-- `CostReductionSource.TotalPowerYouControl` — Reduces cost by total power of creatures you control.
-- `CostReductionSource.TotalPropertyAmongPermanentsYouControl(property: EntityNumericProperty, filter: GameObjectFilter)` — Reduces cost by the *sum* of a numeric property over the permanents the caster controls matching a filter — "{X} less, where X is the total <property> of <filter> you control".
-- `CostReductionSource.YourSpeed` — Reduces cost by your speed, 0–4 (CR 702.179) — "Noncreature spells you cast cost {X} less to cast, where X is your speed" (Samut, the Driving Force).
-
-## ManaRestriction
-
-- `ManaRestriction.AbilityActivationOnly` — "Spend this mana only to activate an ability." Any activated ability of any source qualifies — unlike CardTypeSpellsOrAbilitiesOnly, which ties abilities to a card type.
-- `ManaRestriction.AllOf(restrictions: List<ManaRestriction>)` — Conjunction of restrictions — the mana is spendable only in a context that satisfies *every* one of restrictions.
-- `ManaRestriction.AnyOf(restrictions: List<ManaRestriction>)` — "Spend this mana only to A, B, or C." Disjunction of restrictions — the mana is spendable in any context that satisfies *any* of the restrictions.
-- `ManaRestriction.AnySpend` — No restriction — this mana satisfies any spend context.
-- `ManaRestriction.CannotCastSpellsFromHand` — "This mana can't be spent to cast spells from your hand" (Heartwood Crafter).
-- `ManaRestriction.CannotCastSpellsOtherThan(cardTypes: Set<CardType>)` — "This mana can't be spent to cast a non-cardTypes spell" (Hydraulic Helper: "{T}: Add {U}.
-- `ManaRestriction.CardTypeSpellsOrAbilitiesOnly(cardType: CardType, allowSpells: Boolean, allowAbilities: Boolean, negated: Boolean)` — "Spend this mana only to cast cardType spells or activate abilities of [cardType sources]." Parameterized over card type so the same restriction shape covers Steelswarm Operator (artifact), hypothe…
-- `ManaRestriction.CastFromExileOnly`
-- `ManaRestriction.CastFromNonHandOnly` — "Spend this mana only to cast a spell from anywhere other than your hand." Used by Mm'menon, the Right Hand's granted artifact ability.
-- `ManaRestriction.ColorlessSpellsOnly` — "Spend this mana only to cast colorless spells." A spell is colorless when its colors are empty (CR 105.2c) — a devoid spell, an artifact with no colored symbols, and a face-down spell (CR 708.2) a…
-- `ManaRestriction.CostsContainingXOnly` — "Spend this mana only on costs that contain {X}." Satisfied by casting a spell whose mana cost contains {X}, and by activating an ability whose mana cost contains {X} — both are costs, so unlike Sp…
-- `ManaRestriction.CreatureSpellsOnly` — "Spend this mana only to cast creature spells."
-- `ManaRestriction.EquipAbilityActivationOnly` — "Spend this mana only to activate equip abilities." Satisfied only by paying the cost of an **equip** ability (CR 702.6a — "Cost: Attach this permanent to target creature you control.
-- `ManaRestriction.FaceDownSpellsOnly` — "Spend this mana only to cast face-down spells." Satisfied by casting a card face down for its morph (CR 702.37a) or disguise (CR 702.168a) cost — a spell with no name and no characteristics but "2…
-- `ManaRestriction.InstantOrSorceryOnly` — "Spend this mana only to cast instant or sorcery spells."
-- `ManaRestriction.KickedSpellsOnly` — "Spend this mana only to cast kicked spells."
-- `ManaRestriction.LegendarySpellsOnly` — "Spend this mana only to cast legendary spells." Matches spells with the Legendary supertype (Great Hall of the Citadel, Delighted Halfling).
-- `ManaRestriction.SpellsOnly` — "Spend this mana only to cast spells." Any spell qualifies; ability activations and special actions (turning a permanent face up, unlocking a door) don't.
-- `ManaRestriction.SpellsWithManaValueAtLeast(minManaValue: Int, orXInCost: Boolean, creatureOnly: Boolean)` — "Spend this mana only to cast spells with mana value minManaValue or greater or spells with {X} in their mana costs." Parameterized over the threshold and the two optional clauses printed alongside…
-- `ManaRestriction.SubtypeSpellsOnly(subtypes: Set<String>)` — "Spend this mana only to cast a spell that has any of the given subtypes." Generalizes SubtypeSpellsOrAbilitiesOnly to a *set* of subtypes joined by OR, for cards whose mana is usable on more than…
-- `ManaRestriction.SubtypeSpellsOrAbilitiesOnly(subtype: String, creatureOnly: Boolean)` — "Spend this mana only to cast a spell of the specified subtype (or, when creatureOnly is false, also to activate an ability of a source of that subtype)." The subtype is baked at the moment the man…
-- `ManaRestriction.TurnPermanentsFaceUpOnly` — "Spend this mana only to turn permanents face up." Satisfied by the turn-face-up special action (disguise/morph face-up, CR 707.9 / 702.37e), not by spell casts or ability activations.
-- `ManaRestriction.UnlockDoorOnly` — "Spend this mana only to unlock a door." Satisfied by the unlock-a-door special action (CR 709.5e), not by spell casts or ability activations.
-
-## CostAtom
-
-- `CostAtom.CollectEvidence(amount: DynamicAmount, linkToSource: Boolean)` — Collect evidence amount — exile any number of cards from your graveyard with total mana value amount or greater (CR 701.59a, Murders at Karlov Manor).
-- `CostAtom.Discard(count: Int, filter: GameObjectFilter, random: Boolean)` — Discard count cards matching filter.
-- `CostAtom.DiscardHand` — Discard your entire hand — "unless its controller discards their hand" (Perplex).
-- `CostAtom.ExileFrom(zone: Zone, filter: GameObjectFilter, count: Int, anyPlayersZone: Boolean, singleZone: Boolean, excludeSelf: Boolean)` — Exile count cards matching filter from zone.
-- `CostAtom.ExileFromGraveyardForTotal(filter: GameObjectFilter, measure: CardMeasure, minTotal: Int, excludeSelf: Boolean)` — Exile **any number** of cards matching filter from your graveyard whose combined measure is minTotal or more — the unnamed, filtered generalization of the shape CollectEvidence names: a variable-si…
-- `CostAtom.ExileTopOfLibrary(count: Int)` — Exile the top count cards of your library — Arc-Slogger's "{R}, Exile the top ten cards of your library".
-- `CostAtom.Mana(cost: ManaCost)` — Pay a mana cost.
-- `CostAtom.Mill(count: Int)` — Mill count cards — put that many cards from the top of your library into your graveyard (CR 701.17a).
-- `CostAtom.PayLife(amount: Int)` — Pay amount life (CR 119.4 — payable only while life total ≥ amount).
-- `CostAtom.PayPlayerCounters(counterType: CounterType, amount: DynamicAmount)` — Pay counters from the paying player, before the spell or ability resolves.
-- `CostAtom.PutCountersOnPermanent(counterType: CounterType, count: Int, filter: GameObjectFilter)` — Put count counters of counterType on a permanent matching filter that the *payer* controls — the selected-permanent sibling of PutCountersOnSelf.
-- `CostAtom.PutCountersOnSelf(counterType: CounterType, count: Int)` — Put count counters of counterType on the permanent the cost belongs to — "Put a page counter on this artifact" (Mazemind Tome), the *accruing* mirror of RemoveCounters with `self = true`.
-- `CostAtom.PutFromHandOnTopOfLibrary(count: Int, filter: GameObjectFilter)` — Put count cards matching filter from your hand on top of your library — "Put a card from your hand on top of your library: Return this creature to its owner's hand." (Leashling).
-- `CostAtom.RemoveCounters(counterType: CounterType?, count: DynamicAmount, filter: GameObjectFilter, self: Boolean)` — Remove count counter(s) from among permanents matching filter you control, or from this permanent when self is true.
-- `CostAtom.ReturnToHand(filter: GameObjectFilter, count: Int, youControl: Boolean)` — Return count permanents matching filter to their owner's hand.
-- `CostAtom.RevealFromHand(filter: GameObjectFilter, count: Int)` — Reveal count cards matching filter from your hand (the cards stay in hand).
-- `CostAtom.RevealNotedCreatureType` — "Reveal the creature type you chose" — turn the source permanent's *secret* noted creature type (see com.wingedsheep.sdk.scripting.effects.NoteCreatureTypeEffect with `secret = true`) into public i…
-- `CostAtom.Sacrifice(filter: GameObjectFilter, count: Int, excludeSelf: Boolean, distinctNames: Boolean)` — Sacrifice count permanents matching filter.
-- `CostAtom.SacrificeAll(filter: GameObjectFilter)` — Sacrifice **every** permanent you control matching filter — "as an additional cost to cast this spell, sacrifice all creatures you control" (Soulblast).
-- `CostAtom.TapPermanents(count: Int, filter: GameObjectFilter, excludeSelf: Boolean, sharedCreatureType: Boolean)` — Tap count untapped permanents matching filter you control.
-- `CostAtom.Unattach` — Unattach the ability's source from the permanent it is attached to (CR 701.3d) — "Unattach this Equipment" (Sunforger).
-- `CostAtom.VariablePermanents(filter: GameObjectFilter, minCount: Int, excludeSelf: Boolean, action: PermanentCostAction, xMeasure: VariableCostMeasure, minMeasure: Int)` — Put one or more permanents matching filter you control into another zone — a *variable-count* cost: the payer chooses how many (at least minCount).
-
-## Duration
-
-- `Duration.EndOfCombat` — Effect lasts until end of combat.
-- `Duration.EndOfTurn` — Effect lasts until end of turn.
-- `Duration.EndOfYourNextTurn` — Effect lasts through the *whole* of your next turn, ending during that turn's cleanup step (CR 514.2, the same moment an "until end of turn" effect ends) — "until the end of your next turn".
-- `Duration.NextUse(sourceDescription: String)` — Effect is consumed the first time its replacement effect is applied or end of turn if not consumed.
-- `Duration.Permanent` — Effect is permanent (static abilities, auras while attached).
-- `Duration.UntilAfterAffectedControllersNextUntap` — Effect lasts through the affected entity's controller's next untap step, then expires.
-- `Duration.UntilCondition(conditionDescription: String)` — Effect lasts until a condition is met.
-- `Duration.UntilNextEndStep` — Effect lasts until the beginning of the next end step (the *next* one — never the end step it was created in).
-- `Duration.UntilPhase(phase: String)` — Effect lasts until a specific phase.
-- `Duration.UntilSourceCastFromExile` — Effect lasts until the effect's source *card* is cast from exile — "Target land gains '{T}: Add {C}{C}' until this card is cast from exile" (Emrakul, the Exigent Doom), where the card exiled itself…
-- `Duration.UntilYourNextTurn` — Effect lasts until the beginning of your next turn.
-- `Duration.UntilYourNextUpkeep` — Effect lasts until the beginning of your next upkeep.
-- `Duration.WhileAffectedHasCounter(counterType: CounterType)` — Effect lasts for as long as each affected permanent has at least one counter of counterType on it (CR 611.2b "for as long as …").
-- `Duration.WhileAffectedTapped` — Effect lasts for as long as each *affected* permanent remains tapped (CR 611.2b "for as long as it remains tapped") — the affected-object mirror of WhileSourceTapped: the gate watches the permanent…
-- `Duration.WhileControlledByController` — Effect lasts for as long as the effect's controller controls the affected object — it ends the moment that object's controller becomes a different player ("for as long as you control it").
-- `Duration.WhileSourceAttachedToAffected` — Effect lasts for as long as the effect's source (an Aura/Equipment) remains attached to the affected permanent (CR 611.2b "for as long as …").
-- `Duration.WhileSourceOnBattlefield(sourceDescription: String)` — Effect lasts while the source permanent is on the battlefield.
-- `Duration.WhileSourceTapped(sourceDescription: String)` — Effect lasts while the source permanent remains tapped.
-- `Duration.WhileSourceTappedAndAffectedPowerAtMostSource(sourceDescription: String)` — Effect lasts while the source permanent remains tapped AND each affected entity's projected power stays less than or equal to the source's projected power.
-- `Duration.WhileYouControlSource(sourceDescription: String)` — Effect lasts for as long as the effect's controller controls the *source* permanent — mirror of WhileControlledByController, but the gate watches the source's controller rather than the affected ob…
-- `Duration.WhileYouControlSourceAndSourceTapped(sourceDescription: String)` — Effect lasts for as long as its controller controls the source **and** the source remains tapped — the conjunction of WhileYouControlSource and WhileSourceTapped.
-
-## CardSource
-
-- `CardSource.AttachedTo(host: EffectTarget, filter: GameObjectFilter)` — Permanents attached to a host entity (resolved from an EffectTarget) that match filter.
-- `CardSource.BattlefieldMatching(filter: GameObjectFilter, player: Player, excludeSelf: Boolean, includeAttachments: Boolean, excludeTriggering: Boolean, excludeChosenTargets: Boolean)` — All permanents on the battlefield matching a filter (any controller by default).
-- `CardSource.BottomOfLibrary(count: DynamicAmount, player: Player)` — Bottom N cards of a player's library — "puts the bottom card of their library into their graveyard" (Cellar Door).
-- `CardSource.ChosenTargets` — The spell or ability's resolved targets, taken from EffectContext.targets.
-- `CardSource.ControlledPermanents(player: Player, filter: GameObjectFilter)` — Permanents controlled by a player (uses projected state to respect control-changing effects).
-- `CardSource.CraftedMaterials` — The cards exiled to Craft the source permanent (its com.wingedsheep.engine.state.components.battlefield.CraftedFromExiledComponent), filtered to those still in exile.
-- `CardSource.CreaturesThatSaddledSource` — The creatures that saddled the effect's source this turn (CR 702.171c) — the union of every creature tapped to pay a Saddle ability's cost on this Mount, read off the source's `CrewSaddleContributo…
-- `CardSource.EnteredViaThisResolution` — Every permanent that was put onto the battlefield by *this* resolving spell or ability, read off the `EnteredViaAbilityComponent(sourceId == context.sourceId)` stamp left by a MoveCollectionEffect…
-- `CardSource.ExiledAsCost` — The cards exiled to pay the ability's *activation cost* — the exile counterpart of TappedAsCost, read from `EffectContext.exiledAsCostCards`, which the activation records at cost-payment time (CR 6…
-- `CardSource.FromLinkedExile(count: Int?)`
-- `CardSource.FromMultipleZones(zones: List<Zone>, player: Player, filter: GameObjectFilter)` — Cards from multiple zones matching an optional filter.
-- `CardSource.FromVariable(variableName: String)` — Read cards from a previously stored collection variable.
-- `CardSource.FromZone(zone: Zone, player: Player, filter: GameObjectFilter, excludeSacrificedThisWay: Boolean)` — Cards from a specific zone matching an optional filter.
-- `CardSource.LastKnownCombatPairedWithSource` — The creatures that were blocking, or blocked by, the effect's source at the moment the source last left the battlefield (CR 509 combat pairing, captured as last-known information).
-- `CardSource.LastKnownEquipmentAttachedToSource` — The Equipment that was attached to the effect's source the moment a self-sacrifice / self-exile cost moved it off the battlefield (CR 113.7a last-known information).
-- `CardSource.Self` — The ability's own source card (com.wingedsheep.sdk.scripting.references sourceId).
-- `CardSource.SourceLinkedBattlefield(key: String)` — Still-current battlefield objects recorded by this source's original battlefield visit.
-- `CardSource.TappedAsCost` — Permanents that were tapped as part of the ability's activation cost.
-- `CardSource.TopOfLibrary(count: DynamicAmount, player: Player, isMill: Boolean, isScry: Boolean)` — Top N cards of a player's library.
-- `CardSource.TriggeringEntity` — The entity that caused the trigger to fire (`EffectContext.triggeringEntityId`) — the gatherable counterpart of com.wingedsheep.sdk.scripting.targets.EffectTarget.TriggeringEntity.
-
-## SpellCastPredicate
-
-- `SpellCastPredicate.AnyOf(options: List<SpellCastPredicate>)` — Any of options — the heterogeneous "player or object" unions.
-- `SpellCastPredicate.CastAsAdventure` — The spell was cast **as an Adventure** (CR 715.3) — "Whenever you cast an Adventure spell" (Chancellor of Tales).
-- `SpellCastPredicate.CastAsPrepareSpell` — The spell was cast **as a prepare spell** (CR 722.3c) — "Whenever you cast a prepared spell" (Codie, Ravenous Codex).
-- `SpellCastPredicate.CastFromZone(zone: Zone)` — The spell was cast from this zone (e.g. HAND for "from your hand").
-- `SpellCastPredicate.CastFromZoneOtherThan(zone: Zone)` — The spell was cast from a zone *other than* zone — the negation of CastFromZone.
-- `SpellCastPredicate.HasXInCost` — The spell has `{X}` in its printed mana cost (CR 107.3) — "Whenever you cast a spell with {X} in its mana cost, …" (Geometer's Arthropod).
-- `SpellCastPredicate.IsCard` — The spell cast is a **card**, not a copy — "whenever a player casts an instant or sorcery *card*" (Eye of the Storm).
-- `SpellCastPredicate.IsModal` — The spell was modal — at least one mode was chosen at cast time (rules 700.2).
-- `SpellCastPredicate.NotOwnedByController` — The just-cast spell is **owned by a player other than the one who cast it** — the card's owner (CR 108.3, fixed at game start) differs from its caster.
-- `SpellCastPredicate.PaidWithManaFromCardType(cardType: CardType, atLeast: Int)` — At least atLeast mana produced by a source of card type cardType was spent on the cast — Inga and Esika's "if three or more mana from creatures was spent to cast it" is `PaidWithManaFromCardType(Ca…
-- `SpellCastPredicate.PaidWithManaFromSource` — Mana produced by the trigger's own source permanent was spent on the cast — "Whenever you cast a … spell using mana produced by this" (Tecutlan, the Searing Rift / Barracks of the Thousand / The My…
-- `SpellCastPredicate.PaidWithManaFromSubtype(subtype: Subtype)` — Mana produced by a permanent with this subtype was spent on the cast — Treasure (Alchemist's Talent, Rain of Riches), Cave, or any other producing-source subtype.
-- `SpellCastPredicate.SpellMatches(filter: GameObjectFilter)` — The spell itself matches filter — the same test as com.wingedsheep.sdk.scripting.EventPattern.SpellCastEvent.spellFilter, as a predicate so it can sit inside AnyOf: "an Equipment spell **or** a spe…
-- `SpellCastPredicate.TargetsMatching(filter: GameObjectFilter)` — The spell was cast with at least one chosen target matching filter ("a spell that targets a creature you don't control" — Legolas, Master Archer).
-- `SpellCastPredicate.TargetsOnlySource` — The spell was cast targeting the trigger's own source permanent and **nothing else** — every instance of the word "target" on the spell points at the source ("a spell that targets only this creatur…
-- `SpellCastPredicate.TargetsOpponent` — The spell was cast with at least one chosen target that is an **opponent** of the trigger's controller — "a spell that targets an opponent" (Danitha, Spear of Agony).
-- `SpellCastPredicate.TargetsSource` — The spell was cast targeting the trigger's own source permanent ("a spell that targets this creature" — Legolas, Master Archer).
-- `SpellCastPredicate.WasKicked` — The spell was cast with kicker (CR 702.32).
-
-## ControllerPredicate
-
-- `ControllerPredicate.And(predicates: List<ControllerPredicate>)`
-- `ControllerPredicate.ControlledByActivePlayer` — Controlled by the active player (the player whose turn it is).
-- `ControllerPredicate.ControlledByAny` — Controlled by any player (no restriction)
-- `ControllerPredicate.ControlledByDefendingPlayer` — Any defending player during combat, relative to the active player and attack mode.
-- `ControllerPredicate.ControlledByOpponent` — Controlled by an opponent of the ability's controller
-- `ControllerPredicate.ControlledByReferencedPlayer(target: EffectTarget)` — Controlled by the player referenced by an explicit EffectTarget.
-- `ControllerPredicate.ControlledByTargetOpponent` — Controlled by the targeted opponent
-- `ControllerPredicate.ControlledByTargetPlayer` — Controlled by the targeted player
-- `ControllerPredicate.ControlledByTriggeringPlayer` — Controlled by the player associated with the current trigger — the damaged player for a combat/damage trigger, the event's player otherwise (resolved from the effect context's `triggeringPlayerId`,…
-- `ControllerPredicate.ControlledByYou` — Controlled by the ability's controller
-- `ControllerPredicate.Not(predicate: ControllerPredicate)`
-- `ControllerPredicate.Or(predicates: List<ControllerPredicate>)`
-- `ControllerPredicate.OwnedByOpponent` — Owned by an opponent
-- `ControllerPredicate.OwnedByTargetPlayer` — Owned by the targeted player (the spell/ability's "target player").
-- `ControllerPredicate.OwnedByTriggeringPlayer` — Owned by the player associated with the current trigger — the damaged player for a combat/damage trigger, the event's player otherwise (resolved from the effect context's `triggeringPlayerId`).
-- `ControllerPredicate.OwnedByYou` — Owned by the ability's controller
-
-## EntityNumericProperty
-
-- `EntityNumericProperty.AttachmentCount(kind: AttachmentKind)` — The number of permanents attached to this entity, optionally narrowed to a single AttachmentKind.
-- `EntityNumericProperty.BasePower` — The entity's printed **base** power — its power before counters, Auras, Equipment, anthems, and any other continuous modification.
-- `EntityNumericProperty.BaseToughness` — The entity's printed **base** toughness — the toughness sibling of BasePower.
-- `EntityNumericProperty.BlockerCount`
-- `EntityNumericProperty.ColorCount` — The number of distinct colors this entity has, read from projected state when available (so layer-5 color-changing effects are honored).
-- `EntityNumericProperty.ColoredManaSymbolCount(colors: List<Color>)` — The number of mana symbols of colors in **this one entity's** printed mana cost — `{1}{U}{U}` counts 2 blue, `{U/R}{R}` counts 1 blue.
-- `EntityNumericProperty.CounterCount(counterType: CounterType?)` — The number of counterType counters on the entity — of every kind when `null`.
-- `EntityNumericProperty.DamageDealtThisTurn` — Actual damage dealt by this object this turn, after prevention and replacement effects.
-- `EntityNumericProperty.ExcessMarkedDamage` — The excess damage (CR 120.4a) currently marked on this entity: `max(0, marked − toughness)`, read from post-damage state.
-- `EntityNumericProperty.KeywordValue(keyword: Keyword)` — The total N across this entity's instances of a numeric keyword ("bushido N", "toxic N") — Takeno, Samurai General's "for each point of bushido it has".
-- `EntityNumericProperty.ManaSpent` — Total mana actually paid from the pool to cast a spell on the stack.
-- `EntityNumericProperty.ManaValue`
-- `EntityNumericProperty.Power`
-- `EntityNumericProperty.SubtypeCount` — The number of distinct subtypes this entity has, read from projected state when available (so layer-4 type-changing effects, including Changeling, are honored).
-- `EntityNumericProperty.Toughness`
-- `EntityNumericProperty.ValueChosenAsEntered` — The number the entity's controller chose as it entered the battlefield — Nameless Race's "the life paid as it entered", read back by its characteristic-defining power and toughness.
-
-## AdditionalCost
-
-- `AdditionalCost.Atom(atom: CostAtom)` — A single shared payable thing — see CostAtom.
-- `AdditionalCost.Behold(filter: GameObjectFilter, count: Int, storeAs: String)` — Behold: choose a matching permanent you control or reveal a matching card from your hand.
-- `AdditionalCost.BlightOrPay(blightAmount: Int, alternativeManaCost: String)` — Blight N or pay additional mana: the caster must either put N -1/-1 counters on a creature they control, or pay extra mana on top of the spell's base mana cost.
-- `AdditionalCost.BlightVariable(minCount: Int)` — Blight X (variable): the caster declares X at cast time, puts X -1/-1 counters on a creature they control, and X is exposed to the spell's effects via `DynamicAmount.CastChoice(ChoiceSlot.BLIGHT_AM…
-- `AdditionalCost.Choice(options: List<AdditionalCost>, choiceSlot: ChoiceSlot?)` — Cost-vs-cost: the caster chooses **exactly one** of options and pays it — "as an additional cost to cast this spell, discard a card **or** sacrifice a permanent" (Souls of the Lost).
-- `AdditionalCost.ChooseEntity(zoneFilters: Map<Zone, GameObjectFilter>, storeAs: String, captureSnapshot: Boolean, descriptionOverride: String?)` — Choose one entity from any of the zones declared in zoneFilters, applying the matching filter for that zone, without moving it.
-- `AdditionalCost.Composite(steps: List<AdditionalCost>)` — A composite additional cost that groups multiple atomic costs into a single logical cost.
-- `AdditionalCost.ExileFromStorage(from: String, linkToSource: Boolean)` — Exile cards from a named pipeline collection and optionally link them to the source spell/permanent via LinkedExileComponent.
-- `AdditionalCost.ExileVariableCards(minCount: Int, filter: GameObjectFilter, fromZone: CostZone)` — Exile a variable number of cards from a zone as an additional cost.
-- `AdditionalCost.Forage` — Forage: exile three cards from your graveyard or sacrifice a Food.
-- `AdditionalCost.OrPay(cost: AdditionalCost, alternativeManaCost: String)` — Pay cost, **or** pay alternativeManaCost on top of the spell's mana cost — the whole "do X or pay {N}" shape, parameterized by the cost on the non-mana leg.
-- `AdditionalCost.PayLifeEqualToManaValueOfSpell` — Pay life equal to the mana value of the spell being cast.
-- `AdditionalCost.PayLifePerTarget(amountPerTarget: Int)` — Pay amountPerTarget life for each target chosen by this spell.
-- `AdditionalCost.PayXLife(minCount: Int)` — Pay X life (variable): the caster declares X at cast time and pays X life as an additional cost.
-- `AdditionalCost.SacrificeCreaturesForCostReduction(filter: GameObjectFilter, costReductionPerCreature: Int)` — Sacrifice any number of permanents matching the given filter as an additional cost.
-
-## ProtectionScope
-
-- `ProtectionScope.ActivatedAbilities` — From activated abilities — only the targeting leg applies, since an ability never deals damage, blocks, or enchants on its own (its *source* does).
-- `ProtectionScope.CardType(cardType: String)` — Protection from a card type — "from creatures".
-- `ProtectionScope.Color(color: Color)` — Protection / hexproof from a single color.
-- `ProtectionScope.Colors(colors: Set<Color>)` — Protection from multiple colors — "from white and from blue".
-- `ProtectionScope.EachOpponent` — Protection from each of the controller's opponents (Rule 702.16e).
-- `ProtectionScope.Everything` — Protection from everything (Rule 702.16i).
-- `ProtectionScope.Monocolored` — From monocolored — matches a source with exactly one color (CR 105.2a), the twin of Multicolored.
-- `ProtectionScope.Multicolored` — From multicolored — matches a source with two or more colors (CR 105.2b: a multicolored object has two or more colors).
-- `ProtectionScope.NonColor(color: Color)` — The complement of a single color — "from nongreen".
-- `ProtectionScope.PermanentsCastThisTurn` — From permanents that were cast this turn — a battlefield source that entered this turn by resolving as a cast spell (not a copy, a token, or a permanent put onto the battlefield), and hasn't left s…
-- `ProtectionScope.Spells` — From spells — the quality of *being a spell* (CR 702.16a: the quality "can be any characteristic value or information").
-- `ProtectionScope.Subtype(subtype: String)` — Protection from a creature subtype — "from Goblins".
-- `ProtectionScope.Supertype(supertype: String)` — Protection from a supertype — "from legendary creatures" (Tsabo Tavoc).
-- `ProtectionScope.TriggeredAbilities` — From triggered abilities — the triggered twin of ActivatedAbilities.
-
-## CostModification
-
-- `CostModification.IncreaseColored(symbols: String)` — Add specific colored mana symbols to the cost (e.g. `"{W}"`), a colored tax effect.
-- `CostModification.IncreaseColoredPerUnit(symbols: String, countSource: CostReductionSource)` — Add symbols to the cost once per unit of countSource — the tax mirror of ReduceColoredPerUnit, reading the same CostReductionSource vocabulary.
-- `CostModification.IncreaseGeneric(amount: Int)` — Increase generic mana by a fixed amount (tax effect).
-- `CostModification.IncreaseGenericBy(source: CostReductionSource)` — Increase generic mana by a dynamic amount sourced from the game state — the tax mirror of ReduceGenericBy, reading the same CostReductionSource vocabulary.
-- `CostModification.IncreaseGenericIfAnyTargetMatches(amount: Int, filter: GameObjectFilter)` — Increase generic mana by a fixed amount if the spell targets any object matching the filter.
-- `CostModification.IncreaseGenericPerOtherSpellThisTurn(amountPerSpell: Int)` — Damping-Sphere-style scaling tax: increase by `amountPerSpell` for each spell the casting player has already cast this turn.
-- `CostModification.IncreaseLife(amount: Int)` — Pay amount additional life as part of the casting cost (CR 601.2f).
-- `CostModification.ReduceColored(symbols: String)` — Remove specific colored mana symbols from the cost (e.g. `"{W}{B}"`).
-- `CostModification.ReduceColoredIfAnyTargetMatches(symbols: String, filter: GameObjectFilter)` — Remove specific colored mana symbols from the cost if the spell targets any object matching filter.
-- `CostModification.ReduceColoredPerUnit(symbols: String, countSource: CostReductionSource)` — Remove `symbols` per unit of countSource.
-- `CostModification.ReduceGeneric(amount: Int)` — Reduce generic mana by a fixed amount.
-- `CostModification.ReduceGenericBy(source: CostReductionSource)` — Reduce generic mana by a dynamic amount sourced from the game state.
-
-## ActivationRestriction
-
-- `ActivationRestriction.All(restrictions: List<ActivationRestriction>)` — Composite restriction requiring multiple conditions.
-- `ActivationRestriction.AnyPlayerMay` — Any player may activate this ability, not just the controller.
-- `ActivationRestriction.BeforeStep(step: Step)` — Restrict activation to before a specific step.
-- `ActivationRestriction.ControlledSinceYourMostRecentTurn` — Restrict activation to when the source has been under the activating player's control continuously since the beginning of their most recent turn — i.e. the "summoning sickness" condition (CR 302.6)…
-- `ActivationRestriction.DuringPhase(phase: Phase)` — Restrict activation to during a specific phase.
-- `ActivationRestriction.DuringStep(step: Step)` — Restrict activation to during a specific step.
-- `ActivationRestriction.MaxPerTurn(count: Int)` — Restrict activation to at most count times per turn.
-- `ActivationRestriction.Once` — Restrict activation to only once ever (for the lifetime of the permanent).
-- `ActivationRestriction.OncePerTurn` — Restrict activation to once per turn.
-- `ActivationRestriction.OnlyDuringYourTurn` — Restrict activation to only during your turn.
-- `ActivationRestriction.OnlyIfCondition(condition: Condition)` — Restrict activation based on a game condition.
+- `SuccessCriterion.Always` — Action always counts as having happened.
+- `SuccessCriterion.Auto` — Infer success from the action's shape.
+- `SuccessCriterion.CollectionNonEmpty(name: String, min: Int)` — Action succeeded iff `pipeline.storedCollectionsname.size >= min` after the action runs.
+- `SuccessCriterion.ControlChanged` — Action succeeded iff the gated action actually *changed control* of a permanent — at least one permanent moved from one controller to a different controller during the action (a `ControlChangedEven…
+- `SuccessCriterion.CountersAdded` — Action actually placed at least one counter, after prevention and replacement effects.
+- `SuccessCriterion.CountersRemoved` — Action succeeded iff the gated action actually *removed a counter* — at least one `CountersRemovedEvent` with a positive amount was emitted during the action.
+- `SuccessCriterion.DamageDealt(recipient: DamageRecipient)` — Action succeeded iff the gated action actually *dealt damage* — at least one point of damage was dealt by the effect's source during the action (a `DamageDealtEvent` with `amount > 0` whose source…
+- `SuccessCriterion.PermanentsSacrificed` — Action succeeded iff the gated action actually *sacrificed a permanent* — at least one `PermanentsSacrificedEvent` carrying a non-empty permanent list was emitted during the action.
+- `SuccessCriterion.TurnedFaceUp` — Action succeeded iff the gated action actually *turned a permanent face up* — a `TurnFaceUpEvent` was emitted during the action.
 
 ## TargetRequirement
 
@@ -1529,66 +1861,15 @@ Families: [Effect](#effect) (378) · [StaticAbility](#staticability) (188) · [C
 - `TargetPlayerOrPlaneswalker(count: Int, optional: Boolean, id: String?)` — "Target player or planeswalker" - can target any player or any planeswalker.
 - `TargetSpellOrPermanent(count: Int, optional: Boolean, id: String?, permanentFilter: GameObjectFilter?, spellFilter: GameObjectFilter?, descriptionOverride: String?)` — "Target spell or permanent" - can target spells on the stack or permanents on the battlefield.
 
-## ManaColorSet
+## TimingRule
 
-- `ManaColorSet.AmongCardsInGraveyard(filter: GameObjectFilter)` — The union of colors among the cards in your graveyard matching filter (read from each card's base colors — graveyard cards aren't projected).
-- `ManaColorSet.AmongLinkedExiledCards` — The union of colors among the cards currently exiled *with* the source permanent — the cards recorded in its `LinkedExileComponent` (set by `MoveToZoneEffect(linkToSource = true)`) that are still i…
-- `ManaColorSet.AmongPermanents(filter: GameObjectFilter)` — The union of colors of permanents matching filter (resolved via projected state — type/color-changing effects are honored).
-- `ManaColorSet.AnyColor` — All five colors.
-- `ManaColorSet.ColorsOf(entity: EffectTarget)` — The colors of one object — entity resolved against the running effect: a pipeline-gathered card (`EffectTarget.PipelineTarget`), a target, the source (`EffectTarget.Self`).
-- `ManaColorSet.CommanderIdentity` — The union of color identities of every commander registered to the controller (Partner / Background sum their identities).
-- `ManaColorSet.LandsCouldProduce(scope: LandControllerScope)` — The union of colors that any land in the given scope could produce (CR 106.7 / Fellwar Stone rulings).
-- `ManaColorSet.SourceChosenColor` — The single color recorded on the source permanent's `CastChoicesComponent` (set when it entered the battlefield, e.g., via `EntersWithChoice(COLOR)`).
-- `ManaColorSet.Specific(colors: Set<Color>)` — A fixed, hand-authored set of colors (e.g., `{R}{G}` for Mossfire Valley).
-- `ManaColorSet.Union(members: List<ManaColorSet>)` — The union of several pools — the player picks one color from any of them.
+- `TimingRule.InstantSpeed` — Instant speed: Can be used whenever you have priority.
+- `TimingRule.ManaAbility` — Mana ability: Special timing that does NOT use the stack.
+- `TimingRule.SorcerySpeed` — Sorcery speed: Can only be used during your main phase, when the stack is empty, and you have priority.
 
-## ManaSymbol
+## UnlockCostTarget
 
-- `ManaSymbol.Colored(color: Color)`
-- `ManaSymbol.Colorless`
-- `ManaSymbol.Generic(amount: Int)`
-- `ManaSymbol.Hybrid(color1: Color, color2: Color)` — Hybrid mana symbol - can be paid with either of two colors.
-- `ManaSymbol.HybridPhyrexian(color1: Color, color2: Color)` — Hybrid Phyrexian mana symbol — can be paid with one mana of either color or 2 life (CR 107.4f).
-- `ManaSymbol.MonocolorHybrid(generic: Int, color: Color)` — Monocolored hybrid ("twobrid") mana symbol - can be paid with either generic generic mana OR a single mana of color.
-- `ManaSymbol.Phyrexian(color: Color)` — Phyrexian mana symbol - can be paid with colored mana or 2 life.
-- `ManaSymbol.Snow` — The snow mana symbol `{S}` (CR 107.4h): a one-mana cost payable only with mana of any type produced by a snow source.
-- `ManaSymbol.X`
-
-## SelectionRestriction
-
-- `SelectionRestriction.MaxAffordablePayment(manaPerSelected: Int, payer: Player)` — The selection is capped at the number of cards payer can afford to pay manaPerSelected generic mana for: `floor(availableMana / manaPerSelected)`, where available mana counts floating mana plus unt…
-- `SelectionRestriction.OnePerBasicLandType` — At most one land of each basic land type (Plains/Island/Swamp/Mountain/Forest) may be selected.
-- `SelectionRestriction.OnePerCardName` — At most one card of each name may be selected.
-- `SelectionRestriction.OnePerCardType` — At most one card of each card type may be selected.
-- `SelectionRestriction.OnePerColor(matchControllerPermanentColors: Boolean)` — At most one card of each colour may be selected.
-- `SelectionRestriction.OnePerPower` — At most one card of each power may be selected.
-- `SelectionRestriction.ReducedMinimumIfMatches(reducedMinimum: Int, filter: GameObjectFilter, requiredMatches: Int)` — Allows a selection to satisfy a lower minimum when the chosen cards include requiredMatches cards matching filter.
-- `SelectionRestriction.TotalManaValueAtMost(max: Int, maxAmount: DynamicAmount?)` — The sum of selected cards' mana values must not exceed the cap.
-- `SelectionRestriction.TotalPowerAtMost(max: Int)` — The sum of selected creatures' **projected** power must not exceed max.
-
-## SpellCostTarget
-
-- `SpellCostTarget.AnyCaster(filter: GameObjectFilter)` — Spells matching the filter cast by any player (global tax effect).
-- `SpellCostTarget.FaceDownYouCast` — Face-down (morph) creature spells the source's controller casts.
-- `SpellCostTarget.MorphActivation` — The morph (turn face-up) activated cost, applied globally.
-- `SpellCostTarget.OpponentsCast(filter: GameObjectFilter)` — Spells matching filter cast by an **opponent** of the source's controller, from any zone — "Noncreature spells your opponents cast cost {1} more to cast" (Thalia, the Survivor).
-- `SpellCostTarget.OpponentsCastFromZones(zones: Set<Zone>, filter: GameObjectFilter)` — Spells opponents of the source's controller cast **from one of zones**, matching filter (default: any spell).
-- `SpellCostTarget.OpponentsCastTargeting(targetFilter: GroupFilter)` — Spells opponents of the source's controller cast that target one or more permanents matching targetFilter relative to the source.
-- `SpellCostTarget.SelfCast` — Self-reduction on the spell card itself — applies when this card is cast.
-- `SpellCostTarget.YouCast(filter: GameObjectFilter)` — Spells the source's controller casts that match the filter.
-- `SpellCostTarget.YouCastFromZones(zones: Set<Zone>, filter: GameObjectFilter)` — Spells the source's controller casts **from one of zones**, matching filter (default: any spell).
-
-## SuccessCriterion
-
-- `SuccessCriterion.Always` — Action always counts as having happened.
-- `SuccessCriterion.Auto` — Infer success from the action's shape.
-- `SuccessCriterion.CollectionNonEmpty(name: String, min: Int)` — Action succeeded iff `pipeline.storedCollectionsname.size >= min` after the action runs.
-- `SuccessCriterion.ControlChanged` — Action succeeded iff the gated action actually *changed control* of a permanent — at least one permanent moved from one controller to a different controller during the action (a `ControlChangedEven…
-- `SuccessCriterion.CountersAdded` — Action actually placed at least one counter, after prevention and replacement effects.
-- `SuccessCriterion.CountersRemoved` — Action succeeded iff the gated action actually *removed a counter* — at least one `CountersRemovedEvent` with a positive amount was emitted during the action.
-- `SuccessCriterion.DamageDealt(recipient: DamageRecipient)` — Action succeeded iff the gated action actually *dealt damage* — at least one point of damage was dealt by the effect's source during the action (a `DamageDealtEvent` with `amount > 0` whose source…
-- `SuccessCriterion.PermanentsSacrificed` — Action succeeded iff the gated action actually *sacrificed a permanent* — at least one `PermanentsSacrificedEvent` carrying a non-empty permanent list was emitted during the action.
-- `SuccessCriterion.TurnedFaceUp` — Action succeeded iff the gated action actually *turned a permanent face up* — a `TurnFaceUpEvent` was emitted during the action.
+- `UnlockCostTarget.YouUnlock` — Door-unlock special actions performed by the source's controller ("unlock costs you pay").
 
 ## WardCost
 
@@ -1601,222 +1882,3 @@ Families: [Effect](#effect) (378) · [StaticAbility](#staticability) (188) · [C
 - `WardCost.Mana(manaCost: String, waterbend: Boolean)` — Ward with a mana cost — e.g. Ward {1}.
 - `WardCost.PlayerCounters(counterType: CounterType, amount: Int)` — Ward with a cost paid in **counters placed on the paying player** (CR 122.1 — a counter is a marker placed on an object *or player*) — "Ward—Get five poison counters." (The Serpent Society).
 - `WardCost.Sacrifice(filter: GameObjectFilter, count: Int)` — Ward with a sacrifice cost — e.g. Ward—Sacrifice a Food, or Ward—Sacrifice three nonland permanents (Valgavoth, Terror Eater) via count.
-
-## Gate
-
-- `Gate.DoAction(action: Effect, successCriterion: SuccessCriterion)` — Not a decision — an *action-outcome* gate.
-- `Gate.MayDecide(prompt: String?, hint: String?, dynamicHint: DynamicHint?, sourceRequiredZone: Zone?, inlineOnTrigger: Boolean, feasibility: FeasibilityCheck?, choiceLabels: ChoiceLabels?)` — Pure yes/no — "You may then." The decision-maker chooses whether GatedEffect.then happens at all.
-- `Gate.MayPay(cost: Effect)` — Optionally pay a cost — "You may cost.
-- `Gate.MayPayAnyAmountOfLife` — Optionally pay a *variable* amount of life — "You may pay any amount of life.
-- `Gate.MayPayX` — Optionally pay a *variable* amount of generic mana — "You may pay {X}.
-- `Gate.OnceEachTurn(abilityId: AbilityId, spend: Boolean)` — Not a decision — a **per-turn action budget**.
-- `Gate.WhenCondition(condition: Condition)` — Not a decision — a state test.
-
-## AttackPredicate
-
-- `AttackPredicate.Alone` — The attacker is the only declared attacker this combat.
-- `AttackPredicate.AttackedAlongsideGreaterPower` — The attacker was declared as attacking **and** at least one *other* declared attacker has strictly greater **projected** power than the attacker's own projected power.
-- `AttackPredicate.AttackerCountAtLeast(n: Int)` — At least n creatures total were declared as attackers this combat (counting the attacker the trigger fires for).
-- `AttackPredicate.DefenderIsBattle` — The attacker was declared as attacking a **battle** — the defender-kind sibling of DefenderIsPlayer (CR 508.1: an attacker is declared as attacking a player, planeswalker, or battle).
-- `AttackPredicate.DefenderIsPlayer` — The attacker was declared as attacking a **player** — not a planeswalker or a battle.
-- `AttackPredicate.FirstTimeEachTurn` — The attacker is attacking *for the first time this turn* — it had not been declared as an attacker in any earlier combat phase this turn.
-
-## CollectionFilter
-
-- `CollectionFilter.ExcludeEntity(entity: EffectTarget.SingleEntity)` — Exclude the entity referenced by entity from the collection.
-- `CollectionFilter.ExcludeOtherCollection(otherCollectionName: String)` — Exclude all entities present in another stored collection — i.e., set difference.
-- `CollectionFilter.GreatestManaValue` — Keep only the cards with the greatest mana value in the collection.
-- `CollectionFilter.GreatestPower` — Keep only creatures with the greatest power in the collection.
-- `CollectionFilter.LeastToughness` — Keep only creatures with the least toughness in the collection.
-- `CollectionFilter.SharesSubtypeWithSacrificed` — Keep only entities that share at least one subtype with the sacrificed creature.
-
-## MayPlayExpiry
-
-- `MayPlayExpiry.EndOfTurn` — Permission ends at the cleanup step of the current turn.
-- `MayPlayExpiry.Permanent` — Permission persists for as long as the card remains exiled.
-- `MayPlayExpiry.UntilControllerStep(step: Step, includeCurrentTurn: Boolean)` — Permission ends at the controller's next step.
-- `MayPlayExpiry.UntilSourceExilesAnother` — Permission persists indefinitely — across turns, and it survives the granting source leaving play (the permission's lifecycle is owned by the game state, not the source) — EXCEPT that it is revoked…
-- `MayPlayExpiry.WhileSourceOnBattlefield(sourceDescription: String)` — Permission lasts for as long as the **granting permanent stays on the battlefield** — regardless of who controls it, and regardless of who holds the permission.
-- `MayPlayExpiry.WhileYouControlSource(sourceDescription: String)` — Permission lasts for as long as the grant's controller controls the **granting permanent** — "you may cast it for as long as you control this creature" (Taster of Wares).
-
-## SelectionMode
-
-- `SelectionMode.All` — Select all cards (no choice needed).
-- `SelectionMode.ChooseAnyNumber` — Player may select any number of cards (0 to the full collection size).
-- `SelectionMode.ChooseExactly(count: DynamicAmount)` — Player must choose exactly N cards.
-- `SelectionMode.ChooseSpell` — Choose at most one spell, testing the filter against the face that will be cast.
-- `SelectionMode.ChooseUpTo(count: DynamicAmount)` — Player may choose up to N cards.
-- `SelectionMode.Random(count: DynamicAmount)` — Randomly select N cards (no player choice — engine picks randomly).
-
-## CastRestriction
-
-- `CastRestriction.All(restrictions: List<CastRestriction>)` — Composite restriction requiring multiple conditions.
-- `CastRestriction.OnlyDuringPhase(phase: Phase)` — Restrict casting to a specific phase.
-- `CastRestriction.OnlyDuringStep(step: Step)` — Restrict casting to a specific step.
-- `CastRestriction.OnlyIfCondition(condition: Condition)` — Restrict casting based on a game condition.
-- `CastRestriction.TimingRequirement(timing: TimingRule)` — Restrict casting based on timing rules (instant speed vs sorcery speed).
-
-## Format
-
-- `Format.Commander(commanderDamageThreshold: Int, deckSize: Int, startingLife: Int, startingHandSize: Int, alwaysDivertToCommand: Boolean)` — Commander, at any table size.
-- `Format.MomirBasic(startingLife: Int, startingHandSize: Int, avatarCardName: String, eligibleCreatureNames: List<String>)` — Momir Basic — the classic Vanguard format (<https://mtg.fandom.com/wiki/Momir>).
-- `Format.Standard`
-- `Format.TeamVsTeam(startingLife: Int, startingHandSize: Int, commanderDamageThreshold: Int?, deckSize: Int?, alwaysDivertToCommand: Boolean)` — Team vs. Team — the general N-per-team multiplayer variant (CR 808).
-- `Format.TwoHeadedGiant(startingLife: Int, startingHandSize: Int, poisonThreshold: Int)` — Two-Headed Giant — the 2v2 team variant (CR 810).
-
-## IterationSpace
-
-- `IterationSpace.Collection(collection: String)` — Iterate the entities in a named pipeline collection.
-- `IterationSpace.ColorsOf(source: EffectTarget.SingleEntity)` — Iterate the colors of a referenced entity in canonical WUBRG order, exposing the current color through the chosen-color context — the same channel `ChooseColorThen` feeds — so per-color atoms (`Gra…
-- `IterationSpace.Group(filter: GroupFilter, noRegenerate: Boolean)` — Iterate battlefield permanents matching filter, snapshotted before any iteration runs (simultaneous semantics — entities destroyed during iteration stay in the list).
-- `IterationSpace.Players(players: Player)` — Iterate players matching players (e.g. `Player.Each`, `Player.EachOpponent`, `Player.ActivePlayerFirst`).
-- `IterationSpace.Targets` — Iterate the targets chosen for the spell/ability.
-
-## Scope
-
-- `Scope.AttachedTo`
-- `Scope.Battlefield`
-- `Scope.Self`
-- `Scope.SoulbondPair` — The source **and** the creature it is soulbond-paired with (CR 702.95b) — the "both creatures" / "each of those creatures" of a soulbond payoff (Lightning Mauler's "as long as this creature is pair…
-- `Scope.Specific(entityId: EntityId)`
-
-## AmountFilter
-
-- `AmountFilter.Any`
-- `AmountFilter.AtLeast(value: Int)`
-- `AmountFilter.AtMost(value: Int)`
-- `AmountFilter.Exactly(value: Int)`
-
-## CounterDestination
-
-- `CounterDestination.Exile(grantFreeCast: Boolean)` — Spell is exiled instead of going to graveyard.
-- `CounterDestination.Graveyard` — Spell goes to owner's graveyard (default).
-- `CounterDestination.Hand` — Spell is put into its owner's **hand** instead of their graveyard — Remand's "put it into its owner's hand instead of into that player's graveyard".
-- `CounterDestination.Library(positions: List<LibraryChoicePosition>)` — Spell is put into its owner's **library** instead of their graveyard.
-
-## DelayedTriggerExpiry
-
-- `DelayedTriggerExpiry.EndOfCombat` — Remove the delayed trigger when the current combat phase ends — the scope of a "this combat" rider, which EndOfTurn is too coarse for once a turn has more than one combat phase.
-- `DelayedTriggerExpiry.EndOfTurn` — Remove the delayed trigger at the end of the current turn.
-- `DelayedTriggerExpiry.Never` — Never expire on a turn boundary — the delayed trigger persists across turns until it fires (pair with `fireOnce = true`) or the game ends.
-- `DelayedTriggerExpiry.UntilControllersNextTurn` — Remove the delayed trigger after the untap step of its **controller's** next turn — the delayed-trigger analogue of com.wingedsheep.sdk.scripting.Duration.UntilYourNextTurn, and expired on the same…
-
-## ManaSpellRider
-
-- `ManaSpellRider.CopySpellWhenSpent(spellFilter: GameObjectFilter)` — "When that mana is spent to cast a spellFilter spell, copy that spell and you may choose new targets for the copy." (Pyromancer's Goggles, with `spellFilter = GameObjectFilter.InstantOrSorcery.with…
-- `ManaSpellRider.GrantsKeywordWhenSpent(keyword: String, spellFilter: GameObjectFilter, duration: Duration)` — "If that mana is spent on a spellFilter spell, it gains keyword until end of turn." (Carnelian Orb of Dragonkind, with `spellFilter = GameObjectFilter.Creature.withSubtype("Dragon")` and `keyword =…
-- `ManaSpellRider.MakesSpellUncounterable(spellFilter: GameObjectFilter)` — "That spell can't be countered." (Cavern of Souls, with the default spellFilter.) "If that mana is spent on an instant or sorcery spell, that spell can't be countered." (Boseiju, Who Shelters All,…
-- `ManaSpellRider.ScryOnSharedTypeWithCommander(amount: Int)` — "When that mana is spent to cast a creature spell that shares a creature type with your commander, scry amount." (Path of Ancestry) On consumption the cast pipeline checks the spell's projected cre…
-
-## NumberProperty
-
-- `NumberProperty.Even` — An even number (0 is even).
-- `NumberProperty.MultipleOf(divisor: Int)` — A multiple of divisor (0 counts as a multiple of every nonzero divisor).
-- `NumberProperty.Odd` — An odd number.
-- `NumberProperty.Prime` — A prime number (CR has no notion of this — it's a card-defined property; 0 and 1 are not prime).
-
-## PayCost
-
-- `PayCost.Atom(atom: CostAtom)` — A single shared payable thing — see CostAtom.
-- `PayCost.Choice(options: List<PayCost>)` — Choose one of several costs to pay.
-- `PayCost.DynamicLife(amount: DynamicAmount)` — Pay a life amount computed when the cost is offered rather than written on the card as a number — "unless they pay life equal to its mana value" (Wand of Ith).
-- `PayCost.OwnManaCost` — Pay the mana cost of the permanent the cost applies to (its own mana cost).
-
-## PreventionSourceFilter
-
-- `PreventionSourceFilter.AnySource` — Any damage source.
-- `PreventionSourceFilter.Chosen(eligible: GameObjectFilter)` — The controller chooses one damage source at resolution among permanents and spells matching eligible — "a source of your choice" (Samite Ministration), "an artifact source of your choice" (Circle o…
-- `PreventionSourceFilter.Matching(filter: GameObjectFilter)` — Only damage from sources matching filter, evaluated against projected state whenever damage would be dealt — "by creatures" (Ethereal Haze), "by attacking creatures" (Heavy Fog), "by non-Soldier cr…
-- `PreventionSourceFilter.ThisSource` — Only damage dealt by the effect's own source — "~ deals 2 damage to that player.
-
-## Recipient
-
-- `Recipient.AnotherPlayer` — "Another player" — any player other than the observing ability's controller.
-- `Recipient.AnyOf(options: List<Recipient>)` — Any of options — the heterogeneous "player or object" unions.
-- `Recipient.Object(filter: GameObjectFilter)` — An object (a permanent, or a spell for an ability's target) matching filter.
-- `Recipient.Player(player: Player)` — A player named by a com.wingedsheep.sdk.scripting.references.Player reference.
-
-## CardMeasure
-
-- `CardMeasure.ColoredManaSymbols(colors: List<Color>)` — How many mana symbols of colors appear in the card's **printed** mana cost — Baron Helmut Zemo's "fifteen or more black mana symbols among their mana costs".
-- `CardMeasure.DistinctCardTypes` — How many distinct card types (CR 205.2a; on a graveyard card: artifact, battle, creature, enchantment, instant, kindred, land, planeswalker, sorcery; never supertypes or subtypes) appear **among**…
-- `CardMeasure.ManaValue` — The card's mana value (CR 202.3) — the measure collect evidence N uses ("with total mana value N or greater", CR 701.59a).
-
-## CharacteristicValue
-
-- `CharacteristicValue.Dynamic(source: DynamicAmount)` — A dynamic value determined by game state.
-- `CharacteristicValue.DynamicWithOffset(source: DynamicAmount, offset: Int)` — A dynamic value with a fixed offset.
-- `CharacteristicValue.Fixed(value: Int)` — A fixed integer value.
-
-## CostGating
-
-- `CostGating.None` — No extra restriction — the modifier applies to every matching cast.
-- `CostGating.NthOfTypePerTurn(n: Int)` — Modifier applies only when the matching spell being cast is the Nth such spell the casting player has cast this turn (1-indexed; counts itself).
-- `CostGating.OnlyIf(condition: Condition)` — Modifier applies only while condition holds at cast time.
-
-## CounterCondition
-
-- `CounterCondition.Always` — No condition — always counter.
-- `CounterCondition.UnlessPaysDynamic(amount: DynamicAmount, onPaid: Effect?)` — Counter unless controller pays a dynamic generic mana cost.
-- `CounterCondition.UnlessPaysMana(cost: ManaCost, onPaid: Effect?)` — Counter unless controller pays a fixed mana cost.
-
-## CounterTarget
-
-- `CounterTarget.Ability` — Counter an activated or triggered ability (removed from stack, no zone change).
-- `CounterTarget.Spell` — Counter a spell (goes to graveyard/exile).
-- `CounterTarget.SpellOrAbility` — Counter a spell or an activated/triggered ability.
-
-## DamageType
-
-- `DamageType.Any`
-- `DamageType.Combat`
-- `DamageType.NonCombat`
-
-## FeasibilityCheck
-
-- `FeasibilityCheck.CanPayMana(cost: ManaCost)` — The player can pay cost right now — from floating mana or untapped mana sources.
-- `FeasibilityCheck.ControlsPermanentMatching(filter: GameObjectFilter, count: Int)` — The player controls at least count permanents matching filter.
-- `FeasibilityCheck.HasCardsInZone(zone: Zone, filter: GameObjectFilter, count: Int)` — The player has at least count cards in zone matching filter.
-
-## TimingRule
-
-- `TimingRule.InstantSpeed` — Instant speed: Can be used whenever you have priority.
-- `TimingRule.ManaAbility` — Mana ability: Special timing that does NOT use the stack.
-- `TimingRule.SorcerySpeed` — Sorcery speed: Can only be used during your main phase, when the stack is empty, and you have priority.
-
-## CardDestination
-
-- `CardDestination.ToZone(zone: Zone, player: Player, placement: ZonePlacement)` — Move cards to a specific zone.
-- `CardDestination.ToZoneExiledFrom(fallback: Zone)` — Each card goes back to **the zone it was exiled from** — the "return it to its previous zone" half of an exile-until (CR 610.3: "A second one-shot effect is created immediately after the specified…
-
-## CounterTargetSource
-
-- `CounterTargetSource.Chosen` — Uses a chosen target from context.targets (normal targeting).
-- `CounterTargetSource.TriggeringEntity` — Uses context.triggeringEntityId (for triggered abilities like Decree of Silence).
-
-## PlayerRankMetric
-
-- `PlayerRankMetric.CreaturesOfSubtype(subtype: Subtype)` — How many creatures of subtype each player controls.
-- `PlayerRankMetric.LifeTotal` — Each player's life total.
-
-## RepeatCondition
-
-- `RepeatCondition.PlayerChooses(decider: EffectTarget, prompt: String, yesText: String, noText: String)` — A player decides each iteration whether to repeat.
-- `RepeatCondition.WhileCondition(condition: Condition)` — Repeat while a game-state condition is true (checked after each body execution).
-
-## RetargetChooser
-
-- `RetargetChooser.Controller` — The controller of the effect changes the targets (e.g., "you may change the target").
-- `RetargetChooser.OwnerOfStored(collectionName: String)` — The owner of the single card in pipeline collection collectionName changes the targets — e.g. the card left after `FilterCollection(GreatestManaValue)` over each player's revealed top card (Psychic…
-
-## DamagePredicate
-
-- `DamagePredicate.SourceSoleTargetIsRecipient` — The damage source has exactly one chosen target, and that target is this damage recipient.
-
-## PlotCostTarget
-
-- `PlotCostTarget.YouPlotFromHand` — Cards the source's controller plots from their hand (the printed Plot keyword cost).
-
-## UnlockCostTarget
-
-- `UnlockCostTarget.YouUnlock` — Door-unlock special actions performed by the source's controller ("unlock costs you pay").

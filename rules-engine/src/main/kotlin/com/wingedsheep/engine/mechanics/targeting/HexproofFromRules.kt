@@ -43,7 +43,15 @@ object HexproofFromRules {
         ProtectionScope.Monocolored -> setOf(MONOCOLORED)
         ProtectionScope.Multicolored -> setOf(MULTICOLORED)
         is ProtectionScope.CardType -> setOf("HEXPROOF_FROM_CARDTYPE_${scope.cardType.uppercase()}")
-        else -> SourceKind.of(scope)?.let { setOf(SourceKindProtection.hexproofKeyword(it)) } ?: emptySet()
+        ProtectionScope.Spells,
+        ProtectionScope.PermanentsCastThisTurn,
+        ProtectionScope.ActivatedAbilities,
+        ProtectionScope.TriggeredAbilities ->
+            setOf(SourceKindProtection.hexproofKeyword(checkNotNull(SourceKind.of(scope))))
+        is ProtectionScope.Subtype,
+        is ProtectionScope.Supertype,
+        ProtectionScope.Everything,
+        ProtectionScope.EachOpponent -> emptySet()
     }
 
     /**

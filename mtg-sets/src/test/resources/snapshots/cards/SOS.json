@@ -5418,7 +5418,12 @@
                                         "IsCreature"
                                     ]
                                 },
-                                "ManaValueEqualsX"
+                                {
+                                    "type": "CompareNumericProperty",
+                                    "property": "MANA_VALUE",
+                                    "operator": "EQ",
+                                    "amount": "XValue"
+                                }
                             ]
                         }
                     },
@@ -9684,7 +9689,12 @@
                                 "filter": {
                                     "cardPredicates": [
                                         "IsPermanent",
-                                        "ManaValueAtMostX"
+                                        {
+                                            "type": "CompareNumericProperty",
+                                            "property": "MANA_VALUE",
+                                            "operator": "LTE",
+                                            "amount": "XValue"
+                                        }
                                     ]
                                 }
                             },
@@ -17965,7 +17975,12 @@
                                         "IsCreature"
                                     ]
                                 },
-                                "ManaValueAtMostX"
+                                {
+                                    "type": "CompareNumericProperty",
+                                    "property": "MANA_VALUE",
+                                    "operator": "LTE",
+                                    "amount": "XValue"
+                                }
                             ]
                         }
                     },

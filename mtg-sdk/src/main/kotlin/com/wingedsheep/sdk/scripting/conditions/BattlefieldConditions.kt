@@ -192,17 +192,10 @@ data object TriggeringEntityHadCounters : Condition {
 @Serializable
 data class TriggeringEntityWas(val filter: GameObjectFilter) : Condition {
     init {
-        require(filter.statePredicates.isEmpty() && filter.controllerPredicate == null) {
-            "TriggeringEntityWas reads only the last-known type line; state and controller predicates aren't captured"
-        }
-        val unsupported = filter.cardPredicates.flatMap { unsupportedPredicates(it) } +
-            filter.anyOf.flatMap { alt -> alt.cardPredicates.flatMap { unsupportedPredicates(it) } }
-        require(unsupported.isEmpty()) {
-            "TriggeringEntityWas reads only card types and subtypes, not $unsupported"
-        }
+        requireTypeLineOnly(filter)
     }
 
-    override val description: String = "if it was ${filter.description}"
+    override val description: String = "if it was ${filter.indefiniteArticle} ${filter.description}"
 
     override fun applyTextReplacement(replacer: TextReplacer): Condition {
         val newFilter = filter.applyTextReplacement(replacer)
@@ -210,6 +203,22 @@ data class TriggeringEntityWas(val filter: GameObjectFilter) : Condition {
     }
 
     private companion object {
+        /**
+         * Rejects anything the last-known type line can't answer, in [filter] and in every `anyOf`
+         * alternative at any depth — the snapshot matcher reports such a predicate unknown, and an
+         * unknown under `Not` must not be read as "wasn't".
+         */
+        fun requireTypeLineOnly(filter: GameObjectFilter) {
+            require(filter.statePredicates.isEmpty() && filter.controllerPredicate == null) {
+                "TriggeringEntityWas reads only the last-known type line; state and controller predicates aren't captured"
+            }
+            val unsupported = filter.cardPredicates.flatMap { unsupportedPredicates(it) }
+            require(unsupported.isEmpty()) {
+                "TriggeringEntityWas reads only card types and subtypes, not $unsupported"
+            }
+            filter.anyOf.forEach { requireTypeLineOnly(it) }
+        }
+
         /** The card predicates a last-known type line (card types + subtypes) can answer. */
         fun unsupportedPredicates(predicate: CardPredicate): List<CardPredicate> = when (predicate) {
             CardPredicate.IsCreature, CardPredicate.IsLand, CardPredicate.IsArtifact,

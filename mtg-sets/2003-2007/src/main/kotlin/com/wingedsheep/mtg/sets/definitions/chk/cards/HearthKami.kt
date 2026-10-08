@@ -16,7 +16,7 @@ import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
  * {X}, Sacrifice this creature: Destroy target artifact with mana value X.
  *
  * The X paid for the ability threads into the *target filter* rather than into the effect:
- * `manaValueEqualsX()` lowers to `CardPredicate.ManaValueEqualsX`, which the target enumerator reads
+ * `manaValueEqualsX()` lowers to a mana-value-equals-X comparison, which the target enumerator reads
  * off the X chosen for this activation, so activating for X=3 can only ever target a mana-value-3
  * artifact. That is the whole card — the destroy itself is the plain [Effects.Destroy].
  */

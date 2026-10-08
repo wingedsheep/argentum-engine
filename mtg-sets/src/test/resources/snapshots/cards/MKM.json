@@ -15598,6 +15598,12 @@
     "keywords": [
         "FLYING"
     ],
+    "keywordAbilities": [
+        {
+            "type": "Hexproof",
+            "scope": "ProtectionScope.Multicolored"
+        }
+    ],
     "script": {
         "triggeredAbilities": [
             {
@@ -15660,16 +15666,6 @@
                         "id": "t1"
                     }
                 ]
-            }
-        ],
-        "staticAbilities": [
-            {
-                "type": "GrantHexproofFromToGroup",
-                "scope": "ProtectionScope.Multicolored",
-                "filter": {
-                    "baseFilter": "permanent",
-                    "scope": "Self"
-                }
             }
         ]
     },

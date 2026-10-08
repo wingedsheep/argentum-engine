@@ -1218,7 +1218,7 @@ class CastSpellHandler(
             //
             // X was announced with the modes (CR 601.2b), so it is known here and every mode
             // that reads it must see it: as a filter bound ("creature card with mana value X or
-            // less" — unbound, `ManaValueAtMostX` matches permissively and would offer targets
+            // less" — unbound, `manaValueAtMostX()` matches permissively and would offer targets
             // the cast then rejects) and as a target count ("up to X target creatures", a
             // `dynamicMaxCount` the static `count` placeholder would clamp to one).
             val xContext = PredicateContext(

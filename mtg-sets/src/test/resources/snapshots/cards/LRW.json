@@ -13516,7 +13516,12 @@
                                 "baseFilter": {
                                     "cardPredicates": [
                                         "IsCreature",
-                                        "ManaValueAtMostX"
+                                        {
+                                            "type": "CompareNumericProperty",
+                                            "property": "MANA_VALUE",
+                                            "operator": "LTE",
+                                            "amount": "XValue"
+                                        }
                                     ],
                                     "controllerPredicate": "OwnedByYou"
                                 },

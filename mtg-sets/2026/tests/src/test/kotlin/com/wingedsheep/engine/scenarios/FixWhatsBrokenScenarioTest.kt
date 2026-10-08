@@ -17,7 +17,7 @@ import io.kotest.matchers.shouldBe
  *  Return each artifact and creature card with mana value X from your graveyard to the battlefield."
  *
  * X is declared at cast time (paid as life via [com.wingedsheep.sdk.scripting.AdditionalCost.PayXLife])
- * and the same X drives the resolution filter [com.wingedsheep.sdk.scripting.predicates.CardPredicate.ManaValueEqualsX]
+ * and the same X drives the resolution filter `manaValueEqualsX()`
  * ("mana value X", exactly). Mass reanimation gathers every matching artifact/creature card from the
  * caster's graveyard and returns them to the battlefield.
  */

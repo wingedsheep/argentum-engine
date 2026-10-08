@@ -39,8 +39,12 @@ internal object SdkIndex {
             appendLine("reach these through facades (`Effects.*`, `Conditions.*`, `Filters.*`, …); the long-form")
             appendLine("catalog with authoring notes is [`card-sdk-language-reference.md`](card-sdk-language-reference.md).")
             appendLine()
-            val families = SdkSurface.byFamily.entries.sortedWith(compareByDescending<Map.Entry<String, List<SdkSurface.Leaf>>> { it.value.size }.thenBy { it.key })
-            appendLine("Families: " + families.joinToString(" · ") { "[${it.key}](#${anchor(it.key)}) (${it.value.size})" })
+            // Alphabetical and count-free, one per line: a PR that adds a leaf touches only its own
+            // family's section, so parallel PRs don't conflict on a shared header line.
+            val families = SdkSurface.byFamily.entries.sortedBy { it.key }
+            appendLine("Families:")
+            appendLine()
+            for (family in families.map { it.key }) appendLine("- [$family](#${anchor(family)})")
             for ((family, leaves) in families) {
                 appendLine()
                 appendLine("## ${family}")

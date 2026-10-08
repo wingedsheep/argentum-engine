@@ -175,10 +175,12 @@ interface ObjectFilterBuilder<out Self> {
     fun manaValueAtMost(max: Int) = withCardPredicate(CardPredicate.ManaValueAtMost(max))
 
     /** Mana value at most the X chosen for the source spell/ability */
-    fun manaValueAtMostX() = withCardPredicate(CardPredicate.ManaValueAtMostX)
+    fun manaValueAtMostX() =
+        compareNumericProperty(CardNumericProperty.MANA_VALUE, ComparisonOperator.LTE, DynamicAmount.XValue)
 
     /** Mana value exactly equal to the number chosen for the source spell/ability (Void) */
-    fun manaValueEqualsX() = withCardPredicate(CardPredicate.ManaValueEqualsX)
+    fun manaValueEqualsX() =
+        compareNumericProperty(CardNumericProperty.MANA_VALUE, ComparisonOperator.EQ, DynamicAmount.XValue)
 
     /** Mana value at least */
     fun manaValueAtLeast(min: Int) = withCardPredicate(CardPredicate.ManaValueAtLeast(min))

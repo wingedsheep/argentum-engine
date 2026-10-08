@@ -3451,8 +3451,9 @@
                         {
                             "label": "Draw step",
                             "effect": {
-                                "type": "SkipStepOrPhaseThisTurn",
+                                "type": "SkipStepOrPhaseEffect",
                                 "part": "DRAW_STEP",
+                                "duration": "THIS_TURN",
                                 "target": {
                                     "type": "PlayerRef",
                                     "player": "TriggeringPlayer"
@@ -3462,8 +3463,9 @@
                         {
                             "label": "Main phase",
                             "effect": {
-                                "type": "SkipStepOrPhaseThisTurn",
+                                "type": "SkipStepOrPhaseEffect",
                                 "part": "MAIN_PHASE",
+                                "duration": "THIS_TURN",
                                 "target": {
                                     "type": "PlayerRef",
                                     "player": "TriggeringPlayer"
@@ -3473,8 +3475,9 @@
                         {
                             "label": "Combat phase",
                             "effect": {
-                                "type": "SkipStepOrPhaseThisTurn",
+                                "type": "SkipStepOrPhaseEffect",
                                 "part": "COMBAT_PHASE",
+                                "duration": "THIS_TURN",
                                 "target": {
                                     "type": "PlayerRef",
                                     "player": "TriggeringPlayer"
@@ -13565,7 +13568,12 @@
                                                 "type": "HasSubtype",
                                                 "subtype": "Equipment"
                                             },
-                                            "ManaValueAtMostX"
+                                            {
+                                                "type": "CompareNumericProperty",
+                                                "property": "MANA_VALUE",
+                                                "operator": "LTE",
+                                                "amount": "XValue"
+                                            }
                                         ]
                                     }
                                 },

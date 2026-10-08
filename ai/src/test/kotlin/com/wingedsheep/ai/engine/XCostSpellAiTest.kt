@@ -73,7 +73,7 @@ class XCostSpellAiTest : ScenarioTestBase() {
         /**
          * Repeal ({X}{U}, "return target nonland permanent with mana value X to its owner's hand")
          * is the target-gated case, and the one that proves the *wiring* rather than the arithmetic:
-         * its filter is `ManaValueEqualsX`, so an X that misses the target's mana value is rejected
+         * its filter is `manaValueEqualsX()`, so an X that misses the target's mana value is rejected
          * outright, and the only thing that tells [XCostSelection] so is
          * `LegalAction.xConstrainsTargetManaValueExactly`. Without the flag the action looks like a
          * free X, the sweep offers the largest affordable value, and the cast is illegal.

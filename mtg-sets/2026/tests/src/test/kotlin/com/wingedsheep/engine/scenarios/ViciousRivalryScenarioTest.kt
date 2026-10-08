@@ -17,7 +17,7 @@ import io.kotest.matchers.shouldBe
  *  Destroy all artifacts and creatures with mana value X or less."
  *
  * Proves the [com.wingedsheep.sdk.scripting.AdditionalCost.PayXLife] feature: X is declared at cast
- * time (paid as life) and the same X feeds the board wipe's `ManaValueAtMostX` filter via the
+ * time (paid as life) and the same X feeds the board wipe's `manaValueAtMostX()` filter via the
  * resolution X value.
  */
 class ViciousRivalryScenarioTest : FunSpec({

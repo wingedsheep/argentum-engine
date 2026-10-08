@@ -300,8 +300,8 @@ object XCostSelection {
      * The mana value the engine's own target filter will see.
      *
      * A face-down permanent has no mana cost and so mana value 0 (CR 708.2a), whatever is printed
-     * on the card — which is what `PredicateEvaluator` applies for `ManaValueAtMostX` and
-     * `ManaValueEqualsX`. Reading [CardComponent.manaValue] flat would derive X from a morph's
+     * on the card — which is what `PredicateEvaluator` applies for `manaValueAtMostX()` and
+     * `manaValueEqualsX()`. Reading [CardComponent.manaValue] flat would derive X from a morph's
      * printed cost and pick a target the engine then rejects.
      */
     private fun manaValueOf(state: GameState, id: EntityId): Int? =

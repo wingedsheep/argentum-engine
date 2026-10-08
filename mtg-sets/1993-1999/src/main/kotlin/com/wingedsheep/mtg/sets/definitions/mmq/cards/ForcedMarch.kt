@@ -12,7 +12,7 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
  * Destroy all creatures with mana value X or less.
  *
  * The bound is part of the *filter*, not a count: [GameObjectFilter.manaValueAtMostX] adds
- * `CardPredicate.ManaValueAtMostX`, which reads the {X} paid for this spell at resolution.
+ * `manaValueAtMostX()`, which reads the {X} paid for this spell at resolution.
  * Same idiom as Day of Black Sun's board wipe.
  */
 val ForcedMarch = card("Forced March") {
