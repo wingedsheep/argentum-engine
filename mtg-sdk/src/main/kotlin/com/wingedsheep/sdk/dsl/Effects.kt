@@ -3396,6 +3396,14 @@ object Effects {
     fun CreatePhyrexianMite(count: DynamicAmount, controller: EffectTarget? = null): Effect =
         CreatePredefinedTokenEffect("Phyrexian Mite", controller = controller, dynamicCount = count)
 
+    /** Create green 1/1 Forest Dryad land creature tokens with intrinsic Forest mana abilities. */
+    fun CreateForestDryad(count: Int = 1, tapped: Boolean = false, controller: EffectTarget? = null): Effect =
+        CreatePredefinedTokenEffect("Forest Dryad", count, controller, tapped = tapped)
+
+    /** [CreateForestDryad] with a count evaluated at resolution (Awaken the Woods). */
+    fun CreateForestDryad(count: DynamicAmount, tapped: Boolean = false, controller: EffectTarget? = null): Effect =
+        CreatePredefinedTokenEffect("Forest Dryad", controller = controller, tapped = tapped, dynamicCount = count)
+
     /**
      * Create N Powerstone tokens — The Brothers' War's colorless artifact with "{T}: Add {C}. This
      * mana can't be spent to cast a nonartifact spell." (`PredefinedTokens.Powerstone`). Almost

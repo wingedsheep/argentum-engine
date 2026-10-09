@@ -436,6 +436,27 @@
     ]
 }
 
+// Awaken the Woods
+{
+    "name": "Awaken the Woods",
+    "manaCost": "{X}{G}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Create X 1/1 green Forest Dryad land creature tokens. (They're affected by summoning sickness.)",
+    "script": {
+        "spellEffect": {
+            "type": "CreatePredefinedToken",
+            "tokenType": "Forest Dryad",
+            "dynamicCount": "XValue"
+        }
+    },
+    "metadata": {
+        "collectorNumber": "170",
+        "rarity": "MYTHIC",
+        "artist": "Bryan Sola",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/c/1c95f8b8-faba-4412-8d8f-093e2ec903f0.jpg?1783920050"
+    }
+}
+
 // Battery Bearer
 {
     "name": "Battery Bearer",

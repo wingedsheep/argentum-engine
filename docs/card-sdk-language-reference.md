@@ -2650,6 +2650,11 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   green "Artifact — Heartwood" with "{T}: Add {R} or {G}."
 - `CreateLotus(count?, controller?)` — Lotus tokens (Reality Fracture, Kwia Vigorbloom): a colorless
   "Artifact" named Lotus with "{T}, Sacrifice this token: Add three mana of any one color."
+- `CreateForestDryad(count?, tapped?, controller?)` — green 1/1 "Land Creature — Forest Dryad"
+  tokens (Awaken the Woods). `count` accepts an `Int` or a `DynamicAmount`; the latter is evaluated
+  at resolution (Awaken uses `DynamicAmounts.xValue()`). These are nonbasic lands and creatures;
+  their Forest subtype supplies "{T}: Add {G}" and summoning sickness gates that tap ability.
+  Uses the predefined-token executor and the creating set's token art, with no new effect type.
 - `CreateForestTentacle(count?, tapped?, controller?)` — Forest Tentacle tokens (Reality Fracture,
   Verdant Kraken): a 3/3 green "Land Creature — Forest Tentacle". Its "{T}: Add {G}." is the Forest
   type's intrinsic mana ability (CR 305.6), derived from the subtype, and as a creature it is subject

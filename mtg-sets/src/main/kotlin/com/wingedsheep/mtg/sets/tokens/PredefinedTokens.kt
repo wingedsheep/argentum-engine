@@ -1110,6 +1110,23 @@ object PredefinedTokens {
     }
 
     /**
+     * A green 1/1 Forest Dryad land creature token. The Forest subtype supplies its mana
+     * ability; being a creature makes that tap ability subject to summoning sickness.
+     */
+    val ForestDryad = card("Forest Dryad") {
+        typeLine = "Land Creature — Forest Dryad"
+        colorIdentity = "G"
+        power = 1
+        toughness = 1
+        oracleText = "{T}: Add {G}."
+
+        metadata {
+            imageUri = "https://cards.scryfall.io/normal/front/7/4/74de70f2-93b6-4fc5-8c4d-464f880d3c54.jpg?1783919910"
+            artist = "Donato Giancola"
+        }
+    }
+
+    /**
      * Powerstone token — The Brothers' War's colorless artifact token:
      * "{T}: Add {C}. This mana can't be spent to cast a nonartifact spell."
      *
@@ -1183,6 +1200,7 @@ object PredefinedTokens {
         Heartwood,
         Lotus,
         ForestTentacle,
+        ForestDryad,
         Powerstone
     )
 }
