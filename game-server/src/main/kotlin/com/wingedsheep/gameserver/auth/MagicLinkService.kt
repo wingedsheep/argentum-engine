@@ -97,6 +97,12 @@ class MagicLinkService(
         return users.save(user.copy(displayName = displayName))
     }
 
+    /** Set (or, with null, clear) the account's preset avatar. Caller validates the id. */
+    fun updateAvatar(userId: UUID, avatar: String?): UserRow? {
+        val user = users.findById(userId).orElse(null) ?: return null
+        return users.save(user.copy(avatar = avatar))
+    }
+
     /**
      * Store the account's Learn to Play progress — the client's JSON, kept verbatim. Returns null if
      * the account no longer exists. Caller validates the body (well-formed JSON, size cap).
@@ -104,6 +110,15 @@ class MagicLinkService(
     fun updateLearnProgress(userId: UUID, progressJson: String): UserRow? {
         val user = users.findById(userId).orElse(null) ?: return null
         return users.save(user.copy(learnProgress = progressJson))
+    }
+
+    /**
+     * Store the account's player preferences — the client's JSON, kept verbatim. Returns null if the
+     * account no longer exists. Caller validates the body (well-formed JSON, size cap).
+     */
+    fun updatePreferences(userId: UUID, preferencesJson: String): UserRow? {
+        val user = users.findById(userId).orElse(null) ?: return null
+        return users.save(user.copy(preferences = preferencesJson))
     }
 
     private fun sha256Hex(value: String): String =

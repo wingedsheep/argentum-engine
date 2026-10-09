@@ -201,11 +201,12 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
         'Decks saved to the account instead of this browser',
         'Friends list and online presence',
         'Private messages with other players',
+        'Preferences (stops, stacking, motion) that follow you between devices',
         'Ranked games (every player in the game must be signed in, otherwise it silently plays unranked)',
         'Full stats dashboard and permanent replays',
       ] },
     ],
-    related: ['ranked', 'replays', 'messages'],
+    related: ['ranked', 'replays', 'messages', 'preferences'],
   },
   {
     id: 'first-game',
@@ -557,14 +558,15 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
     section: 'community',
     title: 'Your profile',
     summary:
-      'Profile (from the account menu) shows your record at a glance, your recent games with both decks and their replays, and your recent tournaments. You can change your display name here.',
+      'Profile (from the account menu) shows your record at a glance, your recent games with both decks and their replays, and your recent tournaments. You can change your display name and avatar here.',
     body: [
       { kind: 'ul', items: [
         'Games, wins, losses and win rate.',
         'Recent games, ten to a page — open Decks to see both players’ lists, Watch the replay, or Share its link.',
         'Recent tournaments, each opening its final standings and replays.',
-        'Shortcuts to Full stats, My decks and Friends.',
+        'Shortcuts to Full stats, My decks, Friends and Preferences.',
       ] },
+      { kind: 'p', text: 'Click your avatar to choose one. Portraits offers 56 painted characters — the creature types of each colour, from Kithkin and Loxodon to Phyrexians and Eldrazi. Card art lets you search for any card, pick the printing whose art you like, and drag and zoom the circle to frame the part you want. Your avatar shows in the account menu, on your public profile, to friends and in messages, and inside your life orb at the table. “Use my initial” goes back to the letter. Avatars need an account; guests show their initial.' },
       { kind: 'p', text: 'Everyone also has a public profile at `/u/<id>` that anyone can open without signing in. It shows the same statistics and recent games but never your decklists. “This is how others see your profile” marks your own.' },
     ],
     related: ['stats', 'friends', 'guest-vs-account'],
@@ -992,10 +994,10 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
     summary:
       'Auto passes for you whenever you have nothing worth doing. Stops pauses on opponent spells and abilities, on combat damage, and in a declare attackers step where nothing attacks. Full Control gives you priority at every single step.',
     body: [
-      { kind: 'p', text: 'The button cycles Auto → Stops → Full Control. Auto is right for most games; switch to Full Control when you need a specific window, such as responding in your own upkeep.' },
+      { kind: 'p', text: 'The button cycles Auto → Stops → Full Control. Auto is right for most games; switch to Full Control when you need a specific window, such as responding in your own upkeep. Games start in Auto unless you pick another starting mode in Preferences.' },
       { kind: 'p', text: 'Auto never passes when you have a decision that matters — it is a convenience, not a rules shortcut.' },
     ],
-    related: ['stops', 'yields'],
+    related: ['stops', 'yields', 'preferences'],
   },
   {
     id: 'stops',
@@ -1004,9 +1006,35 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
     summary:
       'Hover a step on the phase bar to reveal two dots: a blue “my turn” stop and an amber “opponent turn” stop. Click one and you will always get priority at that step.',
     body: [
-      { kind: 'p', text: 'Stops are saved in this browser and apply to every game you play.' },
+      { kind: 'p', text: 'Stops are part of your Preferences: they apply to every game you play, and follow you to other devices once you are signed in. Preferences also lists them all in one table, for both turns.' },
     ],
-    related: ['priority-modes', 'phase-bar'],
+    related: ['priority-modes', 'phase-bar', 'preferences'],
+  },
+  {
+    id: 'preferences',
+    section: 'playing',
+    title: 'Preferences',
+    summary:
+      'The gear on the home screen (or Preferences in the account menu) sets how your table behaves: the priority mode games start in, your standing stops, auto-tap, how identical permanents stack, and motion. In a game, the gear beside the fullscreen button opens the same settings over the board.',
+    body: [
+      { kind: 'h', text: 'Gameplay' },
+      { kind: 'ul', items: [
+        'Starting priority mode — Auto, Stops or Full Control. Every game begins in it; the mode button still switches it for the game you are in.',
+        'Always stop at — your standing stops, for your turn and your opponents’. The phase-bar dots edit the same list.',
+        'Auto-tap mana, and Follow the action for games with three or more players.',
+      ] },
+      { kind: 'h', text: 'Battlefield' },
+      { kind: 'p', text: 'Identical permanents — same name, tapped state, counters, damage and so on — collapse into one stack with a count. Lands, creatures and other permanents each have their own rule:' },
+      { kind: 'table', head: ['Setting', 'What it does'], rows: [
+        ['Stack from', 'The fewest identical permanents that form a stack. At 4, three Forests sit side by side and a fourth stacks them. Never stack keeps every card on its own.'],
+        ['Stacks of', 'The most cards in one stack. At most 5 turns twelve Saprolings into stacks of 5, 5 and 2.'],
+        ['Visible stack layers', 'How many cards a stack fans out before the rest hide behind its count.'],
+      ] },
+      { kind: 'h', text: 'Display' },
+      { kind: 'p', text: 'Reduce motion cuts animations short, whatever your device is set to. Card preview on hover can be turned off if the full-size preview gets in your way; on a touch screen, press and hold still opens it.' },
+      { kind: 'tip', text: 'Changes save as you make them. As a guest they live in this browser; signed in, they follow you to every device.' },
+    ],
+    related: ['stops', 'priority-modes', 'auto-tap', 'card-preview', 'guest-vs-account'],
   },
   {
     id: 'phase-bar',
@@ -1022,7 +1050,7 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
     title: 'Auto Tap vs. Manual Tap',
     summary:
       'Auto Tap picks lands for you when you cast something. Manual Tap hands you the choice — useful when the lands you spend now decide what you can cast later.',
-    related: ['priority-modes'],
+    related: ['priority-modes', 'preferences'],
   },
   {
     id: 'mana-payment',
@@ -1082,7 +1110,7 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
       { kind: 'p', text: 'The preview is read-only; nothing you do to it changes the game. Press F while a double-faced card is open to see its other face.' },
     ],
     shortcuts: ['flip-dfc'],
-    related: ['targeting-and-combat', 'zone-browsers', 'card-badges'],
+    related: ['targeting-and-combat', 'zone-browsers', 'card-badges', 'preferences'],
   },
   {
     id: 'targeting-and-combat',
@@ -1352,7 +1380,7 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
     summary:
       'Finished games can be replayed frame by frame. Scrub with the timeline, step with the arrow keys, play/pause with space.',
     body: [
-      { kind: 'p', text: 'Replays in the top bar lists every game you finished, grouped by tournament, with who played, who won and how long it was. Replays are also linked from your profile, from a tournament’s Replays button, and from Watch Replay at the end of a game.' },
+      { kind: 'p', text: 'Replays in the top bar lists every game you finished, newest first, with who played, who won and how long it was; switch to Oldest first, or By tournament to group a tournament’s games in round order. Replays are also linked from your profile, from a tournament’s Replays button, and from Watch Replay at the end of a game.' },
       { kind: 'p', text: 'Every replay has its own link that anyone can open — they watch it as a spectator, so hidden cards stay hidden.' },
       { kind: 'h', text: 'Replay files' },
       { kind: 'p', text: 'Export saves a finished game as a compact replay file; Open file in the replay list plays one back (up to 8 MB). Uploaded replays can be watched but not re-shared.' },

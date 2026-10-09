@@ -19,6 +19,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { LoginModal } from '@/components/auth/LoginModal'
+import { AvatarArt, hasAvatarArt } from '@/components/profile/AvatarArt'
+import { initialOf } from '@/components/profile/avatars'
 import { useAuthStore } from '@/store/authStore'
 import { useFriendsStore } from '@/store/friendsStore'
 import { unreadBadgeCount, useMessagesStore } from '@/store/messagesStore'
@@ -97,7 +99,7 @@ export function AuthWidget() {
     ...(onlineCount > 0 ? [`${onlineCount} ${onlineCount === 1 ? 'friend' : 'friends'} online`] : []),
     ...(incomingCount > 0 ? [`${incomingCount} pending friend ${incomingCount === 1 ? 'request' : 'requests'}`] : []),
   ]
-  const initial = user.displayName.trim().charAt(0).toUpperCase() || '?'
+  const portrait = hasAvatarArt(user.avatar)
 
   return (
     <div className={styles.root} ref={rootRef}>
@@ -111,8 +113,8 @@ export function AuthWidget() {
         aria-label={[user.displayName, ...statusParts].join(', ')}
         title={statusParts.length > 0 ? statusParts.join(' · ') : undefined}
       >
-        <span className={styles.avatar} aria-hidden>
-          {initial}
+        <span className={styles.avatar} data-portrait={portrait} aria-hidden>
+          {portrait ? <AvatarArt avatar={user.avatar} /> : initialOf(user.displayName)}
           {incomingCount + unreadMessages > 0 && (
             <span className={styles.avatarRequests}>{incomingCount + unreadMessages}</span>
           )}
@@ -154,6 +156,15 @@ export function AuthWidget() {
           </div>
           <button type="button" role="menuitem" className={styles.item} onClick={() => go('/profile')}>
             Profile
+          </button>
+          <button
+            type="button"
+            role="menuitem"
+            className={styles.item}
+            onClick={() => go('/preferences')}
+            title="Auto-pass stops, battlefield stacking, motion"
+          >
+            Preferences
           </button>
           <button
             type="button"

@@ -47,6 +47,8 @@ export interface AccountUser {
   readonly isAdmin: boolean
   /** When true the account appears offline to its friends even while connected. */
   readonly hidePresence: boolean
+  /** Chosen preset avatar id (see components/profile/avatars), or null for the initial. */
+  readonly avatar?: string | null
 }
 
 export interface LoginResponse {
@@ -121,6 +123,18 @@ export async function updateProfile(displayName: string): Promise<AccountUser> {
   return (await res.json()) as AccountUser
 }
 
+/** Pick a preset avatar, or `null` to go back to the initial. Returns the updated account. */
+export async function updateAvatar(avatar: string | null): Promise<AccountUser> {
+  const res = await fetch('/api/auth/me/avatar', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...authHeaders() },
+    body: JSON.stringify({ avatar }),
+  })
+  if (res.status === 401) throw new UnauthorizedError()
+  if (!res.ok) throw new Error(await errorMessage(res, `Failed to update avatar (${res.status})`))
+  return (await res.json()) as AccountUser
+}
+
 /** Fetch the current account, or null if not signed in / accounts disabled. */
 export async function fetchMe(): Promise<AccountUser | null> {
   if (!getAuthToken()) return null
@@ -151,6 +165,27 @@ export async function saveLearnProgress(progress: unknown): Promise<void> {
   })
   if (res.status === 401) throw new UnauthorizedError()
   if (!res.ok) throw new Error(`Failed to save course progress (${res.status})`)
+}
+
+/**
+ * Player preferences on the account — the client's own document, stored verbatim by the server.
+ * `{}` when none were saved there yet. See `store/preferencesStore.ts` for the sync.
+ */
+export async function fetchPreferences(): Promise<unknown> {
+  const res = await fetch('/api/auth/me/preferences', { headers: authHeaders() })
+  if (res.status === 401) throw new UnauthorizedError()
+  if (!res.ok) throw new Error(`Failed to load preferences (${res.status})`)
+  return res.json()
+}
+
+export async function savePreferences(preferences: unknown): Promise<void> {
+  const res = await fetch('/api/auth/me/preferences', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...authHeaders() },
+    body: JSON.stringify(preferences),
+  })
+  if (res.status === 401) throw new UnauthorizedError()
+  if (!res.ok) throw new Error(`Failed to save preferences (${res.status})`)
 }
 
 export interface DeckSummary {
@@ -519,6 +554,8 @@ export const fetchManaCurve = () => getStats<StatBucket[]>('/me/curve')
 export interface PublicProfile {
   readonly userId: string
   readonly displayName: string
+  /** Preset avatar id, or null for the initial. */
+  readonly avatar?: string | null
   readonly stats: AccountStats
   readonly ratings: RatingEntry[]
   readonly ratingHistory: RatingPoint[]

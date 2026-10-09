@@ -44,7 +44,13 @@ sealed interface ServerMessage {
         /** Session/lobby ID the player is currently in */
         val contextId: String? = null,
         val aiEnabled: Boolean = false,
-        val availableSets: List<AvailableSet> = emptyList()
+        val availableSets: List<AvailableSet> = emptyList(),
+        /**
+         * The game's seat roster when [context] is "game". A mid-game refresh gets no second
+         * [GameStarted], so this is how the client recovers per-seat facts only the roster carries
+         * (account avatars).
+         */
+        val players: List<PlayerSeatInfo> = emptyList(),
     ) : ServerMessage
 
     /**
@@ -64,6 +70,8 @@ sealed interface ServerMessage {
     data class PlayerSeatInfo(
         val playerId: String,
         val name: String,
+        /** The seat's account avatar id (a preset portrait), null for guests and AI. */
+        val avatar: String? = null,
         val seatIndex: Int,
         /** True for the recipient's own seat. Always false in spectator/replay rosters. */
         val isYou: Boolean = false,

@@ -83,3 +83,17 @@ h2,
 h3 {
   letter-spacing: -0.01em;
 }
+
+/*
+ * Preferences → Display → "Reduce motion: Always". The same effect as the OS setting, for players
+ * who want calm tables without changing their system: animations and transitions finish at once.
+ * `data-motion` is set on <html> by store/preferencesStore.ts.
+ */
+html[data-motion='reduce'] *,
+html[data-motion='reduce'] *::before,
+html[data-motion='reduce'] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}

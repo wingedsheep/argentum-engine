@@ -30,6 +30,22 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: readonly Announcement[] = [
   {
+    id: 'feature-avatars',
+    date: '2026-10-09',
+    kind: 'feature',
+    title: 'Avatars',
+    body:
+      'Give your account a face: choose from 56 painted portraits, or frame any part of any card’s art — any printing — as your own. Click your avatar on your profile to choose; it shows in the account menu, to friends and in messages, and in your life orb at the table.',
+  },
+  {
+    id: 'feature-preferences',
+    date: '2026-10-09',
+    kind: 'feature',
+    title: 'Preferences',
+    body:
+      'Set the table up your way from the gear on the home screen, or mid-game beside the fullscreen button: the priority mode games start in, standing stops for both turns, when identical lands, creatures and other permanents stack and how big a stack gets, auto-tap, reduced motion and the hover preview. Signed in, they follow you to every device.',
+  },
+  {
     id: 'feature-messages',
     date: '2026-10-09',
     kind: 'feature',

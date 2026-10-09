@@ -375,6 +375,22 @@ data class AiProfile(
      * hand, and it is why this gets a real arena run rather than a puzzle column.
      */
     val priceLandsInHandAsMana: Boolean = false,
+    /**
+     * Rank every "which card do I keep / take / discard" answer — discard (including cleanup's
+     * discard to hand size and connive), scry-to-bottom, "put one into your hand", library search
+     * and reorder — by [CardSelectionValue]: a card's worth minus the turns until the player can
+     * actually cast it, counting lands in hand, the unspent land drop, the lands left in the
+     * library, and whether any source makes the colours it needs.
+     *
+     * Fixes four misplays from the 2026-10-09 AI-vs-AI log review, all in [DecisionResponder]'s
+     * legacy `contextualCardScore`, which read only the number of lands on the battlefield:
+     * Orazca Puzzle-Door taking a land over removal with a land already in hand (g11 T7); connive
+     * pitching the only land with the drop unspent (g10 T11); a one-land hand discarding its
+     * three-drop and keeping a seven-drop (g12 T5); and a hand with only Swamps discarding black
+     * cards while keeping five white ones (g20 T11/T13). The untap-limit choice is a question about
+     * permanents, not cards, and keeps the legacy ranking.
+     */
+    val castabilityAwareCardSelection: Boolean = false,
     /** Non-null profiles may only be selected automatically for this set. Arena selection stays explicit. */
     val restrictedToSet: String? = null,
 ) {
@@ -1138,6 +1154,43 @@ data class AiProfile(
         val PRODUCTION_CANDIDATE_EXPIRING = PRODUCTION_CANDIDATE_COUNTERPATIENCE.copy(
             id = "production-candidate-expiring",
             holdExpiringGrantsForCombat = true,
+        )
+
+        /**
+         * [castabilityAwareCardSelection] alone on top of [PRODUCTION], so a puzzle or an arena
+         * point that moves is attributable to it.
+         */
+        val PRODUCTION_CARDSELECT = PRODUCTION.copy(
+            id = "production-cardselect",
+            castabilityAwareCardSelection = true,
+        )
+
+        /**
+         * [PRODUCTION_CANDIDATE_EXPIRING] — the candidate [LIVE] starts from — plus
+         * [castabilityAwareCardSelection]. The promotion gate is `just arena
+         * production-candidate-expiring production-candidate-cardselect 300`.
+         */
+        val PRODUCTION_CANDIDATE_CARDSELECT = PRODUCTION_CANDIDATE_EXPIRING.copy(
+            id = "production-candidate-cardselect",
+            castabilityAwareCardSelection = true,
+        )
+
+        /**
+         * **What real players face.** [EngineAiPlayerController] builds this and nothing else.
+         *
+         * A named, stable home for the live configuration so a fix can ship by turning its flag on
+         * *here*, in the same PR that adds it, instead of every promotion re-pointing the
+         * controller at a fresh `production-candidate-*` id (which serialises parallel work behind
+         * one line). The superseded candidates stay put as the baselines they were measured
+         * against; `just arena production-candidate-expiring live 300` prices everything stacked
+         * on top of the last pinned candidate.
+         *
+         * Add one line per shipped flag, with the arena interval that justified it in the KDoc of
+         * the flag itself.
+         */
+        val LIVE = PRODUCTION_CANDIDATE_EXPIRING.copy(
+            id = "live",
+            castabilityAwareCardSelection = true,
         )
 
         /**

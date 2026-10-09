@@ -4,6 +4,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.DisposableBean
 import org.springframework.stereotype.Component
 import org.springframework.web.socket.WebSocketSession
+import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
@@ -87,6 +88,17 @@ class SessionRegistry : DisposableBean {
     fun removeIdentity(token: String): PlayerIdentity? = playerIdentities.remove(token)
 
     fun getAllIdentities(): Collection<PlayerIdentity> = playerIdentities.values
+
+    /**
+     * A signed-in account changed its avatar: refresh every connected tab's identity and session, so
+     * the next game it sits down at shows the new pick without waiting for a reconnect.
+     */
+    fun refreshAccountAvatar(userId: UUID, avatar: String?) {
+        playerIdentities.values.filter { !it.isAi && it.userId == userId }.forEach { identity ->
+            identity.avatar = avatar
+            identity.webSocketSession?.id?.let { playerSessions[it]?.avatar = avatar }
+        }
+    }
 
     fun getSessionLock(wsId: String): Any = sessionLocks.computeIfAbsent(wsId) { Any() }
 

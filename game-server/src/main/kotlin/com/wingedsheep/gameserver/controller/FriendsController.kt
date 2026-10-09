@@ -30,12 +30,13 @@ class FriendsController(
     private val friends: FriendsService,
     private val authSupport: AuthSupport,
 ) {
-    data class FriendDto(val accountId: String, val displayName: String, val online: Boolean)
+    data class FriendDto(val accountId: String, val displayName: String, val online: Boolean, val avatar: String?)
     data class RequestDto(
         val requestId: String,
         val accountId: String,
         val displayName: String,
         val createdAt: String,
+        val avatar: String?,
     )
     data class RequestsDto(val incoming: List<RequestDto>, val outgoing: List<RequestDto>)
     data class AddFriendBody(val accountId: String)
@@ -44,7 +45,7 @@ class FriendsController(
     @GetMapping
     fun list(@RequestHeader(HttpHeaders.AUTHORIZATION, required = false) auth: String?): List<FriendDto> {
         val userId = authSupport.requireUser(auth).userId
-        return friends.listFriends(userId).map { FriendDto(it.accountId.toString(), it.displayName, it.online) }
+        return friends.listFriends(userId).map { FriendDto(it.accountId.toString(), it.displayName, it.online, it.avatar) }
     }
 
     @GetMapping("/requests")
@@ -118,7 +119,7 @@ class FriendsController(
     }
 
     private fun FriendsService.RequestView.toDto() =
-        RequestDto(requestId.toString(), accountId.toString(), displayName, createdAt.toString())
+        RequestDto(requestId.toString(), accountId.toString(), displayName, createdAt.toString(), avatar)
 
     private fun error(message: String) = mapOf("error" to message)
     private fun ok() = mapOf("status" to "ok")

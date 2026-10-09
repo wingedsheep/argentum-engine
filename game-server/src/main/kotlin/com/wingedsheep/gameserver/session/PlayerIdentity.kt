@@ -32,6 +32,10 @@ class PlayerIdentity(
     @Volatile
     var userId: UUID? = null
 
+    /** The account's preset avatar id (refreshed with [playerName] on link), or null. */
+    @Volatile
+    var avatar: String? = null
+
     /**
      * Connecting client's IP, captured at handshake. Admin-only (used for a geolocation estimate);
      * never sent to clients. Null for AI and when unavailable.
@@ -82,7 +86,8 @@ class PlayerIdentity(
             webSocketSession = ws,
             playerId = playerId,
             playerName = playerName,
-            currentGameSessionId = currentGameSessionId
+            currentGameSessionId = currentGameSessionId,
+            avatar = avatar,
         )
     }
 }

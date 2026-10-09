@@ -30,7 +30,7 @@ class FriendsService(
     private val blocks: AccountBlockStore,
 ) {
     /** An accepted friend plus their current visible-online state. */
-    data class FriendView(val accountId: UUID, val displayName: String, val online: Boolean)
+    data class FriendView(val accountId: UUID, val displayName: String, val online: Boolean, val avatar: String? = null)
 
     /** A pending request (incoming or outgoing), identified by the other party. */
     data class RequestView(
@@ -38,6 +38,7 @@ class FriendsService(
         val accountId: UUID,
         val displayName: String,
         val createdAt: Instant,
+        val avatar: String? = null,
     )
 
     data class Requests(val incoming: List<RequestView>, val outgoing: List<RequestView>)
@@ -59,7 +60,7 @@ class FriendsService(
         return rows.mapNotNull { row ->
             val otherId = other(row, userId)
             val user = byId[otherId] ?: return@mapNotNull null
-            FriendView(otherId, user.displayName, presence.isVisiblyOnline(otherId, user.hidePresence))
+            FriendView(otherId, user.displayName, presence.isVisiblyOnline(otherId, user.hidePresence), user.avatar)
         }.sortedWith(compareByDescending<FriendView> { it.online }.thenBy { it.displayName.lowercase() })
     }
 
@@ -69,10 +70,10 @@ class FriendsService(
         val byId = users.findAllById(rows.flatMap { listOf(it.requesterId, it.addresseeId) }.toSet())
             .associateBy { it.id }
         val incoming = rows.filter { it.addresseeId == userId }.mapNotNull { r ->
-            byId[r.requesterId]?.let { RequestView(r.id!!, r.requesterId, it.displayName, r.createdAt) }
+            byId[r.requesterId]?.let { RequestView(r.id!!, r.requesterId, it.displayName, r.createdAt, it.avatar) }
         }
         val outgoing = rows.filter { it.requesterId == userId }.mapNotNull { r ->
-            byId[r.addresseeId]?.let { RequestView(r.id!!, r.addresseeId, it.displayName, r.createdAt) }
+            byId[r.addresseeId]?.let { RequestView(r.id!!, r.addresseeId, it.displayName, r.createdAt, it.avatar) }
         }
         return Requests(incoming, outgoing)
     }
@@ -94,7 +95,7 @@ class FriendsService(
         val saved = friendships.save(FriendshipRow(requesterId = requesterId, addresseeId = targetId))
         val requesterName = users.findById(requesterId).orElse(null)?.displayName ?: "Someone"
         broadcaster.notifyRequestReceived(targetId, requesterId, requesterName)
-        return SendResult.Created(RequestView(saved.id!!, targetId, target.displayName, saved.createdAt))
+        return SendResult.Created(RequestView(saved.id!!, targetId, target.displayName, saved.createdAt, target.avatar))
     }
 
     /** Accept an incoming pending request. Only the addressee may accept. */

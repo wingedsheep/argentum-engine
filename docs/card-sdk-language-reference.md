@@ -8599,6 +8599,19 @@ staticAbility {
   the chosen type" — grants the landwalk keyword matching the source's `ChosenLandTypeComponent`
   (Plains→Plainswalk, Island→Islandwalk, …) at projection time. Chosen-value counterpart to
   `GrantKeyword`; pair with `EntersWithChoice(ChoiceType.BASIC_LAND_TYPE)`. (Traveler's Cloak)
+- `GrantActivatedAbility(ability, filter, recipientZone = Zone.BATTLEFIELD)` — a battlefield
+  source continuously grants an activated ability to matching objects in the recipient zone.
+  The default preserves Aura/Equipment/self/group grants. For cards outside the battlefield,
+  use a zone-wide `GroupFilter` with an ownership filter, e.g.
+  `GrantActivatedAbility(unearthAbility(ManaCost.parse("{1}{B}{R}")),
+  GroupFilter(GameObjectFilter.Artifact.ownedByYou()), recipientZone = Zone.GRAVEYARD)`
+  (Mishra, Tamer of Mak Fawa). `recipientZone` says where the **grant applies**;
+  `ability.activateFromZone` independently says where the **ability activates**.
+  The shared static-grant resolver supplies both legal actions and activation validation,
+  re-evaluating recipients and the source's controller each read. Removing or blanking the
+  source removes its printed grant immediately; an already activated ability remains on the
+  stack. Self-references bind to the receiving card, not the granting permanent. Ordinary
+  battlefield grants do not leak onto cards in other zones. No new effect or keyword type is needed.
 - `GrantTriggeredAbility(ability, filter)` — "[filter] have '<triggered ability>'". On a battlefield-scoped
   `GroupFilter` it is the lord shape — Unctus, Grand Metatect's "Other blue creatures you control have 'Whenever
   this creature becomes tapped, draw a card, then discard a card'" is `GrantTriggeredAbility(<becomesTapped → loot>,
@@ -9374,6 +9387,14 @@ in the declare-blockers step, even before the turn-based block action has comple
   (Drivnod, Carnage Dominus dying with the creature, or being the creature) still doubles.
 
 **Spell cost statics — `ModifySpellCost`**
+
+`ModifySpellCost` also works in `Effects.CreatePermanentEmblem(ownedStaticAbilities = …)`.
+The cost calculator reads each emblem independently alongside battlefield permanents; `YouCast`
+filters and source-relative dynamic amounts bind to the emblem's controller. Reductions persist
+after the creator leaves, stack across emblems, and apply to alternative mana costs through the
+same modifier pipeline. **Saheeli, Filigree Master** combines an artifact-creature +1/+1 emblem
+bonus with `YouCast(Artifact)` + `ReduceGeneric(1)`. Generic reductions preserve colored and
+colorless mana requirements and cannot reduce generic mana below zero. No new SDK type is needed.
 
 Replaces the per-shape cost classes. Use directly as the `ability` of a `staticAbility { }` block.
 

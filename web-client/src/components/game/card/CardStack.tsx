@@ -1,6 +1,7 @@
 import { memo } from 'react'
 import type { GroupedCard } from '@/store/selectors.ts'
-import { MAX_VISUAL_STACK_DEPTH } from '@/store/selectors.ts'
+import { visibleStackDepth } from '@/store/selectors.ts'
+import { usePreferences } from '@/store/preferencesStore'
 import { useGameStore } from '@/store/gameStore.ts'
 import { useResponsiveContext } from '../board/shared'
 import { stackOffsetFor } from '../board/battlefieldLayout'
@@ -61,7 +62,7 @@ function StackToggle({
  * Renders a group of identical cards as an overlapping stack.
  * Each rendered card has its own data-card-id for targeting arrows.
  *
- * The number of *rendered* layers is capped at MAX_VISUAL_STACK_DEPTH: a group of
+ * The number of *rendered* layers is capped by the player's preference (default MAX_VISUAL_STACK_DEPTH): a group of
  * N identical tokens paints at most that many peeked cards plus a "×N" count badge
  * on the front card (GameCard renders it when count > 1), instead of one DOM node
  * per token. This keeps a legitimately huge board (a horde of tokens) cheap to
@@ -83,6 +84,7 @@ function CardStackImpl({
   isOpponentCard: boolean
 }) {
   const responsive = useResponsiveContext()
+  const maxLayers = usePreferences((s) => s.prefs.battlefield.maxVisibleLayers)
   // Store-held (not local state) so the battlefield sizing solver counts an
   // ungrouped stack as the N cards it renders — see `expandedStackCardIds`.
   const expanded = useGameStore((state) => isStackExpanded(group, state.expandedStackCardIds))
@@ -132,9 +134,10 @@ function CardStackImpl({
   // Calculate stack offset (how much each card is offset from the previous)
   const stackOffset = stackOffsetFor(responsive.isMobile)
 
-  // Render at most MAX_VISUAL_STACK_DEPTH overlapping layers regardless of how
-  // many identical members the group has — the count badge conveys the true size.
-  const renderedCards = group.cards.slice(0, MAX_VISUAL_STACK_DEPTH)
+  // Render at most the player's "visible stack layers" preference (default
+  // MAX_VISUAL_STACK_DEPTH) regardless of how many identical members the group
+  // has — the count badge conveys the true size. rowStats reserves the same depth.
+  const renderedCards = group.cards.slice(0, visibleStackDepth(group.count, maxLayers))
   // The group key guarantees every member shares the same tapped state, so the
   // representative answers for the whole stack (O(1), avoids scanning a horde).
   const hasAnyTapped = group.card.isTapped

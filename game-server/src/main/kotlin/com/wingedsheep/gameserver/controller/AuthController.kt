@@ -6,6 +6,8 @@ import com.wingedsheep.gameserver.auth.EmailService
 import com.wingedsheep.gameserver.auth.InvalidLoginTokenException
 import com.wingedsheep.gameserver.auth.MagicLinkService
 import com.wingedsheep.gameserver.persistence.UserRow
+import com.wingedsheep.gameserver.profile.AvatarValidator
+import com.wingedsheep.gameserver.session.SessionRegistry
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import kotlinx.serialization.json.Json
@@ -30,6 +32,7 @@ import java.util.UUID
  *                                                          has an account)
  *  - POST /api/auth/verify         { token }            → { authToken, user }
  *  - GET  /api/auth/me             (Bearer authToken)   → { user }
+ *  - GET/PUT /api/auth/me/preferences (Bearer authToken) → the client's preferences JSON, verbatim
  *
  * **Dev sign-in.** With no mail configured the link is only logged, which makes signing in locally
  * a hunt through the server log for a link that points at whichever port `base-url` names. When
@@ -45,11 +48,14 @@ class AuthController(
     private val magicLinkService: MagicLinkService,
     private val authSupport: AuthSupport,
     private val emailService: EmailService,
+    private val sessionRegistry: SessionRegistry,
+    private val avatarValidator: AvatarValidator,
     @Value("\${game.dev-endpoints.enabled:false}") private val devEndpointsEnabled: Boolean,
 ) {
     data class RequestLoginBody(val email: String)
     data class VerifyBody(val token: String)
     data class UpdateProfileBody(val displayName: String)
+    data class UpdateAvatarBody(val avatar: String?)
 
     /**
      * The signed-in account as seen by the client. [id] (a UUID) doubles as the shareable "friend
@@ -65,6 +71,8 @@ class AuthController(
         // (it gates the Admin button). Pin the wire name so a promoted account is seen as admin.
         @JsonProperty("isAdmin") val isAdmin: Boolean,
         val hidePresence: Boolean,
+        /** Preset avatar id, or null for the initial. */
+        val avatar: String? = null,
     )
     data class LoginResponse(val authToken: String, val user: UserDto)
 
@@ -72,6 +80,8 @@ class AuthController(
         const val MAX_DISPLAY_NAME_LENGTH = 40
         /** A course of a handful of missions is a few hundred bytes; anything near this is not progress. */
         const val MAX_LEARN_PROGRESS_BYTES = 4096
+        /** A few dozen toggles and numbers; anything near this is not preferences. */
+        const val MAX_PREFERENCES_BYTES = 8192
     }
 
     @PostMapping("/request-login")
@@ -124,6 +134,26 @@ class AuthController(
     }
 
     /**
+     * Pick an avatar — a preset id (`profile.Avatars`) or a crop of a card's art (`CardArtAvatar`) —
+     * or send `null` to go back to the initial.
+     */
+    @PutMapping("/me/avatar")
+    fun updateAvatar(
+        @RequestHeader(HttpHeaders.AUTHORIZATION, required = false) authorization: String?,
+        @RequestBody body: UpdateAvatarBody,
+    ): ResponseEntity<Any> {
+        val claims = authSupport.requireUser(authorization)
+        val avatar = body.avatar
+        if (avatar != null && !avatarValidator.isValid(avatar)) {
+            return ResponseEntity.badRequest().body(mapOf("error" to "Unknown avatar"))
+        }
+        val updated = magicLinkService.updateAvatar(claims.userId, avatar)
+            ?: return ResponseEntity.status(401).body(mapOf("error" to "Account no longer exists"))
+        sessionRegistry.refreshAccountAvatar(claims.userId, avatar)
+        return ResponseEntity.ok(updated.toDto())
+    }
+
+    /**
      * The account's Learn to Play progress — the client's own JSON, returned verbatim, or `{}` when
      * the course was never started on this account. Guests keep the same document in localStorage;
      * the client merges the two on sign-in.
@@ -141,20 +171,56 @@ class AuthController(
     fun updateLearnProgress(
         @RequestHeader(HttpHeaders.AUTHORIZATION, required = false) authorization: String?,
         @RequestBody body: String,
+    ): ResponseEntity<Any> = replaceDocument(authorization, body, MAX_LEARN_PROGRESS_BYTES, "Progress") { userId, json ->
+        magicLinkService.updateLearnProgress(userId, json)
+    }
+
+    /**
+     * The account's player preferences — the client's JSON, returned verbatim, or `{}` when none were
+     * ever saved. Guests keep the same document in localStorage; the client reconciles the two on
+     * sign-in (newest `updatedAt` wins).
+     */
+    @GetMapping("/me/preferences", produces = [MediaType.APPLICATION_JSON_VALUE])
+    fun preferences(@RequestHeader(HttpHeaders.AUTHORIZATION, required = false) authorization: String?): ResponseEntity<Any> {
+        val claims = authSupport.requireUser(authorization)
+        val user = magicLinkService.findUser(claims.userId)
+            ?: return ResponseEntity.status(401).body(mapOf("error" to "Account no longer exists"))
+        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(user.preferences ?: "{}")
+    }
+
+    /** Replace the account's player preferences. The body must be a JSON object, and small. */
+    @PutMapping("/me/preferences", consumes = [MediaType.APPLICATION_JSON_VALUE])
+    fun updatePreferences(
+        @RequestHeader(HttpHeaders.AUTHORIZATION, required = false) authorization: String?,
+        @RequestBody body: String,
+    ): ResponseEntity<Any> = replaceDocument(authorization, body, MAX_PREFERENCES_BYTES, "Preferences") { userId, json ->
+        magicLinkService.updatePreferences(userId, json)
+    }
+
+    /**
+     * Shared body of the opaque per-account JSON documents: authenticate, cap the size, require a JSON
+     * object, store it normalized. [store] returns null when the account is gone.
+     */
+    private fun replaceDocument(
+        authorization: String?,
+        body: String,
+        maxBytes: Int,
+        label: String,
+        store: (UUID, String) -> UserRow?,
     ): ResponseEntity<Any> {
         val claims = authSupport.requireUser(authorization)
-        if (body.length > MAX_LEARN_PROGRESS_BYTES) {
-            return ResponseEntity.badRequest().body(mapOf("error" to "Progress document too large"))
+        if (body.length > maxBytes) {
+            return ResponseEntity.badRequest().body(mapOf("error" to "$label document too large"))
         }
         val parsed = runCatching { Json.parseToJsonElement(body) }.getOrNull()
         if (parsed !is JsonObject) {
-            return ResponseEntity.badRequest().body(mapOf("error" to "Progress must be a JSON object"))
+            return ResponseEntity.badRequest().body(mapOf("error" to "$label must be a JSON object"))
         }
-        magicLinkService.updateLearnProgress(claims.userId, parsed.toString())
+        store(claims.userId, parsed.toString())
             ?: return ResponseEntity.status(401).body(mapOf("error" to "Account no longer exists"))
         return ResponseEntity.noContent().build()
     }
 
     private fun UserRow.toDto() =
-        UserDto(id = id!!, email = email, displayName = displayName, isAdmin = isAdmin, hidePresence = hidePresence)
+        UserDto(id = id!!, email = email, displayName = displayName, isAdmin = isAdmin, hidePresence = hidePresence, avatar = avatar)
 }

@@ -63,7 +63,7 @@ class DirectMessageService(
         OUTGOING_REQUEST,
     }
 
-    data class Participant(val accountId: UUID, val displayName: String, val online: Boolean)
+    data class Participant(val accountId: UUID, val displayName: String, val online: Boolean, val avatar: String? = null)
     data class MessageView(val id: UUID, val senderId: UUID, val body: String, val createdAt: Instant)
 
     data class ThreadSummary(
@@ -295,7 +295,7 @@ class DirectMessageService(
         friendships.findPair(a, b)?.status == FriendshipStatus.ACCEPTED.name
 
     private fun participant(user: UserRow) =
-        Participant(user.id!!, user.displayName, presence.isVisiblyOnline(user.id, user.hidePresence))
+        Participant(user.id!!, user.displayName, presence.isVisiblyOnline(user.id, user.hidePresence), user.avatar)
 
     private fun changed(to: UUID, withAccount: UUID) =
         sockets.send(to, ServerMessage.DirectMessagesChanged(withAccount.toString()))

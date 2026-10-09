@@ -92,7 +92,7 @@ Flyway migration `V1__init.sql`:
 
 | Table | Purpose |
 |-------|---------|
-| `users` | account: email (unique), display name, created_at, `is_admin` (added in `V3__admin_role.sql`), `learn_progress` — the Learn to Play course document as the client's own JSON, opaque to the server (`V13__learn_progress.sql`) |
+| `users` | account: email (unique), display name, created_at, `is_admin` (added in `V3__admin_role.sql`), `learn_progress` — the Learn to Play course document as the client's own JSON, opaque to the server (`V13__learn_progress.sql`), `preferences` — the player's preferences document (auto-pass stops, starting priority mode, battlefield stacking, motion), likewise opaque; read/written at `GET`/`PUT /api/auth/me/preferences`, reconciled with the browser's copy by newest `updatedAt` (`V16__user_preferences.sql`) |
 | `login_tokens` | single-use magic-link tokens (SHA-256 hashed, short TTL) |
 | `decks` | saved decks: denormalized name/format + full `SharedDeck` JSON in `data` |
 | `match_results` | one row per finished game |
@@ -286,6 +286,7 @@ Every admin endpoint (`/api/admin/**` and `/api/stats/admin/**`) accepts either 
 | POST | `/api/auth/verify` | `{ token }` → `{ authToken, user }` |
 | GET | `/api/auth/me` | Bearer → `user` (includes `isAdmin` + `hidePresence`; `id` is the UUID friend code) |
 | PUT | `/api/auth/me` | Bearer + `{ displayName }` → updated `user` (1–40 chars; duplicates allowed) |
+| PUT | `/api/auth/me/avatar` | Bearer + `{ avatar }` → updated `user`; a preset id from `profile/Avatars.kt`, a card-art crop `card:<x>,<y>,<size>:<scryfall path>` of a catalogued printing, or `null` for the initial |
 | GET | `/api/account/decks` | list summaries |
 | GET | `/api/account/decks?full` | every deck in full (one round-trip; powers the unified deck browser) |
 | GET | `/api/account/decks/{id}` | full deck |
@@ -428,6 +429,13 @@ as "can't message this player". New messages are pushed to every open socket of 
   so signed-in users can pick their cloud decks to play. Both render the same full-art gallery tile
   (`components/deck/DeckTile`), whose **Cloud / Local** badge is where a deck's storage shows up.
 - **Display name:** editable on the profile page (`PUT /api/auth/me`); the email stays the identity.
+- **Avatar:** `users.avatar` holds either a preset portrait id (`profile/Avatars.kt`, art in
+  `web-client/src/assets/avatars/`) or a card-art crop, `card:<x>,<y>,<size>:<path>` — `path` is a
+  printing's Scryfall image path (`front/a/b/<uuid>`), the crop square is in units of the art's
+  height, and `AvatarValidator` accepts only paths of printings the catalog has. Picked from the
+  profile page. Friends, requests, blocks, message
+  threads and public profiles carry it; in games it rides on each seat's `PlayerSeatInfo.avatar`
+  (also re-sent in `Reconnected.players` so a refresh keeps it). Guests and AI have none.
 - Profile page at `/profile` shows the win/loss summary plus colors played (a Recharts bar chart),
   sets, game modes, head-to-head, most-played cards, tournament finishes, and a recent-games list — all
   from `/api/stats/me/*` via `api/account.ts`. Each recent game with a stored replay (`hasReplay`)

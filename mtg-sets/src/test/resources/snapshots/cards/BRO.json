@@ -3750,6 +3750,135 @@
     ]
 }
 
+// Mishra, Tamer of Mak Fawa
+{
+    "name": "Mishra, Tamer of Mak Fawa",
+    "manaCost": "{3}{B}{R}",
+    "typeLine": "Legendary Creature — Human Artificer",
+    "oracleText": "Permanents you control have \"Ward—Sacrifice a permanent.\"\nEach artifact card in your graveyard has unearth {1}{B}{R}. ({1}{B}{R}: Return the card from your graveyard to the battlefield. It gains haste. Exile it at the beginning of the next end step or if it would leave the battlefield. Unearth only as a sorcery.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantWard",
+                "cost": {
+                    "type": "WardCost.Sacrifice",
+                    "filter": "permanent"
+                },
+                "filter": {
+                    "baseFilter": "permanent ctrl:you"
+                }
+            },
+            {
+                "type": "GrantActivatedAbility",
+                "ability": {
+                    "id": "unearth_{1}{B}{R}",
+                    "cost": {
+                        "type": "CostAtomWrapper",
+                        "atom": {
+                            "type": "AtomMana",
+                            "cost": "{1}{B}{R}"
+                        }
+                    },
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "MoveToZone",
+                                "target": "Self",
+                                "destination": "Battlefield",
+                                "fromZone": "Graveyard"
+                            },
+                            {
+                                "type": "Gated",
+                                "gate": {
+                                    "type": "Gate.WhenCondition",
+                                    "condition": {
+                                        "type": "SourceInZone",
+                                        "zones": [
+                                            "Battlefield"
+                                        ]
+                                    }
+                                },
+                                "then": {
+                                    "type": "Composite",
+                                    "effects": [
+                                        {
+                                            "type": "GrantKeyword",
+                                            "keyword": "HASTE",
+                                            "target": "Self",
+                                            "duration": "Permanent"
+                                        },
+                                        {
+                                            "type": "CreateDelayedTrigger",
+                                            "step": "END",
+                                            "effect": {
+                                                "type": "MoveTrackedBattlefieldObject",
+                                                "target": "Self",
+                                                "destination": "Exile"
+                                            }
+                                        },
+                                        {
+                                            "type": "GrantExileOnLeave",
+                                            "target": "Self"
+                                        }
+                                    ]
+                                }
+                            }
+                        ]
+                    },
+                    "timing": "SorcerySpeed",
+                    "activateFromZone": "Graveyard",
+                    "descriptionOverride": "Unearth {1}{B}{R} ({1}{B}{R}: Return this card from your graveyard to the battlefield. It gains haste. Exile it at the beginning of the next end step or if it would leave the battlefield. Unearth only as a sorcery.)"
+                },
+                "filter": {
+                    "baseFilter": "artifact own:you"
+                },
+                "recipientZone": "Graveyard"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "217",
+        "rarity": "RARE",
+        "artist": "Darren Tan",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/8/585a753d-a692-474a-bc28-48dd93b73ace.jpg?1783920025",
+        "rulings": [
+            {
+                "date": "2022-10-14",
+                "text": "Despite the appearance of the reminder text, the unearth abilities that Mishra, Tamer of Mak Fawa grants are activated abilities of each individual artifact card in your graveyard. They're not activated abilities of Mishra."
+            },
+            {
+                "date": "2022-10-14",
+                "text": "If you activate a card's unearth ability but that card is removed from your graveyard before the ability resolves, that unearth ability will do nothing as it resolves."
+            },
+            {
+                "date": "2022-10-14",
+                "text": "Activating a card's unearth ability isn't the same as casting that card. The unearth ability is put on the stack, but the card is not. Spells and abilities that interact with activated abilities (such as Defabricate's second mode) will interact with unearth, but spells and abilities that interact with spells (such as Scatter Ray) will not."
+            },
+            {
+                "date": "2022-10-14",
+                "text": "At the beginning of the next end step, a permanent returned to the battlefield with unearth is exiled. This is a delayed triggered ability, and it can be countered by effects such as Defabricate that counter triggered abilities. If the ability is countered, the permanent will stay on the battlefield and the delayed triggered ability won't trigger again. However, the replacement effect will still exile the permanent if it eventually leaves the battlefield."
+            },
+            {
+                "date": "2022-10-14",
+                "text": "Unearth grants haste to the permanent that's returned to the battlefield (even if it's not a creature card). However, neither of the \"exile\" abilities is granted to that permanent. If that permanent loses all its abilities, it will still be exiled at the beginning of the next end step, and if it would leave the battlefield, it is still exiled instead."
+            },
+            {
+                "date": "2022-10-14",
+                "text": "If a permanent returned to the battlefield with unearth would leave the battlefield for any reason, it's exiled instead—unless the spell or ability that's causing the permanent to leave the battlefield is actually trying to exile it! In that case, it succeeds at exiling it. If that spell or ability later returns the card to the battlefield (as Static Net might, for example), the permanent card will return to the battlefield as a new object with no relation to its previous existence. The unearth effects will no longer apply to it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
+    ]
+}
+
 // Obliterating Bolt
 {
     "name": "Obliterating Bolt",
@@ -4237,6 +4366,178 @@
         "imageUri": "https://cards.scryfall.io/normal/front/5/c/5c8b2f2b-6f19-47f7-bb65-00665989bc30.jpg?1783920060"
     },
     "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Saheeli, Filigree Master
+{
+    "name": "Saheeli, Filigree Master",
+    "manaCost": "{2}{U}{R}",
+    "typeLine": "Legendary Planeswalker — Saheeli",
+    "oracleText": "+1: Scry 1. You may tap an untapped artifact you control. If you do, draw a card.\n−2: Create two 1/1 colorless Thopter artifact creature tokens with flying. They gain haste until end of turn.\n−4: You get an emblem with \"Artifact creatures you control get +1/+1\" and \"Artifact spells you cast cost {1} less to cast.\"",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Saheeli, Filigree Master:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "Scry",
+                            "count": 1
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "BattlefieldMatching",
+                                        "filter": "artifact untapped",
+                                        "player": "You"
+                                    },
+                                    "storeAs": "gathered0"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "gathered0",
+                                    "selection": {
+                                        "type": "ChooseUpTo",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeSelected": "selected1",
+                                    "prompt": "You may tap an untapped artifact you control to draw a card",
+                                    "useTargetingUI": true
+                                },
+                                {
+                                    "type": "TapUntapCollection",
+                                    "collectionName": "selected1"
+                                },
+                                {
+                                    "type": "DrawCards",
+                                    "count": {
+                                        "type": "VariableReference",
+                                        "variableName": "selected1_count"
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "+1: Scry 1. You may tap an untapped artifact you control. If you do, draw a card."
+            },
+            {
+                "id": "Saheeli, Filigree Master:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -2
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CreateToken",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "power": 1,
+                            "toughness": 1,
+                            "colors": [],
+                            "creatureTypes": [
+                                "Thopter"
+                            ],
+                            "keywords": [
+                                "FLYING"
+                            ],
+                            "imageUri": "https://cards.scryfall.io/normal/front/4/5/4501d15d-d306-4372-9516-bd63cf788f45.jpg?1783919902",
+                            "artifactToken": true
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Collection",
+                                "collection": "createdTokens"
+                            },
+                            "body": {
+                                "type": "GrantKeyword",
+                                "keyword": "HASTE",
+                                "target": "IterationEntity"
+                            }
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "−2: Create two 1/1 colorless Thopter artifact creature tokens with flying. They gain haste until end of turn."
+            },
+            {
+                "id": "Saheeli, Filigree Master:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -4
+                },
+                "effect": {
+                    "type": "CreatePermanentEmblem",
+                    "groupFilter": {
+                        "baseFilter": "artifact creature ctrl:you"
+                    },
+                    "powerBonus": 1,
+                    "toughnessBonus": 1,
+                    "ownedStaticAbilities": [
+                        {
+                            "type": "ModifySpellCost",
+                            "target": {
+                                "type": "YouCast",
+                                "filter": "artifact"
+                            },
+                            "modification": {
+                                "type": "ReduceGeneric",
+                                "amount": 1
+                            }
+                        }
+                    ],
+                    "emblemDescription": "Artifact creatures you control get +1/+1. Artifact spells you cast cost {1} less to cast."
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "−4: You get an emblem with \"Artifact creatures you control get +1/+1\" and \"Artifact spells you cast cost {1} less to cast.\""
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "219",
+        "rarity": "MYTHIC",
+        "artist": "Aurore Folny",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/3/a3657562-323c-40d0-a261-d029ed549695.jpg?1783920027",
+        "rulings": [
+            {
+                "date": "2022-10-14",
+                "text": "For the first ability, you don't choose which artifact to tap until the ability resolves."
+            },
+            {
+                "date": "2022-10-14",
+                "text": "If you manage to activate Saheeli's last ability multiple times, each emblem you get is applied independently. For example, if you have two of those emblems, artifact creatures you control get +2/+2 and artifact spells you cast cost {2} less."
+            },
+            {
+                "date": "2022-10-14",
+                "text": "The cost reduction provided by Saheeli's emblem can never reduce the colored mana costs of an artifact spell."
+            }
+        ]
+    },
+    "startingLoyalty": 3,
+    "colorIdentityOverride": [
+        "BLUE",
         "RED"
     ]
 }

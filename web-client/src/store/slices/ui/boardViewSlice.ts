@@ -7,8 +7,9 @@
  * always the viewed board and the rail doesn't render.
  */
 import type { SliceCreator, EntityId, GameStore } from '../types'
+import { getPreferences, usePreferences } from '@/store/preferencesStore'
+import type { PlayerSeatInfo } from '@/types/messages.ts'
 
-const FOLLOW_ACTION_KEY = 'argentum-follow-action'
 
 /**
  * True while the player has any pending input or in-progress selection. The camera —
@@ -60,13 +61,6 @@ export function isViewerEliminated(state: GameStore): boolean {
   return gameState.players.filter((p) => !p.hasLost).length >= 2
 }
 
-function loadFollowAction(): boolean {
-  try {
-    return localStorage.getItem(FOLLOW_ACTION_KEY) !== 'false'
-  } catch {
-    return true
-  }
-}
 
 export interface BoardViewSliceState {
   /**
@@ -146,6 +140,8 @@ export interface BoardViewSliceState {
    * (CR 805.5a) — see `hasPriority` in types/gameState.
    */
   teamSharedTurns: boolean
+  /** Each signed-in seat's account avatar id, from the seat roster. Guests and AI are absent. */
+  avatarByPlayerId: Readonly<Record<EntityId, string>>
 }
 
 export interface BoardViewSliceActions {
@@ -193,6 +189,8 @@ export interface BoardViewSliceActions {
     sharedLife?: boolean,
     sharedTurns?: boolean,
   ) => void
+  /** Stamp the seats' account avatars from a seat roster (game start, FFA start, spectating). */
+  setSeatAvatars: (players: readonly PlayerSeatInfo[]) => void
   /** Reset on game start / leave. */
   resetBoardView: () => void
 }
@@ -202,7 +200,7 @@ export type BoardViewSlice = BoardViewSliceState & BoardViewSliceActions
 export const createBoardViewSlice: SliceCreator<BoardViewSlice> = (set, get) => ({
   viewedOpponentId: null,
   viewPinned: false,
-  followAction: loadFollowAction(),
+  followAction: getPreferences().gameplay.followAction,
   overviewMode: false,
   collapsedSeats: [],
   expandedStackCardIds: new Set<EntityId>(),
@@ -212,6 +210,7 @@ export const createBoardViewSlice: SliceCreator<BoardViewSlice> = (set, get) => 
   teamByPlayerId: {},
   teamSharedLife: false,
   teamSharedTurns: false,
+  avatarByPlayerId: {},
 
   viewOpponent: (playerId, opts) => {
     const { gameState, playerId: ownId } = get()
@@ -238,11 +237,7 @@ export const createBoardViewSlice: SliceCreator<BoardViewSlice> = (set, get) => 
     // again", i.e. release the pin, not "turn the setting off" (which would be a second click
     // that looks like a no-op).
     const next = viewPinned && followAction ? true : !followAction
-    try {
-      localStorage.setItem(FOLLOW_ACTION_KEY, String(next))
-    } catch {
-      // Private mode — setting just won't persist.
-    }
+    usePreferences.getState().update('gameplay', { followAction: next })
     // Turning follow on releases any manual pin (the two are mutually exclusive).
     set({ followAction: next, ...(next ? { viewPinned: false } : {}) })
   },
@@ -297,6 +292,12 @@ export const createBoardViewSlice: SliceCreator<BoardViewSlice> = (set, get) => 
   setSeatTeams: (teamByPlayerId, sharedLife = false, sharedTurns = false) =>
     set({ teamByPlayerId, teamSharedLife: sharedLife, teamSharedTurns: sharedTurns }),
 
+  setSeatAvatars: (players) => {
+    const avatarByPlayerId: Record<EntityId, string> = {}
+    for (const p of players) if (p.avatar) avatarByPlayerId[p.playerId as EntityId] = p.avatar
+    set({ avatarByPlayerId })
+  },
+
   resetBoardView: () =>
     set({
       viewedOpponentId: null,
@@ -310,5 +311,6 @@ export const createBoardViewSlice: SliceCreator<BoardViewSlice> = (set, get) => 
       teamByPlayerId: {},
       teamSharedLife: false,
       teamSharedTurns: false,
+      avatarByPlayerId: {},
     }),
 })

@@ -10,7 +10,9 @@ import { useResponsiveContext, handleImageError, getCounterStatModifier, hasStat
 import { styles } from '../board/styles'
 import { counterManaClass } from '@/assets/icons/keywords'
 import { HoverCardPreview } from '../../ui/HoverCardPreview'
+import { useCombatFocusBounds } from '../../combat/combatFocusBounds'
 import { useHasHover } from '@/hooks/useHasHover.ts'
+import { usePreferences } from '@/store/preferencesStore'
 import { ManaCost, AbilityText } from '../../ui/ManaSymbols'
 import { buildActionOptions, playCostRange, playLadderOptions } from '@/utils/actionOptions.ts'
 import { parseManaCost, totalManaNeeded } from '@/utils/manaCost.ts'
@@ -23,10 +25,12 @@ import { castOfferFace } from '@/utils/castFace.ts'
 export function CardPreview() {
   const hoveredCardId = useGameStore((state) => state.hoveredCardId)
   const hoverPosition = useGameStore((state) => state.hoverPosition)
+  const combatFocusBounds = useCombatFocusBounds((state) => state.bounds)
   const gameState = useGameStore(selectGameState)
   const playerId = useGameStore(selectViewingPlayerId)
   const responsive = useResponsiveContext()
   const hasHover = useHasHover()
+  const hoverPreview = usePreferences((s) => s.prefs.display.hoverPreview)
 
   // All hooks must be called before any early return
   const cardActions = useCardLegalActions(hoveredCardId)
@@ -105,6 +109,9 @@ export function CardPreview() {
   const showCostLadder = costRows.length > 1 || costRows.some((o) => o.manaCostReducedTo)
 
   if (!card) return null
+  // Preferences → Display can turn the mouse-hover preview off. Touch previews (long-press) stay:
+  // they are asked for explicitly, not triggered by passing over a card.
+  if (!hoverPreview && hasHover && !responsive.isMobile) return null
 
   // On mobile, show the fullscreen overlay (game-specific behaviour). Any device that can't hover
   // gets it too, whatever its width: the cursor-following variant has nowhere to anchor without a
@@ -262,6 +269,7 @@ export function CardPreview() {
       name={displayName}
       imageUri={displayImageUri ?? null}
       pos={hoverPosition}
+      avoid={combatFocusBounds}
       rulings={card.rulings}
       extraHeight={extraHeight}
       imageRotateDeg={previewImageRotateDeg}

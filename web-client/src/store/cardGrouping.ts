@@ -168,9 +168,22 @@ export function computeCardGroupKey(card: ClientCard): string {
  */
 export const MAX_VISUAL_STACK_DEPTH = 4
 
-/** How many overlapping layers a stack of [count] identical cards actually renders. */
-export function visibleStackDepth(count: number): number {
-  return Math.min(Math.max(count, 0), MAX_VISUAL_STACK_DEPTH)
+/**
+ * How many overlapping layers a stack of [count] identical cards actually renders. [maxLayers] is the
+ * player's "visible stack layers" preference; it defaults to MAX_VISUAL_STACK_DEPTH.
+ */
+export function visibleStackDepth(count: number, maxLayers: number = MAX_VISUAL_STACK_DEPTH): number {
+  return Math.min(Math.max(count, 0), Math.max(1, maxLayers))
+}
+
+/**
+ * The player's stacking rule for one battlefield row (Preferences → Battlefield).
+ * `groupFrom` — fewest identical permanents that form a stack (`0` = never stack).
+ * `stackSize` — most cards in one stack; bigger groups split into several stacks (`0` = no limit).
+ */
+export interface GroupingRule {
+  readonly groupFrom: number
+  readonly stackSize: number
 }
 
 /**
@@ -196,6 +209,7 @@ export function visibleStackDepth(count: number): number {
 export function groupCards(
   cards: readonly ClientCard[],
   splitOutIds?: ReadonlySet<EntityId>,
+  rule?: GroupingRule,
 ): readonly GroupedCard[] {
   if (cards.length === 0) return []
 
@@ -215,15 +229,28 @@ export function groupCards(
   }
 
   const result: GroupedCard[] = []
-  for (const { cards: groupedCards, cardIds } of groups.values()) {
+  const push = (groupedCards: ClientCard[], cardIds: EntityId[]) => {
     const firstCard = groupedCards[0]
-    if (!firstCard) continue // Should never happen, but satisfies TypeScript
-    result.push({
-      card: firstCard,
-      count: groupedCards.length,
-      cardIds,
-      cards: groupedCards,
-    })
+    if (!firstCard) return // Should never happen, but satisfies TypeScript
+    result.push({ card: firstCard, count: groupedCards.length, cardIds, cards: groupedCards })
+  }
+  const groupFrom = rule?.groupFrom ?? 2
+  const stackSize = rule?.stackSize ?? 0
+  for (const { cards: groupedCards, cardIds } of groups.values()) {
+    // Below the player's threshold (or stacking off for this row): identical permanents sit side by
+    // side, each its own group, in the order they came.
+    if (groupedCards.length > 1 && (groupFrom <= 0 || groupedCards.length < groupFrom)) {
+      for (let i = 0; i < groupedCards.length; i++) push([groupedCards[i]!], [cardIds[i]!])
+      continue
+    }
+    // A capped stack size splits a big group into consecutive stacks of at most that many.
+    if (stackSize > 1 && groupedCards.length > stackSize) {
+      for (let i = 0; i < groupedCards.length; i += stackSize) {
+        push(groupedCards.slice(i, i + stackSize), cardIds.slice(i, i + stackSize))
+      }
+      continue
+    }
+    push(groupedCards, cardIds)
   }
 
   return result

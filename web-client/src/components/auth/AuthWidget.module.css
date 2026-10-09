@@ -57,6 +57,11 @@
   font-size: 14px;
 }
 
+.avatar[data-portrait='true'] {
+  background: #10131c;
+  box-shadow: 0 0 0 1.5px rgba(242, 180, 92, 0.75);
+}
+
 .name {
   max-width: 160px;
   overflow: hidden;

@@ -19,6 +19,7 @@ import {
   listDecks,
 } from '@/api/account'
 import { LoginModal } from '@/components/auth/LoginModal'
+import { AvatarPicker } from '@/components/profile/AvatarPicker'
 import { DeckViewModal } from '@/components/profile/DeckViewModal'
 import { TournamentDetailModal } from '@/components/profile/TournamentDetailModal'
 import {
@@ -42,6 +43,7 @@ export function ProfilePage() {
   const init = useAuthStore((s) => s.init)
   const logout = useAuthStore((s) => s.logout)
   const updateDisplayName = useAuthStore((s) => s.updateDisplayName)
+  const updateAvatar = useAuthStore((s) => s.updateAvatar)
 
   const [stats, setStats] = useState<AccountStats | null>(null)
   const [decks, setDecks] = useState<DeckSummary[]>([])
@@ -51,6 +53,7 @@ export function ProfilePage() {
   const [tournaments, setTournaments] = useState<UserTournamentEntry[]>([])
   const [openTournament, setOpenTournament] = useState<number | null>(null)
   const [loginOpen, setLoginOpen] = useState(false)
+  const [avatarPickerOpen, setAvatarPickerOpen] = useState(false)
 
   const [editingName, setEditingName] = useState(false)
   const [nameDraft, setNameDraft] = useState('')
@@ -126,7 +129,20 @@ export function ProfilePage() {
       <AccountPage title="Profile">
         <section className={p.panel}>
           <div className={a.identity}>
-            <Avatar name={user.displayName} />
+            <button
+              type="button"
+              className={a.avatarEdit}
+              onClick={() => setAvatarPickerOpen(true)}
+              aria-label="Change avatar"
+              title="Change avatar"
+              data-testid="profile-avatar"
+            >
+              <Avatar name={user.displayName} avatar={user.avatar} />
+              <span className={a.avatarEditOverlay} aria-hidden>Change</span>
+              <span className={a.avatarEditBadge} aria-hidden>
+                <PencilIcon />
+              </span>
+            </button>
             <div className={a.identityText}>
               {editingName ? (
                 <div className={a.nameEdit}>
@@ -198,6 +214,12 @@ export function ProfilePage() {
             onClick={() => navigate('/deckbuilder?decks=open')}
           />
           <Shortcut icon={<FriendsIcon />} title="Friends" sub="Your friend code and who's online" onClick={() => navigate('/friends')} />
+          <Shortcut
+            icon={<SlidersIcon />}
+            title="Preferences"
+            sub="Auto-pass stops, card stacking & more"
+            onClick={() => navigate('/preferences')}
+          />
         </div>
 
         <section className={p.panel}>
@@ -282,6 +304,14 @@ export function ProfilePage() {
         {openTournament != null && (
           <TournamentDetailModal tournamentId={openTournament} onClose={() => setOpenTournament(null)} />
         )}
+        {avatarPickerOpen && (
+          <AvatarPicker
+            name={user.displayName}
+            current={user.avatar ?? null}
+            onSave={updateAvatar}
+            onClose={() => setAvatarPickerOpen(false)}
+          />
+        )}
       </AccountPage>
     )
   }
@@ -347,6 +377,14 @@ const iconProps = {
   'aria-hidden': true,
 }
 
+function PencilIcon() {
+  return (
+    <svg {...iconProps} width="12" height="12" strokeWidth={2.4}>
+      <path d="M4 20h4L19 9l-4-4L4 16v4zM13.5 6.5l4 4" />
+    </svg>
+  )
+}
+
 function ChartIcon() {
   return (
     <svg {...iconProps}>
@@ -370,6 +408,17 @@ function FriendsIcon() {
       <circle cx="9" cy="8" r="3.5" />
       <path d="M2.5 20c.8-3.4 3.4-5.5 6.5-5.5s5.7 2.1 6.5 5.5" />
       <path d="M16 4.6a3.5 3.5 0 0 1 0 6.8M18 14.8c1.8.8 3 2.6 3.5 5.2" />
+    </svg>
+  )
+}
+
+function SlidersIcon() {
+  return (
+    <svg {...iconProps}>
+      <path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0" />
+      <circle cx="16" cy="6" r="2" />
+      <circle cx="10" cy="12" r="2" />
+      <circle cx="18" cy="18" r="2" />
     </svg>
   )
 }

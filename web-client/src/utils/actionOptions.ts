@@ -410,16 +410,20 @@ export function buildActionOptions(
       })
     })
   } else if (castAction) {
-    // 1c. Normal cast (for non-land, non-modal cards). When the *only* offered cast is an
-    // alternative-cost one (emerge with the hard cast unaffordable), the server's description names
-    // the mechanic — "Cast X" would hide that the cast eats a creature. Likewise a cast of one
-    // specific face (a prepare-spell copy in exile, an adventure-only permission) is named by the
-    // server after that face: "Cast Bloodline Recollector" would hide that it casts Ancestral Craving.
+    // 1c. Normal cast (for non-land, non-modal cards). When the *only* offered cast is a keyword or
+    // alternative-cost one (emerge with the hard cast unaffordable, flashback or disturb out of the
+    // graveyard), the server's description names the mechanic — "Cast X" would hide that the cast
+    // eats a creature, or that it's the graveyard cast at all. Likewise a cast of one specific face
+    // is named by the server after that face: a disturb cast or a modal DFC's back (CR 712.8c) puts
+    // the back on the stack, so "Cast Mischievous Catgeist" would hide that it casts Catlike
+    // Curiosity; a prepare-spell copy in exile or an adventure-only permission, that it casts
+    // Ancestral Craving rather than Bloodline Recollector.
     const castFaceIndex = (castAction.action as { faceIndex?: number | null }).faceIndex
     const castPrototyped = (castAction.action as { castPrototyped?: boolean }).castPrototyped === true
     options.push({
       key: 'cast',
-      label: castAction.actionType === 'CastWithAlternativeCost' || castFaceIndex != null || castPrototyped
+      label: castAction.actionType !== 'CastSpell' || castAction.castsTransformed === true ||
+        castFaceIndex != null || castPrototyped
         ? castAction.description
         : `Cast ${cardInfo.name}`,
       ...costFieldsFor(castAction, cardInfo.manaCost),
