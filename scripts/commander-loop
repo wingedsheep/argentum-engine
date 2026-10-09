@@ -212,24 +212,30 @@ fi
 LOGDIR="$RUNS/commander-logs"
 mkdir -p "$LOGDIR"
 exec > >(tee -a "$RUNS/commander.log") 2>&1
+# `just loops` reads this to tell a running loop from a finished one.
+echo $$ > "$RUNS/commander.pid"
+trap 'rm -f "$RUNS/commander.pid"' EXIT
 log() { echo "[$(date '+%F %T')] $*"; }
 
-# One line per action the session takes, streamed live: its messages and each tool call.
-PRETTY='select(.type == "assistant") | .message.content[]? |
+# Streamed live: the milestones the session reports (Working on / Finding / Summary), nothing else.
+# LOOP_VERBOSE=1 adds its other messages and every tool call. `just loops` is the at-a-glance view.
+[ -n "${LOOP_VERBOSE:-}" ] && VERBOSE=true || VERBOSE=false
+MILESTONE='def milestone: (if startswith("Working on") then "   🔨 " elif startswith("Finding") then "   🔎 " else "   📋 " end) + .[0:200];'
+PRETTY="$MILESTONE"'select(.type == "assistant") | .message.content[]? |
   (if .type == "text" then
      ([.text | split("\n")[] | select(test("^(Working on|Finding|Summary):"))]) as $m
-     | if ($m | length) > 0 then $m[]
-         | (if startswith("Working on") then "   🔨 " elif startswith("Finding") then "   🔎 " else "   📋 " end) + .[0:200]
-       else "   💬 " + (.text | split("\n")[0] | .[0:160]) end
-   elif .type == "tool_use" then "   → " + .name + ": " +
+     | if ($m | length) > 0 then $m[] | milestone
+       elif $verbose then "   💬 " + (.text | split("\n")[0] | .[0:160]) else empty end
+   elif .type == "tool_use" and $verbose then "   → " + .name + ": " +
      ((.input.description // .input.command // .input.skill // .input.file_path // .input.pattern
        // .input.prompt // "") | tostring | split("\n")[0] | .[0:140])
    else empty end)'
 
 if [ "$HARNESS" = codex ]; then
-  PRETTY='if .type == "item.completed" and .item.type == "agent_message" then
-      .item.text | split("\n")[] | select(length > 0) | "   💬 " + .[0:200]
-    elif .type == "item.started" and .item.type == "command_execution" then
+  PRETTY="$MILESTONE"'if .type == "item.completed" and .item.type == "agent_message" then
+      .item.text | split("\n")[] | select(length > 0)
+      | if test("^(Working on|Finding|Summary):") then milestone elif $verbose then "   💬 " + .[0:200] else empty end
+    elif .type == "item.started" and .item.type == "command_execution" and $verbose then
       "   → " + (.item.command | split("\n")[0] | .[0:140])
     elif .type == "error" or .type == "turn.failed" then
       "   ! " + (.message // .error.message // "Codex turn failed")
@@ -258,7 +264,7 @@ while [ ! -e "$RUNS/commander.stop" ]; do
     rm -f "$FINAL_FILE"
     (cd "$REPO" && codex exec --model "$MODEL" --approve-for-me --json \
         --output-last-message "$FINAL_FILE" "$PROMPT" 2>&1) \
-      | tee "$TRANSCRIPT" | jq -Rr --unbuffered "fromjson? | $PRETTY"
+      | tee "$TRANSCRIPT" | jq -Rr --unbuffered --argjson verbose "$VERBOSE" "fromjson? | $PRETTY"
     SESSION_STATUS=$?
     RESULT=$(cat "$FINAL_FILE" 2>/dev/null || true)
     FINAL=$RESULT
@@ -266,7 +272,7 @@ while [ ! -e "$RUNS/commander.stop" ]; do
   else
     (cd "$REPO" && claude -p "$PROMPT" --model "$MODEL" --permission-mode "${PERMISSION_MODE:-auto}" \
         --output-format stream-json --verbose 2>&1) \
-      | tee "$TRANSCRIPT" | jq -Rr --unbuffered "fromjson? | $PRETTY"
+      | tee "$TRANSCRIPT" | jq -Rr --unbuffered --argjson verbose "$VERBOSE" "fromjson? | $PRETTY"
 
     FINAL=$(jq -Rc 'fromjson? | select(.type == "result")' "$TRANSCRIPT" 2>/dev/null | tail -1)
     RESULT=$(echo "$FINAL" | jq -r '.result // empty' 2>/dev/null)

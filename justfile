@@ -253,6 +253,11 @@ kill-daemons MIN_AGE="60" *ARGS:
 check:
     ./gradlew check
 
+# What every agent loop is doing now, its last result, and its open PR (--all for older loops)
+[group: 'ai']
+loops *ARGS:
+    scripts/loop-status {{ARGS}}
+
 # Waits out subscription usage limits; stop with `touch .claude/loop-runs/<code>.stop`.
 # Implement a set: set-loop ecl sonnet|opus|astra|codex:<model-id>|pick; no args shows help
 [group: 'ai']
