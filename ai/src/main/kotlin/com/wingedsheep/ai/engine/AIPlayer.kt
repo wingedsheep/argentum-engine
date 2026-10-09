@@ -274,10 +274,12 @@ class AIPlayer(
                 discountedRaceClock = profile.discountedRaceClock,
                 creatureValuation = profile.creatureValuation,
                 priceLandsInHandAsMana = profile.priceLandsInHandAsMana,
+                evasionAfterAttacking = profile.evasionAfterAttacking,
             )
             val combatAdvisor = CombatAdvisor(
                 simulator, evaluator, cardRegistry, advisorRegistry,
                 priceCrackBackAsLife = profile.priceCrackBackAsLife,
+                crackBackWithoutChumps = profile.crackBackWithoutChumps,
                 lifeWeight = EvalWeights.resolve(profile.evalWeightsId).life,
                 chumpOnlyWhenInDanger = profile.chumpOnlyWhenInDanger,
             )

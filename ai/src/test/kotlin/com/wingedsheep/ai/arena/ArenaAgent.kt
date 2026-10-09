@@ -150,6 +150,11 @@ object ArenaAgents {
         // production-candidate-expiring production-candidate-chumpgate 300` is the promotion gate.
         ArenaAgent("production-chumpgate", AiProfile.PRODUCTION_CHUMPGATE),
         ArenaAgent("production-candidate-chumpgate", AiProfile.PRODUCTION_CANDIDATE_CHUMPGATE),
+        // Attack decisions: crack-back priced as life, and tapped fliers keeping their evasion.
+        // `just arena production production-attacks 300` prices the pair on its own; `just arena
+        // production-candidate-expiring production-candidate-attacks 300` is the promotion gate.
+        ArenaAgent("production-attacks", AiProfile.PRODUCTION_ATTACKS),
+        ArenaAgent("production-candidate-attacks", AiProfile.PRODUCTION_CANDIDATE_ATTACKS),
         // What EngineAiPlayerController plays: production-candidate-expiring plus every fix shipped
         // since. `just arena production-candidate-expiring live 300` prices the stack.
         ArenaAgent("live", AiProfile.LIVE),
