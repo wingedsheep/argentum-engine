@@ -30,7 +30,7 @@ class UserDtoSerializationTest : FunSpec({
 
     test("AdminUsersController.UserDetailDto serializes the admin flag as isAdmin") {
         val dto = AdminUsersController.UserDetailDto(
-            id = id, email = "a@b.com", displayName = "A", isAdmin = true, createdAt = "now",
+            id = id, email = "a@b.com", displayName = "A", isAdmin = true, avatar = null, createdAt = "now",
             stats = AdminUsersController.StatsDto(0, 0, 0, 0.0),
             colors = emptyList(), modes = emptyList(), opponents = emptyList(),
             topCards = emptyList(), tournaments = emptyList(), recentGames = emptyList(),
@@ -40,7 +40,7 @@ class UserDtoSerializationTest : FunSpec({
 
     test("AdminUserStat serializes the admin flag as isAdmin") {
         val dto = AdminUserStat(
-            id = id, email = "a@b.com", displayName = "A", isAdmin = true, createdAt = "now",
+            id = id, email = "a@b.com", displayName = "A", isAdmin = true, avatar = null, createdAt = "now",
             games = 0, wins = 0, lastPlayed = null,
         )
         mapper.writeValueAsString(dto) shouldContain "\"isAdmin\":true"

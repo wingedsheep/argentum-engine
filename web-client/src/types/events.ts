@@ -9,6 +9,8 @@ import { DayNight } from './enums'
  * driving animations and displaying game log.
  */
 export type ClientEvent =
+  | CreatureEnlistedEvent
+  | AttackCancelledEvent
   | LifeChangedEvent
   | SpeedChangedEvent
   | DayNightChangedEvent
@@ -525,4 +527,18 @@ export function isPermanentUntappedEvent(event: ClientEvent): event is Permanent
 
 export function isHandLookedAtEvent(event: ClientEvent): event is HandLookedAtEvent {
   return event.type === 'handLookedAt'
+}
+
+/** An attacker paid one enlist cost. Selection uses the existing battlefield decision UI. */
+export interface CreatureEnlistedEvent {
+  readonly type: 'creatureEnlisted'
+  readonly attackerId: string
+  readonly enlistedId: string
+  readonly description: string
+}
+
+export interface AttackCancelledEvent {
+  readonly type: 'attackCancelled'
+  readonly playerId: string
+  readonly description: string
 }

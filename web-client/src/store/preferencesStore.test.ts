@@ -33,6 +33,12 @@ describe('parsePreferences', () => {
     expect(parsePreferences('nope')).toEqual(DEFAULT_PREFERENCES)
   })
 
+  it('reads the message alert switch, defaulting to on for documents written before it existed', () => {
+    expect(parsePreferences({ display: { motion: 'reduce' } }).messages.alertsAway).toBe(true)
+    expect(parsePreferences({ messages: { alertsAway: false } }).messages.alertsAway).toBe(false)
+    expect(parsePreferences({ messages: { alertsAway: 'no' } }).messages.alertsAway).toBe(true)
+  })
+
   it('keeps valid fields and drops invalid ones field by field', () => {
     const p = parsePreferences({
       gameplay: { priorityMode: 'stops', myTurnStops: ['UPKEEP', 'BOGUS', 'UPKEEP', 'UNTAP'], autoTap: 'yes' },

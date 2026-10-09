@@ -144,7 +144,18 @@ class Settler(
     /** Queue every trigger [events] caused, including those of a step they began. */
     private fun detect(state: GameState, events: List<GameEvent>): GameState {
         var working = ControlHistory.record(CounterHistory.record(state, events), events)
-        val triggers = triggerDetector.detectTriggers(working, events).toMutableList()
+        val checkpoint = state.attackDeclarationCheckpoint()
+        val declarationEvents = checkpoint?.events.orEmpty().toSet()
+        val provisional = events.filter { it in declarationEvents }
+        val triggers = if (provisional.isEmpty()) {
+            triggerDetector.detectTriggers(working, events).toMutableList()
+        } else {
+            // No priority occurs before payment; keep these triggers queued but individually
+            // reversible, without erasing triggers from later mana abilities on cancellation.
+            (triggerDetector.detectTriggers(working, provisional).map {
+                it.copy(attackDeclarationId = checkpoint!!.id)
+            } + triggerDetector.detectTriggers(working, events.filter { it !in declarationEvents })).toMutableList()
+        }
 
         val stepChanged = events.filterIsInstance<StepChangedEvent>().lastOrNull()
         if (stepChanged != null) {

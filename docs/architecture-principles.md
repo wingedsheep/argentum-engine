@@ -1352,6 +1352,24 @@ tagging. Non-tapping and zero-output activations do not fire tap bonuses. This a
 does not prove that future activations can pay a forced card play; forward planning and recovery remain
 separate work.
 
+#### Attack-declaration cost choices
+
+Attack declaration validates the proposed group, taps non-vigilant attackers, collects enlist
+choices, and then pays attack costs before marking the declaration as attacking. Choices use the
+existing battlefield card selector. No player receives priority between these stages.
+
+A tax question carries only the component changes made by declaration taps, tagged with a routing
+ID. The settler tags their queued triggers with the same ID. Cancelling restores those component
+changes on their original objects and removes only those triggers; independent mana actions remain.
+The checkpoint never retains another game state or hidden hands/libraries, so it cannot pin the
+entire hidden world during AI determinization. `AttackDeclarationCancelledEvent` reports rollback
+without emitting false untap triggers. Enlist uses the tap atom and separate enlist/linked-trigger events.
+
+Enlist instances are read from projection. The engine's `Modification.GrantStaticAbility` retains
+point-of-use static abilities in a list through layer-six ordering, including copied token text.
+Ability removal clears this list; a later resolved grant restores only its own instance. Printed
+instances remain dependent on their source's abilities, while resolved grants are independent.
+
 ### 2.11 Copy Effects
 
 **Principle:** Copy effects resolve at entry time by replacing the base `CardComponent`, making

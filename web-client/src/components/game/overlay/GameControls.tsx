@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useGameStore } from '@/store/gameStore.ts'
+import { useAuthStore } from '@/store/authStore'
 import { useIsSharedLifeTeamGame } from '@/store/selectors'
 import { useResponsiveContext } from '../board/shared'
 import { GearIcon, PreferencesDialog } from '@/components/preferences/PreferencesDialog'
@@ -187,6 +188,8 @@ export function SpectatorCountBadge() {
   const spectatorNames = useGameStore((state) => state.spectatorNames)
   const responsive = useResponsiveContext()
   const [hovered, setHovered] = useState(false)
+  // A signed-in player has the chat button after the gear; sit after that too.
+  const chatButton = useAuthStore((state) => state.accountsEnabled && state.status === 'authenticated')
 
   if (spectatorCount <= 0) return null
 
@@ -197,9 +200,9 @@ export function SpectatorCountBadge() {
       style={{
         position: 'absolute',
         top: responsive.isMobile ? 8 : 12,
-        // Sits to the right of the icon-only FullscreenButton (30/34px at left 8/12) and the
-        // GamePreferencesButton beside it.
-        left: responsive.isMobile ? 84 : 96,
+        // Sits to the right of the icon-only FullscreenButton (30/34px at left 8/12), the
+        // GamePreferencesButton beside it, and the ChatButton after that when signed in.
+        left: (responsive.isMobile ? 84 : 96) + (chatButton ? (responsive.isMobile ? 38 : 42) : 0),
         // Above the multiplayer opponent rail (z 120): the name popover drops down
         // into the rail column, and the seat chips would otherwise paint over it.
         // The badge itself sits above the rail's first chip, so nothing is hidden.

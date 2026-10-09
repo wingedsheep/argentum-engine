@@ -2699,7 +2699,12 @@ class TriggerDetector(
                     sourceName = event.sourceName,
                     controllerId = event.controllerId,
                     granterId = event.granterId,
-                    triggerContext = event.carriedTriggerContext,
+                    triggerContext = events.filterIsInstance<ZoneChangeEvent>().firstOrNull {
+                        it.oldObject != null && it.oldObject == event.carriedObjectReferences.triggering
+                    }?.lastKnown?.let { snapshot -> event.carriedTriggerContext.copy(
+                        triggeringLastKnownSnapshot = snapshot,
+                        lastKnownPower = snapshot.power, lastKnownToughness = snapshot.toughness,
+                    ) } ?: event.carriedTriggerContext,
                     carriedPipeline = event.carriedPipeline,
                     objectReferences = event.carriedObjectReferences.copy(captured = true)
                 )

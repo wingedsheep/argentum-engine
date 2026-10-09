@@ -711,3 +711,15 @@ data class CanAttackAsThoughHasty(
         return if (newFilter !== filter) copy(filter = newFilter) else this
     }
 }
+
+/**
+ * Enlist (CR 702.154): each instance offers its own optional attack-declaration tap cost
+ * and creates its own linked power-boost trigger. Multiple instances are independent.
+ * Unlike [ExertAsItAttacks], this chooses another creature and reads its power on resolution;
+ * [CantAttackUnlessSacrifice] is a mandatory restriction, not an optional linked ability.
+ */
+@SerialName("Enlist")
+@Serializable
+data object Enlist : StaticAbility {
+    override val description: String = "Enlist"
+}

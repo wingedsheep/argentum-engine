@@ -414,11 +414,11 @@
 }
 
 /* In a warm-up game the bottom belongs to your hand and the top centre to the opponent's: sit
-   top-left, beside the fullscreen button. */
+   top-left, after the fullscreen, preferences and chat buttons. */
 .pillInGame {
   top: 12px;
   bottom: auto;
-  left: 58px;
+  left: 140px;
   transform: none;
   z-index: 150;
   padding: 4px 4px 4px 10px;

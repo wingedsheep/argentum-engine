@@ -58,6 +58,8 @@ data class ProjectedValues(
     val baseToughness: Int? = null,
     val name: String? = null,
     val keywords: Set<String> = emptySet(),
+    /** Point-of-use abilities lowered through GrantStaticAbility, with duplicate instances retained. */
+    val staticAbilities: List<com.wingedsheep.sdk.scripting.StaticAbility> = emptyList(),
     val enchantmentRestrictions: List<ActiveEnchantmentRestriction> = emptyList(),
     val colors: Set<String> = emptySet(),
     val types: Set<String> = emptySet(),
@@ -274,6 +276,9 @@ class ProjectedState(
     fun getManaAbilityLifeTax(entityId: EntityId): Int =
         projectedValues[entityId]?.manaAbilityLifeTax ?: 0
 
+    fun getStaticAbilities(entityId: EntityId): List<com.wingedsheep.sdk.scripting.StaticAbility> =
+        projectedValues[entityId]?.staticAbilities ?: emptyList()
+
     fun hasLostAllAbilities(entityId: EntityId): Boolean =
         projectedValues[entityId]?.lostAllAbilities == true
 
@@ -310,6 +315,7 @@ internal fun buildIntermediateProjectedState(
             basePower = v.basePower,
             baseToughness = v.baseToughness,
             keywords = v.keywords.toSet(),
+            staticAbilities = v.staticAbilities.toList(),
             enchantmentRestrictions = v.enchantmentRestrictions.toList(),
             colors = v.colors.toSet(),
             types = v.types.toSet(),

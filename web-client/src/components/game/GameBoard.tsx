@@ -34,6 +34,7 @@ import { useBoardGroups } from './board/useBoardGroups'
 import { usePooledBattlefieldLayout } from './board/usePooledBattlefieldLayout'
 import { CardPreview } from './card'
 import { EmotePicker } from '../tableTalk/EmotePicker'
+import { ChatButton } from '@/components/messages/ChatButton'
 import { TargetingOverlay, ManaColorSelectionOverlay, LifeDisplay, ActiveEffectsBadges, SpeedGauge, DayNightBadge, ConcedeButton, FullscreenButton, GamePreferencesButton, SpectatorCountBadge, TeamLifeBanner, EliminationNotice } from './overlay'
 import { HelpDrawer, HelpDrawerButton } from '../help/HelpDrawer'
 import { markLearnSignal } from '@/learn/signals'
@@ -883,6 +884,8 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
       <FullscreenButton />
       {/* Preferences gear (top-left, next to fullscreen) — stacking, stops, motion mid-game */}
       <GamePreferencesButton />
+      {/* Direct messages (top-left, after the gear) — signed-in players only */}
+      <ChatButton variant="game" />
 
       {/* Spectator-count indicator (top-left, next to fullscreen) - only for players */}
       {!spectatorMode && <SpectatorCountBadge />}

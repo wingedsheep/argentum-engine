@@ -89,6 +89,7 @@ enum class TriggerCategory {
     CONNIVED,
     EXPLOITED,
     TRAINED,
+    ENLISTED,
     EXERTED,
     CHAMPIONED,
     YOU_BEND,
@@ -315,6 +316,7 @@ class TriggerIndex(
                 is SdkGameEvent.ConnivedEvent -> CONNIVED_LIST
                 is SdkGameEvent.ExploitedEvent -> EXPLOITED_LIST
                 is SdkGameEvent.TrainedEvent -> TRAINED_LIST
+                is SdkGameEvent.EnlistedEvent -> ENLISTED_LIST
                 is SdkGameEvent.ExertedAsItAttacksEvent -> EXERTED_LIST
                 is SdkGameEvent.ChampionedEvent -> CHAMPIONED_LIST
                 is SdkGameEvent.BendPerformedEvent -> BEND_LIST
@@ -413,6 +415,7 @@ class TriggerIndex(
             is com.wingedsheep.engine.core.PermanentConnivedEvent -> CONNIVED_LIST
             is com.wingedsheep.engine.core.ExploitedEvent -> EXPLOITED_LIST
             is com.wingedsheep.engine.core.TrainedEvent -> TRAINED_LIST
+            is com.wingedsheep.engine.core.EnlistedEvent -> ENLISTED_LIST
             is com.wingedsheep.engine.core.ExertedEvent -> EXERTED_LIST
             is com.wingedsheep.engine.core.ChampionedEvent -> CHAMPIONED_LIST
             is com.wingedsheep.engine.core.BendPerformedEvent -> BEND_LIST
@@ -474,6 +477,7 @@ class TriggerIndex(
             is com.wingedsheep.engine.core.DecisionSubmittedEvent,
             is com.wingedsheep.engine.core.DiscardRequiredEvent,
             is com.wingedsheep.engine.core.DoorLockedEvent,
+            is com.wingedsheep.engine.core.AttackDeclarationCancelledEvent,
             is com.wingedsheep.engine.core.DrawFailedEvent,
             is com.wingedsheep.engine.core.EnduringStoryGainedEvent,
             is com.wingedsheep.engine.core.GameEndedEvent,
@@ -558,6 +562,7 @@ class TriggerIndex(
         private val CONNIVED_LIST = listOf(TriggerCategory.CONNIVED)
         private val EXPLOITED_LIST = listOf(TriggerCategory.EXPLOITED)
         private val TRAINED_LIST = listOf(TriggerCategory.TRAINED)
+        private val ENLISTED_LIST = listOf(TriggerCategory.ENLISTED)
         private val EXERTED_LIST = listOf(TriggerCategory.EXERTED)
         private val CHAMPIONED_LIST = listOf(TriggerCategory.CHAMPIONED)
         private val BEND_LIST = listOf(TriggerCategory.YOU_BEND)

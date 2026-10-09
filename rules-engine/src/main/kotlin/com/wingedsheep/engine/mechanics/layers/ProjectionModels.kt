@@ -482,6 +482,11 @@ sealed interface Modification {
     data class GrantKeyword(val keyword: String) : Modification {
         override val layer get() = Layer.ABILITY
     }
+    /** Carries point-of-use static abilities through ability gains and losses, preserving instances. */
+    @Serializable
+    data class GrantStaticAbility(val ability: com.wingedsheep.sdk.scripting.StaticAbility) : Modification {
+        override val layer get() = Layer.ABILITY
+    }
     @Serializable
     data class RemoveKeyword(val keyword: String) : Modification {
         override val layer get() = Layer.ABILITY
@@ -784,6 +789,7 @@ internal data class MutableProjectedValues(
     var baseToughness: Int? = null,
     var name: String? = null,
     val keywords: MutableSet<String> = mutableSetOf(),
+    val staticAbilities: MutableList<com.wingedsheep.sdk.scripting.StaticAbility> = mutableListOf(),
     val enchantmentRestrictions: MutableList<ActiveEnchantmentRestriction> = mutableListOf(),
     val colors: MutableSet<String> = mutableSetOf(),
     val types: MutableSet<String> = mutableSetOf(),

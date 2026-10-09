@@ -1,0 +1,222 @@
+/*
+ * The chat dock: a chat button in each screen's top-bar chrome, and the narrow glass panel and
+ * new-message preview that drop down from it. Layered under the game's decision overlays (2000+) so a
+ * choice that pops up while you chat stays on top.
+ */
+
+/* ── The chat button (rendered by ChatButton, styled like its fullscreen neighbour) ── */
+
+.button { position: relative; }
+.button[data-open='true'] { color: #fff; border-color: rgba(242, 180, 92, 0.55) !important; }
+
+/* Unread: a small amber count on the corner, popping in when it changes. */
+.badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: #f2b45c;
+  box-shadow: 0 0 0 2px rgba(10, 12, 20, 0.9);
+  color: #1d1405;
+  font-size: 10.5px;
+  font-weight: 800;
+  line-height: 17px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+  animation: badgePop 0.35s ease-out;
+}
+@keyframes badgePop {
+  0% { transform: scale(0.4); }
+  60% { transform: scale(1.18); }
+  100% { transform: scale(1); }
+}
+
+/* A screen without top-bar chrome of its own (a draft) gets the button pinned top-right. */
+.fallback {
+  position: fixed;
+  top: 12px;
+  right: 12px;
+  z-index: 1400;
+}
+
+/* ── New-message preview ───────────────────────────────────────────────── */
+
+.preview {
+  /* top and left/right come from the button it hangs under. */
+  position: fixed;
+  z-index: 1900;
+  display: flex;
+  align-items: center;
+  width: min(300px, calc(100vw - 16px));
+  border: 1px solid rgba(242, 180, 92, 0.35);
+  border-radius: 14px;
+  background: rgba(18, 20, 30, 0.94);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+  animation: previewIn 0.22s ease-out;
+}
+@keyframes previewIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: none; }
+}
+
+.previewBody {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 4px 10px 10px;
+  border: none;
+  border-radius: 14px 0 0 14px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.previewBody:focus-visible { outline: 2px solid var(--color-focus-ring); outline-offset: -2px; }
+.previewText { min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.previewName {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #f4f5f9;
+  font-size: 13px;
+  font-weight: 700;
+}
+.previewTag {
+  padding: 0 6px;
+  border-radius: 999px;
+  background: rgba(242, 180, 92, 0.18);
+  color: #f2c97a;
+  font-size: 10.5px;
+  font-weight: 700;
+  line-height: 16px;
+}
+.previewMessage {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #c3c9d7;
+  font-size: 13px;
+}
+.previewClose {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  margin-right: 6px;
+  padding: 0;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: #8f98ac;
+  cursor: pointer;
+}
+.previewClose:hover { background: rgba(255, 255, 255, 0.08); color: #fff; }
+.previewClose:focus-visible { outline: 2px solid var(--color-focus-ring); outline-offset: 1px; }
+
+/* ── Panel ─────────────────────────────────────────────────────────────── */
+
+.panel {
+  /* top and left/right come from the button it drops down from (--panel-top is that top). */
+  position: fixed;
+  z-index: 1900;
+  display: flex;
+  flex-direction: column;
+  width: min(360px, calc(100vw - 16px));
+  height: min(560px, calc(100vh - var(--panel-top, 60px) - 12px));
+  height: min(560px, calc(100dvh - var(--panel-top, 60px) - 12px));
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  background: rgba(16, 18, 27, 0.95);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+  color: #eef0f6;
+  outline: none;
+  animation: panelIn 0.18s ease-out;
+}
+@keyframes panelIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: none; }
+}
+
+.fill {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.head {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 8px 8px 8px 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.title {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 600;
+  color: #f4f5f9;
+}
+.title[data-lead] { padding-left: 10px; }
+
+.scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 6px;
+}
+
+.textButton {
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: #f2c97a;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.textButton:hover { text-decoration: underline; }
+
+/* A phone: the panel is the screen. */
+@media (max-width: 640px) {
+  .panel {
+    inset: 0 !important;
+    width: auto;
+    height: auto;
+    transform: none;
+    border: none;
+    border-radius: 0;
+    animation-name: sheetIn;
+  }
+  @keyframes sheetIn {
+    from { opacity: 0; transform: translateX(24px); }
+    to { opacity: 1; transform: none; }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .badge, .preview, .panel { animation: none; }
+}
+:global(html[data-motion='reduce']) .badge,
+:global(html[data-motion='reduce']) .preview,
+:global(html[data-motion='reduce']) .panel { animation: none; }
