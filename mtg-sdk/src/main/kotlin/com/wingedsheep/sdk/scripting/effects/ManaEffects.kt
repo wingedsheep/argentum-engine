@@ -204,9 +204,12 @@ data class AddColorlessManaEffect(
      * non-empty the mana is stored as colorless restricted-mana entries so the riders survive in
      * the pool, under [ManaRestriction.AnySpend] when [restriction] is null.
      */
-    val riders: Set<ManaSpellRider> = emptySet()
+    val riders: Set<ManaSpellRider> = emptySet(),
+    /** When the produced mana expires, independently of its spending restriction and riders. */
+    val expiry: ManaExpiry = ManaExpiry.END_OF_TURN
 ) : Effect {
-    constructor(amount: Int, restriction: ManaRestriction? = null) : this(DynamicAmount.Fixed(amount), restriction)
+    constructor(amount: Int, restriction: ManaRestriction? = null, expiry: ManaExpiry = ManaExpiry.END_OF_TURN) :
+        this(DynamicAmount.Fixed(amount), restriction, expiry = expiry)
 
     override val description: String = buildString {
         append(when (val a = amount) {
@@ -214,6 +217,11 @@ data class AddColorlessManaEffect(
             else -> "Add an amount of {C} equal to ${a.description}"
         })
         if (restriction != null) append(". ${restriction.description}")
+        when (expiry) {
+            ManaExpiry.END_OF_COMBAT -> append(". Until end of combat, you don't lose this mana as steps and phases end")
+            ManaExpiry.KEPT_UNTIL_END_OF_TURN -> append(". Until end of turn, you don't lose this mana as steps and phases end")
+            ManaExpiry.END_OF_TURN -> Unit
+        }
         for (rider in riders) append(". ${rider.description}")
     }
 }

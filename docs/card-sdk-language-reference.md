@@ -2324,8 +2324,10 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   `CopySpellWhenSpent`); as with `AddManaOfChoice`, riders without a `restriction` are stored under
   `ManaRestriction.AnySpend` so the rider survives in the pool while the mana stays spendable on
   anything. See [ManaSpellRider](#manaspellrider).
-- `AddColorlessMana(amount, restriction?, riders?)` — add colorless; `riders` as on `AddMana`
-  (Boseiju, Who Shelters All).
+- `AddColorlessMana(amount, restriction?, riders?, expiry?)` — add colorless; `riders` and `expiry`
+  as on `AddMana`. Both fixed and dynamic amounts support all axes. Boseiju, Who Shelters All uses
+  a rider; Su-Chi Cave Guard uses `AddColorlessMana(8, expiry = ManaExpiry.KEPT_UNTIL_END_OF_TURN)`.
+  Only those eight units persist, not other colourless mana in the pool.
 - `LoseUnspentMana(target = EffectTarget.Controller)` — remove all unspent mana from the resolved
   player, including restricted mana, combat-duration mana, and provenance tags. Player target handles
   and player-set targets work. Step/phase retention does not apply; unconditional mana-conversion
@@ -14438,7 +14440,7 @@ the rider twice (Pyromancer's Goggles: "That many copies will be created").
 
 The *duration* axis of mana — when it leaves the pool — orthogonal to `ManaRestriction` (where it
 may be spent) and `ManaSpellRider` (what happens to the spell). Passed via the `expiry` parameter
-of `AddMana`. The engine empties pools as each step and phase ends (CR 500.5), so:
+of `AddMana` and `AddColorlessMana`. The engine empties pools as each step and phase ends (CR 500.5), so:
 
 - `ManaExpiry.END_OF_TURN` — the default; ordinary mana, lost at the next step/phase boundary
   (the name predates per-step emptying).

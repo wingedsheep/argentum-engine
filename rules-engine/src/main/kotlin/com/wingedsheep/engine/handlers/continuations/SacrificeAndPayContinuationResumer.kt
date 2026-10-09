@@ -746,6 +746,7 @@ class SacrificeAndPayContinuationResumer(
             manaPoolComponent.red,
             manaPoolComponent.green,
             manaPoolComponent.colorless,
+            restrictedMana = manaPoolComponent.restrictedMana,
             snowMana = manaPoolComponent.snowMana,
             snowColorless = manaPoolComponent.snowColorless
         ).withSpendingColors(state, playerId)
@@ -769,6 +770,7 @@ class SacrificeAndPayContinuationResumer(
                     red = newPool.red,
                     green = newPool.green,
                     colorless = newPool.colorless,
+                    restrictedMana = newPool.restrictedMana,
                     snowMana = newPool.snowMana,
                     snowColorless = newPool.snowColorless
                 )

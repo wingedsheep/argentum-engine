@@ -164,5 +164,47 @@ object SequencingPuzzles {
             // is live the moment it is untapped. Here the tapland is the turn-losing play.
             check = { shouldPlayLand("Mountain") },
         ),
+
+        // ── Hoarding a castable permanent. sequencing-02's cliff, for a spell instead of a land. ──
+        //
+        // A sorcery-speed permanent with the mana to cast it has no better window to wait for, yet
+        // the hand curve charges casting it as card loss: 4.0 for the last card at the default
+        // −3.0 (3.0 at `concave-hand-2`), 1.5 for the second. A summoning-sick 1/1 or a mana rock is
+        // worth less than that on the board, so passing won — the AI held Wose Pathfinder with ten
+        // lands for five turns while it died (2026-10-09 logs, game 21).
+        // `AiProfile.permanentCastIsNotCardLoss` refunds the charge for exactly this shape.
+
+        AiPuzzle(
+            id = "sequencing-09",
+            category = PuzzleCategory.SEQUENCING,
+            expectation = "On the last card in hand, deploy the 1/1 — six lands are idle and there " +
+                "is no better window for a creature",
+            aiSeat = 1,
+            position = { scenario ->
+                scenario.withPlayers()
+                    .withLandsOnBattlefield(1, "Forest", 6)
+                    .withCardInHand(1, "Llanowar Elves")
+                    .withCardOnBattlefield(2, "Hill Giant")
+                    .build()
+            },
+            check = { shouldCast("Llanowar Elves") },
+        ),
+
+        AiPuzzle(
+            id = "sequencing-10",
+            category = PuzzleCategory.SEQUENCING,
+            expectation = "Cast the mana rock now; the six-drop beside it is out of reach either way",
+            aiSeat = 1,
+            position = { scenario ->
+                scenario.withPlayers()
+                    .withLandsOnBattlefield(1, "Island", 4)
+                    .withCardInHand(1, "Dragonstorm Globe")
+                    .withCardInHand(1, "Craw Wurm")
+                    .withCardOnBattlefield(2, "Grizzly Bears")
+                    .build()
+            },
+            // One card of slack, so this is the second-card charge (1.5), not sequencing-09's cliff.
+            check = { shouldCast("Dragonstorm Globe") },
+        ),
     )
 }

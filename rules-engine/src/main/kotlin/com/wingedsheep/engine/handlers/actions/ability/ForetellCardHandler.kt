@@ -119,6 +119,7 @@ class ForetellCardHandler(
             red = poolComponent.red,
             green = poolComponent.green,
             colorless = poolComponent.colorless,
+            restrictedMana = poolComponent.restrictedMana,
             snowMana = poolComponent.snowMana,
             snowColorless = poolComponent.snowColorless
         ).withSpendingColors(currentState, action.playerId)
@@ -143,6 +144,7 @@ class ForetellCardHandler(
                     red = poolAfterPayment.red,
                     green = poolAfterPayment.green,
                     colorless = poolAfterPayment.colorless,
+                    restrictedMana = poolAfterPayment.restrictedMana,
                     snowMana = poolAfterPayment.snowMana,
                     snowColorless = poolAfterPayment.snowColorless
                 )

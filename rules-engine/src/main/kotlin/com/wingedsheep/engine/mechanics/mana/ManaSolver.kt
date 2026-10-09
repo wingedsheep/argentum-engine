@@ -2796,8 +2796,8 @@ class ManaSolver(
      * Gets the total available mana for a player (floating mana + untapped sources).
      *
      * When [spellContext] is provided, floating restricted mana whose restriction the context
-     * satisfies is counted too (it is spendable on that payment). Without a context restricted
-     * entries are ignored — the conservative choice, since eligibility can't be judged.
+     * satisfies is counted too (it is spendable on that payment). Without a context only AnySpend
+     * entries qualify: those entries carry metadata but impose no spending restriction.
      */
     fun getAvailableManaCount(
         state: GameState,
@@ -2808,9 +2808,9 @@ class ManaSolver(
         // Count floating mana (plus restricted entries eligible for this payment)
         val poolComponent = state.getEntity(playerId)?.get<ManaPoolComponent>()
         val floatingMana = if (poolComponent != null) {
-            val eligibleRestricted = if (spellContext != null) {
-                poolComponent.restrictedMana.count { it.restriction.isSatisfiedBy(spellContext) }
-            } else 0
+            val eligibleRestricted = poolComponent.restrictedMana.count {
+                it.restriction.isEligibleForPayment(spellContext)
+            }
             poolComponent.white + poolComponent.blue + poolComponent.black +
                 poolComponent.red + poolComponent.green + poolComponent.colorless +
                 eligibleRestricted
