@@ -436,7 +436,8 @@ as "can't message this player". New messages are pushed to every open socket of 
   profile page. Friends, requests, blocks, message
   threads and public profiles carry it; in games it rides on each seat's `PlayerSeatInfo.avatar`
   (also re-sent in `Reconnected.players` so a refresh keeps it). Guests have none; an AI seat takes
-  the preset of its persona (`AiGameManager.AI_PERSONAS`, one portrait per AI name).
+  its persona's portrait (`AiGameManager.AI_PERSONAS` → `Avatars.aiIds`, art in
+  `web-client/src/assets/avatars/ai/`), which no account can pick.
 - Profile page at `/profile` shows the win/loss summary plus colors played (a Recharts bar chart),
   sets, game modes, head-to-head, most-played cards, tournament finishes, and a recent-games list — all
   from `/api/stats/me/*` via `api/account.ts`. Each recent game with a stored replay (`hasReplay`)

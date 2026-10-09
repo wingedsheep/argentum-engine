@@ -79,25 +79,25 @@ class AiGameManager(
     companion object {
         /**
          * The AI's table identities: a name and the preset portrait it sits behind, so an AI seat shows
-         * a face on the match intro and life orb instead of its initial. Every avatar must be a
-         * [com.wingedsheep.gameserver.profile.Avatars] preset the client has art for.
+         * a face on the match intro and at the table instead of its initial. Every avatar is one of
+         * [com.wingedsheep.gameserver.profile.Avatars.aiIds], painted for that persona.
          */
         internal val AI_PERSONAS = listOf(
-            AiPersona("Cruel Optimus", "construct-colossus"),
-            AiPersona("Thought Harvester", "lich-lord"),
-            AiPersona("The Stack Tyrant", "demon-tyrant"),
-            AiPersona("Mindripper Prime", "phyrexian-horror"),
-            AiPersona("Soulless Topdeckr", "artificer-golem"),
-            AiPersona("The Unblinkable", "crystal-elemental"),
-            AiPersona("Dread Calculus", "specter-rider"),
-            AiPersona("Synapse Ravager", "sliver-hive"),
-            AiPersona("Neural Butcher", "eldrazi-titan"),
-            AiPersona("The Iron Oracle", "sphinx-sage"),
-            AiPersona("Phyrexian Brainframe", "vedalken-artificer"),
-            AiPersona("Darksteel Nemesis", "gargoyle-sentinel"),
-            AiPersona("Voltaic Mastermind", "storm-archmage"),
-            AiPersona("Myr Overlord", "myr-sentinel"),
-            AiPersona("Blightsteel Brain", "thopter-swarm"),
+            AiPersona("Cruel Optimus", "ai-cruel-optimus"),
+            AiPersona("Thought Harvester", "ai-thought-harvester"),
+            AiPersona("The Stack Tyrant", "ai-stack-tyrant"),
+            AiPersona("Mindripper Prime", "ai-mindripper-prime"),
+            AiPersona("Soulless Topdeckr", "ai-soulless-topdeckr"),
+            AiPersona("The Unblinkable", "ai-the-unblinkable"),
+            AiPersona("Dread Calculus", "ai-dread-calculus"),
+            AiPersona("Synapse Ravager", "ai-synapse-ravager"),
+            AiPersona("Neural Butcher", "ai-neural-butcher"),
+            AiPersona("The Iron Oracle", "ai-iron-oracle"),
+            AiPersona("Phyrexian Brainframe", "ai-phyrexian-brainframe"),
+            AiPersona("Darksteel Nemesis", "ai-darksteel-nemesis"),
+            AiPersona("Voltaic Mastermind", "ai-voltaic-mastermind"),
+            AiPersona("Myr Overlord", "ai-myr-overlord"),
+            AiPersona("Blightsteel Brain", "ai-blightsteel-brain"),
         )
 
         fun randomAiPersona(): AiPersona = AI_PERSONAS.random()

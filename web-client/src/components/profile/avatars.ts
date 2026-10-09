@@ -111,7 +111,19 @@ export const AVATAR_GROUPS: readonly AvatarGroup[] = [
 /** Every preset, in picker order. */
 export const AVATARS: readonly AvatarOption[] = AVATAR_GROUPS.flatMap((g) => g.avatars)
 
-const byId = new Map(AVATARS.map((a) => [a.id, a]))
+/**
+ * The AI opponents' portraits — one per persona in the server's `AiGameManager.AI_PERSONAS`, art in
+ * `src/assets/avatars/ai/`. They arrive on AI seats and resolve like any preset, but the picker never
+ * offers them (they aren't in [AVATARS]) and the server won't accept one for an account.
+ */
+const aiImages = import.meta.glob<string>('../../assets/avatars/ai/*.webp', { eager: true, import: 'default' })
+const AI_TINT = '#b9c3d1'
+export const AI_AVATARS: readonly AvatarOption[] = Object.keys(aiImages)
+  .map((path) => path.slice(path.lastIndexOf('/') + 1, -'.webp'.length))
+  .sort()
+  .map((id) => ({ id, name: 'AI opponent', tint: AI_TINT }))
+
+const byId = new Map([...AVATARS, ...AI_AVATARS].map((a) => [a.id, a]))
 
 export function avatarOption(id: string | null | undefined): AvatarOption | undefined {
   return id ? byId.get(id) : undefined
@@ -164,7 +176,7 @@ export function resolveAvatar(value: string | null | undefined): ResolvedAvatar 
     return { kind: 'card', url: cardArtUrl(path), path, crop: { x: x!, y: y!, size: size! } }
   }
   const option = byId.get(value)
-  const url = images[`../../assets/avatars/${value}.webp`]
+  const url = images[`../../assets/avatars/${value}.webp`] ?? aiImages[`../../assets/avatars/ai/${value}.webp`]
   return option && url ? { kind: 'preset', url, option } : undefined
 }
 

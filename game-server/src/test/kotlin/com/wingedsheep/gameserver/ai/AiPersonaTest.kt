@@ -4,11 +4,16 @@ import com.wingedsheep.gameserver.profile.Avatars
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldNotContainDuplicates
+import io.kotest.matchers.shouldBe
 
 class AiPersonaTest : FunSpec({
 
-    test("every AI persona sits behind a preset portrait the client has art for") {
-        AiGameManager.AI_PERSONAS.filterNot { Avatars.isPreset(it.avatar) }.shouldBeEmpty()
+    test("every AI persona sits behind its own AI portrait, and every AI portrait has a persona") {
+        AiGameManager.AI_PERSONAS.map { it.avatar }.toSet() shouldBe Avatars.aiIds
+    }
+
+    test("AI portraits are not presets a player can pick") {
+        Avatars.aiIds.filter { Avatars.isPreset(it) }.shouldBeEmpty()
     }
 
     test("AI personas have distinct names and portraits") {
