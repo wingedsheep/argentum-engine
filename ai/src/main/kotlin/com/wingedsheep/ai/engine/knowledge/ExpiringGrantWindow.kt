@@ -1,18 +1,33 @@
 package com.wingedsheep.ai.engine.knowledge
 
+import com.wingedsheep.ai.engine.CombatMath
+import com.wingedsheep.engine.core.ActivateAbility
+import com.wingedsheep.engine.mechanics.layers.ProjectedState
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.components.battlefield.TappedComponent
+import com.wingedsheep.engine.state.components.combat.AttackingComponent
+import com.wingedsheep.engine.state.components.combat.BlockingComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
+import com.wingedsheep.engine.state.components.stack.ActivatedAbilityOnStackComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.state.components.stack.TargetsComponent
+import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.ActivatedAbility
 import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.TimingRule
+import com.wingedsheep.sdk.scripting.effects.ChooseOptionEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
+import com.wingedsheep.sdk.scripting.effects.ForEachEffect
 import com.wingedsheep.sdk.scripting.effects.GrantEvasionKeywordEffect
 import com.wingedsheep.sdk.scripting.effects.GrantKeywordEffect
+import com.wingedsheep.sdk.scripting.effects.IterationSpace
 import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
+import com.wingedsheep.sdk.scripting.effects.SetLandTypeEffect
+import com.wingedsheep.sdk.scripting.effects.TapUntapEffect
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 
 /**
@@ -86,14 +101,45 @@ internal object ExpiringGrantWindow {
         playerId: EntityId,
         ability: ActivatedAbility,
         intents: IntentCatalog,
+        /**
+         * The materialized activation — its source and committed targets, which is what the
+         * unspendable floor needs to know *which* creature the grant lands on. Null keeps the
+         * deferral path alone, which reads the ability and nothing else.
+         */
+        activation: ActivateAbility? = null,
+        /**
+         * [com.wingedsheep.ai.engine.AiProfile.holdExpiringGrantsForCombat]: the deferral floor —
+         * a window later this turn is strictly better than this one.
+         */
+        deferToLaterWindow: Boolean = true,
+        /**
+         * [com.wingedsheep.ai.engine.AiProfile.refuseUnspendableGrants]: the "nothing can spend
+         * it" floor — see [nothingCanSpend] — plus a wider reading of the deferral's shapes and no
+         * long-game release on it.
+         */
+        refuseUnspendable: Boolean = false,
     ): Boolean {
         if (ability.isManaAbility) return false
+
+        if (refuseUnspendable && activation != null &&
+            nothingCanSpend(state, playerId, ability, activation, intents)
+        ) {
+            return true
+        }
+        if (!deferToLaterWindow) return false
 
         // A sorcery-speed ability has no later window worth holding for: our own main phases are
         // the only ones it gets, and the postcombat one is strictly worse than this.
         if (ability.timing != TimingRule.InstantSpeed) return false
 
-        if (!everyPayoffExpiresThisTurn(ability.effect)) return false
+        val expires = if (refuseUnspendable) {
+            // Only creature grants defer. A land-type change is bought to deny or fix mana, and
+            // mana is spent in the main phase this floor would defer it past.
+            expiringPayoffs(ability.effect)?.all { it.kind == PayoffKind.CREATURE } == true
+        } else {
+            everyPayoffExpiresThisTurn(ability.effect)
+        }
+        if (!expires) return false
 
         if (!laterWindowIsStillAhead(state, playerId)) return false
 
@@ -107,7 +153,241 @@ internal object ExpiringGrantWindow {
         // ability shape is a discard: at a full hand the card being pitched is the one the cleanup
         // step was going to take anyway, so the activation is free and the floor has no business
         // stopping it.
-        return Patience.factorFor(state, state.projectedState, playerId) > 0.0
+        //
+        // The long-game release is the one that does not transfer, and [refuseUnspendable] drops
+        // it. Patience decays because a card held is a bet that a better *target* or *spell* turns
+        // up, and that bet worsens every turn. This floor makes no bet: the window it defers to is
+        // later this same turn, and the ability is still there at the same cost. Turn 24 is no
+        // reason to pay for deathtouch in a main phase — and that release is what let it through.
+        val projected = state.projectedState
+        return if (refuseUnspendable) {
+            !Patience.releasedOutright(state, projected, playerId)
+        } else {
+            Patience.factorFor(state, projected, playerId) > 0.0
+        }
+    }
+
+    /**
+     * Whether **no** window left this turn can spend what [activation] buys — the floor
+     * [com.wingedsheep.ai.engine.AiProfile.refuseUnspendableGrants] adds.
+     *
+     * The deferral floor in [holds] answers "is a better window still ahead?". This answers the
+     * question it leaves open once that window has come and gone: "is there *any* window?". An
+     * end-of-turn grant buys something only through a fight it changes, a spell it answers, or mana
+     * it denies or fixes. With none of those left, the leaf score is pricing a board cleanup is
+     * about to erase. The shapes off the log review all land here:
+     *
+     *  - **Esquire of the King** pumping the team, and **Poison Dart Frog** granting deathtouch,
+     *    with no creature that can still attack or block — once attackers are declared, a creature
+     *    that is not attacking has no combat left to spend the stats in.
+     *  - **A grant already in force.** Two of the Frog's four activations in one main phase landed
+     *    on a Frog that already had deathtouch, or had it waiting on the stack.
+     *  - **Dream Thrush** turning an opponent's land into a Plains on our own turn, with no
+     *    landwalker of ours to walk through it.
+     *
+     * What counts as a consumer is deliberately generous, so this only fires where "does nothing"
+     * is structurally certain — the [TimingVerdict.NoWindow] standard. Before attackers are
+     * declared, any creature that *could* attack or block keeps the grant alive; whether it will is
+     * the leaf's call. A stack object that threatens us releases the floor outright, because a
+     * grant is often the answer to one.
+     *
+     * A shape it cannot read — any leaf that is not an end-of-turn grant, a target it cannot
+     * resolve — returns false and keeps the leaf in charge.
+     */
+    private fun nothingCanSpend(
+        state: GameState,
+        playerId: EntityId,
+        ability: ActivatedAbility,
+        activation: ActivateAbility,
+        intents: IntentCatalog,
+    ): Boolean {
+        val payoffs = expiringPayoffs(ability.effect) ?: return false
+        if (somethingOnTheStackThreatensUs(state, playerId, intents)) return false
+
+        val projected = state.projectedState
+        // A source that taps itself — as the cost ({T}) or as a rider ("Tap it.") — cannot be the
+        // creature that attacks or blocks with the grant afterwards.
+        val sourceTaps = tapsItsSource(ability)
+        val pendingOnStack = state.stack.any { stackId ->
+            val onStack = state.getEntity(stackId)?.get<ActivatedAbilityOnStackComponent>()
+            onStack != null && onStack.sourceId == activation.sourceId && onStack.effect == ability.effect
+        }
+
+        return payoffs.none { payoff ->
+            val affected = affectedBy(state, projected, playerId, payoff.target, activation)
+                ?: return false
+            when (payoff.kind) {
+                PayoffKind.CREATURE -> {
+                    val keyword = payoff.keyword
+                    // Already in force, or already on its way: a second grant of the same keyword
+                    // adds nothing. Pending is read for a self-grant only, where "the same ability
+                    // from the same source" can only mean the same creature.
+                    val fresh = affected.filterNot { id ->
+                        keyword != null && (
+                            projected.hasKeyword(id, keyword) ||
+                                (pendingOnStack && payoff.target == EffectTarget.Self)
+                            )
+                    }
+                    fresh.any { canStillFight(state, projected, playerId, it, activation.sourceId, sourceTaps) }
+                }
+                PayoffKind.LAND -> affected.any { canStillMatter(state, projected, playerId, it) }
+            }
+        }
+    }
+
+    /**
+     * Whether [creature] can still be in a fight this turn that a grant on it would change.
+     *
+     * Read off the step, from the seat of whoever is asking:
+     *
+     *  - **Our turn, before attackers are declared** — it can attack. Whether it *should* is the
+     *    leaf's question, not this one's.
+     *  - **Our turn, attackers declared, damage not yet dealt** — it is attacking.
+     *  - **Their turn, before blockers are declared** — it can block, and once their attack is
+     *    known there is something to block.
+     *  - **Their turn, blockers declared** — it is blocking.
+     *
+     * The combat damage step and everything after it is never a fight: priority there comes after
+     * the damage (CR 510.2–510.3). An additional combat phase later in the turn is a shape this
+     * does not try to see.
+     */
+    private fun canStillFight(
+        state: GameState,
+        projected: ProjectedState,
+        playerId: EntityId,
+        creature: EntityId,
+        sourceId: EntityId,
+        sourceTaps: Boolean,
+    ): Boolean {
+        if (!projected.isCreature(creature)) return false
+        val entity = state.getEntity(creature) ?: return false
+        val tapsAway = sourceTaps && creature == sourceId
+        return if (state.isActiveTurnFor(playerId)) {
+            when (state.step) {
+                in UNTIL_ATTACKERS_DECLARED -> !tapsAway &&
+                    creature in CombatMath.getCreaturesThatCanAttack(state, projected, playerId)
+                in FIGHT_STILL_AHEAD -> entity.has<AttackingComponent>()
+                else -> false
+            }
+        } else {
+            when (state.step) {
+                in UNTIL_ATTACKERS_DECLARED -> !tapsAway && !entity.has<TappedComponent>()
+                Step.DECLARE_ATTACKERS -> !tapsAway && !entity.has<TappedComponent>() &&
+                    state.getBattlefield().any { state.getEntity(it)?.has<AttackingComponent>() == true }
+                in FIGHT_STILL_AHEAD -> entity.has<BlockingComponent>()
+                else -> false
+            }
+        }
+    }
+
+    /**
+     * Whether a land-type change on [land] can still change anything this turn.
+     *
+     * Three ways, and a land outside them is one whose type no longer matters to anyone: an
+     * untapped land of ours (fixing our own colors), an untapped land of theirs on *their* turn
+     * (denying the mana they were about to spend), and any land at all while a landwalker of ours
+     * can still attack through it. An opponent's land on our own turn is left out on purpose: the
+     * only mana it denies is an instant they might cast into our turn, and the price was a creature
+     * tapped through *their* whole turn — Dream Thrush, at 4 life.
+     */
+    private fun canStillMatter(
+        state: GameState,
+        projected: ProjectedState,
+        playerId: EntityId,
+        land: EntityId,
+    ): Boolean {
+        val untapped = state.getEntity(land)?.has<TappedComponent>() == false
+        val ours = projected.getController(land) == playerId
+        val ourTurn = state.isActiveTurnFor(playerId)
+        if (untapped && (ours || !ourTurn)) return true
+        if (!ourTurn || state.step !in UNTIL_ATTACKERS_DECLARED) return false
+        return CombatMath.getCreaturesThatCanAttack(state, projected, playerId).any { attacker ->
+            projected.getKeywords(attacker).any { it in LANDWALK_KEYWORDS }
+        }
+    }
+
+    /**
+     * The permanents a payoff lands on, or null when this cannot tell — which keeps the leaf in
+     * charge rather than guessing.
+     */
+    private fun affectedBy(
+        state: GameState,
+        projected: ProjectedState,
+        playerId: EntityId,
+        target: EffectTarget?,
+        activation: ActivateAbility,
+    ): List<EntityId>? = when (target) {
+        EffectTarget.Self -> listOf(activation.sourceId)
+        // A player-level grant ("you have hexproof until end of turn") has no creature to fight
+        // with and no land to tap, and is not a shape this reads.
+        EffectTarget.Controller -> null
+        // A group pump ("creatures you control get +1/+1"). Our own creatures are the ones whose
+        // fights we can spend it in, whatever else the group reaches.
+        EffectTarget.IterationEntity -> projected.getBattlefieldControlledBy(playerId)
+            .filter { projected.isCreature(it) }
+        null -> null
+        else -> activation.targets.mapNotNull { (it as? ChosenTarget.Permanent)?.entityId }
+            .filter { it in state.getBattlefield() }
+            .ifEmpty { null }
+    }
+
+    /** Whether paying for [ability] taps its own source — `{T}` in the cost, or "Tap it." on resolution. */
+    private fun tapsItsSource(ability: ActivatedAbility): Boolean {
+        fun costTaps(cost: AbilityCost): Boolean = when (cost) {
+            AbilityCost.Tap -> true
+            is AbilityCost.Composite -> cost.costs.any(::costTaps)
+            else -> false
+        }
+        return costTaps(ability.cost) || EffectWalker.leaves(ability.effect).any {
+            it is TapUntapEffect && it.tap && it.target == EffectTarget.Self
+        }
+    }
+
+    /** What an end-of-turn payoff is bought for — see [nothingCanSpend]. */
+    private enum class PayoffKind { CREATURE, LAND }
+
+    /** One leaf of an ability whose payoff ends at cleanup, and where it lands. */
+    private data class Payoff(val kind: PayoffKind, val target: EffectTarget?, val keyword: String? = null)
+
+    /**
+     * The payoffs of [effect] when **every** one of them is gone at cleanup, or null when any part
+     * of it outlives the turn or cannot be read.
+     *
+     * The `refuseUnspendable` reading of [everyPayoffExpiresThisTurn]: the same three grant leaves,
+     * plus the shapes the log review found that one could not see —
+     *
+     *  - a **group pump**, which `Patterns.Group.modifyStatsForAll` lowers to a `ForEachEffect` over
+     *    a group whose body is the ordinary pump bound to the iteration entity (Esquire of the King);
+     *  - an end-of-turn **land-type change** (Dream Thrush);
+     *  - and two leaves that are not payoffs at all, skipped rather than failing the test: the
+     *    source tapping *itself* ("Tap it." on Vanguard of the Rose — a drawback, which
+     *    [tapsItsSource] reads separately) and the option choice a land-type change opens with.
+     *
+     * An effect with no payoff left once those are skipped is not this shape either.
+     */
+    private fun expiringPayoffs(effect: Effect): List<Payoff>? {
+        val payoffs = mutableListOf<Payoff>()
+        for (leaf in EffectWalker.leaves(effect)) {
+            when {
+                leaf is TapUntapEffect && leaf.tap && leaf.target == EffectTarget.Self -> Unit
+                leaf is ChooseOptionEffect -> Unit
+                leaf is ForEachEffect && leaf.space is IterationSpace.Group -> {
+                    val body = expiringPayoffs(leaf.body) ?: return null
+                    if (body.any { it.target != EffectTarget.IterationEntity }) return null
+                    payoffs += body
+                }
+                leaf is SetLandTypeEffect && leaf.duration == Duration.EndOfTurn ->
+                    payoffs += Payoff(PayoffKind.LAND, leaf.target)
+                leaf is GrantKeywordEffect && leaf.duration == Duration.EndOfTurn ->
+                    payoffs += Payoff(PayoffKind.CREATURE, leaf.target, leaf.keyword)
+                leaf is GrantEvasionKeywordEffect && leaf.duration == Duration.EndOfTurn ->
+                    payoffs += Payoff(PayoffKind.CREATURE, leaf.target)
+                leaf is ModifyStatsEffect && leaf.duration == Duration.EndOfTurn && isPump(leaf) ->
+                    payoffs += Payoff(PayoffKind.CREATURE, leaf.target)
+                else -> return null
+            }
+        }
+        return payoffs.ifEmpty { null }
     }
 
     /**
@@ -255,4 +535,21 @@ internal object ExpiringGrantWindow {
 
     /** [BEFORE_OUR_ATTACK] plus the step where their attack is not yet known. */
     private val BEFORE_THEIR_ATTACK = BEFORE_OUR_ATTACK + Step.BEGIN_COMBAT
+
+    /**
+     * Every step in which, on either side of the table, no attacker has been declared yet — the
+     * same set as [BEFORE_THEIR_ATTACK], named for what [canStillFight] reads it as.
+     */
+    private val UNTIL_ATTACKERS_DECLARED = BEFORE_THEIR_ATTACK
+
+    /** Attackers declared and combat damage still to come — see [canStillFight]. */
+    private val FIGHT_STILL_AHEAD = setOf(
+        Step.DECLARE_ATTACKERS, Step.DECLARE_BLOCKERS, Step.FIRST_STRIKE_COMBAT_DAMAGE,
+    )
+
+    /** The keywords a land-type change can open a path for — see [canStillMatter]. */
+    private val LANDWALK_KEYWORDS = setOf(
+        Keyword.PLAINSWALK, Keyword.ISLANDWALK, Keyword.SWAMPWALK, Keyword.MOUNTAINWALK,
+        Keyword.FORESTWALK, Keyword.DESERTWALK, Keyword.NONBASIC_LANDWALK,
+    ).map { it.name }.toSet()
 }
