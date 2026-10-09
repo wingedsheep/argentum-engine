@@ -68,6 +68,101 @@ class DependentSpellTargetTest : FunSpec({
         val json = kotlinx.serialization.json.Json
         json.decodeFromString(serializer, json.encodeToString(serializer, dto)) shouldBe dto
     }
+    test("dependent player targets honor protection from everything") {
+        val d = setup()
+        d.putLandOnBattlefield(d.player2, "Forest")
+        d.replaceState(d.state.updateEntity(d.player2) { it.with(
+            com.wingedsheep.engine.state.components.player.PlayerProtectionComponent(
+                scopes = listOf(com.wingedsheep.sdk.scripting.ProtectionScope.Everything)
+            )
+        ) })
+        val infos = utils.buildTargetInfos(d.state, d.player1, requirements, targetingSourceType = TargetingSourceType.SPELL)
+        infos[0].validTargets shouldBe emptyList()
+        infos[1].validTargets shouldBe emptyList()
+    }
+    test("dependent player protection filters only matching source colors") {
+        val d = setup()
+        val red = com.wingedsheep.sdk.dsl.card("Red Test Source") { manaCost = "{R}"; typeLine = "Sorcery" }
+        val blue = com.wingedsheep.sdk.dsl.card("Blue Test Source") { manaCost = "{U}"; typeLine = "Sorcery" }
+        d.registerCards(listOf(red, blue))
+        val redId = d.putCardInHand(d.player1, red.name)
+        val blueId = d.putCardInHand(d.player1, blue.name)
+        d.putLandOnBattlefield(d.player2, "Forest")
+        d.replaceState(d.state.updateEntity(d.player2) { it.with(
+            com.wingedsheep.engine.state.components.player.PlayerProtectionComponent(
+                scopes = listOf(com.wingedsheep.sdk.scripting.ProtectionScope.Color(com.wingedsheep.sdk.core.Color.RED))
+            )
+        ) })
+        utils.buildTargetInfos(d.state, d.player1, requirements, redId, TargetingSourceType.SPELL)[0]
+            .validTargets shouldBe emptyList()
+        utils.buildTargetInfos(d.state, d.player1, requirements, blueId, TargetingSourceType.SPELL)[0]
+            .validTargets shouldBe listOf(d.player2)
+    }
+    test("dependent permanent protection removes an impossible player branch") {
+        val d = setup()
+        val red = com.wingedsheep.sdk.dsl.card("Red Test Source") { manaCost = "{R}"; typeLine = "Sorcery" }
+        val land = com.wingedsheep.sdk.dsl.card("Protected Test Land") {
+            typeLine = "Land"
+            keywordAbility(com.wingedsheep.sdk.scripting.KeywordAbility.Protection(
+                com.wingedsheep.sdk.scripting.ProtectionScope.Color(com.wingedsheep.sdk.core.Color.RED)
+            ))
+        }
+        d.registerCards(listOf(red, land))
+        val sourceId = d.putCardInHand(d.player1, red.name)
+        d.putLandOnBattlefield(d.player2, land.name)
+        val infos = utils.buildTargetInfos(d.state, d.player1, requirements, sourceId, TargetingSourceType.SPELL)
+        infos[0].validTargets shouldBe emptyList()
+        infos[1].validTargets shouldBe emptyList()
+    }
+    test("a colorless projected source does not inherit its printed red color") {
+        val d = setup()
+        val source = com.wingedsheep.sdk.dsl.card("Red Printed Source") {
+            manaCost = "{R}"
+            typeLine = "Creature"
+            power = 1
+            toughness = 1
+        }
+        val land = com.wingedsheep.sdk.dsl.card("Protected Test Land") {
+            typeLine = "Land"
+            keywordAbility(com.wingedsheep.sdk.scripting.KeywordAbility.Protection(
+                com.wingedsheep.sdk.scripting.ProtectionScope.Color(com.wingedsheep.sdk.core.Color.RED)
+            ))
+        }
+        d.registerCards(listOf(source, land))
+        val sourceId = d.putCreatureOnBattlefield(d.player1, source.name)
+        val targetId = d.putLandOnBattlefield(d.player2, land.name)
+        utils.buildTargetInfos(d.state, d.player1, requirements, sourceId, TargetingSourceType.ACTIVATED_ABILITY)[0]
+            .validTargets shouldBe emptyList()
+        d.replaceState(d.state.updateEntity(sourceId) { it.with(
+            com.wingedsheep.engine.state.components.identity.FaceDownComponent
+        ) })
+        d.state.projectedState.getColors(sourceId) shouldBe emptySet()
+        val infos = utils.buildTargetInfos(d.state, d.player1, requirements, sourceId, TargetingSourceType.ACTIVATED_ABILITY)
+        infos[1].validTargetsByPrefix?.get(d.player2.toString()) shouldBe listOf(targetId)
+    }
+    test("dependent permanent selection honors hexproof suppression") {
+        val d = setup()
+        val land = com.wingedsheep.sdk.dsl.card("Hexproof Test Land") {
+            typeLine = "Land"
+            keywords(com.wingedsheep.sdk.core.Keyword.HEXPROOF)
+        }
+        d.registerCards(listOf(land))
+        val targetId = d.putLandOnBattlefield(d.player2, land.name)
+        val suppressor = d.putLandOnBattlefield(d.player1, "Forest")
+        utils.buildTargetInfos(d.state, d.player1, requirements, targetingSourceType = TargetingSourceType.SPELL)[0]
+            .validTargets shouldBe listOf(d.player1)
+        d.replaceState(d.state.updateEntity(suppressor) { it.with(
+            com.wingedsheep.engine.state.components.battlefield.SuppressesHexproofForGroupComponent(
+                filters = listOf(com.wingedsheep.sdk.scripting.filters.unified.GroupFilter(GameObjectFilter.Land))
+            )
+        ) })
+        val infos = utils.buildTargetInfos(d.state, d.player1, requirements, targetingSourceType = TargetingSourceType.SPELL)
+        infos[1].validTargetsByPrefix?.get(d.player2.toString()) shouldBe listOf(targetId)
+        TargetValidator(predicates).validateTargets(
+            d.state, listOf(ChosenTarget.Player(d.player2), ChosenTarget.Permanent(targetId)), requirements,
+            d.player1, targetingSourceType = TargetingSourceType.SPELL
+        ) shouldBe null
+    }
     test("resolution drops newly shrouded or opposing hexproof players but permits own hexproof") {
         val d = setup()
         val resolver = com.wingedsheep.engine.mechanics.stack.ResolutionTargetValidator(predicates)
