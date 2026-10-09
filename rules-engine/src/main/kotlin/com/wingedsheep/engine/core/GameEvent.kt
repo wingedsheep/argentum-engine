@@ -54,6 +54,8 @@ data class ZoneChangeEvent(
      * controller, the aura host it was attached to, combat pairings, token-ness, per-player damage,
      * damage sources, and lost-abilities. `null` for any transition that did not leave the
      * battlefield (entries, library→graveyard mill, etc.), so readers fall back to live state.
+     * An additional meld-card arrival shares the departed permanent's snapshot for controller
+     * provenance, but [isBattlefieldDeparture] remains false and its front face supplies card types.
      *
      * This replaces what were ~16 parallel `lastKnown*` scalar fields. See [EntitySnapshot] for the
      * per-field documentation, and its derived `plusOnePlusOneCounters` / `minusOneMinusOneCounters`
@@ -95,8 +97,13 @@ data class ZoneChangeEvent(
     val requestedDestination: Zone = toZone,
     /** Internal: this arrival's simultaneous graveyard batch has already been ordered. */
     @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
-    val graveyardOrderFinalized: Boolean = false
-) : GameEvent
+    val graveyardOrderFinalized: Boolean = false,
+    /** The one departed melded permanent represented by this additional card arrival. */
+    val meldedPermanent: com.wingedsheep.engine.state.ObjectRef? = null
+) : GameEvent {
+    /** A meld partner arrives as a card; it is not another permanent leaving (CR 712.21). */
+    val isBattlefieldDeparture: Boolean get() = fromZone == Zone.BATTLEFIELD && meldedPermanent == null
+}
 
 @Serializable
 enum class ZoneTransitionCause { PRIMARY, REPLACEMENT_ADDITIONAL, DURATION_RETURN }

@@ -562,6 +562,15 @@ actionable references: invalidating a live object does not erase the event's las
 These fields are internal engine data; client event mapping continues to expose the existing game
 log shape.
 
+A meld departure emits the host's ordinary zone event and the partner's card-arrival event, marked
+`meldedPermanent` with the departed host's object reference. `isBattlefieldDeparture` excludes that
+additional arrival from permanent death/leave detection. Both movement outcomes share the departed
+object and identify separate destination objects. Resolution movement permissions preserve that
+one-to-many relationship, including across serialized continuations; zone-return durations record
+both destination visits independently. Card-arrival trackers read each front face, while death
+trackers read the one departed permanent.
+
+
 Graveyards store cards oldest first. `GraveyardOrdering` finishes each atomic effect, SBA pass,
 or action-cost batch: it preserves earlier cards and asks each owner to order simultaneous arrivals,
 in APNAP order. `GraveyardOrderContinuation` holds the move events and pipeline outputs until all

@@ -114,8 +114,17 @@ class MeldScenarioTest : ScenarioTestBase() {
         }
     }
 
+    private val optionalBlink = card("Test Meld Optional Blink") {
+        manaCost = "{0}"
+        typeLine = "Sorcery"
+        spell {
+            val t = target(TargetFilter.Creature)
+            effect = Effects.Exile(t) then Effects.May(Effects.PutOntoBattlefield(t))
+        }
+    }
+
     init {
-        listOf(host, partner, result, wrongResult, deathWatcher, destroy, bounce).forEach(cardRegistry::register)
+        listOf(host, partner, result, wrongResult, deathWatcher, destroy, bounce, optionalBlink).forEach(cardRegistry::register)
 
         fun board() = scenario()
             .withPlayers("Player", "Opponent")
@@ -132,6 +141,23 @@ class MeldScenarioTest : ScenarioTestBase() {
 
         fun TestGame.exile(player: EntityId) = state.getZone(ZoneKey(player, Zone.EXILE))
             .map { state.getEntity(it)!!.get<CardComponent>()!!.name }
+
+        test("a decision between exile and return preserves both meld card identities") {
+            val game = board().withCardOnBattlefield(1, "Test Meld Partner")
+                .withCardInHand(1, "Test Meld Optional Blink").build()
+            game.meld()
+            val melded = game.findPermanent("Test Meld Result").shouldNotBeNull()
+            game.castSpell(1, "Test Meld Optional Blink", melded).error shouldBe null
+            game.resolveStack()
+            game.state.pendingDecision.shouldNotBeNull()
+
+            game.answerYesNo(true).error shouldBe null
+            game.resolveStack()
+
+            game.findPermanent("Test Meld Host").shouldNotBeNull()
+            game.findPermanent("Test Meld Partner").shouldNotBeNull()
+            game.exile(game.player1Id) shouldBe emptyList()
+        }
 
         test("melds the pair into the result: one permanent, both cards out of exile, enters triggers fire") {
             val game = board().withCardOnBattlefield(1, "Test Meld Partner").build()

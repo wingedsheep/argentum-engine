@@ -68,6 +68,18 @@ class MoveToZoneEffectExecutor(
                 EffectResult.success(state)
             } else EffectResult.error(state, "No valid target for move to zone")
 
+        // A later instruction of this resolution finds both cards of a departed meld.
+        // Reuse the composite continuation machinery so entry choices can pause between cards.
+        if (effect.target !is com.wingedsheep.sdk.scripting.targets.EffectTarget.SpecificEntity) {
+            val parts = context.objectReferences.meldedCards(targetId, state)
+            if (parts != null) {
+                if (parts.isEmpty()) return EffectResult.success(state)
+                return effectExecutor(state, com.wingedsheep.sdk.scripting.effects.CompositeEffect(parts.map {
+                    effect.copy(target = com.wingedsheep.sdk.scripting.targets.EffectTarget.SpecificEntity(it))
+                }), context)
+            }
+        }
+
         // byDestruction delegates to destroyPermanent (handles indestructible)
         if (effect.byDestruction) {
             return destroyPermanent(

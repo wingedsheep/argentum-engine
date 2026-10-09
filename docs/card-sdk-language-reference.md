@@ -1814,7 +1814,11 @@ this path, with blocker filters evaluated against projected state.
   object (ETB triggers fire), under its owner's control; `tappedAndAttacking` is "It enters tapped and attacking."
   Engine model: the source's entity *is* the melded permanent (`MeldedComponent` holds the partner card, which sits in
   no zone); its mana value is the sum of the front faces' (CR 712.8g); when it leaves the battlefield it dies/leaves
-  once and both cards go to the new zone front face up (CR 712.21). It can't be transformed (CR 712.4c) and never
+  once and both cards go to the new zone front face up (CR 712.21). Both arrivals emit zone events and
+  update card-based graveyard/exile history; permanent death/leave counts remain one. Flicker instructions,
+  moved collections, linked exile and `MoveUntilSourceLeaves` follow both resulting cards (CR 712.21c),
+  with independent object references so a card that leaves and returns to exile cannot be retrieved by
+  the old effect. No additional card-authoring flag is needed. It can't be transformed (CR 712.4c) and never
   matches `transformed()` (CR 701.27g). The upkeep / end-step / beginning-of-combat meld triggers keep their
   intervening "if" as the trigger condition; the ownership half is checked by the effect as it resolves.
 - `ReturnSelfFromGraveyardTransformed(tapped = false)` — "Return this card from your graveyard to the

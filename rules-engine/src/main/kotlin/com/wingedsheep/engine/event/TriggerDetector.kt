@@ -291,7 +291,7 @@ class TriggerDetector(
                     pending.triggerContext.triggeringEntityId != pending.sourceId
                 val triggeringZoneEvent = if (event is ZoneChangeEvent && pending.triggerContext.triggeringEntityId == event.entityId) event
                     else if (attachedDeparture) events.take(eventIndex).filterIsInstance<ZoneChangeEvent>().lastOrNull {
-                        it.entityId == pending.triggerContext.triggeringEntityId && it.fromZone == Zone.BATTLEFIELD
+                        it.entityId == pending.triggerContext.triggeringEntityId && it.isBattlefieldDeparture
                     } else null
                 val eventContext = triggeringZoneEvent?.let(TriggerContext::fromEvent) ?: pending.triggerContext
                 val sourceEventContext = (event as? ZoneChangeEvent)?.takeIf { selfZoneEvent }?.let(TriggerContext::fromEvent)
@@ -300,6 +300,8 @@ class TriggerDetector(
                     ?: state.objectRef(pending.sourceId)
                 pending.copy(triggerContext = eventContext, objectReferences = com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(
                     captured = true,
+                    permittedMoves = (com.wingedsheep.engine.handlers.meldArrivalMoves(events, sourceEventContext?.triggeringObject) +
+                        com.wingedsheep.engine.handlers.meldArrivalMoves(events, eventContext.triggeringObject)).distinct(),
                     origin = if (selfZoneEvent) sourceEventContext?.triggeringOrigin else sourceAtEvent,
                     // CR 400.7f allows the Aura's immediate graveyard object, including the unattached SBA.
                     source = if (attachedDeparture && (event as ZoneChangeEvent).toZone != Zone.GRAVEYARD)
@@ -499,7 +501,7 @@ class TriggerDetector(
                 val triggerContext = trigger.triggerContext
                 val selfEvent = triggerContext.triggeringEntityId == trigger.sourceId
                 val departure = events.filterIsInstance<ZoneChangeEvent>().firstOrNull {
-                    it.entityId == trigger.sourceId && it.fromZone == Zone.BATTLEFIELD &&
+                    it.entityId == trigger.sourceId && it.isBattlefieldDeparture &&
                         (trigger.sourceBattlefieldTimestamp == null ||
                             it.lastKnown?.battlefieldEntryTimestamp == trigger.sourceBattlefieldTimestamp)
                 }
@@ -508,6 +510,8 @@ class TriggerDetector(
                 val actionable = if (selfEvent && triggerContext.triggeringObject != null) triggerContext.triggeringObject else origin
                 trigger = trigger.copy(objectReferences = com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(
                     captured = true, origin = origin, source = actionable,
+                    permittedMoves = (com.wingedsheep.engine.handlers.meldArrivalMoves(events, actionable) +
+                        com.wingedsheep.engine.handlers.meldArrivalMoves(events, triggerContext.triggeringObject)).distinct(),
                     triggering = triggerContext.triggeringObject ?: triggerContext.triggeringEntityId?.let { id ->
                         events.filterIsInstance<ZoneChangeEvent>().lastOrNull { it.entityId == id }?.newObject
                             ?: state.objectRef(id)
@@ -1762,7 +1766,7 @@ class TriggerDetector(
                         // Explicit battlefield-exit triggers use the dedicated look-back detectors.
                         // "From anywhere" triggers instead see the card in its destination zone,
                         // including abilities restored when it leaves the battlefield.
-                        if (event is ZoneChangeEvent && event.fromZone == Zone.BATTLEFIELD &&
+                        if (event is ZoneChangeEvent && event.isBattlefieldDeparture &&
                             event.entityId == entityId &&
                             (ability.trigger as? EventPattern.ZoneChangeEvent)?.from == Zone.BATTLEFIELD
                         ) continue
@@ -1803,7 +1807,7 @@ class TriggerDetector(
 
         // Handle death triggers (source might not be on battlefield anymore)
         if (event is ZoneChangeEvent && event.toZone == Zone.GRAVEYARD &&
-            event.fromZone == Zone.BATTLEFIELD) {
+            event.isBattlefieldDeparture) {
             deathAndLeaveDetector.detectDeathTriggers(state, index.statics, event, triggers)
             // Handle "whenever a creature dealt damage by this creature this turn dies" triggers
             deathAndLeaveDetector.detectCreatureDealtDamageBySourceDiesTriggers(state, event, triggers, projected, index)
@@ -1820,7 +1824,7 @@ class TriggerDetector(
         }
 
         // Handle leaves-the-battlefield triggers (source is no longer on battlefield)
-        if (event is ZoneChangeEvent && event.fromZone == Zone.BATTLEFIELD) {
+        if (event is ZoneChangeEvent && event.isBattlefieldDeparture) {
             deathAndLeaveDetector.detectLeavesBattlefieldTriggers(state, index.statics, event, triggers)
         }
 
@@ -3403,7 +3407,7 @@ class TriggerDetector(
         data class LeaveInfo(val entityId: EntityId, val cardComponent: CardComponent)
         val leavesByController = mutableMapOf<EntityId, MutableList<LeaveInfo>>()
         for (event in events) {
-            if (event is ZoneChangeEvent && event.fromZone == Zone.BATTLEFIELD &&
+            if (event is ZoneChangeEvent && event.isBattlefieldDeparture &&
                 event.toZone != Zone.GRAVEYARD) {
                 val entity = state.getEntity(event.entityId) ?: continue
                 val card = entity.get<CardComponent>() ?: continue
@@ -3499,7 +3503,7 @@ class TriggerDetector(
         val deathsByController = mutableMapOf<EntityId, MutableList<CreatureDeathInfo>>()
         for (event in events) {
             if (event !is ZoneChangeEvent) continue
-            if (event.fromZone != Zone.BATTLEFIELD || event.toZone != Zone.GRAVEYARD) continue
+            if (!event.isBattlefieldDeparture || event.toZone != Zone.GRAVEYARD) continue
             val controllerId = event.lastKnown?.controllerId ?: event.ownerId
             deathsByController.getOrPut(controllerId) { mutableListOf() }
                 .add(
@@ -3536,7 +3540,7 @@ class TriggerDetector(
         // deal damage — would otherwise be silently dropped on a board wipe that also kills it.)
         for (event in events) {
             if (event !is ZoneChangeEvent) continue
-            if (event.fromZone != Zone.BATTLEFIELD || event.toZone != Zone.GRAVEYARD) continue
+            if (!event.isBattlefieldDeparture || event.toZone != Zone.GRAVEYARD) continue
             // Still on the battlefield → already covered by the index path above.
             if (event.entityId in state.getBattlefield()) continue
             val container = state.getEntity(event.entityId)
@@ -3907,7 +3911,7 @@ class TriggerDetector(
         // we don't have to disambiguate.
         val zoneEvents = events.filterIsInstance<ZoneChangeEvent>().filter {
             it.toZone == Zone.BATTLEFIELD ||
-                (it.fromZone == Zone.BATTLEFIELD && it.toZone != Zone.BATTLEFIELD)
+                (it.isBattlefieldDeparture && it.toZone != Zone.BATTLEFIELD)
         }
         if (zoneEvents.isEmpty()) return
 
@@ -4184,7 +4188,7 @@ class TriggerDetector(
         // Creatures put into a graveyard from the battlefield this batch, taking continuous effects
         // into account via last-known type line (an animated land that dies counts, CR 700.4).
         val dyingCreatures = events.filterIsInstance<ZoneChangeEvent>()
-            .filter { it.fromZone == Zone.BATTLEFIELD && it.toZone == Zone.GRAVEYARD }
+            .filter { it.isBattlefieldDeparture && it.toZone == Zone.GRAVEYARD }
             .filter { it.lastKnown?.typeLine?.isCreature == true }
             .map { it.entityId }
             .toSet()
@@ -4197,7 +4201,7 @@ class TriggerDetector(
         // Last-known information of every permanent that left the battlefield this batch (CR
         // 603.10a): read for departed trigger sources and departed doublers alike.
         val departed = events.filterIsInstance<ZoneChangeEvent>()
-            .filter { it.fromZone == Zone.BATTLEFIELD && it.lastKnown != null && it.entityId !in battlefield }
+            .filter { it.isBattlefieldDeparture && it.lastKnown != null && it.entityId !in battlefield }
             .associateBy { it.entityId }
 
         data class DeathDoubler(

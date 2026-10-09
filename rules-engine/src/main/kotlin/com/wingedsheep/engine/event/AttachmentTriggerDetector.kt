@@ -175,7 +175,7 @@ class AttachmentTriggerDetector(
             // targeted object is the aura's host; the targeting source is checked by the matcher.
             is BecomesTargetEvent -> listOf(event.targetEntityId)
             is ZoneChangeEvent -> {
-                if (event.fromZone == Zone.BATTLEFIELD) listOf(event.entityId) else emptyList()
+                if (event.isBattlefieldDeparture) listOf(event.entityId) else emptyList()
             }
             else -> emptyList()
         }
