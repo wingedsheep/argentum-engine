@@ -3278,6 +3278,47 @@
     ]
 }
 
+// Shalai's Acolyte
+{
+    "name": "Shalai's Acolyte",
+    "manaCost": "{4}{W}",
+    "typeLine": "Creature — Angel",
+    "oracleText": "Kicker {1}{G} (You may pay an additional {1}{G} as you cast this spell.)\nFlying\nIf this creature was kicked, it enters with two +1/+1 counters on it.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Kicker",
+            "manaCost": "{1}{G}"
+        }
+    ],
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "count": 2,
+                "selfOnly": true,
+                "condition": "WasKicked"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "33",
+        "rarity": "UNCOMMON",
+        "artist": "Zara Alfonso",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/9/39996722-e7f2-41e4-aa1e-2b6778d7b535.jpg?1783921359"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE"
+    ]
+}
+
 // Sheoldred, the Apocalypse
 {
     "name": "Sheoldred, the Apocalypse",
@@ -4389,6 +4430,70 @@
         "imageUri": "https://cards.scryfall.io/normal/front/a/e/aef37244-deb9-464e-ab8c-4308369ae09b.jpg?1783921266"
     },
     "colorIdentityOverride": []
+}
+
+// Viashino Branchrider
+{
+    "name": "Viashino Branchrider",
+    "manaCost": "{R}",
+    "typeLine": "Creature — Lizard Warrior",
+    "oracleText": "Kicker {2}{G} (You may pay an additional {2}{G} as you cast this spell.)\nHaste\nIf this creature was kicked, it enters with two +1/+1 counters on it.\n{2}{R}: This creature gets +2/+0 until end of turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "HASTE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Kicker",
+            "manaCost": "{2}{G}"
+        }
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Viashino Branchrider:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{R}"
+                    }
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": "Self"
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "count": 2,
+                "selfOnly": true,
+                "condition": "WasKicked"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "150",
+        "artist": "Andrew Mar",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/f/1f08749e-05e0-4fb4-a4ae-35e7187584ab.jpg?1783921307"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN"
+    ]
 }
 
 // Wooded Ridgeline
