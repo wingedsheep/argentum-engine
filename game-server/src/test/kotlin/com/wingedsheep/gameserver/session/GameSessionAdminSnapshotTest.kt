@@ -11,7 +11,7 @@ import io.mockk.mockk
 import org.springframework.web.socket.WebSocketSession
 
 /**
- * The admin Live Games view reads a game through [GameSession.adminSnapshot] and
+ * The admin Live overview reads a game through [GameSession.adminSnapshot] and
  * [GameSession.lastActionAt]: who is seated (AI or human, connected or not), where the game stands,
  * and whether anyone has acted lately — the inputs to "would a restart interrupt anyone?".
  */

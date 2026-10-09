@@ -20,9 +20,10 @@ import io.kotest.matchers.string.shouldContain
 import io.mockk.every
 import io.mockk.mockk
 import java.time.Instant
+import java.util.UUID
 
 /**
- * The admin Live games view's per-player activity: the page a client reports and the feed of moves
+ * The admin Live overview's per-player activity: the page a client reports and the feed of moves
  * ([PlayerActivityTracker]), and how [PlayerActivityResolver] ranks server state over that page.
  */
 class PlayerActivityTest : FunSpec({
@@ -78,6 +79,18 @@ class PlayerActivityTest : FunSpec({
 
             tracker.retainOnly(emptySet())
             tracker.lastInputAt(carol.token) shouldBe null
+        }
+
+        test("the viewing admin's own moves can be left out of the feed") {
+            val tracker = PlayerActivityTracker()
+            val admin = identity("Admin").apply { userId = UUID.randomUUID() }
+            val dave = identity("Dave").apply { userId = UUID.randomUUID() }
+            tracker.onMessage(admin, ClientMessage.ReportActivity("deckbuilder"))
+            tracker.onMessage(dave, ClientMessage.JoinMatchmaking(mode = MatchmakingMode.RANDOM_DECK))
+            tracker.onMessage(identity("Guest"), ClientMessage.LeaveMatchmaking)
+
+            tracker.recentFeed(excludeUserId = admin.userId).map { it.playerName } shouldBe listOf("Guest", "Dave")
+            tracker.recentFeed().map { it.playerName } shouldBe listOf("Guest", "Dave", "Admin")
         }
 
         test("AI identities are never tracked") {

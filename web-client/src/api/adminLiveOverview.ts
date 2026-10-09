@@ -1,5 +1,5 @@
 /**
- * REST client for the admin Live Games view (`/api/admin/live-games`): every game session and every
+ * REST client for the admin Live overview (`/api/admin/live-overview`): every game session and every
  * running tournament lobby the server holds in memory right now. Needs no database, so it works on a
  * server without accounts too. Auth is the dashboard's shared {@link AdminAuth}.
  */
@@ -98,7 +98,7 @@ export interface LiveOverview {
 }
 
 export async function fetchLiveOverview(auth: AdminAuth): Promise<LiveOverview> {
-  const res = await fetch('/api/admin/live-games', { headers: adminAuthHeaders(auth) })
-  if (!res.ok) throw new Error(`Failed to load live games (${res.status})`)
+  const res = await fetch('/api/admin/live-overview', { headers: adminAuthHeaders(auth) })
+  if (!res.ok) throw new Error(`Failed to load the live overview (${res.status})`)
   return (await res.json()) as LiveOverview
 }

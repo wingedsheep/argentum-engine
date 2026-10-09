@@ -4,10 +4,11 @@ import com.wingedsheep.gameserver.protocol.ClientMessage
 import com.wingedsheep.gameserver.session.PlayerIdentity
 import org.springframework.stereotype.Component
 import java.time.Instant
+import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 
 /**
- * What the admin Live games view knows about players beyond the server's own session state: the page
+ * What the admin Live overview knows about players beyond the server's own session state: the page
  * each client says it's showing ([ClientMessage.ReportActivity]), when each player last sent a real
  * input, and a short in-memory feed of the moves worth noticing — opening a lobby, joining a queue,
  * submitting a deck. Fed from the single WebSocket dispatch point, so no handler needs to know it
@@ -21,7 +22,16 @@ class PlayerActivityTracker {
 
     data class PageReport(val page: String, val since: Instant)
 
-    data class FeedEntry(val at: Instant, val playerName: String, val signedIn: Boolean, val kind: String, val text: String)
+    data class FeedEntry(
+        val at: Instant,
+        val playerName: String,
+        /** The account behind the move, when signed in — lets an admin hide their own moves. */
+        val userId: UUID?,
+        val kind: String,
+        val text: String,
+    ) {
+        val signedIn: Boolean get() = userId != null
+    }
 
     private val pages = ConcurrentHashMap<String, PageReport>()
     private val lastInput = ConcurrentHashMap<String, Instant>()
@@ -50,8 +60,9 @@ class PlayerActivityTracker {
 
     fun lastInputAt(token: String): Instant? = lastInput[token]
 
-    /** Newest first. */
-    fun recentFeed(): List<FeedEntry> = synchronized(feed) { feed.reversed() }
+    /** Newest first, leaving out the moves of [excludeUserId]'s account (the admin viewing the feed). */
+    fun recentFeed(excludeUserId: UUID? = null): List<FeedEntry> =
+        synchronized(feed) { feed.reversed() }.filter { excludeUserId == null || it.userId != excludeUserId }
 
     /** Drop per-player entries for identities the registry no longer holds. */
     fun retainOnly(liveTokens: Set<String>) {
@@ -61,7 +72,7 @@ class PlayerActivityTracker {
 
     private fun append(identity: PlayerIdentity, at: Instant, kind: String, text: String) {
         synchronized(feed) {
-            feed.addLast(FeedEntry(at, identity.playerName, identity.userId != null, kind, text))
+            feed.addLast(FeedEntry(at, identity.playerName, identity.userId, kind, text))
             while (feed.size > FEED_SIZE) feed.removeFirst()
         }
     }

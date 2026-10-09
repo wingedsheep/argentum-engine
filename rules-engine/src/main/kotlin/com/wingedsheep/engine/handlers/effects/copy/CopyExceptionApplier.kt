@@ -78,13 +78,14 @@ object CopyExceptionApplier {
         exceptions: CopyExceptions,
         resolvingTrigger: com.wingedsheep.sdk.scripting.TriggeredAbility? = null,
         copierColors: Set<com.wingedsheep.sdk.core.Color> = emptySet(),
+        copierStats: CreatureStats? = null,
     ): CardComponent {
         if (exceptions.isEmpty) return base
         val addedTriggers = exceptions.addedTriggeredAbilities +
             if (exceptions.retainResolvingTriggeredAbility && resolvingTrigger != null) listOf(resolvingTrigger)
             else emptyList()
         return base.copy(
-            flipSide = base.flipSide?.let { apply(it, exceptions, resolvingTrigger, copierColors) },
+            flipSide = base.flipSide?.let { apply(it, exceptions, resolvingTrigger, copierColors, copierStats) },
             copyNumericKeywords = base.copyNumericKeywords + exceptions.addedNumericKeywords,
             name = exceptions.nameOverride ?: base.name,
             // Each instance gets its own identity, including two copies of a once-per-turn
@@ -100,7 +101,10 @@ object CopyExceptionApplier {
                 ))
             },
             typeLine = typeLine(base.typeLine, exceptions),
-            baseStats = baseStats(base.baseStats, exceptions),
+            // "Its power and toughness are equal to this creature's" keeps the copier's own base
+            // P/T — a prototyped copier's included (CR 718.3b). No copier (a minted token): unchanged.
+            baseStats = if (exceptions.retainPowerToughness && copierStats != null) copierStats
+                else baseStats(base.baseStats, exceptions),
             // Color is already derived from the indicator/CDA in the stored characteristics.
             // A color exception also omits the copied color-defining keyword (CR 707.9d).
             baseKeywords = (if (exceptions.retainColors || exceptions.overrideColors != null ||

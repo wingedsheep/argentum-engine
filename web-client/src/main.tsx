@@ -60,7 +60,7 @@ const PublicProfilePage = lazy(() =>
 
 // Beside the router, not inside `App`: a search keeps running on every route (see the component).
 const MatchmakingLayer = lazy(() => import('./components/matchmaking/MatchmakingLayer'))
-// Same reason: reports the current page to the server (admin Live games view) on every route.
+// Same reason: reports the current page to the server (admin Live overview) on every route.
 const ActivityReporter = lazy(() => import('./components/shared/ActivityReporter'))
 
 initAnalytics()

@@ -9,9 +9,15 @@ import { getAuthToken } from './account'
 /** The bootstrap password if the user logged in with it, or null to use the signed-in account's token. */
 export type AdminAuth = string | null
 
-/** Headers for an admin request: the bootstrap password if present, else the account's Bearer token. */
+/**
+ * Headers for an admin request: the bootstrap password if present, plus the account's Bearer token when
+ * signed in. The server authorizes on either; the token also tells it who is viewing (the Live overview
+ * leaves the viewer's own moves out of its feed).
+ */
 export function adminAuthHeaders(auth: AdminAuth): Record<string, string> {
-  if (auth) return { 'X-Admin-Password': auth }
   const token = getAuthToken()
-  return token ? { Authorization: `Bearer ${token}` } : {}
+  return {
+    ...(auth ? { 'X-Admin-Password': auth } : {}),
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  }
 }

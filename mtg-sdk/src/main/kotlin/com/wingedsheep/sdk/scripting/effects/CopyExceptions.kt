@@ -65,6 +65,13 @@ import kotlinx.serialization.Serializable
  *   exception. Applied even when the copied object had no P/T at all (Absorbing Man copying a
  *   land), in which case base P/T are created from scratch.
  * @property toughnessOverride Replaces the copied base toughness.
+ * @property retainPowerToughness "except its power and toughness are equal to this creature's power
+ *   and toughness" (Hulking Metamorph) — the copy keeps the *copying* object's own pre-copy base P/T
+ *   instead of the copied one, the P/T twin of [retainColors]. Reads the copier's current copiable
+ *   P/T, so a prototyped copier (CR 718.3b) keeps its prototype size. Only meaningful on a path with
+ *   a copier — an existing permanent becoming a copy, or a permanent entering as one; a minted token
+ *   has no prior self, so there it leaves the copied P/T alone. Can't combine with a stated
+ *   [powerOverride] / [toughnessOverride].
  * @property noManaCost "except it … has no mana cost" — the copy has no mana cost and so mana
  *   value 0 (Embalm / Eternalize, CR 702.128a).
  * @property addedNumericKeywords Numeric keywords the copy has *in addition* to the ones it copied —
@@ -88,6 +95,7 @@ data class CopyExceptions(
     val retainColors: Boolean = false,
     val powerOverride: Int? = null,
     val toughnessOverride: Int? = null,
+    val retainPowerToughness: Boolean = false,
     val noManaCost: Boolean = false,
     val addedNumericKeywords: List<com.wingedsheep.sdk.scripting.KeywordAbility.Numeric> = emptyList(),
     /** Add the frozen resolving trigger as copiable rules text; no-op outside a triggered ability. */
@@ -106,6 +114,9 @@ data class CopyExceptions(
     init {
         require(!retainColors || (overrideColors == null && addedColors.isEmpty())) {
             "CopyExceptions.retainColors cannot combine with color additions or overrides"
+        }
+        require(!retainPowerToughness || (powerOverride == null && toughnessOverride == null)) {
+            "CopyExceptions.retainPowerToughness cannot combine with a power/toughness override"
         }
         require(addedActivatedAbilities.none { it.isManaAbility }) {
             "CopyExceptions.addedActivatedAbilities can't carry a mana ability"
@@ -146,8 +157,10 @@ data class CopyExceptions(
             addedColors = if (retainColors) emptySet() else base.addedColors + addedColors,
             overrideColors = if (retainColors) null else overrideColors ?: base.overrideColors,
             retainColors = retainColors || (base.retainColors && overrideColors == null && addedColors.isEmpty()),
-            powerOverride = powerOverride ?: base.powerOverride,
-            toughnessOverride = toughnessOverride ?: base.toughnessOverride,
+            powerOverride = if (retainPowerToughness) null else powerOverride ?: base.powerOverride,
+            toughnessOverride = if (retainPowerToughness) null else toughnessOverride ?: base.toughnessOverride,
+            retainPowerToughness = retainPowerToughness ||
+                (base.retainPowerToughness && powerOverride == null && toughnessOverride == null),
             noManaCost = noManaCost || base.noManaCost,
             addedNumericKeywords = base.addedNumericKeywords + addedNumericKeywords,
             retainResolvingTriggeredAbility = base.retainResolvingTriggeredAbility || retainResolvingTriggeredAbility,
@@ -180,6 +193,7 @@ data class CopyExceptions(
         if (powerOverride != null || toughnessOverride != null) {
             add("it's ${powerOverride ?: "*"}/${toughnessOverride ?: "*"}")
         }
+        if (retainPowerToughness) add("its power and toughness are equal to this creature's power and toughness")
         overrideColors?.let { add("it's ${it.joinToString(" ") { c -> c.displayName.lowercase() }}") }
         if (addedColors.isNotEmpty()) {
             add(

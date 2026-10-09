@@ -373,6 +373,7 @@ class ModalAndCloneContinuationResumer(
             ),
             exceptions,
             copierColors = originalCardComponent.colors,
+            copierStats = originalCardComponent.baseStats,
         )
         return state.updateEntity(entityId) { c ->
             c.with(copiedCardComponent)

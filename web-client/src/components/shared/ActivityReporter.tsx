@@ -1,5 +1,5 @@
 /**
- * Tells the server which top-level page this client is on, so the admin Live games view can say a
+ * Tells the server which top-level page this client is on, so the admin Live overview can say a
  * player is in the deckbuilder or reading the help rather than just "online". Mounted beside the
  * router like {@link MatchmakingLayer}: the socket outlives client-side navigation, and so must this.
  *

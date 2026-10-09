@@ -313,7 +313,7 @@ class GameSession(
 
     /**
      * When the last game action was applied (or the game started / was restored). In memory only — a
-     * restored game counts from its restore. Read by the admin Live Games view to tell a game that is
+     * restored game counts from its restore. Read by the admin Live overview to tell a game that is
      * being played from one whose players have walked away.
      */
     @Volatile
@@ -513,7 +513,7 @@ class GameSession(
         )
     }
 
-    /** One seat as the admin Live Games view sees it. */
+    /** One seat as the admin Live overview sees it. */
     data class AdminSeat(
         val name: String,
         val isAi: Boolean,
@@ -521,7 +521,7 @@ class GameSession(
         val life: Int?,
     )
 
-    /** A point-in-time summary of this game for the admin Live Games view. */
+    /** A point-in-time summary of this game for the admin Live overview. */
     data class AdminSnapshot(
         val seats: List<AdminSeat>,
         val started: Boolean,
@@ -532,7 +532,7 @@ class GameSession(
     )
 
     /**
-     * Read-only summary for the admin Live Games view: seats in turn order with AI/connection flags
+     * Read-only summary for the admin Live overview: seats in turn order with AI/connection flags
      * and life, plus where the game stands. Reads one [gameState] reference, so it never blocks on
      * or races the game thread.
      */

@@ -1,11 +1,11 @@
 /**
- * The "who is doing what" half of the admin Live games view: every online player with the server's
+ * The "who is doing what" half of the admin Live overview: every online player with the server's
  * one-line account of their activity (playing, drafting, waiting in a lobby, searching, editing decks,
  * browsing a page), a breakdown bar over those buckets, and a feed of recent moves — lobbies opened,
- * queues joined, decks submitted. All of it comes from the same `/api/admin/live-games` poll.
+ * queues joined, decks submitted. All of it comes from the same `/api/admin/live-overview` poll.
  */
 import type React from 'react'
-import type { ActivityFeedEntry, ActivityKind, OnlinePlayer } from '@/api/adminLiveGames'
+import type { ActivityFeedEntry, ActivityKind, OnlinePlayer } from '@/api/adminLiveOverview'
 import { formatAgo, formatClock } from './statFormat'
 import { Panel, Table, adminTheme, cellStyle } from './adminUi'
 

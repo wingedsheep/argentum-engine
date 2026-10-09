@@ -21,12 +21,12 @@ import java.time.Instant
  * maintenance?" and gives each game a session id the dashboard can spectate through the ordinary
  * `/?spectate=` deep link. Also lists every online player with what they're doing — playing,
  * drafting, waiting in a lobby, searching, editing decks — via [PlayerActivityResolver], and a short
- * feed of recent moves from [PlayerActivityTracker]. Read-only; auth through [AdminAuthService]. Unlike the stats endpoints it
+ * feed of recent moves from [PlayerActivityTracker] (minus the viewing admin's own). Read-only; auth through [AdminAuthService]. Unlike the stats endpoints it
  * needs no database, so it's mounted whether or not accounts are enabled.
  */
 @RestController
-@RequestMapping("/api/admin/live-games")
-class AdminLiveGamesController(
+@RequestMapping("/api/admin/live-overview")
+class AdminLiveOverviewController(
     private val adminAuth: AdminAuthService,
     private val gameRepository: GameRepository,
     private val lobbyRepository: LobbyRepository,
@@ -174,7 +174,8 @@ class AdminLiveGamesController(
                 lastInputAt = p.lastInputAt?.toString(),
             )
         }.sortedWith(compareBy<OnlinePlayerDto> { PlayerActivityResolver.Kind.valueOf(it.activity).ordinal }.thenBy { it.name.lowercase() })
-        val feed = activityTracker.recentFeed().map { FeedEntryDto(it.at.toString(), it.playerName, it.signedIn, it.kind, it.text) }
+        // The admin's own clicks around the site are noise in a feed meant to show what *players* do.
+        val feed = activityTracker.recentFeed(excludeUserId = adminAuth.viewerUserId(authorization)).map { FeedEntryDto(it.at.toString(), it.playerName, it.signedIn, it.kind, it.text) }
 
         ResponseEntity.ok(
             LiveOverviewDto(

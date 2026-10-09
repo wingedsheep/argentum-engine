@@ -1,5 +1,5 @@
 /**
- * Admin Live Games: what the server is doing right now — every game session in memory (public or
+ * Admin Live overview: what the server is doing right now — every game session in memory (public or
  * private, human or AI) and every tournament lobby past its waiting room. Built to answer "is this a
  * good moment for maintenance?": the headline counts the games and lobbies a restart would interrupt,
  * and each game shows how long ago someone last acted in it. Any started game can be watched in a new
@@ -12,7 +12,7 @@
  */
 import { useCallback, useEffect, useState } from 'react'
 import type React from 'react'
-import { type LiveGame, type LiveLobby, type LiveOverview, fetchLiveOverview } from '@/api/adminLiveGames'
+import { type LiveGame, type LiveLobby, type LiveOverview, fetchLiveOverview } from '@/api/adminLiveOverview'
 import type { AdminAuth } from '@/api/adminAuth'
 import { formatAgo, formatClock, gameModeLabel } from './statFormat'
 import { ActivityFeedPanel, OnlinePlayersPanel } from './AdminOnlinePlayers'
@@ -22,7 +22,7 @@ const REFRESH_MS = 10_000
 /** A game with no action for this long is shown as idle — likely abandoned rather than being played. */
 const IDLE_AFTER_MS = 5 * 60_000
 
-export function AdminLiveGames({ auth, onBack }: { auth: AdminAuth; onBack: () => void }) {
+export function AdminLiveOverview({ auth, onBack }: { auth: AdminAuth; onBack: () => void }) {
   const [overview, setOverview] = useState<LiveOverview | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [showAiOnly, setShowAiOnly] = useState(false)
@@ -32,7 +32,7 @@ export function AdminLiveGames({ auth, onBack }: { auth: AdminAuth; onBack: () =
       setOverview(await fetchLiveOverview(auth))
       setError(null)
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Failed to load live games')
+      setError(e instanceof Error ? e.message : 'Failed to load the live overview')
     }
   }, [auth])
 
@@ -52,7 +52,7 @@ export function AdminLiveGames({ auth, onBack }: { auth: AdminAuth; onBack: () =
 
   return (
     <AdminScreen
-      title="Live games"
+      title="Live overview"
       subtitle="Everything running on the server right now"
       onBack={onBack}
       backLabel="← Dashboard"

@@ -342,16 +342,18 @@ Per-user endpoints take `Authorization: Bearer …`; admin endpoints take either
 The replay browser lives at `/api/admin/games` and `/api/admin/games/{id}/replay` (also either
 credential; password-only on a DB-less server).
 
-### Admin — live games (`/api/admin/live-games`, either admin credential)
+### Admin — live overview (`/api/admin/live-overview`, either admin credential)
 
-`GET /api/admin/live-games` → `{ generatedAt, onlinePlayers, games, lobbies }`: every game session in
+`GET /api/admin/live-overview` → `{ generatedAt, onlinePlayers, games, lobbies, players, feed }`: every game session in
 memory (public or private, AI or human — seats with connection/AI flags and life, mode, turn and step,
 `startedAt`, `lastActionAt`, spectator count, `hasConnectedHuman`) plus every tournament lobby that is
 drafting, deckbuilding, or playing rounds. In-memory only, so it needs no database and is mounted
-whether or not accounts are enabled. The dashboard's **Live games** screen polls it to judge whether a
+whether or not accounts are enabled. The dashboard's **Live overview** screen polls it to judge whether a
 restart would interrupt play, and opens any started game through the `/?spectate=<gameSessionId>` deep
 link (an ephemeral spectator the seated players see in their watcher list). `lastActionAt` is not
-persisted — a game restored after a restart counts from its restore.
+persisted — a game restored after a restart counts from its restore. `feed` (recent player moves,
+in memory) omits the requesting admin's own moves when the request carries their account's Bearer
+token — the dashboard sends it alongside the bootstrap password when signed in.
 
 Aggregate queries live in `StatsQueryService` (plain SQL via `JdbcTemplate`). Geolocation
 (`GeoIpService`) resolves IPs via the free ip-api.com batch endpoint, cached in-process; it's only

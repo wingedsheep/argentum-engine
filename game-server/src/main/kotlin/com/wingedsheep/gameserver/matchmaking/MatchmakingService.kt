@@ -74,7 +74,7 @@ class MatchmakingService(
     fun queueCounts(): List<ServerMessage.MatchmakingQueueCount> =
         toCounts(synchronized(lock) { queue.counts() })
 
-    /** Where [playerId] stands in matchmaking, for the admin Live games view; null when not queued. */
+    /** Where [playerId] stands in matchmaking, for the admin Live overview; null when not queued. */
     fun searchOf(playerId: EntityId): Search? = synchronized(lock) {
         val match = queue.pendingMatchOf(playerId)
         val entry = queue.entryOf(playerId) ?: match?.players?.firstOrNull { it.playerId == playerId }

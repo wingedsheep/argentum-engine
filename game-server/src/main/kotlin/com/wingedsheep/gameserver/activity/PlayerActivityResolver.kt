@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component
 import java.time.Instant
 
 /**
- * What one online player is doing right now, for the admin Live games view. The server's own session
+ * What one online player is doing right now, for the admin Live overview. The server's own session
  * state answers most of it — a seat in a game, a draft pick, a lobby, a matchmaking search — and the
  * page the client last reported ([PlayerActivityTracker]) fills in the rest: the deckbuilder, the
  * help, a profile. Precedence follows what holds the player's attention: a game beats a lobby, a

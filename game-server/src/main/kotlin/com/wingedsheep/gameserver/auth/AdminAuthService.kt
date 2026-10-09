@@ -5,6 +5,7 @@ import com.wingedsheep.gameserver.persistence.UserRepository
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Component
+import java.util.UUID
 
 /**
  * The single authority for "may this request use the admin dashboard". There are two ways in:
@@ -43,6 +44,12 @@ class AdminAuthService(private val gameProperties: GameProperties) {
         val user = users?.findById(claims.userId)?.orElse(null) ?: return false
         return user.isAdmin
     }
+
+    /**
+     * The account making this request, when it carries a valid Bearer token — whichever path authorized
+     * it. Lets admin views tell the viewer's own activity apart from everyone else's.
+     */
+    fun viewerUserId(authorization: String?): UUID? = authSupport?.userOrNull(authorization)?.userId
 
     /** Whether an admin path even exists on this server (a password is set, or accounts are enabled). */
     fun isConfigured(): Boolean = gameProperties.admin.password.isNotBlank() || authSupport != null
