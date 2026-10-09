@@ -870,12 +870,9 @@ class Strategist(
     ): com.wingedsheep.engine.core.GameAction = withSumGatedExilePayment(
         state, action,
         TargetSelection.fillHeuristically(
-            state, action.copy(action = withAutomaticPayments(action)), playerId,
+            state, action.copy(action = withAutomaticPayments(state, action)), playerId,
             fillPartialRequirements = useMeaningfulFilter, intents = intents,
             polarityFromEffect = targetPolarityFromEffect,
-    /**
-            state, action.copy(action = withAutomaticPayments(state, action)), playerId,
-            fillPartialRequirements = useMeaningfulFilter, intents = intents
         ),
     )
 
