@@ -132,6 +132,10 @@ class PuzzleComparisonBenchmark : ScenarioTestBase() {
                 // the negative controls, since an instant's hand value is real option value.
                 AiProfile.PRODUCTION_DEPLOY,
                 AiProfile.PRODUCTION_CANDIDATE_DEPLOY,
+                // Attack decisions from the 2026-10-09 game-log review — crack-back priced as life,
+                // tapped fliers keeping their evasion — alone and on top of what is live.
+                AiProfile.PRODUCTION_ATTACKS,
+                AiProfile.PRODUCTION_CANDIDATE_ATTACKS,
                 // Phase 7's rollout evaluator, isolated from Phases 4 and 6 so the column is
                 // attributable to the rollouts alone.
                 AiProfile.PHASE7,

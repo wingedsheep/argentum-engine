@@ -1,6 +1,8 @@
 package com.wingedsheep.ai.engine
 
 import com.wingedsheep.engine.mechanics.layers.ProjectedState
+import com.wingedsheep.engine.mechanics.targeting.ColorProtection
+import com.wingedsheep.engine.mechanics.targeting.SourceKindProtection
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.DamageComponent
@@ -72,6 +74,10 @@ object CombatMath {
             val sharesColor = aColors.any { it in bColors }
             if (!sharesColor && "ARTIFACT" !in bTypes) return false
         }
+
+        // Protection (CR 702.16f — attacking creatures with protection can't be blocked by creatures
+        // that have the stated quality).
+        if (isProtectedFromBlocker(state, projected, attacker, blocker)) return false
 
         // Menace: requires 2+ blockers (can't be single-blocked)
         // We return true here — menace is handled at the assignment level
@@ -155,6 +161,34 @@ object CombatMath {
         }
 
         return true
+    }
+
+    /**
+     * Whether [attacker]'s protection stops [blocker] from blocking it — the same qualities the
+     * engine's `ProtectionFrom*Rule`s in `BlockEvasionRules` read, none of which need a card
+     * registry, so they hold on every caller of [canBeBlockedBy] and not only the ones that pass one.
+     *
+     * Without this, every pro-colour creature looked blockable by a creature of that colour: the
+     * crack-back estimate behind an attack plan counted black blockers against a pair of
+     * pro-black Centaur tokens and sent the AI's only green creature in, one life short of
+     * surviving the swing back.
+     */
+    private fun isProtectedFromBlocker(
+        state: GameState,
+        projected: ProjectedState,
+        attacker: EntityId,
+        blocker: EntityId,
+    ): Boolean {
+        if (ColorProtection.isProtected(projected, attacker, projected.getColors(blocker))) return true
+        if (projected.getSubtypes(blocker).any { projected.hasKeyword(attacker, "PROTECTION_FROM_SUBTYPE_${it.uppercase()}") }) return true
+        if (projected.getSupertypes(blocker).any { projected.hasKeyword(attacker, "PROTECTION_FROM_SUPERTYPE_${it.uppercase()}") }) return true
+        if (projected.getTypes(blocker).any { projected.hasKeyword(attacker, "PROTECTION_FROM_CARDTYPE_${it.uppercase()}") }) return true
+        if (projected.hasKeyword(attacker, "PROTECTION_FROM_EACH_OPPONENT")) {
+            val attackerController = projected.getController(attacker)
+            val blockerController = projected.getController(blocker)
+            if (attackerController != null && blockerController != null && attackerController != blockerController) return true
+        }
+        return SourceKindProtection.isProtectedFromObject(state, attacker, blocker)
     }
 
     /**
@@ -347,7 +381,14 @@ object CombatMath {
         state: GameState,
         projected: ProjectedState,
         attackers: List<EntityId>,
-        opponentBlockers: List<EntityId>
+        opponentBlockers: List<EntityId>,
+        /**
+         * Whether a blocker may stand in front of an attacker it neither survives nor kills. True is
+         * the worst case for the attacking side — every body soaks a hit — and is what "can we
+         * survive at all" needs. False is what a defender actually does at a healthy life total:
+         * it takes the hit rather than throw a creature away.
+         */
+        chumpBlocks: Boolean = true,
     ): Int {
         var totalDamage = 0
         val usedBlockers = mutableSetOf<EntityId>()
@@ -382,6 +423,7 @@ object CombatMath {
             // For non-tramplers, any valid blocker prevents all damage — use cheapest
             val validBlockers = getValidBlockersFor(state, projected, attacker, opponentBlockers)
                 .filter { it !in usedBlockers }
+                .filter { chumpBlocks || isWorthwhileBlock(state, projected, attacker, it) }
 
             // Handle menace: needs 2 valid blockers
             if (Keyword.MENACE.name in aKeywords && validBlockers.size <= 1) {
@@ -409,6 +451,17 @@ object CombatMath {
 
         return totalDamage
     }
+
+    /** [blocker] survives [attacker], or lives long enough to kill it — a block, not a chump. */
+    private fun isWorthwhileBlock(
+        state: GameState,
+        projected: ProjectedState,
+        attacker: EntityId,
+        blocker: EntityId,
+    ): Boolean =
+        survivesBlock(state, projected, attacker, blocker) ||
+            (survivesFirstStrike(state, projected, attacker, blocker) &&
+                wouldKillInCombat(state, projected, blocker, attacker))
 
     /**
      * Get creatures controlled by [playerId] that can actually attack
@@ -565,14 +618,15 @@ object CombatMath {
         state: GameState,
         projected: ProjectedState,
         opponentId: EntityId,
-        myBlockers: List<EntityId>
+        myBlockers: List<EntityId>,
+        chumpBlocks: Boolean = true,
     ): Int {
         val opponentAttackers = projected.getBattlefieldControlledBy(opponentId).filter { entityId ->
             projected.isCreature(entityId) &&
                 Keyword.DEFENDER.name !in projected.getKeywords(entityId)
         }
         if (opponentAttackers.isEmpty()) return 0
-        return calculateDamageThroughOptimalBlocking(state, projected, opponentAttackers, myBlockers)
+        return calculateDamageThroughOptimalBlocking(state, projected, opponentAttackers, myBlockers, chumpBlocks)
     }
 
     /**
