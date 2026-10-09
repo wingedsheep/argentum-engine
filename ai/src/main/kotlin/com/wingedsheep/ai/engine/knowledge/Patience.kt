@@ -48,10 +48,20 @@ internal object Patience {
      * `0.0`, and `0.0` outright whenever one of the releases has fired.
      */
     fun factorFor(state: GameState, projected: ProjectedState, playerId: EntityId): Double {
-        if (ThreatAssessment.lethalOnBoardAgainst(state, projected, playerId)) return 0.0
-        if (state.getZone(playerId, Zone.HAND).size >= MaximumHandSize.DEFAULT) return 0.0
+        if (releasedOutright(state, projected, playerId)) return 0.0
         return byTurn(state.turnNumber)
     }
+
+    /**
+     * The first two releases alone — lethal on board, a full hand — without the third's decay.
+     *
+     * For a floor whose claim is about a window later *this turn* rather than a better card later
+     * in the game: the decay prices a bet that does not exist there. See
+     * [ExpiringGrantWindow.holds].
+     */
+    fun releasedOutright(state: GameState, projected: ProjectedState, playerId: EntityId): Boolean =
+        ThreatAssessment.lethalOnBoardAgainst(state, projected, playerId) ||
+            state.getZone(playerId, Zone.HAND).size >= MaximumHandSize.DEFAULT
 
     /**
      * How much of the bar still stands on turn [turnNumber], from `1.0` down to `0.0`.

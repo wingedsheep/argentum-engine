@@ -6,6 +6,9 @@ import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.mechanics.layers.ProjectedState
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.DamageComponent
+import com.wingedsheep.engine.state.components.battlefield.TappedComponent
+import com.wingedsheep.engine.state.components.combat.AttackingComponent
+import com.wingedsheep.engine.state.components.combat.BlockingComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.state.components.stack.TargetsComponent
@@ -67,6 +70,13 @@ class HoldPolicy(
      */
     private val holdExpiringGrantsForCombat: Boolean = false,
     /**
+     * [AiProfile.refuseUnspendableGrants][com.wingedsheep.ai.engine.AiProfile.refuseUnspendableGrants]
+     * — refuse an until-end-of-turn payoff that nothing left this turn can spend: an activation
+     * ([ExpiringGrantWindow]) or a combat trick aimed at a creature sitting the fight out
+     * ([trickTargetSitsOutTheFight]).
+     */
+    private val refuseUnspendableGrants: Boolean = false,
+    /**
      * The profile's `EvaluationWeights.boardPresence`, so [RemovalPatience] can quote its discount
      * in the same currency as the board value it compares against. The default is the compiled
      * fallback's, which is what every profile that does not opt in would have used anyway.
@@ -109,7 +119,7 @@ class HoldPolicy(
 
         val intent = intents.forName(cardName) ?: return TimingVerdict.Neutral
 
-        val window = windowVerdictFor(state, playerId, intent)
+        val window = windowVerdictFor(state, playerId, intent, cast)
         // A card that accomplishes nothing here is already floored below passing; there is no
         // target trade left to price on top of that.
         if (window is TimingVerdict.NoWindow) return window
@@ -170,15 +180,27 @@ class HoldPolicy(
         cardName: String,
         activation: ActivateAbility?,
     ): TimingVerdict {
-        if (!holdExpiringGrantsForCombat || activation == null) return TimingVerdict.Neutral
+        if (!(holdExpiringGrantsForCombat || refuseUnspendableGrants) || activation == null) {
+            return TimingVerdict.Neutral
+        }
         val ability = intents.activatedAbility(cardName, activation.abilityId)
             ?: return TimingVerdict.Neutral
-        return if (ExpiringGrantWindow.holds(state, playerId, ability, intents)) TimingVerdict.NoWindow
-        else TimingVerdict.Neutral
+        val holds = ExpiringGrantWindow.holds(
+            state, playerId, ability, intents,
+            activation = activation,
+            deferToLaterWindow = holdExpiringGrantsForCombat,
+            refuseUnspendable = refuseUnspendableGrants,
+        )
+        return if (holds) TimingVerdict.NoWindow else TimingVerdict.Neutral
     }
 
     /** The window half — "is this the moment?", which only an instant-speed card can get wrong. */
-    private fun windowVerdictFor(state: GameState, playerId: EntityId, intent: CardIntent): TimingVerdict {
+    private fun windowVerdictFor(
+        state: GameState,
+        playerId: EntityId,
+        intent: CardIntent,
+        cast: CastSpell?,
+    ): TimingVerdict {
         if (intent.speed != Speed.INSTANT) return TimingVerdict.Neutral
 
         val stackHasSomething = state.stack.isNotEmpty()
@@ -193,7 +215,15 @@ class HoldPolicy(
             // Anywhere else — our own main phase, and specifically the opponent's end step, where
             // the old blanket `passScore - 1.5` discount actively *encouraged* dumping it — it buys
             // nothing at all.
+            //
+            // "Something will use it" is about the *target*, not the step. Once the fight is set, a
+            // pump on a creature that is not in it has no combat to spend the stats in, whatever
+            // step it is cast in — Acrobatic Leap on a Market Gnome in our own declare-blockers
+            // step, with only the Guardian attacking. So that shape gets the same reading as any
+            // window outside combat: only a spell on the stack can still make it worth a card.
             IntentTag.COMBAT_TRICK in intent.tags -> when {
+                refuseUnspendableGrants && cast != null && trickTargetSitsOutTheFight(state, playerId, cast) ->
+                    responseWindowFor(state, playerId, intent)
                 state.step in combatWindow -> TimingVerdict.Adjust(COMBAT_WINDOW)
                 else -> responseWindowFor(state, playerId, intent)
             }
@@ -262,6 +292,41 @@ class HoldPolicy(
                 isOpponentEndStep(state, playerId) -> TimingVerdict.Adjust(END_STEP_WINDOW)
 
             else -> TimingVerdict.Neutral
+        }
+    }
+
+    /**
+     * Whether [cast] pumps only creatures of ours that the fight has already left out — the
+     * combat-trick half of [AiProfile.refuseUnspendableGrants][com.wingedsheep.ai.engine.AiProfile.refuseUnspendableGrants].
+     *
+     * "Already left out" is read off the declarations, so it is only ever true once they are in:
+     * on our turn once attackers are declared (we only get priority in that step afterwards), on
+     * theirs once blockers are. Before that a creature not yet in combat can still be put in it,
+     * and the window is the ordinary one. From the combat damage step on, the damage is dealt
+     * before anyone gets priority (CR 510.2–510.3), so no creature is still in a fight a pump can
+     * change.
+     *
+     * Every target must be one of ours, untapped and out of combat. An opposing target, a tapped
+     * one (an "untap it" rider is a lasting payoff), or a target that is attacking or blocking
+     * keeps the ordinary window — this only fires where the trick provably buys nothing.
+     */
+    private fun trickTargetSitsOutTheFight(state: GameState, playerId: EntityId, cast: CastSpell): Boolean {
+        val fightSet = if (state.isActiveTurnFor(playerId)) {
+            state.step in ATTACKERS_DECLARED_STEPS
+        } else {
+            state.step in BLOCKERS_DECLARED_STEPS
+        }
+        if (!fightSet) return false
+        val damageDealt = state.step == Step.COMBAT_DAMAGE || state.step == Step.END_COMBAT
+
+        val projected = state.projectedState
+        val targets = cast.targets.map { (it as? ChosenTarget.Permanent)?.entityId ?: return false }
+        if (targets.isEmpty()) return false
+        return targets.all { id ->
+            val entity = state.getEntity(id) ?: return false
+            projected.getController(id) == playerId &&
+                !entity.has<TappedComponent>() &&
+                (damageDealt || (!entity.has<AttackingComponent>() && !entity.has<BlockingComponent>()))
         }
     }
 
@@ -386,6 +451,17 @@ class HoldPolicy(
         )
 
         val REMOVAL_TAGS = setOf(IntentTag.REMOVAL, IntentTag.EXILE_REMOVAL, IntentTag.SWEEPER)
+
+        /** Our turn, attackers already declared — see [trickTargetSitsOutTheFight]. */
+        val ATTACKERS_DECLARED_STEPS = setOf(
+            Step.DECLARE_ATTACKERS, Step.DECLARE_BLOCKERS, Step.FIRST_STRIKE_COMBAT_DAMAGE,
+            Step.COMBAT_DAMAGE, Step.END_COMBAT,
+        )
+
+        /** Their turn, blockers already declared — see [trickTargetSitsOutTheFight]. */
+        val BLOCKERS_DECLARED_STEPS = setOf(
+            Step.DECLARE_BLOCKERS, Step.FIRST_STRIKE_COMBAT_DAMAGE, Step.COMBAT_DAMAGE, Step.END_COMBAT,
+        )
     }
 }
 
