@@ -36,7 +36,7 @@ class PuzzleSuiteTest : ScenarioTestBase() {
                     PuzzleCatalog.byCategory(category).size shouldBeGreaterThanOrEqual 6
                 }
             }
-            PuzzleCatalog.all.size shouldBe 103
+            PuzzleCatalog.all.size shouldBe 105
         }
 
         test("every KNOWN_FAILURES id names a real puzzle") {
@@ -266,6 +266,21 @@ class PuzzleSuiteTest : ScenarioTestBase() {
             "instants-18",
             "instants-19",
             "instants-20",
+
+            // ── Hoarding a castable permanent ──
+            // sequencing-02's cliff, for a spell instead of a land: casting the last card costs 4.0
+            // of `CardAdvantage` on this baseline's −3.0 empty hand, and the second card 1.5, while
+            // a summoning-sick Llanowar Elves or a Dragonstorm Globe is worth less than that on the
+            // board. Off the 2026-10-09 game logs, where the AI sat on Wose Pathfinder with ten lands
+            // for five turns while it died.
+            //
+            // **Closed by `AiProfile.permanentCastIsNotCardLoss`**, unaided —
+            // `AiProfile.PRODUCTION_DEPLOY` closes both. Still listed here because
+            // [AiProfile.PRODUCTION] is the frozen baseline this set describes. The negative
+            // controls are `respond-02` (the last Counterspell stays held) and the `instants`
+            // category: an instant's hand value is real option value and gets no refund.
+            "sequencing-09",
+            "sequencing-10",
         )
     }
 }
