@@ -3387,6 +3387,80 @@
     ]
 }
 
+// Shield-Wall Sentinel
+{
+    "name": "Shield-Wall Sentinel",
+    "manaCost": "{4}",
+    "typeLine": "Artifact Creature — Golem",
+    "oracleText": "Defender\nWhen this creature enters, you may search your library for a creature card with defender, reveal it, put it into your hand, then shuffle.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "keywords": [
+        "DEFENDER"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Shield-Wall Sentinel:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Library",
+                                    "filter": "creature kw:defender"
+                                },
+                                "storeAs": "searchable",
+                                "search": true
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "searchable",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "found"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "found",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Hand"
+                                },
+                                "revealed": true
+                            },
+                            "ShuffleLibrary",
+                            "EmitLibrarySearchedEvent"
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "238",
+        "artist": "Titus Lunter",
+        "flavorText": "\"Unit alpha-6 locking into position!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/e/7e57e1d7-da1d-4a2b-867f-85b8331b7bbc.jpg?1783921266"
+    }
+}
+
 // Shivan Devastator
 {
     "name": "Shivan Devastator",

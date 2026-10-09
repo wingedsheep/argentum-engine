@@ -1,0 +1,55 @@
+{
+  "player1Name": "Sentinel",
+  "player2Name": "Opponent",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": [
+      "Shield-Wall Sentinel"
+    ],
+    "battlefield": [
+      {
+        "name": "Forest"
+      },
+      {
+        "name": "Forest"
+      },
+      {
+        "name": "Forest"
+      },
+      {
+        "name": "Forest"
+      }
+    ],
+    "graveyard": [],
+    "library": [
+      "Gibbering Barricade",
+      "Llanowar Stalker",
+      "Forest",
+      "Forest"
+    ]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {
+        "name": "Llanowar Stalker"
+      }
+    ],
+    "graveyard": [],
+    "library": [
+      "Forest",
+      "Forest",
+      "Forest"
+    ]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [
+    "DECLARE_ATTACKERS"
+  ],
+  "player2StopAtSteps": [],
+  "player1OpponentStopAtSteps": [],
+  "player2OpponentStopAtSteps": []
+}
