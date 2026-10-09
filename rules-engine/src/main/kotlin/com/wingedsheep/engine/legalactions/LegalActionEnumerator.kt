@@ -95,6 +95,10 @@ class LegalActionEnumerator(
 
         // Normal priority: enumerate all action categories
         val offers = enumerators.flatMap { it.enumerate(context) }.filter { offer ->
+            val cast = offer.action as? com.wingedsheep.engine.core.CastSpell
+            if (cast != null && context.castPermissionUtils.blockedByResolvedCastRestriction(state, cast)) {
+                return@filter false
+            }
             forced == null || when (val action = offer.action) {
                 is com.wingedsheep.engine.core.CastSpell -> action.cardId == forced.card.entityId
                 is com.wingedsheep.engine.core.PlayLand -> action.cardId == forced.card.entityId

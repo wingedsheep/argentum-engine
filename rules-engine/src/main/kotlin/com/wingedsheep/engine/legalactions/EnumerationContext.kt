@@ -135,7 +135,8 @@ class EnumerationContext(
     // Cast restrictions — blanket, spell-independent locks (a Silence-style CantCastSpellsComponent
     // or a RestrictSpellsCastPerTurn per-turn limit). Cached once per enumeration pass.
     val cantCastSpells: Boolean by lazy {
-        state.getEntity(playerId)?.has<CantCastSpellsComponent>() == true ||
+        state.getEntity(playerId)?.get<CantCastSpellsComponent>()?.restrictions
+            ?.any { it.spellFilter == com.wingedsheep.sdk.scripting.GameObjectFilter.Any } == true ||
             castPermissionUtils.hasReachedSpellCastLimit(state, playerId)
     }
 

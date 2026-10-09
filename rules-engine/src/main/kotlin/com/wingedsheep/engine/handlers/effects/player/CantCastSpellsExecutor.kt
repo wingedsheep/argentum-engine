@@ -1,6 +1,8 @@
 package com.wingedsheep.engine.handlers.effects.player
 
 import com.wingedsheep.engine.core.EffectResult
+import com.wingedsheep.engine.core.PlayerActionPermissionsChangedEvent
+import com.wingedsheep.engine.state.components.player.SpellCastRestriction
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
@@ -36,10 +38,16 @@ class CantCastSpellsExecutor : EffectExecutor<CantCastSpellsEffect> {
 
         val newState = targetIds.fold(state) { acc, targetId ->
             acc.updateEntity(targetId) { container ->
-                container.with(CantCastSpellsComponent(removeOn = removeOn))
+                val existing = container.get<CantCastSpellsComponent>()?.restrictions.orEmpty()
+                container.with(CantCastSpellsComponent(existing + SpellCastRestriction(
+                    spellFilter = effect.spellFilter,
+                    removeOn = removeOn,
+                    sourceId = context.sourceId,
+                    controllerId = context.controllerId
+                )))
             }
         }
 
-        return EffectResult.success(newState)
+        return EffectResult.success(newState, targetIds.map(::PlayerActionPermissionsChangedEvent))
     }
 }

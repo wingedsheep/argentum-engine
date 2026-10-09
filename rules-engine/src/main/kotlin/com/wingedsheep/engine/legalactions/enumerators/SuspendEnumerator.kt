@@ -35,7 +35,7 @@ class SuspendEnumerator : ActionEnumerator {
             // CR 702.62c: "take into consideration any effects that would prohibit that card from
             // being cast" — the same blanket/per-spell cast-prohibition check every other cast
             // enumerator consults, even though suspend never actually casts the card.
-            if (context.cantCastSpell(cardId)) continue
+            if (context.castPermissionUtils.reasonCannotCast(state, playerId, cardId) != null) continue
 
             // Printed flash is read off the CardDefinition, not projected state: projection is
             // only ever built for battlefield entities, so hasKeyword() on a hand-zone card

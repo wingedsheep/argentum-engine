@@ -1,6 +1,16 @@
 package com.wingedsheep.engine.legalactions.utils
 
 import com.wingedsheep.engine.state.manaAbilitySourceAllowed
+import com.wingedsheep.engine.core.CastSpell
+import com.wingedsheep.engine.core.AlternativeCostType
+import com.wingedsheep.engine.handlers.actions.spell.CastZoneResolver
+import com.wingedsheep.engine.handlers.actions.spell.altAllows
+import com.wingedsheep.engine.legality.LegalityKernel
+import com.wingedsheep.engine.mechanics.CastCharacteristics
+import com.wingedsheep.engine.handlers.effects.permanent.types.buildCardComponentForDfcFace
+import com.wingedsheep.engine.handlers.effects.permanent.types.dfcBackFaceManaValue
+import com.wingedsheep.sdk.core.TypeLine
+import com.wingedsheep.sdk.model.CreatureStats
 
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.engine.mechanics.layers.ProjectedState
@@ -64,6 +74,10 @@ class CastPermissionUtils(
     private val predicateEvaluator: PredicateEvaluator,
     private val conditionEvaluator: ConditionEvaluator
 ) {
+    private val castZones by lazy {
+        CastZoneResolver(cardRegistry, conditionEvaluator, LegalityKernel(cardRegistry, conditionEvaluator))
+    }
+
     /**
      * Whether [playerId] has already cast as many spells this turn as an *unfiltered*
      * [RestrictSpellsCastPerTurn] permanent allows — the blanket lock that blocks every spell.
@@ -155,8 +169,11 @@ class CastPermissionUtils(
      * the [RestrictSpellsCastPerTurn] per-turn limit) and the per-spell static restrictions
      * (Mana Maze's [CantCastSpellsSharingColorWithLastCast], any [PlayersCantCastSpells]).
      */
-    fun reasonCannotCast(state: GameState, playerId: EntityId, spellCardId: EntityId): String? {
-        if (state.getEntity(playerId)?.has<CantCastSpellsComponent>() == true) {
+    fun reasonCannotCast(
+        state: GameState, playerId: EntityId, spellCardId: EntityId,
+        action: CastSpell = CastSpell(playerId, spellCardId)
+    ): String? {
+        if (blockedByResolvedCastRestriction(state, action)) {
             return "You can't cast spells right now"
         }
         if (hasReachedSpellCastLimit(state, playerId)) {
@@ -175,6 +192,51 @@ class CastPermissionUtils(
             return "You can cast a legendary instant or sorcery only if you control a legendary creature or planeswalker"
         }
         return null
+    }
+
+    /**
+     * Resolved bans are checked after the cast's face/alternative cost has been chosen. In
+     * enumeration this runs on the final offers, so a banned front never hides a legal back or
+     * face-down cast. No trial state or projection work is needed when the player has no ban.
+     */
+    fun blockedByResolvedCastRestriction(state: GameState, action: CastSpell): Boolean {
+        val bans = state.getEntity(action.playerId)?.get<CantCastSpellsComponent>()?.restrictions
+            ?: return false
+        if (bans.any { it.spellFilter == GameObjectFilter.Any }) return true
+        val announced = CastCharacteristics.announce(state, action, cardRegistry)
+        val current = announced.getEntity(action.cardId)?.get<CardComponent>() ?: return false
+        val definition = cardRegistry.getCard(current.cardDefinitionId)
+        val face = action.faceIndex?.let { definition?.cardFaces?.getOrNull(it) }
+        val back = (if (action.useAlternativeCost && action.altAllows(AlternativeCostType.DISTURB)) {
+            castZones.disturbCastFace(state, action.playerId, action.cardId)
+        } else null) ?: (if (action.useAlternativeCost && action.altAllows(AlternativeCostType.MODAL_BACK_FACE)) {
+            castZones.modalBackCastFace(state, action.playerId, action.cardId)
+        } else null) ?: castZones.permissionTransformedCastFace(state, action.playerId, action.cardId)
+        val castCard = when {
+            action.castFaceDown -> current.copy(
+                name = "", manaCost = ManaCost.ZERO, typeLine = TypeLine.parse("Creature"),
+                colors = emptySet(), baseStats = CreatureStats(2, 2), baseKeywords = emptySet(),
+                baseFlags = emptySet(), manaValueOverride = null
+            )
+            face != null -> current.copy(
+                name = face.name, manaCost = face.manaCost, typeLine = face.typeLine,
+                colors = face.manaCost.colors, baseStats = null, baseKeywords = face.keywords,
+                baseFlags = emptySet(), manaValueOverride = null
+            )
+            back != null && definition != null -> buildCardComponentForDfcFace(current, back, dfcBackFaceManaValue(definition, current.manaValue))
+            else -> current
+        }
+        val matchingState = if (castCard == current) announced else announced.updateEntity(action.cardId) {
+            it.with(castCard)
+        }
+        // The candidate is outside the battlefield; the existing projection is sufficient and
+        // its absence for this entity makes the predicate read the announced CardComponent.
+        return bans.any { ban ->
+            predicateEvaluator.matches(
+                matchingState, state.projectedState, action.cardId, ban.spellFilter,
+                PredicateContext(controllerId = ban.controllerId ?: action.playerId, sourceId = ban.sourceId)
+            )
+        }
     }
 
     /**
