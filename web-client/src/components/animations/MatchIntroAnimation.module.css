@@ -57,7 +57,7 @@
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
   column-gap: 28px;
-  width: min(760px, calc(100vw - 32px));
+  width: min(860px, calc(100vw - 32px));
   padding: 16px 28px;
   box-sizing: border-box;
   border-radius: 18px;
@@ -84,12 +84,54 @@
 .side {
   min-width: 0;
   display: flex;
-  flex-direction: column;
-  gap: 2px;
+  align-items: center;
+  gap: 16px;
+}
+.sideText { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+
+.sidePlayer { justify-content: flex-end; text-align: right; }
+.sidePlayer .sideText { align-items: flex-end; }
+.sideOpponent { justify-content: flex-start; text-align: left; }
+.sideOpponent .sideText { align-items: flex-start; }
+
+/* The seat's portrait: ringed in gold, it rises in with the band. */
+.portrait,
+.portraitSmall {
+  position: relative;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: linear-gradient(145deg, #3a3f52, #1d2029);
+  color: #eef0f6;
+  font-family: var(--font-display);
+  font-weight: 600;
+}
+.portrait {
+  width: 76px;
+  height: 76px;
+  font-size: 34px;
+  box-shadow: 0 0 0 2px rgba(242, 180, 92, 0.85), 0 10px 28px rgba(0, 0, 0, 0.55);
+}
+.portraitSmall {
+  width: 30px;
+  height: 30px;
+  font-size: 14px;
+  box-shadow: 0 0 0 1.5px rgba(242, 180, 92, 0.75);
 }
 
-.sidePlayer { align-items: flex-end; text-align: right; }
-.sideOpponent { align-items: flex-start; text-align: left; }
+.podRow { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.podName {
+  margin: 0;
+  min-width: 0;
+  font-family: var(--font-display);
+  font-size: 19px;
+  font-weight: 600;
+  color: #f4f5f9;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 
 .playerName {
   margin: 0;
@@ -140,12 +182,20 @@
 
 @media (max-width: 639px) {
   .band {
-    grid-template-columns: minmax(0, 1fr);
+    /* One column as wide as the longer row, centred, so both rows share a left edge. */
+    grid-template-columns: minmax(0, max-content);
+    justify-content: center;
     row-gap: 6px;
     padding: 14px 18px;
     bottom: max(7vh, 28px);
   }
-  .sidePlayer, .sideOpponent { align-items: center; text-align: center; }
+  /* Stacked on a phone: both rows read portrait-then-name, aligned on one edge. */
+  .sidePlayer, .sideOpponent { justify-content: flex-start; text-align: left; }
+  .sidePlayer .sideText, .sideOpponent .sideText { align-items: flex-start; }
+  .vs { flex-direction: row; gap: 8px; justify-content: center; width: 52px; }
+  .portrait { width: 52px; height: 52px; font-size: 24px; }
+  /* Reversed so the portrait leads; flex-end is the left edge in a reversed row. */
+  .sideOpponent { flex-direction: row-reverse; justify-content: flex-end; }
   .playerName { font-size: 21px; }
   .vsText { font-size: 22px; }
 }

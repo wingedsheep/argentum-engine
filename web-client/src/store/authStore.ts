@@ -11,6 +11,7 @@ import {
   fetchAppConfig,
   fetchMe,
   setAuthToken,
+  updateAvatar,
   updateProfile,
 } from '@/api/account'
 
@@ -31,6 +32,8 @@ interface AuthState {
   setSession: (login: LoginResponse) => void
   /** Change the signed-in user's display name (persists to the server, then updates the store). */
   updateDisplayName: (displayName: string) => Promise<void>
+  /** Pick a preset avatar (or null for the initial); persists to the server, then updates the store. */
+  updateAvatar: (avatar: string | null) => Promise<void>
   /** Patch fields of the signed-in user in the store (e.g. after toggling presence visibility). */
   patchUser: (patch: Partial<AccountUser>) => void
   /** Sign out: drop the token and the user. */
@@ -69,6 +72,11 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   updateDisplayName: async (displayName) => {
     const user = await updateProfile(displayName)
+    set({ user })
+  },
+
+  updateAvatar: async (avatar) => {
+    const user = await updateAvatar(avatar)
     set({ user })
   },
 

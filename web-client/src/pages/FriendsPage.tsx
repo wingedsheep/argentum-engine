@@ -172,7 +172,7 @@ export function FriendsPage() {
               {incoming.map((r) => (
                 <div key={r.requestId} className={a.personRow}>
                   <span className={a.person}>
-                    <Avatar name={r.displayName} small />
+                    <Avatar name={r.displayName} avatar={r.avatar} small />
                     <span className={a.personName}>{r.displayName}</span>
                   </span>
                   <span className={a.rowActions}>
@@ -206,7 +206,7 @@ export function FriendsPage() {
               friends.map((f) => (
                 <div key={f.accountId} className={a.personRow}>
                   <span className={a.person}>
-                    <Avatar name={f.displayName} small online={f.online} />
+                    <Avatar name={f.displayName} avatar={f.avatar} small online={f.online} />
                     <span className={a.cellStack}>
                       <span className={a.personName}>{f.displayName}</span>
                       <span className={a.personStatus} data-online={f.online}>{f.online ? 'Online' : 'Offline'}</span>
@@ -238,7 +238,7 @@ export function FriendsPage() {
               {outgoing.map((r) => (
                 <div key={r.requestId} className={a.personRow}>
                   <span className={a.person}>
-                    <Avatar name={r.displayName} small />
+                    <Avatar name={r.displayName} avatar={r.avatar} small />
                     <span className={a.cellStack}>
                       <span className={a.personName}>{r.displayName}</span>
                       <span className={a.pendingTag}>Awaiting reply</span>
@@ -310,7 +310,7 @@ function BlockedPlayersSection() {
       {blocked.map((b) => (
         <div key={b.accountId} className={a.personRow}>
           <span className={a.person}>
-            <Avatar name={b.displayName} small />
+            <Avatar name={b.displayName} avatar={b.avatar} small />
             <span className={a.personName}>{b.displayName}</span>
           </span>
           <button type="button" className={a.miniButton} onClick={() => doUnblock(b.accountId)}>

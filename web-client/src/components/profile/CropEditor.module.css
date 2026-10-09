@@ -1,0 +1,59 @@
+.root { display: flex; flex-direction: column; gap: 10px; }
+
+.frame {
+  position: relative;
+  /* Never taller than the room the dialog has: narrow the frame so its height fits. */
+  width: min(100%, calc(var(--aspect, 1.37) * max(180px, calc(86dvh - 520px))));
+  margin: 0 auto;
+  overflow: hidden;
+  border-radius: 12px;
+  background: #0a0c12;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+.frame[data-loaded='false'] { min-height: 160px; }
+.frame:active { cursor: grabbing; }
+.frame:focus-visible { outline: 2px solid var(--color-focus-ring); outline-offset: 3px; }
+
+.art { display: block; width: 100%; height: auto; pointer-events: none; }
+
+/* The circle is a hole in a veil: its enormous shadow dims everything outside it. */
+.circle {
+  position: absolute;
+  border-radius: 50%;
+  box-shadow: 0 0 0 9999px rgba(5, 6, 10, 0.62);
+  outline: 2px solid rgba(255, 255, 255, 0.92);
+  outline-offset: -1px;
+  pointer-events: none;
+}
+.circle::after {
+  /* A faint rule-of-thirds hint so the subject can be placed deliberately. */
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background:
+    linear-gradient(to right, transparent 33.2%, rgba(255, 255, 255, 0.18) 33.3%, transparent 33.6%,
+      transparent 66.4%, rgba(255, 255, 255, 0.18) 66.6%, transparent 66.8%),
+    linear-gradient(to bottom, transparent 33.2%, rgba(255, 255, 255, 0.18) 33.3%, transparent 33.6%,
+      transparent 66.4%, rgba(255, 255, 255, 0.18) 66.6%, transparent 66.8%);
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+.frame:active .circle::after,
+.frame:focus-visible .circle::after { opacity: 1; }
+
+.loading {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: #9aa3b5;
+  font-size: 13px;
+}
+
+.zoomRow { display: flex; align-items: center; gap: 10px; color: #9aa3b5; }
+.zoomIcon { width: 14px; text-align: center; font-size: 16px; font-weight: 600; }
+.zoom { flex: 1; accent-color: #f2b45c; }

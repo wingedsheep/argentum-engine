@@ -22,6 +22,8 @@ export type ThreadState = 'ACTIVE' | 'INCOMING_REQUEST' | 'OUTGOING_REQUEST'
 export interface Participant {
   readonly accountId: string
   readonly displayName: string
+  /** Preset avatar id, or null for the initial. */
+  readonly avatar?: string | null
   readonly online: boolean
 }
 

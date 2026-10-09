@@ -82,6 +82,7 @@ export function createConnectionHandlers(set: SetState, get: GetState): Pick<Mes
         updates.sessionId = msg.contextId
       }
       set(updates)
+      if (msg.context === 'game' && msg.players?.length) get().setSeatAvatars(msg.players)
 
       if (!msg.context && !msg.contextId) {
         const savedLobbyId = loadLobbyId()

@@ -30,6 +30,14 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: readonly Announcement[] = [
   {
+    id: 'feature-avatars',
+    date: '2026-10-09',
+    kind: 'feature',
+    title: 'Avatars',
+    body:
+      'Give your account a face: choose from 56 painted portraits, or frame any part of any card’s art — any printing — as your own. Click your avatar on your profile to choose; it shows in the account menu, to friends and in messages, and in your life orb at the table.',
+  },
+  {
     id: 'feature-preferences',
     date: '2026-10-09',
     kind: 'feature',

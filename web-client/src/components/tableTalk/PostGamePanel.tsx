@@ -1,5 +1,8 @@
 import { useState } from 'react'
 import type { PostGameMessage } from '@/types'
+import { AvatarArt, hasAvatarArt } from '@/components/profile/AvatarArt'
+import { initialOf } from '@/components/profile/avatars'
+import { useGameStore } from '@/store/gameStore'
 import { useTableTalkStore } from '@/store/tableTalkStore'
 import styles from './TableTalk.module.css'
 
@@ -14,13 +17,20 @@ export function PostGamePanel({ postGame }: { postGame: PostGameMessage }) {
   const addFriend = useTableTalkStore((s) => s.addFriend)
   const block = useTableTalkStore((s) => s.block)
   const [confirmingBlock, setConfirmingBlock] = useState(false)
+  // A 1v1, so the opponent's portrait is the one seat avatar that isn't ours.
+  const opponentAvatar = useGameStore((s) =>
+    Object.entries(s.avatarByPlayerId).find(([id]) => id !== s.playerId)?.[1],
+  )
+  const portrait = hasAvatarArt(opponentAvatar)
   const name = postGame.opponentName
   const { rematch, opponentLeft, blocked } = postGame
 
   return (
     <section className={styles.postGame} aria-label={`Your opponent, ${name}`} data-testid="post-game">
       <div className={styles.opponentRow}>
-        <span className={styles.avatar} aria-hidden>{initialOf(name)}</span>
+        <span className={styles.avatar} data-portrait={portrait} aria-hidden>
+          {portrait ? <AvatarArt avatar={opponentAvatar} /> : initialOf(name)}
+        </span>
         <span className={styles.opponentText}>
           <span className={styles.opponentName}>{name}</span>
           <span className={styles.opponentStatus} data-tone={statusTone(postGame)}>{statusLine(postGame)}</span>
@@ -186,8 +196,4 @@ function statusTone(pg: PostGameMessage): 'live' | 'gone' | 'quiet' {
   if (pg.blocked || pg.opponentLeft) return 'gone'
   if ((pg.rematch.opponent && !pg.rematch.you) || pg.friendship === 'REQUEST_RECEIVED') return 'live'
   return 'quiet'
-}
-
-function initialOf(name: string): string {
-  return (name.trim()[0] ?? '?').toUpperCase()
 }

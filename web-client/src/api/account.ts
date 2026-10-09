@@ -47,6 +47,8 @@ export interface AccountUser {
   readonly isAdmin: boolean
   /** When true the account appears offline to its friends even while connected. */
   readonly hidePresence: boolean
+  /** Chosen preset avatar id (see components/profile/avatars), or null for the initial. */
+  readonly avatar?: string | null
 }
 
 export interface LoginResponse {
@@ -118,6 +120,18 @@ export async function updateProfile(displayName: string): Promise<AccountUser> {
   })
   if (res.status === 401) throw new UnauthorizedError()
   if (!res.ok) throw new Error(await errorMessage(res, `Failed to update profile (${res.status})`))
+  return (await res.json()) as AccountUser
+}
+
+/** Pick a preset avatar, or `null` to go back to the initial. Returns the updated account. */
+export async function updateAvatar(avatar: string | null): Promise<AccountUser> {
+  const res = await fetch('/api/auth/me/avatar', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...authHeaders() },
+    body: JSON.stringify({ avatar }),
+  })
+  if (res.status === 401) throw new UnauthorizedError()
+  if (!res.ok) throw new Error(await errorMessage(res, `Failed to update avatar (${res.status})`))
   return (await res.json()) as AccountUser
 }
 
@@ -540,6 +554,8 @@ export const fetchManaCurve = () => getStats<StatBucket[]>('/me/curve')
 export interface PublicProfile {
   readonly userId: string
   readonly displayName: string
+  /** Preset avatar id, or null for the initial. */
+  readonly avatar?: string | null
   readonly stats: AccountStats
   readonly ratings: RatingEntry[]
   readonly ratingHistory: RatingPoint[]

@@ -558,7 +558,7 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
     section: 'community',
     title: 'Your profile',
     summary:
-      'Profile (from the account menu) shows your record at a glance, your recent games with both decks and their replays, and your recent tournaments. You can change your display name here.',
+      'Profile (from the account menu) shows your record at a glance, your recent games with both decks and their replays, and your recent tournaments. You can change your display name and avatar here.',
     body: [
       { kind: 'ul', items: [
         'Games, wins, losses and win rate.',
@@ -566,6 +566,7 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
         'Recent tournaments, each opening its final standings and replays.',
         'Shortcuts to Full stats, My decks, Friends and Preferences.',
       ] },
+      { kind: 'p', text: 'Click your avatar to choose one. Portraits offers 56 painted characters — the creature types of each colour, from Kithkin and Loxodon to Phyrexians and Eldrazi. Card art lets you search for any card, pick the printing whose art you like, and drag and zoom the circle to frame the part you want. Your avatar shows in the account menu, on your public profile, to friends and in messages, and inside your life orb at the table. “Use my initial” goes back to the letter. Avatars need an account; guests show their initial.' },
       { kind: 'p', text: 'Everyone also has a public profile at `/u/<id>` that anyone can open without signing in. It shows the same statistics and recent games but never your decklists. “This is how others see your profile” marks your own.' },
     ],
     related: ['stats', 'friends', 'guest-vs-account'],

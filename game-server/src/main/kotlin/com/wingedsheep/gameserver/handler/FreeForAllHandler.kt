@@ -249,6 +249,7 @@ class FreeForAllHandler(
                 playerId = playerId,
                 playerName = identity.playerName,
                 currentGameSessionId = gameSession.sessionId,
+                avatar = identity.avatar,
             ))
         }
     }

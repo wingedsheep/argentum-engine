@@ -55,6 +55,7 @@ export function createSpectatingHandlers(set: SetState, get: GetState): Pick<Mes
         for (const p of msg.players) if (p.teamIndex != null) teams[p.playerId] = p.teamIndex
         get().setSeatTeams(teams, msg.players.some((p) => p.teamSharedLife))
       }
+      if (msg.players && Object.keys(get().avatarByPlayerId).length === 0) get().setSeatAvatars(msg.players)
 
       if (msg.gameState && prevState?.gameState) {
         const prevPlayers = prevState.gameState.players

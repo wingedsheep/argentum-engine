@@ -32,6 +32,8 @@ data class UserRow(
     val learnProgress: String? = null,
     /** Player preferences — the client's JSON, stored verbatim; null until first saved. */
     val preferences: String? = null,
+    /** Chosen preset avatar id (see `profile.Avatars`); null shows the display name's initial. */
+    val avatar: String? = null,
     val createdAt: Instant = Instant.now(),
 )
 

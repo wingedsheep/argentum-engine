@@ -40,7 +40,7 @@ import type {
   MatchmakingQueueCount,
 } from '@/types'
 import type { ConnectionStatus } from '@/network/websocket.ts'
-import type { CounterRemovalCreatureInfo, SpectatorCombatState, SpectatorDecisionStatus, UpdateLobbySettingsMessage } from '@/types/messages.ts'
+import type { CounterRemovalCreatureInfo, PlayerSeatInfo, SpectatorCombatState, SpectatorDecisionStatus, UpdateLobbySettingsMessage } from '@/types/messages.ts'
 
 /**
  * Every field of the omnibus lobby-settings message except its discriminator.
@@ -745,6 +745,9 @@ export interface MatchIntro {
   opponentName: string
   /** Every opponent's name in seat order (length > 1 in a multiplayer game). */
   opponentNames: string[]
+  /** Account avatars from the seat roster — yours, then each opponent's in `opponentNames` order. */
+  playerAvatar?: string | null
+  opponentAvatars?: (string | null)[]
   round?: number
   playerRecord?: string
   opponentRecord?: string
@@ -1128,6 +1131,7 @@ export type GameStore = {
   teamByPlayerId: Readonly<Record<EntityId, number>>
   teamSharedLife: boolean
   teamSharedTurns: boolean
+  avatarByPlayerId: Readonly<Record<EntityId, string>>
   viewOpponent: (playerId: EntityId, opts?: { pin?: boolean }) => void
   unpinView: () => void
   toggleFollowAction: () => void
@@ -1143,6 +1147,7 @@ export type GameStore = {
     sharedLife?: boolean,
     sharedTurns?: boolean,
   ) => void
+  setSeatAvatars: (players: readonly PlayerSeatInfo[]) => void
   resetBoardView: () => void
 
   // UI slice

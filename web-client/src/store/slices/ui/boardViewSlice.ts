@@ -8,6 +8,7 @@
  */
 import type { SliceCreator, EntityId, GameStore } from '../types'
 import { getPreferences, usePreferences } from '@/store/preferencesStore'
+import type { PlayerSeatInfo } from '@/types/messages.ts'
 
 
 /**
@@ -139,6 +140,8 @@ export interface BoardViewSliceState {
    * (CR 805.5a) — see `hasPriority` in types/gameState.
    */
   teamSharedTurns: boolean
+  /** Each signed-in seat's account avatar id, from the seat roster. Guests and AI are absent. */
+  avatarByPlayerId: Readonly<Record<EntityId, string>>
 }
 
 export interface BoardViewSliceActions {
@@ -186,6 +189,8 @@ export interface BoardViewSliceActions {
     sharedLife?: boolean,
     sharedTurns?: boolean,
   ) => void
+  /** Stamp the seats' account avatars from a seat roster (game start, FFA start, spectating). */
+  setSeatAvatars: (players: readonly PlayerSeatInfo[]) => void
   /** Reset on game start / leave. */
   resetBoardView: () => void
 }
@@ -205,6 +210,7 @@ export const createBoardViewSlice: SliceCreator<BoardViewSlice> = (set, get) => 
   teamByPlayerId: {},
   teamSharedLife: false,
   teamSharedTurns: false,
+  avatarByPlayerId: {},
 
   viewOpponent: (playerId, opts) => {
     const { gameState, playerId: ownId } = get()
@@ -286,6 +292,12 @@ export const createBoardViewSlice: SliceCreator<BoardViewSlice> = (set, get) => 
   setSeatTeams: (teamByPlayerId, sharedLife = false, sharedTurns = false) =>
     set({ teamByPlayerId, teamSharedLife: sharedLife, teamSharedTurns: sharedTurns }),
 
+  setSeatAvatars: (players) => {
+    const avatarByPlayerId: Record<EntityId, string> = {}
+    for (const p of players) if (p.avatar) avatarByPlayerId[p.playerId as EntityId] = p.avatar
+    set({ avatarByPlayerId })
+  },
+
   resetBoardView: () =>
     set({
       viewedOpponentId: null,
@@ -299,5 +311,6 @@ export const createBoardViewSlice: SliceCreator<BoardViewSlice> = (set, get) => 
       teamByPlayerId: {},
       teamSharedLife: false,
       teamSharedTurns: false,
+      avatarByPlayerId: {},
     }),
 })

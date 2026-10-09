@@ -6,6 +6,8 @@ import com.wingedsheep.gameserver.auth.EmailService
 import com.wingedsheep.gameserver.auth.InvalidLoginTokenException
 import com.wingedsheep.gameserver.auth.MagicLinkService
 import com.wingedsheep.gameserver.persistence.UserRow
+import com.wingedsheep.gameserver.profile.AvatarValidator
+import com.wingedsheep.gameserver.session.SessionRegistry
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import kotlinx.serialization.json.Json
@@ -46,11 +48,14 @@ class AuthController(
     private val magicLinkService: MagicLinkService,
     private val authSupport: AuthSupport,
     private val emailService: EmailService,
+    private val sessionRegistry: SessionRegistry,
+    private val avatarValidator: AvatarValidator,
     @Value("\${game.dev-endpoints.enabled:false}") private val devEndpointsEnabled: Boolean,
 ) {
     data class RequestLoginBody(val email: String)
     data class VerifyBody(val token: String)
     data class UpdateProfileBody(val displayName: String)
+    data class UpdateAvatarBody(val avatar: String?)
 
     /**
      * The signed-in account as seen by the client. [id] (a UUID) doubles as the shareable "friend
@@ -66,6 +71,8 @@ class AuthController(
         // (it gates the Admin button). Pin the wire name so a promoted account is seen as admin.
         @JsonProperty("isAdmin") val isAdmin: Boolean,
         val hidePresence: Boolean,
+        /** Preset avatar id, or null for the initial. */
+        val avatar: String? = null,
     )
     data class LoginResponse(val authToken: String, val user: UserDto)
 
@@ -123,6 +130,26 @@ class AuthController(
         }
         val updated = magicLinkService.updateDisplayName(claims.userId, name)
             ?: return ResponseEntity.status(401).body(mapOf("error" to "Account no longer exists"))
+        return ResponseEntity.ok(updated.toDto())
+    }
+
+    /**
+     * Pick an avatar — a preset id (`profile.Avatars`) or a crop of a card's art (`CardArtAvatar`) —
+     * or send `null` to go back to the initial.
+     */
+    @PutMapping("/me/avatar")
+    fun updateAvatar(
+        @RequestHeader(HttpHeaders.AUTHORIZATION, required = false) authorization: String?,
+        @RequestBody body: UpdateAvatarBody,
+    ): ResponseEntity<Any> {
+        val claims = authSupport.requireUser(authorization)
+        val avatar = body.avatar
+        if (avatar != null && !avatarValidator.isValid(avatar)) {
+            return ResponseEntity.badRequest().body(mapOf("error" to "Unknown avatar"))
+        }
+        val updated = magicLinkService.updateAvatar(claims.userId, avatar)
+            ?: return ResponseEntity.status(401).body(mapOf("error" to "Account no longer exists"))
+        sessionRegistry.refreshAccountAvatar(claims.userId, avatar)
         return ResponseEntity.ok(updated.toDto())
     }
 
@@ -195,5 +222,5 @@ class AuthController(
     }
 
     private fun UserRow.toDto() =
-        UserDto(id = id!!, email = email, displayName = displayName, isAdmin = isAdmin, hidePresence = hidePresence)
+        UserDto(id = id!!, email = email, displayName = displayName, isAdmin = isAdmin, hidePresence = hidePresence, avatar = avatar)
 }

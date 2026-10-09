@@ -96,6 +96,7 @@ export function createLobbyHandlers(set: SetState, get: GetState): Pick<MessageH
         teamByPlayerId: seatTeams,
         teamSharedLife: sharedLife,
       })
+      get().setSeatAvatars(msg.players)
     },
 
     onFreeForAllGameComplete: (msg) => {

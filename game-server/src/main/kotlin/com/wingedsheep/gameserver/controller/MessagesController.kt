@@ -31,7 +31,7 @@ class MessagesController(
     private val messages: DirectMessageService,
     private val authSupport: AuthSupport,
 ) {
-    data class ParticipantDto(val accountId: String, val displayName: String, val online: Boolean)
+    data class ParticipantDto(val accountId: String, val displayName: String, val online: Boolean, val avatar: String?)
     data class MessageDto(val id: String, val senderId: String, val body: String, val createdAt: String)
     data class ThreadDto(
         val other: ParticipantDto,
@@ -145,7 +145,7 @@ class MessagesController(
     }
 
     private fun DirectMessageService.Participant.toDto() =
-        ParticipantDto(accountId.toString(), displayName, online)
+        ParticipantDto(accountId.toString(), displayName, online, avatar)
 
     private fun DirectMessageService.MessageView.toDto() =
         MessageDto(id.toString(), senderId.toString(), body, createdAt.toString())
