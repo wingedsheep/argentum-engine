@@ -202,6 +202,10 @@ object DynamicAmounts {
     /** The number the triggering scry looked at. */
     fun triggerScryCount(): DynamicAmount = DynamicAmount.ContextProperty(ContextPropertyKey.TRIGGER_SCRY_COUNT)
 
+    /** The number of cards chosen for the bottom during the triggering scry. */
+    fun triggerScryBottomCount(): DynamicAmount =
+        DynamicAmount.ContextProperty(ContextPropertyKey.TRIGGER_SCRY_BOTTOM_COUNT)
+
     /** The number of counters the triggering event put on ("that many"). */
     fun triggerCountersPlaced(): DynamicAmount =
         DynamicAmount.ContextProperty(ContextPropertyKey.TRIGGER_COUNTERS_PLACED_AMOUNT)

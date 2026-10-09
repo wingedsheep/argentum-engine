@@ -804,7 +804,7 @@ Families:
 - `EmitExploredEventEffect(target: EffectTarget, revealedCardWasLand: Boolean?)` — Tail marker that emits the "a permanent explored" event (CR 701.44), mirroring EmitSurveiledEventEffect.
 - `EmitLibrarySearchedEventEffect` — Emit a `LibrarySearchedEvent` after a library-search pipeline finishes resolving — the search twin of EmitScriedEventEffect.
 - `EmitManifestedDreadEventEffect(graveyardCollection: String)` — Emit a `ManifestedDreadEvent` after a manifest-dread pipeline finishes resolving — the manifest-dread twin of EmitScriedEventEffect.
-- `EmitScriedEventEffect(gatherCollection: String, player: Player)` — Emit a `ScriedEvent` after a scry pipeline finishes resolving.
+- `EmitScriedEventEffect(gatherCollection: String, player: Player, bottomCollection: String)` — Emit a `ScriedEvent` after a scry pipeline finishes resolving.
 - `EmitSurveiledEventEffect(gatherCollection: String)` — Emit a `SurveiledEvent` after a surveil pipeline finishes resolving — the surveil twin of EmitScriedEventEffect.
 - `EmitTrainedEventEffect` — Emit a `TrainedEvent` (CR 702.149c) after a training ability's +1/+1 counter placement resolves — the training twin of EmitExploitedEventEffect / `EmitScriedEventEffect`.
 - `EnchantPutOntoBattlefieldEffect(from: String, filter: GameObjectFilter)` — "This Aura loses its enchant ability and gains 'enchant filter put onto the battlefield with this Aura.' … attach this Aura to it." — the reanimation-Aura idiom (Animate Dead, Dance of the Dead, Ne…

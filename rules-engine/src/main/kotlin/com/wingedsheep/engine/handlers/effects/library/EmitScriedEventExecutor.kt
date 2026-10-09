@@ -37,6 +37,7 @@ class EmitScriedEventExecutor : EffectExecutor<EmitScriedEventEffect> {
         // Actual cards looked at (CR 701.22a); may be 0 if the library was empty, in
         // which case the trigger still fires per CR 701.22d.
         val count = context.pipeline.storedCollections[effect.gatherCollection]?.size ?: 0
+        val bottomCount = context.pipeline.storedCollections[effect.bottomCollection]?.size ?: 0
 
         // The scrying player — the target of "Target player scries X", else the controller.
         val playerId = TargetResolutionUtils.resolvePlayerRef(effect.player, context, state)
@@ -50,7 +51,7 @@ class EmitScriedEventExecutor : EffectExecutor<EmitScriedEventEffect> {
         val marked = state.updateEntity(playerId) { it.with(ScriedOrSurveiledThisTurnComponent) }
         return EffectResult.success(
             marked,
-            listOf(ScriedEvent(playerId = playerId, count = count, sourceName = sourceName))
+            listOf(ScriedEvent(playerId = playerId, count = count, sourceName = sourceName, bottomCount = bottomCount))
         )
     }
 }

@@ -678,6 +678,8 @@ object CardLinter {
      * entries win over field-keyed ones.
      */
     private val dataflowFields: Map<Pair<String?, String>, Classification> = buildMap {
+        put("EmitScriedEvent" to "gatherCollection", read(Space.COLLECTION))
+        put("EmitScriedEvent" to "bottomCollection", read(Space.COLLECTION))
         // --- Writers -------------------------------------------------------------------------
         put("GatherCards" to "storeAs", write(Space.COLLECTION))
         put("CaptureControllers" to "storeAs", write(Space.COLLECTION))

@@ -886,7 +886,9 @@ class CastFromZoneEnumerator(
                     )
                 } else {
                     val isInstant = exiledCard.typeLine.isInstant
-                    val hasCorrectTiming = isInstant || context.canPlaySorcerySpeed
+                    val hasCorrectTiming = isInstant || context.canPlaySorcerySpeed ||
+                        exiledCardDef?.keywords?.contains(com.wingedsheep.sdk.core.Keyword.FLASH) == true ||
+                        context.castPermissionUtils.hasGrantedFlash(state, exiledId)
                     val castRestrictions = exiledCardDef?.script?.castRestrictions ?: emptyList()
                     val meetsRestrictions = context.legality.castRestrictionsMet(state, playerId, castRestrictions)
                     val freeCastFromGranter = grantAbility.withoutPayingManaCost

@@ -43,6 +43,9 @@ data class ShuffleLibraryEffect(
  * Suppression of a literal "scry 0" (CR 701.22b) is handled by `scry()` omitting this
  * tail entirely, not here.
  *
+ * The size of [bottomCollection] captures the number chosen for the bottom, independently
+ * of any later library changes, for "that many" scry payoffs.
+ *
  * Card authors should not use this directly; it is wired into the scry primitive.
  */
 @SerialName("EmitScriedEvent")
@@ -50,7 +53,9 @@ data class ShuffleLibraryEffect(
 data class EmitScriedEventEffect(
     val gatherCollection: String = "scried",
     /** Who scried — the player whose library was looked at ("Target player scries X"). */
-    val player: Player = Player.You
+    val player: Player = Player.You,
+    /** Collection chosen for the bottom; count the choice, not the later library contents. */
+    val bottomCollection: String = "toBottom"
 ) : Effect {
     // Intentionally blank: this is an internal pipeline tail with no player-facing text.
     override val description: String = ""

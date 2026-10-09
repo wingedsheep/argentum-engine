@@ -525,6 +525,12 @@ enum class ContextPropertyKey(val description: String) {
      */
     TRIGGER_SCRY_COUNT("the number of cards looked at"),
     /**
+     * Cards chosen for the bottom during the triggering scry. Captured at the choice,
+     * independent of subsequent library changes. Zero for a non-scry trigger.
+     * Pair with a greater-than-zero trigger restriction for "one or more" (The Temporal Anchor).
+     */
+    TRIGGER_SCRY_BOTTOM_COUNT("the number of cards chosen for the bottom while scrying"),
+    /**
      * Damage in excess of lethal dealt to the creature target in the trigger payload
      * (CR 120.4a). Set from `DamageDealtEvent.excessAmount`; non-zero only when the trigger
      * is a `DealsDamageEvent(requireExcess = true)`. Used by Fall of Cair Andros — "amass
