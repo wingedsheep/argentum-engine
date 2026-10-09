@@ -619,7 +619,7 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
       { kind: 'h', text: 'The chat button' },
       { kind: 'p', text: 'Away from the Messages page — in a game, the deckbuilder, a lobby — the speech-bubble button beside the fullscreen button opens a small chat panel under it. In a game it sits in the top-left row, after the preferences gear. The panel stays open while you keep playing, follows you from page to page, and closes with ×, Esc or the button. Typing in it never triggers game shortcuts.' },
       { kind: 'p', text: 'A new message puts an amber count on the button and drops a short preview under it; click the preview to answer. Don’t want that during a game? Turn off the bell in the chat panel (or Message alerts away from home in Preferences): away from the home screen the button then stays quiet, and your unread messages wait for you on the home screen.' },
-      { kind: 'p', text: 'The number on the account menu counts unread messages and new requests. Messages need an account — guests can’t send or receive them.' },
+      { kind: 'p', text: 'The number on the chat button counts unread messages and new requests; the Messages item in the account menu shows it too. Messages need an account — guests can’t send or receive them.' },
     ],
     related: ['friends', 'preferences', 'after-the-game', 'guest-vs-account'],
   },
