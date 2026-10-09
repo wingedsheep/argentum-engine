@@ -1,0 +1,64 @@
+{
+  "player1Name": "Caster",
+  "player2Name": "Opponent",
+  "player1": {
+    "lifeTotal": 12,
+    "hand": [
+      "Strength of the Coalition"
+    ],
+    "battlefield": [
+      {
+        "name": "Forest"
+      },
+      {
+        "name": "Forest"
+      },
+      {
+        "name": "Forest"
+      },
+      {
+        "name": "Plains"
+      },
+      {
+        "name": "Grizzly Bears"
+      },
+      {
+        "name": "Hill Giant"
+      }
+    ],
+    "graveyard": [],
+    "library": [
+      "Forest",
+      "Mountain",
+      "Plains"
+    ]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [
+      "Unsummon"
+    ],
+    "battlefield": [
+      {
+        "name": "Hill Giant",
+        "tapped": false
+      },
+      {
+        "name": "Island"
+      }
+    ],
+    "graveyard": [],
+    "library": [
+      "Island",
+      "Island",
+      "Island"
+    ]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [],
+  "player2StopAtSteps": [],
+  "player1OpponentStopAtSteps": [],
+  "player2OpponentStopAtSteps": []
+}
