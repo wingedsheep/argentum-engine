@@ -1,0 +1,68 @@
+{
+  "player1Name": "Tester",
+  "player2Name": "Opponent",
+  "player1": {
+    "lifeTotal": 15,
+    "hand": [
+      "Samite Herbalist",
+      "Lightning Bolt",
+      "Pyroclasm"
+    ],
+    "battlefield": [
+      {
+        "name": "Plains"
+      },
+      {
+        "name": "Plains"
+      },
+      {
+        "name": "Plains"
+      },
+      {
+        "name": "Mountain"
+      },
+      {
+        "name": "Mountain"
+      },
+      {
+        "name": "Grizzly Bears"
+      },
+      {
+        "name": "Samite Herbalist"
+      }
+    ],
+    "graveyard": [],
+    "library": [
+      "Forest",
+      "Mountain",
+      "Grizzly Bears"
+    ]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [
+      "Lightning Bolt"
+    ],
+    "battlefield": [
+      {
+        "name": "Mountain"
+      },
+      {
+        "name": "Grizzly Bears"
+      }
+    ],
+    "graveyard": [],
+    "library": [
+      "Forest",
+      "Mountain",
+      "Grizzly Bears"
+    ]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [],
+  "player2StopAtSteps": [],
+  "player1OpponentStopAtSteps": [],
+  "player2OpponentStopAtSteps": []
+}
