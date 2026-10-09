@@ -393,5 +393,138 @@ object HoldingInstantsPuzzles {
             // grant on — the line thrown away by protecting it.
             check = { shouldActivate("Olivia's Dragoon") },
         ),
+        AiPuzzle(
+            id = "instants-18",
+            category = PuzzleCategory.HOLDING_INSTANTS,
+            expectation = "Turn 24 is no reason to buy deathtouch in a main phase — hold it for combat",
+            aiSeat = 1,
+            position = { scenario ->
+                scenario.withPlayers()
+                    .withTurnNumber(24)
+                    .withLifeTotal(1, 11)
+                    .withLifeTotal(2, 17)
+                    .withCardOnBattlefield(1, "Poison Dart Frog")
+                    .withCardOnBattlefield(1, "Coati Scavenger")
+                    .withLandsOnBattlefield(1, "Forest", 5)
+                    .withCardOnBattlefield(2, "Waterwind Scout")
+                    .withCardOnBattlefield(2, "Oaken Siren")
+                    .withCardOnBattlefield(2, "Ironpaw Aspirant")
+                    .withCardOnBattlefield(2, "Scampering Surveyor")
+                    .withLandsOnBattlefield(2, "Plains", 6)
+                    .build()
+                    .advanceToPriority(1, Step.PRECOMBAT_MAIN)
+            },
+            // Off a real game (g11 of the 2026-10-09 log review, turn 24): four deathtouch
+            // activations across two Frogs in one precombat main, on a turn neither attacked. This
+            // is `instants-14`'s floor at work, except that `Patience`'s long-game release had
+            // switched it off from turn 14 on — and that release prices a bet on a better card,
+            // which a window later this same turn is not.
+            check = { shouldNotActivate("Poison Dart Frog") },
+        ),
+
+        AiPuzzle(
+            id = "instants-19",
+            category = PuzzleCategory.HOLDING_INSTANTS,
+            expectation = "Don't pump the team in the main phase — the attack it is for is not declared yet",
+            aiSeat = 1,
+            position = { scenario ->
+                scenario.withPlayers()
+                    .withTurnNumber(13)
+                    .withLifeTotal(2, 14)
+                    .withCardOnBattlefield(1, "Esquire of the King")
+                    .withCardOnBattlefield(1, "Esquire of the King")
+                    .withCardOnBattlefield(1, "Mushroom Watchdogs")
+                    .withLandsOnBattlefield(1, "Plains", 6)
+                    .withCardOnBattlefield(2, "Armored Pegasus")
+                    .withCardOnBattlefield(2, "Snapping Drake")
+                    .withCardOnBattlefield(2, "Regal Unicorn")
+                    .withCardOnBattlefield(2, "Owl Familiar")
+                    .withLandsOnBattlefield(2, "Island", 6)
+                    .build()
+                    .advanceToPriority(1, Step.PRECOMBAT_MAIN)
+            },
+            // Off a real game (g21 turn 13, and the five turns after it): `{4}{W}, {T}` for +1/+1
+            // to the team in the precombat main, then no attack — five mana and the Esquire tapped
+            // through the opponent's turn, for nothing. The deferral floor already says "not
+            // before combat" for a pump; it could not read a *group* pump, which the SDK lowers to
+            // a `ForEachEffect` over the group.
+            check = { shouldNotActivate("Esquire of the King") },
+        ),
+
+        AiPuzzle(
+            id = "instants-20",
+            category = PuzzleCategory.HOLDING_INSTANTS,
+            expectation = "Combat is over — a +1/+1 until end of turn has nothing left to fight",
+            aiSeat = 1,
+            position = { scenario ->
+                scenario.withPlayers()
+                    .withCardOnBattlefield(1, "Esquire of the King")
+                    .withCardOnBattlefield(1, "Mushroom Watchdogs")
+                    .withLandsOnBattlefield(1, "Plains", 6)
+                    .withCardOnBattlefield(2, "Regal Unicorn")
+                    .build()
+                    .advanceToPriority(1, Step.POSTCOMBAT_MAIN)
+            },
+            // The structural floor, with no deferral involved: after combat there is no window
+            // left this turn that an end-of-turn pump can be spent in, and the leaf still pays for
+            // the +1/+1 because it scores the board before cleanup erases it.
+            check = { shouldNotActivate("Esquire of the King") },
+        ),
+
+        AiPuzzle(
+            id = "instants-21",
+            category = PuzzleCategory.HOLDING_INSTANTS,
+            expectation = "Don't pump a creature that is not in the combat — the Gnome isn't attacking",
+            aiSeat = 1,
+            position = { scenario ->
+                scenario.withPlayers()
+                    .withTurnNumber(11)
+                    .withCardOnBattlefield(1, "Guardian of the Great Door")
+                    .withCardOnBattlefield(1, "Market Gnome")
+                    .withCardOnBattlefield(1, "Waterwind Scout")
+                    .withCardInHand(1, "Acrobatic Leap")
+                    .withLandsOnBattlefield(1, "Plains", 3)
+                    .withCardOnBattlefield(2, "Poison Dart Frog")
+                    .withCardOnBattlefield(2, "Armored Kincaller")
+                    .withCardOnBattlefield(2, "Envoy of Okinec Ahau")
+                    .withLandsOnBattlefield(2, "Forest", 3)
+                    .build()
+                    .advanceToDeclaration(1, Step.DECLARE_ATTACKERS)
+                    .also { it.declareAttackers(mapOf("Guardian of the Great Door" to 2)) }
+                    .advanceToPriority(1, Step.DECLARE_BLOCKERS)
+            },
+            // Off a real game (g11 turn 11): Acrobatic Leap (+1/+3, flying, untap it) on a Market
+            // Gnome in our own declare-blockers step, with only the Guardian attacking. The combat
+            // window bonus was paid for the *step*, never asking whether the target was in it.
+            check = { shouldNotCast("Acrobatic Leap") },
+        ),
+
+        AiPuzzle(
+            id = "instants-22",
+            category = PuzzleCategory.HOLDING_INSTANTS,
+            expectation = "The Bears are blocked by a 3/3 — +1/+3 wins the fight, so cast it on them",
+            aiSeat = 1,
+            position = { scenario ->
+                scenario.withPlayers()
+                    .withCardOnBattlefield(1, "Grizzly Bears")
+                    .withCardOnBattlefield(1, "Llanowar Elves")
+                    .withCardInHand(1, "Acrobatic Leap")
+                    .withLandsOnBattlefield(1, "Plains", 1)
+                    .withCardOnBattlefield(2, "Hill Giant")
+                    .build()
+                    .advanceToDeclaration(1, Step.DECLARE_ATTACKERS)
+                    .also { it.declareAttackers(mapOf("Grizzly Bears" to 2)) }
+                    .advanceToDeclaration(2, Step.DECLARE_BLOCKERS)
+                    .also { it.declareBlockers(mapOf("Hill Giant" to listOf("Grizzly Bears"))) }
+                    .advanceToPriority(1, Step.DECLARE_BLOCKERS)
+            },
+            // `instants-21`'s negative control: the same trick, the same step, aimed at the
+            // creature that is in the fight. A 3/5 kills the Giant and lives. The Elves are the
+            // non-combatant the floor must not confuse it with.
+            check = {
+                shouldCast("Acrobatic Leap")
+                shouldTarget("Grizzly Bears")
+            },
+        ),
     )
 }

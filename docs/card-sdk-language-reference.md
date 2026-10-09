@@ -3052,6 +3052,12 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   instant that made it; the filter is matched on projected state against the ability's source when the ability is
   offered and when it is activated, so a Jace that enters later that turn is covered. **Jace's Machinations**:
   `planeswalkerFilter = GameObjectFilter.Planeswalker.withSubtype("Jace").youControl()`.
+- `ExtraLoyaltyActivation(filter = GameObjectFilter.Planeswalker.youControl(), times = 2)` — a static
+  maximum loyalty-activation allowance for matching permanents. `GameObjectFilter.Any.sourceItself()`
+  scopes it to its own permanent (Urza, Planeswalker); the default preserves Oath of Teferi. Multiple
+  static and resolved allowances take the largest maximum, never add together. Both legal actions and
+  validation read the same projected filter/controller query; removal of the granting ability removes
+  its permission immediately. Timing, loyalty costs, and activation bans still apply.
 - `AllowLoyaltyActivationsThisTurnEffect(target = Self, times = 2)` — the *count* half of CR 606.3, relaxed for
   one permanent: "you may activate loyalty abilities of [target] twice this turn rather than only once". Facade:
   `Effects.AllowLoyaltyActivationsThisTurn(times = 2, target = Self)`. A resolution-time one-shot that raises the

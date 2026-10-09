@@ -2,6 +2,8 @@ package com.wingedsheep.ai.engine
 
 import com.wingedsheep.ai.engine.evaluation.BoardPresence
 import com.wingedsheep.ai.engine.knowledge.IntentCatalog
+import com.wingedsheep.ai.engine.knowledge.TargetPolarity
+import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.core.GameAction
@@ -91,7 +93,25 @@ object TargetSelection {
         action: LegalAction,
         playerId: EntityId,
         intents: IntentCatalog = IntentCatalog.NONE,
+        /**
+         * [com.wingedsheep.ai.engine.AiProfile.targetPolarityFromEffect]: rank by the polarity
+         * [polarities] derives from the effect, for spells and abilities alike, instead of only
+         * recognising a fixed stat boost on an activated ability.
+         */
+        polarityFromEffect: Boolean = false,
     ): (EntityId) -> Double {
+        if (polarityFromEffect) {
+            // One polarity per action, not per slot: the ranker is shared by every requirement of
+            // the action. A multi-slot action whose slots disagree ("target creature you control
+            // fights target creature you don't") reads UNKNOWN and keeps the removal ranking —
+            // which is what it got before, and its filters already split the sides.
+            val polarity = polarities(state, action, intents).distinct().singleOrNull()
+            if (polarity == TargetPolarity.BENEFICIAL) {
+                // Our best permanent first, theirs last; ourselves ahead of an opponent.
+                return { entityId -> -rank(state, entityId, playerId, intents) }
+            }
+            if (polarity == TargetPolarity.HARMFUL) return { entityId -> rank(state, entityId, playerId, intents) }
+        }
         val activation = action.action as? ActivateAbility
         val name = activation?.let { state.getEntity(it.sourceId)?.get<CardComponent>()?.name }
         val ability = if (name != null) intents.activatedAbility(name, activation.abilityId) else null
@@ -113,6 +133,78 @@ object TargetSelection {
     }
 
     /**
+     * [TargetPolarity] of each of [action]'s target slots, in [targetInfosFor] order — or empty
+     * when it cannot be read: no card knowledge, a modal spell (each mode has its own slots), a
+     * face-down cast, or a definition whose requirements do not line up one-to-one with the slots
+     * the enumerator offered. Empty means UNKNOWN everywhere, never "no targets".
+     */
+    fun polarities(state: GameState, action: LegalAction, intents: IntentCatalog): List<TargetPolarity> {
+        if (!intents.isEnabled || action.modalEnumeration != null) return emptyList()
+        val read = when (val base = action.action) {
+            is CastSpell -> if (base.castFaceDown) emptyList()
+                else state.getEntity(base.cardId)?.get<CardComponent>()?.name
+                    ?.let(intents::spellTargetPolarities).orEmpty()
+            is ActivateAbility -> state.getEntity(base.sourceId)?.get<CardComponent>()?.name
+                ?.let { intents.abilityTargetPolarities(it, base.abilityId) }.orEmpty()
+            else -> emptyList()
+        }
+        val slots = targetInfosFor(action)?.size ?: return emptyList()
+        return if (read.size == slots) read else emptyList()
+    }
+
+    /**
+     * Whether [action] has a mandatory target slot whose **every** legal target is on the wrong side
+     * of the table for what the effect does to it — a Blossombind with only our own creatures to
+     * enchant, a Prohibit with only our own spell on the stack, a Giant Growth with only theirs.
+     *
+     * Such an action can only be cast *at* us, so it is not a candidate: the right play is to hold
+     * the card. The leaf score cannot be trusted to say so on its own — Prohibit at a spell above
+     * its mana-value cap resolves to nothing, and nothing is exactly what a one-ply evaluator fails
+     * to price against keeping the card.
+     *
+     * An optional slot never vetoes: it can be left empty. A target whose side cannot be read (an
+     * ownerless object) is never "wrong", so one of those anywhere keeps the action.
+     */
+    fun aimsOnlyAtTheWrongSide(
+        state: GameState,
+        action: LegalAction,
+        playerId: EntityId,
+        intents: IntentCatalog,
+    ): Boolean {
+        val polarities = polarities(state, action, intents)
+        if (polarities.isEmpty()) return false
+        val infos = targetInfosFor(action) ?: return false
+        return infos.zip(polarities).any { (info, polarity) ->
+            info.minTargets > 0 && info.validTargets.isNotEmpty() && when (polarity) {
+                TargetPolarity.HARMFUL -> info.validTargets.all { sideOf(state, it, playerId) == Side.OURS }
+                TargetPolarity.BENEFICIAL -> info.validTargets.all { sideOf(state, it, playerId) == Side.THEIRS }
+                TargetPolarity.UNKNOWN -> false
+            }
+        }
+    }
+
+    private enum class Side { OURS, THEIRS, NEITHER }
+
+    /**
+     * Which side of the table [entityId] sits on for [playerId]: a player is its own side, a
+     * permanent its projected controller's, and a spell on the stack its caster's (the projection
+     * covers the battlefield only, so the stack falls back to [ControllerComponent]). A teammate
+     * is ours (CR 810).
+     */
+    private fun sideOf(state: GameState, entityId: EntityId, playerId: EntityId): Side {
+        val controller = when {
+            state.getEntity(entityId)?.get<PlayerComponent>() != null -> entityId
+            else -> state.projectedState.getController(entityId)
+                ?: state.getEntity(entityId)?.get<ControllerComponent>()?.playerId
+        } ?: return Side.NEITHER
+        return when {
+            controller == playerId || controller in state.teamOf(playerId) -> Side.OURS
+            state.isOpponentTo(controller, playerId) -> Side.THEIRS
+            else -> Side.NEITHER
+        }
+    }
+
+    /**
      * For spells/abilities that require target selection, fill in heuristic
      * targets so the action can actually resolve.
      *
@@ -128,6 +220,8 @@ object TargetSelection {
         playerId: EntityId,
         fillPartialRequirements: Boolean,
         intents: IntentCatalog = IntentCatalog.NONE,
+        /** See [ranker]'s parameter of the same name. */
+        polarityFromEffect: Boolean = false,
     ): GameAction {
         action.modalEnumeration?.let {
             return fillModalHeuristically(state, action, playerId, intents)
@@ -141,7 +235,7 @@ object TargetSelection {
         if (targetsAlreadyFilled(baseAction) != false) return action.action
         val targetInfos = fillableRequirements(action, fillPartialRequirements) ?: return action.action
 
-        val rankTarget = ranker(state, action, playerId, intents)
+        val rankTarget = ranker(state, action, playerId, intents, polarityFromEffect)
         val chosenTargets = mutableListOf<ChosenTarget>()
         val chosenIds = mutableSetOf<EntityId>()
         for ((index, info) in targetInfos.withIndex()) {

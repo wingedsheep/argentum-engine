@@ -124,7 +124,11 @@ export function GameHistoryList({
   )
 }
 
-/** Tournaments as clickable rows: name + mode and date, status, final placement. */
+/**
+ * Tournaments as clickable rows: name + mode and date, match record, placement. A live tournament
+ * shows its status instead of a record; an abandoned one is shown by the games it got through, with
+ * its last standing, rather than flagged as abandoned.
+ */
 export function TournamentList({
   tournaments,
   onOpen,
@@ -136,7 +140,9 @@ export function TournamentList({
     <ul className={a.list}>
       {tournaments.map((t, i) => {
         const mode = gameModeLabel(t.gameMode, t.format)
-        const done = t.status === 'COMPLETED'
+        const live = t.status === 'IN_PROGRESS'
+        const won = t.status === 'COMPLETED' && t.placement === 1
+        const record = `${t.wins}–${t.losses}${t.draws ? `–${t.draws}` : ''}`
         return (
           <li key={`${t.id}-${i}`}>
             <button type="button" className={a.tournamentRow} onClick={() => onOpen(t.id)}>
@@ -146,11 +152,19 @@ export function TournamentList({
                   {mode.variant ?? mode.primary} · {formatDateTime(t.endedAt)}
                 </span>
               </span>
-              <span>{!done && <TournamentStatusBadge status={t.status} />}</span>
-              <span className={a.place} data-first={done && t.placement === 1}>
-                {done ? (
+              <span>
+                {live ? (
+                  <TournamentStatusBadge status={t.status} />
+                ) : (
+                  <span className={a.dim} title="Match record (wins–losses–draws)">
+                    {record}
+                  </span>
+                )}
+              </span>
+              <span className={a.place} data-first={won}>
+                {!live && t.placement > 0 ? (
                   <>
-                    {t.placement === 1 ? '🏆 ' : ''}
+                    {won ? '🏆 ' : ''}
                     {t.placement}
                     <span className={a.dim} style={{ fontSize: 13 }}>/{t.playerCount}</span>
                   </>

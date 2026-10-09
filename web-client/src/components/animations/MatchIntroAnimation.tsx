@@ -82,12 +82,13 @@ export function MatchIntroAnimation() {
         {/* Opponent (right) */}
         <div className={`${styles.side} ${styles.sideOpponent}`}>
           {matchIntro.opponentNames.length > 1 ? (
-            // A pod: one compact row per opponent, each with its small portrait.
-            <div className={styles.sideText}>
+            // A pod: the opponents side by side, each a medallion with its name beneath — sized down
+            // as the table fills so the row always fits its half of the band.
+            <div className={styles.pod} data-count={Math.min(matchIntro.opponentNames.length, 5)}>
               {matchIntro.opponentNames.map((name, i) => (
-                <div key={i} className={styles.podRow}>
-                  <Portrait name={name} avatar={matchIntro.opponentAvatars?.[i]} small />
-                  <p className={styles.podName}>{name}</p>
+                <div key={i} className={styles.podSeat}>
+                  <Portrait name={name} avatar={matchIntro.opponentAvatars?.[i]} seat />
+                  <p className={styles.podName} title={name}>{name}</p>
                 </div>
               ))}
             </div>
@@ -109,10 +110,10 @@ export function MatchIntroAnimation() {
 }
 
 /** A seat's account avatar, or its initial for guests and AI, so both sides of the VS stay balanced. */
-function Portrait({ name, avatar, small = false }: { name: string; avatar: string | null | undefined; small?: boolean }) {
+function Portrait({ name, avatar, seat = false }: { name: string; avatar: string | null | undefined; seat?: boolean }) {
   const art = hasAvatarArt(avatar)
   return (
-    <span className={small ? styles.portraitSmall : styles.portrait} data-portrait={art} aria-hidden>
+    <span className={seat ? styles.portraitSeat : styles.portrait} data-portrait={art} aria-hidden>
       {art ? <AvatarArt avatar={avatar} /> : initialOf(name)}
     </span>
   )

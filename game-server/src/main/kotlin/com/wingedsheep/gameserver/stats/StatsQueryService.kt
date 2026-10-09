@@ -154,11 +154,18 @@ data class UserTournamentEntry(
     val name: String?,
     val format: String?,
     val gameMode: String?,
-    /** Final placement (1 = winner); 0 while the tournament is still in progress. */
+    /**
+     * Final placement (1 = winner). For an in-progress or abandoned tournament, the standing after the
+     * last recorded match (0 if none was recorded yet).
+     */
     val placement: Int,
     val playerCount: Int,
     /** IN_PROGRESS / COMPLETED / ABANDONED — see [TournamentStatus]. */
     val status: String,
+    /** Match record so far — final once COMPLETED, last-known for an in-progress or abandoned one. */
+    val wins: Int,
+    val losses: Int,
+    val draws: Int,
 )
 
 /** One player's final standing in a tournament. */
@@ -720,15 +727,22 @@ class StatsQueryService(
     private fun imageUriFor(name: String): String? =
         lookupCard(name)?.let { printingRegistry.defaultPrinting(it.name)?.imageUri ?: it.metadata.imageUri }
 
-    /** The user's tournaments, newest first — including any in-progress or abandoned ones. */
+    /**
+     * The user's tournaments, newest first — including any in-progress or abandoned ones. A
+     * tournament that isn't COMPLETED is listed only once a game of it has been recorded: one torn
+     * down before anyone played says nothing about the player, so it is left out.
+     */
     fun tournamentHistory(userId: UUID, limit: Int): List<UserTournamentEntry> = jdbc.query(
         """
         SELECT t.id AS id, COALESCE(t.ended_at, t.started_at, now()) AS ended_at, t.name AS name,
                t.format AS format, t.game_mode AS game_mode, tp.placement AS placement,
-               t.player_count AS player_count, t.status AS status
+               t.player_count AS player_count, t.status AS status,
+               tp.wins AS wins, tp.losses AS losses, tp.draws AS draws
         FROM tournament_participants tp
         JOIN tournaments t ON t.id = tp.tournament_id
         WHERE tp.user_id = ?
+          AND (t.status = 'COMPLETED'
+               OR EXISTS (SELECT 1 FROM match_results r WHERE r.lobby_id = t.lobby_id))
         ORDER BY COALESCE(t.ended_at, t.started_at, now()) DESC
         LIMIT ?
         """.trimIndent(),
@@ -742,6 +756,9 @@ class StatsQueryService(
                 placement = rs.getInt("placement"),
                 playerCount = rs.getInt("player_count"),
                 status = rs.getString("status"),
+                wins = rs.getInt("wins"),
+                losses = rs.getInt("losses"),
+                draws = rs.getInt("draws"),
             )
         },
         userId, limit,

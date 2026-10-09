@@ -402,10 +402,17 @@ export interface UserTournamentEntry {
   readonly name: string | null
   readonly format: string | null
   readonly gameMode: string | null
-  /** Final placement (1 = winner); 0 while the tournament is still in progress. */
+  /**
+   * Final placement (1 = winner). For an in-progress or abandoned tournament, the standing after the
+   * last recorded match (0 if none yet).
+   */
   readonly placement: number
   readonly playerCount: number
   readonly status: TournamentStatus
+  /** Match record — final once completed, last-known for an in-progress or abandoned tournament. */
+  readonly wins: number
+  readonly losses: number
+  readonly draws: number
 }
 
 /** One player's final standing in a tournament. */

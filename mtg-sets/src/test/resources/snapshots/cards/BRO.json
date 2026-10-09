@@ -6160,6 +6160,255 @@
     ]
 }
 
+// Urza, Planeswalker
+{
+    "name": "Urza, Planeswalker",
+    "manaCost": "",
+    "typeLine": "Legendary Planeswalker — Urza",
+    "oracleText": "You may activate the loyalty abilities of Urza twice each turn rather than only once.\n+2: Artifact, instant, and sorcery spells you cast this turn cost {2} less to cast. You gain 2 life.\n+1: Draw two cards, then discard a card.\n0: Create two 1/1 colorless Soldier artifact creature tokens.\n−3: Exile target nonland permanent.\n−10: Artifacts and planeswalkers you control gain indestructible until end of turn. Destroy all nonland permanents.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Urza, Planeswalker:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 2
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ReduceSpellCosts",
+                            "spellFilter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "Or",
+                                        "predicates": [
+                                            {
+                                                "type": "Or",
+                                                "predicates": [
+                                                    "IsArtifact",
+                                                    "IsInstant"
+                                                ]
+                                            },
+                                            "IsSorcery"
+                                        ]
+                                    }
+                                ]
+                            },
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "+2: Artifact, instant, and sorcery spells you cast this turn cost {2} less to cast. You gain 2 life."
+            },
+            {
+                "id": "Urza, Planeswalker:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Hand"
+                                    },
+                                    "storeAs": "hand"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "hand",
+                                    "selection": {
+                                        "type": "ChooseExactly",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeSelected": "discarded",
+                                    "prompt": "Choose 1 card to discard"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "discarded",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Graveyard"
+                                    },
+                                    "moveType": "Discard"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "+1: Draw two cards, then discard a card."
+            },
+            {
+                "id": "Urza, Planeswalker:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 0
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [],
+                    "creatureTypes": [
+                        "Soldier"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/3/7/37da5b54-ec55-46e3-9f0b-565cbbe1ac7a.jpg?1783919907",
+                    "artifactToken": true
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "0: Create two 1/1 colorless Soldier artifact creature tokens."
+            },
+            {
+                "id": "Urza, Planeswalker:4",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -3
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Exile"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "nonland permanent"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "−3: Exile target nonland permanent."
+            },
+            {
+                "id": "Urza, Planeswalker:5",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -10
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Group",
+                                "filter": {
+                                    "baseFilter": "artifact|planeswalker ctrl:you"
+                                }
+                            },
+                            "body": {
+                                "type": "GrantKeyword",
+                                "keyword": "INDESTRUCTIBLE",
+                                "target": "IterationEntity"
+                            }
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "BattlefieldMatching",
+                                        "filter": "nonland permanent"
+                                    },
+                                    "storeAs": "destroyAll_gathered"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "destroyAll_gathered",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Graveyard"
+                                    },
+                                    "moveType": "Destroy"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "−10: Artifacts and planeswalkers you control gain indestructible until end of turn. Destroy all nonland permanents."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ExtraLoyaltyActivation",
+                "filter": {
+                    "statePredicates": [
+                        "IsSource"
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "238b",
+        "rarity": "MYTHIC",
+        "artist": "Ryan Pancoast",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/0/40a01679-3224-427e-bd1d-b797b0ab68b7.jpg?1783920022"
+    },
+    "startingLoyalty": 7,
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
+    ],
+    "colorIndicator": [
+        "WHITE",
+        "BLUE"
+    ],
+    "hasNoManaCost": true,
+    "meldResult": true,
+    "meldParts": [
+        "Urza, Lord Protector",
+        "The Mightstone and Weakstone"
+    ]
+}
+
 // Whirling Strike
 {
     "name": "Whirling Strike",

@@ -1263,18 +1263,45 @@ class CastPermissionUtils(
     fun hasLandPlayLeft(state: GameState, playerId: EntityId): Boolean =
         LandDropUtils.hasLandPlayLeft(state, playerId, cardRegistry, conditionEvaluator)
 
-    fun getMaxLoyaltyActivations(state: GameState, playerId: EntityId): Int {
-        for (permanentId in state.getBattlefield()) {
-            val container = state.getEntity(permanentId) ?: continue
-            val controller = container.get<ControllerComponent>()?.playerId ?: continue
-            if (controller != playerId) continue
-            val card = container.get<CardComponent>() ?: continue
-            val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
-            if (cardDef.script.staticAbilities.any { it is ExtraLoyaltyActivation }) {
-                return 2
+    /** Shared by action validation and enumeration; permissions set a maximum, not a bonus. */
+    fun getMaxLoyaltyActivations(state: GameState, playerId: EntityId, walkerId: EntityId): Int {
+        val projected = state.projectedState
+        if (projected.getController(walkerId) != playerId) return 1
+        var maximum = 1
+        fun consider(sourceId: EntityId, raw: com.wingedsheep.sdk.scripting.StaticAbility) {
+            val controller = projected.getController(sourceId) ?: return
+            val ability = when (raw) {
+                is com.wingedsheep.sdk.scripting.ConditionalStaticAbility -> {
+                    if (raw.ability !is ExtraLoyaltyActivation) return
+                    if (!conditionEvaluator.evaluate(state, raw.condition,
+                            EffectContext(sourceId = sourceId, controllerId = controller), projected)) return
+                    raw.ability
+                }
+                else -> raw
+            } as? ExtraLoyaltyActivation ?: return
+            if (ability.times <= maximum) return
+            if (predicateEvaluator.matches(state, projected, walkerId, ability.filter,
+                    PredicateContext(controllerId = controller, sourceId = sourceId))) {
+                maximum = ability.times
             }
         }
-        return 1
+        for (sourceId in state.getBattlefield()) {
+            if (projected.hasLostAllAbilities(sourceId)) continue
+            val container = state.getEntity(sourceId) ?: continue
+            if (container.has<com.wingedsheep.engine.state.components.identity.FaceDownComponent>()) continue
+            val card = container.get<CardComponent>() ?: continue
+            val definition = cardRegistry.getCard(card.cardDefinitionId) ?: continue
+            for (ability in com.wingedsheep.engine.state.components.identity.RoomFaceStatics.activeStaticAbilities(container, definition)) {
+                consider(sourceId, ability)
+            }
+        }
+        for (grant in state.grantedStaticAbilities) {
+            if (grant.entityId !in state.getBattlefield() || projected.hasLostAllAbilities(grant.entityId)) continue
+            if (!com.wingedsheep.engine.mechanics.durations.GrantDurationGate.holds(
+                    state, grant.entityId, grant.sourceId, grant.duration)) continue
+            consider(grant.entityId, grant.ability)
+        }
+        return maximum
     }
 
     fun hasGraveyardPlayPermissionForType(

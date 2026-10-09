@@ -70,7 +70,7 @@ sealed interface ServerMessage {
     data class PlayerSeatInfo(
         val playerId: String,
         val name: String,
-        /** The seat's account avatar id (a preset portrait), null for guests and AI. */
+        /** The seat's avatar id: the account's portrait, an AI persona's preset, or null for guests. */
         val avatar: String? = null,
         val seatIndex: Int,
         /** True for the recipient's own seat. Always false in spectator/replay rosters. */

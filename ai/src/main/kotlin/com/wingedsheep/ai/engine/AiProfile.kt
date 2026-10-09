@@ -341,6 +341,32 @@ data class AiProfile(
      */
     val holdExpiringGrantsForCombat: Boolean = false,
     /**
+     * Aim a spell or ability at the side of the table its effect is *for*, derived from the effect
+     * by [com.wingedsheep.ai.engine.knowledge.TargetPolarityAnalyzer] rather than from the one
+     * shape the ranker used to recognise (a fixed stat boost on an activated ability).
+     *
+     * Three things change, all from the same reading:
+     *
+     *  1. **Ranking.** A beneficial slot — a damage shield, a pump spell, an evasion Aura — ranks
+     *     our own best permanent first. Everything else used to rank as removal, which is how a
+     *     Daru Healer spent its "prevent the next 1 damage to any target" on the opponent's
+     *     Gustcloak Harrier (2026-10-09 AI-vs-AI log, game 18 turn 26): an opponent's permanent is
+     *     always the best *removal* target, and the simulated board does not price a shield.
+     *  2. **Wrong-side veto.** A candidate with a mandatory slot whose every legal target is on the
+     *     wrong side is dropped, so the card is held: Blossombind on our own Explosive Prodigy
+     *     because the opponent had no creatures (game 15 turn 12), Prohibit on our own Treefolk
+     *     Healer — above its mana-value cap, so it did nothing at all — at 4 life (game 3 turn 21).
+     *  3. **The unkicked cast stays a candidate.** `preferKickerVariants` dropped it whenever the
+     *     kicked one was affordable, on the theory that a kicker only adds. A kicker adds an
+     *     *effect*, whose target the cast cannot see: kicked Tolarian Emissary destroyed our own
+     *     Traveler's Cloak, the only enchantment on the table (game 3 turn 19).
+     *
+     * Every slot the analyzer cannot read confidently is UNKNOWN and keeps the old behaviour.
+     * Needs [useCardIntent]: the polarity is read off the card definition, which only the intent
+     * catalog can reach.
+     */
+    val targetPolarityFromEffect: Boolean = false,
+    /**
      * The two `BoardPresence.creatureValue` corrections [PRODUCTION_RACECLOCK]'s KDoc named as the
      * reason its arena win came with a puzzle trade — the damaged-creature discount and the flat
      * multiplier on "can't attack". Both are off by default; see
@@ -414,6 +440,30 @@ data class AiProfile(
      * search's own determinizer assumes.
      */
     val informedChoiceDecisions: Boolean = false,
+    /**
+     * Refuse to pay for an until-end-of-turn payoff that nothing can spend this turn: an activation
+     * or a combat trick whose every effect wears off at cleanup, in a window where the creature it
+     * buys for is not in a combat that is still ahead of it.
+     *
+     * The leaf score reads an end-of-turn grant as permanent — `BoardPresence` prices deathtouch,
+     * +1/+1 or a new land type on the board as it stands, and the board as it stands is before
+     * cleanup. So it pays for the grant wherever it is bought, and off a 24-game log review it was
+     * bought wherever the AI had spare mana: Esquire of the King's team pump in our precombat main on
+     * six turns that declared no attack, Poison Dart Frog's deathtouch on turns the Frog never
+     * attacked (four activations in one main phase, two of them on a Frog already granted it), Dream
+     * Thrush turning an opponent's tapped land into a Plains on our own turn and staying tapped
+     * through their attack at 4 life, Acrobatic Leap cast on a Market Gnome that was not in the
+     * combat it was cast in. See [com.wingedsheep.ai.engine.knowledge.ExpiringGrantWindow] for the
+     * activation half and [com.wingedsheep.ai.engine.knowledge.HoldPolicy] for the trick half.
+     *
+     * With [holdExpiringGrantsForCombat] also on, two things change about that flag's deferral
+     * floor: it reads the same wider set of shapes (a group pump, a land-type change, an ability
+     * that taps its own source as a drawback), and it stops inheriting `Patience`'s long-game
+     * release. That release is a bet that a *better card* is coming; the deferral is a claim about
+     * a window later *this turn*, which a long game does not weaken — and it was the release that
+     * let the Frog's deathtouch through from turn 14 on. Needs [useCardIntent].
+     */
+    val refuseUnspendableGrants: Boolean = false,
     /** Non-null profiles may only be selected automatically for this set. Arena selection stays explicit. */
     val restrictedToSet: String? = null,
 ) {
@@ -1199,6 +1249,31 @@ data class AiProfile(
         )
 
         /**
+         * [refuseUnspendableGrants] alone on top of [PRODUCTION], so a puzzle or an arena point
+         * that moves is attributable to it and nothing else.
+         *
+         * Without [holdExpiringGrantsForCombat] this column carries only the "nothing can spend
+         * it" floors — a grant no fight left this turn can use, one already in force, a trick on a
+         * creature out of combat. The deferral floor, and the long-game release this flag removes
+         * from it, belong to [PRODUCTION_CANDIDATE_NOOP].
+         */
+        val PRODUCTION_NOOP = PRODUCTION.copy(
+            id = "production-noop",
+            refuseUnspendableGrants = true,
+        )
+
+        /**
+         * The promotion candidate: [PRODUCTION_CANDIDATE_EXPIRING] plus [refuseUnspendableGrants]
+         * — the agent that stops buying end-of-turn payoffs it has nothing to spend on. Stacked on
+         * the profile the 24-game log review was taken from, so the positions it cites are the
+         * ones this changes.
+         */
+        val PRODUCTION_CANDIDATE_NOOP = PRODUCTION_CANDIDATE_EXPIRING.copy(
+            id = "production-candidate-noop",
+            refuseUnspendableGrants = true,
+        )
+
+        /**
          * **What real players face.** [EngineAiPlayerController] builds this and nothing else.
          *
          * A named, stable home for the live configuration so a fix can ship by turning its flag on
@@ -1215,6 +1290,8 @@ data class AiProfile(
             id = "live",
             castabilityAwareCardSelection = true,
             informedChoiceDecisions = true,
+            refuseUnspendableGrants = true,
+            targetPolarityFromEffect = true,
         )
 
         /**
@@ -1234,6 +1311,25 @@ data class AiProfile(
         val PRODUCTION_CANDIDATE_CHOICES = PRODUCTION_CANDIDATE_EXPIRING.copy(
             id = "production-candidate-choices",
             informedChoiceDecisions = true,
+        )
+
+        /**
+         * [targetPolarityFromEffect] alone on top of [PRODUCTION], so a puzzle or arena point that
+         * moves is attributable to it.
+         */
+        val PRODUCTION_POLARITY = PRODUCTION.copy(
+            id = "production-polarity",
+            targetPolarityFromEffect = true,
+        )
+
+        /**
+         * The promotion candidate: [PRODUCTION_CANDIDATE_EXPIRING] — the
+         * candidate [LIVE] starts from — plus
+         * [targetPolarityFromEffect].
+         */
+        val PRODUCTION_CANDIDATE_POLARITY = PRODUCTION_CANDIDATE_EXPIRING.copy(
+            id = "production-candidate-polarity",
+            targetPolarityFromEffect = true,
         )
 
         /**
