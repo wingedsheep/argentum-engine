@@ -13129,6 +13129,11 @@ default to "you" so card authors don't need to pass it explicitly.
     The land half of Spider-Man 2099's end-step intervening-if; compose with
     `YouCastSpellsThisTurn(1, fromZoneOtherThan = Zone.HAND)` via `Any(...)` for the full "played a land or
     cast a spell this turn from anywhere other than your hand".
+  - **Visions of Phyrexia**: `Not(Any(YouPlayedLandThisTurn(fromZone = Zone.EXILE),
+    YouCastSpellsThisTurn(1, fromZone = Zone.EXILE)))` expresses "if you didn't play a card from exile
+    this turn". Use as `interveningIf` so casting an instant from exile in response suppresses the
+    token. This reads all of your plays, including cards owned by another player or permitted by
+    another source; putting a land onto the battlefield without playing it does not count.
 - `YouDrewCardsThisTurn(atLeast = 1)` — "as long as you've drawn N or more cards this turn".
   Backed by `PlayerDrewCardsThisTurn(Player.You, atLeast)`, which reads the per-player
   `CardsDrawnThisTurnComponent` (reset for all players at turn start). Works in resolution and
