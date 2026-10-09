@@ -90,7 +90,7 @@ class AnnouncedCharacteristicsCastEnumerator(private val kind: CharacteristicsAn
                 if (context.castPermissionUtils.reasonCannotCast(state, player, id) != null) continue
                 if (zones.hasPlayWithoutPayingCost(state, player, id) ||
                     state.getEntity(id)?.has<com.wingedsheep.engine.state.components.identity.PlayWithFixedAlternativeManaCostComponent>() == true) continue
-                if (Keyword.FLASH !in def.keywords && !zones.hasGrantedFlash(state, id) && !context.canPlaySorcerySpeed) continue
+                if (Keyword.FLASH !in def.keywords && !zones.hasGrantedFlash(state, id, player) && !context.canPlaySorcerySpeed) continue
                 if (!context.legality.castRestrictionsMet(state, player, def.script.castRestrictions)) continue
 
                 val totals = CastCostTotaller(context.cardRegistry, context.costCalculator,

@@ -241,7 +241,7 @@ class CastSpellEnumerator(
             // Check timing - sorcery-speed spells need main phase, empty stack, your turn
             val isInstant = cardComponent.typeLine.isInstant
             val hasFlash = cardDef.keywords.contains(Keyword.FLASH)
-            val grantedFlash = hasFlash || context.castPermissionUtils.hasGrantedFlash(state, cardId)
+            val grantedFlash = hasFlash || context.castPermissionUtils.hasGrantedFlash(state, cardId, context.playerId)
             // The granted alternative cost that would price this card (the first covering grant —
             // the one the cast handler charges). Its flash rider times only its own cast.
             val coveringAltGrant = context.alternativeCastingCosts.firstOrNull { grant ->
@@ -1720,7 +1720,7 @@ class CastSpellEnumerator(
             // Check timing (same rules as normal cast)
             val isInstant = cardComponent.typeLine.isInstant
             val hasFlash = cardDef.keywords.contains(Keyword.FLASH)
-            val grantedFlash = hasFlash || context.castPermissionUtils.hasGrantedFlash(state, cardId)
+            val grantedFlash = hasFlash || context.castPermissionUtils.hasGrantedFlash(state, cardId, context.playerId)
             if (!isInstant && !grantedFlash && !context.canPlaySorcerySpeed) continue
 
             val castRestrictions = cardDef.script.castRestrictions
@@ -1822,7 +1822,7 @@ class CastSpellEnumerator(
             // Timing (same rules as a normal cast).
             val isInstant = cardComponent.typeLine.isInstant
             val hasFlash = cardDef.keywords.contains(Keyword.FLASH)
-            val grantedFlash = hasFlash || context.castPermissionUtils.hasGrantedFlash(state, cardId)
+            val grantedFlash = hasFlash || context.castPermissionUtils.hasGrantedFlash(state, cardId, context.playerId)
             if (!isInstant && !grantedFlash && !context.canPlaySorcerySpeed) continue
 
             val castRestrictions = cardDef.script.castRestrictions
@@ -1938,7 +1938,7 @@ class CastSpellEnumerator(
             // Splice grants no timing permission of its own — the spell is cast at its normal timing.
             val isInstant = cardComponent.typeLine.isInstant
             val grantedFlash = cardDef.keywords.contains(Keyword.FLASH) ||
-                context.castPermissionUtils.hasGrantedFlash(state, cardId)
+                context.castPermissionUtils.hasGrantedFlash(state, cardId, context.playerId)
             if (!isInstant && !grantedFlash && !context.canPlaySorcerySpeed) continue
 
             val castRestrictions = cardDef.script.castRestrictions
@@ -2039,7 +2039,7 @@ class CastSpellEnumerator(
             // advertise a cast the timing rules forbid outright.
             val isInstant = cardComponent.typeLine.isInstant
             val hasFlash = cardDef.keywords.contains(Keyword.FLASH)
-            val grantedFlash = hasFlash || context.castPermissionUtils.hasGrantedFlash(state, cardId)
+            val grantedFlash = hasFlash || context.castPermissionUtils.hasGrantedFlash(state, cardId, context.playerId)
             if (!isInstant && !grantedFlash && optionalCosts.none { it.grantsFlashTiming } &&
                 !context.canPlaySorcerySpeed
             ) continue
@@ -2419,7 +2419,7 @@ class CastSpellEnumerator(
             // Timing — the alternative cost doesn't change when the spell can be cast; instants keep flash timing,
             // sorceries stay sorcery-speed.
             val isInstant = cardComponent.typeLine.isInstant
-            val grantedFlash = cardDef.keywords.contains(Keyword.FLASH) || context.castPermissionUtils.hasGrantedFlash(state, cardId)
+            val grantedFlash = cardDef.keywords.contains(Keyword.FLASH) || context.castPermissionUtils.hasGrantedFlash(state, cardId, context.playerId)
             if (!isInstant && !grantedFlash && !context.canPlaySorcerySpeed) continue
 
             // Check cast restrictions
@@ -3044,7 +3044,7 @@ class CastSpellEnumerator(
         val playerId = context.playerId
 
         val hasFlash = back.keywords.contains(Keyword.FLASH) ||
-            context.castPermissionUtils.hasGrantedFlash(state, cardId)
+            context.castPermissionUtils.hasGrantedFlash(state, cardId, context.playerId)
         if (!back.typeLine.isInstant && !hasFlash && !context.canPlaySorcerySpeed) return
 
         val description = "Cast ${back.name}"

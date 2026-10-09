@@ -10431,7 +10431,10 @@ riders, matching how the engine already treats e.g. City of Brass's damage durin
   are thin delegates to the shared `FlashTypeGrants.hasGrantedFlash`, which is the single source of
   truth for every non-printed flash (the card's own `conditionalFlash`, the turn-scoped
   `Effects.GrantFlashToSpells` player grant, and this static), so enumeration and the cast handler
-  cannot disagree. Sibling of the durational `Effects.GrantFlashToSpells`; use the static for "as
+  cannot disagree. Both pass the actual caster explicitly: conditional flash, player grants, and
+  per-turn cast counts use that player even when a linked-exile permission lets them cast an
+  opponent-owned card. The owner's personal flash grants do not transfer with the card.
+  Sibling of the durational `Effects.GrantFlashToSpells`; use the static for "as
   long as this is on the battlefield" wording.
 
   **Gating it on a condition** — wrap it in a `ConditionalStaticAbility` (i.e. set `condition` on the

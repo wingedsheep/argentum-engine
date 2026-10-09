@@ -155,7 +155,7 @@ class CastFromZoneEnumerator(
 
             val isInstant = cardComponent.typeLine.isInstant
             val hasFlash = cardDef.keywords.contains(com.wingedsheep.sdk.core.Keyword.FLASH) ||
-                context.castPermissionUtils.hasGrantedFlash(state, cardId)
+                context.castPermissionUtils.hasGrantedFlash(state, cardId, context.playerId)
             if (!isInstant && !hasFlash && !context.canPlaySorcerySpeed) continue
             if (context.cantCastSpell(cardId)) continue
 
@@ -888,7 +888,7 @@ class CastFromZoneEnumerator(
                     val isInstant = exiledCard.typeLine.isInstant
                     val hasCorrectTiming = isInstant || context.canPlaySorcerySpeed ||
                         exiledCardDef?.keywords?.contains(com.wingedsheep.sdk.core.Keyword.FLASH) == true ||
-                        context.castPermissionUtils.hasGrantedFlash(state, exiledId)
+                        context.castPermissionUtils.hasGrantedFlash(state, exiledId, context.playerId)
                     val castRestrictions = exiledCardDef?.script?.castRestrictions ?: emptyList()
                     val meetsRestrictions = context.legality.castRestrictionsMet(state, playerId, castRestrictions)
                     val freeCastFromGranter = grantAbility.withoutPayingManaCost
@@ -1422,7 +1422,7 @@ class CastFromZoneEnumerator(
             // Timing: Mayhem grants no permission — instants/flash any time, else sorcery speed.
             val isInstant = cardComponent.typeLine.isInstant
             val hasFlash = cardDef.keywords.contains(com.wingedsheep.sdk.core.Keyword.FLASH) ||
-                context.castPermissionUtils.hasGrantedFlash(state, cardId)
+                context.castPermissionUtils.hasGrantedFlash(state, cardId, context.playerId)
             if (!isInstant && !hasFlash && !context.canPlaySorcerySpeed) continue
 
             if (context.cantCastSpell(cardId)) {
@@ -1537,7 +1537,7 @@ class CastFromZoneEnumerator(
 
             val isInstant = cardComponent.typeLine.isInstant
             val hasFlash = cardDef.keywords.contains(com.wingedsheep.sdk.core.Keyword.FLASH) ||
-                context.castPermissionUtils.hasGrantedFlash(state, cardId)
+                context.castPermissionUtils.hasGrantedFlash(state, cardId, context.playerId)
             if (!isInstant && !hasFlash && !context.canPlaySorcerySpeed) continue
 
             val action = CastSpell(playerId, cardId, useAlternativeCost = true, alternativeCostType = AlternativeCostType.ESCAPE)
@@ -1640,7 +1640,7 @@ class CastFromZoneEnumerator(
 
             val isInstant = backFace.typeLine.isInstant
             val hasFlash = backFace.keywords.contains(com.wingedsheep.sdk.core.Keyword.FLASH) ||
-                context.castPermissionUtils.hasGrantedFlash(state, cardId)
+                context.castPermissionUtils.hasGrantedFlash(state, cardId, context.playerId)
             if (!isInstant && !hasFlash && !context.canPlaySorcerySpeed) continue
 
             val description = "Cast ${backFace.name} (Disturb)"

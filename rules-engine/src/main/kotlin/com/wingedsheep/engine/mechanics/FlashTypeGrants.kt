@@ -8,7 +8,6 @@ import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.ClassLevelComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
-import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.player.FlashGrantsThisTurnComponent
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
@@ -56,31 +55,30 @@ object FlashTypeGrants {
     /**
      * Whether [spellCardId] may currently be cast as though it had flash by something other than a
      * printed flash keyword. Callers `||` this with their own printed-keyword check.
+     * [casterId] is explicit because the player casting a card may differ from its owner.
      */
     fun hasGrantedFlash(
         state: GameState,
         spellCardId: EntityId,
+        casterId: EntityId,
         cardRegistry: CardRegistry,
         predicateEvaluator: PredicateEvaluator,
         conditionEvaluator: ConditionEvaluator,
     ): Boolean {
-        val spellOwner = state.getEntity(spellCardId)?.get<ControllerComponent>()?.playerId
-            ?: return false
-
         // 1. The card's own conditionalFlash (e.g. Ferocious).
         val spellDef = state.getEntity(spellCardId)?.get<CardComponent>()
             ?.let { cardRegistry.getCard(it.cardDefinitionId) }
         val conditionalFlash = spellDef?.script?.conditionalFlash
         if (conditionalFlash != null) {
-            val effectContext = EffectContext(sourceId = spellCardId, controllerId = spellOwner)
+            val effectContext = EffectContext(sourceId = spellCardId, controllerId = casterId)
             if (conditionEvaluator.evaluate(state, conditionalFlash, effectContext)) return true
         }
 
-        val context = PredicateContext(controllerId = spellOwner)
+        val context = PredicateContext(controllerId = casterId)
 
-        // 2. Turn-scoped grants on the spell owner (Borne Upon a Wind etc., via
+        // 2. Turn-scoped grants on the caster (Borne Upon a Wind etc., via
         // GrantFlashToSpellsEffect → FlashGrantsThisTurnComponent).
-        val turnGrants = state.getEntity(spellOwner)?.get<FlashGrantsThisTurnComponent>()
+        val turnGrants = state.getEntity(casterId)?.get<FlashGrantsThisTurnComponent>()
         if (turnGrants != null) {
             for (filter in turnGrants.filters) {
                 if (predicateEvaluator.matches(state, state.projectedState, spellCardId, filter, context)) {
@@ -103,10 +101,10 @@ object FlashTypeGrants {
                     val ability = activeGrant(state, raw, entityId, playerId, conditionEvaluator)
                         ?: continue
                     // If controllerOnly, only the permanent's controller benefits.
-                    if (ability.controllerOnly && playerId != spellOwner) continue
+                    if (ability.controllerOnly && playerId != casterId) continue
                     // "The first [type] spell you cast each turn" — the grant covers only one
                     // spell per turn (Radagast of Rhosgobel).
-                    if (!nthGateAllows(state, spellOwner, ability, predicateEvaluator)) continue
+                    if (!nthGateAllows(state, casterId, ability, predicateEvaluator)) continue
                     if (predicateEvaluator.matches(state, state.projectedState, spellCardId, ability.filter, context)) {
                         return true
                     }

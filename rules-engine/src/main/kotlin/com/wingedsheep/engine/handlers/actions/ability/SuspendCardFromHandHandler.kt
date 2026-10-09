@@ -93,7 +93,7 @@ class SuspendCardFromHandHandler(
         // permission side of "could begin to cast" is exactly as real as printed flash.
         val cardDef = cardRegistry.getCard(cardComponent.cardDefinitionId)
         val hasFlash = cardDef?.keywords?.contains(Keyword.FLASH) == true ||
-            castPermissionUtils.hasGrantedFlash(state, action.cardId)
+            castPermissionUtils.hasGrantedFlash(state, action.cardId, action.playerId)
         val isInstantSpeed = cardComponent.typeLine.isInstant || hasFlash
         if (!isInstantSpeed && !turnManager.canPlaySorcerySpeed(state, action.playerId)) {
             return "This card can only be suspended at a time you could cast it"
