@@ -161,18 +161,23 @@ export interface PooledLayout {
 
 /**
  * Transition applied to a battlefield card's box when the solver resizes it —
- * the card's own `transform` / `box-shadow` transitions plus the size axes.
+ * the card's own `transform` transition plus the size axes.
  *
  * The `transform` leg also carries tapping: a tapped permanent turns 90deg and drops onto the
  * row's baseline through this one property, so the curve is tuned for that — most of the turn
  * happens in the first third and then settles, which reads as the card being laid down rather
  * than swept around. Keep it short; a tap is punctuation, not an event.
+ *
+ * `box-shadow` deliberately snaps. The highlight glows are 20–40px blurs, and easing one
+ * re-rasterizes the card's whole glow on every frame of the transition. In combat every valid
+ * attacker or blocker brightens on hover, so sweeping the pointer across a board kept a dozen
+ * of those animating back to back — ten times the raster work of the same sweep outside combat.
  */
 export const CARD_RESIZE_TRANSITION =
-  'transform 0.15s cubic-bezier(0.22, 0.75, 0.3, 1), box-shadow 0.15s, width 0.18s ease, height 0.18s ease'
+  'transform 0.15s cubic-bezier(0.22, 0.75, 0.3, 1), width 0.18s ease, height 0.18s ease'
 
-/** Reduced motion: the turn and the lift snap; only the non-motion box-shadow still eases. */
-export const CARD_REDUCED_MOTION_TRANSITION = 'box-shadow 0.15s'
+/** Reduced motion: the turn, the lift and the resize all snap. */
+export const CARD_REDUCED_MOTION_TRANSITION = 'none'
 
 /**
  * Chips drawn inside a card counter-rotate so they stay upright when it taps. They have to turn

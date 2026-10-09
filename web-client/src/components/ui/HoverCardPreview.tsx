@@ -7,6 +7,8 @@ const MARGIN = 40
 /** Height of the `hint` row below the image, for vertical positioning. */
 const HINT_HEIGHT = 30
 const VIEWPORT_PADDING = 10
+/** Gap between the preview and a region it is told to avoid. */
+const AVOID_GAP = 16
 const RULINGS_MAX_HEIGHT = 300
 
 export interface HoverCardPreviewProps {
@@ -33,6 +35,12 @@ export interface HoverCardPreviewProps {
   imageRotateDeg?: 0 | 90 | 180 | 270
   /** Drawn in place of the image when there is no art to show (an artless ability on the stack). */
   artFallback?: ReactNode
+  /**
+   * A viewport region the preview must not cover — the hovered creature's combat clique, whose
+   * blocks the player is trying to read. The preview opens beside it (right, else left), and only
+   * falls back to cursor placement when neither side has room.
+   */
+  avoid?: { left: number; top: number; right: number; bottom: number } | null
 }
 
 /**
@@ -47,7 +55,7 @@ export interface HoverCardPreviewProps {
  * also live inside `overflow: hidden` / transformed ancestors (a tapped permanent rotates),
  * which would clip a preview rendered in place.
  */
-export function HoverCardPreview({ name, imageUri, imageSize = 'large', pos, rulings, children, overlay, hint, extraHeight = 0, imageRotateDeg = 0, artFallback }: HoverCardPreviewProps) {
+export function HoverCardPreview({ name, imageUri, imageSize = 'large', pos, rulings, children, overlay, hint, extraHeight = 0, imageRotateDeg = 0, artFallback, avoid }: HoverCardPreviewProps) {
   const [showRulings, setShowRulings] = useState(false)
   const [lastCardName, setLastCardName] = useState<string | null>(null)
 
@@ -107,9 +115,21 @@ export function HoverCardPreview({ name, imageUri, imageSize = 'large', pos, rul
   // Position near cursor, clamped to viewport
   let top = 80
   let left = 20
-  if (pos) {
-    const vw = window.innerWidth
-
+  const vw = window.innerWidth
+  const vh = window.innerHeight
+  const besideAvoid = avoid
+    ? avoid.right + AVOID_GAP + previewWidth <= vw - VIEWPORT_PADDING
+      ? avoid.right + AVOID_GAP
+      : avoid.left - AVOID_GAP - previewWidth >= VIEWPORT_PADDING
+        ? avoid.left - AVOID_GAP - previewWidth
+        : null
+    : null
+  if (avoid && besideAvoid !== null) {
+    left = besideAvoid
+    // Level with the region's middle, clamped on-screen.
+    const centred = (avoid.top + avoid.bottom) / 2 - estimatedHeight / 2
+    top = Math.max(VIEWPORT_PADDING, Math.min(centred, vh - estimatedHeight - VIEWPORT_PADDING))
+  } else if (pos) {
     if (pos.x + previewWidth + MARGIN < vw - VIEWPORT_PADDING) {
       left = pos.x + MARGIN
     } else if (pos.x - previewWidth - MARGIN > VIEWPORT_PADDING) {

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 
 /**
  * Functional-update helper that keeps the previous state when the freshly measured value is
@@ -8,13 +8,14 @@ function keepIfEqual<T>(next: T): (prev: T) => T {
   const nextJson = JSON.stringify(next)
   return (prev) => (JSON.stringify(prev) === nextJson ? prev : next)
 }
-import { useGameStore } from '@/store/gameStore.ts'
+import { useGameStore, type GameStore } from '@/store/gameStore.ts'
 import { selectGameState, selectViewingPlayerId, useViewedOpponent, selectTeamMap, identitySeatColor } from '@/store/selectors.ts'
 import type { EntityId } from '@/types'
 import { Step, ZoneType } from '@/types'
 import { defendingPlayerOf, isBattle } from '@/utils/combatTargets'
 import { bandsFromBandIds, computeCombatClique, type CombatClique } from './combatClique'
-import { CliqueCaption, CliqueSpotlight, describeFocus, measureClique } from './CombatFocus'
+import { CliqueCaption, CliqueSpotlight, cliqueBounds, describeFocus, measureClique } from './CombatFocus'
+import { setCombatFocusBounds } from './combatFocusBounds'
 
 interface Point {
   x: number
@@ -311,6 +312,8 @@ const DIM_OPACITY = 0.1
 /** Hover settle times: a short delay in, a longer grace out so sweeping across cards doesn't flicker. */
 const FOCUS_IN_MS = 70
 const FOCUS_OUT_MS = 120
+/** Matches CliqueSpotlight's opacity transition, plus a frame of slack. */
+const SPOTLIGHT_FADE_MS = 220
 
 export function CombatArrows() {
   const combatState = useGameStore((state) => state.combatState)
@@ -716,16 +719,7 @@ export function CombatArrows() {
 
   // Hover focus: hovering a creature in combat lifts its whole clique (see computeCombatClique)
   // and dims every other arrow, so one block can be read out of a crowded board.
-  const hoveredCardId = useGameStore((state) => state.hoveredCardId)
   const isDragging = draggingBlockerId != null || draggingAttackerId != null
-  const [focusId, setFocusId] = useState<EntityId | null>(null)
-  useEffect(() => {
-    const target = isDragging ? null : hoveredCardId
-    // Card to card passes through a null hover; the out-grace swallows it, so focus moves
-    // straight from one clique to the next instead of blinking the scrim off and on.
-    const timer = setTimeout(() => setFocusId(target), target ? FOCUS_IN_MS : FOCUS_OUT_MS)
-    return () => clearTimeout(timer)
-  }, [hoveredCardId, isDragging])
   const { attackerSet, bands } = useMemo(() => {
     const attackers = new Set<EntityId>()
     const bands: EntityId[][] = []
@@ -743,13 +737,55 @@ export function CombatArrows() {
     }
     return { attackerSet: attackers, bands }
   }, [gameStateCombat, combatState, opponentAttackerTargets, isDeclareAttackersStep])
+  // Only a creature in combat can have a clique, so only hovers onto or off one concern this
+  // overlay. Selecting the id unconditionally re-rendered every arrow — and re-measured the
+  // spotlight — on each hover across lands, the hand, and creatures sitting combat out.
+  const combatants = useMemo(() => {
+    const ids = new Set(attackerSet)
+    for (const a of arrows) ids.add(a.blockerId)
+    return ids
+  }, [attackerSet, arrows])
+  const hoveredCombatant = useGameStore(useCallback(
+    (state: GameStore) => (state.hoveredCardId && combatants.has(state.hoveredCardId) ? state.hoveredCardId : null),
+    [combatants],
+  ))
+  const [focusId, setFocusId] = useState<EntityId | null>(null)
+  useEffect(() => {
+    const target = isDragging ? null : hoveredCombatant
+    // Card to card passes through a null hover; the out-grace swallows it, so focus moves
+    // straight from one clique to the next instead of blinking the scrim off and on.
+    const timer = setTimeout(() => setFocusId(target), target ? FOCUS_IN_MS : FOCUS_OUT_MS)
+    return () => clearTimeout(timer)
+  }, [hoveredCombatant, isDragging])
   const clique = useMemo<CombatClique | null>(
     () => (focusId ? computeCombatClique(focusId, arrows, bands, attackerSet) : null),
     [focusId, arrows, bands, attackerSet],
   )
-  // The last clique shown, kept so the spotlight can fade out instead of vanishing.
+  // The last clique shown, kept so the spotlight can fade out instead of vanishing — and then
+  // dropped once it has, rather than left mounted (and re-measured on every render) at opacity 0.
   const lastFocus = useRef<{ clique: CombatClique; focusId: EntityId } | null>(null)
   if (clique && focusId) lastFocus.current = { clique, focusId }
+  const [, setSpotlightGone] = useState(0)
+  useEffect(() => {
+    if (clique || !lastFocus.current) return
+    const timer = setTimeout(() => {
+      lastFocus.current = null
+      setSpotlightGone((n) => n + 1)
+    }, SPOTLIGHT_FADE_MS)
+    return () => clearTimeout(timer)
+  }, [clique])
+
+  // The hover preview opens beside the hovered creature's clique rather than over it. Published
+  // from the raw hover (not the settled `focusId`) and before paint, so the preview's first frame
+  // is already in the right place instead of jumping aside once the spotlight lands.
+  const showsArrows = !hasOverlayDecision && isInCombatPhase
+  useLayoutEffect(() => {
+    const hovered = showsArrows && !isDragging ? hoveredCombatant : null
+    const hoverClique = hovered ? computeCombatClique(hovered, arrows, bands, attackerSet) : null
+    setCombatFocusBounds(hoverClique ? cliqueBounds(measureClique(hoverClique)) : null)
+  }, [hoveredCombatant, isDragging, showsArrows, arrows, bands, attackerSet])
+  useEffect(() => () => setCombatFocusBounds(null), [])
+
   // Whether "no blockers" is a fact yet: blocks are being declared right now, or have been.
   const blocksKnown = isDeclaringBlockers ||
     (opponentBlockerAssignments != null && Object.keys(opponentBlockerAssignments).length > 0 && isDeclareBlockersStep) ||
@@ -803,6 +839,15 @@ export function CombatArrows() {
 
   return (
     <>
+      {/* Hover spotlight sits under every arrow, so the clique's arrows read over the scrim */}
+      {spotlight && spotlightRects && (
+        <CliqueSpotlight
+          clique={spotlight.clique}
+          rects={spotlightRects}
+          focusId={spotlight.focusId}
+          visible={focused}
+        />
+      )}
       <svg
         style={{
           position: 'fixed',
@@ -814,16 +859,6 @@ export function CombatArrows() {
           zIndex: 2000, // Above spectator container (1500)
         }}
       >
-        {/* Hover spotlight sits under every arrow, so the clique's arrows read over the scrim */}
-        {spotlight && spotlightRects && (
-          <CliqueSpotlight
-            clique={spotlight.clique}
-            rects={spotlightRects}
-            focusId={spotlight.focusId}
-            visible={focused}
-          />
-        )}
-
         {/* Attack direction indicators (triangles pointing toward the defender,
             seat-colored once assigned in multiplayer) */}
         {attackIndicators.map(({ x, y, direction, attackerId, color }) => (

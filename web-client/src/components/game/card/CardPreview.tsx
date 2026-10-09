@@ -10,6 +10,7 @@ import { useResponsiveContext, handleImageError, getCounterStatModifier, hasStat
 import { styles } from '../board/styles'
 import { counterManaClass } from '@/assets/icons/keywords'
 import { HoverCardPreview } from '../../ui/HoverCardPreview'
+import { useCombatFocusBounds } from '../../combat/combatFocusBounds'
 import { useHasHover } from '@/hooks/useHasHover.ts'
 import { ManaCost, AbilityText } from '../../ui/ManaSymbols'
 import { buildActionOptions, playCostRange, playLadderOptions } from '@/utils/actionOptions.ts'
@@ -23,6 +24,7 @@ import { castOfferFace } from '@/utils/castFace.ts'
 export function CardPreview() {
   const hoveredCardId = useGameStore((state) => state.hoveredCardId)
   const hoverPosition = useGameStore((state) => state.hoverPosition)
+  const combatFocusBounds = useCombatFocusBounds((state) => state.bounds)
   const gameState = useGameStore(selectGameState)
   const playerId = useGameStore(selectViewingPlayerId)
   const responsive = useResponsiveContext()
@@ -262,6 +264,7 @@ export function CardPreview() {
       name={displayName}
       imageUri={displayImageUri ?? null}
       pos={hoverPosition}
+      avoid={combatFocusBounds}
       rulings={card.rulings}
       extraHeight={extraHeight}
       imageRotateDeg={previewImageRotateDeg}
