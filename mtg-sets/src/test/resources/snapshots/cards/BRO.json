@@ -4827,6 +4827,57 @@
     "colorIdentityOverride": []
 }
 
+// Su-Chi Cave Guard
+{
+    "name": "Su-Chi Cave Guard",
+    "manaCost": "{8}",
+    "typeLine": "Artifact Creature — Construct",
+    "oracleText": "Vigilance\nWard {4} (Whenever this creature becomes the target of a spell or ability an opponent controls, counter it unless that player pays {4}.)\nWhen this creature dies, add eight {C}. Until end of turn, you don't lose this mana as steps and phases end.",
+    "creatureStats": {
+        "power": 8,
+        "toughness": 8
+    },
+    "keywords": [
+        "VIGILANCE",
+        "WARD"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Ward",
+            "cost": {
+                "type": "WardCost.Mana",
+                "manaCost": "{4}"
+            }
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Su-Chi Cave Guard:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 8
+                    },
+                    "expiry": "KEPT_UNTIL_END_OF_TURN"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "249",
+        "rarity": "UNCOMMON",
+        "artist": "Dmitry Burmak",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/b/bb04dad2-4561-4cef-9cee-80d6f1a44bee.jpg?1783920012"
+    }
+}
+
 // Supply Drop
 {
     "name": "Supply Drop",

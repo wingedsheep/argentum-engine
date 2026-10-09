@@ -2740,12 +2740,14 @@ object Effects {
     /**
      * Add colorless mana. [riders] attach side-effects to whatever spell this mana pays for
      * (Boseiju, Who Shelters All's `ManaSpellRider.MakesSpellUncounterable(InstantOrSorcery)`).
+     * [expiry] tags only the produced mana with its retention duration, as on [AddMana].
      */
     fun AddColorlessMana(
         amount: Int,
         restriction: ManaRestriction? = null,
         riders: Set<ManaSpellRider> = emptySet(),
-    ): Effect = AddColorlessManaEffect(DynamicAmount.Fixed(amount), restriction, riders)
+        expiry: com.wingedsheep.sdk.scripting.effects.ManaExpiry = com.wingedsheep.sdk.scripting.effects.ManaExpiry.END_OF_TURN,
+    ): Effect = AddColorlessManaEffect(DynamicAmount.Fixed(amount), restriction, riders, expiry)
 
     /**
      * Pay a mana cost at resolution — the payment inside a gate or a reflexive trigger ("you may
@@ -2772,8 +2774,12 @@ object Effects {
     /**
      * Add a dynamic amount of colorless mana.
      */
-    fun AddColorlessMana(amount: DynamicAmount, restriction: ManaRestriction? = null): Effect =
-        AddColorlessManaEffect(amount, restriction)
+    fun AddColorlessMana(
+        amount: DynamicAmount,
+        restriction: ManaRestriction? = null,
+        riders: Set<ManaSpellRider> = emptySet(),
+        expiry: com.wingedsheep.sdk.scripting.effects.ManaExpiry = com.wingedsheep.sdk.scripting.effects.ManaExpiry.END_OF_TURN,
+    ): Effect = AddColorlessManaEffect(amount, restriction, riders, expiry)
 
     /**
      * Pay a dynamically-computed amount of generic mana at resolution, optionally from a player
