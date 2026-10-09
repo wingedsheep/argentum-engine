@@ -1,12 +1,14 @@
 package com.wingedsheep.engine.handlers.effects.mana
 
 import com.wingedsheep.engine.core.EffectResult
+import com.wingedsheep.engine.core.ManaPoolChangedEvent
 import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.sdk.scripting.effects.AddColorlessManaEffect
+import com.wingedsheep.sdk.scripting.effects.ManaExpiry
 import com.wingedsheep.sdk.scripting.effects.ManaRestriction
 import kotlin.reflect.KClass
 
@@ -32,24 +34,24 @@ class AddColorlessManaExecutor(
 
         var newState = state.updateEntity(context.controllerId) { container ->
             val manaPool = container.get<ManaPoolComponent>() ?: ManaPoolComponent()
-            // Riders ride on restricted-mana entries, so rider-carrying mana with no restriction is
-            // stored under the no-op AnySpend marker (mirrors AddManaExecutor).
+            // Duration and riders travel on individual entries. AnySpend keeps tagged mana
+            // spendable on any cost without retaining unrelated mana (mirrors AddManaExecutor).
             val updatedPool = when {
                 effect.restriction != null ->
-                    manaPool.addRestricted(null, amount, effect.restriction!!, effect.riders)
-                effect.riders.isNotEmpty() ->
-                    manaPool.addRestricted(null, amount, ManaRestriction.AnySpend, effect.riders)
+                    manaPool.addRestricted(null, amount, effect.restriction!!, effect.riders, expiry = effect.expiry)
+                effect.riders.isNotEmpty() || effect.expiry != ManaExpiry.END_OF_TURN ->
+                    manaPool.addRestricted(null, amount, ManaRestriction.AnySpend, effect.riders, expiry = effect.expiry)
                 else -> manaPool.addColorless(amount)
             }
             container.with(updatedPool)
         }
 
-        newState = if (effect.restriction == null && effect.riders.isEmpty()) {
+        newState = if (effect.restriction == null && effect.riders.isEmpty() && effect.expiry == ManaExpiry.END_OF_TURN) {
             ManaProvenanceTracker.tagAddedMana(newState, context.controllerId, context.sourceId, amount)
         } else {
             ManaProvenanceTracker.tagAddedRestrictedMana(newState, context.controllerId, context.sourceId, amount)
         }
 
-        return EffectResult.success(newState)
+        return EffectResult.success(newState, listOf(ManaPoolChangedEvent(context.controllerId)))
     }
 }

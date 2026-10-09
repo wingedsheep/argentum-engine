@@ -192,6 +192,7 @@ class CombatTaxContinuationResumer(
         var pool = ManaPool(
             poolComponent.white, poolComponent.blue, poolComponent.black,
             poolComponent.red, poolComponent.green, poolComponent.colorless,
+            restrictedMana = poolComponent.restrictedMana,
             snowMana = poolComponent.snowMana,
             snowColorless = poolComponent.snowColorless
         ).withSpendingColors(state, playerId)
@@ -243,6 +244,7 @@ class CombatTaxContinuationResumer(
                 ManaPoolComponent(
                     white = newPool.white, blue = newPool.blue, black = newPool.black,
                     red = newPool.red, green = newPool.green, colorless = newPool.colorless,
+                    restrictedMana = newPool.restrictedMana,
                     snowMana = newPool.snowMana,
                     snowColorless = newPool.snowColorless
                 )

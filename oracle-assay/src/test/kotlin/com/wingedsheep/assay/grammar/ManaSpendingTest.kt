@@ -358,4 +358,13 @@ class ManaSpendingTest : StringSpec({
         )
         Grammar.abilityLine.printLine(manaAbility(withRider)) shouldBe null
     }
+    "colourless expiry refuses to print as ordinary mana including through restriction wrappers" {
+        for (restriction in listOf(null, ManaRestriction.CreatureSpellsOnly)) {
+            val effect = com.wingedsheep.sdk.dsl.Effects.AddColorlessMana(
+                2, restriction = restriction,
+                expiry = com.wingedsheep.sdk.scripting.effects.ManaExpiry.KEPT_UNTIL_END_OF_TURN
+            )
+            Grammar.abilityLine.printLine(manaAbility(effect)) shouldBe null
+        }
+    }
 })
