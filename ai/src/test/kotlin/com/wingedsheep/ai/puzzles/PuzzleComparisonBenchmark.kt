@@ -109,6 +109,11 @@ class PuzzleComparisonBenchmark : ScenarioTestBase() {
                 // Castability-aware card selection, alone and on top of what is live.
                 AiProfile.PRODUCTION_CARDSELECT,
                 AiProfile.PRODUCTION_CANDIDATE_CARDSELECT,
+                // Choice decisions (colour, land type, card name, skip-a-draw) answered by what
+                // they are for. The suite has no naming or colour position, so these columns are
+                // a no-regression check, not where the gain shows.
+                AiProfile.PRODUCTION_CHOICES,
+                AiProfile.PRODUCTION_CANDIDATE_CHOICES,
                 // Phase 7's rollout evaluator, isolated from Phases 4 and 6 so the column is
                 // attributable to the rollouts alone.
                 AiProfile.PHASE7,

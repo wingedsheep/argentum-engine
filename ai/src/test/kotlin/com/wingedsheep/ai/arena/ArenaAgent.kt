@@ -143,6 +143,12 @@ object ArenaAgents {
         // What EngineAiPlayerController plays: production-candidate-expiring plus every fix shipped
         // since. `just arena production-candidate-expiring live 300` prices the stack.
         ArenaAgent("live", AiProfile.LIVE),
+        // Choice decisions answered by what they are for: colour/land-type tie-breaks, shortlisted
+        // card names, and a skipped draw priced as a card. `just arena production
+        // production-choices 300` prices it alone; `just arena production-candidate-expiring
+        // production-candidate-choices 300` is the promotion gate.
+        ArenaAgent("production-choices", AiProfile.PRODUCTION_CHOICES),
+        ArenaAgent("production-candidate-choices", AiProfile.PRODUCTION_CANDIDATE_CHOICES),
         ArenaAgent("production-targeted", AiProfile.PRODUCTION_TARGETED),
         // Explicit ECL candidates. Their resource-backed weights fail closed to production's
         // evaluator until a validated artifact is installed; automatic selection is set-gated.

@@ -391,6 +391,29 @@ data class AiProfile(
      * permanents, not cards, and keeps the legacy ranking.
      */
     val castabilityAwareCardSelection: Boolean = false,
+    /**
+     * Answer the choices a one-step simulation can't tell apart with what the choice is *for*,
+     * instead of with the first option. Three misplays from the 2026-10-09 AI-vs-AI log review:
+     *
+     * - **Colour and land-type ties** go to the colour that matters. A mana source's choice leans to
+     *   its controller's unpaid pips (game 4: Room of Refuge chose white in an R/G deck and tapped
+     *   for dead mana for the rest of the game); any other — landwalk, protection, a hoser — leans
+     *   to what the opponents have (game 3: Traveler's Cloak granted islandwalk against Forests and
+     *   Swamps).
+     * - **Card names and creature types** are shortlisted from the cards actually in the game and
+     *   only those are simulated, instead of every name in the registry. Ties lean to the
+     *   opponents' cards for names (game 9: Lammastide Weave named "A Killer Among Us", the
+     *   alphabetically first card, against a Lorwyn deck) and to our own for creature types.
+     * - **A pending "skip your draw step" marker** is priced as the card it costs (game 7: Fasting
+     *   skipped five draws on two lands, because the choice is made in the upkeep and the simulation
+     *   stops before the draw it gives up).
+     *
+     * Every rule is a tie-break or a missing price, never an override: an option the simulation
+     * already scores higher still wins. See [ChoicePriors] for the weights and the information
+     * they read — the multiset of each player's hand and library, which is no more than the
+     * search's own determinizer assumes.
+     */
+    val informedChoiceDecisions: Boolean = false,
     /** Non-null profiles may only be selected automatically for this set. Arena selection stays explicit. */
     val restrictedToSet: String? = null,
 ) {
@@ -1191,6 +1214,26 @@ data class AiProfile(
         val LIVE = PRODUCTION_CANDIDATE_EXPIRING.copy(
             id = "live",
             castabilityAwareCardSelection = true,
+            informedChoiceDecisions = true,
+        )
+
+        /**
+         * [informedChoiceDecisions] alone on top of [PRODUCTION], so a puzzle or an arena point
+         * that moves is attributable to it.
+         */
+        val PRODUCTION_CHOICES = PRODUCTION.copy(
+            id = "production-choices",
+            informedChoiceDecisions = true,
+        )
+
+        /**
+         * The promotion candidate: [PRODUCTION_CANDIDATE_EXPIRING] plus [informedChoiceDecisions].
+         * Stacked on the expiring candidate because that is the live profile the 2026-10-09 log
+         * review played; the combining PR decides what it finally stacks on.
+         */
+        val PRODUCTION_CANDIDATE_CHOICES = PRODUCTION_CANDIDATE_EXPIRING.copy(
+            id = "production-candidate-choices",
+            informedChoiceDecisions = true,
         )
 
         /**

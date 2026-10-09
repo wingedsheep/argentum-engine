@@ -286,6 +286,7 @@ class AIPlayer(
                 budgetPolicy = profile.budgetPolicy,
                 intents = intents,
                 castabilityAwareCardSelection = profile.castabilityAwareCardSelection,
+                informedChoices = profile.informedChoiceDecisions,
             )
 
             // Wire up the decision resolver so simulations can resolve non-trivial
