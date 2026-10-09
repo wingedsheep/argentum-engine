@@ -2539,6 +2539,45 @@
     ]
 }
 
+// Phyrexian Vivisector
+{
+    "name": "Phyrexian Vivisector",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Phyrexian Human",
+    "oracleText": "Whenever a creature you control dies, scry 1. (Look at the top card of your library. You may put that card on the bottom.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Phyrexian Vivisector:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:you",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Scry",
+                    "count": 1
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "100",
+        "artist": "Irina Nordsol",
+        "flavorText": "Before he was the Father of Machines, Yawgmoth was a twisted Thran physician, and his legacy of medical atrocities lives on in New Phyrexia.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/5/65617a8f-4bd8-4edb-b5ec-e20b4482390b.jpg?1783921329"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Pilfer
 {
     "name": "Pilfer",
