@@ -13,6 +13,7 @@
  */
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import type React from 'react'
+import { createPortal } from 'react-dom'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import type { ThreadSummary } from '@/api/messages'
 import { LoginModal } from '@/components/auth/LoginModal'
@@ -139,6 +140,11 @@ function ThreadList({ selectedId, myId }: { selectedId: string | undefined; myId
               <>
                 <p className={m.emptyTitle}>No conversations yet</p>
                 <p className={a.muted}>Message a friend from your <Link className={a.link} to="/friends">friends list</Link> or any player’s profile.</p>
+                {requests.length > 0 && (
+                  <button type="button" className={a.link} onClick={() => setTab('requests')}>
+                    You have {requests.length} message {requests.length === 1 ? 'request' : 'requests'} →
+                  </button>
+                )}
               </>
             ) : (
               <>
@@ -558,8 +564,9 @@ function Composer({ accountId, myId, conversation: c }: { accountId: string; myI
     <div className={m.composerWrap}>
       {outgoingRequest && (
         <p className={m.requestHint}>
-          {c.messages.length === 0 ? 'This will arrive as a message request. ' : 'Sent as a message request. '}
-          You can send {left} more {left === 1 ? 'message' : 'messages'} until they accept.
+          {c.messages.length === 0
+            ? `This will arrive as a message request — you can send up to ${left} ${left === 1 ? 'message' : 'messages'} until they accept.`
+            : `Sent as a message request. You can send ${left} more until they accept.`}
         </p>
       )}
       <div className={m.composer}>
@@ -660,7 +667,8 @@ function ConfirmDialog({
   onCancel: () => void
   onConfirm: () => void
 }) {
-  return (
+  // Portalled: the glass panel's backdrop-filter would otherwise contain the fixed backdrop.
+  return createPortal(
     <AccountModal title={title} size="small" onClose={onCancel}>
       <p className={m.confirmBody}>{body}</p>
       {error && <p className={a.error}>{error}</p>}
@@ -672,6 +680,7 @@ function ConfirmDialog({
           {busy ? `${confirmLabel}…` : confirmLabel}
         </button>
       </div>
-    </AccountModal>
+    </AccountModal>,
+    document.body,
   )
 }
