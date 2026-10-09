@@ -4681,6 +4681,78 @@
     ]
 }
 
+// Valiant Veteran
+{
+    "name": "Valiant Veteran",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Kor Soldier",
+    "oracleText": "Other Soldiers you control get +1/+1.\n{3}{W}{W}, Exile this card from your graveyard: Put a +1/+1 counter on each Soldier you control.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Valiant Veteran:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{3}{W}{W}"
+                            }
+                        },
+                        "CostExileSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "permanent Soldier ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": "IterationEntity"
+                    }
+                },
+                "activateFromZone": "Graveyard"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1,
+                "filter": {
+                    "baseFilter": "permanent Soldier ctrl:you",
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "38",
+        "rarity": "RARE",
+        "artist": "Néstor Ossandón Leal",
+        "flavorText": "\"Let them come. We will show them that Argivian steel is stronger than any Phyrexian metal.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/8/18b1a4ee-437f-4a08-b176-8342d526143f.jpg?1783921357",
+        "rulings": [
+            {
+                "date": "2022-09-09",
+                "text": "Exiling Valiant Veteran from your graveyard is part of the cost to activate its last ability. This means that once it has been activated it is no longer in the graveyard, and players can't respond to it by removing it from your graveyard to prevent you from activating it."
+            }
+        ]
+    }
+}
+
 // Vanquisher's Axe
 {
     "name": "Vanquisher's Axe",
