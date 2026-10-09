@@ -166,6 +166,8 @@ class ManaStaticsIndex private constructor(
                             continue
                         }
                         if (ability !is GrantActivatedAbility) continue
+                        if (ability.recipientZone != com.wingedsheep.sdk.core.Zone.BATTLEFIELD) continue
+                        if (projected.hasLostAllAbilities(permanentId)) continue
                         if (ability.filter.scope !is Scope.Battlefield) continue
                         if (!ability.ability.isManaAbility) continue
                         val granterController = projected.getController(permanentId) ?: continue

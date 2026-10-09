@@ -3750,6 +3750,135 @@
     ]
 }
 
+// Mishra, Tamer of Mak Fawa
+{
+    "name": "Mishra, Tamer of Mak Fawa",
+    "manaCost": "{3}{B}{R}",
+    "typeLine": "Legendary Creature — Human Artificer",
+    "oracleText": "Permanents you control have \"Ward—Sacrifice a permanent.\"\nEach artifact card in your graveyard has unearth {1}{B}{R}. ({1}{B}{R}: Return the card from your graveyard to the battlefield. It gains haste. Exile it at the beginning of the next end step or if it would leave the battlefield. Unearth only as a sorcery.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantWard",
+                "cost": {
+                    "type": "WardCost.Sacrifice",
+                    "filter": "permanent"
+                },
+                "filter": {
+                    "baseFilter": "permanent ctrl:you"
+                }
+            },
+            {
+                "type": "GrantActivatedAbility",
+                "ability": {
+                    "id": "unearth_{1}{B}{R}",
+                    "cost": {
+                        "type": "CostAtomWrapper",
+                        "atom": {
+                            "type": "AtomMana",
+                            "cost": "{1}{B}{R}"
+                        }
+                    },
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "MoveToZone",
+                                "target": "Self",
+                                "destination": "Battlefield",
+                                "fromZone": "Graveyard"
+                            },
+                            {
+                                "type": "Gated",
+                                "gate": {
+                                    "type": "Gate.WhenCondition",
+                                    "condition": {
+                                        "type": "SourceInZone",
+                                        "zones": [
+                                            "Battlefield"
+                                        ]
+                                    }
+                                },
+                                "then": {
+                                    "type": "Composite",
+                                    "effects": [
+                                        {
+                                            "type": "GrantKeyword",
+                                            "keyword": "HASTE",
+                                            "target": "Self",
+                                            "duration": "Permanent"
+                                        },
+                                        {
+                                            "type": "CreateDelayedTrigger",
+                                            "step": "END",
+                                            "effect": {
+                                                "type": "MoveTrackedBattlefieldObject",
+                                                "target": "Self",
+                                                "destination": "Exile"
+                                            }
+                                        },
+                                        {
+                                            "type": "GrantExileOnLeave",
+                                            "target": "Self"
+                                        }
+                                    ]
+                                }
+                            }
+                        ]
+                    },
+                    "timing": "SorcerySpeed",
+                    "activateFromZone": "Graveyard",
+                    "descriptionOverride": "Unearth {1}{B}{R} ({1}{B}{R}: Return this card from your graveyard to the battlefield. It gains haste. Exile it at the beginning of the next end step or if it would leave the battlefield. Unearth only as a sorcery.)"
+                },
+                "filter": {
+                    "baseFilter": "artifact own:you"
+                },
+                "recipientZone": "Graveyard"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "217",
+        "rarity": "RARE",
+        "artist": "Darren Tan",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/8/585a753d-a692-474a-bc28-48dd93b73ace.jpg?1783920025",
+        "rulings": [
+            {
+                "date": "2022-10-14",
+                "text": "Despite the appearance of the reminder text, the unearth abilities that Mishra, Tamer of Mak Fawa grants are activated abilities of each individual artifact card in your graveyard. They're not activated abilities of Mishra."
+            },
+            {
+                "date": "2022-10-14",
+                "text": "If you activate a card's unearth ability but that card is removed from your graveyard before the ability resolves, that unearth ability will do nothing as it resolves."
+            },
+            {
+                "date": "2022-10-14",
+                "text": "Activating a card's unearth ability isn't the same as casting that card. The unearth ability is put on the stack, but the card is not. Spells and abilities that interact with activated abilities (such as Defabricate's second mode) will interact with unearth, but spells and abilities that interact with spells (such as Scatter Ray) will not."
+            },
+            {
+                "date": "2022-10-14",
+                "text": "At the beginning of the next end step, a permanent returned to the battlefield with unearth is exiled. This is a delayed triggered ability, and it can be countered by effects such as Defabricate that counter triggered abilities. If the ability is countered, the permanent will stay on the battlefield and the delayed triggered ability won't trigger again. However, the replacement effect will still exile the permanent if it eventually leaves the battlefield."
+            },
+            {
+                "date": "2022-10-14",
+                "text": "Unearth grants haste to the permanent that's returned to the battlefield (even if it's not a creature card). However, neither of the \"exile\" abilities is granted to that permanent. If that permanent loses all its abilities, it will still be exiled at the beginning of the next end step, and if it would leave the battlefield, it is still exiled instead."
+            },
+            {
+                "date": "2022-10-14",
+                "text": "If a permanent returned to the battlefield with unearth would leave the battlefield for any reason, it's exiled instead—unless the spell or ability that's causing the permanent to leave the battlefield is actually trying to exile it! In that case, it succeeds at exiling it. If that spell or ability later returns the card to the battlefield (as Static Net might, for example), the permanent card will return to the battlefield as a new object with no relation to its previous existence. The unearth effects will no longer apply to it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
+    ]
+}
+
 // Obliterating Bolt
 {
     "name": "Obliterating Bolt",

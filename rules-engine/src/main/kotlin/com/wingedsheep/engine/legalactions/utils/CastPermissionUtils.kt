@@ -9,6 +9,7 @@ import com.wingedsheep.engine.legality.LegalityKernel
 import com.wingedsheep.engine.mechanics.CastCharacteristics
 import com.wingedsheep.engine.handlers.effects.permanent.types.buildCardComponentForDfcFace
 import com.wingedsheep.engine.handlers.effects.permanent.types.dfcBackFaceManaValue
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.core.TypeLine
 import com.wingedsheep.sdk.model.CreatureStats
 
@@ -44,6 +45,8 @@ import com.wingedsheep.sdk.scripting.ExtraLoyaltyActivation
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.EquipAbilitiesAtInstantSpeed
 import com.wingedsheep.sdk.scripting.FreeFirstEquipEachTurn
+import com.wingedsheep.sdk.scripting.StaticAbility
+import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
 import com.wingedsheep.sdk.scripting.GrantActivatedAbility
 import com.wingedsheep.sdk.scripting.MayPlayLandsFromGraveyard
 import com.wingedsheep.engine.state.components.identity.emblemStaticAbilitiesOf
@@ -1315,6 +1318,26 @@ class CastPermissionUtils(
     }
 
     /**
+     * Cheap once-per-zone guard for the zone enumerator: an ordinary graveyard must not
+     * trigger a battlefield-wide grant lookup for every card it contains. Conditions are
+     * evaluated by the shared resolver, not by this presence check.
+     */
+    fun hasStaticActivatedAbilityGrantsInZone(state: GameState, zone: Zone): Boolean {
+        fun grantsInZone(raw: StaticAbility): Boolean {
+            val ability = (raw as? ConditionalStaticAbility)?.ability ?: raw
+            return ability is GrantActivatedAbility && ability.recipientZone == zone
+        }
+        if (state.grantedStaticAbilities.any { grantsInZone(it.ability) }) return true
+        return state.getBattlefield().any { id ->
+            val container = state.getEntity(id) ?: return@any false
+            val card = container.get<CardComponent>() ?: return@any false
+            val definition = cardRegistry.getCard(card.cardDefinitionId) ?: return@any false
+            com.wingedsheep.engine.state.components.identity.RoomFaceStatics
+                .activeStaticAbilities(container, definition).any(::grantsInZone)
+        }
+    }
+
+    /**
      * Get activated abilities granted to an entity by static abilities on battlefield permanents,
      * paired with the EntityId of the permanent that granted each ability.
      *
@@ -1366,6 +1389,7 @@ class CastPermissionUtils(
                 // AbilityId so duplicate donors don't collapse and each gets its own once-per-turn
                 // budget (see donorCardsActivatedAbilities).
                 if (ability is com.wingedsheep.sdk.scripting.HasAllActivatedAbilitiesOfCards) {
+                    if (state.logicalZone(entityId)?.zoneType != Zone.BATTLEFIELD) continue
                     val receives = donorGrantReaches(state, permanentId, entityId, ability, predicateEvaluator, projected)
                     if (receives) {
                         for (granted in donorCardsActivatedAbilities(
@@ -1389,6 +1413,8 @@ class CastPermissionUtils(
                     continue
                 }
                 if (ability !is com.wingedsheep.sdk.scripting.GrantActivatedAbility) continue
+                if (state.logicalZone(entityId)?.zoneType != ability.recipientZone) continue
+                if (projected.hasLostAllAbilities(permanentId)) continue
                 when (val scope = ability.filter.scope) {
                     is com.wingedsheep.sdk.scripting.filters.unified.Scope.Battlefield -> {
                         if (ability.filter.excludeSelf && permanentId == entityId) continue
@@ -1437,7 +1463,9 @@ class CastPermissionUtils(
 
         // GainActivatedAbilitiesOfPermanents (Sharkey, Tyrant of the Shire): permanents matching
         // [grantedTo] gain copies of the activated abilities of permanents matching [sourceFilter].
-        result.addAll(getGainedAbilitiesOfPermanents(entityId, state, projected))
+        if (state.logicalZone(entityId)?.zoneType == Zone.BATTLEFIELD) {
+            result.addAll(getGainedAbilitiesOfPermanents(entityId, state, projected))
+        }
 
         // Multiple granters can hand the same ability to a permanent — e.g., two Brightcap
         // Badgers each grant Saproling tokens "{T}: Add {G}." The cards share a CardDefinition
@@ -1471,6 +1499,7 @@ class CastPermissionUtils(
             val granter = state.getEntity(granterId) ?: continue
             if (!state.getBattlefield().contains(granterId)) continue
             if (granter.has<FaceDownComponent>()) continue
+            if (state.logicalZone(entityId)?.zoneType != grantAbility.recipientZone) continue
             when (val scope = grantAbility.filter.scope) {
                 is Scope.Battlefield -> {
                     if (grantAbility.filter.excludeSelf && granterId == entityId) continue

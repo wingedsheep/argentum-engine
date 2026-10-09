@@ -1,5 +1,6 @@
 package com.wingedsheep.sdk.scripting
 
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.text.TextReplacer
 import kotlinx.serialization.SerialName
@@ -34,7 +35,7 @@ data class GrantTriggeredAbility(
 }
 
 /**
- * Grants an activated ability to a filtered set of permanents.
+ * Grants an activated ability to a filtered set of objects in [recipientZone].
  *
  * Use [GroupFilter.attachedCreature] for "enchanted/equipped creature has ..." auras
  * and equipment, [GroupFilter.source] for "this creature has ..." abilities, or any
@@ -43,14 +44,21 @@ data class GrantTriggeredAbility(
  * `LegalActionsCalculator` and `ActivateAbilityHandler` consult this static ability
  * when computing legal activated abilities for each permanent.
  *
+ * The source functions on the battlefield; [recipientZone] selects where the recipients
+ * must be. For a zone-wide group, use the default group scope with an owner filter outside
+ * the battlefield (cards there have owners, not controllers). The ability's own
+ * `activateFromZone` independently determines where it may be activated.
+ *
  * @property ability The activated ability to grant.
- * @property filter The permanents that gain the ability.
+ * @property filter The objects that gain the ability, relative to the granting permanent.
+ * @property recipientZone The zone the recipients must occupy; defaults to battlefield.
  */
 @SerialName("GrantActivatedAbility")
 @Serializable
 data class GrantActivatedAbility(
     val ability: ActivatedAbility,
-    val filter: GroupFilter = GroupFilter.attachedCreature()
+    val filter: GroupFilter = GroupFilter.attachedCreature(),
+    val recipientZone: Zone = Zone.BATTLEFIELD
 ) : StaticAbility {
     override val description: String = "${filter.description} have ${ability.description}"
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {

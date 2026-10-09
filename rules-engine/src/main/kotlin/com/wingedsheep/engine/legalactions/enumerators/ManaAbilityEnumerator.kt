@@ -98,10 +98,10 @@ class ManaAbilityEnumerator(
             val grantedManaAbilities = state.grantedActivatedAbilities
                 .filter { it.entityId == entityId }
                 .map { it.ability }
-                .filter { it.isManaAbility }
+                .filter { it.isManaAbility && it.activateFromZone == Zone.BATTLEFIELD }
             val staticManaAbilities = context.castPermissionUtils
                 .getStaticGrantedActivatedAbilities(entityId, state)
-                .filter { it.isManaAbility }
+                .filter { it.isManaAbility && it.activateFromZone == Zone.BATTLEFIELD }
 
             // Intrinsic mana abilities from projected basic-land subtypes (CR 305.7).
             // When present, they replace the card definition's own mana abilities so
@@ -132,7 +132,7 @@ class ManaAbilityEnumerator(
                 entityLostAllAbilities -> emptyList()
                 intrinsicManaAbilities.isNotEmpty() -> intrinsicManaAbilities
                 cardDef == null -> emptyList()
-                else -> cardDef.script.effectiveActivatedAbilities(classLevel).filter { it.isManaAbility }
+                else -> cardDef.script.effectiveActivatedAbilities(classLevel).filter { it.isManaAbility && it.activateFromZone == Zone.BATTLEFIELD }
             }
             val manaAbilities = (ownManaAbilities + grantedManaAbilities + staticManaAbilities).let { all ->
                 if (entityId in borrowed) all.filter(BorrowedManaAbilities::isTapManaAbility) else all
