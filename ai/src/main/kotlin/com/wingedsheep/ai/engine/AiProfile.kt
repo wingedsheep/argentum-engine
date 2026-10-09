@@ -1166,12 +1166,30 @@ data class AiProfile(
         )
 
         /**
-         * [PRODUCTION_CANDIDATE_EXPIRING] — what [EngineAiPlayerController] points at — plus
+         * [PRODUCTION_CANDIDATE_EXPIRING] — the candidate [LIVE] starts from — plus
          * [castabilityAwareCardSelection]. The promotion gate is `just arena
          * production-candidate-expiring production-candidate-cardselect 300`.
          */
         val PRODUCTION_CANDIDATE_CARDSELECT = PRODUCTION_CANDIDATE_EXPIRING.copy(
             id = "production-candidate-cardselect",
+            castabilityAwareCardSelection = true,
+        )
+
+        /**
+         * **What real players face.** [EngineAiPlayerController] builds this and nothing else.
+         *
+         * A named, stable home for the live configuration so a fix can ship by turning its flag on
+         * *here*, in the same PR that adds it, instead of every promotion re-pointing the
+         * controller at a fresh `production-candidate-*` id (which serialises parallel work behind
+         * one line). The superseded candidates stay put as the baselines they were measured
+         * against; `just arena production-candidate-expiring live 300` prices everything stacked
+         * on top of the last pinned candidate.
+         *
+         * Add one line per shipped flag, with the arena interval that justified it in the KDoc of
+         * the flag itself.
+         */
+        val LIVE = PRODUCTION_CANDIDATE_EXPIRING.copy(
+            id = "live",
             castabilityAwareCardSelection = true,
         )
 
