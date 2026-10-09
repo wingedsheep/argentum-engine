@@ -285,6 +285,11 @@ class LegacySuspensionMigrationTest : ScenarioTestBase() {
             // The graveyard turn history (Crawling Sensation) postdates the capture.
             "com.wingedsheep.engine.state.components.player.CardsPutIntoGraveyardThisTurnComponent").mapValues { (key, child) ->
             when {
+                // Departure object references postdate these historical traces. EnlistTest
+                // checks that the captured reference preserves the old object's power across a blink.
+                key == "snapshot" && value["type"] == JsonPrimitive(
+                    "com.wingedsheep.engine.state.components.battlefield.LastKnownPermanentComponent"
+                ) -> normalizeRouting(JsonObject(child.jsonObject - "objectRef"))
                 root && key == "nextRoutingId" -> JsonPrimitive(0)
                 key == "question" && "answer" in value -> {
                     val question = child.jsonObject

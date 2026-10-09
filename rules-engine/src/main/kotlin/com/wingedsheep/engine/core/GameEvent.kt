@@ -2453,3 +2453,19 @@ data class ResolutionControlEvent(
     @Serializable
     enum class Stage { GRANTED, STARTED, ENDED }
 }
+
+/** One enlist attack cost was paid by tapping [enlistedId]. */
+@Serializable
+@SerialName("EnlistedEvent")
+data class EnlistedEvent(
+    val attackerId: EntityId,
+    val attackerName: String,
+    val enlistedId: EntityId,
+    val enlistedName: String,
+    val controllerId: EntityId,
+) : GameEvent
+
+/** The optional attack payment was declined; declaration taps and their queued triggers were rolled back. */
+@Serializable
+@SerialName("AttackDeclarationCancelledEvent")
+data class AttackDeclarationCancelledEvent(val playerId: EntityId) : GameEvent

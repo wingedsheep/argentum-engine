@@ -477,6 +477,13 @@ class ObjectTriggerSubject internal constructor(
         return spec(ChampionedEvent)
     }
 
+    /** "Whenever this creature enlists a creature." */
+    fun enlists(): TriggerSpec {
+        unfiltered("enlists")
+        only("enlists", TriggerBinding.SELF)
+        return spec(EnlistedEvent)
+    }
+
     /**
      * "When you do" after "you may exert this creature as it attacks" (CR 701.43d) — pair with the
      * [com.wingedsheep.sdk.scripting.ExertAsItAttacks] static it is linked to (CR 607.2h).

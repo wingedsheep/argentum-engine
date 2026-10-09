@@ -168,30 +168,105 @@ internal class AttackPhaseManager(
             return ExecutionResult.error(state, attackYouValidation)
         }
 
+        // Declaration taps precede optional attack costs. Keep an immutable checkpoint so a
+        // cancelled attack-tax question can roll back the declaration without leaving tap triggers.
+        var tappedState = state
+        val events = mutableListOf<GameEvent>()
+        for (attacker in attackers.keys) {
+            if (!projected.hasKeyword(attacker, Keyword.VIGILANCE)) {
+                val (next, tapped) = tap(tappedState, attacker)
+                tappedState = next
+                events.addAll(tapped)
+            }
+        }
+        val enlistInstances = EnlistAttackCosts.instances(tappedState, attackers.keys)
+        // Only a cancellable tax window needs rollback state or a routing handle.
+        val rollback = if (calculateTotalAttackTax(tappedState, attackers, tappedState.projectedState) > 0) {
+            val (declarationId, allocated) = tappedState.newRoutingId()
+            tappedState = allocated
+            AttackDeclarationCheckpoint.capture(declarationId, state, tappedState, attackers.keys, events)
+        } else null
+        return chooseEnlist(tappedState, attackingPlayer, attackers, enlistInstances, emptyList(), bands, rollback, events)
+    }
+
+    internal fun chooseEnlist(
+        state: GameState,
+        attackingPlayer: EntityId,
+        attackers: Map<EntityId, EntityId>,
+        remaining: List<EntityId>,
+        chosen: List<EnlistPayment>,
+        bands: List<Set<EntityId>>,
+        rollback: AttackDeclarationCheckpoint? = null,
+        carryEvents: List<GameEvent> = emptyList(),
+    ): ExecutionResult {
+        for ((index, attacker) in remaining.withIndex()) {
+            val options = EnlistAttackCosts.eligible(state, attacker, attackers.keys, chosen)
+            if (options.isEmpty()) continue
+            val controller = state.projectedState.getController(attacker) ?: attackingPlayer
+            val name = com.wingedsheep.engine.state.nameVisibleToAll(state, attacker, state.getEntity(attacker)?.get<CardComponent>()?.name ?: "Creature")
+            return state.suspendForDecision(
+                question = { id -> SelectCardsDecision(
+                    id = id, playerId = controller,
+                    prompt = "Enlist with $name: choose a creature to tap, or choose none",
+                    context = DecisionContext(sourceId = attacker, sourceName = name, phase = DecisionPhase.COMBAT),
+                    options = options, minSelections = 0, maxSelections = 1, useTargetingUI = true,
+                ) },
+                answer = AttackEnlistSelectionContinuation(attackingPlayer, attackers, remaining.drop(index), chosen, rollback, bands),
+                events = carryEvents,
+            )
+        }
+        return beginAttackPayments(state, attackingPlayer, attackers, chosen, bands, rollback, carryEvents)
+    }
+
+    private fun beginAttackPayments(
+        state: GameState,
+        attackingPlayer: EntityId,
+        attackers: Map<EntityId, EntityId>,
+        enlistments: List<EnlistPayment>,
+        bands: List<Set<EntityId>>,
+        rollback: AttackDeclarationCheckpoint? = null,
+        carryEvents: List<GameEvent> = emptyList(),
+    ): ExecutionResult {
+        val projected = state.projectedState
         // Calculate (but don't pay) the attack tax. If non-zero, pause for the attacking
         // player to confirm before we tap any of their mana — otherwise auto-tapping the
         // pool would steal sources they were saving for instants/post-combat plays.
         val totalTax = calculateTotalAttackTax(state, attackers, projected)
         if (totalTax > 0) {
-            return pauseForAttackTaxConfirmation(state, attackingPlayer, attackers, totalTax, bands)
+            return pauseForAttackTaxConfirmation(state, attackingPlayer, attackers, totalTax, bands, enlistments, rollback, carryEvents)
         }
 
+        return payEnlistAndContinue(state, attackingPlayer, attackers, enlistments, bands, carryEvents)
+    }
+
+    internal fun payEnlistAndContinue(
+        state: GameState,
+        attackingPlayer: EntityId,
+        attackers: Map<EntityId, EntityId>,
+        enlistments: List<EnlistPayment>,
+        bands: List<Set<EntityId>>,
+        taxEvents: List<GameEvent>,
+    ): ExecutionResult {
+        val paid = EnlistAttackCosts.pay(state, enlistments)
+        if (paid.error != null) return paid
+        val paidState = paid.state
+        val paidEvents = taxEvents + paid.events
         // Non-mana attack costs: "can't attack unless you sacrifice two Islands" (Leviathan). The
         // clause is a *restriction* checked at CR 508.1c, and the cost it names is determined and
         // paid at CR 508.1h–j — not an optional "as it attacks" cost (CR 508.1g), which the player
         // may always decline. Affordability was already enforced by CantAttackUnlessSacrificeRule,
         // so reaching here means the cost *can* be paid; what remains is choosing what to sacrifice.
-        val sacrificeCosts = AttackSacrificeCosts.requirementsFor(state, attackers.keys, cardRegistry)
+        val sacrificeCosts = AttackSacrificeCosts.requirementsFor(paidState, attackers.keys, cardRegistry)
         if (sacrificeCosts.isNotEmpty()) {
-            return pauseForAttackSacrifice(state, attackingPlayer, attackers, sacrificeCosts, bands)
+            return pauseForAttackSacrifice(paidState, attackingPlayer, attackers, sacrificeCosts, bands, paidEvents)
         }
 
-        return commitAttackDeclaration(state, attackingPlayer, attackers, projected, taxEvents = emptyList(), bands = bands)
+        return commitAttackDeclaration(paidState, attackingPlayer, attackers, paidState.projectedState, taxEvents = paidEvents, bands = bands)
     }
 
     /**
      * Apply the post-tax commitment for a declared attack: stamp [AttackingComponent],
-     * tap attackers (unless vigilance), mark tracking components, and emit the
+     * mark tracking components, and emit the
      * [AttackersDeclaredEvent]. Callable both from the synchronous (no-tax) path in
      * [declareAttackers] and from [com.wingedsheep.engine.handlers.continuations.CombatTaxContinuationResumer]
      * after the player confirms and the tax is paid.
@@ -285,21 +360,12 @@ internal class AttackPhaseManager(
             }
         }
 
-        val tapEvents = mutableListOf<GameEvent>()
         for ((attackerId, defenderId) in attackers) {
-            val hasVigilance = projected.hasKeyword(attackerId, Keyword.VIGILANCE)
             newState = newState.updateEntity(attackerId) { container ->
                 container.with(AttackingComponent(defenderId, bandIdByAttacker[attackerId], defendingPlayerId = CombatDefenders.defendingPlayerOf(newState, defenderId)))
                     .with(AttackedThisCombatComponent)
             }
             newState = AttackedPermanents.markAttacked(newState, defenderId)
-            // Non-vigilance attackers tap as a turn-based action; route through the tap atom so the
-            // TappedEvent fires "becomes tapped" triggers (it was open-coded and once dropped here).
-            if (!hasVigilance) {
-                val (tappedState, event) = tap(newState, attackerId)
-                newState = tappedState
-                tapEvents.addAll(event)
-            }
         }
 
         // Resolve each attacker's defending player (CR 508.5/508.6): the defender entity is
@@ -366,7 +432,7 @@ internal class AttackPhaseManager(
         val attackerNames = attackers.keys.map { state.getEntity(it)?.get<CardComponent>()?.name ?: "Creature" }
         return ExecutionResult.success(
             newState,
-            taxEvents + exertEvents + tapEvents + listOf(
+            taxEvents + exertEvents + listOf(
                 AttackersDeclaredEvent(
                     attackers.keys.toList(),
                     attackerNames,
@@ -385,12 +451,16 @@ internal class AttackPhaseManager(
         attackers: Map<EntityId, EntityId>,
         totalTax: Int,
         bands: List<Set<EntityId>> = emptyList(),
+        enlistments: List<EnlistPayment> = emptyList(),
+        rollback: AttackDeclarationCheckpoint? = null,
+        carryEvents: List<GameEvent> = emptyList(),
     ): ExecutionResult {
         val manaCost = com.wingedsheep.sdk.core.ManaCost(
             List(totalTax) { com.wingedsheep.sdk.core.ManaSymbol.generic(1) }
         )
         val manaSolver = com.wingedsheep.engine.mechanics.mana.ManaSolver(cardRegistry, predicateEvaluator)
-        val sources = manaSolver.findAvailableManaSources(state, attackingPlayer)
+        val reserved = enlistments.mapTo(mutableSetOf()) { it.enlistedId }
+        val sources = manaSolver.findAvailableManaSources(state, attackingPlayer).filter { it.entityId !in reserved }
         val sourceOptions = sources.map { source ->
             com.wingedsheep.engine.core.ManaSourceOption(
                 entityId = source.entityId,
@@ -402,7 +472,7 @@ internal class AttackPhaseManager(
                 requiresTappingAnotherPermanent = source.tapPermanentsSubCost != null,
             )
         }
-        val solution = manaSolver.solve(state, attackingPlayer, manaCost)
+        val solution = manaSolver.solve(state, attackingPlayer, manaCost, excludeSources = reserved)
         val autoPaySuggestion = solution?.sources?.map { it.entityId } ?: emptyList()
 
         val attackerNames = attackers.keys.mapNotNull { state.getEntity(it)?.get<CardComponent>()?.name }
@@ -417,6 +487,8 @@ internal class AttackPhaseManager(
             manaCost = manaCost,
             availableSources = sourceOptions,
             autoPaySuggestion = autoPaySuggestion,
+            enlistments = enlistments,
+            rollback = rollback,
             bands = bands,
         )
         return state.suspendForDecision(
@@ -436,7 +508,8 @@ internal class AttackPhaseManager(
                     canDecline = true,
                 )
             },
-            answer = continuation
+            answer = continuation,
+            events = carryEvents,
         )
     }
 
@@ -453,6 +526,7 @@ internal class AttackPhaseManager(
         attackers: Map<EntityId, EntityId>,
         costs: List<Pair<EntityId, com.wingedsheep.sdk.scripting.CantAttackUnlessSacrifice>>,
         bands: List<Set<EntityId>>,
+        carryEvents: List<GameEvent>,
     ): ExecutionResult {
         val (payingAttacker, requirement) = costs.first()
         val eligible = AttackSacrificeCosts.eligiblePermanents(
@@ -486,7 +560,8 @@ internal class AttackPhaseManager(
                     maxSelections = requirement.count,
                 )
             },
-            answer = continuation
+            answer = continuation,
+            events = carryEvents,
         )
     }
 

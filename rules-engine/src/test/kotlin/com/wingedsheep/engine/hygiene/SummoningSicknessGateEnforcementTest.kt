@@ -28,12 +28,12 @@ import java.io.File
  * an escape hatch.
  *
  * **Known limit, stated plainly:** the allowlist is per *file*, not per line, so a new open-coded
- * tap gate added inside **any** of the seven [ALLOWED_FILES] would not be caught — the biggest
+ * tap gate added inside **any** of the eight [ALLOWED_FILES] would not be caught — the biggest
  * (`ManaSolver.kt`) as much as `LegalityKernel.kt` and `SacrificeAndPayContinuationResumer.kt`. Every *other* file in
  * `rules-engine/src/main/kotlin` is covered. The scan also does not cover `ai/`, `game-server/`,
  * `gym/` or `mtg-sets/` at all; the reads there are attack-evaluation heuristics and scenario setup.
  * A per-line allowlist (file → a regex the permitted line must match, e.g.
- * `ControlledSinceYourMostRecentTurn` / `canAttack`) would close most of the seven without new
+ * `ControlledSinceYourMostRecentTurn` / `canAttack`) would close most of the eight without new
  * machinery, and is the obvious next step if this ever catches nothing while a bypass ships.
  */
 class SummoningSicknessGateEnforcementTest : FunSpec({
@@ -71,6 +71,9 @@ class SummoningSicknessGateEnforcementTest : FunSpec({
             // The *attack* half of CR 302.6 (CR 702.10b). Reads plain haste on purpose — an
             // "activate as though hasty" grant must never make a creature able to attack.
             "com/wingedsheep/engine/mechanics/combat/rules/AttackRestrictionRules.kt",
+            // Enlist expressly requires continuous control or actual haste. It is not a {T}/{Q}
+            // activation cost; the as-though-hasty activation permission must not qualify a helper.
+            "com/wingedsheep/engine/mechanics/combat/EnlistAttackCosts.kt",
             // A non-gate read: ManaSource.canAttack, an auto-tap preference that models attacking,
             // so plain haste is correct. See the class KDoc's "known limit".
             "com/wingedsheep/engine/mechanics/mana/ManaSolver.kt",

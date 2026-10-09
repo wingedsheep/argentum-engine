@@ -59,7 +59,9 @@ data class PendingTrigger(
      */
     val opponentTargetChooserId: EntityId? = null,
     /** Frozen before stack-placement rewrites such as unwrapping a consent gate. */
-    val rulesText: TriggeredAbility = ability
+    val rulesText: TriggeredAbility = ability,
+    /** Provisional declaration taps; removed if their attack-tax payment is cancelled. */
+    val attackDeclarationId: String? = null
 )
 
 /**

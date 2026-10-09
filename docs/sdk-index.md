@@ -1146,6 +1146,7 @@ Families:
 - `EventPattern.DoorUnlockedEvent(player: Player)` — A door of a Room becomes unlocked (CR 709.5h).
 - `EventPattern.DrawCardsEvent(player: Player, amount: Int)` — When a player would draw one or more cards.
 - `EventPattern.DrawEvent(player: Player, exceptFirstInDrawStep: Boolean)` — When a player draws a card.
+- `EventPattern.EnlistedEvent` — This creature enlists another creature.
 - `EventPattern.EvidenceCollectedEvent(player: Player)` — Whenever player collects evidence (CR 701.59).
 - `EventPattern.ExertedAsItAttacksEvent` — "When you do" after "you may exert this creature as it attacks" (CR 701.43d) — the triggered ability linked to com.wingedsheep.sdk.scripting.ExertAsItAttacks (CR 607.2h).
 - `EventPattern.ExpendEvent(threshold: Int, player: Player)` — When you expend N — i.e., you spend your Nth total mana to cast spells during a turn.
@@ -1710,6 +1711,7 @@ Families:
 - `DamagePersistsThroughCleanup` — Marked damage isn't removed from this permanent during cleanup steps — an exception to the CR 514.2 turn-based action that normally removes all marked damage.
 - `DampLandManaProduction` — Replaces land mana production when a land would produce two or more mana.
 - `DivideCombatDamageFreely(filter: GroupFilter)` — This creature's combat damage may be divided as its controller chooses among the defending player and/or any number of creatures they control.
+- `Enlist` — Enlist (CR 702.154): each instance offers its own optional attack-declaration tap cost and creates its own linked power-boost trigger.
 - `EquipAbilitiesAtInstantSpeed` — The controller may activate equip abilities any time they could cast an instant (instant-speed equip).
 - `EquipmentAttachRestriction(filter: GameObjectFilter)` — "This Equipment can be attached only to filter." — a printed restriction on what the Equipment carrying it may equip (Konda's Banner: "can be attached only to a legendary creature"; Gate Smasher, O…
 - `ExertAsItAttacks` — "You may exert this creature as it attacks." (CR 701.43d) — an *optional* cost to attack (CR 508.1g): as attackers are declared, the controller chooses whether to exert each declared attacker carry…

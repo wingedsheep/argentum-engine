@@ -646,6 +646,10 @@ class StaticAbilityHandler(
      */
     private fun convertStaticAbility(ability: StaticAbility): ContinuousEffectData? {
         return when (ability) {
+            is com.wingedsheep.sdk.scripting.Enlist -> ContinuousEffectData(
+                modification = Modification.GrantStaticAbility(ability),
+                affectsFilter = AffectsFilter.Self,
+            )
             is com.wingedsheep.sdk.scripting.CanAttackAsThoughHasty -> {
                 ContinuousEffectData(
                     modification = Modification.CanAttackAsThoughHasty,

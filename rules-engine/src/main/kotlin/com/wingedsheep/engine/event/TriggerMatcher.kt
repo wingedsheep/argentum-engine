@@ -432,6 +432,8 @@ class TriggerMatcher(
                 // here keeps the regular loop from double-firing or mis-binding them.
                 false
             }
+            is EventPattern.EnlistedEvent ->
+                event is com.wingedsheep.engine.core.EnlistedEvent && event.attackerId == sourceId
             is EventPattern.ExertedAsItAttacksEvent -> {
                 // The "when you do" linked to ExertAsItAttacks (CR 607.2h): only this creature's own
                 // exert, and only one chosen as an optional attack cost — not a Costs.Exert payment.
