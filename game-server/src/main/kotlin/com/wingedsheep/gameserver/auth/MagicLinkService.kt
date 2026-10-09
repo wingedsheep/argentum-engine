@@ -106,6 +106,15 @@ class MagicLinkService(
         return users.save(user.copy(learnProgress = progressJson))
     }
 
+    /**
+     * Store the account's player preferences — the client's JSON, kept verbatim. Returns null if the
+     * account no longer exists. Caller validates the body (well-formed JSON, size cap).
+     */
+    fun updatePreferences(userId: UUID, preferencesJson: String): UserRow? {
+        val user = users.findById(userId).orElse(null) ?: return null
+        return users.save(user.copy(preferences = preferencesJson))
+    }
+
     private fun sha256Hex(value: String): String =
         MessageDigest.getInstance("SHA-256")
             .digest(value.toByteArray(Charsets.UTF_8))

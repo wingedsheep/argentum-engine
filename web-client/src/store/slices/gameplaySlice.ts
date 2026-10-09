@@ -26,6 +26,7 @@ import {
 import type { Step, PriorityModeValue, YieldKind } from '@/types'
 import { trackEvent } from '@/utils/analytics.ts'
 import { getWebSocket } from './shared'
+import { getPreferences, usePreferences } from '@/store/preferencesStore'
 
 /** How long an error toast stays up before auto-dismissing. */
 const ERROR_AUTO_DISMISS_MS = 5000
@@ -130,7 +131,7 @@ export const createGameplaySlice: SliceCreator<GameplaySlice> = (set, get) => ({
   opponentName: null,
   undoAvailable: false,
   opponentDisconnectCountdown: null,
-  autoTapEnabled: localStorage.getItem('argentum-auto-tap') !== 'false',
+  autoTapEnabled: getPreferences().gameplay.autoTap,
   spectatorCount: 0,
   spectatorNames: [],
 
@@ -527,7 +528,7 @@ export const createGameplaySlice: SliceCreator<GameplaySlice> = (set, get) => ({
     const { autoTapEnabled } = get()
     const newValue = !autoTapEnabled
     set({ autoTapEnabled: newValue })
-    localStorage.setItem('argentum-auto-tap', String(newValue))
+    usePreferences.getState().update('gameplay', { autoTap: newValue })
   },
 
   cancelGame: () => {
@@ -560,8 +561,11 @@ export const createGameplaySlice: SliceCreator<GameplaySlice> = (set, get) => ({
     const newOverrides = { ...stopOverrides, [key]: newStops }
     set({ stopOverrides: newOverrides })
     getWebSocket()?.send(createSetStopOverridesMessage(newOverrides.myTurnStops, newOverrides.opponentTurnStops))
-    // Persist to localStorage
-    localStorage.setItem('argentum-stop-overrides', JSON.stringify(newOverrides))
+    // Remember them: the next game starts with the same stops (see onGameStarted).
+    usePreferences.getState().update('gameplay', {
+      myTurnStops: newOverrides.myTurnStops,
+      opponentTurnStops: newOverrides.opponentTurnStops,
+    })
   },
 
   // Persistent per-ability yields (MTGO right-click yields — backlog §C). The server owns the

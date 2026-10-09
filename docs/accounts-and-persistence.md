@@ -92,7 +92,7 @@ Flyway migration `V1__init.sql`:
 
 | Table | Purpose |
 |-------|---------|
-| `users` | account: email (unique), display name, created_at, `is_admin` (added in `V3__admin_role.sql`), `learn_progress` — the Learn to Play course document as the client's own JSON, opaque to the server (`V13__learn_progress.sql`) |
+| `users` | account: email (unique), display name, created_at, `is_admin` (added in `V3__admin_role.sql`), `learn_progress` — the Learn to Play course document as the client's own JSON, opaque to the server (`V13__learn_progress.sql`), `preferences` — the player's preferences document (auto-pass stops, starting priority mode, battlefield stacking, motion), likewise opaque; read/written at `GET`/`PUT /api/auth/me/preferences`, reconciled with the browser's copy by newest `updatedAt` (`V16__user_preferences.sql`) |
 | `login_tokens` | single-use magic-link tokens (SHA-256 hashed, short TTL) |
 | `decks` | saved decks: denormalized name/format + full `SharedDeck` JSON in `data` |
 | `match_results` | one row per finished game |

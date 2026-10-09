@@ -172,3 +172,49 @@ describe('computeCardGroupKey', () => {
     )
   })
 })
+
+describe('groupCards — stacking preferences', () => {
+  const horde = (n: number) => Array.from({ length: n }, (_, i) => token({ id: `e${i}` }))
+  const sizes = (groups: ReturnType<typeof groupCards>) => groups.map((g) => g.count)
+
+  it('without a rule, two identical permanents already stack', () => {
+    expect(sizes(groupCards(horde(2)))).toEqual([2])
+  })
+
+  it('keeps identical permanents side by side below the group-from threshold', () => {
+    expect(sizes(groupCards(horde(3), undefined, { groupFrom: 4, stackSize: 0 }))).toEqual([1, 1, 1])
+    expect(sizes(groupCards(horde(4), undefined, { groupFrom: 4, stackSize: 0 }))).toEqual([4])
+  })
+
+  it('never stacks when group-from is 0', () => {
+    const groups = groupCards(horde(5), undefined, { groupFrom: 0, stackSize: 0 })
+    expect(sizes(groups)).toEqual([1, 1, 1, 1, 1])
+    // Order is preserved — each singleton is its own card.
+    expect(groups.map((g) => g.card.id)).toEqual(['e0', 'e1', 'e2', 'e3', 'e4'].map(entityId))
+  })
+
+  it('splits a large group into stacks of at most stack-size', () => {
+    const groups = groupCards(horde(7), undefined, { groupFrom: 2, stackSize: 3 })
+    expect(sizes(groups)).toEqual([3, 3, 1])
+    // Every member still lands in exactly one stack, so actions reach all of them.
+    expect(groups.flatMap((g) => g.cardIds)).toHaveLength(7)
+  })
+
+  it('a stack-size of 0 means no limit', () => {
+    expect(sizes(groupCards(horde(12), undefined, { groupFrom: 2, stackSize: 0 }))).toEqual([12])
+  })
+
+  it('only identical permanents are affected — a different card stays its own group', () => {
+    const cards = [...horde(3), token({ id: 'x', isTapped: true })]
+    expect(sizes(groupCards(cards, undefined, { groupFrom: 3, stackSize: 0 }))).toEqual([3, 1])
+  })
+})
+
+describe('visibleStackDepth — layers preference', () => {
+  it('caps at the given layer count, defaulting to MAX_VISUAL_STACK_DEPTH', () => {
+    expect(visibleStackDepth(10)).toBe(MAX_VISUAL_STACK_DEPTH)
+    expect(visibleStackDepth(10, 2)).toBe(2)
+    expect(visibleStackDepth(3, 6)).toBe(3)
+    expect(visibleStackDepth(5, 0)).toBe(1)
+  })
+})

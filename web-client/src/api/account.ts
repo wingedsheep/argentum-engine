@@ -153,6 +153,27 @@ export async function saveLearnProgress(progress: unknown): Promise<void> {
   if (!res.ok) throw new Error(`Failed to save course progress (${res.status})`)
 }
 
+/**
+ * Player preferences on the account — the client's own document, stored verbatim by the server.
+ * `{}` when none were saved there yet. See `store/preferencesStore.ts` for the sync.
+ */
+export async function fetchPreferences(): Promise<unknown> {
+  const res = await fetch('/api/auth/me/preferences', { headers: authHeaders() })
+  if (res.status === 401) throw new UnauthorizedError()
+  if (!res.ok) throw new Error(`Failed to load preferences (${res.status})`)
+  return res.json()
+}
+
+export async function savePreferences(preferences: unknown): Promise<void> {
+  const res = await fetch('/api/auth/me/preferences', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...authHeaders() },
+    body: JSON.stringify(preferences),
+  })
+  if (res.status === 401) throw new UnauthorizedError()
+  if (!res.ok) throw new Error(`Failed to save preferences (${res.status})`)
+}
+
 export interface DeckSummary {
   readonly id: number
   readonly name: string

@@ -34,7 +34,7 @@ import { useBoardGroups } from './board/useBoardGroups'
 import { usePooledBattlefieldLayout } from './board/usePooledBattlefieldLayout'
 import { CardPreview } from './card'
 import { EmotePicker } from '../tableTalk/EmotePicker'
-import { TargetingOverlay, ManaColorSelectionOverlay, LifeDisplay, ActiveEffectsBadges, SpeedGauge, DayNightBadge, ConcedeButton, FullscreenButton, SpectatorCountBadge, TeamLifeBanner, EliminationNotice } from './overlay'
+import { TargetingOverlay, ManaColorSelectionOverlay, LifeDisplay, ActiveEffectsBadges, SpeedGauge, DayNightBadge, ConcedeButton, FullscreenButton, GamePreferencesButton, SpectatorCountBadge, TeamLifeBanner, EliminationNotice } from './overlay'
 import { HelpDrawer, HelpDrawerButton } from '../help/HelpDrawer'
 import { markLearnSignal } from '@/learn/signals'
 import { styles } from './board/styles'
@@ -881,6 +881,8 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
     }}>
       {/* Fullscreen button (top-left) */}
       <FullscreenButton />
+      {/* Preferences gear (top-left, next to fullscreen) — stacking, stops, motion mid-game */}
+      <GamePreferencesButton />
 
       {/* Spectator-count indicator (top-left, next to fullscreen) - only for players */}
       {!spectatorMode && <SpectatorCountBadge />}

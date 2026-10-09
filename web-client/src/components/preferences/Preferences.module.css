@@ -1,0 +1,305 @@
+/*
+ * The preferences editor (PreferencesPanel). Sits on a page-shell panel on /preferences and inside
+ * the in-game settings dialog, so it draws no outer chrome of its own — only its sections.
+ */
+
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  color: #eef0f6;
+}
+
+.section {
+  padding: 18px 20px;
+  border-radius: 14px;
+  background: rgba(14, 16, 26, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.root[data-compact='true'] .section {
+  padding: 14px 14px;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.sectionHead { margin-bottom: 10px; }
+
+.sectionTitle {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #f2b45c;
+}
+
+.sectionLede {
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: #9aa3b8;
+  line-height: 1.45;
+}
+
+.field {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.fieldText {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.label { font-size: 14px; font-weight: 600; }
+
+.hint {
+  font-size: 12.5px;
+  color: #9aa3b8;
+  line-height: 1.4;
+}
+
+.note {
+  margin: -4px 0 4px;
+  font-size: 12px;
+  color: #7f879a;
+}
+
+.control { flex: none; }
+
+/* ── Segmented control ── */
+
+.segmented {
+  display: inline-flex;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 10px;
+  background: rgba(8, 9, 15, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.segment {
+  min-height: 30px;
+  padding: 0 12px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: #b4bccd;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.segment:hover { color: #fff; }
+.segment[data-active='true'] { background: rgba(242, 180, 92, 0.18); color: #f7c67f; font-weight: 600; }
+.segment:focus-visible, .switch:focus-visible, .select:focus-visible, .check:focus-visible, .linkButton:focus-visible, .resetButton:focus-visible {
+  outline: 2px solid var(--color-focus-ring, #f2b45c);
+  outline-offset: 2px;
+}
+
+/* ── Switch ── */
+
+.switch {
+  position: relative;
+  width: 42px;
+  height: 24px;
+  padding: 0;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.1);
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.switch[data-on='true'] { background: #f2b45c; border-color: transparent; }
+
+.switchKnob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+  transition: transform 0.15s ease;
+}
+
+.switch[data-on='true'] .switchKnob { transform: translateX(18px); }
+
+/* ── Stop grid ── */
+
+.stopGrid {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  margin-bottom: 6px;
+}
+
+.stopGrid th, .stopGrid td {
+  padding: 5px 8px;
+  text-align: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.stopGrid thead th {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #7f879a;
+}
+
+.stopGrid tbody th {
+  text-align: left;
+  font-weight: 500;
+  color: #d5dae6;
+}
+
+.stopGrid tbody tr:hover { background: rgba(255, 255, 255, 0.03); }
+
+.check {
+  width: 16px;
+  height: 16px;
+  accent-color: #f2b45c;
+  cursor: pointer;
+}
+
+.check:disabled { cursor: not-allowed; opacity: 0.55; }
+
+.linkButton {
+  padding: 0;
+  margin-bottom: 4px;
+  border: none;
+  background: none;
+  color: #f2b45c;
+  font: inherit;
+  font-size: 12.5px;
+  cursor: pointer;
+}
+
+.linkButton:hover { text-decoration: underline; }
+
+/* ── Stacking ── */
+
+.stackRows { display: flex; flex-direction: column; }
+
+.stackRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto 140px;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.selectLabel {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 11px;
+  color: #7f879a;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.select {
+  min-height: 32px;
+  padding: 0 8px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(8, 9, 15, 0.8);
+  color: #eef0f6;
+  font: inherit;
+  font-size: 13px;
+  text-transform: none;
+  letter-spacing: normal;
+  cursor: pointer;
+}
+
+.select:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.preview {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 4px;
+  min-height: 24px;
+}
+
+.previewStack {
+  position: relative;
+  height: 20px;
+  flex: none;
+}
+
+.previewCard {
+  position: absolute;
+  top: 0;
+  width: 14px;
+  height: 20px;
+  border-radius: 2px;
+  background: linear-gradient(160deg, #3a4560, #232a3d);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.previewCount {
+  position: absolute;
+  right: -5px;
+  bottom: -5px;
+  min-width: 13px;
+  height: 13px;
+  padding: 0 2px;
+  border-radius: 7px;
+  background: #f2b45c;
+  color: #1d1405;
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 13px;
+  text-align: center;
+}
+
+/* ── Footer ── */
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.resetButton {
+  min-height: 34px;
+  padding: 0 14px;
+  border-radius: 9px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.08);
+  color: #eef0f6;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.resetButton:hover:not(:disabled) { background: rgba(255, 255, 255, 0.15); }
+.resetButton:disabled { opacity: 0.45; cursor: not-allowed; }
+
+@media (max-width: 640px) {
+  .section { padding: 14px; }
+  .field { flex-direction: column; align-items: stretch; gap: 8px; }
+  .control { align-self: flex-start; }
+  .segmented { flex-wrap: wrap; }
+  .stackRow {
+    grid-template-columns: 1fr 1fr;
+  }
+  .stackRow > .fieldText { grid-column: 1 / -1; }
+  .stackRow > .preview { grid-column: 1 / -1; }
+}

@@ -159,6 +159,15 @@ export function AuthWidget() {
             type="button"
             role="menuitem"
             className={styles.item}
+            onClick={() => go('/preferences')}
+            title="Auto-pass stops, battlefield stacking, motion"
+          >
+            Preferences
+          </button>
+          <button
+            type="button"
+            role="menuitem"
+            className={styles.item}
             onClick={() => go('/stats')}
             title="Your win rate, ELO and game history"
           >

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useGameStore } from '@/store/gameStore.ts'
 import { useIsSharedLifeTeamGame } from '@/store/selectors'
 import { useResponsiveContext } from '../board/shared'
+import { GearIcon, PreferencesDialog } from '@/components/preferences/PreferencesDialog'
 
 /**
  * Concede button with confirmation, positioned top-right.
@@ -196,8 +197,9 @@ export function SpectatorCountBadge() {
       style={{
         position: 'absolute',
         top: responsive.isMobile ? 8 : 12,
-        // Sits to the right of the icon-only FullscreenButton (30/34px at left 8/12).
-        left: responsive.isMobile ? 46 : 54,
+        // Sits to the right of the icon-only FullscreenButton (30/34px at left 8/12) and the
+        // GamePreferencesButton beside it.
+        left: responsive.isMobile ? 84 : 96,
         // Above the multiplayer opponent rail (z 120): the name popover drops down
         // into the rail column, and the seat chips would otherwise paint over it.
         // The badge itself sits above the rail's first chip, so nothing is hidden.
@@ -328,5 +330,49 @@ export function FullscreenButton() {
           : <path d="M4 9V4h5 M20 9V4h-5 M4 15v5h5 M20 15v5h-5" />}
       </svg>
     </button>
+  )
+}
+
+/**
+ * In-game preferences: a gear beside the fullscreen button that opens the preferences dialog over
+ * the board — stacking, stops, auto-tap and motion, without leaving the game.
+ */
+export function GamePreferencesButton() {
+  const [open, setOpen] = useState(false)
+  const responsive = useResponsiveContext()
+  const size = responsive.isMobile ? 30 : 34
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        style={{
+          position: 'absolute',
+          top: responsive.isMobile ? 8 : 12,
+          // To the right of the FullscreenButton (30/34px at left 8/12).
+          left: responsive.isMobile ? 46 : 54,
+          zIndex: 100,
+          width: size,
+          height: size,
+          padding: 0,
+          backgroundColor: 'var(--chrome-bg)',
+          backdropFilter: 'var(--chrome-blur)',
+          WebkitBackdropFilter: 'var(--chrome-blur)',
+          color: 'var(--chrome-text)',
+          border: '1px solid var(--chrome-border)',
+          borderRadius: 'var(--chrome-radius)',
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+        title="Preferences"
+        aria-label="Preferences"
+        data-testid="game-preferences-button"
+      >
+        <GearIcon size={responsive.isMobile ? 15 : 17} />
+      </button>
+      {open && <PreferencesDialog onClose={() => setOpen(false)} />}
+    </>
   )
 }
