@@ -1,8 +1,8 @@
 /**
  * The preferences editor — every setting in `store/preferencesStore.ts`, grouped into Gameplay,
- * Battlefield and Display. Shared by the /preferences page and the in-game settings dialog, so the
- * two can never drift. Each control writes straight to the store (which saves to localStorage and,
- * when signed in, to the account); there is no Save button.
+ * Battlefield, Display and (signed in) Messages. Shared by the /preferences page and the in-game
+ * settings dialog, so the two can never drift. Each control writes straight to the store (which
+ * saves to localStorage and, when signed in, to the account); there is no Save button.
  */
 import type React from 'react'
 import {
@@ -13,6 +13,7 @@ import {
   type MotionPreference,
   type StackingRule,
 } from '@/store/preferencesStore'
+import { useAuthStore } from '@/store/authStore'
 import { Step, StepDisplayNames } from '@/types/enums'
 import type { PriorityModeValue } from '@/types/messages'
 import s from './Preferences.module.css'
@@ -42,6 +43,8 @@ export function PreferencesPanel({ compact = false }: { compact?: boolean }) {
   const update = usePreferences((st) => st.update)
   const reset = usePreferences((st) => st.reset)
   const { gameplay, battlefield, display } = prefs
+  // Messages need an account; a guest has nothing to be alerted to.
+  const signedIn = useAuthStore((st) => st.status === 'authenticated')
 
   const toggleStop = (step: Step, mine: boolean) => {
     const key = mine ? 'myTurnStops' : 'opponentTurnStops'
@@ -224,6 +227,20 @@ export function PreferencesPanel({ compact = false }: { compact?: boolean }) {
           onChange={(hoverPreview) => update('display', { hoverPreview })}
         />
       </section>
+
+      {signedIn && (
+        <section className={s.section}>
+          <header className={s.sectionHead}>
+            <h2 className={s.sectionTitle}>Messages</h2>
+          </header>
+          <Toggle
+            label="Message alerts away from home"
+            hint="In a game, a draft or the deckbuilder, light up the chat tab and preview new messages. When off, they wait quietly until you're back on the home screen."
+            checked={prefs.messages.alertsAway}
+            onChange={(alertsAway) => update('messages', { alertsAway })}
+          />
+        </section>
+      )}
 
       <footer className={s.footer}>
         <span className={s.hint}>Changes save as you make them.</span>

@@ -12,15 +12,11 @@
  */
 import { useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
+import { isAppRoute, useHomeVisible } from '@/hooks/useHomeVisible'
 import { useGameStore } from '@/store/gameStore.ts'
 import { MatchFoundDialog } from './MatchFoundDialog'
 import styles from './Matchmaking.module.css'
 import { formatWait, queueLabel } from './queues'
-
-/** Routes that render `App` (the `*` route), where the lobby and the home panel live. */
-function isAppRoute(pathname: string): boolean {
-  return pathname === '/' || pathname === ''
-}
 
 export default function MatchmakingLayer() {
   const location = useLocation()
@@ -29,10 +25,7 @@ export default function MatchmakingLayer() {
   const onAppRoute = isAppRoute(location.pathname)
   const inGame = useGameStore((s) => s.gameState != null || s.mulliganState != null || s.waitingForOpponentMulligan)
   // `App` shows the home hub — and with it the queue panel — only when nothing else is up.
-  const elsewhereInApp = useGameStore((s) =>
-    s.gameOverState != null || s.quickGameLobbyState != null || s.lobbyState != null || s.spectatingState != null,
-  )
-  const homeVisible = onAppRoute && !inGame && !elsewhereInApp
+  const homeVisible = useHomeVisible()
 
   // Once per seating: the status object is replaced on every server message, so a later visit to
   // another page doesn't bounce the player home again.

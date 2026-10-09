@@ -20,7 +20,7 @@
   padding: 16px 10px 10px;
 }
 
-.listHead { padding: 0 8px 10px; }
+.listHead { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 0 4px 10px 8px; }
 .listTitle {
   margin: 0;
   font-family: var(--font-display);
@@ -161,35 +161,8 @@
   max-width: 420px;
   text-align: center;
 }
-.emptyIcon { color: #f2b45c; opacity: 0.85; margin-bottom: 4px; }
 .emptyHeading { margin: 0; font-family: var(--font-display); font-size: 22px; font-weight: 600; color: #f4f5f9; }
 
-.friendPicks {
-  list-style: none;
-  margin: 12px 0 0;
-  padding: 0;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 8px;
-}
-.friendPick {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  max-width: 200px;
-  padding: 5px 12px 5px 5px;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.05);
-  color: #eef0f6;
-  font: inherit;
-  font-size: 13.5px;
-  cursor: pointer;
-}
-.friendPick:hover { background: rgba(255, 255, 255, 0.11); }
-.friendPick:focus-visible { outline: 2px solid var(--color-focus-ring); outline-offset: 2px; }
-.friendPickName { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 .convHead {
   flex: none;
@@ -206,11 +179,84 @@
   place-items: center;
   width: 34px;
   height: 34px;
+  padding: 0;
+  border: none;
   border-radius: 10px;
+  background: transparent;
   color: #c9cfdc;
+  cursor: pointer;
 }
 .back:hover { background: rgba(255, 255, 255, 0.08); color: #fff; }
-.emptyPane .back { position: absolute; top: 10px; left: 10px; }
+.back:focus-visible { outline: 2px solid var(--color-focus-ring); outline-offset: 1px; }
+.back[data-always='true'] { display: grid; }
+
+/* Loading and error states: the header's controls float over the centred message. */
+.floatingHead {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  right: 10px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.paneTitle {
+  flex: 1 1 auto;
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 600;
+  color: #f4f5f9;
+}
+
+.iconButton {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  color: #c9cfdc;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+}
+.iconButton:hover, .iconButton[data-active='true'] { background: rgba(255, 255, 255, 0.09); color: #fff; }
+.iconButton:focus-visible { outline: 2px solid var(--color-focus-ring); outline-offset: 1px; }
+
+/* ── New message: friend picker ────────────────────────────────────────── */
+
+.picker { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; padding: 10px 10px 8px; }
+.pickerSearch {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 4px 8px;
+  padding: 0 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.28);
+  color: #7d8598;
+}
+.pickerSearch:focus-within { border-color: rgba(242, 180, 92, 0.55); }
+.pickerInput {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 38px;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: #eef0f6;
+  font: inherit;
+  font-size: 14px;
+}
+.pickerInput::placeholder { color: #7d8598; }
+.pickerScroll { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+.pickerStatus { font-size: 12.5px; color: #7d8598; }
+.pickerStatus[data-online='true'] { color: #6fdc9a; }
 
 .convWho {
   flex: 1 1 auto;
@@ -462,6 +508,19 @@
 .dangerButton:focus-visible { outline: 2px solid var(--color-focus-ring); outline-offset: 2px; }
 
 /* ── Phone: one pane at a time ─────────────────────────────────────────── */
+
+/* ── Compact: the chat dock's narrow column ────────────────────────────── */
+
+.convPane[data-compact='true'] .back { display: grid; }
+.convPane[data-compact='true'] .convHead { padding: 8px 8px 8px 6px; gap: 4px; }
+.convPane[data-compact='true'] .messages { padding: 12px 12px 10px; }
+.convPane[data-compact='true'] .group { max-width: 86%; }
+.convPane[data-compact='true'] .bubble { font-size: 14px; }
+.convPane[data-compact='true'] .hint { display: none; }
+.convPane[data-compact='true'] .composerMeta { min-height: 0; }
+.convPane[data-compact='true'] .composerWrap { padding: 8px 10px 10px; }
+.convPane[data-compact='true'] .requestBar { padding: 12px; }
+.convPane[data-compact='true'] .convIntro { padding: 16px 8px; }
 
 @media (max-width: 760px) {
   .layout { grid-template-columns: minmax(0, 1fr); gap: 0; }

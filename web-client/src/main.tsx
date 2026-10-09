@@ -68,6 +68,8 @@ const PublicProfilePage = lazy(() =>
 const MatchmakingLayer = lazy(() => import('./components/matchmaking/MatchmakingLayer'))
 // Same reason: reports the current page to the server (admin Live overview) on every route.
 const ActivityReporter = lazy(() => import('./components/shared/ActivityReporter'))
+// Same reason: direct messages from any screen, a conversation staying open across a navigation.
+const ChatDock = lazy(() => import('./components/messages/ChatDock'))
 
 initAnalytics()
 
@@ -111,6 +113,7 @@ createRoot(rootElement).render(
       <Suspense fallback={null}>
         <MatchmakingLayer />
         <ActivityReporter />
+        <ChatDock />
       </Suspense>
     </BrowserRouter>
   </StrictMode>

@@ -607,18 +607,21 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
     section: 'community',
     title: 'Messages',
     summary:
-      'Send private messages to other signed-in players from Messages in the account menu. Friends can message each other freely; a message from anyone else arrives as a request you accept, delete or block.',
+      'Send private messages to other signed-in players — from Messages in the account menu, or from the chat tab on the right edge of every other screen, even mid-game. Friends can message each other freely; a message from anyone else arrives as a request you accept, delete or block.',
     body: [
       { kind: 'ul', items: [
-        'Start a conversation — Message on a friend’s row on the Friends page, or on any player’s profile.',
+        'Start a conversation — the pencil (New message) in Messages or in the chat tab lists all your friends, including ones you haven’t written to yet. Message on a friend’s row on the Friends page, or on any player’s profile, works too.',
         'Requests — a message from someone who isn’t your friend waits under the Requests tab. Accept it to reply (replying also accepts it), Delete it, or Block them. They aren’t told which you chose.',
         'Writing to someone who isn’t your friend — your first messages arrive as a request, and you can send three until they accept.',
         'Delete conversation — removes it for you only; if either of you writes again it starts fresh.',
         'Block — they can’t message you, you won’t be matched against each other, and their emotes stop reaching you. It also ends a friendship. Unblock from the Friends page.',
       ] },
+      { kind: 'h', text: 'The chat tab' },
+      { kind: 'p', text: 'Away from the Messages page — in a game, a draft, the deckbuilder — your conversations live behind a thin sliver on the right edge of the screen. Hover or tap it to slide out the chat tab, and click to open a small chat panel. It stays open while you keep playing, follows you from page to page, and closes with ×, Esc or the tab. Typing in it never triggers game shortcuts.' },
+      { kind: 'p', text: 'A new message turns the sliver amber and shows a short preview beside it; click the preview to answer. Don’t want that during a game? Turn off the bell in the chat panel (or Message alerts away from home in Preferences): away from the home screen the tab then stays quiet, and your unread messages wait for you on the home screen.' },
       { kind: 'p', text: 'The number on the account menu counts unread messages and new requests. Messages need an account — guests can’t send or receive them.' },
     ],
-    related: ['friends', 'after-the-game', 'guest-vs-account'],
+    related: ['friends', 'preferences', 'after-the-game', 'guest-vs-account'],
   },
   {
     id: 'after-the-game',
@@ -1032,9 +1035,11 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
       ] },
       { kind: 'h', text: 'Display' },
       { kind: 'p', text: 'Reduce motion cuts animations short, whatever your device is set to. Card preview on hover can be turned off if the full-size preview gets in your way; on a touch screen, press and hold still opens it.' },
+      { kind: 'h', text: 'Messages' },
+      { kind: 'p', text: 'Signed in, Message alerts away from home decides whether new messages light up the chat tab and show a preview while you’re in a game, a draft or on another page. The home screen always shows them.' },
       { kind: 'tip', text: 'Changes save as you make them. As a guest they live in this browser; signed in, they follow you to every device.' },
     ],
-    related: ['stops', 'priority-modes', 'auto-tap', 'card-preview', 'guest-vs-account'],
+    related: ['stops', 'priority-modes', 'auto-tap', 'card-preview', 'messages', 'guest-vs-account'],
   },
   {
     id: 'phase-bar',

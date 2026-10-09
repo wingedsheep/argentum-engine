@@ -66,6 +66,14 @@ export interface Preferences {
     /** Show the large card preview when hovering a card with a mouse. */
     hoverPreview: boolean
   }
+  messages: {
+    /**
+     * Alert to new direct messages away from the home screen — in a game, a draft, the deckbuilder.
+     * When off the chat dock stays quiet there (no unread colour, no preview); the home screen always
+     * shows them.
+     */
+    alertsAway: boolean
+  }
 }
 
 /** Steps that hold a priority window — the ones a stop can be set on. */
@@ -99,6 +107,9 @@ export const DEFAULT_PREFERENCES: Preferences = {
   display: {
     motion: 'system',
     hoverPreview: true,
+  },
+  messages: {
+    alertsAway: true,
   },
 }
 
@@ -138,6 +149,7 @@ export function parsePreferences(raw: unknown): Preferences {
   const g = obj(root.gameplay)
   const b = obj(root.battlefield)
   const d = obj(root.display)
+  const msg = obj(root.messages)
   const D = DEFAULT_PREFERENCES
   return {
     version: 1,
@@ -160,6 +172,9 @@ export function parsePreferences(raw: unknown): Preferences {
     display: {
       motion: typeof d.motion === 'string' && MOTIONS.has(d.motion) ? (d.motion as MotionPreference) : D.display.motion,
       hoverPreview: bool(d.hoverPreview, D.display.hoverPreview),
+    },
+    messages: {
+      alertsAway: bool(msg.alertsAway, D.messages.alertsAway),
     },
   }
 }
@@ -221,7 +236,7 @@ function pushToAccount(prefs: Preferences) {
 
 // ----- Store -----
 
-type Section = 'gameplay' | 'battlefield' | 'display'
+type Section = 'gameplay' | 'battlefield' | 'display' | 'messages'
 
 interface PreferencesState {
   prefs: Preferences
