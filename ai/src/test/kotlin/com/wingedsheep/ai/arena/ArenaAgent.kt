@@ -140,6 +140,9 @@ object ArenaAgents {
         // production-candidate-expiring production-candidate-cardselect 300` is the promotion gate.
         ArenaAgent("production-cardselect", AiProfile.PRODUCTION_CARDSELECT),
         ArenaAgent("production-candidate-cardselect", AiProfile.PRODUCTION_CANDIDATE_CARDSELECT),
+        // What EngineAiPlayerController plays: production-candidate-expiring plus every fix shipped
+        // since. `just arena production-candidate-expiring live 300` prices the stack.
+        ArenaAgent("live", AiProfile.LIVE),
         ArenaAgent("production-targeted", AiProfile.PRODUCTION_TARGETED),
         // Explicit ECL candidates. Their resource-backed weights fail closed to production's
         // evaluator until a validated artifact is installed; automatic selection is set-gated.
