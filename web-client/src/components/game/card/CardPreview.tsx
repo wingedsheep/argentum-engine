@@ -11,6 +11,7 @@ import { styles } from '../board/styles'
 import { counterManaClass } from '@/assets/icons/keywords'
 import { HoverCardPreview } from '../../ui/HoverCardPreview'
 import { useHasHover } from '@/hooks/useHasHover.ts'
+import { usePreferences } from '@/store/preferencesStore'
 import { ManaCost, AbilityText } from '../../ui/ManaSymbols'
 import { buildActionOptions, playCostRange, playLadderOptions } from '@/utils/actionOptions.ts'
 import { parseManaCost, totalManaNeeded } from '@/utils/manaCost.ts'
@@ -27,6 +28,7 @@ export function CardPreview() {
   const playerId = useGameStore(selectViewingPlayerId)
   const responsive = useResponsiveContext()
   const hasHover = useHasHover()
+  const hoverPreview = usePreferences((s) => s.prefs.display.hoverPreview)
 
   // All hooks must be called before any early return
   const cardActions = useCardLegalActions(hoveredCardId)
@@ -105,6 +107,9 @@ export function CardPreview() {
   const showCostLadder = costRows.length > 1 || costRows.some((o) => o.manaCostReducedTo)
 
   if (!card) return null
+  // Preferences → Display can turn the mouse-hover preview off. Touch previews (long-press) stay:
+  // they are asked for explicitly, not triggered by passing over a card.
+  if (!hoverPreview && hasHover && !responsive.isMobile) return null
 
   // On mobile, show the fullscreen overlay (game-specific behaviour). Any device that can't hover
   // gets it too, whatever its width: the cursor-following variant has nowhere to anchor without a

@@ -12,6 +12,8 @@ import { keepAttackerPreview, keepBlockerPreview } from './combatPreview'
 import { CLEARED_PIPELINE_SELECTIONS, isActionStillOffered } from '../ui/pipelineSlice'
 import type { SetState, GetState } from './types'
 import { useTableTalkStore } from '@/store/tableTalkStore'
+import { getPreferences } from '@/store/preferencesStore'
+import { createSetPriorityModeMessage, createSetStopOverridesMessage } from '@/types'
 import type {
   LogEntry,
   DrawAnimation,
@@ -741,6 +743,25 @@ type GameplayHandlerKeys =
   | 'onMulliganDecision' | 'onChooseBottomCards' | 'onMulliganComplete' | 'onWaitingForOpponentMulligan'
   | 'onGameOver' | 'onPlayerEliminated' | 'onError'
 
+/**
+ * Send the player's standing stops and starting priority mode to the server for a new game, and
+ * mirror them in the store so the step strip and mode button read right before the first update.
+ * The server keeps both per game, so this runs once per game start.
+ */
+function applyGameplayPreferences(set: SetState) {
+  const { priorityMode, myTurnStops, opponentTurnStops } = getPreferences().gameplay
+  set({
+    stopOverrides: { myTurnStops, opponentTurnStops },
+    priorityMode,
+    fullControl: priorityMode === 'fullControl',
+  })
+  const ws = getWebSocket()
+  if (myTurnStops.length || opponentTurnStops.length) {
+    ws?.send(createSetStopOverridesMessage(myTurnStops, opponentTurnStops))
+  }
+  if (priorityMode !== 'auto') ws?.send(createSetPriorityModeMessage(priorityMode))
+}
+
 export function createGameplayHandlers(set: SetState, get: GetState): Pick<MessageHandlers, GameplayHandlerKeys> {
   return {
     onGameCreated: (msg) => {
@@ -780,23 +801,9 @@ export function createGameplayHandlers(set: SetState, get: GetState): Pick<Messa
       const sharedTurns = msg.players.some((p) => p.teamSharedTurns)
       get().setSeatTeams(seatTeams, sharedLife, sharedTurns)
 
-      // Load persisted stop overrides and send to server
-      try {
-        const saved = localStorage.getItem('argentum-stop-overrides')
-        if (saved) {
-          const parsed = JSON.parse(saved) as { myTurnStops: string[]; opponentTurnStops: string[] }
-          if (parsed.myTurnStops?.length || parsed.opponentTurnStops?.length) {
-            set({
-              stopOverrides: parsed as { myTurnStops: Step[]; opponentTurnStops: Step[] },
-            })
-            getWebSocket()?.send({
-              type: 'setStopOverrides' as const,
-              myTurnStops: parsed.myTurnStops,
-              opponentTurnStops: parsed.opponentTurnStops,
-            })
-          }
-        }
-      } catch { /* ignore invalid localStorage data */ }
+      // Start the game the way the player set the table up (Preferences → Gameplay): their
+      // standing stops and their starting priority mode.
+      applyGameplayPreferences(set)
 
       // Show match intro animation
       const playerName = localStorage.getItem('argentum-player-name') ?? 'You'

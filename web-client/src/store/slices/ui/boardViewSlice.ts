@@ -7,8 +7,8 @@
  * always the viewed board and the rail doesn't render.
  */
 import type { SliceCreator, EntityId, GameStore } from '../types'
+import { getPreferences, usePreferences } from '@/store/preferencesStore'
 
-const FOLLOW_ACTION_KEY = 'argentum-follow-action'
 
 /**
  * True while the player has any pending input or in-progress selection. The camera —
@@ -60,13 +60,6 @@ export function isViewerEliminated(state: GameStore): boolean {
   return gameState.players.filter((p) => !p.hasLost).length >= 2
 }
 
-function loadFollowAction(): boolean {
-  try {
-    return localStorage.getItem(FOLLOW_ACTION_KEY) !== 'false'
-  } catch {
-    return true
-  }
-}
 
 export interface BoardViewSliceState {
   /**
@@ -202,7 +195,7 @@ export type BoardViewSlice = BoardViewSliceState & BoardViewSliceActions
 export const createBoardViewSlice: SliceCreator<BoardViewSlice> = (set, get) => ({
   viewedOpponentId: null,
   viewPinned: false,
-  followAction: loadFollowAction(),
+  followAction: getPreferences().gameplay.followAction,
   overviewMode: false,
   collapsedSeats: [],
   expandedStackCardIds: new Set<EntityId>(),
@@ -238,11 +231,7 @@ export const createBoardViewSlice: SliceCreator<BoardViewSlice> = (set, get) => 
     // again", i.e. release the pin, not "turn the setting off" (which would be a second click
     // that looks like a no-op).
     const next = viewPinned && followAction ? true : !followAction
-    try {
-      localStorage.setItem(FOLLOW_ACTION_KEY, String(next))
-    } catch {
-      // Private mode — setting just won't persist.
-    }
+    usePreferences.getState().update('gameplay', { followAction: next })
     // Turning follow on releases any manual pin (the two are mutually exclusive).
     set({ followAction: next, ...(next ? { viewPinned: false } : {}) })
   },

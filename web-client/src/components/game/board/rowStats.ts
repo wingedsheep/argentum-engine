@@ -18,9 +18,12 @@ import type { RowStats } from './battlefieldLayout'
  *
  * A stack the player ungrouped with the ⤢ toggle (`expanded`) renders every
  * member as its own full card, so it counts as that many items and no peeks.
+ *
+ * [maxLayers] is the player's "visible stack layers" preference (CardStack draws the same cap).
  */
 export function rowStats(
   expanded: ReadonlySet<EntityId>,
+  maxLayers: number,
   ...groupLists: (readonly GroupedCard[])[]
 ): RowStats {
   let count = 0
@@ -37,7 +40,7 @@ export function rowStats(
       }
       count++
       if (group.card.isTapped) tapped++
-      stackedExtra += visibleStackDepth(group.count) - 1
+      stackedExtra += visibleStackDepth(group.count, maxLayers) - 1
     }
   }
   return { count, tapped, stackedExtra }

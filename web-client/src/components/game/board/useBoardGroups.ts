@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { useGameStore } from '@/store/gameStore.ts'
+import { usePreferences } from '@/store/preferencesStore'
 import {
   groupCards,
   useBattlefieldCards,
@@ -20,7 +21,8 @@ export interface BoardGroups {
 }
 
 /**
- * Groups one side's permanents into stacks (see `groupCards`) and derives the
+ * Groups one side's permanents into stacks (see `groupCards`, shaped by the
+ * player's stacking preferences) and derives the
  * row stats. Used by `Battlefield` to render, and by `GameBoard`'s pooled
  * two-player solve, which needs both sides' stats before either battlefield
  * renders — grouping twice per update is far cheaper than plumbing the groups
@@ -46,17 +48,22 @@ export function useBoardGroups(isOpponent: boolean, playerId?: EntityId): BoardG
 
   const splitOutIds = useSplitOutTargetIds()
   const expanded = useGameStore((state) => state.expandedStackCardIds)
-  const groupedLands = useMemo(() => groupCards(lands, splitOutIds), [lands, splitOutIds])
-  const groupedCreatures = useMemo(() => groupCards(creatures, splitOutIds), [creatures, splitOutIds])
-  const groupedPlaneswalkers = useMemo(() => groupCards(planeswalkers, splitOutIds), [planeswalkers, splitOutIds])
-  const groupedOther = useMemo(() => groupCards(other, splitOutIds), [other, splitOutIds])
+  // The player's stacking rules (Preferences → Battlefield); the same rules apply to every board.
+  const landRule = usePreferences((s) => s.prefs.battlefield.lands)
+  const creatureRule = usePreferences((s) => s.prefs.battlefield.creatures)
+  const otherRule = usePreferences((s) => s.prefs.battlefield.other)
+  const maxLayers = usePreferences((s) => s.prefs.battlefield.maxVisibleLayers)
+  const groupedLands = useMemo(() => groupCards(lands, splitOutIds, landRule), [lands, splitOutIds, landRule])
+  const groupedCreatures = useMemo(() => groupCards(creatures, splitOutIds, creatureRule), [creatures, splitOutIds, creatureRule])
+  const groupedPlaneswalkers = useMemo(() => groupCards(planeswalkers, splitOutIds, otherRule), [planeswalkers, splitOutIds, otherRule])
+  const groupedOther = useMemo(() => groupCards(other, splitOutIds, otherRule), [other, splitOutIds, otherRule])
 
   const stats = useMemo<BoardStats>(
     () => ({
-      front: rowStats(expanded, groupedCreatures, groupedPlaneswalkers),
-      back: rowStats(expanded, groupedLands, groupedOther),
+      front: rowStats(expanded, maxLayers, groupedCreatures, groupedPlaneswalkers),
+      back: rowStats(expanded, maxLayers, groupedLands, groupedOther),
     }),
-    [expanded, groupedCreatures, groupedPlaneswalkers, groupedLands, groupedOther],
+    [expanded, maxLayers, groupedCreatures, groupedPlaneswalkers, groupedLands, groupedOther],
   )
 
   return useMemo(

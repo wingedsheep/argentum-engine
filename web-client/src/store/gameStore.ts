@@ -10,6 +10,9 @@
  */
 import { create } from 'zustand'
 import { subscribeWithSelector } from 'zustand/middleware'
+import { usePreferences } from './preferencesStore'
+import { getWebSocket } from './slices/shared'
+import { createSetStopOverridesMessage } from '@/types'
 
 import { createConnectionSlice } from '@/store/slices'
 import { createGameplaySlice } from '@/store/slices'
@@ -66,3 +69,29 @@ export const useGameStore = create<GameStore>()(
     ...createUISlice(...args),
   }))
 )
+
+// The preferences page (or the in-game settings dialog, or another device via the account sync) can
+// change a gameplay preference while a game store is alive: keep the live game in step. Stops go to
+// the server too, so a stop added from the dialog applies to the game in progress. The starting
+// priority mode deliberately does not — it only shapes the next game.
+usePreferences.subscribe((state, prev) => {
+  const next = state.prefs.gameplay
+  const before = prev.prefs.gameplay
+  if (next === before) return
+  const game = useGameStore.getState()
+  const patch: Partial<GameStore> = {}
+  if (game.autoTapEnabled !== next.autoTap) patch.autoTapEnabled = next.autoTap
+  if (game.followAction !== next.followAction) patch.followAction = next.followAction
+  const stopsChanged =
+    !sameSteps(game.stopOverrides.myTurnStops, next.myTurnStops) ||
+    !sameSteps(game.stopOverrides.opponentTurnStops, next.opponentTurnStops)
+  if (stopsChanged && game.gameState && !game.spectatingState) {
+    patch.stopOverrides = { myTurnStops: next.myTurnStops, opponentTurnStops: next.opponentTurnStops }
+    getWebSocket()?.send(createSetStopOverridesMessage(next.myTurnStops, next.opponentTurnStops))
+  }
+  if (Object.keys(patch).length) useGameStore.setState(patch)
+})
+
+function sameSteps(a: readonly string[], b: readonly string[]): boolean {
+  return a.length === b.length && a.every((x) => b.includes(x))
+}

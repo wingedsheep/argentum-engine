@@ -30,6 +30,7 @@ import java.util.UUID
  *                                                          has an account)
  *  - POST /api/auth/verify         { token }            → { authToken, user }
  *  - GET  /api/auth/me             (Bearer authToken)   → { user }
+ *  - GET/PUT /api/auth/me/preferences (Bearer authToken) → the client's preferences JSON, verbatim
  *
  * **Dev sign-in.** With no mail configured the link is only logged, which makes signing in locally
  * a hunt through the server log for a link that points at whichever port `base-url` names. When
@@ -72,6 +73,8 @@ class AuthController(
         const val MAX_DISPLAY_NAME_LENGTH = 40
         /** A course of a handful of missions is a few hundred bytes; anything near this is not progress. */
         const val MAX_LEARN_PROGRESS_BYTES = 4096
+        /** A few dozen toggles and numbers; anything near this is not preferences. */
+        const val MAX_PREFERENCES_BYTES = 8192
     }
 
     @PostMapping("/request-login")
@@ -141,16 +144,52 @@ class AuthController(
     fun updateLearnProgress(
         @RequestHeader(HttpHeaders.AUTHORIZATION, required = false) authorization: String?,
         @RequestBody body: String,
+    ): ResponseEntity<Any> = replaceDocument(authorization, body, MAX_LEARN_PROGRESS_BYTES, "Progress") { userId, json ->
+        magicLinkService.updateLearnProgress(userId, json)
+    }
+
+    /**
+     * The account's player preferences — the client's JSON, returned verbatim, or `{}` when none were
+     * ever saved. Guests keep the same document in localStorage; the client reconciles the two on
+     * sign-in (newest `updatedAt` wins).
+     */
+    @GetMapping("/me/preferences", produces = [MediaType.APPLICATION_JSON_VALUE])
+    fun preferences(@RequestHeader(HttpHeaders.AUTHORIZATION, required = false) authorization: String?): ResponseEntity<Any> {
+        val claims = authSupport.requireUser(authorization)
+        val user = magicLinkService.findUser(claims.userId)
+            ?: return ResponseEntity.status(401).body(mapOf("error" to "Account no longer exists"))
+        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(user.preferences ?: "{}")
+    }
+
+    /** Replace the account's player preferences. The body must be a JSON object, and small. */
+    @PutMapping("/me/preferences", consumes = [MediaType.APPLICATION_JSON_VALUE])
+    fun updatePreferences(
+        @RequestHeader(HttpHeaders.AUTHORIZATION, required = false) authorization: String?,
+        @RequestBody body: String,
+    ): ResponseEntity<Any> = replaceDocument(authorization, body, MAX_PREFERENCES_BYTES, "Preferences") { userId, json ->
+        magicLinkService.updatePreferences(userId, json)
+    }
+
+    /**
+     * Shared body of the opaque per-account JSON documents: authenticate, cap the size, require a JSON
+     * object, store it normalized. [store] returns null when the account is gone.
+     */
+    private fun replaceDocument(
+        authorization: String?,
+        body: String,
+        maxBytes: Int,
+        label: String,
+        store: (UUID, String) -> UserRow?,
     ): ResponseEntity<Any> {
         val claims = authSupport.requireUser(authorization)
-        if (body.length > MAX_LEARN_PROGRESS_BYTES) {
-            return ResponseEntity.badRequest().body(mapOf("error" to "Progress document too large"))
+        if (body.length > maxBytes) {
+            return ResponseEntity.badRequest().body(mapOf("error" to "$label document too large"))
         }
         val parsed = runCatching { Json.parseToJsonElement(body) }.getOrNull()
         if (parsed !is JsonObject) {
-            return ResponseEntity.badRequest().body(mapOf("error" to "Progress must be a JSON object"))
+            return ResponseEntity.badRequest().body(mapOf("error" to "$label must be a JSON object"))
         }
-        magicLinkService.updateLearnProgress(claims.userId, parsed.toString())
+        store(claims.userId, parsed.toString())
             ?: return ResponseEntity.status(401).body(mapOf("error" to "Account no longer exists"))
         return ResponseEntity.noContent().build()
     }

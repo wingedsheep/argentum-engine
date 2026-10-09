@@ -180,11 +180,14 @@ export const CARD_REDUCED_MOTION_TRANSITION = 'box-shadow 0.15s'
  */
 export const CARD_COUNTER_ROTATE_TRANSITION = 'transform 0.15s cubic-bezier(0.22, 0.75, 0.3, 1)'
 
-/** Viewer asked for reduced motion: size changes then snap instead of easing. */
+/**
+ * Viewer asked for reduced motion — in their OS, or in Preferences → Display (which marks <html>
+ * with `data-motion="reduce"`): size changes then snap instead of easing.
+ */
 export const prefersReducedMotion = (): boolean =>
   typeof window !== 'undefined' &&
-  typeof window.matchMedia === 'function' &&
-  window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  (document.documentElement.dataset.motion === 'reduce' ||
+    (typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches))
 
 export const EMPTY_ROW: RowStats = { count: 0, tapped: 0, stackedExtra: 0 }
 export const EMPTY_BOARD: BoardStats = { front: EMPTY_ROW, back: EMPTY_ROW }
