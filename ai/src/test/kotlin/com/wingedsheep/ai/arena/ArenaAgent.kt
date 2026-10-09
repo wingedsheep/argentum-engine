@@ -135,6 +135,14 @@ object ArenaAgents {
         // gate, against what players face today.
         ArenaAgent("production-expiring", AiProfile.PRODUCTION_EXPIRING),
         ArenaAgent("production-candidate-expiring", AiProfile.PRODUCTION_CANDIDATE_EXPIRING),
+        // Castability-aware keep/take/discard ranking (lands in hand, the land drop, colours).
+        // `just arena production production-cardselect 300` prices the term on its own; `just arena
+        // production-candidate-expiring production-candidate-cardselect 300` is the promotion gate.
+        ArenaAgent("production-cardselect", AiProfile.PRODUCTION_CARDSELECT),
+        ArenaAgent("production-candidate-cardselect", AiProfile.PRODUCTION_CANDIDATE_CARDSELECT),
+        // What EngineAiPlayerController plays: production-candidate-expiring plus every fix shipped
+        // since. `just arena production-candidate-expiring live 300` prices the stack.
+        ArenaAgent("live", AiProfile.LIVE),
         ArenaAgent("production-targeted", AiProfile.PRODUCTION_TARGETED),
         // Explicit ECL candidates. Their resource-backed weights fail closed to production's
         // evaluator until a validated artifact is installed; automatic selection is set-gated.

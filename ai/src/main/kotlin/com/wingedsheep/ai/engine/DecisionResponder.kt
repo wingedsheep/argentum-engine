@@ -45,6 +45,12 @@ class DecisionResponder(
      * [IntentCatalog.NONE] is the off position and leaves both at their pre-Phase-6 behaviour.
      */
     private val intents: IntentCatalog = IntentCatalog.NONE,
+    /**
+     * [AiProfile.castabilityAwareCardSelection]: rank keep / take / discard / search choices with
+     * [CardSelectionValue] instead of the battlefield-land-count heuristic. Off leaves every one of
+     * those answers exactly as it was.
+     */
+    private val castabilityAwareCardSelection: Boolean = false,
 ) {
     var forcedPlayPicker: (GameState, EntityId) -> GameAction = simulator::completeForcedPlay
 
@@ -221,7 +227,7 @@ class DecisionResponder(
             // Start with a legal keep set, then release valuable permanents while every cap holds.
             // The displayed minimum is only a lower bound when restrictions overlap or are disjoint.
             val keep = options.toMutableSet()
-            val ranked = rankCardsContextual(state, options, playerId, wantToKeep = true)
+            val ranked = rankCardsContextual(state, options, playerId, wantToKeep = true, legacyOnly = true)
             for (id in ranked) {
                 keep.remove(id)
                 if (untapChoice.untapLimits.any { limit ->
@@ -572,8 +578,12 @@ class DecisionResponder(
         }
 
         // Context-aware search: what does my board need?
-        val ranked = decision.options.sortedByDescending { entityId ->
-            searchCardContextualScore(state, decision.cards[entityId], playerId)
+        val ranked = if (castabilityAwareCardSelection) {
+            rankCardsContextual(state, decision.options, playerId, wantToKeep = true)
+        } else {
+            decision.options.sortedByDescending { entityId ->
+                searchCardContextualScore(state, decision.cards[entityId], playerId)
+            }
         }
 
         val count = decision.maxSelections.coerceAtMost(ranked.size)
@@ -587,8 +597,12 @@ class DecisionResponder(
         decision: ReorderLibraryDecision,
         playerId: EntityId
     ): DecisionResponse {
-        val ranked = decision.cards.sortedByDescending { entityId ->
-            searchCardContextualScore(state, decision.cardInfo[entityId], playerId)
+        val ranked = if (castabilityAwareCardSelection) {
+            rankCardsContextual(state, decision.cards, playerId, wantToKeep = true)
+        } else {
+            decision.cards.sortedByDescending { entityId ->
+                searchCardContextualScore(state, decision.cardInfo[entityId], playerId)
+            }
         }
         return OrderedResponse(decision.id, ranked)
     }
@@ -641,8 +655,19 @@ class DecisionResponder(
         state: GameState,
         cards: List<EntityId>,
         playerId: EntityId,
-        wantToKeep: Boolean
+        wantToKeep: Boolean,
+        // The untap-limit choice ranks *permanents* by how much they are worth untapped, a
+        // different question from which card to hold; it keeps the legacy reading either way.
+        legacyOnly: Boolean = false,
     ): List<EntityId> {
+        if (castabilityAwareCardSelection && !legacyOnly) {
+            val value = CardSelectionValue.of(state, playerId, intents)
+            // A stable sort on the score keeps the decision's own order for ties, so identical
+            // copies resolve the same way they always did.
+            val scored = cards.map { it to value.score(it) }
+            return if (wantToKeep) scored.sortedByDescending { it.second }.map { it.first }
+            else scored.sortedBy { it.second }.map { it.first }
+        }
         val projected = state.projectedState
         val myLands = projected.getBattlefieldControlledBy(playerId).count { entityId ->
             state.getEntity(entityId)?.get<CardComponent>()?.isLand == true
