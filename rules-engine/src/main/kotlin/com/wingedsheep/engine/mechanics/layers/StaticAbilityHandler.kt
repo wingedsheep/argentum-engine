@@ -1042,6 +1042,7 @@ class StaticAbilityHandler(
             is com.wingedsheep.sdk.scripting.CanBlockAsThoughUntapped,
             is CantAttackUnless,
             is com.wingedsheep.sdk.scripting.CantAttackUnlessSacrifice,
+            is com.wingedsheep.sdk.scripting.Enlist,
             is com.wingedsheep.sdk.scripting.ExertAsItAttacks,
             is CantAttackUnlessCoAttacker,
             is CantBeAttackedBy,

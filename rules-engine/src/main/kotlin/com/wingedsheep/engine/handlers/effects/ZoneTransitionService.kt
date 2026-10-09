@@ -481,6 +481,7 @@ class ZoneTransitionService(
         val lastKnownSnapshot = if (leavingBattlefield) {
             com.wingedsheep.engine.state.components.stack.EntitySnapshot(
                 entityId = entityId,
+                objectRef = oldObject,
                 battlefieldEntryTimestamp = container.get<BattlefieldEntryTimestampComponent>()?.timestamp,
                 power = lastKnownPower,
                 toughness = lastKnownToughness,
@@ -702,6 +703,15 @@ class ZoneTransitionService(
                 ?.get<com.wingedsheep.engine.state.components.battlefield.LinkedExileComponent>()
             val departedTimestamp = lastKnownSnapshot?.battlefieldEntryTimestamp
             if (lastKnownSnapshot != null) {
+                newState = newState.copy(pendingTriggers = newState.pendingTriggers.map { pending ->
+                    if (lastKnownSnapshot.objectRef != null && pending.objectReferences.triggering == lastKnownSnapshot.objectRef) {
+                        pending.copy(triggerContext = pending.triggerContext.copy(
+                            triggeringLastKnownSnapshot = lastKnownSnapshot,
+                            lastKnownPower = lastKnownSnapshot.power,
+                            lastKnownToughness = lastKnownSnapshot.toughness,
+                        ))
+                    } else pending
+                })
                 for (stackId in newState.stack) {
                     val stackEntity = newState.getEntity(stackId) ?: continue
                     val activated = stackEntity.get<ActivatedAbilityOnStackComponent>()
@@ -714,12 +724,25 @@ class ZoneTransitionService(
                         }
                     }
                     val triggered = stackEntity.get<TriggeredAbilityOnStackComponent>()
+                    // A non-targeted triggering permanent may be read when this ability resolves
+                    // (enlist). Capture its departure, not its characteristics when the cost was paid.
+                    if (triggered != null && triggered.objectReferences.triggering == lastKnownSnapshot.objectRef &&
+                        lastKnownSnapshot.objectRef != null
+                    ) {
+                        newState = newState.updateEntity(stackId) {
+                            it.with(triggered.copy(triggerContext = triggered.triggerContext?.copy(
+                                triggeringLastKnownSnapshot = lastKnownSnapshot,
+                                lastKnownPower = lastKnownSnapshot.power,
+                                lastKnownToughness = lastKnownSnapshot.toughness,
+                            )))
+                        }
+                    }
                     if (triggered != null && triggered.sourceId == entityId &&
                         triggered.lastKnownSourceSnapshot == null &&
                         triggered.sourceBattlefieldTimestamp == departedTimestamp
                     ) {
                         newState = newState.updateEntity(stackId) {
-                            it.with(triggered.copy(lastKnownSourceSnapshot = lastKnownSnapshot))
+                            it.with((it.get<TriggeredAbilityOnStackComponent>() ?: triggered).copy(lastKnownSourceSnapshot = lastKnownSnapshot))
                         }
                     }
                 }

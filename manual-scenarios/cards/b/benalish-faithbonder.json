@@ -1,0 +1,46 @@
+{
+  "player1Name": "Enlist",
+  "player2Name": "Defender",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": [
+      "Benalish Faithbonder"
+    ],
+    "battlefield": [
+      {
+        "name": "Benalish Faithbonder"
+      },
+      {
+        "name": "Grizzly Bears"
+      },
+      {
+        "name": "Plains"
+      },
+      {
+        "name": "Plains"
+      }
+    ],
+    "library": [
+      "Plains",
+      "Plains",
+      "Plains"
+    ]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {
+        "name": "Grizzly Bears"
+      }
+    ],
+    "library": [
+      "Forest",
+      "Forest",
+      "Forest"
+    ]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1
+}

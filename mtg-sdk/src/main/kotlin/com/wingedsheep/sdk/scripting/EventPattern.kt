@@ -3054,6 +3054,18 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
     }
 
     /**
+     * This creature enlists another creature. Unlike [ExertedAsItAttacksEvent], this records
+     * another creature's payment; [TapEvent] alone cannot identify which ability it paid.
+     * The enlisted creature is available as TriggeringEntity. The keyword's linked boost is
+     * generated separately, once for each paid instance (CR 702.154c–d).
+     */
+    @SerialName("EnlistedEvent")
+    @Serializable
+    data object EnlistedEvent : EventPattern {
+        override val description: String = "this creature enlists a creature"
+    }
+
+    /**
      * "When you do" after "you may exert this creature as it attacks" (CR 701.43d) — the triggered
      * ability linked to [com.wingedsheep.sdk.scripting.ExertAsItAttacks] (CR 607.2h). SELF-only:
      * it fires for the ability's own source, and only when the exert was chosen as an optional

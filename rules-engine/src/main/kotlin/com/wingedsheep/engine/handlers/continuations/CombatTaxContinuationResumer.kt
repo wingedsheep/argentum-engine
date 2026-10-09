@@ -40,6 +40,15 @@ class CombatTaxContinuationResumer(
 ) : ContinuationResumerModule {
 
     override fun resumers(): List<ContinuationResumer<*>> = listOf(
+        resumer(com.wingedsheep.engine.core.AttackEnlistSelectionContinuation::class) { state, c, response, _ ->
+            if (response !is com.wingedsheep.engine.core.CardsSelectedResponse) {
+                ExecutionResult.error(state, "Expected enlist card selection")
+            } else {
+                val chosen = response.selectedCards.map { com.wingedsheep.engine.core.EnlistPayment(c.remaining.first(), it) }
+                services.combatManager.attackPhase.chooseEnlist(state, c.attackingPlayer, c.attackers,
+                    c.remaining.drop(1), c.chosen + chosen, c.bands, c.rollback)
+            }
+        },
         resumer(AttackTaxManaSelectionContinuation::class) { state, continuation, response, _ ->
             resumeAttackTaxSelection(state, continuation, response)
         },
@@ -139,17 +148,19 @@ class CombatTaxContinuationResumer(
         if (response.isDecline(floatingCovers(state, continuation.attackingPlayer, continuation.manaCost))) {
             // Decline: no mana tapped, no AttackingComponent applied. Drop back into
             // DECLARE_ATTACKERS as a clean no-op (no error banner).
-            return ExecutionResult.success(state)
+            val restored = continuation.rollback?.restore(state) ?: state
+            return ExecutionResult.success(restored, listOf(com.wingedsheep.engine.core.AttackDeclarationCancelledEvent(continuation.attackingPlayer)))
         }
 
-        val paid = payTax(state, continuation.attackingPlayer, continuation.manaCost, continuation.availableSources, response)
+        val paid = payTax(state, continuation.attackingPlayer, continuation.manaCost, continuation.availableSources, response,
+            continuation.enlistments.mapTo(mutableSetOf()) { it.enlistedId })
             ?: return ExecutionResult.error(state, "Cannot pay attack tax of ${continuation.manaCost}")
 
-        return services.combatManager.attackPhase.commitAttackDeclaration(
+        return services.combatManager.attackPhase.payEnlistAndContinue(
             state = paid.state,
             attackingPlayer = continuation.attackingPlayer,
             attackers = continuation.attackers,
-            projected = paid.state.projectedState,
+            enlistments = continuation.enlistments,
             taxEvents = paid.events,
             bands = continuation.bands,
         )
@@ -186,6 +197,7 @@ class CombatTaxContinuationResumer(
         manaCost: ManaCost,
         availableSources: List<ManaSourceOption>,
         response: ManaSourcesSelectedResponse,
+        reserved: Set<EntityId> = emptySet(),
     ): TaxPayment? {
         val playerEntity = state.getEntity(playerId) ?: return null
         val poolComponent = playerEntity.get<ManaPoolComponent>() ?: return null
@@ -205,7 +217,7 @@ class CombatTaxContinuationResumer(
         if (!remainingCost.isEmpty()) {
             if (response.autoPay) {
                 val solver = services.manaSolver
-                val solution = solver.solve(currentState, playerId, remainingCost) ?: return null
+                val solution = solver.solve(currentState, playerId, remainingCost, excludeSources = reserved) ?: return null
                 for (source in solution.sources) {
                     val (tappedState, tapEvents) = ManaAbilityLifeCost.tapForManaPayingLife(services.zones, currentState, source.entityId, playerId, solution.manaProduced[source.entityId])
                     currentState = tappedState

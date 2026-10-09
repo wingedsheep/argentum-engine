@@ -8249,6 +8249,10 @@ Dominant back faces that "stay" instead self-exile on their final chapter, dodgi
   live count, because several removals can land in one batch (two attackers damaging the same battle)
   and the live count would make every one of them look like the last. Backs the intrinsic Siege
   defeat ability (`Sieges.defeatAbility`, CR 310.12b).
+- `EventPattern.EnlistedEvent` (facade: `Triggers.self.enlists()`, SELF only) — fires once
+  per paid enlist instance, binding the enlisted creature as `EffectTarget.TriggeringEntity`.
+  This is distinct from an ordinary tap and from the keyword's separately generated linked boost.
+  Supports Guardian of New Benalia and Keldon Flamesage's enlist payoffs.
 - `EventPattern.ExertedAsItAttacksEvent` (facade: `Triggers.self.exertedAsItAttacks()`, SELF only) — the
   "When you do" after "you may exert this creature as it attacks" (CR 701.43d), linked to the
   `ExertAsItAttacks` static (CR 607.2h). Matches an `ExertedEvent` for the source with `asItAttacks`
@@ -9312,6 +9316,14 @@ in the declare-blockers step, even before the turn-based block action has comple
   *creature* — two Leviathans owe two Islands each, asked one at a time so each choice is made
   knowing the last. The sacrifice runs through `ForceSacrificeExecutor.sacrificePermanents`, so it
   emits `PermanentsSacrificedEvent` and fires dies triggers rather than being a silent zone move.
+- `Enlist` — `staticAbility { ability = Enlist }` represents the optional attack-declaration
+  tap cost and its linked power-boost trigger. Each occurrence is independent. After declaration
+  taps, the controller selects another untapped creature they control that was not chosen to attack
+  and either has haste or has been controlled since the turn began. Declining still attacks.
+  Each payment emits a separate enlist event and stack ability. The +X/+0 reads projected power
+  at resolution, or that original creature's departure-time power after it leaves, floored at zero,
+  until end of turn. The recipient never follows a blink. Grants use `Effects.GrantStaticAbility`.
+  First canonical user: Benalish Faithbonder. No new effect or dynamic-amount type is needed.
 - `ExertAsItAttacks` — "You may exert this creature as it attacks" (CR 701.43d): an **optional**
   cost to attack (CR 508.1g). After any mandatory attack cost (tax, sacrifice) is settled,
   `AttackPhaseManager.commitAttackDeclaration` pauses with one `SelectCardsDecision` (battlefield

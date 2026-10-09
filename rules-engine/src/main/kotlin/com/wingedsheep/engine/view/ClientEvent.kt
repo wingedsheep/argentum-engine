@@ -368,6 +368,19 @@ sealed interface ClientEvent {
     ) : ClientEvent
 
     @Serializable
+    @SerialName("attackCancelled")
+    data class AttackCancelled(val playerId: EntityId,
+        override val description: String = "Attack cancelled") : ClientEvent
+
+    @Serializable
+    @SerialName("creatureEnlisted")
+    data class CreatureEnlisted(
+        val attackerId: EntityId,
+        val enlistedId: EntityId,
+        override val description: String,
+    ) : ClientEvent
+
+    @Serializable
     @SerialName("permanentExerted")
     data class PermanentExerted(
         val permanentId: EntityId,
@@ -1200,6 +1213,8 @@ object ClientEventTransformer {
                 permanentName = event.entityName
             )
 
+            is AttackDeclarationCancelledEvent -> ClientEvent.AttackCancelled(event.playerId)
+            is EnlistedEvent -> ClientEvent.CreatureEnlisted(event.attackerId, event.enlistedId, "${event.attackerName} enlisted ${event.enlistedName}")
             is ExertedEvent -> ClientEvent.PermanentExerted(
                 permanentId = event.entityId,
                 permanentName = event.entityName

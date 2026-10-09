@@ -49,6 +49,8 @@ data class TriggerContext(
     val triggeringEntityId: EntityId? = null,
     val triggeringOrigin: com.wingedsheep.engine.state.ObjectRef? = null,
     val triggeringObject: com.wingedsheep.engine.state.ObjectRef? = null,
+    /** Departure-time characteristics of the captured triggering battlefield object, even after a blink. */
+    val triggeringLastKnownSnapshot: com.wingedsheep.engine.state.components.stack.EntitySnapshot? = null,
     /** Battlefield visit of the entity whose entry or departure caused this trigger. */
     val triggeringBattlefieldTimestamp: Long? = null,
     val triggeringPlayerId: EntityId? = null,
@@ -279,6 +281,10 @@ data class TriggerContext(
     companion object {
         fun fromEvent(event: com.wingedsheep.engine.core.GameEvent): TriggerContext {
             return when (event) {
+                is com.wingedsheep.engine.core.EnlistedEvent -> TriggerContext(
+                    triggeringEntityId = event.enlistedId,
+                    triggeringPlayerId = event.controllerId,
+                )
                 is ZoneChangeEvent -> TriggerContext(
                     triggeringEntityId = event.entityId,
                     triggeringOrigin = if (event.toZone == Zone.BATTLEFIELD) event.newObject else event.oldObject,

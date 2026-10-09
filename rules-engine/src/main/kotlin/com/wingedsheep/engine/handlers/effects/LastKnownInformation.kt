@@ -84,6 +84,7 @@ fun EffectContext.lkiSnapshotFor(reference: EffectTarget.SingleEntity, entityId:
         is EffectTarget.TappedAsCost -> tappedEntitySnapshots.snapshotFor(entityId)
         is EffectTarget.RevealedAsCost -> revealedAsCostSnapshots.snapshotFor(entityId)
         is EffectTarget.PipelineTarget -> chosenEntitySnapshots.snapshotFor(entityId)
+        EffectTarget.TriggeringEntity -> triggerContext?.triggeringLastKnownSnapshot?.takeIf { it.entityId == entityId }
         EffectTarget.Self -> lastKnownSourceSnapshot?.takeIf { it.entityId == entityId }
         else -> null
     }
