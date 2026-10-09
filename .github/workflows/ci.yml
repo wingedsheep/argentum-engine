@@ -94,6 +94,19 @@ jobs:
           mkdir -p "${GRADLE_BUILD_CACHE_DIR}"
           touch "${RUNNER_TEMP}/cache-marker"
 
+      # FlywayMigrationTest starts postgres:16-alpine through Testcontainers, whose image pull gives up
+      # after a fixed timeout (ContainerFetchException). A slow Docker Hub pull mid-suite failed the
+      # server group repeatedly; pulling up front, with retries, means the tests find it locally.
+      - name: Pre-pull Testcontainers images
+        if: matrix.name == 'server'
+        run: |
+          for attempt in 1 2 3 4 5; do
+            docker pull postgres:16-alpine && exit 0
+            echo "::warning::docker pull failed (attempt ${attempt}); retrying"
+            sleep $((attempt * 10))
+          done
+          exit 1
+
       - name: Test
         # Wrapped in a watchdog: if a group hasn't finished within the timeout it is almost certainly
         # the intermittent ":game-server" hang where a forked test-worker JVM never terminates (a
