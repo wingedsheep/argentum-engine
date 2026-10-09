@@ -126,6 +126,70 @@ class EnlistTest : FunSpec({
         cast(d, grantEnlist.name, a); attack(d,listOf(a)); choose(d,listOf(b)); resolveAll(d)
         power(d,a) shouldBe 5
     }
+    test("a generated token uses its own enlist static ability") {
+        val d = setup()
+        val makeToken = card("Make Enlisting Token") {
+            manaCost = "{0}"; typeLine = "Sorcery"
+            spell { effect = Effects.CreateToken(1, 4, creatureTypes = setOf("Soldier"),
+                name = "Enlisting Token", staticAbilities = listOf(Enlist)) }
+        }
+        d.registerCards(listOf(makeToken))
+        val spell = d.putCardInHand(d.activePlayer!!, makeToken.name)
+        d.castSpell(d.activePlayer!!, spell).error shouldBe null; d.bothPass()
+        val a = d.state.getBattlefield().single {
+            d.state.getEntity(it)?.get<com.wingedsheep.engine.state.components.identity.CardComponent>()?.name == "Enlisting Token"
+        }
+        d.removeSummoningSickness(a)
+        val b = ready(d, "Grizzly Bears")
+        attack(d, listOf(a)); choose(d, listOf(b)); resolveAll(d)
+        power(d, a) shouldBe 3
+    }
+    test("copying a token preserves its intrinsic enlist ability") {
+        val d = setup()
+        val makeToken = card("Make Copyable Enlisting Token") {
+            manaCost = "{0}"; typeLine = "Sorcery"
+            spell { effect = Effects.CreateToken(1, 4, creatureTypes = setOf("Soldier"),
+                name = "Copyable Enlisting Token", staticAbilities = listOf(Enlist)) }
+        }
+        val copy = instant("Copy Enlisting Token") { Effects.CreateTokenCopyOfTarget(it) }
+        d.registerCards(listOf(makeToken, copy))
+        val spell = d.putCardInHand(d.activePlayer!!, makeToken.name)
+        d.castSpell(d.activePlayer!!, spell).error shouldBe null; d.bothPass()
+        val original = d.state.getBattlefield().single {
+            d.state.getEntity(it)?.get<com.wingedsheep.engine.state.components.identity.CardComponent>()?.name == "Copyable Enlisting Token"
+        }
+        cast(d, copy.name, original)
+        val a = d.state.getBattlefield().single { it != original &&
+            d.state.getEntity(it)?.get<com.wingedsheep.engine.state.components.identity.CardComponent>()?.name == "Copyable Enlisting Token" }
+        d.removeSummoningSickness(a)
+        val b = ready(d, "Grizzly Bears")
+        attack(d, listOf(a)); choose(d, listOf(b)); resolveAll(d)
+        power(d, a) shouldBe 3
+    }
+    test("enlist granted after ability removal survives") {
+        val d = setup(); val a = ready(d, "Grizzly Bears"); val b = ready(d, haste.name)
+        cast(d, blank.name, a); cast(d, grantEnlist.name, a)
+        attack(d, listOf(a)); choose(d, listOf(b)); resolveAll(d)
+        power(d, a) shouldBe 5
+    }
+    test("ability removal after granting enlist suppresses it") {
+        val d = setup(); val a = ready(d, "Grizzly Bears"); ready(d, haste.name)
+        cast(d, grantEnlist.name, a); cast(d, blank.name, a)
+        attack(d, listOf(a))
+        d.pendingDecision shouldBe null; d.state.stack.size shouldBe 0
+    }
+    test("a token copy combines printed enlist with a copy-added instance") {
+        val d = setup(); val original = ready(d, recruit.name)
+        val copy = instant("Copy With Enlist") { Effects.CreateTokenCopyOfTarget(it, addedStaticAbilities = listOf(Enlist)) }
+        d.registerCards(listOf(copy)); cast(d, copy.name, original)
+        val a = d.state.getBattlefield().single { it != original &&
+            d.state.getEntity(it)?.get<com.wingedsheep.engine.state.components.identity.CardComponent>()?.name == recruit.name }
+        d.removeSummoningSickness(a)
+        val b = ready(d, "Grizzly Bears"); val c = ready(d, haste.name)
+        attack(d, listOf(a)); choose(d, listOf(b)); choose(d, listOf(c))
+        d.state.stack.size shouldBe 2
+        resolveAll(d); power(d, a) shouldBe 6
+    }
     test("enlisted creature blink uses its original departure power") {
         val d = setup(); val a = ready(d, recruit.name); val b = ready(d, "Grizzly Bears")
         attack(d,listOf(a)); choose(d,listOf(b))

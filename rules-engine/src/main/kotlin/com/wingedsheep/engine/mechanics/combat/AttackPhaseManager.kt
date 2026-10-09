@@ -179,7 +179,7 @@ internal class AttackPhaseManager(
                 events.addAll(tapped)
             }
         }
-        val enlistInstances = EnlistAttackCosts.instances(tappedState, attackers.keys, cardRegistry)
+        val enlistInstances = EnlistAttackCosts.instances(tappedState, attackers.keys)
         // Only a cancellable tax window needs rollback state or a routing handle.
         val rollback = if (calculateTotalAttackTax(tappedState, attackers, tappedState.projectedState) > 0) {
             val (declarationId, allocated) = tappedState.newRoutingId()

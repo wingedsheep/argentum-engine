@@ -1365,6 +1365,11 @@ The checkpoint never retains another game state or hidden hands/libraries, so it
 entire hidden world during AI determinization. `AttackDeclarationCancelledEvent` reports rollback
 without emitting false untap triggers. Enlist uses the tap atom and separate enlist/linked-trigger events.
 
+Enlist instances are read from projection. The engine's `Modification.GrantStaticAbility` retains
+point-of-use static abilities in a list through layer-six ordering, including copied token text.
+Ability removal clears this list; a later resolved grant restores only its own instance. Printed
+instances remain dependent on their source's abilities, while resolved grants are independent.
+
 ### 2.11 Copy Effects
 
 **Principle:** Copy effects resolve at entry time by replacing the base `CardComponent`, making

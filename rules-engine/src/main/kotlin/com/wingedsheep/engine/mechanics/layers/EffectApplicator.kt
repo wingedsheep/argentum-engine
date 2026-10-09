@@ -434,8 +434,12 @@ internal class EffectApplicator(
                         values.toughness = (values.toughness ?: 0) + toughnessMod
                     }
                 }
+                is Modification.GrantStaticAbility -> {
+                    values.staticAbilities.add(mod.ability)
+                }
                 is Modification.RemoveAllAbilities -> {
                     values.keywords.clear()
+                    values.staticAbilities.clear()
                     values.manaAbilityLifeTax = 0
                     values.lostAllAbilities = true
                 }

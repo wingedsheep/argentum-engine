@@ -349,6 +349,8 @@ class StateProjector {
         val deferredCantBlock = mutableListOf<Pair<ContinuousEffect, Boolean>>()
         for (effect in postTypeEffects) {
             if (effect.modification is Modification.CanAttackAsThoughHasty) continue
+            if (effect.modification is Modification.GrantStaticAbility && effect.fromStaticAbility &&
+                projectedValues[effect.sourceId]?.isFaceDown == true) continue
             // CR 613.6: a prohibition belonging to an effect begun in an earlier layer
             // keeps applying even when the source loses the ability during Layer 6.
             val startedBeforeAbility = effect.groupId?.let { groupId ->
@@ -358,7 +360,8 @@ class StateProjector {
             // longer exists (CR 604.2) — e.g. a creature's own "can't be blocked" under a Humility
             // that predates it. EffectSorter orders such a grant after the removal that strips its
             // source (CR 613.8a), so the source's lostAllAbilities is settled by the time we get here.
-            if (effect.modification is Modification.GrantKeyword && effect.fromStaticAbility &&
+            if ((effect.modification is Modification.GrantKeyword ||
+                    effect.modification is Modification.GrantStaticAbility) && effect.fromStaticAbility &&
                 !startedBeforeAbility && effect.sourceId !in staticRemoveAllAbilitiesSources &&
                 projectedValues[effect.sourceId]?.lostAllAbilities == true) continue
             // "Can't block" is a rules effect, not a characteristic: it applies once Layer 6 has
@@ -547,6 +550,7 @@ class StateProjector {
                 baseToughness = v.baseToughness,
                 name = v.name,
                 keywords = v.keywords,
+                staticAbilities = v.staticAbilities.toList(),
                 enchantmentRestrictions = v.enchantmentRestrictions.toList(),
                 colors = v.colors,
                 types = v.types,
@@ -1050,7 +1054,10 @@ class StateProjector {
                         affectsFilter = data.affectsFilter,
                         // Namespaced so a multi-layer grant can't share a CR 613.6 lock with one of
                         // the holder's printed groups (both are keyed by the holder's id).
-                        groupId = data.groupId?.let { "grant$index-$it" }
+                        groupId = data.groupId?.let { "grant$index-$it" },
+                        // This node represents gaining the ability itself, not an effect generated
+                        // by the holder's ability. A later grant survives an earlier ability loss.
+                        fromStaticAbility = data.modification !is Modification.GrantStaticAbility
                     )
                 )
             }

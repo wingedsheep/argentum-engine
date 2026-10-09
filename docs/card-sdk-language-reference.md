@@ -9323,6 +9323,8 @@ in the declare-blockers step, even before the turn-based block action has comple
   Each payment emits a separate enlist event and stack ability. The +X/+0 reads projected power
   at resolution, or that original creature's departure-time power after it leaves, floored at zero,
   until end of turn. The recipient never follows a blink. Grants use `Effects.GrantStaticAbility`.
+  Copied token instances and later grants survive independently; removing abilities clears existing
+  enlist instances, while a subsequent grant restores its own instance in layer order.
   First canonical user: Benalish Faithbonder. No new effect or dynamic-amount type is needed.
 - `ExertAsItAttacks` — "You may exert this creature as it attacks" (CR 701.43d): an **optional**
   cost to attack (CR 508.1g). After any mandatory attack cost (tax, sacrifice) is settled,

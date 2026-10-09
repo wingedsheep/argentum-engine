@@ -3,13 +3,11 @@ package com.wingedsheep.engine.mechanics.combat
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.event.TriggerContext
 import com.wingedsheep.engine.handlers.ObjectReferenceEnvironment
-import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.nameVisibleToAll
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
-import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.model.EntityId
@@ -20,18 +18,10 @@ import com.wingedsheep.sdk.scripting.values.EntityNumericProperty
 
 /** Enlist choices are collected before mana payment, and each paid instance emits its own trigger. */
 internal object EnlistAttackCosts {
-    fun instances(state: GameState, attackers: Set<EntityId>, cards: CardRegistry): List<EntityId> = buildList {
+    fun instances(state: GameState, attackers: Set<EntityId>): List<EntityId> = buildList {
         val projected = state.projectedState
         for (attacker in attackers) {
-            val entity = state.getEntity(attacker) ?: continue
-            if (projected.hasLostAllAbilities(attacker)) continue
-            val card = entity.get<CardComponent>()?.let { cards.getCard(it.cardDefinitionId) }
-            val printed = if (entity.has<FaceDownComponent>()) 0 else card?.staticAbilities?.count { it == Enlist } ?: 0
-            val granted = state.grantedStaticAbilities.count {
-                it.entityId == attacker && it.ability == Enlist &&
-                    com.wingedsheep.engine.mechanics.durations.GrantDurationGate.holds(state, attacker, it.sourceId, it.duration)
-            }
-            repeat(printed + granted) { add(attacker) }
+            repeat(projected.getStaticAbilities(attacker).count { it == Enlist }) { add(attacker) }
         }
     }
 
