@@ -120,6 +120,9 @@ class PuzzleComparisonBenchmark : ScenarioTestBase() {
                 // the attacker that is in the fight) are the negative controls and must not.
                 AiProfile.PRODUCTION_NOOP,
                 AiProfile.PRODUCTION_CANDIDATE_NOOP,
+                // Target polarity read off the effect, alone and on top of what is live.
+                AiProfile.PRODUCTION_POLARITY,
+                AiProfile.PRODUCTION_CANDIDATE_POLARITY,
                 // Phase 7's rollout evaluator, isolated from Phases 4 and 6 so the column is
                 // attributable to the rollouts alone.
                 AiProfile.PHASE7,

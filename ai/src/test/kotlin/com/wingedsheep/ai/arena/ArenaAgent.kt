@@ -154,6 +154,12 @@ object ArenaAgents {
         // production-candidate-choices 300` is the promotion gate.
         ArenaAgent("production-choices", AiProfile.PRODUCTION_CHOICES),
         ArenaAgent("production-candidate-choices", AiProfile.PRODUCTION_CANDIDATE_CHOICES),
+        // Targets aimed by the polarity the effect implies, wrong-side-only casts held, and the
+        // unkicked cast kept beside the kicked one. `just arena production production-polarity 300`
+        // prices the term on its own; `just arena production-candidate-expiring
+        // production-candidate-polarity 300` is the promotion gate.
+        ArenaAgent("production-polarity", AiProfile.PRODUCTION_POLARITY),
+        ArenaAgent("production-candidate-polarity", AiProfile.PRODUCTION_CANDIDATE_POLARITY),
         ArenaAgent("production-targeted", AiProfile.PRODUCTION_TARGETED),
         // Explicit ECL candidates. Their resource-backed weights fail closed to production's
         // evaluator until a validated artifact is installed; automatic selection is set-gated.

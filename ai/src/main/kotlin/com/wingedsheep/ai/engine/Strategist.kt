@@ -118,6 +118,12 @@ class Strategist(
      */
     private val refuseUnspendableGrants: Boolean = false,
     /**
+     * [AiProfile.targetPolarityFromEffect]: rank targets by what the effect does to them, drop a
+     * candidate whose every legal target is on the wrong side, and keep "cast without the kicker"
+     * as a candidate beside the kicked cast.
+     */
+    private val targetPolarityFromEffect: Boolean = false,
+    /**
      * The profile's `EvaluationWeights.boardPresence`. Only [HoldPolicy] reads it, to quote a
      * patience discount in the same units the leaf score prices board value in.
      */
@@ -193,7 +199,13 @@ class Strategist(
         val candidates = if (forcedPlay) {
             legalActions.filter { it.affordable && !it.hasUnfillableTargetRequirement }
         } else candidatesFrom(legalActions)
-        val affordable = expandXCostAbilities(state, preferKickerVariants(candidates), playerId)
+        // A forced play has to play *something*, so nothing is vetoed there.
+        val aimed = if (targetPolarityFromEffect && !forcedPlay) {
+            candidates.filterNot { TargetSelection.aimsOnlyAtTheWrongSide(state, it, playerId, intents) }
+        } else {
+            candidates
+        }
+        val affordable = expandXCostAbilities(state, preferKickerVariants(aimed), playerId)
 
         if (affordable.isEmpty()) return pass ?: legalActions.first()
 
@@ -731,7 +743,7 @@ class Strategist(
         val targetInfos = TargetSelection.fillableRequirements(action, useMeaningfulFilter)
             ?: return heuristicTargets(state, action, playerId)
 
-        val rankTarget = TargetSelection.ranker(state, action, playerId, intents)
+        val rankTarget = TargetSelection.ranker(state, action, playerId, intents, targetPolarityFromEffect)
         // Heuristic baseline for every requirement, then refine each one by simulation.
         val chosenTargets = mutableListOf<com.wingedsheep.engine.state.components.stack.ChosenTarget>()
         val chosenIds = mutableSetOf<EntityId>()
@@ -806,7 +818,8 @@ class Strategist(
         state, action,
         TargetSelection.fillHeuristically(
             state, action.copy(action = withAutomaticPayments(action)), playerId,
-            fillPartialRequirements = useMeaningfulFilter, intents = intents
+            fillPartialRequirements = useMeaningfulFilter, intents = intents,
+            polarityFromEffect = targetPolarityFromEffect,
         ),
     )
 
@@ -1085,6 +1098,12 @@ class Strategist(
      * tripping the "close call" heuristic).
      */
     private fun preferKickerVariants(actions: List<LegalAction>): List<LegalAction> {
+        // "Strictly better" holds for the kicker's *bonus*, not for what the bonus is aimed at.
+        // Tolarian Emissary's kicked ETB destroys target enchantment, and with only our own Aura
+        // on the table the kicked cast blows it up — a target that is not chosen until the trigger
+        // goes on the stack, so nothing at cast time can see it. Keeping the plain cast lets the
+        // simulation compare the two; it costs one extra simulation per kicker card in hand.
+        if (targetPolarityFromEffect) return actions
         // Collect cardIds that have an affordable CastWithKicker variant
         val kickedCardIds = mutableSetOf<EntityId>()
         for (action in actions) {
