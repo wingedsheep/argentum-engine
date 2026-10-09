@@ -259,6 +259,17 @@ check:
 set-loop CODE="" MODEL="":
     scripts/set-loop "{{CODE}}" "{{MODEL}}"
 
+# Waits out subscription usage limits; stop with `touch .claude/loop-runs/commander.stop`.
+# Make EDHREC's top Commander decks playable, one deck at a time: commander-loop [model] [top]
+[group: 'ai']
+commander-loop MODEL="" TOP="":
+    scripts/commander-loop "{{MODEL}}" "{{TOP}}"
+
+# Rank the cards EDHREC's top Commander decks run that we lack, in deck-completion order
+[group: 'build']
+commander-staples *ARGS:
+    scripts/commander-staples {{ARGS}}
+
 # Waits out subscription usage limits; stop with `touch .claude/loop-runs/assay.stop`.
 # Widen Assay's grammar, one band per PR, over text the engine already expresses: assay-loop [model] [focus]
 [group: 'ai']

@@ -45,6 +45,10 @@ docs it points at; load those when the work needs them.
     expresses (declines on hand-written cards; never new SDK vocabulary) → **`just assay-loop [model]
     [focus]`** (fresh headless session per step, like `just set-loop`), or the **`assay-loop`** skill for an
     in-session `/loop`.
+  - Implementing the cards popular Commander decks run, autonomously, one PR at a time →
+    **`just commander-loop [model] [top]`** (fresh headless session per step, like `just set-loop`). It
+    finishes EDHREC's top decks in the order `just commander-staples` ranks them: the most real decks made
+    playable per card added.
   - Proving a set is *actually* finished once its backlog reads N/N, and archiving it → **`verify-set`**
     (Scryfall field verification of every compiled card, reprint and basic-land coverage, self-play pass).
     A green backlog is a claim; that skill is the proof.

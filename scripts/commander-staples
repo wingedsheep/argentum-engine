@@ -1,0 +1,184 @@
+#!/usr/bin/env python3
+"""
+Rank the cards Commander players use most that the engine doesn't implement yet, and the order to
+add them in so the most real decks become fully playable soonest.
+
+Source: EDHREC's top commanders (default: the top 100 over the past 2 years), each commander's
+page (how many of its decks run each card) and its average decklist (the 100 cards a typical deck
+runs). Those are compared against every `card("Name")` and `Printing` row under `mtg-sets/`.
+
+Two orderings come out of it, and the queue uses both:
+  - Decks, greedily: repeatedly finish the deck that buys the most real decks per card still
+    missing. Staples alone never finish a deck — most of a deck's missing cards are specific to
+    its commander — so finishing decks one at a time is what makes them playable.
+  - Staples: every missing card weighted by how many real decks (across all those commanders) run
+    it. Inside a deck, cards are listed in this order, so the most-shared cards land first.
+
+EDHREC responses are cached under ~/.cache/edhrec/ for 7 days.
+
+Usage:
+  scripts/commander-staples                          # print the queue
+  scripts/commander-staples --out queue.md           # write it to a file
+  scripts/commander-staples --top 50 --period month  # a narrower, more current slice
+  scripts/commander-staples --refresh                # re-fetch EDHREC
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import re
+import sys
+import time
+import unicodedata
+import urllib.error
+import urllib.request
+from collections import defaultdict
+from datetime import date
+from pathlib import Path
+
+from card_exclusions import load_exclusions
+from set_dirs import iter_card_files
+
+CACHE_ROOT = Path.home() / ".cache" / "edhrec"
+EDHREC_BASE = "https://json.edhrec.com/pages"
+USER_AGENT = "argentum-engine-commander-staples/1.0"
+CACHE_MAX_AGE_SEC = 7 * 24 * 3600
+REQUEST_DELAY_SEC = 0.3
+REQUEST_TIMEOUT_SEC = 30
+
+# Same patterns as scripts/card-status: the escaped-quote body is load-bearing.
+CARD_DSL_RE = re.compile(r'\b(?:card|basicLand)\(\s*"((?:[^"\\]|\\.)*)"')
+PRINTING_NAME_RE = re.compile(r'\bname\s*=\s*"((?:[^"\\]|\\.)*)"')
+BASICS = ["Plains", "Island", "Swamp", "Mountain", "Forest", "Wastes"] + [
+    f"Snow-Covered {b}" for b in ["Plains", "Island", "Swamp", "Mountain", "Forest"]
+]
+
+
+def norm(name: str) -> str:
+    """EDHREC and our sources disagree on diacritics and curly quotes; compare without them."""
+    ascii_ = unicodedata.normalize("NFKD", name).encode("ascii", "ignore").decode()
+    return ascii_.replace("’", "'").strip().lower()
+
+
+def implemented_names() -> set[str]:
+    names = {norm(b) for b in BASICS}
+    for kt in iter_card_files():
+        text = kt.read_text(encoding="utf-8")
+        for pattern in (CARD_DSL_RE, PRINTING_NAME_RE):
+            names.update(norm(re.sub(r"\\(.)", r"\1", n)) for n in pattern.findall(text))
+    return names
+
+
+def is_implemented(name: str, implemented: set[str]) -> bool:
+    """A multi-face card is authored under its full name or its front face, depending on layout."""
+    n = norm(name)
+    return n in implemented or any(face.strip() in implemented for face in n.split(" // "))
+
+
+def edhrec_get(path: str, *, refresh: bool) -> dict:
+    cache = CACHE_ROOT / (path.replace("/", "_") + ".json")
+    if not refresh and cache.is_file() and time.time() - cache.stat().st_mtime < CACHE_MAX_AGE_SEC:
+        return json.loads(cache.read_text(encoding="utf-8"))
+    req = urllib.request.Request(
+        f"{EDHREC_BASE}/{path}.json",
+        headers={"User-Agent": USER_AGENT, "Accept": "application/json"},
+    )
+    for attempt in range(4):
+        try:
+            with urllib.request.urlopen(req, timeout=REQUEST_TIMEOUT_SEC) as resp:
+                payload = json.load(resp)
+            break
+        except (urllib.error.URLError, TimeoutError) as e:
+            if attempt == 3:
+                raise SystemExit(f"commander-staples: EDHREC {path} failed: {e}")
+            time.sleep(2 ** attempt * 2)
+    time.sleep(REQUEST_DELAY_SEC)
+    CACHE_ROOT.mkdir(parents=True, exist_ok=True)
+    cache.write_text(json.dumps(payload), encoding="utf-8")
+    return payload
+
+
+def build_queue(top: int, period: str, refresh: bool) -> str:
+    implemented = implemented_names()
+    excluded = {norm(n) for n in load_exclusions()}
+    commanders = edhrec_get(f"commanders/{period}", refresh=refresh)
+    commanders = commanders["container"]["json_dict"]["cardlists"][0]["cardviews"][:top]
+    total = sum(c["num_decks"] for c in commanders)
+
+    weight: dict[str, int] = defaultdict(int)  # real decks running the card, across all commanders
+    decks = []
+    for c in commanders:
+        page = edhrec_get(f"commanders/{c['sanitized']}", refresh=refresh)
+        seen: set[str] = set()
+        for cardlist in page["container"]["json_dict"]["cardlists"]:
+            for view in cardlist["cardviews"]:
+                if view["name"] not in seen:
+                    seen.add(view["name"])
+                    weight[view["name"]] += view.get("num_decks", 0)
+        weight[c["name"]] += c["num_decks"]
+        average = edhrec_get(f"average-decks/{c['sanitized']}", refresh=refresh)["deck"]
+        cards = {c["name"]} | {n for group in average["cards"].values() for n, _ in group}
+        missing = {n for n in cards if not is_implemented(n, implemented) and norm(n) not in excluded}
+        decks.append({"name": c["name"], "decks": c["num_decks"], "missing": missing})
+
+    lines = [
+        "# Commander staples queue",
+        "",
+        f"Generated {date.today().isoformat()} by `scripts/commander-staples --top {top} --period {period}`",
+        f"from EDHREC's top {len(commanders)} commanders ({total:,} decks). Regenerate rather than edit:",
+        "it reads what's implemented from the checkout it runs in.",
+        "",
+        f"Fully playable today: {sum(1 for d in decks if not d['missing'])} of {len(decks)} average decks.",
+        "",
+        "## Decks — finish in this order",
+        "",
+        "Each deck lists only the cards no earlier deck already needs, most-shared first",
+        "(the number is how many real decks across all these commanders run the card).",
+        "",
+    ]
+    added: set[str] = set()
+    covered = 0
+    remaining = [d for d in decks]
+    rank = 0
+    while remaining:
+        best = max(remaining, key=lambda d: d["decks"] / max(1, len(d["missing"] - added)))
+        remaining.remove(best)
+        new = sorted(best["missing"] - added, key=lambda n: (-weight[n], n))
+        added |= set(new)
+        covered += best["decks"]
+        rank += 1
+        status = "playable" if not best["missing"] else f"missing {len(best['missing'])}"
+        lines.append(
+            f"### {rank}. {best['name']} — {best['decks']:,} decks — {status}"
+            f" — +{len(new)} new (running {len(added)}) — cumulative {covered / total:.1%}"
+        )
+        lines += [f"- {n} — {weight[n]:,}" for n in new]
+        lines.append("")
+
+    staples = sorted((n for n in weight if not is_implemented(n, implemented) and norm(n) not in excluded),
+                     key=lambda n: (-weight[n], n))
+    lines += ["## Staples — top 100 missing cards across every deck", ""]
+    lines += [f"{i}. {n} — {weight[n]:,} ({weight[n] / total:.1%})" for i, n in enumerate(staples[:100], 1)]
+    return "\n".join(lines) + "\n"
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument("--top", type=int, default=100, help="how many top commanders (default 100)")
+    parser.add_argument("--period", choices=["year", "month", "week"], default="year",
+                        help="EDHREC popularity window: year = past 2 years (default)")
+    parser.add_argument("--out", type=Path, help="write the queue here instead of stdout")
+    parser.add_argument("--refresh", action="store_true", help="ignore the 7-day EDHREC cache")
+    args = parser.parse_args()
+    queue = build_queue(args.top, args.period, args.refresh)
+    if args.out:
+        args.out.write_text(queue, encoding="utf-8")
+        print(f"commander-staples: wrote {args.out}", file=sys.stderr)
+    else:
+        sys.stdout.write(queue)
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
