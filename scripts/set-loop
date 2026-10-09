@@ -309,7 +309,10 @@ while [ ! -e "$RUNS/$CODE.stop" ]; do
   LAST=$(echo "$RESULT" | tail -1)
   log "iteration $N finished: ${LAST:-<no result>} ($STATS)"
 
-  if grep -qiE 'usage limit|session limit|hit your limit|rate limit|overloaded|quota exceeded' <<<"$RESULT$(tail -5 "$TRANSCRIPT")"; then
+  # A session that ended on its protocol line finished its step; any "rate limit" in its text is
+  # its own prose (e.g. a Scryfall 429 it reported), not the harness stopping it.
+  if ! grep -qE '^(STEP [0-9]+ DONE|WAITING_CI|[A-Z]+_COMPLETE|STUCK)' <<<"$LAST" &&
+     grep -qiE 'usage limit|session limit|hit your limit|rate limit|overloaded|quota exceeded' <<<"$RESULT$(tail -5 "$TRANSCRIPT")"; then
     log "limit reached — waiting 15 min"; sleep 900; continue
   fi
   if [ "$HARNESS" = codex ] && { [ "$SESSION_STATUS" -ne 0 ] || [ -z "$FINAL" ]; }; then
