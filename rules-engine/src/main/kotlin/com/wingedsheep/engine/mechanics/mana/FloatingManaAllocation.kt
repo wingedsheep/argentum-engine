@@ -75,8 +75,7 @@ private fun ManaPool.matchFloating(
 ): FloatingManaAllocation? {
     val units = buildList {
         restrictedMana.forEachIndexed { index, entry ->
-            val eligible = if (context == null) entry.restriction == ManaRestriction.AnySpend
-                else entry.restriction.isSatisfiedBy(context)
+            val eligible = entry.restriction.isEligibleForPayment(context)
             if (eligible) add(PoolUnits(entry.color,
                 entry.source?.isSnow == true, 1, index, entry.obligationIds - dischargedObligations))
         }

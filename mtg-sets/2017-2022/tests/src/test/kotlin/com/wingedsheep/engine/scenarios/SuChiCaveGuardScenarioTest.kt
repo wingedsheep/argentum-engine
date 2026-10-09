@@ -1,8 +1,10 @@
 package com.wingedsheep.engine.scenarios
 
+import com.wingedsheep.engine.core.ForetellCard
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.OwnerComponent
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
+import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.sdk.core.Color
@@ -70,6 +72,40 @@ class SuChiCaveGuardScenarioTest : FunSpec({
         d.pool(player).total shouldBe 8
         d.passPriorityUntil(Step.UPKEEP)
         d.pool(player).isEmpty shouldBe true
+    }
+    test("retained mana pays a counterspell tax and the remainder survives combat") {
+        val d = driver()
+        val player = d.activePlayer!!
+        val opponent = d.getOpponent(player)
+        d.destroyGuard(player)
+        val ring = d.putCardInHand(player, "Sol Ring")
+        d.castSpell(player, ring).error shouldBe null
+        d.pool(player).total shouldBe 7
+        val ringOnStack = d.state.stack.single()
+        d.passPriority(player).error shouldBe null
+        val snare = d.putCardInHand(opponent, "Geistlight Snare")
+        d.giveMana(opponent, Color.BLUE, 3)
+        d.castSpellWithTargets(opponent, snare, listOf(ChosenTarget.Spell(ringOnStack))).error shouldBe null
+        d.bothPass()
+        d.submitYesNo(player, true).error shouldBe null
+        d.pool(player).total shouldBe 4
+        d.bothPass()
+        d.findPermanent(player, "Sol Ring") shouldBe ring
+        d.passPriorityUntil(Step.POSTCOMBAT_MAIN)
+        d.pool(player).total shouldBe 4
+        d.pool(player).restrictedMana.all { it.expiry == ManaExpiry.KEPT_UNTIL_END_OF_TURN } shouldBe true
+    }
+    test("retained mana pays the foretell special action and the remainder survives combat") {
+        val d = driver()
+        val player = d.activePlayer!!
+        d.destroyGuard(player)
+        val effigy = d.putCardInHand(player, "Scorn Effigy")
+        d.submit(ForetellCard(player, effigy)).error shouldBe null
+        d.getExile(player).contains(effigy) shouldBe true
+        d.pool(player).total shouldBe 6
+        d.passPriorityUntil(Step.POSTCOMBAT_MAIN)
+        d.pool(player).total shouldBe 6
+        d.pool(player).restrictedMana.all { it.expiry == ManaExpiry.KEPT_UNTIL_END_OF_TURN } shouldBe true
     }
     test("two deaths accumulate independently") {
         val d = driver()

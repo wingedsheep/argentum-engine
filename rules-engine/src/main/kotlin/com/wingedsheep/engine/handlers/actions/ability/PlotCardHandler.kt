@@ -154,6 +154,7 @@ class PlotCardHandler(
             red = poolComponent.red,
             green = poolComponent.green,
             colorless = poolComponent.colorless,
+            restrictedMana = poolComponent.restrictedMana,
             snowMana = poolComponent.snowMana,
             snowColorless = poolComponent.snowColorless
         ).withSpendingColors(state, action.playerId)
@@ -178,6 +179,7 @@ class PlotCardHandler(
                     red = poolAfterPayment.red,
                     green = poolAfterPayment.green,
                     colorless = poolAfterPayment.colorless,
+                    restrictedMana = poolAfterPayment.restrictedMana,
                     snowMana = poolAfterPayment.snowMana,
                     snowColorless = poolAfterPayment.snowColorless
                 )

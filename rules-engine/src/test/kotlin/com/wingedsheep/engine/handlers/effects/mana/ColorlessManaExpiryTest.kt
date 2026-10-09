@@ -66,6 +66,55 @@ class ColorlessManaExpiryTest : FunSpec({
         payable.canPay(ManaCost.parse("{C}"), SpellPaymentContext(isInstantOrSorcery = true)) shouldBe false
         payable.pay(ManaCost.parse("{C}"), SpellPaymentContext(isCreature = true))!!.restrictedMana.size shouldBe 2
     }
+    test("contextless costs spend retained colourless mana and preserve spell-only entries") {
+        val ineligible = produce(AddColorlessManaEffect(2, ManaRestriction.CreatureSpellsOnly)).restrictedMana
+        val retained = produce(kept(5)).restrictedMana
+        val pool = ManaPool(restrictedMana = ineligible + retained)
+        val cost = ManaCost.parse("{2}{C}{C}")
+
+        pool.canPay(cost) shouldBe true
+        val paid = pool.pay(cost)!!
+        paid.restrictedMana.filter { it.restriction == ManaRestriction.CreatureSpellsOnly } shouldBe ineligible
+        paid.restrictedMana.filter { it.restriction == ManaRestriction.AnySpend } shouldBe retained.take(1)
+        pool.canPay(ManaCost.parse("{4}{C}{C}")) shouldBe false
+        pool.pay(ManaCost.parse("{4}{C}{C}")) shouldBe null
+        pool.restrictedMana shouldBe ineligible + retained
+    }
+    test("contextless partial payment reports unpaid generic mana without consuming spell-only mana") {
+        val ineligible = produce(AddColorlessManaEffect(2, ManaRestriction.CreatureSpellsOnly)).restrictedMana
+        val pool = ManaPool(restrictedMana = ineligible + produce(kept(3)).restrictedMana)
+        val paid = pool.payPartial(ManaCost.parse("{3}{C}{C}"))
+
+        paid.remainingCost shouldBe ManaCost.parse("{2}")
+        paid.manaSpent.colorless shouldBe 3
+        paid.newPool.restrictedMana shouldBe ineligible
+        paid.newPool.canPay(ManaCost.parse("{C}")) shouldBe false
+        paid.newPool.payPartial(ManaCost.parse("{C}")).remainingCost shouldBe ManaCost.parse("{C}")
+    }
+    test("contextless coloured and generic costs also spend retained AnySpend entries") {
+        val retained = produce(kept(3)).restrictedMana.map { it.copy(color = Color.RED) }
+        val pool = ManaPool(restrictedMana = retained)
+        val cost = ManaCost.parse("{1}{R}")
+
+        pool.canPay(cost) shouldBe true
+        pool.pay(cost)!!.restrictedMana shouldBe retained.take(1)
+        val partial = pool.payPartial(cost)
+        partial.remainingCost.isEmpty() shouldBe true
+        partial.manaSpent.red shouldBe 2
+        partial.newPool.restrictedMana shouldBe retained.take(1)
+        pool.canPay(ManaCost.parse("{C}")) shouldBe false
+    }
+    test("contextless X coverage counts only eligible mana of an allowed colour") {
+        val retained = produce(kept(3)).restrictedMana
+        val red = retained.take(2).map { it.copy(color = Color.RED) }
+        val ineligible = produce(AddColorlessManaEffect(4, ManaRestriction.CreatureSpellsOnly)).restrictedMana
+        val pool = ManaPool(restrictedMana = retained + red + ineligible)
+
+        pool.xCoverage(10, emptySet(), null) shouldBe 5
+        pool.xCoverage(4, emptySet(), null) shouldBe 4
+        pool.xCoverage(10, setOf(Color.RED), null) shouldBe 2
+        pool.xCoverage(10, setOf(Color.GREEN), null) shouldBe 0
+    }
     test("zero and negative amounts do not tag or change existing mana") {
         val initial = ManaPoolComponent(colorless = 2)
         produce(kept(0), initial) shouldBe initial
