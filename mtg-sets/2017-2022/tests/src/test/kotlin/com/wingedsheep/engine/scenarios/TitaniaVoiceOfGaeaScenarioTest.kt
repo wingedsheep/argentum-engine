@@ -30,6 +30,7 @@ class TitaniaVoiceOfGaeaScenarioTest : ScenarioTestBase() {
         var b = scenario()
             .withPlayers("Player", "Opponent")
             .withCardOnBattlefield(1, "Titania, Voice of Gaea")
+            .withCardInHand(1, "Cloudshift")
             .withCardInLibrary(1, "Forest")
             .withCardInLibrary(1, "Forest")
             .withCardInLibrary(2, "Forest")
@@ -68,6 +69,22 @@ class TitaniaVoiceOfGaeaScenarioTest : ScenarioTestBase() {
                     game.state.projectedState.getPower(titania) shouldBe 6
                     game.state.projectedState.getToughness(titania) shouldBe 6
                 }
+            }
+
+            test("Cloudshift returns both Titania and Argoth as their front faces") {
+                val game = upkeepBoard(landsInGraveyard = 4)
+                game.passUntilPhase(Phase.BEGINNING, Step.UPKEEP)
+                game.resolveStack()
+                game.passUntilPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                val melded = game.findPermanent("Titania, Gaea Incarnate").shouldNotBeNull()
+
+                game.castSpell(1, "Cloudshift", melded).error shouldBe null
+                game.resolveStack()
+
+                game.findPermanent("Titania, Gaea Incarnate") shouldBe null
+                game.findPermanent("Titania, Voice of Gaea").shouldNotBeNull()
+                game.findPermanent("Argoth, Sanctum of Nature").shouldNotBeNull()
+                game.isInExile(1, "Argoth, Sanctum of Nature") shouldBe false
             }
 
             test("with no other lands the melded Titania enters as 0/0 and dies before its enters trigger resolves") {

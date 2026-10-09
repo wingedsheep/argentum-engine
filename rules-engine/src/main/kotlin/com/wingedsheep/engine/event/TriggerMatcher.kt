@@ -1100,6 +1100,9 @@ class TriggerMatcher(
     ): Boolean {
         if (event !is ZoneChangeEvent) return false
 
+        // The partner is a second card arriving, not a second permanent leaving.
+        if (event.meldedPermanent != null && trigger.from == Zone.BATTLEFIELD) return false
+
         // Match zones
         if (trigger.from != null && event.fromZone != trigger.from) return false
         if (trigger.to != null && event.toZone != trigger.to) return false
@@ -1138,7 +1141,7 @@ class TriggerMatcher(
             // captures the projected types/subtypes at the moment of leaving (e.g., a creature
             // that was a Food artifact only because of Ygra's continuous effect). The base
             // cardComponent.typeLine in the new zone has only the printed types.
-            val typeLine = if (event.fromZone == Zone.BATTLEFIELD && event.lastKnown?.typeLine != null) {
+            val typeLine = if (trigger.from == Zone.BATTLEFIELD && event.isBattlefieldDeparture && event.lastKnown?.typeLine != null) {
                 event.lastKnown.typeLine
             } else {
                 cardComponent?.typeLine ?: event.lastKnown?.typeLine
@@ -1199,7 +1202,7 @@ class TriggerMatcher(
                         // the creature is no longer on the battlefield and projected state won't
                         // have its keywords (e.g., Jackdaw Savior: "whenever a creature you control
                         // with flying dies").
-                        if (event.fromZone == Zone.BATTLEFIELD && event.lastKnown?.keywords?.isNotEmpty() == true) {
+                        if (event.isBattlefieldDeparture && event.lastKnown?.keywords?.isNotEmpty() == true) {
                             event.lastKnown.keywords.containsKeyword(predicate.keyword)
                         } else {
                             projected.hasKeyword(event.entityId, predicate.keyword)
@@ -1227,7 +1230,7 @@ class TriggerMatcher(
                         // entity may also be unreachable after a bounce/exile by the time
                         // we check. For enter-battlefield events the entity is still in state
                         // and lastKnownWasToken is not populated — read TokenComponent live.
-                        val isToken = if (event.fromZone == Zone.BATTLEFIELD) {
+                        val isToken = if (event.isBattlefieldDeparture) {
                             event.lastKnown?.wasToken == true
                         } else {
                             entity?.has<com.wingedsheep.engine.state.components.identity.TokenComponent>() == true
@@ -1235,7 +1238,7 @@ class TriggerMatcher(
                         !isToken
                     }
                     is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsToken -> {
-                        if (event.fromZone == Zone.BATTLEFIELD) {
+                        if (event.isBattlefieldDeparture) {
                             event.lastKnown?.wasToken == true
                         } else {
                             entity?.has<com.wingedsheep.engine.state.components.identity.TokenComponent>() == true
@@ -2197,7 +2200,7 @@ class TriggerMatcher(
         sourceId: EntityId
     ): Boolean = when (predicate) {
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.SharesNameWithSpellCastThisTurn -> {
-            if (event.fromZone == Zone.BATTLEFIELD)
+            if (event.isBattlefieldDeparture)
                 com.wingedsheep.engine.handlers.predicates.sharesNameWithSpellCastThisTurn(state, event.lastKnown?.name)
             else matchesStatePredicateForTrigger(predicate, state, event.entityId)
         }
@@ -2218,7 +2221,7 @@ class TriggerMatcher(
             // controller from the event's last-known info (the entity is no longer on the
             // battlefield by the time the trigger gates). For ETB triggers (to=BATTLEFIELD)
             // the entity is live and the projected path applies.
-            val leavingBattlefield = event.fromZone == Zone.BATTLEFIELD
+            val leavingBattlefield = event.isBattlefieldDeparture
             if (leavingBattlefield) {
                 val dyingPower = event.lastKnown?.power
                 val dyingController = event.lastKnown?.controllerId ?: event.ownerId
@@ -2242,7 +2245,7 @@ class TriggerMatcher(
             // The dying / leaving entity is no longer on the battlefield, so its live counters are
             // gone; gate against the counters captured on the event (LKI). For non-leave triggers
             // (e.g. ETB, to=BATTLEFIELD) the entity is live, so read its current counters.
-            if (event.fromZone == Zone.BATTLEFIELD) {
+            if (event.isBattlefieldDeparture) {
                 (event.lastKnown?.counters?.get(predicate.counterType) ?: 0) >= predicate.minCount
             } else {
                 val counters = state.getEntity(event.entityId)?.get<CountersComponent>()
@@ -2250,7 +2253,7 @@ class TriggerMatcher(
             }
         }
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.HasAnyCounter -> {
-            if (event.fromZone == Zone.BATTLEFIELD) {
+            if (event.isBattlefieldDeparture) {
                 (event.lastKnown?.totalCounters ?: 0) > 0
             } else {
                 val counters = state.getEntity(event.entityId)?.get<CountersComponent>()
@@ -2262,7 +2265,7 @@ class TriggerMatcher(
         // attachment links are gone by trigger-gating time, so ZoneTransitionService freezes the
         // answer as `wasModified` before exit cleanup. For non-leave triggers (ETB) the entity is live.
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsModified -> {
-            if (event.fromZone == Zone.BATTLEFIELD) {
+            if (event.isBattlefieldDeparture) {
                 event.lastKnown?.wasModified == true
             } else {
                 isModified(state, event.entityId) { state.projectedState.getController(it) }
@@ -2274,19 +2277,19 @@ class TriggerMatcher(
         // projected path would read no longer exists. "Whenever a face-down creature you control
         // dies" (Yarus, Roar of the Old Gods) is only answerable from the snapshot (CR 608.2h).
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsFaceDown -> {
-            if (event.fromZone == Zone.BATTLEFIELD) event.lastKnown?.wasFaceDown == true
+            if (event.isBattlefieldDeparture) event.lastKnown?.wasFaceDown == true
             else matchesStatePredicateForTrigger(predicate, state, event.entityId)
         }
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsFaceUp -> {
-            if (event.fromZone == Zone.BATTLEFIELD) event.lastKnown?.wasFaceDown == false
+            if (event.isBattlefieldDeparture) event.lastKnown?.wasFaceDown == false
             else matchesStatePredicateForTrigger(predicate, state, event.entityId)
         }
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsEquipped -> {
-            if (event.fromZone == Zone.BATTLEFIELD) event.lastKnown?.wasEquipped == true
+            if (event.isBattlefieldDeparture) event.lastKnown?.wasEquipped == true
             else hasAttachmentOfKind(state, event.entityId, equipment = true)
         }
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsEnchanted -> {
-            if (event.fromZone == Zone.BATTLEFIELD) event.lastKnown?.wasEnchanted == true
+            if (event.isBattlefieldDeparture) event.lastKnown?.wasEnchanted == true
             else hasAttachmentOfKind(state, event.entityId, equipment = false)
         }
         // "Whenever an *attacking* creature is put into your graveyard from the battlefield"
@@ -2296,7 +2299,7 @@ class TriggerMatcher(
         // (Garna, Bloodfist of Keld); without this arm the trigger path would fail open and fire
         // for every matching creature that dies, attacking or not.
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsAttacking -> {
-            if (event.fromZone == Zone.BATTLEFIELD) event.lastKnown?.wasAttacking == true
+            if (event.isBattlefieldDeparture) event.lastKnown?.wasAttacking == true
             else matchesStatePredicateForTrigger(predicate, state, event.entityId)
         }
         is com.wingedsheep.sdk.scripting.predicates.StatePredicate.Or ->

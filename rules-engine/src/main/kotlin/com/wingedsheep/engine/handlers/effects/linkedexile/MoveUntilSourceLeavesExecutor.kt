@@ -33,16 +33,20 @@ class MoveUntilSourceLeavesExecutor(private val zones: ZoneTransitionService) : 
         val previousZone = state.logicalZone(targetId)?.zoneType ?: return EffectResult.success(state)
         if (previousZone == effect.destination) return EffectResult.success(state)
         val result = zones.moveToZone(state, targetId, effect.destination)
-        val moved = result.transitions.firstOrNull { it.oldObject == state.objectRef(targetId) }
-            ?.newObject ?: return EffectResult.success(result.state, result.events)
-        if (result.actualDestination != effect.destination || !result.state.isCurrentObject(moved)) {
+        val moved = result.transitions.filter {
+            it.oldObject == state.objectRef(targetId) &&
+                it.cause == com.wingedsheep.engine.core.ZoneTransitionCause.PRIMARY &&
+                it.toZone == effect.destination
+        }.mapNotNull { it.newObject }.filter(result.state::isCurrentObject)
+        if (result.actualDestination != effect.destination || moved.isEmpty()) {
             return EffectResult.success(result.state, result.events)
         }
-        // Keep the ordinary linked-exile view for the client and abilities that reference the pile.
-        val linked = if (effect.destination == Zone.EXILE && result.state.isCurrentObject(source)) {
-            ZoneMovementUtils.linkExiledToSource(result.state, targetId, sourceId)
-        } else result.state
-        val recorded = linked.copy(zoneReturns = linked.zoneReturns + ZoneReturn(source, moved, previousZone))
+        // Keep the ordinary linked-exile view for both cards of a departed meld.
+        var linked = result.state
+        if (effect.destination == Zone.EXILE && linked.isCurrentObject(source)) {
+            for (card in moved) linked = ZoneMovementUtils.linkExiledToSource(linked, card.entityId, sourceId)
+        }
+        val recorded = linked.copy(zoneReturns = linked.zoneReturns + moved.map { ZoneReturn(source, it, previousZone) })
         // Moving the source itself can end the duration as part of the initial move.
         val returns = ZoneReturnService.returnDepartedSources(zones, recorded)
         return EffectResult.success(returns.state, result.events + returns.events)

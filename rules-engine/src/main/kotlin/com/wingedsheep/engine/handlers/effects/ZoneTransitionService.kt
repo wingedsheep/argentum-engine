@@ -137,7 +137,9 @@ data class ZoneEntryOptions(
      * as you control a transformed permanent" — and an Aura that moved first must not be read off
      * the partly-moved state. Null for a lone move: the pre-move state already is the look-back.
      */
-    val lookBackGrants: LookBackGrants? = null
+    val lookBackGrants: LookBackGrants? = null,
+    /** Internal card-arrival half of a meld departure; replacements already chose both cards' destination. */
+    val meldedPermanent: com.wingedsheep.engine.state.ObjectRef? = null
 )
 
 /**
@@ -261,9 +263,9 @@ class ZoneTransitionService(
         val currentZoneKey = fromZoneKey ?: findEntityZone(state, entityId)
             ?: return ZoneTransitionResult(state, emptyList())
 
-        val oldObject = state.objectRef(entityId)
+        val oldObject = options.meldedPermanent ?: state.objectRef(entityId)
         val fromZone = currentZoneKey.zoneType
-        val leavingBattlefield = fromZone == Zone.BATTLEFIELD
+        val leavingBattlefield = fromZone == Zone.BATTLEFIELD && options.meldedPermanent == null
 
         // A token that has left the battlefield stays where it is until the SBA removes it
         // (CR 111.8) — "exile it, then return it" (Flicker of Fate) must not bring a token back.
@@ -688,7 +690,7 @@ class ZoneTransitionService(
 
         // CR 712.21: a melded permanent that leaves the battlefield is one permanent leaving and two
         // cards arriving. The host turns back into its own front face after the copy revert below;
-        // the partner card follows it into the destination zone once the host has landed (step 7b'').
+        // the partner card follows it into the destination zone once the host has landed.
         val melded = if (leavingBattlefield) {
             newState.getEntity(entityId)?.get<com.wingedsheep.engine.state.components.identity.MeldedComponent>()
         } else null
@@ -1003,22 +1005,6 @@ class ZoneTransitionService(
             }
         }
 
-        // 7b''. CR 712.21: the melded permanent's other card goes to the same zone, front face up.
-        // It was never an object on the battlefield of its own, so it gets no ZoneChangeEvent —
-        // the host's event is the one permanent leaving. Shuffles after the host's own placement,
-        // so a shuffle-into-library melded permanent mixes both cards in.
-        if (melded != null) {
-            val partnerOwner = newState.getEntity(melded.partnerId)?.get<CardComponent>()?.ownerId ?: ownerId
-            val partnerZone = ZoneKey(partnerOwner, actualDestZone)
-            newState = when (actualDestZone) {
-                Zone.LIBRARY -> placeInLibrary(newState, melded.partnerId, partnerZone, effectiveLibraryPlacement)
-                Zone.EXILE -> newState.addToZone(partnerZone, melded.partnerId).updateEntity(melded.partnerId) { c ->
-                    c.with(com.wingedsheep.engine.state.components.identity.ExiledFromZoneComponent(fromZone))
-                }
-                else -> newState.addToZone(partnerZone, melded.partnerId)
-            }
-        }
-
         // 7c. Clear the CR 903.9a "already asked this stay" marker on every commander zone
         // change. The marker is attached by CommanderZoneChoiceCheck when the owner declines
         // the prompt; clearing it here means the next entry into a non-command zone produces a
@@ -1065,9 +1051,28 @@ class ZoneTransitionService(
                 craftMaterial = leavingBattlefield && options.craftMaterial,
                 oldObject = oldObject,
                 newObject = newObject,
-                requestedDestination = destinationZone
+                requestedDestination = destinationZone,
+                meldedPermanent = options.meldedPermanent
             )
         )
+
+        if (melded != null) {
+            val partner = moveToZone(
+                newState, melded.partnerId, actualDestZone,
+                options.copy(skipZoneChangeRedirect = true, meldedPermanent = oldObject,
+                    libraryPlacement = effectiveLibraryPlacement),
+                fromZoneKey = currentZoneKey
+            )
+            newState = partner.state
+            events.addAll(partner.events.map {
+                if (it is ZoneChangeEvent && it.meldedPermanent == oldObject)
+                    it.copy(requestedDestination = destinationZone, lastKnown = lastKnownSnapshot) else it
+            })
+            transitions.addAll(partner.transitions.map { it.copy(requestedDestination = destinationZone) })
+            if (actualDestZone == Zone.EXILE) redirectResult.linkSourceId?.let { source ->
+                newState = ZoneMovementUtils.linkExiledToSource(newState, melded.partnerId, source)
+            }
+        }
 
         // 8a2. Void: track that a nonland permanent left the battlefield this turn.
         // Uses the last-known projected type line so that creature-lands (which carry the
@@ -1201,7 +1206,7 @@ class ZoneTransitionService(
         // in one turn records its most recent origin.
         if (actualDestZone == Zone.GRAVEYARD && fromZone != Zone.GRAVEYARD) {
             newState = newState.updateEntity(entityId) { c ->
-                c.with(PutIntoGraveyardThisTurnComponent(fromBattlefield = leavingBattlefield))
+                c.with(PutIntoGraveyardThisTurnComponent(fromBattlefield = fromZone == Zone.BATTLEFIELD))
             }
         }
 
@@ -1236,6 +1241,8 @@ class ZoneTransitionService(
             }
         }
 
+        val arrivingCard = newState.getEntity(entityId)?.get<CardComponent>() ?: cardComponent
+
         // 8d. Descend (CR 700.11): track permanent cards put into a player's graveyard
         // from any zone. Tokens are excluded per Scryfall ruling — although tokens are
         // briefly placed in the graveyard before ceasing to exist, that placement does
@@ -1244,7 +1251,7 @@ class ZoneTransitionService(
         // excluded. The count is keyed on the card's owner, not its last controller —
         // "your graveyard" is the owner's graveyard.
         if (actualDestZone == Zone.GRAVEYARD &&
-            cardComponent.typeLine.isPermanent &&
+            arrivingCard.typeLine.isPermanent &&
             !container.has<TokenComponent>()
         ) {
             newState = newState.updateEntity(ownerId) { playerContainer ->
@@ -1260,7 +1267,7 @@ class ZoneTransitionService(
         // doesn't undo the count.
         if (actualDestZone == Zone.GRAVEYARD &&
             fromZone != Zone.GRAVEYARD &&
-            cardComponent.typeLine.isCreature &&
+            arrivingCard.typeLine.isCreature &&
             !container.has<TokenComponent>()
         ) {
             newState = newState.updateEntity(ownerId) { playerContainer ->

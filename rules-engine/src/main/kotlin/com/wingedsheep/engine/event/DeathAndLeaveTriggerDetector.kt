@@ -151,7 +151,7 @@ class DeathAndLeaveTriggerDetector(
         // Collect all death events from this batch
         val deathEvents = events.filterIsInstance<ZoneChangeEvent>().filter {
             it.toZone == Zone.GRAVEYARD &&
-                it.fromZone == Zone.BATTLEFIELD
+                it.isBattlefieldDeparture
         }
         if (deathEvents.size < 2) return // Need at least 2 simultaneous deaths
 
@@ -207,7 +207,7 @@ class DeathAndLeaveTriggerDetector(
         triggers: MutableList<PendingTrigger>
     ) {
         val deathEvents = events.filterIsInstance<ZoneChangeEvent>().filter {
-            it.toZone == Zone.GRAVEYARD && it.fromZone == Zone.BATTLEFIELD
+            it.toZone == Zone.GRAVEYARD && it.isBattlefieldDeparture
         }
         if (deathEvents.isEmpty()) return
 
@@ -443,7 +443,7 @@ class DeathAndLeaveTriggerDetector(
         event: ZoneChangeEvent,
         triggers: MutableList<PendingTrigger>
     ) {
-        if (event.fromZone != Zone.BATTLEFIELD || event.toZone != Zone.GRAVEYARD) return
+        if (!event.isBattlefieldDeparture || event.toZone != Zone.GRAVEYARD) return
         if (event.lastKnown?.wasToken == true) return
         if ((event.lastKnown?.minusOneMinusOneCounters ?: 0) > 0) return
         if (Keyword.PERSIST.name !in (event.lastKnown?.keywords ?: emptySet())) return
@@ -497,7 +497,7 @@ class DeathAndLeaveTriggerDetector(
         event: ZoneChangeEvent,
         triggers: MutableList<PendingTrigger>
     ) {
-        if (event.fromZone != Zone.BATTLEFIELD || event.toZone != Zone.GRAVEYARD) return
+        if (!event.isBattlefieldDeparture || event.toZone != Zone.GRAVEYARD) return
         if ((event.lastKnown?.plusOnePlusOneCounters ?: 0) > 0) return
         if (Keyword.UNDYING.name !in (event.lastKnown?.keywords ?: emptySet())) return
 
@@ -564,7 +564,7 @@ class DeathAndLeaveTriggerDetector(
         event: ZoneChangeEvent,
         triggers: MutableList<PendingTrigger>
     ) {
-        if (event.fromZone != Zone.BATTLEFIELD || event.toZone != Zone.GRAVEYARD) return
+        if (!event.isBattlefieldDeparture || event.toZone != Zone.GRAVEYARD) return
         if (event.lastKnown?.wasToken == true) return
         if (event.lastKnown?.typeLine?.isCreature != true) return
         if (Keyword.ENDURING.name !in event.lastKnown.keywords) return

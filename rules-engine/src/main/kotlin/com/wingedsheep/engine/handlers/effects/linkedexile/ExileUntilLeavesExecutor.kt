@@ -76,7 +76,10 @@ class ExileUntilLeavesExecutor(private val zones: ZoneTransitionService) : Effec
         val sourceContainer = newState.getEntity(sourceId)
         if (sourceContainer != null) {
             val existingLinked = sourceContainer.get<LinkedExileComponent>()
-            val allExiled = (existingLinked?.exiledIds ?: emptyList()) + listOf(targetId)
+            val allExiled = (existingLinked?.exiledIds ?: emptyList()) + transitionResult.transitions.filter {
+                it.oldObject == state.objectRef(targetId) && it.toZone == Zone.EXILE &&
+                    it.cause == com.wingedsheep.engine.core.ZoneTransitionCause.PRIMARY
+            }.mapNotNull { it.newObject }.filter(newState::isCurrentObject).map { it.entityId }
             newState = newState.updateEntity(sourceId) { c ->
                 c.with(LinkedExileComponent(allExiled))
             }

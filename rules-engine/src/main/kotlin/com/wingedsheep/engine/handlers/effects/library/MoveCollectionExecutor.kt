@@ -57,8 +57,9 @@ class MoveCollectionExecutor(
         context: EffectContext
     ): EffectResult {
         var context = context
-        val allCards = context.pipeline.storedCollections[effect.from]
+        val stored = context.pipeline.storedCollections[effect.from]
             ?: return EffectResult.error(state, "No collection named '${effect.from}' in storedCollections")
+        val allCards = stored.flatMap { context.objectReferences.meldedCards(it, state) ?: listOf(it) }.distinct()
 
         // Optional per-card filter: only move cards matching it; the rest stay put. Lets a single
         // gathered pile be split by type across multiple MoveCollection steps.
@@ -144,8 +145,10 @@ class MoveCollectionExecutor(
             is CardDestination.ToZoneExiledFrom ->
                 moveToZonesExiledFrom(state, context, cards, destination, effect)
         }
+        val arrivedCards = (cards + result.events.filterIsInstance<ZoneChangeEvent>()
+            .filter { it.meldedPermanent?.entityId in cards }.map { it.entityId }).distinct()
         if (effect.linkToSource && result.outcome is Outcome.Done) {
-            result = linkCardsToSource(result, context, cards)
+            result = linkCardsToSource(result, context, arrivedCards)
         }
         if (effect.unlinkFromSource && result.outcome is Outcome.Done) {
             result = unlinkCardsFromSource(result, context, cards)
@@ -153,16 +156,20 @@ class MoveCollectionExecutor(
         val counterType = effect.addCounterType
         if (counterType != null && result.outcome is Outcome.Done) {
             var newState = result.state
-            for (cardId in cards) {
+            val counterEvents = mutableListOf<GameEvent>()
+            for (cardId in arrivedCards) {
+                if (newState.getEntity(cardId) == null) continue
                 newState = newState.updateEntity(cardId) { c ->
                     val existing = c.get<CountersComponent>() ?: CountersComponent()
                     c.with(existing.withAdded(counterType, 1))
                 }
+                counterEvents.add(CountersAddedEvent(cardId, counterType, 1,
+                    newState.getEntity(cardId)?.get<CardComponent>()?.name.orEmpty()))
             }
-            result = EffectResult.success(newState, result.events).copy(updatedCollections = result.updatedCollections)
+            result = result.copy(state = newState, events = result.events + counterEvents)
         }
         if (effect.lookableInExile && result.outcome is Outcome.Done) {
-            result = grantLookAtInExile(result, context, cards)
+            result = grantLookAtInExile(result, context, arrivedCards)
         }
         val marksBattlefieldEntries = when (destination) {
             is CardDestination.ToZone -> destination.zone == Zone.BATTLEFIELD
@@ -1018,6 +1025,8 @@ class MoveCollectionExecutor(
             }
 
             movedIds.add(cardId)
+            movedIds.addAll(transitionResult.events.filterIsInstance<ZoneChangeEvent>()
+                .filter { it.meldedPermanent?.entityId == cardId }.map { it.entityId })
             if (destZone == Zone.LIBRARY) {
                 librariesReceivingCards.add(actualDestPlayerId)
             }

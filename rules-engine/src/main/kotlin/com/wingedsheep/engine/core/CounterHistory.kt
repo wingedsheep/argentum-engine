@@ -59,7 +59,7 @@ object CounterHistory {
             return projected.isCreature(entityId) && projected.getController(entityId) == playerId
         }
         val departure = events.firstOrNull {
-            it is ZoneChangeEvent && it.entityId == entityId && it.fromZone == Zone.BATTLEFIELD
+            it is ZoneChangeEvent && it.entityId == entityId && it.isBattlefieldDeparture
         } as ZoneChangeEvent? ?: return false
         val lastKnown = departure.lastKnown ?: return false
         return lastKnown.typeLine?.isCreature == true && lastKnown.controllerId == playerId
@@ -106,7 +106,7 @@ object CounterHistory {
     ): com.wingedsheep.sdk.model.EntityId? {
         if (event.entityId in state.getBattlefield()) return state.projectedState.getController(event.entityId)
         val departure = events.firstOrNull {
-            it is ZoneChangeEvent && it.entityId == event.entityId && it.fromZone == Zone.BATTLEFIELD
+            it is ZoneChangeEvent && it.entityId == event.entityId && it.isBattlefieldDeparture
         } as ZoneChangeEvent?
         return departure?.lastKnown?.controllerId
     }
