@@ -755,6 +755,11 @@ export function TargetingOverlay() {
       }}>
         {promptText}
       </div>
+      {targetingState.sourceCardName && (
+        <div style={{ color: '#ccc', fontSize: responsive.fontSize.small, fontStyle: 'italic', marginTop: 2 }}>
+          for {targetingState.sourceCardName}
+        </div>
+      )}
       <div style={{ color: '#aaa', fontSize: responsive.fontSize.small, marginTop: 4 }}>
         {hintText}
       </div>

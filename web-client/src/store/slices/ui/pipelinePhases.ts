@@ -1211,6 +1211,12 @@ export function enterPhase(
       // chosen X becomes the minimum as well as the maximum.
       const resolveMinByX = (staticMin: number, max: number, exact: boolean | undefined): number =>
         exact && chosenX != null ? chosenX : Math.min(staticMin, max)
+      // Name the spell the targets are for — "for Catlike Curiosity (Disturb)". The banner is all
+      // the player sees once the menu closes, and the server's description is the one place that
+      // names the face actually being cast (a disturb or modal-DFC back, CR 712.8c) and how.
+      const spellSource = action.type === 'CastSpell' && actionInfo.description
+        ? { sourceCardName: actionInfo.description.replace(/^Cast /, '') }
+        : {}
 
       if (actionInfo.targetRequirements && actionInfo.targetRequirements.length > 1) {
         const firstReq = actionInfo.targetRequirements[0]!
@@ -1228,6 +1234,7 @@ export function enterPhase(
           targetDescription: firstReq.description,
           totalRequirements: actionInfo.targetRequirements.length,
           ...(actionInfo.requiresDamageDistribution ? { requiresDamageDistribution: true } : {}),
+          ...spellSource,
         })
       } else {
         const rawMax = actionInfo.targetCount ?? 1
@@ -1243,6 +1250,7 @@ export function enterPhase(
           // already derives the requirement's wording, the single-target path just dropped it.
           ...(actionInfo.targetDescription ? { targetDescription: actionInfo.targetDescription } : {}),
           ...(actionInfo.requiresDamageDistribution ? { requiresDamageDistribution: true } : {}),
+          ...spellSource,
         })
       }
       break
