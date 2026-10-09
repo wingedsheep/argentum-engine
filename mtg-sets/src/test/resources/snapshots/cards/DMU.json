@@ -2539,6 +2539,45 @@
     ]
 }
 
+// Phyrexian Vivisector
+{
+    "name": "Phyrexian Vivisector",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Phyrexian Human",
+    "oracleText": "Whenever a creature you control dies, scry 1. (Look at the top card of your library. You may put that card on the bottom.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Phyrexian Vivisector:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:you",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Scry",
+                    "count": 1
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "100",
+        "artist": "Irina Nordsol",
+        "flavorText": "Before he was the Father of Machines, Yawgmoth was a twisted Thran physician, and his legacy of medical atrocities lives on in New Phyrexia.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/5/65617a8f-4bd8-4edb-b5ec-e20b4482390b.jpg?1783921329"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Pilfer
 {
     "name": "Pilfer",
@@ -2833,6 +2872,96 @@
         "imageUri": "https://cards.scryfall.io/normal/front/5/f/5fc22ecb-5d87-464e-8c7d-5d40a52e1e4f.jpg?1783921267"
     },
     "colorIdentityOverride": []
+}
+
+// Samite Herbalist
+{
+    "name": "Samite Herbalist",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Human Cleric",
+    "oracleText": "Whenever this creature becomes tapped, you gain 1 life and scry 1. (Look at the top card of your library. You may put that card on the bottom.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Samite Herbalist:1",
+                "trigger": "TapEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "Scry",
+                            "count": 1
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "31",
+        "artist": "Alessandra Pisano",
+        "flavorText": "\"Spiritual wholeness is not something you can give to yourself: it is attained only through the divine blessing of healing another.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/0/409189da-53c9-4daf-b6b2-d155fc14f91a.jpg?1783921361"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Sengir Connoisseur
+{
+    "name": "Sengir Connoisseur",
+    "manaCost": "{3}{B}{B}",
+    "typeLine": "Creature — Vampire",
+    "oracleText": "Flying\nWhenever one or more other creatures die, put a +1/+1 counter on this creature. This ability triggers only once each turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sengir Connoisseur:1",
+                "trigger": {
+                    "type": "CreaturesYouControlDiedEvent",
+                    "filter": "creature ctrl:any",
+                    "excludeSelf": true
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                },
+                "oncePerTurn": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "104",
+        "rarity": "UNCOMMON",
+        "artist": "Irina Nordsol",
+        "flavorText": "\"We cannot afford to let the Phyrexians win. They taste terrible.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/c/7c9231f0-7733-46d9-b9c6-c6c5b7fe65dd.jpg?1783921328"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
 }
 
 // Shadow-Rite Priest
