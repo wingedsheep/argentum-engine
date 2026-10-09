@@ -32,11 +32,13 @@ import com.wingedsheep.engine.legalactions.LegalAction
 import com.wingedsheep.engine.legalactions.MeaningfulActionFilter
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.sdk.core.Format
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.ManaSymbol
 import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AdditionalCostPayment
 import com.wingedsheep.sdk.scripting.AlternativePaymentChoice
@@ -112,6 +114,11 @@ class Strategist(
      * hands it to [com.wingedsheep.ai.engine.knowledge.ExpiringGrantWindow].
      */
     private val holdExpiringGrantsForCombat: Boolean = false,
+    /**
+     * [AiProfile.permanentCastIsNotCardLoss] — refund the hand-curve charge on a sorcery-speed
+     * permanent cast. See [deploymentCredit].
+     */
+    private val permanentCastIsNotCardLoss: Boolean = false,
     /**
      * The profile's `EvaluationWeights.boardPresence`. Only [HoldPolicy] reads it, to quote a
      * patience discount in the same units the leaf score prices board value in.
@@ -287,7 +294,7 @@ class Strategist(
         val firstCandidate = if (pass != null) 1 else 0
         val adjusted = (firstCandidate until leaves.size).map { i ->
             val adjustment = if (forcedPlay) AdjustedScore(leafScores[i])
-                else adjustScore(evaluationState, leaves[i], playerId, leafScores[i], passScore)
+                else adjustScore(evaluationState, leaves[i], playerId, leafScores[i], passScore, leafStates[i])
             Triple(leaves[i], leafScores[i], adjustment)
         }
         val scored = adjusted.map { (action, _, adjustment) -> action to adjustment.score }
@@ -625,10 +632,14 @@ class Strategist(
         state: GameState,
         action: LegalAction,
         playerId: EntityId,
-        leafScore: Double,
+        rawLeafScore: Double,
         passScore: Double,
+        leafState: GameState,
     ): AdjustedScore {
-        val cardName = resolveCardName(state, action) ?: return AdjustedScore(leafScore)
+        val credit = deploymentCredit(state, action, leafState, playerId)
+        val leafScore = rawLeafScore + credit
+        val creditNote = if (credit > 0.0) "deployed, not spent %+.2f".format(credit) else null
+        val cardName = resolveCardName(state, action) ?: return AdjustedScore(leafScore, creditNote)
 
         // Phase 6: what the board looks like after this resolves is only half the question; the
         // other half is whether this was the window — and, for removal, whether this was the target
@@ -649,8 +660,10 @@ class Strategist(
         }
         val timingDelta = (timing as? TimingVerdict.Adjust)?.delta ?: 0.0
         val timingReason = (timing as? TimingVerdict.Adjust)?.reason ?: "timing"
-        val timingNote =
-            if (timingDelta != 0.0) "hold policy $timingReason %+.2f".format(timingDelta) else null
+        val timingNote = listOfNotNull(
+            creditNote,
+            if (timingDelta != 0.0) "hold policy $timingReason %+.2f".format(timingDelta) else null,
+        ).joinToString("; ").ifEmpty { null }
 
         // Check for card-specific advisor override. Timing is applied outside it, so a per-card
         // advisor still sees the pure board score as its `defaultScore` and a card with both
@@ -673,6 +686,46 @@ class Strategist(
             (override ?: leafScore) + timingDelta,
             listOfNotNull(advisorNote, timingNote).joinToString("; ").ifEmpty { null },
         )
+    }
+
+    /**
+     * What the evaluator charged for taking [action]'s card out of our hand, refunded when the cast
+     * merely *deployed* it — [AiProfile.permanentCastIsNotCardLoss].
+     *
+     * Measured with the evaluator itself rather than by re-deriving `CardAdvantage`'s curve: the
+     * charge is `evaluate(root) − evaluate(root without that card in hand)`, so whichever hand model
+     * the profile runs (the land-drop earmark, lands priced as mana, a fitted raw vector) is refunded
+     * at exactly the price it charged, and nothing here can drift from it.
+     *
+     * Four conditions, each the reason the refund is honest:
+     *  - **Our own main phase, empty stack** — sorcery timing, where passing cannot buy a better
+     *    window, only a later main phase with the same mana.
+     *  - **The card was in our hand** — a cast from the graveyard or exile never had hand value.
+     *  - **The leaf has it on our battlefield** — the simulation, not the type line, says it became a
+     *    permanent, so an Adventure cast as its spell half, or a creature that was countered, gets
+     *    nothing.
+     *  - **Never negative** — the refund cancels a charge; it is not a second opinion on the hand.
+     *
+     * The board side then decides alone: a body worth having beats passing, a permanent that makes
+     * the board worse (or only costs mana the hand could have spent) still does not.
+     */
+    private fun deploymentCredit(
+        root: GameState,
+        action: LegalAction,
+        leaf: GameState,
+        playerId: EntityId,
+    ): Double {
+        if (!permanentCastIsNotCardLoss) return 0.0
+        val cast = action.action as? CastSpell ?: return 0.0
+        if (!root.isActiveTurnFor(playerId) || root.stack.isNotEmpty()) return 0.0
+        if (root.step != Step.PRECOMBAT_MAIN && root.step != Step.POSTCOMBAT_MAIN) return 0.0
+        val hand = ZoneKey(playerId, Zone.HAND)
+        if (cast.cardId !in root.getZone(hand)) return 0.0
+        if (cast.cardId !in leaf.getBattlefield(playerId)) return 0.0
+        val without = root.removeFromZone(hand, cast.cardId)
+        val charge = evaluator.evaluate(root, root.projectedState, playerId) -
+            evaluator.evaluate(without, without.projectedState, playerId)
+        return charge.coerceAtLeast(0.0)
     }
 
     /**
@@ -715,7 +768,7 @@ class Strategist(
          */
         forceTargetRefinement: Boolean = false,
     ): com.wingedsheep.engine.core.GameAction {
-        val baseAction = withAutomaticPayments(action)
+        val baseAction = withAutomaticPayments(state, action)
         if (TargetSelection.targetsAlreadyFilled(baseAction) != false) {
             return withSumGatedExilePayment(state, action, baseAction)
         }
@@ -799,7 +852,7 @@ class Strategist(
     ): com.wingedsheep.engine.core.GameAction = withSumGatedExilePayment(
         state, action,
         TargetSelection.fillHeuristically(
-            state, action.copy(action = withAutomaticPayments(action)), playerId,
+            state, action.copy(action = withAutomaticPayments(state, action)), playerId,
             fillPartialRequirements = useMeaningfulFilter, intents = intents
         ),
     )
@@ -813,7 +866,7 @@ class Strategist(
      * spells and activated abilities. The first candidate is deterministic and already filtered by
      * projected controller/type/counter legality.
      */
-    private fun withAutomaticPayments(action: LegalAction): GameAction {
+    private fun withAutomaticPayments(state: GameState, action: LegalAction): GameAction {
         val gameAction = withAutomaticTapForGeneric(action, withAutomaticConvoke(action))
         val info = action.additionalCostInfo ?: return gameAction
         val existing = when (gameAction) {
@@ -854,6 +907,7 @@ class Strategist(
                     existing.copy(variableCostPermanents = chosen)
                 }
             }
+            "Craft" -> existing.copy(exiledCards = craftMaterials(state, info))
             else -> return gameAction
         }
         // "Discard a card and sacrifice a creature": every further selection cost is paid too.
@@ -863,6 +917,39 @@ class Strategist(
             is ActivateAbility -> gameAction.copy(costPayment = payment)
             else -> gameAction
         }
+    }
+
+    /**
+     * The cheapest materials for a Craft activation (CR 702.167a): graveyard cards first, then the
+     * permanents worth least on the board, [AdditionalCostData.craftMinCount] of them.
+     *
+     * The engine refuses a Craft activation with no materials named — it never auto-picks, because
+     * which artifact goes is the activator's choice — so before this the AI's every Craft was
+     * "illegal once materialized" and silently dropped. An LCI deck sat on Inverted Iceberg and
+     * Unstable Glyphbridge for twenty-four turns with an empty hand and thirteen lands (2026-10-09
+     * logs, game 11 T15–T39).
+     *
+     * A graveyard card is free to exile; a permanent is board value given up, so the cheapest one
+     * by `BoardPresence` goes first — a Gnome token before a creature that is doing work.
+     * Exactly the minimum, never more: the only crafts that reward extra materials read their total
+     * power or mana value, and spending a body for that is a choice this pick does not try to make.
+     * A per-slot craft (Throne of the Grim Captain) may need a matching the cheapest-first order
+     * does not find; that one still reaches the processor, is refused, and is dropped as before.
+     */
+    private fun craftMaterials(
+        state: GameState,
+        info: com.wingedsheep.engine.legalactions.AdditionalCostData,
+    ): List<EntityId> {
+        val projected = state.projectedState
+        val battlefield = state.getBattlefield().toSet()
+        return info.validCraftMaterials
+            .filter { state.getEntity(it) != null }
+            .sortedBy { id ->
+                if (id !in battlefield) return@sortedBy -1.0
+                val card = state.getEntity(id)?.get<CardComponent>() ?: return@sortedBy 0.0
+                BoardPresence.permanentValue(state, projected, id, card, intents)
+            }
+            .take(info.craftMinCount)
     }
 
     /**

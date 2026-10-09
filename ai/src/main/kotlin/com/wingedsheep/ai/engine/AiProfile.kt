@@ -391,6 +391,33 @@ data class AiProfile(
      * permanents, not cards, and keeps the legacy ranking.
      */
     val castabilityAwareCardSelection: Boolean = false,
+    /**
+     * Stop charging a permanent cast at sorcery speed as card loss — [landDropIsNotCardLoss]'s
+     * argument, one card type further.
+     *
+     * Casting a creature in our own main phase does not spend a card, it moves one from the zone
+     * `CardAdvantage` prices to the one `BoardPresence` prices. Charged as card loss, the move only
+     * happens when the permanent's board value beats what the hand curve says the card was worth
+     * *held* — and at the empty-hand cliff that is 3.0 (1.0 → `concave-hand-2`'s −2.0), more than a
+     * summoning-sick 1/1 or a mana rock is worth on any board. So the AI sat on its last creature for
+     * turns with ten lands untapped: Wose Pathfinder for five turns while six attackers killed it
+     * (2026-10-09 logs, game 21 T19–T23), Hecteyes at 2 life with its only spare blocker in hand
+     * (game 23 T21), Changeling Wayfinder with nine lands (game 15 T22/T24). The same charge one rung
+     * up — 1.5 for the second card — is what kept a 1/1 pinger in hand next to two other cards
+     * (game 13 T14) and a Dragonstorm Globe uncast for eight turns (game 9).
+     *
+     * The hand curve is the right price for a card whose value is the *option* of casting it: an
+     * instant waiting for its window, a counterspell, a trick. A sorcery-speed permanent with the
+     * mana to cast it has no window to wait for — passing just moves it to a later main phase with
+     * the same mana and less game left, and mana unspent at end of turn is worth nothing. So
+     * `Strategist` refunds exactly what the evaluator charged for taking that card out of hand
+     * (`evaluate(root) − evaluate(root without the card)`), and only for a cast that put the card
+     * onto our battlefield from our own main phase with the stack empty. The board side then decides
+     * alone, the way [landDropIsNotCardLoss] lets `Tempo` decide the land drop. Instants, sorceries,
+     * flash plays on the opponent's turn and an Adventure's spell half are untouched — their hand
+     * value is real option value.
+     */
+    val permanentCastIsNotCardLoss: Boolean = false,
     /** Non-null profiles may only be selected automatically for this set. Arena selection stays explicit. */
     val restrictedToSet: String? = null,
 ) {
@@ -1156,6 +1183,22 @@ data class AiProfile(
             holdExpiringGrantsForCombat = true,
         )
 
+        /** [permanentCastIsNotCardLoss] alone on top of [PRODUCTION], for attribution. */
+        val PRODUCTION_DEPLOY = PRODUCTION.copy(
+            id = "production-deploy",
+            permanentCastIsNotCardLoss = true,
+        )
+
+        /**
+         * [PRODUCTION_CANDIDATE_EXPIRING] plus [permanentCastIsNotCardLoss] — the agent that stops
+         * hoarding castable permanents. Stacked on the profile the 2026-10-09 game logs were taken
+         * with, so the cited misplays are measured against the agent that made them.
+         */
+        val PRODUCTION_CANDIDATE_DEPLOY = PRODUCTION_CANDIDATE_EXPIRING.copy(
+            id = "production-candidate-deploy",
+            permanentCastIsNotCardLoss = true,
+        )
+
         /**
          * [castabilityAwareCardSelection] alone on top of [PRODUCTION], so a puzzle or an arena
          * point that moves is attributable to it.
@@ -1191,6 +1234,7 @@ data class AiProfile(
         val LIVE = PRODUCTION_CANDIDATE_EXPIRING.copy(
             id = "live",
             castabilityAwareCardSelection = true,
+            permanentCastIsNotCardLoss = true,
         )
 
         /**

@@ -109,6 +109,12 @@ class PuzzleComparisonBenchmark : ScenarioTestBase() {
                 // Castability-aware card selection, alone and on top of what is live.
                 AiProfile.PRODUCTION_CARDSELECT,
                 AiProfile.PRODUCTION_CANDIDATE_CARDSELECT,
+                // Sorcery-speed permanents no longer charged as card loss, alone and on top of the
+                // agent the 2026-10-09 logs were taken with. `sequencing-09`/`-10` are the verdicts
+                // that should move; `instants-*` and `respond-02` (hold the last Counterspell) are
+                // the negative controls, since an instant's hand value is real option value.
+                AiProfile.PRODUCTION_DEPLOY,
+                AiProfile.PRODUCTION_CANDIDATE_DEPLOY,
                 // Phase 7's rollout evaluator, isolated from Phases 4 and 6 so the column is
                 // attributable to the rollouts alone.
                 AiProfile.PHASE7,
