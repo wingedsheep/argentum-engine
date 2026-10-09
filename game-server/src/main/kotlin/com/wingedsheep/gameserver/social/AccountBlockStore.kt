@@ -10,7 +10,7 @@ import java.time.Instant
 import java.util.UUID
 
 /** An account [accountId] has blocked, for the "Blocked players" list. */
-data class BlockedAccount(val accountId: UUID, val displayName: String, val blockedAt: Instant)
+data class BlockedAccount(val accountId: UUID, val displayName: String, val blockedAt: Instant, val avatar: String? = null)
 
 /**
  * Durable account-to-account blocks. Wired like [com.wingedsheep.gameserver.matchmaking.RatingLookup]:
@@ -68,9 +68,9 @@ class JdbcAccountBlockStore(
 
     override fun list(blocker: UUID): List<BlockedAccount> {
         val rows = blocks.findByBlockerId(blocker)
-        val names = users.findAllById(rows.map { it.blockedId }).associate { it.id to it.displayName }
+        val byId = users.findAllById(rows.map { it.blockedId }).associateBy { it.id }
         return rows.mapNotNull { row ->
-            names[row.blockedId]?.let { BlockedAccount(row.blockedId, it, row.createdAt) }
+            byId[row.blockedId]?.let { BlockedAccount(row.blockedId, it.displayName, row.createdAt, it.avatar) }
         }.sortedBy { it.displayName.lowercase() }
     }
 }

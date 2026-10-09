@@ -800,6 +800,7 @@ export function createGameplayHandlers(set: SetState, get: GetState): Pick<Messa
       // vs. Team shares neither. `syncSeatTeams` re-derives both from every state update.
       const sharedTurns = msg.players.some((p) => p.teamSharedTurns)
       get().setSeatTeams(seatTeams, sharedLife, sharedTurns)
+      get().setSeatAvatars(msg.players)
 
       // Start the game the way the player set the table up (Preferences → Gameplay): their
       // standing stops and their starting priority mode.
@@ -827,6 +828,8 @@ export function createGameplayHandlers(set: SetState, get: GetState): Pick<Messa
           playerName,
           opponentName,
           opponentNames: msg.players.filter((p) => !p.isYou).map((p) => p.name),
+          playerAvatar: msg.players.find((p) => p.isYou)?.avatar ?? null,
+          opponentAvatars: msg.players.filter((p) => !p.isYou).map((p) => p.avatar ?? null),
           ...(round != null ? { round } : {}),
           ...(playerRecord != null ? { playerRecord } : {}),
           ...(opponentRecord != null ? { opponentRecord } : {}),

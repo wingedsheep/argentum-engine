@@ -361,6 +361,7 @@
   font-size: 18px;
   font-weight: 600;
 }
+.avatar[data-portrait='true'] { position: relative; background: #10131c; }
 
 .opponentText {
   display: flex;

@@ -244,6 +244,17 @@ class GameSession(
      */
     val departedForMatch: MutableSet<EntityId> = java.util.concurrent.ConcurrentHashMap.newKeySet()
 
+    /**
+     * Each seat's account avatar, remembered from the first session that carried one so an AI or
+     * reconnect session swapped in later (which carries none) doesn't blank it.
+     */
+    private val seatAvatars = java.util.concurrent.ConcurrentHashMap<EntityId, String>()
+
+    /** Note a seat's account avatar from a session that carries one (connect, reconnect, swap). */
+    fun rememberAvatar(playerSession: PlayerSession) {
+        playerSession.avatar?.let { seatAvatars[playerSession.playerId] = it }
+    }
+
     /** Player info for persistence (playerId -> (playerName, token)) */
     private val playerPersistenceInfo = mutableMapOf<EntityId, PlayerPersistenceInfo>()
 
@@ -408,6 +419,7 @@ class GameSession(
 
         val playerId = playerSession.playerId
         players[playerId] = playerSession
+        rememberAvatar(playerSession)
 
         // Convert deck list map to flat list of card names
         val cards = deckList.flatMap { (cardName, count) ->
@@ -476,6 +488,7 @@ class GameSession(
     fun replacePlayerSession(playerId: EntityId, newSession: PlayerSession) {
         if (players.containsKey(playerId)) {
             players[playerId] = newSession
+            rememberAvatar(newSession)
         }
     }
 
@@ -607,6 +620,7 @@ class GameSession(
             ServerMessage.PlayerSeatInfo(
                 playerId = player.playerId.value,
                 name = player.playerName,
+                avatar = seatAvatars[player.playerId],
                 seatIndex = seatIndex,
                 isYou = viewerId != null && player.playerId == viewerId,
                 isAi = playerPersistenceInfo[player.playerId]?.isAi == true,
@@ -2193,6 +2207,7 @@ class GameSession(
      */
     fun associatePlayer(playerSession: PlayerSession) {
         players[playerSession.playerId] = playerSession
+        rememberAvatar(playerSession)
         playerSession.currentGameSessionId = sessionId
     }
 

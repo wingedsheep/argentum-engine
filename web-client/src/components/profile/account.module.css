@@ -52,6 +52,64 @@
   box-shadow: 0 6px 22px rgba(242, 180, 92, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.4);
 }
 
+.avatar { position: relative; }
+
+/* A chosen portrait fills the circle, ringed in the gold the initial used to be. */
+.avatar[data-portrait='true'] {
+  background: #10131c;
+  box-shadow: 0 0 0 2px rgba(242, 180, 92, 0.7), 0 6px 22px rgba(0, 0, 0, 0.45);
+}
+.avatarSmall[data-portrait='true'] {
+  background: #10131c;
+  border-color: rgba(255, 255, 255, 0.22);
+}
+
+/* The profile's own avatar is a button that opens the picker. */
+.avatarEdit {
+  position: relative;
+  flex: none;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: none;
+  cursor: pointer;
+  color: inherit;
+}
+.avatarEdit:focus-visible { outline: 2px solid var(--color-focus-ring); outline-offset: 4px; }
+.avatarEditOverlay {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(8, 10, 16, 0.62);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+.avatarEdit:hover .avatarEditOverlay,
+.avatarEdit:focus-visible .avatarEditOverlay { opacity: 1; }
+.avatarEditBadge {
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #f2b45c;
+  color: #1d1405;
+  border: 2px solid #12141c;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  transition: transform 0.15s ease;
+}
+.avatarEdit:hover .avatarEditBadge { transform: scale(1.08); }
+
 .avatarSmall {
   flex: none;
   display: grid;

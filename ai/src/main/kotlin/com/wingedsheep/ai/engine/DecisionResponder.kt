@@ -13,7 +13,13 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
+import com.wingedsheep.engine.state.ZoneKey
+import com.wingedsheep.engine.state.components.identity.ControllerComponent
+import com.wingedsheep.engine.state.components.player.LandDropsComponent
+import com.wingedsheep.engine.state.components.player.SkipDrawStepComponent
+import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Keyword
+import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 
@@ -51,7 +57,16 @@ class DecisionResponder(
      * those answers exactly as it was.
      */
     private val castabilityAwareCardSelection: Boolean = false,
+    /**
+     * [AiProfile.informedChoiceDecisions]: break simulation ties on colour, land-type,
+     * creature-type and card-name choices with [ChoicePriors], shortlist the open-ended name and
+     * creature-type lists instead of simulating every entry, and price a pending "skip your draw
+     * step" marker as the card it costs. Off is the historical behaviour, byte for byte.
+     */
+    private val informedChoices: Boolean = false,
 ) {
+    private val priors: ChoicePriors? = if (informedChoices) ChoicePriors(simulator.cardRegistry) else null
+
     var forcedPlayPicker: (GameState, EntityId) -> GameAction = simulator::completeForcedPlay
 
     fun respond(state: GameState, decision: PendingDecision, playerId: EntityId): DecisionResponse {
@@ -328,8 +343,8 @@ class DecisionResponder(
     ): DecisionResponse {
         val yesResult = simulator.simulateDecision(state, YesNoResponse(decision.id, true))
         val noResult = simulator.simulateDecision(state, YesNoResponse(decision.id, false))
-        val yesScore = evaluateResult(yesResult, playerId)
-        val noScore = evaluateResult(noResult, playerId)
+        val yesScore = evaluateChoice(yesResult, playerId)
+        val noScore = evaluateChoice(noResult, playerId)
         return YesNoResponse(decision.id, yesScore >= noScore)
     }
 
@@ -345,8 +360,8 @@ class DecisionResponder(
     ): DecisionResponse {
         val yesResult = simulator.simulateDecision(state, BatchYesNoResponse(decision.id, choice = true, applyToAll = true))
         val noResult = simulator.simulateDecision(state, BatchYesNoResponse(decision.id, choice = false, applyToAll = true))
-        val yesScore = evaluateResult(yesResult, playerId)
-        val noScore = evaluateResult(noResult, playerId)
+        val yesScore = evaluateChoice(yesResult, playerId)
+        val noScore = evaluateChoice(noResult, playerId)
         return BatchYesNoResponse(decision.id, choice = yesScore >= noScore, applyToAll = true)
     }
 
@@ -378,6 +393,17 @@ class DecisionResponder(
         decision: ChooseColorDecision,
         playerId: EntityId
     ): DecisionResponse {
+        priors?.let { priors ->
+            // Most colour choices are invisible to a one-step simulation — the colour a land will
+            // tap for, the colour a creature gains protection from — so every option ties and the
+            // first one (white) used to win. Break the tie towards the colour that matters.
+            val polarity = priors.polarityOf(state, decision.context.sourceId, ChoicePriors.Polarity.OPPONENT)
+            val weights = priors.colorWeights(state, playerId, polarity)
+            val best = bestWithTieBreak(decision.availableColors.toList(), { weights[it] ?: 0.0 }) { color ->
+                evaluateChoice(simulator.simulateDecision(state, ColorChosenResponse(decision.id, color)), playerId)
+            }
+            return ColorChosenResponse(decision.id, best)
+        }
         val best = decision.availableColors.maxByOrNull { color ->
             evaluateResult(
                 simulator.simulateDecision(state, ColorChosenResponse(decision.id, color)),
@@ -518,6 +544,7 @@ class DecisionResponder(
         playerId: EntityId
     ): DecisionResponse {
         if (decision.options.size == 1) return OptionChosenResponse(decision.id, 0)
+        if (priors != null) return respondOptionInformed(state, decision, playerId, priors)
 
         val best = decision.options.indices.maxByOrNull { index ->
             evaluateResult(
@@ -526,6 +553,95 @@ class DecisionResponder(
             )
         }!!
         return OptionChosenResponse(decision.id, best)
+    }
+
+    /**
+     * [respondOption] with [ChoicePriors]. Four shapes are recognised by their option lists, since
+     * a [ChooseOptionDecision] carries no type tag:
+     *
+     * - **Basic land types** and **colours**: simulate all five, break ties with the prior. A
+     *   landwalk grant leans to the land types the opponent controls; a mana source's own choice
+     *   leans to its controller's colours.
+     * - **Creature types** and **card names** — the open-ended lists, hundreds or thousands long.
+     *   Simulating each was the old cost, and it bought nothing: almost every entry names nothing in
+     *   the game, so they all tie and the alphabetically first won ("A Killer Among Us" against a
+     *   Lorwyn deck). Only names and types that actually occur among the players' cards are
+     *   simulated — the best few of each side — and a tie leans to the opponent's cards for names
+     *   (strip, mill, shut off) and to our own for creature types (lords, tribal payoffs).
+     *
+     * Anything else (modes, opponents, a short custom list) keeps the plain simulation.
+     */
+    private fun respondOptionInformed(
+        state: GameState,
+        decision: ChooseOptionDecision,
+        playerId: EntityId,
+        priors: ChoicePriors,
+    ): DecisionResponse {
+        val options = decision.options
+        val simulate = { index: Int ->
+            evaluateChoice(simulator.simulateDecision(state, OptionChosenResponse(decision.id, index)), playerId)
+        }
+        val sourceId = decision.context.sourceId
+
+        val landTypes = options.map { option ->
+            ChoicePriors.BASIC_LAND_COLORS.keys.firstOrNull { it.equals(option, ignoreCase = true) }
+        }
+        if (landTypes.all { it != null }) {
+            val polarity = priors.polarityOf(state, sourceId, ChoicePriors.Polarity.OPPONENT)
+            val weights = priors.landTypeWeights(state, playerId, polarity)
+            val best = bestWithTieBreak(options.indices.toList(), { weights[landTypes[it]] ?: 0.0 }, simulate)
+            return OptionChosenResponse(decision.id, best)
+        }
+
+        val colors = options.map { option -> Color.entries.firstOrNull { it.displayName.equals(option, ignoreCase = true) } }
+        if (colors.all { it != null }) {
+            val polarity = priors.polarityOf(state, sourceId, ChoicePriors.Polarity.OPPONENT)
+            val weights = priors.colorWeights(state, playerId, polarity)
+            val best = bestWithTieBreak(options.indices.toList(), { weights[colors[it]] ?: 0.0 }, simulate)
+            return OptionChosenResponse(decision.id, best)
+        }
+
+        if (options.size <= OPEN_LIST_THRESHOLD) {
+            return OptionChosenResponse(decision.id, options.indices.maxByOrNull(simulate)!!)
+        }
+
+        val creatureTypes = options.all { it.lowercase() in CREATURE_TYPES_LOWER }
+        if (!creatureTypes && options.take(3).any { simulator.cardRegistry.getCard(it) == null }) {
+            // A long list that is neither creature types nor card names: no prior applies.
+            return OptionChosenResponse(decision.id, options.indices.maxByOrNull(simulate)!!)
+        }
+        val ours = listOf(playerId)
+        val theirs = state.getOpponents(playerId)
+        val (mine, opposing) = if (creatureTypes) {
+            priors.creatureTypeWeights(state, ours) to priors.creatureTypeWeights(state, theirs)
+        } else {
+            priors.nameWeights(state, ours) to priors.nameWeights(state, theirs)
+        }
+        val key = { option: String -> if (creatureTypes) option.lowercase() else option }
+        fun shortlist(weights: Map<String, Double>): List<Int> = options.indices
+            .filter { (weights[key(options[it])] ?: 0.0) > 0.0 }
+            .sortedByDescending { weights[key(options[it])] }
+            .take(OPEN_LIST_CANDIDATES_PER_SIDE)
+        val candidates = (shortlist(mine) + shortlist(opposing)).distinct()
+        if (candidates.isEmpty()) return OptionChosenResponse(decision.id, 0)
+
+        val lean = if (creatureTypes) mine else opposing
+        val best = bestWithTieBreak(candidates, { lean[key(options[it])] ?: 0.0 }, simulate)
+        return OptionChosenResponse(decision.id, best)
+    }
+
+    /**
+     * The highest-scoring candidate, with ties — equal up to floating-point noise — going to the
+     * one [preference] rates highest, and any tie left after that to the earliest.
+     */
+    private fun <T> bestWithTieBreak(candidates: List<T>, preference: (T) -> Double, score: (T) -> Double): T {
+        val scored = candidates.map { it to score(it) }
+        val top = scored.maxOf { it.second }
+        val tolerance = TIE_EPSILON * maxOf(1.0, kotlin.math.abs(top))
+        val tied = scored.filter { (_, s) -> s == top || top - s <= tolerance }.map { it.first }
+        var best = tied.first()
+        for (candidate in tied) if (preference(candidate) > preference(best)) best = candidate
+        return best
     }
 
     // ── Budget modal ─────────────────────────────────────────────────────
@@ -811,6 +927,80 @@ class DecisionResponder(
         if (result is SimulationResult.Illegal) Double.NEGATIVE_INFINITY
         else result.scoreOrRankLast { evaluator.evaluate(it, it.projectedState, playerId) }
 
+    /**
+     * [evaluateResult] plus, under [informedChoices], the price of every pending "skip your next
+     * draw step" marker in the result.
+     *
+     * The marker is the whole cost of a Fasting-style "skip your draw step; if you do, gain 2 life",
+     * and a one-step simulation can't see it: the choice is made in the upkeep, the simulation
+     * stops at the next quiet state — still the upkeep — and the card that would have been drawn
+     * never reaches the board either branch is scored on. So the "yes" branch showed +2 life against
+     * nothing, and a player stuck on two lands skipped five draws in a row. Pricing the marker as
+     * the card it costs restores the trade the choice actually is. The marker on an opponent is
+     * the same card from the other side, and so counts for us.
+     */
+    private fun evaluateChoice(result: SimulationResult, playerId: EntityId): Double {
+        val base = evaluateResult(result, playerId)
+        if (!informedChoices || result is SimulationResult.Illegal || base.isInfinite()) return base
+        val state = result.state
+        if (state.gameOver) return base
+        var adjusted = base
+        for (player in state.turnOrder) {
+            if (state.getEntity(player)?.has<SkipDrawStepComponent>() != true) continue
+            adjusted -= drawValue(state, player, playerId)
+        }
+        return adjusted
+    }
+
+    /**
+     * What [drawer] drawing one card is worth to [viewer]: the mean evaluation change of that card
+     * arriving, over a spread of [drawer]'s library.
+     *
+     * A spread rather than the top card on purpose — the top card is hidden even from its owner,
+     * and pricing the skip by it would let the answer depend on information the player doesn't
+     * have. Sampling across the library uses only the library's contents, which its owner knows.
+     *
+     * A drawn land the drawer has a land drop waiting for is priced **on the battlefield**, not in
+     * hand. The draw step is followed by a main phase, so that land is played this turn; pricing it
+     * as a card in hand charges a land-starved player the hand curve's marginal rate (0.8 at a hand
+     * of five) for the very land that unlocks the hand — Fasting's game-7 victim was on one mana
+     * source with two-drops stuck behind it, and that is the trade it kept getting wrong. Any other
+     * card is priced in hand.
+     */
+    private fun drawValue(state: GameState, drawer: EntityId, viewer: EntityId): Double {
+        val library = state.getZone(drawer, Zone.LIBRARY)
+        if (library.isEmpty()) return 0.0
+        val samples = DRAW_VALUE_SAMPLES.coerceAtMost(library.size)
+        val stride = library.size.toDouble() / samples
+        val before = evaluator.evaluate(state, state.projectedState, viewer)
+        val from = ZoneKey(drawer, Zone.LIBRARY)
+        val dropWaiting = landDropWaiting(state, drawer)
+        return (0 until samples).sumOf { i ->
+            val cardId = library[(i * stride).toInt()]
+            val isLand = state.getEntity(cardId)?.get<CardComponent>()?.typeLine?.isLand == true
+            val drawn = if (isLand && dropWaiting) {
+                state.moveToZone(cardId, from, ZoneKey(drawer, Zone.BATTLEFIELD))
+                    .updateEntity(cardId) { it.with(ControllerComponent(drawer)) }
+            } else {
+                state.moveToZone(cardId, from, ZoneKey(drawer, Zone.HAND))
+            }
+            evaluator.evaluate(drawn, drawn.projectedState, viewer) - before
+        } / samples
+    }
+
+    /**
+     * Whether [player]'s next land drop is still open and no land in hand is already queued for it.
+     * Off-turn the drop resets before their next main phase, so it is open by definition.
+     */
+    private fun landDropWaiting(state: GameState, player: EntityId): Boolean {
+        val dropOpen = state.activePlayerId != player ||
+            (state.getEntity(player)?.get<LandDropsComponent>()?.remaining ?: 1) > 0
+        val landInHand = state.getZone(player, Zone.HAND).any {
+            state.getEntity(it)?.get<CardComponent>()?.typeLine?.isLand == true
+        }
+        return dropOpen && !landInHand
+    }
+
     private fun <T> pickBestBySimulation(
         state: GameState,
         candidates: List<T>,
@@ -849,5 +1039,25 @@ class DecisionResponder(
     private fun creatureKillValue(state: GameState, entityId: EntityId): Double {
         val card = state.getEntity(entityId)?.get<CardComponent>() ?: return 0.0
         return BoardPresence.permanentValue(state, state.projectedState, entityId, card, intents)
+    }
+
+    private companion object {
+        /**
+         * An option list longer than this is open-ended — every creature type, every card name —
+         * and is shortlisted from the cards in the game rather than simulated entry by entry. Well
+         * above any closed list the engine offers (five colours, five land types, a card's modes).
+         */
+        const val OPEN_LIST_THRESHOLD = 16
+
+        /** Names or creature types simulated per side of an open-ended list. */
+        const val OPEN_LIST_CANDIDATES_PER_SIDE = 3
+
+        /** Relative score difference treated as a tie: identical boards, up to summation order. */
+        const val TIE_EPSILON = 1e-9
+
+        /** Library cards averaged to price one draw. */
+        const val DRAW_VALUE_SAMPLES = 5
+
+        val CREATURE_TYPES_LOWER: Set<String> = Subtype.ALL_CREATURE_TYPES.mapTo(HashSet()) { it.lowercase() }
     }
 }

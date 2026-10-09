@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useGameStore } from '@/store/gameStore.ts'
 import { randomBackground } from '@/utils/background'
+import { AvatarArt, hasAvatarArt } from '@/components/profile/AvatarArt'
+import { initialOf } from '@/components/profile/avatars'
 import styles from './MatchIntroAnimation.module.css'
 
 type Phase = 'fadeIn' | 'slideIn' | 'hold' | 'fadeOut' | 'done'
@@ -58,12 +60,15 @@ export function MatchIntroAnimation() {
       <div className={styles.art} style={{ backgroundImage: `url(${randomBackground})` }} aria-hidden />
       <div className={styles.shade} aria-hidden />
       <div className={bandClass}>
-        {/* Player (left) */}
+        {/* Player (left): portrait on the outer edge, name toward the VS. */}
         <div className={`${styles.side} ${styles.sidePlayer}`}>
-          <p className={styles.playerName}>{matchIntro.playerName}</p>
-          {matchIntro.playerRecord && (
-            <p className={styles.playerRecord}>{matchIntro.playerRecord}</p>
-          )}
+          <Portrait name={matchIntro.playerName} avatar={matchIntro.playerAvatar} />
+          <div className={styles.sideText}>
+            <p className={styles.playerName}>{matchIntro.playerName}</p>
+            {matchIntro.playerRecord && (
+              <p className={styles.playerRecord}>{matchIntro.playerRecord}</p>
+            )}
+          </div>
         </div>
 
         {/* VS (center) */}
@@ -76,16 +81,39 @@ export function MatchIntroAnimation() {
 
         {/* Opponent (right) */}
         <div className={`${styles.side} ${styles.sideOpponent}`}>
-          {matchIntro.opponentNames.length > 1
-            ? matchIntro.opponentNames.map((name, i) => (
-                <p key={i} className={styles.playerName}>{name}</p>
-              ))
-            : <p className={styles.playerName}>{matchIntro.opponentName}</p>}
-          {matchIntro.opponentRecord && (
-            <p className={styles.playerRecord}>{matchIntro.opponentRecord}</p>
+          {matchIntro.opponentNames.length > 1 ? (
+            // A pod: one compact row per opponent, each with its small portrait.
+            <div className={styles.sideText}>
+              {matchIntro.opponentNames.map((name, i) => (
+                <div key={i} className={styles.podRow}>
+                  <Portrait name={name} avatar={matchIntro.opponentAvatars?.[i]} small />
+                  <p className={styles.podName}>{name}</p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <>
+              <div className={styles.sideText}>
+                <p className={styles.playerName}>{matchIntro.opponentName}</p>
+                {matchIntro.opponentRecord && (
+                  <p className={styles.playerRecord}>{matchIntro.opponentRecord}</p>
+                )}
+              </div>
+              <Portrait name={matchIntro.opponentName} avatar={matchIntro.opponentAvatars?.[0]} />
+            </>
           )}
         </div>
       </div>
     </div>
+  )
+}
+
+/** A seat's account avatar, or its initial for guests and AI, so both sides of the VS stay balanced. */
+function Portrait({ name, avatar, small = false }: { name: string; avatar: string | null | undefined; small?: boolean }) {
+  const art = hasAvatarArt(avatar)
+  return (
+    <span className={small ? styles.portraitSmall : styles.portrait} data-portrait={art} aria-hidden>
+      {art ? <AvatarArt avatar={avatar} /> : initialOf(name)}
+    </span>
   )
 }

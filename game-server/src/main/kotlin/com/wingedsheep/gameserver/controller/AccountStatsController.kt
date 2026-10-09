@@ -227,6 +227,7 @@ class AccountStatsController(
     data class PublicProfileDto(
         val userId: String,
         val displayName: String,
+        val avatar: String?,
         val stats: StatsDto,
         val ratings: List<RatingDto>,
         val ratingHistory: List<RatingPointDto>,
@@ -255,6 +256,7 @@ class AccountStatsController(
             PublicProfileDto(
                 userId = id.toString(),
                 displayName = user.displayName,
+                avatar = user.avatar,
                 stats = statsFor(id),
                 ratings = ratingsFor(id),
                 ratingHistory = ratingHistoryFor(id, RankedMode.entries),

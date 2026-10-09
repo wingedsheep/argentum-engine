@@ -172,7 +172,7 @@ function ThreadRow({ thread, myId, selected, onOpen }: { thread: ThreadSummary; 
   const unread = thread.unread > 0 && !selected
   return (
     <button type="button" className={m.threadRow} data-selected={selected} data-unread={unread} onClick={onOpen} aria-current={selected ? 'true' : undefined}>
-      <Avatar name={thread.other.displayName} small online={thread.isFriend ? thread.other.online : undefined} />
+      <Avatar name={thread.other.displayName} avatar={thread.other.avatar} small online={thread.isFriend ? thread.other.online : undefined} />
       <span className={m.threadText}>
         <span className={m.threadTop}>
           <span className={m.threadName}>{thread.other.displayName}</span>
@@ -213,7 +213,7 @@ function EmptyPane() {
             {shown.map((f) => (
               <li key={f.accountId}>
                 <button type="button" className={m.friendPick} onClick={() => navigate(`/messages/${f.accountId}`)}>
-                  <Avatar name={f.displayName} small online={f.online} />
+                  <Avatar name={f.displayName} avatar={f.avatar} small online={f.online} />
                   <span className={m.friendPickName}>{f.displayName}</span>
                 </button>
               </li>
@@ -327,7 +327,7 @@ function ReadyConversation({ accountId, myId, conversation: c }: { accountId: st
       <header className={m.convHead}>
         <BackLink />
         <Link to={`/u/${accountId}`} className={m.convWho} title="View profile">
-          <Avatar name={name} small online={c.isFriend ? c.other.online : undefined} />
+          <Avatar name={name} avatar={c.other.avatar} small online={c.isFriend ? c.other.online : undefined} />
           <span className={m.convWhoText}>
             <span className={m.convName}>{name}</span>
             <span className={m.convStatus} data-online={c.isFriend && c.other.online}>{statusLine}</span>
@@ -446,7 +446,7 @@ function MessageList({ conversation: c, myId, onLoadOlder }: { conversation: Ope
       )}
       {c.messages.length === 0 && (
         <div className={m.convIntro}>
-          <Avatar name={c.other.displayName} />
+          <Avatar name={c.other.displayName} avatar={c.other.avatar} />
           <p className={m.introName}>{c.other.displayName}</p>
           <p className={a.muted}>
             {c.isFriend
