@@ -165,6 +165,12 @@ object ArenaAgents {
         // production-candidate-polarity 300` is the promotion gate.
         ArenaAgent("production-polarity", AiProfile.PRODUCTION_POLARITY),
         ArenaAgent("production-candidate-polarity", AiProfile.PRODUCTION_CANDIDATE_POLARITY),
+        // Sorcery-speed permanents deployed instead of hoarded against the hand curve. `just arena
+        // production production-deploy 300` prices the term on its own; `just arena
+        // production-candidate-expiring production-candidate-deploy 300` is the gate against the
+        // agent the 2026-10-09 game logs were taken with.
+        ArenaAgent("production-deploy", AiProfile.PRODUCTION_DEPLOY),
+        ArenaAgent("production-candidate-deploy", AiProfile.PRODUCTION_CANDIDATE_DEPLOY),
         ArenaAgent("production-targeted", AiProfile.PRODUCTION_TARGETED),
         // Explicit ECL candidates. Their resource-backed weights fail closed to production's
         // evaluator until a validated artifact is installed; automatic selection is set-gated.
