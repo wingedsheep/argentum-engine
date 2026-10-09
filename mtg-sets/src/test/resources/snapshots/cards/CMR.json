@@ -939,6 +939,73 @@
     ]
 }
 
+// Spectator Seating
+{
+    "name": "Spectator Seating",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "This land enters tapped unless you have two or more opponents.\n{T}: Add {R} or {W}.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Spectator Seating:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "RED"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Spectator Seating:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "WHITE"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersTapped",
+                "unlessCondition": {
+                    "type": "Compare",
+                    "left": "PlayerCount",
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "356",
+        "rarity": "RARE",
+        "artist": "Ravenna Tran",
+        "flavorText": "The loudest and most heartfelt cheers come from the cheap seats.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/f/2f6f1453-fe93-4a29-965c-5f867a81e8b3.jpg?1783928740",
+        "rulings": [
+            {
+                "date": "2020-11-10",
+                "text": "Count the number of opponents you currently have, not how many you started with. If your four-player game is down to you and a single opponent, the land enters the battlefield tapped."
+            },
+            {
+                "date": "2020-11-10",
+                "text": "If an effect puts the land onto the battlefield tapped, having two or more opponents won't untap it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
+    ]
+}
+
 // Training Center
 {
     "name": "Training Center",

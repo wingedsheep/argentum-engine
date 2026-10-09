@@ -4969,6 +4969,39 @@
     "colorIdentityOverride": []
 }
 
+// Parallel Lives
+{
+    "name": "Parallel Lives",
+    "manaCost": "{3}{G}",
+    "typeLine": "Enchantment",
+    "oracleText": "If an effect would create one or more tokens under your control, it creates twice that many of those tokens instead.",
+    "script": {
+        "replacementEffects": [
+            "MultiplyTokenCreation"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "199",
+        "rarity": "RARE",
+        "artist": "Steve Prescott",
+        "flavorText": "\"There will come a time when the only prey left will be each other.\"\n—Ulrich of Krallenhorde Pack",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/1/01033dae-fec1-41f2-b7f2-cc6a43331790.jpg?1783940912",
+        "rulings": [
+            {
+                "date": "2023-09-01",
+                "text": "If you control two Parallel Lives, then the number of tokens created is four times the original number. If you control three, then the number of tokens created is eight times the original number, and so on."
+            },
+            {
+                "date": "2023-09-01",
+                "text": "Everything that is specified by the effect creating the original token or tokens will also be true about the additional token or tokens created by Parallel Lives's replacement effect. For example, if an effect tells you to create a token \"tapped and attacking,\" the additional tokens will also be tapped and attacking."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Pitchburn Devils
 {
     "name": "Pitchburn Devils",

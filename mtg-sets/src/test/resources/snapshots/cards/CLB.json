@@ -148,6 +148,64 @@
     "colorIdentityOverride": []
 }
 
+// Cadira, Caller of the Small
+{
+    "name": "Cadira, Caller of the Small",
+    "manaCost": "{1}{G}{W}",
+    "typeLine": "Legendary Creature — Orc Ranger",
+    "oracleText": "Trample\nWhenever Cadira deals combat damage to a player, for each token you control, create a 1/1 white Rabbit creature token.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Cadira, Caller of the Small:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "token"
+                    },
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Rabbit"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/2/2/22ca55e0-d269-4178-bc90-920a12066e4f.jpg?1783922327"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "269",
+        "rarity": "UNCOMMON",
+        "artist": "Alexandr Leskinen",
+        "flavorText": "She roams the border between wilderness and civilization, protecting those who need it most.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/5/75994e0b-b0c7-4b0d-8f48-4be303429bd6.jpg?1783922696"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE"
+    ]
+}
+
 // Carnelian Orb of Dragonkind
 {
     "name": "Carnelian Orb of Dragonkind",

@@ -1553,6 +1553,114 @@
     ]
 }
 
+// Kozilek, Butcher of Truth
+{
+    "name": "Kozilek, Butcher of Truth",
+    "manaCost": "{10}",
+    "typeLine": "Legendary Creature — Eldrazi",
+    "oracleText": "When you cast this spell, draw four cards.\nAnnihilator 4 (Whenever this creature attacks, defending player sacrifices four permanents of their choice.)\nWhen Kozilek is put into a graveyard from anywhere, its owner shuffles their graveyard into their library.",
+    "creatureStats": {
+        "power": 12,
+        "toughness": 12
+    },
+    "keywords": [
+        "ANNIHILATOR"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "ANNIHILATOR",
+            "n": 4
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Kozilek, Butcher of Truth:1",
+                "trigger": "CastThisSpellEvent",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 4
+                    }
+                },
+                "descriptionOverride": "When you cast this spell, draw four cards."
+            },
+            {
+                "id": "Kozilek, Butcher of Truth:2",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "ForceSacrifice",
+                    "filter": "permanent",
+                    "count": 4,
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "DefendingPlayer"
+                    }
+                },
+                "descriptionOverride": "Annihilator 4"
+            },
+            {
+                "id": "Kozilek, Butcher of Truth:3",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Graveyard",
+                                "player": "OwnerOfSource"
+                            },
+                            "storeAs": "graveyardCards"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "graveyardCards",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "player": "OwnerOfSource",
+                                "placement": "Shuffled"
+                            }
+                        }
+                    ]
+                },
+                "activeZones": [
+                    "Graveyard"
+                ],
+                "descriptionOverride": "When Kozilek is put into a graveyard from anywhere, its owner shuffles their graveyard into their library."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "6",
+        "rarity": "MYTHIC",
+        "artist": "Michael Komarck",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/6/067fac91-2483-4678-b86a-2c54a3a480cf.jpg?1783942013",
+        "rulings": [
+            {
+                "date": "2018-12-07",
+                "text": "Kozilek's first ability triggers as you cast it, and that ability resolves before the spell itself. It resolves even if the spell is countered."
+            },
+            {
+                "date": "2010-06-15",
+                "text": "Annihilator abilities trigger and resolve during the declare attackers step. The defending player chooses and sacrifices the required number of permanents before they declare blockers. Any creatures sacrificed this way won't be able to block."
+            },
+            {
+                "date": "2010-06-15",
+                "text": "If a creature with annihilator is attacking a planeswalker, and the defending player chooses to sacrifice that planeswalker, the attacking creature continues to attack. It may be blocked. If it isn't blocked, it simply won't deal combat damage to anything."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Lagac Lizard
 {
     "name": "Lagac Lizard",
@@ -3152,6 +3260,120 @@
     "colorIdentityOverride": [
         "WHITE"
     ]
+}
+
+// Ulamog, the Infinite Gyre
+{
+    "name": "Ulamog, the Infinite Gyre",
+    "manaCost": "{11}",
+    "typeLine": "Legendary Creature — Eldrazi",
+    "oracleText": "When you cast this spell, destroy target permanent.\nIndestructible\nAnnihilator 4 (Whenever this creature attacks, defending player sacrifices four permanents of their choice.)\nWhen Ulamog is put into a graveyard from anywhere, its owner shuffles their graveyard into their library.",
+    "creatureStats": {
+        "power": 10,
+        "toughness": 10
+    },
+    "keywords": [
+        "INDESTRUCTIBLE",
+        "ANNIHILATOR"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "ANNIHILATOR",
+            "n": 4
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ulamog, the Infinite Gyre:1",
+                "trigger": "CastThisSpellEvent",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "permanent"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "When you cast this spell, destroy target permanent."
+            },
+            {
+                "id": "Ulamog, the Infinite Gyre:2",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "ForceSacrifice",
+                    "filter": "permanent",
+                    "count": 4,
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "DefendingPlayer"
+                    }
+                },
+                "descriptionOverride": "Annihilator 4"
+            },
+            {
+                "id": "Ulamog, the Infinite Gyre:3",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Graveyard",
+                                "player": "OwnerOfSource"
+                            },
+                            "storeAs": "graveyardCards"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "graveyardCards",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "player": "OwnerOfSource",
+                                "placement": "Shuffled"
+                            }
+                        }
+                    ]
+                },
+                "activeZones": [
+                    "Graveyard"
+                ],
+                "descriptionOverride": "When Ulamog is put into a graveyard from anywhere, its owner shuffles their graveyard into their library."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "12",
+        "rarity": "MYTHIC",
+        "artist": "Aleksi Briclot",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/2/225e3cc6-34d0-4f81-9f49-162d97e2ea59.jpg?1783942011",
+        "rulings": [
+            {
+                "date": "2018-12-07",
+                "text": "Ulamog's ability triggers as you cast it, and that ability resolves before the spell itself. It resolves even if that spell is countered."
+            },
+            {
+                "date": "2010-06-15",
+                "text": "Annihilator abilities trigger and resolve during the declare attackers step. The defending player chooses and sacrifices the required number of permanents before they declare blockers. Any creatures sacrificed this way won't be able to block."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
 }
 
 // Virulent Swipe
