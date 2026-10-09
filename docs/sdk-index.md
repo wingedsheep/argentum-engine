@@ -713,7 +713,7 @@ Families:
 - `CantBeRegeneratedEffect(target: EffectTarget)` — Mark target as unable to regenerate.
 - `CantBlockEffect(target: EffectTarget, duration: Duration, attacker: EffectTarget?)` — Target creature can't block this turn — either at all, or only attacker.
 - `CantBlockGroupEffect(filter: GroupFilter, duration: Duration)` — All creatures matching a filter can't block this turn.
-- `CantCastSpellsEffect(target: EffectTarget, duration: Duration)` — Target player can't cast spells for the specified duration.
+- `CantCastSpellsEffect(target: EffectTarget, duration: Duration, spellFilter: GameObjectFilter)` — Target player can't cast matching spells for the specified duration.
 - `CantCastSpellsFromNonHandZonesEffect(target: EffectTarget, duration: Duration)` — Target player can't cast spells from anywhere other than their **hand** for the specified duration — casts from graveyard (flashback, escape, disturb), exile (foretell, plot, a may-play permission)…
 - `CantPlayCardsFromHandEffect(target: EffectTarget, duration: Duration)` — Target player can't play cards from their hand for the specified duration.
 - `CantSearchLibrariesEffect(target: EffectTarget, duration: Duration)` — The target player(s) can't search libraries for the specified duration — "Players can't search libraries this turn" (Shadow of Doubt).

@@ -3004,7 +3004,13 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   the restriction only applies once at least one creature blocks it. Enforced at block declaration in
   `BlockPhaseManager.validateMinBlockersRequirements`, mirroring the menace check. Used by Troll of
   Khazad-dûm (`CantBeBlockedByFewerThan(3)`).
-- `CantCastSpellsEffect(target, until?)` — target can't cast spells. Facade: `Effects.CantCastSpells(target, duration)`.
+- `CantCastSpellsEffect(target, duration = EndOfTurn, spellFilter = Any)` — target can't cast matching
+  spells from any zone. Facade: `Effects.CantCastSpells(target, duration, spellFilter)`.
+  `PlayerRef(Player.Each)` + `GameObjectFilter.Noncreature` models **Calamity's Wake**.
+  The filter checks the spell's announced characteristics (including alternative faces, bestow and
+  face-down casting), not a fixed list of cards at resolution. Independent bans accumulate and
+  expire separately; supported durations are `EndOfTurn` and `Permanent`. Existing spells on the
+  stack, land plays and activated abilities are unaffected. The default still forbids every spell.
 - `CantSearchLibrariesEffect(target, duration = EndOfTurn)` — target player(s) can't search libraries. Facade:
   `Effects.CantSearchLibraries(target, duration)`; `EffectTarget.PlayerRef(Player.Each)` for "Players can't search
   libraries this turn" (Shadow of Doubt). Stamps `CantSearchLibrariesComponent` (cleared at end-of-turn cleanup). Enforced

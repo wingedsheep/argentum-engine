@@ -1041,21 +1041,20 @@ data class FlashGrantsThisTurnComponent(
     val removeOn: PlayerEffectRemoval = PlayerEffectRemoval.EndOfTurn
 ) : Component
 
-/**
- * Component indicating that a player cannot cast spells for the rest of this turn.
- * Applied by effects like Xantid Swarm ("defending player can't cast spells this turn").
- *
- * When present on a player entity, that player's spell casting legal actions
- * are suppressed in LegalActionsCalculator.
- *
- * @param removeOn When this component should be removed:
- *   - [PlayerEffectRemoval.EndOfTurn] — removed during end-of-turn cleanup (default)
- *   - [PlayerEffectRemoval.Permanent] — stays until explicitly removed
- */
+/** Independent casting bans; cleanup removes only entries whose duration has ended. */
 @Serializable
 data class CantCastSpellsComponent(
-    val removeOn: PlayerEffectRemoval = PlayerEffectRemoval.EndOfTurn
+    val restrictions: List<SpellCastRestriction> = listOf(SpellCastRestriction())
 ) : Component
+
+/** A resolved ban retains the granting context for source- and controller-relative filters. */
+@Serializable
+data class SpellCastRestriction(
+    val spellFilter: GameObjectFilter = GameObjectFilter.Any,
+    val removeOn: PlayerEffectRemoval = PlayerEffectRemoval.EndOfTurn,
+    val sourceId: EntityId? = null,
+    val controllerId: EntityId? = null
+)
 
 /**
  * Component indicating that a player can't search libraries — applied by
