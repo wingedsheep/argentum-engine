@@ -85,6 +85,8 @@ export type ServerMessage =
   // Friends
   | FriendPresenceMessage
   | FriendRequestReceivedMessage
+  | DirectMessageMessage
+  | DirectMessagesChangedMessage
   // Table talk and after the game
   | EmoteMessage
   | PostGameMessage
@@ -3240,6 +3242,29 @@ export interface FriendRequestReceivedMessage {
   readonly type: 'friendRequestReceived'
   readonly fromAccountId: string
   readonly fromName: string
+}
+
+/**
+ * A new direct message in your conversation with `withAccountId` — one you received, or one you sent
+ * from another tab. `request` is true when the conversation is, for you, an unanswered message request.
+ */
+export interface DirectMessageMessage {
+  readonly type: 'directMessage'
+  readonly withAccountId: string
+  readonly withName: string
+  readonly message: {
+    readonly id: string
+    readonly senderId: string
+    readonly body: string
+    readonly createdAt: string
+  }
+  readonly request: boolean
+}
+
+/** Your conversation with `withAccountId` was read, accepted, deleted or blocked — refetch it. */
+export interface DirectMessagesChangedMessage {
+  readonly type: 'directMessagesChanged'
+  readonly withAccountId: string
 }
 
 /** The preset messages a player can send the table. A closed set — nothing to moderate. */

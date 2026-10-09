@@ -213,6 +213,9 @@ export function FriendsPage() {
                     </span>
                   </span>
                   <span className={a.rowActions}>
+                    <button type="button" className={a.miniButton} onClick={() => navigate(`/messages/${f.accountId}`)}>
+                      Message
+                    </button>
                     <button type="button" className={a.miniButton} onClick={() => navigate(`/u/${f.accountId}`)}>
                       Profile
                     </button>
@@ -303,7 +306,7 @@ function BlockedPlayersSection() {
         <h2 className={a.sectionTitle}>Blocked</h2>
         <span className={a.count}>{blocked.length}</span>
       </div>
-      <p className={a.muted}>You won’t be matched with these players, and their emotes don’t reach you.</p>
+      <p className={a.muted}>You won’t be matched with these players, and their messages and emotes don’t reach you.</p>
       {blocked.map((b) => (
         <div key={b.accountId} className={a.personRow}>
           <span className={a.person}>

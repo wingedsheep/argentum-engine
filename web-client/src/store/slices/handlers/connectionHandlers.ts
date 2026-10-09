@@ -5,6 +5,7 @@ import type { MessageHandlers } from '@/network/messageHandlers.ts'
 import { entityId, createJoinLobbyMessage, createSpectateGameMessage } from '@/types'
 import { useTableTalkStore } from '@/store/tableTalkStore'
 import { useFriendsStore } from '@/store/friendsStore'
+import { useMessagesStore } from '@/store/messagesStore'
 import { getWebSocket, clearLobbyId, loadLobbyId } from '../shared'
 import type { SetState, GetState } from './types'
 
@@ -14,6 +15,8 @@ type ConnectionHandlerKeys =
   | 'onOnlinePlayersCount'
   | 'onFriendPresence'
   | 'onFriendRequestReceived'
+  | 'onDirectMessage'
+  | 'onDirectMessagesChanged'
   | 'onEmote'
   | 'onPostGame'
   | 'onPong'
@@ -98,6 +101,13 @@ export function createConnectionHandlers(set: SetState, get: GetState): Pick<Mes
     },
     onFriendRequestReceived: () => {
       useFriendsStore.getState().noteIncomingRequest()
+    },
+    // Direct messages likewise live in their own store.
+    onDirectMessage: (msg) => {
+      useMessagesStore.getState().receive(msg)
+    },
+    onDirectMessagesChanged: (msg) => {
+      useMessagesStore.getState().noteChanged(msg.withAccountId)
     },
 
     // Emotes and the result screen's social actions live in the table-talk store, for the same reason.

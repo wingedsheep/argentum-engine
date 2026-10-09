@@ -45,6 +45,9 @@ const ProfilePage = lazy(() =>
 const FriendsPage = lazy(() =>
   import('./pages/FriendsPage').then(({ FriendsPage }) => ({ default: FriendsPage }))
 )
+const MessagesPage = lazy(() =>
+  import('./pages/MessagesPage').then(({ MessagesPage }) => ({ default: MessagesPage }))
+)
 const StatsPage = lazy(() =>
   import('./pages/StatsPage').then(({ StatsPage }) => ({ default: StatsPage }))
 )
@@ -88,6 +91,8 @@ createRoot(rootElement).render(
           <Route path="/stats" element={<StatsPage />} />
           <Route path="/u/:userId" element={<PublicProfilePage />} />
           <Route path="/friends" element={<FriendsPage />} />
+          <Route path="/messages" element={<MessagesPage />} />
+          <Route path="/messages/:accountId" element={<MessagesPage />} />
           <Route path="/help" element={<HelpPage />} />
           <Route path="/help/:section" element={<HelpPage />} />
           <Route path="/learn" element={<LearnPage />} />
