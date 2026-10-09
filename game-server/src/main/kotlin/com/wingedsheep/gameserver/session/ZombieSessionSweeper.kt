@@ -8,6 +8,7 @@ import com.wingedsheep.gameserver.repository.LobbyRepository
 import org.slf4j.LoggerFactory
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
+import java.time.Instant
 
 @Component
 class ZombieSessionSweeper(
@@ -27,6 +28,7 @@ class ZombieSessionSweeper(
 
     @Scheduled(fixedRate = 60_000)
     fun sweep() {
+        sweepAbandonedGames(Instant.now())
         sweepFinishedGames()
         sweepEmptyLobbies()
         sweepDisconnectedIdentities()
@@ -44,6 +46,26 @@ class ZombieSessionSweeper(
             if (game.pruneDisconnectedSpectators()) {
                 lobbySharedContext.broadcastSpectatorCount(game)
             }
+        }
+    }
+
+    /**
+     * End games nobody is playing any more — see [AbandonedGamePolicy]. Also keeps each game's
+     * [GameSession.unattendedSince] clock, which that policy and the admin Live overview read.
+     * Runs before [sweepFinishedGames]; the normal game-over path removes what it ends.
+     */
+    internal fun sweepAbandonedGames(now: Instant) {
+        for (game in gameRepository.findAll()) {
+            if (game.isGameOver()) continue
+            val facts = AbandonedGamePolicy.of(game)
+            if (facts.hasConnectedHuman) {
+                game.unattendedSince = null
+                continue
+            }
+            if (game.unattendedSince == null) game.unattendedSince = now
+            val verdict = AbandonedGamePolicy.verdict(facts.copy(unattendedSince = game.unattendedSince), now) ?: continue
+            runCatching { gamePlayHandler.abandonGame(game, verdict) }
+                .onFailure { logger.error("Failed to end abandoned game ${game.sessionId}", it) }
         }
     }
 

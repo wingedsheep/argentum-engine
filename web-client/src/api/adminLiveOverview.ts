@@ -28,8 +28,11 @@ export interface LiveGame {
   readonly turnNumber: number | null
   readonly activePlayerName: string | null
   readonly step: string | null
+  /** When the game began — for a game still in its pregame, when its session was created. */
   readonly startedAt: string | null
   readonly lastActionAt: string | null
+  /** When the server will end this game as abandoned if nothing changes; null while a human is connected. */
+  readonly autoEndAt: string | null
   readonly spectatorCount: number
   /** At least one human seat with an open socket — a restart would interrupt this game. */
   readonly hasConnectedHuman: boolean
@@ -101,4 +104,13 @@ export async function fetchLiveOverview(auth: AdminAuth): Promise<LiveOverview> 
   const res = await fetch('/api/admin/live-overview', { headers: adminAuthHeaders(auth) })
   if (!res.ok) throw new Error(`Failed to load the live overview (${res.status})`)
   return (await res.json()) as LiveOverview
+}
+
+/** End a game now, as a draw — for clearing out one the admin can see is dead. */
+export async function endLiveGame(auth: AdminAuth, gameSessionId: string): Promise<void> {
+  const res = await fetch(`/api/admin/live-overview/games/${encodeURIComponent(gameSessionId)}/end`, {
+    method: 'POST',
+    headers: adminAuthHeaders(auth),
+  })
+  if (!res.ok) throw new Error(`Failed to end the game (${res.status})`)
 }
