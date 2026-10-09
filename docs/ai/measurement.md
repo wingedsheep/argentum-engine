@@ -32,6 +32,16 @@ AI got better. Built in Phase 1 of [`backlog/engine-ai-improvement.md`](../../ba
 
 The numbers themselves live in [`baseline-metrics.md`](baseline-metrics.md).
 
+## Reading games, not just win rates
+
+The arena says *whether* an agent got better; it never says *where* it misplays. For that,
+`just ai-game-logs [GAMES] [SEED] [AGENT]` plays games with sealed decks drawn from a random set per
+seat and writes one readable log per game to `ai/build/game-logs/`: the board and hands at each turn,
+every action and decision with card names, and — whenever the active player passes its own main phase
+on an empty stack — the non-mana actions it could have afforded. Mixing sets on purpose exposes the AI
+to cards no advisor module was written for. Read the logs for patterns, then reproduce one as a puzzle
+or focused test before changing anything.
+
 ---
 
 ## The one-paragraph version

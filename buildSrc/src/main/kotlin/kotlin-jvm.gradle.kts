@@ -62,6 +62,7 @@ tasks.withType<Test>().configureEach {
         "eclCollect", "eclCollectGames", "eclCollectSeed", "eclCollectOutput", "eclCollectBaseDir",
         "eclCollectRunId", "eclCollectStartIndex",
         "arenaGames", "arenaSeed", "arenaSet", "arenaMaxTurns", "arenaThreads",
+        "gameLog", "gameLogGames", "gameLogSeed", "gameLogAgent", "gameLogDir",
     )) {
         System.getProperty(prop)?.let { systemProperty(prop, it) }
     }
