@@ -341,6 +341,32 @@ data class AiProfile(
      */
     val holdExpiringGrantsForCombat: Boolean = false,
     /**
+     * Aim a spell or ability at the side of the table its effect is *for*, derived from the effect
+     * by [com.wingedsheep.ai.engine.knowledge.TargetPolarityAnalyzer] rather than from the one
+     * shape the ranker used to recognise (a fixed stat boost on an activated ability).
+     *
+     * Three things change, all from the same reading:
+     *
+     *  1. **Ranking.** A beneficial slot — a damage shield, a pump spell, an evasion Aura — ranks
+     *     our own best permanent first. Everything else used to rank as removal, which is how a
+     *     Daru Healer spent its "prevent the next 1 damage to any target" on the opponent's
+     *     Gustcloak Harrier (2026-10-09 AI-vs-AI log, game 18 turn 26): an opponent's permanent is
+     *     always the best *removal* target, and the simulated board does not price a shield.
+     *  2. **Wrong-side veto.** A candidate with a mandatory slot whose every legal target is on the
+     *     wrong side is dropped, so the card is held: Blossombind on our own Explosive Prodigy
+     *     because the opponent had no creatures (game 15 turn 12), Prohibit on our own Treefolk
+     *     Healer — above its mana-value cap, so it did nothing at all — at 4 life (game 3 turn 21).
+     *  3. **The unkicked cast stays a candidate.** `preferKickerVariants` dropped it whenever the
+     *     kicked one was affordable, on the theory that a kicker only adds. A kicker adds an
+     *     *effect*, whose target the cast cannot see: kicked Tolarian Emissary destroyed our own
+     *     Traveler's Cloak, the only enchantment on the table (game 3 turn 19).
+     *
+     * Every slot the analyzer cannot read confidently is UNKNOWN and keeps the old behaviour.
+     * Needs [useCardIntent]: the polarity is read off the card definition, which only the intent
+     * catalog can reach.
+     */
+    val targetPolarityFromEffect: Boolean = false,
+    /**
      * The two `BoardPresence.creatureValue` corrections [PRODUCTION_RACECLOCK]'s KDoc named as the
      * reason its arena win came with a puzzle trade — the damaged-creature discount and the flat
      * multiplier on "can't attack". Both are off by default; see
@@ -438,6 +464,53 @@ data class AiProfile(
      * let the Frog's deathtouch through from turn 14 on. Needs [useCardIntent].
      */
     val refuseUnspendableGrants: Boolean = false,
+    /**
+     * Blocking local search may not add a chump block — a blocker that dies while everything it
+     * blocked survives — unless the life it saves is life we need: this hit is lethal, or it leaves
+     * us dead to the attack after (`CombatAdvisor.isLifeInDanger`, counting every creature that
+     * will have untapped by then rather than only today's untapped ones).
+     *
+     * Fixes the high-life chump blocks in the 2026-10-09 AI-vs-AI logs: a 2/3 in front of a 5/5
+     * first-striking trampler at 18 life (it saved three points and lost the creature), a 0/3 wall
+     * in front of a 3/3 at 18, a 1/1 in front of a 2/2 at 12, a 3/1 in front of a 6/4 at 20 with
+     * the opponent at 8, a 1/1 in front of a 2/3 at 25. None came from the chump passes — every
+     * one was a local-search "add a blocker" mutation the one-ply evaluator scored a fraction of a
+     * point higher than taking the hit. The evaluator prices a creature by what it is worth on the
+     * board after this combat; it cannot see that a creature alive next turn blocks again, so it
+     * sells bodies for life it does not need. The chump passes already encode the policy ("chump
+     * only when facing lethal"); this stops the search from routing around it.
+     *
+     * A losing block the heuristic seed already chose is left alone — the gate is on what search
+     * *adds*. Read off the simulated combat, not predicted, so first strike and deathtouch count.
+     */
+    val chumpOnlyWhenInDanger: Boolean = false,
+    /**
+     * Stop charging a permanent cast at sorcery speed as card loss — [landDropIsNotCardLoss]'s
+     * argument, one card type further.
+     *
+     * Casting a creature in our own main phase does not spend a card, it moves one from the zone
+     * `CardAdvantage` prices to the one `BoardPresence` prices. Charged as card loss, the move only
+     * happens when the permanent's board value beats what the hand curve says the card was worth
+     * *held* — and at the empty-hand cliff that is 3.0 (1.0 → `concave-hand-2`'s −2.0), more than a
+     * summoning-sick 1/1 or a mana rock is worth on any board. So the AI sat on its last creature for
+     * turns with ten lands untapped: Wose Pathfinder for five turns while six attackers killed it
+     * (2026-10-09 logs, game 21 T19–T23), Hecteyes at 2 life with its only spare blocker in hand
+     * (game 23 T21), Changeling Wayfinder with nine lands (game 15 T22/T24). The same charge one rung
+     * up — 1.5 for the second card — is what kept a 1/1 pinger in hand next to two other cards
+     * (game 13 T14) and a Dragonstorm Globe uncast for eight turns (game 9).
+     *
+     * The hand curve is the right price for a card whose value is the *option* of casting it: an
+     * instant waiting for its window, a counterspell, a trick. A sorcery-speed permanent with the
+     * mana to cast it has no window to wait for — passing just moves it to a later main phase with
+     * the same mana and less game left, and mana unspent at end of turn is worth nothing. So
+     * `Strategist` refunds exactly what the evaluator charged for taking that card out of hand
+     * (`evaluate(root) − evaluate(root without the card)`), and only for a cast that put the card
+     * onto our battlefield from our own main phase with the stack empty. The board side then decides
+     * alone, the way [landDropIsNotCardLoss] lets `Tempo` decide the land drop. Instants, sorceries,
+     * flash plays on the opponent's turn and an Adventure's spell half are untouched — their hand
+     * value is real option value.
+     */
+    val permanentCastIsNotCardLoss: Boolean = false,
     /** Non-null profiles may only be selected automatically for this set. Arena selection stays explicit. */
     val restrictedToSet: String? = null,
 ) {
@@ -1203,6 +1276,22 @@ data class AiProfile(
             holdExpiringGrantsForCombat = true,
         )
 
+        /** [permanentCastIsNotCardLoss] alone on top of [PRODUCTION], for attribution. */
+        val PRODUCTION_DEPLOY = PRODUCTION.copy(
+            id = "production-deploy",
+            permanentCastIsNotCardLoss = true,
+        )
+
+        /**
+         * [PRODUCTION_CANDIDATE_EXPIRING] plus [permanentCastIsNotCardLoss] — the agent that stops
+         * hoarding castable permanents. Stacked on the profile the 2026-10-09 game logs were taken
+         * with, so the cited misplays are measured against the agent that made them.
+         */
+        val PRODUCTION_CANDIDATE_DEPLOY = PRODUCTION_CANDIDATE_EXPIRING.copy(
+            id = "production-candidate-deploy",
+            permanentCastIsNotCardLoss = true,
+        )
+
         /**
          * [castabilityAwareCardSelection] alone on top of [PRODUCTION], so a puzzle or an arena
          * point that moves is attributable to it.
@@ -1248,6 +1337,25 @@ data class AiProfile(
         )
 
         /**
+         * [chumpOnlyWhenInDanger] alone on top of [PRODUCTION], so a puzzle or an arena point that
+         * moves is attributable to it.
+         */
+        val PRODUCTION_CHUMPGATE = PRODUCTION.copy(
+            id = "production-chumpgate",
+            chumpOnlyWhenInDanger = true,
+        )
+
+        /**
+         * [chumpOnlyWhenInDanger] on top of [PRODUCTION_CANDIDATE_EXPIRING] — the last pinned
+         * candidate [LIVE] builds on, so the arena gate `just arena production-candidate-expiring
+         * production-candidate-chumpgate` measures this flag and nothing else. [LIVE] ships it.
+         */
+        val PRODUCTION_CANDIDATE_CHUMPGATE = PRODUCTION_CANDIDATE_EXPIRING.copy(
+            id = "production-candidate-chumpgate",
+            chumpOnlyWhenInDanger = true,
+        )
+
+        /**
          * **What real players face.** [EngineAiPlayerController] builds this and nothing else.
          *
          * A named, stable home for the live configuration so a fix can ship by turning its flag on
@@ -1265,6 +1373,9 @@ data class AiProfile(
             castabilityAwareCardSelection = true,
             informedChoiceDecisions = true,
             refuseUnspendableGrants = true,
+            targetPolarityFromEffect = true,
+            chumpOnlyWhenInDanger = true,
+            permanentCastIsNotCardLoss = true,
         )
 
         /**
@@ -1284,6 +1395,25 @@ data class AiProfile(
         val PRODUCTION_CANDIDATE_CHOICES = PRODUCTION_CANDIDATE_EXPIRING.copy(
             id = "production-candidate-choices",
             informedChoiceDecisions = true,
+        )
+
+        /**
+         * [targetPolarityFromEffect] alone on top of [PRODUCTION], so a puzzle or arena point that
+         * moves is attributable to it.
+         */
+        val PRODUCTION_POLARITY = PRODUCTION.copy(
+            id = "production-polarity",
+            targetPolarityFromEffect = true,
+        )
+
+        /**
+         * The promotion candidate: [PRODUCTION_CANDIDATE_EXPIRING] — the
+         * candidate [LIVE] starts from — plus
+         * [targetPolarityFromEffect].
+         */
+        val PRODUCTION_CANDIDATE_POLARITY = PRODUCTION_CANDIDATE_EXPIRING.copy(
+            id = "production-candidate-polarity",
+            targetPolarityFromEffect = true,
         )
 
         /**

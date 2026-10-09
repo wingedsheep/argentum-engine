@@ -9,12 +9,17 @@ import com.wingedsheep.engine.core.DeclareAttackers
 import com.wingedsheep.engine.core.DeclareBlockers
 import com.wingedsheep.engine.core.GameAction
 import com.wingedsheep.engine.core.PassPriority
+import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.legalactions.LegalAction
+import com.wingedsheep.engine.mechanics.combat.rules.BlockCheckContext
+import com.wingedsheep.engine.mechanics.combat.rules.BlockEvasionRule
+import com.wingedsheep.engine.mechanics.combat.rules.defaultBlockEvasionRules
 import com.wingedsheep.engine.mechanics.layers.ProjectedState
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.core.doesntUntapDuringUntapStep
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
@@ -50,7 +55,24 @@ class CombatAdvisor(
     private val priceCrackBackAsLife: Boolean = false,
     /** The composite evaluator's `life` coefficient, so the two are in the same units. */
     private val lifeWeight: Double = 1.0,
+    /**
+     * Keep blocking local search from buying life with a creature while the life is not needed.
+     * [AiProfile.chumpOnlyWhenInDanger] carries the argument; this is where it is enforced.
+     */
+    private val chumpOnlyWhenInDanger: Boolean = false,
 ) {
+    /**
+     * The engine's own block-legality rules, asked alongside [CombatMath.canBeBlockedBy]'s
+     * hand-mirrored subset. That subset has no protection check at all, so a black creature was
+     * planned in front of a pro-black attacker; the engine refused the whole declaration, and
+     * [legalizeBlockerPlan] peeled blockers off cheapest-first until nothing — the free block
+     * beside it included — was left. Null without a registry: tests that build a bare advisor keep
+     * the hand-mirrored check alone.
+     */
+    private val blockEvasionRules: List<BlockEvasionRule>? by lazy {
+        cardRegistry?.let { defaultBlockEvasionRules(PredicateEvaluator(it)) }
+    }
+
     companion object {
         /**
          * Max engine simulations for blocking local search — now a **floor**, not a ceiling.
@@ -214,7 +236,7 @@ class CombatAdvisor(
         var bestMap = if (useSimulation) {
             improveViaLocalSearch(
                 state, projected, playerId, attackers, validBlockers,
-                mandatoryBlockerIds, seedMap, budget, trace
+                mandatoryBlockerIds, seedMap, budget, myLife, trace
             )
         } else {
             seedMap
@@ -232,11 +254,14 @@ class CombatAdvisor(
             val sortedUnblocked = unblockedAttackers.sortedByDescending { chumpPriority(projected, it) }
 
             for (attacker in sortedUnblocked) {
+                val needed = if (needsTwoBlockers(projected, attacker)) 2 else 1
                 val available = availableBlockersFor(state, projected, attacker, validBlockers, assignedBlockers)
                     .sortedBy { CombatMath.creatureValue(state, projected, it) }
-                val cheapest = available.firstOrNull() ?: continue
-                bestMap[cheapest] = listOf(attacker)
-                assignedBlockers.add(cheapest)
+                if (available.size < needed) continue
+                available.take(needed).forEach { blocker ->
+                    bestMap[blocker] = listOf(attacker)
+                    assignedBlockers.add(blocker)
+                }
             }
 
             // ── Survival pass: a plan that still lets lethal through is not a plan ──
@@ -260,13 +285,16 @@ class CombatAdvisor(
         // ── Proactive chump-block: if facing lethal within 2 turns, sacrifice low-value creatures ──
         // Only do this when NOT already facing immediate lethal (that's handled above).
         if (incomingDamage < myLife) {
-            val inDanger = isLifeInDanger(state, projected, attackers, bestMap, myLife, playerId)
+            val inDanger = isLifeInDanger(state, projected, attackers, bestMap, myLife, playerId, chumpOnlyWhenInDanger)
             if (inDanger) {
                 val unblockedAttackers = attackers
                     .filter { attacker -> bestMap.values.none { attacker in it } }
                     .sortedByDescending { chumpPriority(projected, it) }
 
                 for (attacker in unblockedAttackers) {
+                    // One cheap body cannot stop a menace attacker; the pair it would take is not
+                    // a cheap chump any more.
+                    if (needsTwoBlockers(projected, attacker)) continue
                     val available = availableBlockersFor(state, projected, attacker, validBlockers, assignedBlockers)
                         .filter { CombatMath.creatureValue(state, projected, it) < 2.0 }
                         .sortedBy { CombatMath.creatureValue(state, projected, it) }
@@ -376,11 +404,28 @@ class CombatAdvisor(
         mandatoryBlockerIds: Set<EntityId>,
         seedMap: MutableMap<EntityId, List<EntityId>>,
         budget: DecisionBudget,
+        myLife: Int,
         trace: CombatPlanTrace? = null,
     ): MutableMap<EntityId, List<EntityId>> {
         var currentPlan = seedMap.toMutableMap()
-        var currentScore = evaluateBlockingPlan(state, playerId, currentPlan) ?: return currentPlan
+        // An illegal seed simulates to nothing, and returning it unsearched hands the whole
+        // decision to `legalizeBlockerPlan`'s cheapest-first peeling — which can strip a perfectly
+        // good block that sat beside the illegal one. Search from the legal part of it instead.
+        val seedOutcome = evaluateBlockingPlan(state, playerId, currentPlan)
+            ?: run {
+                currentPlan = legalizeBlockerPlan(state, playerId, currentPlan, mandatoryBlockerIds).toMutableMap()
+                evaluateBlockingPlan(state, playerId, currentPlan)
+            }
+            ?: return currentPlan
+        var currentScore = seedOutcome.score
         trace?.recordBlock(currentPlan, currentScore)
+
+        // Blockers the seed already loses. Under [chumpOnlyWhenInDanger] a mutation may keep these
+        // (the heuristic put them there for a reason of its own) but may not add to them unless
+        // the life it buys is life we need.
+        val seedLosers = seedOutcome.losingBlockers
+        val chumpsAllowed = !chumpOnlyWhenInDanger ||
+            isLifeInDanger(state, projected, attackers, currentPlan, myLife, playerId, countCreaturesThatUntap = true)
         var simulationsLeft = budget.allowances.blockSimulations
         val deadline = budget.combatDeadlineNanos
 
@@ -399,7 +444,9 @@ class CombatAdvisor(
             for (mutation in mutations) {
                 if (simulationsLeft <= 0 || System.nanoTime() > deadline) break
                 simulationsLeft--
-                val score = evaluateBlockingPlan(state, playerId, mutation) ?: continue
+                val outcome = evaluateBlockingPlan(state, playerId, mutation) ?: continue
+                if (!chumpsAllowed && !seedLosers.containsAll(outcome.losingBlockers)) continue
+                val score = outcome.score
                 trace?.recordBlock(mutation, score)
                 if (score > bestScore) {
                     bestScore = score
@@ -463,7 +510,7 @@ class CombatAdvisor(
 
         for (attacker in unblockedAttackers.take(3)) {
             for (blocker in unassignedBlockers.take(3)) {
-                if (!CombatMath.canBeBlockedBy(state, projected, attacker, blocker, cardRegistry)) continue
+                if (!canBlock(state, projected, attacker, blocker)) continue
                 val mutation = currentPlan.toMutableMap()
                 mutation[blocker] = listOf(attacker)
                 mutations.add(mutation)
@@ -480,7 +527,7 @@ class CombatAdvisor(
                 }
             if (worstAssignment != null) {
                 val bestUnblocked = unblockedAttackers.first()
-                if (CombatMath.canBeBlockedBy(state, projected, bestUnblocked, worstAssignment.key, cardRegistry)) {
+                if (canBlock(state, projected, bestUnblocked, worstAssignment.key)) {
                     val mutation = currentPlan.toMutableMap()
                     mutation[worstAssignment.key] = listOf(bestUnblocked)
                     mutations.add(mutation)
@@ -714,6 +761,7 @@ class CombatAdvisor(
         assignedBlockers: Set<EntityId>,
         predicate: (BlockInfo) -> Boolean
     ): EntityId? {
+        if (needsTwoBlockers(projected, attacker)) return null
         val aPower = projected.getPower(attacker) ?: 0
         val aToughness = projected.getToughness(attacker) ?: 0
         val aKeywords = projected.getKeywords(attacker)
@@ -750,6 +798,14 @@ class CombatAdvisor(
     }
 
     /**
+     * A simulated blocking plan: its board score, and the blockers it lost without taking anything
+     * with them — dead after combat while every attacker they blocked is still on the battlefield.
+     * Read off the simulated outcome rather than predicted, so first strike, deathtouch, a pump or
+     * a damage-assignment order all count as they actually resolved.
+     */
+    private data class BlockPlanOutcome(val score: Double, val losingBlockers: Set<EntityId>)
+
+    /**
      * Simulate a blocking plan through the engine's combat resolution and return
      * the board evaluation score from the blocker's perspective.
      *
@@ -759,7 +815,7 @@ class CombatAdvisor(
         state: GameState,
         playerId: EntityId,
         blockerMap: Map<EntityId, List<EntityId>>
-    ): Double? {
+    ): BlockPlanOutcome? {
         val blockAction = DeclareBlockers(playerId, blockerMap)
         val simResult = simulator.simulate(state, blockAction)
         if (simResult is SimulationResult.Illegal || simResult is SimulationResult.StoppedAtLimit) return null
@@ -803,7 +859,12 @@ class CombatAdvisor(
             }
         } ?: 0.0
 
-        return baseScore + counterAttackBonus
+        val survivors = current.getBattlefield().toSet()
+        val losingBlockers = blockerMap.filter { (blocker, blocked) ->
+            blocked.isNotEmpty() && blocker !in survivors && blocked.all { it in survivors }
+        }.keys
+
+        return BlockPlanOutcome(baseScore + counterAttackBonus, losingBlockers)
     }
 
     /**
@@ -820,7 +881,8 @@ class CombatAdvisor(
         attackers: List<EntityId>,
         blockerMap: Map<EntityId, List<EntityId>>,
         myLife: Int,
-        playerId: EntityId
+        playerId: EntityId,
+        countCreaturesThatUntap: Boolean = false,
     ): Boolean {
         val incomingDamage = calculateIncomingDamage(state, projected, attackers, blockerMap)
 
@@ -832,10 +894,17 @@ class CombatAdvisor(
 
         // Our blockers next turn: untapped creatures that aren't currently assigned to block
         // (conservatively — some may die in this combat, but this is a fast heuristic)
+        //
+        // [countCreaturesThatUntap] corrects the "untapped" half: the opponent's next attack comes
+        // after *our* untap step, so a creature that attacked this turn is a blocker by then.
+        // Counting only today's untapped creatures overstates the danger after every swing of ours,
+        // and an overstated danger is exactly what licenses a chump.
         val myBlockers = projected.getBattlefieldControlledBy(playerId)
             .filter { entityId ->
-                projected.isCreature(entityId) &&
-                    state.getEntity(entityId)?.has<TappedComponent>() != true
+                projected.isCreature(entityId) && (
+                    state.getEntity(entityId)?.has<TappedComponent>() != true ||
+                        (countCreaturesThatUntap && !projected.doesntUntapDuringUntapStep(entityId))
+                    )
             }
 
         val nextTurnDamage = incomingNextTurnDamage(state, projected, playerId, myBlockers)
@@ -1143,8 +1212,27 @@ class CombatAdvisor(
         validBlockers: List<EntityId>,
         assignedBlockers: Set<EntityId>
     ): List<EntityId> {
-        return validBlockers.filter { it !in assignedBlockers && CombatMath.canBeBlockedBy(state, projected, attacker, it, cardRegistry) }
+        return validBlockers.filter { it !in assignedBlockers && canBlock(state, projected, attacker, it) }
     }
+
+    /** Can [blocker] block [attacker] on its own terms — evasion, protection, restrictions. */
+    private fun canBlock(state: GameState, projected: ProjectedState, attacker: EntityId, blocker: EntityId): Boolean {
+        if (!CombatMath.canBeBlockedBy(state, projected, attacker, blocker, cardRegistry)) return false
+        val rules = blockEvasionRules ?: return true
+        val registry = cardRegistry ?: return true
+        val blockingPlayer = projected.getController(blocker) ?: return true
+        val ctx = BlockCheckContext(state, projected, attacker, blocker, blockingPlayer, registry)
+        return rules.none { it.check(ctx) != null }
+    }
+
+    /**
+     * Menace: a lone blocker on this attacker is not a block, it is an illegal
+     * declaration. Every single-blocker pass has to skip it rather than leave it for
+     * [fixMenaceAssignments] to strip, because stripping frees the blocker *after* the passes that
+     * could have used it elsewhere have run.
+     */
+    private fun needsTwoBlockers(projected: ProjectedState, attacker: EntityId): Boolean =
+        Keyword.MENACE.name in projected.getKeywords(attacker)
 
     // ── Helpers ──────────────────────────────────────────────────────────
 

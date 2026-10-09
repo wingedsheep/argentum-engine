@@ -343,7 +343,7 @@
 .opponentRow {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 14px;
   min-width: 0;
 }
 
@@ -351,17 +351,28 @@
   flex: none;
   display: grid;
   place-items: center;
-  width: 38px;
-  height: 38px;
+  width: 56px;
+  height: 56px;
   border-radius: 50%;
   background: linear-gradient(145deg, #3a3f52, #23262f);
   border: 1px solid rgba(255, 255, 255, 0.12);
   color: #f0f2f7;
   font-family: var(--font-display);
-  font-size: 18px;
+  font-size: 24px;
   font-weight: 600;
 }
-.avatar[data-portrait='true'] { position: relative; background: #10131c; }
+/* The opponent's portrait, ringed in gold like the match intro's, so the result card closes the match
+   with the same face that opened it. */
+.avatar[data-portrait='true'] {
+  position: relative;
+  background: #10131c;
+  border: none;
+  box-shadow: 0 0 0 2px rgba(10, 12, 20, 0.9), 0 0 0 3.5px rgba(242, 180, 92, 0.8), 0 6px 18px rgba(0, 0, 0, 0.45);
+}
+/* A phone's card is narrow enough that the name needs the room more than the portrait does. */
+@media (max-width: 639px) {
+  .avatar { width: 46px; height: 46px; font-size: 20px; }
+}
 
 .opponentText {
   display: flex;

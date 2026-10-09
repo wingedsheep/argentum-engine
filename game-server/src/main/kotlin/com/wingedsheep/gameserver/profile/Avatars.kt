@@ -36,6 +36,19 @@ object Avatars {
         "construct-colossus", "eldrazi-titan", "sliver-hive", "crystal-elemental",
     )
 
+    /**
+     * Portraits painted for the AI opponents, one per persona in `AiGameManager.AI_PERSONAS` (art in
+     * `web-client/src/assets/avatars/ai/`). They ride on AI seats only: a player is never offered one
+     * and [isPreset] does not accept one.
+     */
+    val aiIds: Set<String> = linkedSetOf(
+        "ai-cruel-optimus", "ai-thought-harvester", "ai-stack-tyrant",
+        "ai-mindripper-prime", "ai-soulless-topdeckr", "ai-the-unblinkable",
+        "ai-dread-calculus", "ai-synapse-ravager", "ai-neural-butcher",
+        "ai-iron-oracle", "ai-phyrexian-brainframe", "ai-darksteel-nemesis",
+        "ai-voltaic-mastermind", "ai-myr-overlord", "ai-blightsteel-brain",
+    )
+
     fun isPreset(id: String): Boolean = id in ids
 }
 

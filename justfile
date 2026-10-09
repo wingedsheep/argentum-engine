@@ -116,12 +116,23 @@ benchmark-throughput GAMES="20" SET="BLB":
 # Play two AI agents head-to-head over paired-swap games and report a win rate with a confidence
 # interval (e.g., just arena v0 blb-advisors 1000). Agents: v0, current, production, blb-advisors,
 # ons-advisors, v0-blind. 1000 games is the merge gate; 300 is directional; 100 is a smoke test.
-# Results land in benchmarks/arena/. How to read one: docs/ai/measurement.md.
+# Results land in benchmarks/arena/, appended pair by pair as they finish — a killed run keeps
+# them (`just arena-report DIR`). One game is capped at ARENA_GAME_TIMEOUT_SEC of wall clock
+# (default 600, 0 = off); a capped game is a `timeout` draw and is not reproducible from its seed.
+# How to read one: docs/ai/measurement.md.
 [group: 'ai']
 arena A B GAMES="300" SET="BLB" SEED="20260727" ARTIFACT_DIR="":
     scripts/gradle-locked :ai:test --tests "*.ArenaBenchmark" -Dbenchmark=true -Darena=true \
         -DarenaA={{A}} -DarenaB={{B}} -DarenaGames={{GAMES}} -DarenaSet={{SET}} -DarenaSeed={{SEED}} \
+        -DarenaGameTimeoutSec=${ARENA_GAME_TIMEOUT_SEC:-600} \
         -Dargentum.ai.apprentice.dir={{ARTIFACT_DIR}}
+
+# Rebuild the summary of an arena or arena-pod run from its results directory (or results.csv) —
+# the way to read a run that was killed or never finished. A partial report says PARTIAL up top.
+[group: 'ai']
+arena-report DIR:
+    scripts/gradle-locked :ai:test --tests "*.ArenaBenchmark" -Dbenchmark=true \
+        -DarenaReport="$(cd "{{invocation_directory()}}" && realpath "{{DIR}}")"
 
 # Play AI-vs-AI games with sealed decks from random sets (a different set per seat) and write one
 # readable log per game — board, hand, every action, and what was on offer when the AI passed.
@@ -184,7 +195,7 @@ arena-puzzles-compare:
 arena-pod TABLE A B GAMES="300" SET="BLB" SEED="20260727":
     scripts/gradle-locked :ai:test --tests "*.ArenaBenchmark" -Dbenchmark=true -DarenaPod=true \
         -DarenaTable={{TABLE}} -DarenaA={{A}} -DarenaB={{B}} -DarenaGames={{GAMES}} \
-        -DarenaSet={{SET}} -DarenaSeed={{SEED}}
+        -DarenaSet={{SET}} -DarenaSeed={{SEED}} -DarenaGameTimeoutSec=${ARENA_GAME_TIMEOUT_SEC:-600}
 
 # Run every agent in ai/src/test/resources/arena/gauntlet.json against every other and print the
 # full pairwise matrix plus Bradley-Terry Elo. The matrix is the deliverable — MTG agents are
@@ -192,7 +203,8 @@ arena-pod TABLE A B GAMES="300" SET="BLB" SEED="20260727":
 [group: 'ai']
 arena-gauntlet GAMES="200" SET="BLB" SEED="20260727":
     scripts/gradle-locked :ai:test --tests "*.ArenaBenchmark" -Dbenchmark=true -DarenaGauntlet=true \
-        -DarenaGames={{GAMES}} -DarenaSet={{SET}} -DarenaSeed={{SEED}}
+        -DarenaGames={{GAMES}} -DarenaSet={{SET}} -DarenaSeed={{SEED}} \
+        -DarenaGameTimeoutSec=${ARENA_GAME_TIMEOUT_SEC:-600}
 
 # Play the same agent against itself at 100 / 1000 / 3000 ms of decision budget. Strength must be
 # MONOTONE in the budget; if it isn't, the search is generating noise and the fix is a better leaf

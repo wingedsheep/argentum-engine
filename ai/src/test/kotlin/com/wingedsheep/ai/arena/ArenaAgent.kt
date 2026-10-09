@@ -145,6 +145,11 @@ object ArenaAgents {
         // production-candidate-expiring production-candidate-noop 300` is the promotion gate.
         ArenaAgent("production-noop", AiProfile.PRODUCTION_NOOP),
         ArenaAgent("production-candidate-noop", AiProfile.PRODUCTION_CANDIDATE_NOOP),
+        // Blocking search may not add a chump block unless the life it saves is needed.
+        // `just arena production production-chumpgate 300` prices the term on its own; `just arena
+        // production-candidate-expiring production-candidate-chumpgate 300` is the promotion gate.
+        ArenaAgent("production-chumpgate", AiProfile.PRODUCTION_CHUMPGATE),
+        ArenaAgent("production-candidate-chumpgate", AiProfile.PRODUCTION_CANDIDATE_CHUMPGATE),
         // What EngineAiPlayerController plays: production-candidate-expiring plus every fix shipped
         // since. `just arena production-candidate-expiring live 300` prices the stack.
         ArenaAgent("live", AiProfile.LIVE),
@@ -154,6 +159,18 @@ object ArenaAgents {
         // production-candidate-choices 300` is the promotion gate.
         ArenaAgent("production-choices", AiProfile.PRODUCTION_CHOICES),
         ArenaAgent("production-candidate-choices", AiProfile.PRODUCTION_CANDIDATE_CHOICES),
+        // Targets aimed by the polarity the effect implies, wrong-side-only casts held, and the
+        // unkicked cast kept beside the kicked one. `just arena production production-polarity 300`
+        // prices the term on its own; `just arena production-candidate-expiring
+        // production-candidate-polarity 300` is the promotion gate.
+        ArenaAgent("production-polarity", AiProfile.PRODUCTION_POLARITY),
+        ArenaAgent("production-candidate-polarity", AiProfile.PRODUCTION_CANDIDATE_POLARITY),
+        // Sorcery-speed permanents deployed instead of hoarded against the hand curve. `just arena
+        // production production-deploy 300` prices the term on its own; `just arena
+        // production-candidate-expiring production-candidate-deploy 300` is the gate against the
+        // agent the 2026-10-09 game logs were taken with.
+        ArenaAgent("production-deploy", AiProfile.PRODUCTION_DEPLOY),
+        ArenaAgent("production-candidate-deploy", AiProfile.PRODUCTION_CANDIDATE_DEPLOY),
         ArenaAgent("production-targeted", AiProfile.PRODUCTION_TARGETED),
         // Explicit ECL candidates. Their resource-backed weights fail closed to production's
         // evaluator until a validated artifact is installed; automatic selection is set-gated.

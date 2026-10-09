@@ -120,6 +120,18 @@ class PuzzleComparisonBenchmark : ScenarioTestBase() {
                 // the attacker that is in the fight) are the negative controls and must not.
                 AiProfile.PRODUCTION_NOOP,
                 AiProfile.PRODUCTION_CANDIDATE_NOOP,
+                // Target polarity read off the effect, alone and on top of what is live.
+                AiProfile.PRODUCTION_POLARITY,
+                AiProfile.PRODUCTION_CANDIDATE_POLARITY,
+                // Chump blocks only when the life is needed, alone and on top of what is live.
+                AiProfile.PRODUCTION_CHUMPGATE,
+                AiProfile.PRODUCTION_CANDIDATE_CHUMPGATE,
+                // Sorcery-speed permanents no longer charged as card loss, alone and on top of the
+                // agent the 2026-10-09 logs were taken with. `sequencing-09`/`-10` are the verdicts
+                // that should move; `instants-*` and `respond-02` (hold the last Counterspell) are
+                // the negative controls, since an instant's hand value is real option value.
+                AiProfile.PRODUCTION_DEPLOY,
+                AiProfile.PRODUCTION_CANDIDATE_DEPLOY,
                 // Phase 7's rollout evaluator, isolated from Phases 4 and 6 so the column is
                 // attributable to the rollouts alone.
                 AiProfile.PHASE7,

@@ -135,6 +135,26 @@ class IntentCatalog private constructor(private val registry: CardRegistry?) {
     }
 
     /**
+     * [TargetPolarity] of each target slot of the card called [cardName] cast as a spell, in
+     * requirement order. Empty when the catalog is off, the name is not a real card, or the card's
+     * targeting cannot be read — callers treat every missing slot as [TargetPolarity.UNKNOWN].
+     */
+    fun spellTargetPolarities(cardName: String): List<TargetPolarity> {
+        val definition = registry?.getCard(cardName) ?: return emptyList()
+        return TargetPolarityAnalyzer.forSpell(definition)
+    }
+
+    /**
+     * [TargetPolarity] of each target slot of the printed activated ability [abilityId] on the card
+     * called [cardName]. Empty under the same conditions as [activatedAbility] answers null.
+     */
+    fun abilityTargetPolarities(cardName: String, abilityId: AbilityId): List<TargetPolarity> {
+        val definition = registry?.getCard(cardName) ?: return emptyList()
+        val ability = activatedAbility(cardName, abilityId) ?: return emptyList()
+        return TargetPolarityAnalyzer.forAbility(definition, ability)
+    }
+
+    /**
      * The intent of one ability's [effect] — what a triggered or activated ability sitting on the
      * stack is doing. Always answers, even on [NONE]: an effect needs no registry to read.
      *

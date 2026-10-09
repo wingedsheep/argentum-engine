@@ -279,6 +279,7 @@ class AIPlayer(
                 simulator, evaluator, cardRegistry, advisorRegistry,
                 priceCrackBackAsLife = profile.priceCrackBackAsLife,
                 lifeWeight = EvalWeights.resolve(profile.evalWeightsId).life,
+                chumpOnlyWhenInDanger = profile.chumpOnlyWhenInDanger,
             )
             val responder = DecisionResponder(
                 simulator, evaluator,
@@ -314,6 +315,8 @@ class AIPlayer(
                     holdFlashPermanentsForAmbush = profile.holdFlashPermanentsForAmbush,
                     holdExpiringGrantsForCombat = profile.holdExpiringGrantsForCombat,
                     refuseUnspendableGrants = profile.refuseUnspendableGrants,
+                    targetPolarityFromEffect = profile.targetPolarityFromEffect,
+                    permanentCastIsNotCardLoss = profile.permanentCastIsNotCardLoss,
                     // Same seam as `CombatAdvisor`'s `lifeWeight`: a raw Phase 9 profile resolves
                     // to the compiled fallback here, which is the right answer for a policy that
                     // only needs to know what a point of board value trades against.
