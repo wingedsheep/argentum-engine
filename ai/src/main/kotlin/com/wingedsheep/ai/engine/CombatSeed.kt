@@ -160,7 +160,7 @@ object CombatSeed {
                 val allOpponentAttackers = projected.getBattlefieldControlledBy(opponentId).filter {
                     projected.isCreature(it) && Keyword.DEFENDER.name !in projected.getKeywords(it)
                 }
-                val myPotentialBlockers = validAttackers.filter { it !in seedMap }
+                val myPotentialBlockers = validAttackers.filter { it !in seedMap && !projected.cantBlock(it) }
                 val crackBackDamage = if (allOpponentAttackers.isNotEmpty()) {
                     CombatMath.calculateDamageThroughOptimalBlocking(
                         state, projected, allOpponentAttackers, myPotentialBlockers
@@ -170,7 +170,7 @@ object CombatSeed {
                 // If opponent threatens near-lethal damage next turn, hold back our best blocker.
                 // Prefer deathtouch creatures as hold-backs (they trade with anything).
                 val holdBack = if (crackBackDamage > 0 && myLife <= crackBackDamage * 1.5) {
-                    remaining.maxByOrNull { entityId ->
+                    remaining.filterNot { projected.cantBlock(it) }.maxByOrNull { entityId ->
                         val keywords = projected.getKeywords(entityId)
                         val hasDeathtouch = Keyword.DEATHTOUCH.name in keywords
                         val toughness = projected.getToughness(entityId) ?: 0

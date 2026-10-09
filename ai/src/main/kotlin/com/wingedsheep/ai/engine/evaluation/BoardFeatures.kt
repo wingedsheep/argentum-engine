@@ -840,16 +840,28 @@ object ThreatAssessment : BoardFeature {
     override fun score(state: GameState, projected: ProjectedState, playerId: EntityId): Double =
         score(state, projected, playerId, discountedRaceClock = false)
 
+    /** The pre-[com.wingedsheep.ai.engine.AiProfile.evasionAfterAttacking] signature. */
+    fun score(
+        state: GameState,
+        projected: ProjectedState,
+        playerId: EntityId,
+        discountedRaceClock: Boolean,
+    ): Double = score(state, projected, playerId, discountedRaceClock, evasionAfterAttacking = false)
+
     /**
      * @param discountedRaceClock score the race in urgency rather than in turns, so a distant clock
      *   is discounted and an absent one is zero. `EvaluationWeights.toEvaluator` binds this from
      *   [com.wingedsheep.ai.engine.AiProfile.discountedRaceClock]; see [RACE_URGENCY_SCALE].
+     * @param evasionAfterAttacking keep tapped attackers in evasive power and stop counting a
+     *   can't-block flier as air cover; see
+     *   [com.wingedsheep.ai.engine.AiProfile.evasionAfterAttacking].
      */
     fun score(
         state: GameState,
         projected: ProjectedState,
         playerId: EntityId,
         discountedRaceClock: Boolean,
+        evasionAfterAttacking: Boolean,
     ): Double {
         val sides = state.sidesFor(playerId) ?: return 0.0
 
@@ -893,8 +905,8 @@ object ThreatAssessment : BoardFeature {
             if (hasLethalOnBoard(theirAttackPower, myLife, myDefense)) score -= 10.0
 
             // Evasive damage (flying power they can't block)
-            val theirEvasivePower = evasivePower(state, projected, opponent, sides.mine)
-            val myEvasivePower = evasivePower(state, projected, sides.mine, opponent)
+            val theirEvasivePower = evasivePower(state, projected, opponent, sides.mine, evasionAfterAttacking)
+            val myEvasivePower = evasivePower(state, projected, sides.mine, opponent, evasionAfterAttacking)
             score += (myEvasivePower - theirEvasivePower) * 0.5
 
             score
@@ -966,17 +978,32 @@ object ThreatAssessment : BoardFeature {
         }
     }
 
-    /** Power of creatures with flying/evasion that the defending side can't block. */
+    /**
+     * Power of creatures with flying/evasion that the defending side can't block.
+     *
+     * The defenders' fliers are counted only while untapped — a tapped one cannot block — but the
+     * attackers' were too, which is the mistake [attackPotential] documents avoiding: the state an
+     * attack plan is scored on is the post-combat one, where every flier that just attacked is
+     * tapped, so attacking with an unblockable flier erased its own evasive power from the score.
+     *
+     * The same post-combat state exposes a second miscount: a flier that *can't block* (Aesthir
+     * Glider) was counted as the defenders' air cover while it stood untapped at home, so sending it
+     * in looked like it opened the skies to the opponent's fliers. It never covered them.
+     *
+     * [afterAttacking] fixes both; off, the historical reading.
+     */
     private fun evasivePower(
         state: GameState,
         projected: ProjectedState,
         attackers: List<EntityId>,
-        defenders: List<EntityId>
+        defenders: List<EntityId>,
+        afterAttacking: Boolean,
     ): Int {
         val defenderHasFlyers = defenders.any { defenderId ->
             projected.getBattlefieldControlledBy(defenderId).any { entityId ->
                 projected.isCreature(entityId) &&
                     state.getEntity(entityId)?.has<TappedComponent>() != true &&
+                    !(afterAttacking && projected.cantBlock(entityId)) &&
                     (Keyword.FLYING.name in projected.getKeywords(entityId) ||
                         Keyword.REACH.name in projected.getKeywords(entityId))
             }
@@ -989,7 +1016,7 @@ object ThreatAssessment : BoardFeature {
                 .filter { entityId ->
                     projected.isCreature(entityId) &&
                         Keyword.FLYING.name in projected.getKeywords(entityId) &&
-                        state.getEntity(entityId)?.has<TappedComponent>() != true &&
+                        (afterAttacking || state.getEntity(entityId)?.has<TappedComponent>() != true) &&
                         (state.getEntity(entityId)?.has<SummoningSicknessComponent>() != true ||
                             projected.hasKeyword(entityId, Keyword.HASTE) || projected.canAttackAsThoughHasty(entityId))
                 }
