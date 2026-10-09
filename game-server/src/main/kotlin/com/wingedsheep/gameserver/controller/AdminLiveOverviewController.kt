@@ -3,13 +3,17 @@ package com.wingedsheep.gameserver.controller
 import com.wingedsheep.gameserver.activity.PlayerActivityResolver
 import com.wingedsheep.gameserver.activity.PlayerActivityTracker
 import com.wingedsheep.gameserver.auth.AdminAuthService
+import com.wingedsheep.gameserver.handler.GamePlayHandler
 import com.wingedsheep.gameserver.lobby.LobbyState
 import com.wingedsheep.gameserver.repository.GameRepository
 import com.wingedsheep.gameserver.repository.LobbyRepository
+import com.wingedsheep.gameserver.session.AbandonedGamePolicy
 import com.wingedsheep.gameserver.session.SessionRegistry
 import org.springframework.http.HttpHeaders
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
@@ -21,7 +25,7 @@ import java.time.Instant
  * maintenance?" and gives each game a session id the dashboard can spectate through the ordinary
  * `/?spectate=` deep link. Also lists every online player with what they're doing — playing,
  * drafting, waiting in a lobby, searching, editing decks — via [PlayerActivityResolver], and a short
- * feed of recent moves from [PlayerActivityTracker] (minus the viewing admin's own). Read-only; auth through [AdminAuthService]. Unlike the stats endpoints it
+ * feed of recent moves from [PlayerActivityTracker] (minus the viewing admin's own). The one write is ending a dead game ([endGame]); auth through [AdminAuthService]. Unlike the stats endpoints it
  * needs no database, so it's mounted whether or not accounts are enabled.
  */
 @RestController
@@ -33,6 +37,7 @@ class AdminLiveOverviewController(
     private val sessionRegistry: SessionRegistry,
     private val activityResolver: PlayerActivityResolver,
     private val activityTracker: PlayerActivityTracker,
+    private val gamePlayHandler: GamePlayHandler,
 ) {
 
     data class SeatDto(val name: String, val isAi: Boolean, val connected: Boolean, val life: Int?)
@@ -54,8 +59,11 @@ class AdminLiveOverviewController(
         val turnNumber: Int?,
         val activePlayerName: String?,
         val step: String?,
+        /** When the game began; for a game still in its pregame, when its session was created. */
         val startedAt: String?,
         val lastActionAt: String?,
+        /** When the sweeper will end this game as abandoned if nothing changes — null while a human is connected. */
+        val autoEndAt: String?,
         val spectatorCount: Int,
         /** At least one human seat with an open socket — the games a restart would interrupt. */
         val hasConnectedHuman: Boolean,
@@ -126,8 +134,9 @@ class AdminLiveOverviewController(
                 turnNumber = snapshot.turnNumber,
                 activePlayerName = snapshot.activePlayerName,
                 step = snapshot.step?.name,
-                startedAt = session.replayStartedAt?.toString(),
+                startedAt = (session.replayStartedAt ?: session.createdAt).toString(),
                 lastActionAt = session.lastActionAt?.toString(),
+                autoEndAt = AbandonedGamePolicy.endsAt(AbandonedGamePolicy.of(session))?.toString(),
                 spectatorCount = session.getSpectators().size,
                 hasConnectedHuman = snapshot.seats.any { !it.isAi && it.connected },
             )
@@ -187,5 +196,24 @@ class AdminLiveOverviewController(
                 feed = feed,
             )
         )
+    }
+
+    /**
+     * End one game now, as a draw, through the same path the abandoned-game sweep uses
+     * ([GamePlayHandler.abandonGame]): players and spectators are told why, the replay is saved, the
+     * AI controllers shut down. For clearing out a game the admin can see is dead without waiting for
+     * [AbandonedGamePolicy].
+     */
+    @PostMapping("/games/{gameSessionId}/end")
+    fun endGame(
+        @PathVariable gameSessionId: String,
+        @RequestHeader("X-Admin-Password", required = false) password: String?,
+        @RequestHeader(HttpHeaders.AUTHORIZATION, required = false) authorization: String?,
+    ): ResponseEntity<Any> = adminAuth.guard(password, authorization) {
+        val session = gameRepository.findById(gameSessionId)
+            ?: return@guard ResponseEntity.status(404).body(mapOf("error" to "Game not found"))
+        val ended = gamePlayHandler.abandonGame(session, "The game was ended as a draw by a server admin.")
+        if (!ended) return@guard ResponseEntity.status(409).body(mapOf("error" to "Game has already ended"))
+        ResponseEntity.ok(mapOf("ended" to true))
     }
 }

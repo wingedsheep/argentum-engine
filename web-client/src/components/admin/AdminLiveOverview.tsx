@@ -8,11 +8,14 @@
  * drafting, in a lobby, searching, in the deckbuilder — and a feed of recent moves
  * ({@link OnlinePlayersPanel}, {@link ActivityFeedPanel}).
  *
- * Polls every {@link REFRESH_MS}; read-only and gated behind the dashboard's shared {@link AdminAuth}.
+ * Each game shows when it started and, once no human is connected, when the server's abandoned-game
+ * sweep will end it; an "End" button ends one right away (as a draw).
+ *
+ * Polls every {@link REFRESH_MS}; gated behind the dashboard's shared {@link AdminAuth}.
  */
 import { useCallback, useEffect, useState } from 'react'
 import type React from 'react'
-import { type LiveGame, type LiveLobby, type LiveOverview, fetchLiveOverview } from '@/api/adminLiveOverview'
+import { type LiveGame, type LiveLobby, type LiveOverview, endLiveGame, fetchLiveOverview } from '@/api/adminLiveOverview'
 import type { AdminAuth } from '@/api/adminAuth'
 import { formatAgo, formatClock, gameModeLabel } from './statFormat'
 import { ActivityFeedPanel, OnlinePlayersPanel } from './AdminOnlinePlayers'
@@ -35,6 +38,20 @@ export function AdminLiveOverview({ auth, onBack }: { auth: AdminAuth; onBack: (
       setError(e instanceof Error ? e.message : 'Failed to load the live overview')
     }
   }, [auth])
+
+  const endGame = useCallback(
+    async (game: LiveGame) => {
+      const players = game.seats.map((s) => s.name).join(' vs ')
+      if (!window.confirm(`End ${players} now? It is recorded as a draw.`)) return
+      try {
+        await endLiveGame(auth, game.gameSessionId)
+      } catch (e) {
+        setError(e instanceof Error ? e.message : 'Failed to end the game')
+      }
+      void load()
+    },
+    [auth, load],
+  )
 
   useEffect(() => {
     void load()
@@ -97,9 +114,9 @@ export function AdminLiveOverview({ auth, onBack }: { auth: AdminAuth; onBack: (
             {visible.length === 0 ? (
               <p style={cellStyle.muted}>No games with connected players.</p>
             ) : (
-              <Table head={['Players', 'Mode', 'Turn', 'Last action', 'Running for', 'Watching', '']} leftColumns={5}>
+              <Table head={['Players', 'Mode', 'Turn', 'Started', 'Last action', 'Auto-ends', 'Watching', '']} leftColumns={6}>
                 {visible.map((g) => (
-                  <GameRow key={g.gameSessionId} game={g} now={now} />
+                  <GameRow key={g.gameSessionId} game={g} now={now} onEnd={() => void endGame(g)} />
                 ))}
               </Table>
             )}
@@ -139,7 +156,7 @@ function MaintenanceVerdict({ activeGames, idleGames, lobbies }: { activeGames: 
   )
 }
 
-function GameRow({ game, now }: { game: LiveGame; now: number }) {
+function GameRow({ game, now, onEnd }: { game: LiveGame; now: number; onEnd: () => void }) {
   const mode = gameModeLabel(game.gameMode, game.format)
   const idle = isIdle(game, now)
   return (
@@ -167,18 +184,35 @@ function GameRow({ game, now }: { game: LiveGame; now: number }) {
       <td style={cellStyle.td}>
         {game.gameOver ? 'Over' : !game.started ? 'Pregame' : `T${game.turnNumber ?? '?'} · ${prettyStep(game.step)}`}
       </td>
+      <td style={cellStyle.td}>
+        {game.startedAt ? (
+          <>
+            {formatStarted(game.startedAt, now)}
+            <span style={styles.tag}> · {formatAgo(now - Date.parse(game.startedAt))} ago</span>
+          </>
+        ) : (
+          '—'
+        )}
+      </td>
       <td style={{ ...cellStyle.td, color: idle ? adminTheme.textMuted : adminTheme.good }}>
         {game.lastActionAt ? `${formatAgo(now - Date.parse(game.lastActionAt))} ago` : '—'}
       </td>
-      <td style={cellStyle.td}>{game.startedAt ? formatAgo(now - Date.parse(game.startedAt)) : '—'}</td>
+      <td style={cellStyle.td} title="Games with no connected human are ended as a draw after 30 min without a move, or 60 min without a connected player">
+        {game.autoEndAt ? <span style={styles.tag}>in {formatAgo(Date.parse(game.autoEndAt) - now)}</span> : '—'}
+      </td>
       <td style={cellStyle.tdNum}>{game.spectatorCount || '—'}</td>
-      <td style={cellStyle.tdNum}>
+      <td style={{ ...cellStyle.tdNum, whiteSpace: 'nowrap' }}>
         {game.started && !game.gameOver ? (
           <a style={styles.link} href={`/?spectate=${encodeURIComponent(game.gameSessionId)}`} target="_blank" rel="noreferrer">
             Watch ↗
           </a>
         ) : (
           <span style={styles.tag}>—</span>
+        )}
+        {!game.gameOver && (
+          <button type="button" style={styles.end} onClick={onEnd} title="End this game now as a draw">
+            End
+          </button>
         )}
       </td>
     </tr>
@@ -201,6 +235,14 @@ function LobbyRow({ lobby }: { lobby: LiveLobby }) {
       <td style={cellStyle.tdNum}>{lobby.currentRound != null ? `${lobby.currentRound} / ${lobby.totalRounds ?? '?'}` : '—'}</td>
     </tr>
   )
+}
+
+/** Clock time for a game started today, date and time for an older one — the long-forgotten ones. */
+function formatStarted(iso: string, now: number): string {
+  const started = new Date(iso)
+  const time = started.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+  if (started.toDateString() === new Date(now).toDateString()) return time
+  return `${started.toLocaleDateString([], { month: 'short', day: 'numeric' })} ${time}`
 }
 
 function isIdle(game: LiveGame, now: number): boolean {
@@ -249,6 +291,17 @@ const styles: Record<string, React.CSSProperties> = {
   life: { color: adminTheme.textMuted, fontSize: 12, fontVariantNumeric: 'tabular-nums' },
   disconnected: { color: adminTheme.bad, fontSize: 12 },
   link: { color: adminTheme.accent, fontSize: 13, textDecoration: 'none', whiteSpace: 'nowrap' },
+  end: {
+    marginLeft: 10,
+    background: 'none',
+    border: `1px solid ${adminTheme.border}`,
+    borderRadius: 6,
+    color: adminTheme.bad,
+    padding: '2px 8px',
+    font: 'inherit',
+    fontSize: 12,
+    cursor: 'pointer',
+  },
   refresh: {
     background: 'none',
     border: `1px solid ${adminTheme.border}`,

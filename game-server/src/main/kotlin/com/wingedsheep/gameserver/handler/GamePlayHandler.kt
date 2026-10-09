@@ -886,6 +886,29 @@ class GamePlayHandler(
     }
 
     /**
+     * End a game nobody is playing — the sweeper's [com.wingedsheep.gameserver.session.AbandonedGamePolicy]
+     * or an admin from the Live overview. A started game ends as a draw through the normal game-over
+     * path, so seats, spectators, the lobby, the replay and the AI controllers are all finalized as for
+     * any other ending. A game still in its pregame has nothing to record and is simply dropped,
+     * unless a tournament lobby is waiting on it (that lobby's own sweep owns it). Returns whether
+     * anything was ended.
+     */
+    fun abandonGame(gameSession: GameSession, message: String): Boolean {
+        if (gameSession.abandon(message)) {
+            logger.info("Abandoning game ${gameSession.sessionId}: $message")
+            handleGameOver(gameSession, GameOverReason.DRAW)
+            return true
+        }
+        if (gameSession.isGameOver() || gameSession.adminSnapshot().started) return false
+        if (gameRepository.getLobbyForGame(gameSession.sessionId) != null) return false
+        logger.info("Dropping unstarted game ${gameSession.sessionId}: $message")
+        gameRepository.remove(gameSession.sessionId)
+        mulliganBroadcastSent.remove(gameSession.sessionId)
+        aiGameManager.cleanupGame(gameSession.sessionId)
+        return true
+    }
+
+    /**
      * [playerId] leaves a game against the AI because matchmaking found them a human opponent. The
      * seat concedes so the game ends cleanly and the AI shuts down, but quietly — see
      * [GameSession.departedForMatch].
