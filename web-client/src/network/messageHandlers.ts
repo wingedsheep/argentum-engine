@@ -57,6 +57,8 @@ import type {
   MatchmakingQueuesMessage,
   FriendPresenceMessage,
   FriendRequestReceivedMessage,
+  DirectMessageMessage,
+  DirectMessagesChangedMessage,
   EmoteMessage,
   PostGameMessage,
 } from '@/types'
@@ -137,6 +139,8 @@ export interface MessageHandlers {
   // Friends handlers
   onFriendPresence: (message: FriendPresenceMessage) => void
   onFriendRequestReceived: (message: FriendRequestReceivedMessage) => void
+  onDirectMessage: (message: DirectMessageMessage) => void
+  onDirectMessagesChanged: (message: DirectMessagesChangedMessage) => void
   // Table talk and after the game
   onEmote: (message: EmoteMessage) => void
   onPostGame: (message: PostGameMessage) => void
@@ -333,6 +337,12 @@ export function handleServerMessage(message: ServerMessage, handlers: MessageHan
       break
     case 'friendRequestReceived':
       handlers.onFriendRequestReceived(message)
+      break
+    case 'directMessage':
+      handlers.onDirectMessage(message)
+      break
+    case 'directMessagesChanged':
+      handlers.onDirectMessagesChanged(message)
       break
     case 'emote':
       handlers.onEmote(message)

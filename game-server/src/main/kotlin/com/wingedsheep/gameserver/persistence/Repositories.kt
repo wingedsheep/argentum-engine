@@ -70,6 +70,42 @@ interface UserBlockRepository : CrudRepository<UserBlockRow, UUID> {
     fun findByBlockerIdAndBlockedId(blockerId: UUID, blockedId: UUID): UserBlockRow?
 }
 
+/** Direct-message threads; an account's threads are found from either side of the pair. */
+interface DmThreadRepository : CrudRepository<DmThreadRow, UUID> {
+    fun findByUserLowAndUserHigh(userLow: UUID, userHigh: UUID): DmThreadRow?
+
+    @Query("SELECT * FROM dm_threads WHERE user_low = :userId OR user_high = :userId ORDER BY last_message_at DESC LIMIT :limit")
+    fun findRecentFor(@Param("userId") userId: UUID, @Param("limit") limit: Int): List<DmThreadRow>
+}
+
+/**
+ * Messages in a thread. Each read is bounded below by the reader's clear marker, so a conversation
+ * someone deleted stays deleted for them; a null bound uses the epoch.
+ */
+interface DmMessageRepository : CrudRepository<DmMessageRow, UUID> {
+    @Query(
+        """
+        SELECT * FROM dm_messages
+        WHERE thread_id = :threadId AND created_at > :after AND created_at < :before
+        ORDER BY created_at DESC
+        LIMIT :limit
+        """,
+    )
+    fun findPage(
+        @Param("threadId") threadId: UUID,
+        @Param("after") after: Instant,
+        @Param("before") before: Instant,
+        @Param("limit") limit: Int,
+    ): List<DmMessageRow>
+
+    @Query("SELECT count(*) FROM dm_messages WHERE thread_id = :threadId AND sender_id = :senderId AND created_at > :after")
+    fun countFromSince(
+        @Param("threadId") threadId: UUID,
+        @Param("senderId") senderId: UUID,
+        @Param("after") after: Instant,
+    ): Int
+}
+
 interface GameReplayRepository : CrudRepository<GameReplayRow, Long> {
     fun findByGameId(gameId: String): GameReplayRow?
 
