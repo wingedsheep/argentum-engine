@@ -26,6 +26,8 @@ The selected CLI must be installed and signed in. Codex runs with `--approve-for
 approval review in the workspace sandbox); Claude uses `PERMISSION_MODE`, defaulting to `auto`.
 Both share the ledger and logs under `.claude/loop-runs/`, so run only one launcher per set at a time.
 Stop with Ctrl-C, or `touch .claude/loop-runs/ecl.stop` to stop after the current step or retry wait.
+`just loops` shows what every loop (set, assay, commander) is doing now, its last result, and its open
+PR. A launcher streams only the milestones a session reports; `LOOP_VERBOSE=1` adds every tool call.
 Codex launch failures stop with a transcript path; usage limits wait 30 minutes before retrying.
 Its JSON stream and final-message file follow the
 [Codex non-interactive interface](https://learn.chatgpt.com/docs/non-interactive-mode).

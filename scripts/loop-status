@@ -1,0 +1,168 @@
+#!/usr/bin/env python3
+"""What the agent loops are doing, one block per loop, read from their logs.
+
+  just loops          running loops, plus any that stopped in the last day
+  just loops --all    every loop that has a log
+
+Each block says what the loop is doing now (working on which step, waiting on CI, paused for a usage
+limit), what its last finished iteration reported, and its open PR. The detail is in the loop's log:
+`tail -f .claude/loop-runs/<name>.log`.
+"""
+import json
+import os
+import re
+import subprocess
+import sys
+from datetime import datetime, timedelta
+from pathlib import Path
+
+STAMP = re.compile(r"^\[(\d{4}-\d\d-\d\d \d\d:\d\d:\d\d)\] (.*)$")
+MILESTONE = re.compile(r"^\s+(🔨|🔎|📋) (.*)$")
+ITERATION = re.compile(r"^iteration (\d+) \(PR: ([^)]*)\)")
+FINISHED = re.compile(r"^iteration (\d+) finished: (.*?)(?: \(([^()]*)\))?$")
+PR_PREFIX = {"commander": "loop-cmdr-", "assay": "loop-assay-"}
+TTY = sys.stdout.isatty()
+
+
+def color(code, text):
+    return f"\033[{code}m{text}\033[0m" if TTY else text
+
+
+def repo_root():
+    common = subprocess.run(["git", "rev-parse", "--path-format=absolute", "--git-common-dir"],
+                            capture_output=True, text=True, check=True).stdout.strip()
+    return Path(common).parent
+
+
+def running_loops(runs):
+    """Loop name -> pid. The pid file is authoritative; ps catches loops started before it existed."""
+    found = {}
+    for pid_file in runs.glob("*.pid"):
+        try:
+            pid = int(pid_file.read_text().strip())
+            os.kill(pid, 0)
+            found[pid_file.stem] = pid
+        except (ValueError, OSError):
+            pass
+    ps = subprocess.run(["ps", "-eo", "pid=,command="], capture_output=True, text=True).stdout
+    for line in ps.splitlines():
+        m = re.search(r"^\s*(\d+) .*scripts/(set|assay|commander)-loop(?:\s+(\S+))?", line)
+        if not m:
+            continue
+        name = m.group(3).lower() if m.group(2) == "set" and m.group(3) else m.group(2)
+        found.setdefault(name, int(m.group(1)))
+    return found
+
+
+def open_prs():
+    try:
+        out = subprocess.run(["gh", "pr", "list", "--author", "@me", "--state", "open", "--limit", "100",
+                              "--json", "number,title,headRefName"],
+                             capture_output=True, text=True, timeout=20)
+        return json.loads(out.stdout) if out.returncode == 0 else []
+    except (OSError, subprocess.TimeoutExpired, json.JSONDecodeError):
+        return []
+
+
+def when(ts, now):
+    return ts.strftime("%H:%M") if abs(ts - now) < timedelta(hours=20) else ts.strftime("%b %d %H:%M")
+
+
+def minutes(delta):
+    m = int(delta.total_seconds() // 60)
+    return f"{m} min" if m < 60 else f"{m // 60}h {m % 60:02d}m"
+
+
+def parse(log):
+    """The current run of a loop: its start line, its timestamped events, and the milestones between them."""
+    lines = log.read_text(errors="replace").splitlines()
+    start = max((i for i, l in enumerate(lines) if re.search(r"-loop .*started", l)), default=0)
+    events, milestones = [], []  # milestones: (index of the event they follow, icon, text)
+    for line in lines[start:]:
+        if m := STAMP.match(line):
+            events.append((datetime.strptime(m.group(1), "%Y-%m-%d %H:%M:%S"), m.group(2)))
+        elif (m := MILESTONE.match(line)) and events:
+            milestones.append((len(events) - 1, m.group(1), m.group(2)))
+    return events, milestones
+
+
+def describe(name, log, pid, prs, now):
+    events, milestones = parse(log)
+    if not events:
+        return None
+    started, header = events[0]
+    model = re.search(r"model ([^,)]+)", header)
+    done = [e for e in events if FINISHED.match(e[1])]
+    last_ts, last = events[-1]
+
+    state = color("32", "● running") if pid else color("90", "○ stopped")
+    head = [color("1", name), state]
+    if model:
+        head.append(model.group(1))
+    head.append(f"since {when(started, now)}")
+    head.append(f"{len(done)} iteration{'s' * (len(done) != 1)} done")
+    out = ["  ·  ".join(head)]
+
+    def after(index):
+        return [(icon, text) for i, icon, text in milestones if i == index]
+
+    # Now: what the last event says the loop is in the middle of. A stopped loop was killed there.
+    if not pid:
+        out.append(f"  ended {when(last_ts, now)}, during: {last}")
+    elif m := ITERATION.match(last):
+        now_line = f"iteration {m.group(1)}, {minutes(now - last_ts)} in"
+        work = after(len(events) - 1)
+        doing = [t for icon, t in work if icon == "🔨"]
+        out.append(f"  now   {now_line}" + (f" — {doing[-1]}" if doing else " — choosing a step"))
+        out += [f"        🔎 {t}" for icon, t in work if icon == "🔎"][-3:]
+    elif "limit reached" in last or "no result" in last:
+        wait = re.search(r"waiting (\d+) min", last)
+        resume = last_ts + timedelta(minutes=int(wait.group(1))) if wait else None
+        why = "usage limit" if "limit" in last else "no result from the session"
+        out.append(f"  now   paused ({why})" + (f", resumes ≈{when(resume, now)}" if resume else ""))
+    elif m := re.match(r"waiting for CI on PR #(\d+)", last):
+        out.append(f"  now   waiting for CI on PR #{m.group(1)} (since {when(last_ts, now)})")
+    else:
+        out.append(f"  now   {last}  ({when(last_ts, now)})")
+
+    # Last: the most recent finished iteration and its summary.
+    if done:
+        index = max(i for i, e in enumerate(events) if FINISHED.match(e[1]))
+        ts, text = events[index]
+        m = FINISHED.match(text)
+        stats = f", {m.group(3)}" if m.group(3) else ""
+        out.append(f"  last  iteration {m.group(1)} → {m.group(2)}  ({when(ts, now)}{stats})")
+        begun = max((i for i in range(index) if ITERATION.match(events[i][1])), default=index)
+        summary = [t for i, icon, t in milestones if begun <= i <= index and icon == "📋"]
+        out += [f"        📋 {t}" for t in summary]
+
+    prefix = PR_PREFIX.get(name, f"loop-{name}-")
+    ours = [p for p in prs if p["headRefName"].startswith(prefix)]
+    out += [f"  PR    #{p['number']} {p['title']}" for p in ours] or ["  PR    none open"]
+    out.append(f"  log   {log}")
+    return last_ts, "\n".join(out)
+
+
+def main():
+    if any(a in ("-h", "--help") for a in sys.argv[1:]):
+        print(__doc__.strip())
+        return
+    show_all = "--all" in sys.argv[1:]
+    runs = repo_root() / ".claude" / "loop-runs"
+    now = datetime.now()
+    running = running_loops(runs)
+    logs = sorted(runs.glob("*.log"))
+    recent = [log for log in logs if log.stem in running or show_all
+              or now - datetime.fromtimestamp(log.stat().st_mtime) < timedelta(days=1)]
+    if not recent:
+        print("No loops running or stopped in the last day. `just loops --all` lists older ones.")
+        return
+    prs = open_prs()
+    blocks = [b for log in recent if (b := describe(log.stem, log, running.get(log.stem), prs, now))]
+    # Running loops first, then by most recent activity.
+    blocks.sort(key=lambda b: (color("32", "● running") not in b[1], -b[0].timestamp()))
+    print("\n\n".join(b[1] for b in blocks))
+
+
+if __name__ == "__main__":
+    main()
