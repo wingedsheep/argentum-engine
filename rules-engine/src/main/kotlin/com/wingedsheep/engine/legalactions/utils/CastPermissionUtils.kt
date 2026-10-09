@@ -3,6 +3,9 @@ package com.wingedsheep.engine.legalactions.utils
 import com.wingedsheep.engine.state.manaAbilitySourceAllowed
 import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.core.AlternativeCostType
+import com.wingedsheep.engine.handlers.actions.spell.CastZoneResolver
+import com.wingedsheep.engine.handlers.actions.spell.altAllows
+import com.wingedsheep.engine.legality.LegalityKernel
 import com.wingedsheep.engine.mechanics.CastCharacteristics
 import com.wingedsheep.engine.handlers.effects.permanent.types.buildCardComponentForDfcFace
 import com.wingedsheep.engine.handlers.effects.permanent.types.dfcBackFaceManaValue
@@ -71,6 +74,10 @@ class CastPermissionUtils(
     private val predicateEvaluator: PredicateEvaluator,
     private val conditionEvaluator: ConditionEvaluator
 ) {
+    private val castZones by lazy {
+        CastZoneResolver(cardRegistry, conditionEvaluator, LegalityKernel(cardRegistry, conditionEvaluator))
+    }
+
     /**
      * Whether [playerId] has already cast as many spells this turn as an *unfiltered*
      * [RestrictSpellsCastPerTurn] permanent allows — the blanket lock that blocks every spell.
@@ -200,12 +207,11 @@ class CastPermissionUtils(
         val current = announced.getEntity(action.cardId)?.get<CardComponent>() ?: return false
         val definition = cardRegistry.getCard(current.cardDefinitionId)
         val face = action.faceIndex?.let { definition?.cardFaces?.getOrNull(it) }
-        val transformed = action.useAlternativeCost && action.alternativeCostType in
-            setOf(AlternativeCostType.DISTURB, AlternativeCostType.MODAL_BACK_FACE) ||
-            state.mayPlayPermissions.any {
-                it.castTransformed && it.controllerId == action.playerId && action.cardId in it.cardIds
-            }
-        val back = if (transformed) definition?.backFace else null
+        val back = (if (action.useAlternativeCost && action.altAllows(AlternativeCostType.DISTURB)) {
+            castZones.disturbCastFace(state, action.playerId, action.cardId)
+        } else null) ?: (if (action.useAlternativeCost && action.altAllows(AlternativeCostType.MODAL_BACK_FACE)) {
+            castZones.modalBackCastFace(state, action.playerId, action.cardId)
+        } else null) ?: castZones.permissionTransformedCastFace(state, action.playerId, action.cardId)
         val castCard = when {
             action.castFaceDown -> current.copy(
                 name = "", manaCost = ManaCost.ZERO, typeLine = TypeLine.parse("Creature"),
@@ -217,7 +223,7 @@ class CastPermissionUtils(
                 colors = face.manaCost.colors, baseStats = null, baseKeywords = face.keywords,
                 baseFlags = emptySet(), manaValueOverride = null
             )
-            back != null -> buildCardComponentForDfcFace(current, back, dfcBackFaceManaValue(definition, current.manaValue))
+            back != null && definition != null -> buildCardComponentForDfcFace(current, back, dfcBackFaceManaValue(definition, current.manaValue))
             else -> current
         }
         val matchingState = if (castCard == current) announced else announced.updateEntity(action.cardId) {

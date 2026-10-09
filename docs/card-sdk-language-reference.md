@@ -3011,6 +3011,10 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   face-down casting), not a fixed list of cards at resolution. Independent bans accumulate and
   expire separately; supported durations are `EndOfTurn` and `Permanent`. Existing spells on the
   stack, land plays and activated abilities are unaffected. The default still forbids every spell.
+  Use characteristic filters independent of the casting process, such as type, subtype or color.
+  X-dependent mana-value filters, caster-relative controller filters and stack-state predicates
+  are not supported: matching happens before the card moves to the stack, and offers do not yet
+  constrain the chosen X. Those cases need additional casting-state and offer support.
 - `CantSearchLibrariesEffect(target, duration = EndOfTurn)` — target player(s) can't search libraries. Facade:
   `Effects.CantSearchLibraries(target, duration)`; `EffectTarget.PlayerRef(Player.Each)` for "Players can't search
   libraries this turn" (Shadow of Doubt). Stamps `CantSearchLibrariesComponent` (cleared at end-of-turn cleanup). Enforced

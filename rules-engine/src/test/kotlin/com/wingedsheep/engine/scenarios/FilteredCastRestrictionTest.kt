@@ -40,12 +40,22 @@ class FilteredCastRestrictionTest : FunSpec({
     }
     val modal = morph.copy(name = "Cast Ban Modal", layout = CardLayout.MODAL_DFC,
         keywordAbilities = emptyList(), backFace = creature.copy(name = "Cast Ban Modal Back"))
+    val modalCreatureFront = creature.copy(name = "Cast Ban Creature Modal", layout = CardLayout.MODAL_DFC,
+        backFace = morph.copy(name = "Cast Ban Enchantment Back", keywordAbilities = emptyList()))
+    val disturb = creature.copy(name = "Cast Ban Disturb",
+        keywordAbilities = listOf(KeywordAbility.disturb("{0}")),
+        backFace = morph.copy(name = "Cast Ban Disturb Back", keywordAbilities = emptyList()))
+    val suspendCreature = creature.copy(name = "Cast Ban Suspend Creature",
+        keywordAbilities = listOf(KeywordAbility.suspend("{0}", 2)))
+    val suspendInstant = instant.copy(name = "Cast Ban Suspend Instant",
+        keywordAbilities = listOf(KeywordAbility.suspend("{0}", 2)))
     val bestowed = card("Cast Ban Bestow") {
         manaCost = "{0}"; typeLine = "Enchantment Creature — Spirit"; power = 1; toughness = 1
         keywordAbility(KeywordAbility.bestow("{0}"))
     }
     fun setup(): GameTestDriver = GameTestDriver().apply {
-        registerCards(TestCards.all + listOf(creature, instant, adventure, morph, modal, bestowed))
+        registerCards(TestCards.all + listOf(creature, instant, adventure, morph, modal, modalCreatureFront, disturb,
+            suspendCreature, suspendInstant, bestowed))
         initMirrorMatch(Deck.of("Plains" to 40), startingPlayer = 0)
         passPriorityUntil(Step.PRECOMBAT_MAIN)
     }
@@ -122,6 +132,41 @@ class FilteredCastRestrictionTest : FunSpec({
         val action = offers(d, id).first { it.alternativeCostType == AlternativeCostType.MODAL_BACK_FACE }
         d.submitExpectFailure(CastSpell(me, id))
         d.submitSuccess(action)
+    }
+    test("legacy alternative-cost declarations judge each modal back rather than its front") {
+        for (definition in listOf(modal, modalCreatureFront)) {
+            for (filter in listOf(GameObjectFilter.Creature, GameObjectFilter.Noncreature)) {
+                val d = setup(); val me = d.activePlayer!!
+                val id = d.putCardInHand(me, definition.name)
+                ban(d, filter)
+                val banned = definition.backFace!!.typeLine.isCreature == (filter == GameObjectFilter.Creature)
+                offers(d, id).any { it.alternativeCostType == AlternativeCostType.MODAL_BACK_FACE } shouldBe !banned
+                val action = CastSpell(me, id, useAlternativeCost = true)
+                if (banned) d.submitExpectFailure(action) else d.submitSuccess(action)
+            }
+        }
+    }
+    test("legacy disturb declarations judge the enchantment back rather than its creature front") {
+        for (filter in listOf(GameObjectFilter.Creature, GameObjectFilter.Noncreature)) {
+            val d = setup(); val me = d.activePlayer!!
+            val id = d.putCardInGraveyard(me, disturb.name)
+            ban(d, filter)
+            val banned = filter == GameObjectFilter.Noncreature
+            offers(d, id).any { it.alternativeCostType == AlternativeCostType.DISTURB } shouldBe !banned
+            val action = CastSpell(me, id, useAlternativeCost = true)
+            if (banned) d.submitExpectFailure(action) else d.submitSuccess(action)
+        }
+    }
+    test("suspend offers honor filtered bans just like authoritative validation") {
+        val d = setup(); val me = d.activePlayer!!
+        val body = d.putCardInHand(me, suspendCreature.name)
+        val spell = d.putCardInHand(me, suspendInstant.name)
+        ban(d, GameObjectFilter.Noncreature)
+        val suspendOffers = d.legalActions(me).mapNotNull { it.action as? SuspendCardFromHand }
+        suspendOffers.any { it.cardId == spell } shouldBe false
+        suspendOffers.any { it.cardId == body } shouldBe true
+        d.submitExpectFailure(SuspendCardFromHand(me, spell))
+        d.submitSuccess(SuspendCardFromHand(me, body))
     }
     test("bestow is a noncreature spell while the ordinary enchantment creature remains legal") {
         val d = setup(); val me = d.activePlayer!!
