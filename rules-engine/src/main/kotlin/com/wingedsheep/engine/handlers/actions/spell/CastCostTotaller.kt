@@ -183,6 +183,13 @@ internal class CastCostTotaller(
             }
         }
 
+        if (cardDef != null && action.optionalCostPayments.isNotEmpty()) {
+            val spell = costCalculator.optionalPaymentDefinition(state, action, cardDef)
+            effectiveCost = costCalculator.withOptionalPayments(action.optionalCostPayments).applyOptionalPayments(
+                state, spell, action.playerId, effectiveCost, action.targets.map { it.toEntityId() },
+                castSourceZone(state, action.cardId), action.declaredCostSlot,
+                (action.paymentStrategy as? com.wingedsheep.engine.core.PaymentStrategy.Explicit)?.phyrexianLifePayments.orEmpty())
+        }
         return effectiveCost
     }
 

@@ -945,6 +945,74 @@
     ]
 }
 
+// Defiler of Dreams
+{
+    "name": "Defiler of Dreams",
+    "manaCost": "{3}{U}{U}",
+    "typeLine": "Creature — Phyrexian Sphinx",
+    "oracleText": "Flying\nAs an additional cost to cast blue permanent spells, you may pay 2 life. Those spells cost {U} less to cast if you paid life this way. This effect reduces only the amount of blue mana you pay.\nWhenever you cast a blue permanent spell, draw a card.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Defiler of Dreams:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsPermanent",
+                            {
+                                "type": "HasColor",
+                                "color": "BLUE"
+                            }
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": {
+                    "type": "YouCast",
+                    "filter": "permanent blue"
+                },
+                "modification": {
+                    "type": "ReduceColored",
+                    "symbols": "{U}"
+                },
+                "optionalLifePayment": 2
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "46",
+        "rarity": "RARE",
+        "artist": "Ryan Pancoast",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/8/881cc4a3-252b-4155-a34f-63d4b4f44442.jpg?1783921353",
+        "rulings": [
+            {
+                "date": "2022-09-09",
+                "text": "You may only pay the additional cost once per permanent spell."
+            }
+        ]
+    }
+}
+
 // Destroy Evil
 {
     "name": "Destroy Evil",

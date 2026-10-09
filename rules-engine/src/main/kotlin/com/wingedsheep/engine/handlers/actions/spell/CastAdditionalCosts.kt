@@ -54,6 +54,11 @@ class CastAdditionalCosts(
      * permission attaches.
      */
     fun owedAdditionalCosts(state: GameState, action: CastSpell, cardDef: CardDefinition?): List<AdditionalCost> = buildList {
+        for (payment in action.optionalCostPayments) {
+            costCalculator.optionalModifier(state, payment)?.optionalLifePayment?.let {
+                add(com.wingedsheep.sdk.dsl.Costs.additional.PayLife(it))
+            }
+        }
         if (cardDef != null) addAll(additionalCostsForModes(cardDef, action))
         declaredSlotCost(action, cardDef)?.let { add(it) }
         if (action.useAlternativeCost && cardDef != null) {

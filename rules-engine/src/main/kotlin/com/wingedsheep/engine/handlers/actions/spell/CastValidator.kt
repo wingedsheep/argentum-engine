@@ -224,6 +224,20 @@ internal class CastValidator(
         )
 
         validateAuthority(state, action, cardComponent, cardDef, source)?.let { return it }
+        if (action.optionalCostPayments.isNotEmpty()) {
+            if (action.optionalCostPayments.distinct().size != action.optionalCostPayments.size) return "An optional cost can only be paid once"
+            if (action.castFaceDown) return "This optional cost does not apply to a face-down spell"
+            val spell = source.transformedFace ?: action.faceIndex?.let { index ->
+                cardDef?.cardFaces?.getOrNull(index)?.let { costCalculator.faceCharacteristics(cardDef, it) }
+            } ?: cardDef ?: return "Spell definition missing"
+            val fromZone = castCostTotaller.castSourceZone(state, action.cardId)
+            for (payment in action.optionalCostPayments) {
+                if (!costCalculator.optionalPaymentApplies(state, payment, spell, action.playerId, fromZone,
+                    action.targets.map { it.toEntityId() }, action.declaredCostSlot)) return "Optional cost is not available for this spell"
+            }
+            val life = action.optionalCostPayments.sumOf { costCalculator.optionalModifier(state, it)?.optionalLifePayment ?: 0 }
+            if (!state.canPayLife(action.playerId, life)) return "Cannot pay optional life cost"
+        }
         if (action.castFaceDown) return validateFaceDownCast(state, action, cardDef, duringResolution)
         if (!duringResolution) validateTiming(state, action, cardComponent, cardDef, source)?.let { return it }
         validateAlternativeCostSelections(state, action, cardDef)?.let { return it }
@@ -636,8 +650,12 @@ internal class CastValidator(
             it is AdditionalCost.Choice && it.choiceSlot != null && it.choiceSlot !in action.additionalCostChoices
         }
         val check = SpellCostCheck(state, action, costHandler, predicateEvaluator)
-        return SpellCosts.reduceAlternatives(announcedCosts, state, action.playerId, action.additionalCostPayment, costHandler, action.additionalCostChoices)
-            .firstNotNullOfOrNull { SpellCosts.validate(check, it) }
+        val reduced = SpellCosts.reduceAlternatives(announcedCosts, state, action.playerId,
+            action.additionalCostPayment, costHandler, action.additionalCostChoices)
+        reduced.firstNotNullOfOrNull { SpellCosts.validate(check, it) }?.let { return it }
+        val totalLife = reduced.sumOf { SpellCosts.lifeToPay(check, it) }
+        if (!state.canPayLife(action.playerId, totalLife)) return "Cannot pay combined additional life costs"
+        return null
     }
 
     /**

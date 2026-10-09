@@ -94,7 +94,7 @@ class LegalActionEnumerator(
         }
 
         // Normal priority: enumerate all action categories
-        val offers = enumerators.flatMap { it.enumerate(context) }.filter { offer ->
+        val offers = (enumerators.flatMap { it.enumerate(context) } + optionalPaymentOffers(context)).filter { offer ->
             val cast = offer.action as? com.wingedsheep.engine.core.CastSpell
             if (cast != null && context.castPermissionUtils.blockedByResolvedCastRestriction(state, cast)) {
                 return@filter false
@@ -114,6 +114,43 @@ class LegalActionEnumerator(
         }
         return com.wingedsheep.engine.legalactions.enumerators.AdditionalManaForCountersOffer
             .annotate(context, permitted.map(::capXAtExactTargetCount), predicateEvaluator = predicateEvaluator)
+    }
+
+    /** Reuse every casting rail under an immutable declared-cost pricing context. */
+    private fun optionalPaymentOffers(context: EnumerationContext): List<LegalAction> {
+        val payments = costCalculator.optionalPayments(context.state, context.playerId)
+        if (payments.isEmpty()) return emptyList()
+        val groups = payments.groupBy { costCalculator.optionalModifier(context.state, it) }.values
+        // Identical instances have identical outcomes; offer each count, not every permutation.
+        var combinations = listOf(emptyList<com.wingedsheep.engine.core.CostModifierPayment>())
+        for (group in groups) combinations = combinations.flatMap { selected ->
+            (0..group.size).map { selected + group.take(it) }.filter { chosen ->
+                context.state.canPayLife(context.playerId, chosen.sumOf {
+                    costCalculator.optionalModifier(context.state, it)?.optionalLifePayment ?: 0
+                })
+            }
+        }
+        return combinations.filter { it.isNotEmpty() }.flatMap { chosen ->
+            val life = chosen.sumOf { costCalculator.optionalModifier(context.state, it)?.optionalLifePayment ?: 0 }
+            val pricing = costCalculator.withOptionalPayments(chosen)
+            val variant = EnumerationContext(context.state, context.playerId, cardRegistry,
+                manaSolver.reservingLife(life), pricing, predicateEvaluator, conditionEvaluator, turnManager, context.mode)
+            enumerators.asSequence().filter {
+                it is CastSpellEnumerator || it is CastFromZoneEnumerator || it is SneakCastEnumerator ||
+                    it is EmergeCastEnumerator || it is AnnouncedCharacteristicsCastEnumerator || it is WebSlingingCastEnumerator
+            }.flatMap { it.enumerate(variant) }.mapNotNull { offer ->
+                val action = offer.action as? com.wingedsheep.engine.core.CastSpell ?: return@mapNotNull null
+                if (action.castFaceDown) return@mapNotNull null
+                val component = context.state.getEntity(action.cardId)
+                    ?.get<com.wingedsheep.engine.state.components.identity.CardComponent>() ?: return@mapNotNull null
+                val printed = cardRegistry.getCard(component.cardDefinitionId) ?: return@mapNotNull null
+                val spell = pricing.optionalPaymentDefinition(context.state, action, printed)
+                val zone = context.state.logicalZone(action.cardId)?.zoneType
+                if (chosen.any { !pricing.optionalPaymentApplies(context.state, it, spell, context.playerId, zone,
+                    declaredCostSlot = action.declaredCostSlot) }) return@mapNotNull null
+                offer.copy(action = action.copy(optionalCostPayments = chosen), description = "${offer.description} — pay $life life")
+            }.toList()
+        }
     }
 
     /**

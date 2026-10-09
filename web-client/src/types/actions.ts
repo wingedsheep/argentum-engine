@@ -157,6 +157,7 @@ export interface CastSpellAction {
    */
   readonly wasWaterbendPaid?: boolean
   /** Extra generic mana paid for entry +1/+1 counters (Chorus of the Conclave); 0/absent declines. */
+  readonly optionalCostPayments?: readonly { readonly sourceId: string; readonly abilityIndex: number }[]
   readonly additionalManaForCounters?: number
   /**
    * The opponent promised this spell's gift additional cost (Bloomburrow gift — CR 702.174a), or

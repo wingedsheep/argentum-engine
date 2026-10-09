@@ -1065,6 +1065,7 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
       'With Manual Tap — or by choosing “Choose which lands to tap” in a card’s action menu — you pay a cost yourself: click highlighted mana sources until every pip is covered, then press Pay.',
     body: [
       { kind: 'p', text: 'Each pip of the cost shows whether it is paid from your mana pool, covered by a source you selected, or not yet covered. Auto Pay hands the rest to the auto-tapper; Decline backs out. If paying would sacrifice something, a warning says so first.' },
+      { kind: 'p', text: 'When a permanent lets you pay life for a spell discount, the card menu offers a separate cast option showing the life payment. Choose the ordinary cast option to keep your life. Each available source can contribute once.' },
       { kind: 'p', text: 'Alternative ways to pay — convoke, delve, tapping creatures for generic mana and the like — open their own selector, which shows the remaining cost as you choose.' },
     ],
     related: ['auto-tap', 'decisions'],

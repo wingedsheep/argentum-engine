@@ -204,8 +204,10 @@ internal class CastCostPayer(
         for (cost in costs) {
             val lifeToPay = SpellCosts.lifeToPay(SpellCostCheck(ledger.state, ledger.action, costHandler, predicateEvaluator), cost)
             if (lifeToPay == 0) continue
+            if (!ledger.state.canPayLife(ledger.playerId, lifeToPay)) return "Cannot pay additional life cost"
             val (afterPayment, paymentEvents) =
-                LifePaymentService.pay(zones, ledger.state, ledger.playerId, lifeToPay) ?: continue
+                LifePaymentService.pay(zones, ledger.state, ledger.playerId, lifeToPay)
+                    ?: return "Cannot pay additional life cost"
             ledger.state = afterPayment
             ledger.events.addAll(paymentEvents)
         }

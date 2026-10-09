@@ -28,7 +28,11 @@ data class ModifySpellCost(
     val target: SpellCostTarget,
     val modification: CostModification,
     val gating: CostGating = CostGating.None,
+    /** Optional additional life payment elected once per instance while announcing the spell. */
+    val optionalLifePayment: Int? = null,
 ) : StaticAbility {
+    init { require(optionalLifePayment == null || optionalLifePayment > 0) }
+
     override val description: String = buildDescription()
 
     private fun buildDescription(): String {
@@ -80,7 +84,8 @@ data class ModifySpellCost(
             is CostGating.OnlyIf -> " ${g.condition.description}"
             else -> ""
         }
-        return "$prefix $agreedVerb$perTurn$conditionSuffix"
+        return "$prefix $agreedVerb$perTurn$conditionSuffix" +
+            (optionalLifePayment?.let { " if you pay an additional $it life" } ?: "")
     }
 
     /**

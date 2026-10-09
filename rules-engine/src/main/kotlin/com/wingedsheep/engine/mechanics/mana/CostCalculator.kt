@@ -64,8 +64,50 @@ import com.wingedsheep.sdk.scripting.predicates.CardPredicate
  */
 class CostCalculator(
     private val cardRegistry: CardRegistry,
-    private val predicateEvaluator: PredicateEvaluator
+    private val predicateEvaluator: PredicateEvaluator,
+    val optionalCostPayments: List<com.wingedsheep.engine.core.CostModifierPayment> = emptyList(),
 ) {
+    /** Immutable pricing context, used by both declaration variants and the cast totaller. */
+    fun withOptionalPayments(payments: List<com.wingedsheep.engine.core.CostModifierPayment>): CostCalculator =
+        if (payments == optionalCostPayments) this else CostCalculator(cardRegistry, predicateEvaluator, payments)
+
+    fun optionalModifier(state: GameState, payment: com.wingedsheep.engine.core.CostModifierPayment): ModifySpellCost? =
+        (state.projectedState.getStaticAbilities(payment.sourceId).getOrNull(payment.abilityIndex) as? ModifySpellCost)
+            ?.takeIf { it.optionalLifePayment != null }
+
+    fun optionalPayments(state: GameState, casterId: EntityId): List<com.wingedsheep.engine.core.CostModifierPayment> = buildList {
+        for (id in state.projectedState.getBattlefieldControlledBy(casterId)) {
+            state.projectedState.getStaticAbilities(id).forEachIndexed { index, ability ->
+                if (ability is ModifySpellCost && ability.optionalLifePayment != null) {
+                    add(com.wingedsheep.engine.core.CostModifierPayment(id, index))
+                }
+            }
+        }
+    }
+
+    /** Characteristics of the face actually announced, rather than the printed front. */
+    internal fun optionalPaymentDefinition(state: GameState, action: com.wingedsheep.engine.core.CastSpell, printed: CardDefinition): CardDefinition {
+        action.faceIndex?.let { index -> printed.cardFaces.getOrNull(index)?.let { return faceCharacteristics(printed, it) } }
+        val backSelected = action.useAlternativeCost &&
+            (action.alternativeCostType == com.wingedsheep.engine.core.AlternativeCostType.MODAL_BACK_FACE ||
+                action.alternativeCostType == com.wingedsheep.engine.core.AlternativeCostType.DISTURB)
+        val transformedPermission = state.mayPlayPermissions.any {
+            it.castTransformed && it.controllerId == action.playerId && action.cardId in it.cardIds
+        }
+        if (backSelected || transformedPermission) printed.backFace?.let { return it }
+        return com.wingedsheep.engine.mechanics.CastCharacteristics.definitionForCast(printed, action)!!
+    }
+
+    fun optionalPaymentApplies(
+        state: GameState, payment: com.wingedsheep.engine.core.CostModifierPayment,
+        cardDef: CardDefinition, casterId: EntityId, fromZone: Zone?,
+        targets: List<EntityId> = emptyList(), declaredCostSlot: ChoiceSlot? = null,
+    ): Boolean {
+        val ability = optionalModifier(state, payment) ?: return false
+        return targetMatchesSpell(ability.target, cardDef, casterId, payment.sourceId, state, targets, fromZone) &&
+            gatingApplies(state, casterId, cardDef, ability, declaredCostSlot)
+    }
+
     private val conditionEvaluator = predicateEvaluator.conditions
     private val dynamicAmountEvaluator = predicateEvaluator.amounts
 
@@ -98,6 +140,7 @@ class CostCalculator(
         // Self-reductions read from the spell card's own static abilities.
         for (ability in cardDef.script.staticAbilities) {
             if (ability !is ModifySpellCost) continue
+            if (ability.optionalLifePayment != null) continue
             if (ability.target != SpellCostTarget.SelfCast) continue
             if (!gatingApplies(state, casterId, cardDef, ability, declaredCostSlot)) continue
             applyToSpellCast(
@@ -143,6 +186,7 @@ class CostCalculator(
 
         // ModifySpellCost abilities on battlefield permanents and emblems.
         for ((sourceId, ability) in scanModifySpellCost(state)) {
+            if (ability.optionalLifePayment != null) continue
             if (!targetMatchesSpell(ability.target, cardDef, casterId, sourceId, state, chosenTargets, fromZone)) continue
             if (!gatingApplies(state, casterId, cardDef, ability, declaredCostSlot)) continue
             applyToSpellCast(
@@ -177,7 +221,40 @@ class CostCalculator(
         // Last, once the cost is final: symbols the caster may pay with life (K'rrik) become
         // Phyrexian. This changes how the cost may be paid, not the cost, so it follows every
         // increase and reduction.
-        return LifePayableMana.apply(state, cardRegistry, casterId, effectiveCost)
+        return LifePayableMana.apply(state, cardRegistry, casterId, applyOptionalPayments(
+            state, cardDef, casterId, effectiveCost, chosenTargets, fromZone, declaredCostSlot))
+    }
+
+    /** Apply elected modifiers after every additional mana cost has been included. */
+    fun applyOptionalPayments(
+        state: GameState, cardDef: CardDefinition, casterId: EntityId, cost: ManaCost,
+        chosenTargets: List<EntityId> = emptyList(), fromZone: Zone? = null, declaredCostSlot: ChoiceSlot? = null,
+        phyrexianPaidWithLife: List<Color> = emptyList(),
+    ): ManaCost {
+        if (optionalCostPayments.isEmpty()) return cost
+        var genericReduction = 0
+        var genericIncrease = 0
+        val coloredReductionSymbols = mutableListOf<ManaSymbol>()
+        val coloredReductionWithOverflow = mutableListOf<ManaSymbol>()
+        val coloredIncreaseSymbols = mutableListOf<ManaSymbol>()
+        for (payment in optionalCostPayments) {
+            val ability = optionalModifier(state, payment) ?: continue
+            if (!targetMatchesSpell(ability.target, cardDef, casterId, payment.sourceId, state, chosenTargets, fromZone)) continue
+            if (!gatingApplies(state, casterId, cardDef, ability, declaredCostSlot)) continue
+            applyToSpellCast(
+                state, cardDef, casterId, ability.modification, chosenTargets, sourceId = payment.sourceId,
+                addGenericReduction = { genericReduction += it }, addGenericIncrease = { genericIncrease += it },
+                addColoredReduction = { coloredReductionSymbols += it },
+                addColoredReductionWithOverflow = { coloredReductionWithOverflow += it },
+                addColoredIncrease = { coloredIncreaseSymbols += it }, abilitySourceId = payment.sourceId,
+            )
+        }
+
+        var result = increaseGenericCost(cost, genericIncrease)
+        result = increaseColoredCost(result, coloredIncreaseSymbols)
+        result = reduceGenericCost(result, genericReduction)
+        result = reduceOptionalColored(result, coloredReductionSymbols, phyrexianPaidWithLife)
+        return reduceColoredCostWithOverflow(result, coloredReductionWithOverflow)
     }
 
     /**
@@ -205,7 +282,7 @@ class CostCalculator(
     )
 
     /** [cardDef] seen with only [face]'s characteristics, as the spell is while on the stack. */
-    private fun faceCharacteristics(cardDef: CardDefinition, face: CardFace): CardDefinition = cardDef.copy(
+    internal fun faceCharacteristics(cardDef: CardDefinition, face: CardFace): CardDefinition = cardDef.copy(
         name = face.name,
         manaCost = face.manaCost,
         typeLine = face.typeLine,
@@ -1200,6 +1277,46 @@ class CostCalculator(
     private fun increaseColoredCost(cost: ManaCost, symbolsToAdd: List<ManaSymbol>): ManaCost {
         if (symbolsToAdd.isEmpty()) return cost
         return ManaCost(cost.symbols + symbolsToAdd)
+    }
+
+    /** Match announced colored payments, including hybrid halves, without spilling into generic. */
+    private fun reduceOptionalColored(cost: ManaCost, reductions: List<ManaSymbol>, lifePips: List<Color>): ManaCost {
+        if (reductions.isEmpty()) return cost
+        val reserved = mutableSetOf<Int>()
+        for (color in lifePips) {
+            val index = cost.symbols.indices.firstOrNull { it !in reserved && cost.symbols[it] == ManaSymbol.Phyrexian(color) }
+                ?: cost.symbols.indices.firstOrNull {
+                    it !in reserved && (cost.symbols[it] as? ManaSymbol.HybridPhyrexian)?.color1 == color
+                }
+            if (index != null) reserved.add(index)
+        }
+        fun matches(reduction: ManaSymbol, symbol: ManaSymbol): Boolean {
+            if (reduction == symbol) return true
+            val color = (reduction as? ManaSymbol.Colored)?.color ?: return false
+            return when (symbol) {
+                is ManaSymbol.HybridPair -> color == symbol.color1 || color == symbol.color2
+                is ManaSymbol.HybridPhyrexian -> color == symbol.color1 || color == symbol.color2
+                is ManaSymbol.Phyrexian -> color == symbol.color
+                is ManaSymbol.MonocolorHybrid -> color == symbol.color
+                else -> false
+            }
+        }
+        val assignments = mutableMapOf<Int, Int>()
+        fun assign(reduction: Int, visited: MutableSet<Int>): Boolean {
+            val candidates = cost.symbols.indices.filter { it !in reserved && matches(reductions[reduction], cost.symbols[it]) }
+                .sortedBy { if (cost.symbols[it] == reductions[reduction]) 0 else 1 }
+            for (index in candidates) {
+                if (!visited.add(index)) continue
+                val previous = assignments[index]
+                if (previous == null || assign(previous, visited)) {
+                    assignments[index] = reduction
+                    return true
+                }
+            }
+            return false
+        }
+        reductions.indices.forEach { assign(it, mutableSetOf()) }
+        return ManaCost(cost.symbols.filterIndexed { index, _ -> index !in assignments })
     }
 
     /**

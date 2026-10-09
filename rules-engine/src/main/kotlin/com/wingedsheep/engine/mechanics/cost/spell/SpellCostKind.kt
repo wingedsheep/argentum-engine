@@ -128,9 +128,10 @@ class SpellCostEnumeration(
     val castCardId: EntityId,
     val costUtils: CostEnumerationUtils,
     val predicateEvaluator: PredicateEvaluator,
+    val reservedLife: Int = 0,
 ) {
     constructor(context: EnumerationContext, castCardId: EntityId) :
-        this(context.state, context.playerId, castCardId, context.costUtils, context.predicateEvaluator)
+        this(context.state, context.playerId, castCardId, context.costUtils, context.predicateEvaluator, context.reservedLife)
 }
 
 /**
@@ -138,6 +139,7 @@ class SpellCostEnumeration(
  * candidate pool it contributes; the enumerator turns the result into one `AdditionalCostData`.
  */
 class SpellCostOffer {
+    var lifeRequired = 0
     val sacrificeTargets = mutableListOf<EntityId>()
     var variableSacrificeTargets = emptyList<EntityId>()
     var variableSacrificeReduction = 0

@@ -1170,6 +1170,14 @@ contexts:
 `Generic(amount)`, `Hybrid(color1, color2)`, `Phyrexian(color)`, `X`, and `Colorless`. This
 structured representation enables the solver to reason about payment options without string parsing.
 
+**Optional life-funded cost modifiers.** `ModifySpellCost.optionalLifePayment` rides the existing
+additional-cost pipeline. A cast records each elected projected static instance in
+`CastSpell.optionalCostPayments`; validation checks the actual spell face, source and life budget.
+Enumeration uses an immutable `CostCalculator` carrying the same declarations, with the mana solver
+reserving their life budget. Identical instances are offered by count rather than by permutation.
+The totaller applies the discount after additional mana costs, and a mana-action continuation retains
+both its mana total and its non-mana obligations if the granting source departs during payment.
+
 **Tier 2: Mana Solving (Engine).** The `ManaSolver` determines whether a player *can* pay a cost
 and *which sources to tap*. This is a constraint satisfaction problem, not a simple subtraction:
 

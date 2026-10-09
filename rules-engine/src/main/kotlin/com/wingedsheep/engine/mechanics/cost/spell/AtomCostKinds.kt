@@ -987,8 +987,10 @@ internal object PayLifeCostKind : SpellCostKind<CostAtom.PayLife> {
     // Mode-level and cast-level affordability gate, so "discard a card or pay 3 life" doesn't
     // surface a Pay-3-Life action to a caster with fewer than 3 life (Bitter Triumph). Validation
     // still backstops it.
-    override fun enumerate(env: SpellCostEnumeration, cost: CostAtom.PayLife, offer: SpellCostOffer) =
-        env.state.canPayLife(env.playerId, cost.amount)
+    override fun enumerate(env: SpellCostEnumeration, cost: CostAtom.PayLife, offer: SpellCostOffer): Boolean {
+        offer.lifeRequired += cost.amount
+        return env.state.canPayLife(env.playerId, env.reservedLife + offer.lifeRequired)
+    }
 
     override fun validate(check: SpellCostCheck, cost: CostAtom.PayLife): String? {
         // CR 119.4 — you can't pay life unless you have at least that much (CR 810.9a — team total)
