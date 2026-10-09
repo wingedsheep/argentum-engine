@@ -98,7 +98,43 @@ Agents are named in `ai/src/test/kotlin/com/wingedsheep/ai/arena/ArenaAgent.kt`:
 | `v0-phase4-intent` | Phases 4 and 6 together — what the plan proposes to ship |
 
 Results land in `benchmarks/arena/<timestamp>-<a>-vs-<b>/` (gitignored): `results.csv` is one row
-per game, `summary.md` is the report below.
+per game, `summary.md` is the report below, `run.properties` records the agents, set, seed and caps.
+
+### A run that does not finish
+
+The run directory is created — and its path printed — **before the first game**. Every pair (for
+`arena-pod`, every rotation group) is appended to `results.csv` and flushed the moment it completes,
+and each one prints a progress line with its slowest game and the elapsed time. So a run you kill,
+or one that never ends, still has every finished pair on disk:
+
+```bash
+just arena-report benchmarks/arena/20261009-101500-production-vs-v0    # or .../results.csv
+```
+
+rebuilds the full summary from that file, with a `PARTIAL RUN: 149 of 150 pairs finished` line on
+top. A JVM shutdown (Ctrl-C, SIGTERM) does the same thing on its way out and writes it to
+`summary.partial.md`. Pairs stay the unit: rows are written a whole pair at a time, and the reader
+drops a pair it cannot see both games of, so a partial file is a smaller but **still unbiased**
+sample. Two things it cannot give back: the CSV keeps only the *count* of rejected AI actions, not
+their messages, and its wall clock is "start to last finished pair". While a run is going, the
+completion-order rows are the file; a finished run rewrites it sorted by pair.
+
+### The per-game timeout
+
+`just arena`, `arena-pod` and `arena-gauntlet` cap each **game** at 600 s of wall clock
+(`ARENA_GAME_TIMEOUT_SEC=900 just arena ...` to change it, `0` to switch it off; the JVM flag is
+`-DarenaGameTimeoutSec`). The turn cap and the 20,000-action cap still apply, but they count
+*actions*, and under a rollout profile on a huge board with a loaded machine an action can take
+seconds — 20,000 of them is hours. The deadline is checked between actions (no thread is ever
+interrupted); a game past it ends as a draw with draw reason `timeout(600s,turn=…,actions=…)`.
+
+**A timeout is the one cap that depends on the machine, not the seed.** The same pair rerun on a
+quieter box may play that game to a result, so a timed-out game is not reproducible byte-for-byte.
+That is why the cap is off for every determinism check (`ArenaHarnessTest`, `PodArenaHarnessTest`,
+`FrozenBaselineTest` never set one) and why the report states it on its own line —
+`TIMEOUTS: 2 game(s) hit the 600s wall-clock cap — scored as draws, and NOT reproducible` — rather
+than burying it in the `Unfinished:` taxonomy. Any timeout in a run you quote is worth saying in the
+PR; more than a handful means the cap is too tight for that agent, or that agent has a runaway.
 
 ---
 

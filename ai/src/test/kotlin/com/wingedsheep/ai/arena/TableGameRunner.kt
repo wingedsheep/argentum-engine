@@ -18,6 +18,8 @@ import com.wingedsheep.sdk.core.Format
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
 import java.security.MessageDigest
+import kotlin.time.Duration
+import kotlin.time.TimeSource
 import kotlin.time.measureTime
 
 /**
@@ -174,6 +176,9 @@ object TableGameRunner {
      */
     const val DEFAULT_MAX_ACTIONS = 20_000
 
+    /** Draw-reason prefix of a game the wall-clock cap ended. See [play]'s `gameTimeout`. */
+    const val TIMEOUT_REASON = "timeout"
+
     fun play(
         registry: CardRegistry,
         setup: TableSetup,
@@ -191,6 +196,18 @@ object TableGameRunner {
         featureCollector: ArenaFeatureCollector? = null,
         trainingObserver: ArenaTrainingObserver? = null,
         preserveGraveyardOrder: Boolean = true,
+        /**
+         * Wall-clock cap for this one game, or null (the default) for none. Checked between
+         * actions — never by interrupting a thread — so an action in flight always finishes and the
+         * game ends as a draw with draw reason `timeout(...)`.
+         *
+         * **A wall-clock cap is nondeterministic.** Whether it binds depends on machine load, so a
+         * game it ends is no longer reproducible byte-for-byte from its seed: a rerun on a quieter
+         * box may play it to a result. It exists so one runaway game (a slow agent on a huge board)
+         * cannot hold a whole run hostage; the report counts every timeout so a reader knows how
+         * many games were cut this way. `FrozenBaselineTest` and the harness tests leave it null.
+         */
+        gameTimeout: Duration? = null,
     ): TableGameOutcome {
         require(agents.size == setup.seats && decks.size == setup.seats) {
             "${setup.id} has ${setup.seats} seats but got ${agents.size} agents / ${decks.size} decks."
@@ -250,11 +267,17 @@ object TableGameRunner {
             seatIds.mapIndexed { seat, id -> id to agents[seat].name }.toMap(),
         )
 
+        val started = TimeSource.Monotonic.markNow()
         val duration = measureTime {
             try {
                 while (!state.gameOver && state.turnNumber < maxPlayerTurns &&
                     actionCount < maxActions
                 ) {
+                    if (gameTimeout != null && started.elapsedNow() >= gameTimeout) {
+                        drawReason = "$TIMEOUT_REASON(${gameTimeout.inWholeSeconds}s," +
+                            "turn=${state.turnNumber},actions=$actionCount)"
+                        break
+                    }
                     if (actionCount - lastProgressAction > STUCK_ACTIONS_PER_TURN) {
                         drawReason = "stuck(turn=${state.turnNumber},step=${state.step.name})"
                         break

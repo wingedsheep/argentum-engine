@@ -1,6 +1,7 @@
 package com.wingedsheep.ai.arena
 
 import java.io.File
+import kotlin.time.Duration
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -19,10 +20,18 @@ object ArenaReport {
     // Head-to-head
     // ─────────────────────────────────────────────────────────────────────────
 
-    fun summary(run: ArenaRun): String = buildString {
-        val s = run.stats
+    fun summary(run: ArenaRun): String = summary(run.stats, meta(run))
+
+    internal fun meta(run: ArenaRun) = ArenaRunMeta(
+        run.config.setCode, run.config.seed, run.config.threads, run.wallClock,
+        run.config.pairs, run.config.gameTimeout,
+    )
+
+    /** The summary from the statistics alone — what [ArenaResultsFile.report] renders a partial run with. */
+    fun summary(s: ArenaStats, meta: ArenaRunMeta): String = buildString {
         appendLine("--- ARENA: ${s.agentA} vs ${s.agentB} ---")
-        appendLine("Games:        ${s.games} (${s.pairs} pairs), set=${run.config.setCode}, seed=${run.config.seed}")
+        appendPartial(s.pairs, meta.plannedUnits, "pairs")
+        appendLine("Games:        ${s.games} (${s.pairs} pairs), set=${meta.setCode}, seed=${meta.seed}")
         appendLine("Record:       ${s.aWins}W-${s.bWins}L-${s.draws}D for ${s.agentA}")
         appendLine()
         // Paired first: it is the estimator, and quoting the unpaired number first invites
@@ -33,6 +42,7 @@ object ArenaReport {
         appendLine()
         appendLine("Seat 0 wins:  ${s.seat0Wins} / ${s.games} (${pct(s.seat0WinRate)}) — first-player advantage, cancelled by pairing")
         appendLine("Completed:    ${s.completedGames} / ${s.games} (${pct(s.completionRate)})")
+        appendTimeouts(s.timeouts, meta.gameTimeout)
         appendLine("Illegal acts: ${s.illegalActions.values.sum()} (actions the processor rejected — should be 0)")
         if (s.drawReasons.isNotEmpty()) {
             appendLine("Unfinished:   " + s.drawReasons.entries.joinToString(", ") { "${it.value}x ${it.key}" })
@@ -50,8 +60,8 @@ object ArenaReport {
         appendLine()
         appendLine("Avg turns:    ${fmt("%.1f", s.meanTurns)}   avg actions: ${fmt("%.0f", s.meanActions)}   " +
             "avg game: ${fmt("%.0f", s.meanGameMs)}ms")
-        appendLine("Wall clock:   ${run.wallClock.inWholeSeconds}s on ${run.config.threads} threads " +
-            "(${fmt("%.1f", s.games * 1000.0 / run.wallClock.inWholeMilliseconds.coerceAtLeast(1))} games/sec)")
+        appendLine("Wall clock:   ${meta.wallClock.inWholeSeconds}s on ${meta.threads} threads " +
+            "(${fmt("%.1f", s.games * 1000.0 / meta.wallClock.inWholeMilliseconds.coerceAtLeast(1))} games/sec)")
         appendLine()
         appendLine(verdict(s))
     }
@@ -69,23 +79,31 @@ object ArenaReport {
                 "spans parity — this is not a demonstrated improvement."
     }
 
-    /** Writes `results.csv` + `summary.md` under `benchmarks/arena/<timestamp>-<a>-vs-<b>/`. */
-    fun write(run: ArenaRun): File {
-        val dir = outputDir("${run.stats.agentA}-vs-${run.stats.agentB}")
-        File(dir, "results.csv").writeText(buildString {
-            appendLine("pair,game,seat0_agent,seat1_agent,seed,winner_seat,turns,actions,duration_ms," +
-                "seat0_life,seat1_life,completed,illegal_actions,draw_reason,exception")
-            for (pair in run.pairs) {
-                for (game in pair.games) {
-                    appendLine(listOf(
-                        game.pairId, game.gameIndex, game.seat0Agent, game.seat1Agent, game.seed,
-                        game.winnerSeat ?: "", game.turns, game.actions, game.durationMs,
-                        game.seat0Life, game.seat1Life, game.completed, game.illegalActions.values.sum(),
-                        csv(game.drawReason), csv(game.exception ?: ""),
-                    ).joinToString(","))
-                }
-            }
-        })
+    const val PAIR_HEADER = "pair,game,seat0_agent,seat1_agent,seed,winner_seat,turns,actions,duration_ms," +
+        "seat0_life,seat1_life,completed,illegal_actions,draw_reason,exception"
+
+    /** The `results.csv` rows of one pair — one per game. */
+    fun pairRows(pair: ArenaPair): List<String> = pair.games.map { game ->
+        listOf(
+            game.pairId, game.gameIndex, game.seat0Agent, game.seat1Agent, game.seed,
+            game.winnerSeat ?: "", game.turns, game.actions, game.durationMs,
+            game.seat0Life, game.seat1Life, game.completed, game.illegalActions.values.sum(),
+            csv(game.drawReason), csv(game.exception ?: ""),
+        ).joinToString(",")
+    }
+
+    /** The run directory for a head-to-head run: `benchmarks/arena/<timestamp>-<a>-vs-<b>/`. */
+    fun runDir(agentA: String, agentB: String): File = outputDir("$agentA-vs-$agentB")
+
+    /**
+     * Writes `results.csv` (sorted by pair, replacing the completion-order file the run appended
+     * to) + `summary.md` into [dir].
+     */
+    fun write(run: ArenaRun, dir: File = runDir(run.stats.agentA, run.stats.agentB)): File {
+        dir.mkdirs()
+        File(dir, ArenaResultsFile.RESULTS).writeText(
+            (listOf(PAIR_HEADER) + run.pairs.flatMap(::pairRows)).joinToString("") { it + "\n" }
+        )
         File(dir, "summary.md").writeText("```\n${summary(run)}```\n")
         return dir
     }
@@ -99,11 +117,21 @@ object ArenaReport {
      * field of N is a 1/N proposition, and reading a 34% pod result as "loses badly" is the single
      * most likely way to misread this report.
      */
-    fun podSummary(run: PodArenaRun): String = buildString {
-        val s = run.stats
+    fun podSummary(run: PodArenaRun): String = podSummary(
+        run.stats,
+        ArenaRunMeta(
+            run.config.setCode, run.config.seed, run.config.threads, run.wallClock,
+            run.config.groups, run.config.gameTimeout,
+        ),
+    )
+
+    /** The pod summary from the statistics alone — what [ArenaResultsFile.report] renders. */
+    fun podSummary(s: PodArenaStats, meta: ArenaRunMeta): String = buildString {
+        val gamesPerGroup = TableSetup.resolve(s.table).teamCount
         appendLine("--- POD ARENA (${s.table}): ${s.agentA} vs a field of ${s.agentB} ---")
-        appendLine("Games:        ${s.games} (${s.groups} rotation groups x ${run.config.gamesPerGroup}), " +
-            "set=${run.config.setCode}, seed=${run.config.seed}")
+        appendPartial(s.groups, meta.plannedUnits, "rotation groups")
+        appendLine("Games:        ${s.games} (${s.groups} rotation groups x $gamesPerGroup), " +
+            "set=${meta.setCode}, seed=${meta.seed}")
         appendLine("Record:       ${s.aWins} wins for ${s.agentA}, ${s.games - s.aWins - s.noWinner} " +
             "for the field, ${s.noWinner} with no winner")
         appendLine()
@@ -115,6 +143,7 @@ object ArenaReport {
         appendLine("Wins by team position: ${s.winsByTeamPosition.joinToString(", ")} " +
             "— turn-order advantage, cancelled by the rotation")
         appendLine("Completed:    ${s.completedGames} / ${s.games} (${pct(s.completionRate)})")
+        appendTimeouts(s.timeouts, meta.gameTimeout)
         appendLine("Illegal acts: ${s.illegalActions.values.sum()} (actions the processor rejected)")
         if (s.drawReasons.isNotEmpty()) {
             appendLine("Unfinished:   " + s.drawReasons.entries.joinToString(", ") { "${it.value}x ${it.key}" })
@@ -132,7 +161,7 @@ object ArenaReport {
         appendLine()
         appendLine("Avg turns:    ${fmt("%.1f", s.meanTurns)}   avg actions: ${fmt("%.0f", s.meanActions)}   " +
             "avg game: ${fmt("%.0f", s.meanGameMs)}ms")
-        appendLine("Wall clock:   ${run.wallClock.inWholeSeconds}s on ${run.config.threads} threads")
+        appendLine("Wall clock:   ${meta.wallClock.inWholeSeconds}s on ${meta.threads} threads")
         appendLine()
         appendLine(podVerdict(s))
     }
@@ -149,28 +178,56 @@ object ArenaReport {
                 "spans the ${pct(s.nullShare)} null — this is not a demonstrated improvement."
     }
 
-    /** Writes `results.csv` + `summary.md` under `benchmarks/arena/<timestamp>-pod-...`. */
-    fun writePod(run: PodArenaRun): File {
-        val s = run.stats
-        val dir = outputDir("pod-${s.table}-${s.agentA}-vs-${s.agentB}")
-        File(dir, "results.csv").writeText(buildString {
-            appendLine("group,rotation,table,a_seat,seat_agents,seed,winner_seat,winner_team,a_won," +
-                "turns,actions,duration_ms,life_by_seat,completed,illegal_actions,draw_reason,exception")
-            for (group in run.groups) {
-                for (game in group.games) {
-                    val o = game.outcome
-                    appendLine(listOf(
-                        o.groupId, o.rotation, o.setup.id, game.aSeat, o.seatAgents.joinToString("|"),
-                        o.seed, o.winnerSeat ?: "", o.winnerTeam ?: "", game.aWon,
-                        o.turns, o.actions, o.durationMs, o.lifeBySeat.joinToString("|"),
-                        o.completed, o.illegalActions.values.sum(),
-                        csv(o.drawReason), csv(o.exception ?: ""),
-                    ).joinToString(","))
-                }
-            }
-        })
+    const val GROUP_HEADER = "group,rotation,table,a_seat,seat_agents,seed,winner_seat,winner_team,a_won," +
+        "turns,actions,duration_ms,life_by_seat,completed,illegal_actions,draw_reason,exception"
+
+    /** The `results.csv` rows of one rotation group — one per game. */
+    fun groupRows(group: PodGroup): List<String> = group.games.map { game ->
+        val o = game.outcome
+        listOf(
+            o.groupId, o.rotation, o.setup.id, game.aSeat, o.seatAgents.joinToString("|"),
+            o.seed, o.winnerSeat ?: "", o.winnerTeam ?: "", game.aWon,
+            o.turns, o.actions, o.durationMs, o.lifeBySeat.joinToString("|"),
+            o.completed, o.illegalActions.values.sum(),
+            csv(o.drawReason), csv(o.exception ?: ""),
+        ).joinToString(",")
+    }
+
+    /** The run directory for a pod run: `benchmarks/arena/<timestamp>-pod-<table>-<a>-vs-<b>/`. */
+    fun podRunDir(table: String, agentA: String, agentB: String): File = outputDir("pod-$table-$agentA-vs-$agentB")
+
+    /** Writes `results.csv` (sorted by group) + `summary.md` into [dir]. */
+    fun writePod(run: PodArenaRun, dir: File = podRunDir(run.stats.table, run.stats.agentA, run.stats.agentB)): File {
+        dir.mkdirs()
+        File(dir, ArenaResultsFile.RESULTS).writeText(
+            (listOf(GROUP_HEADER) + run.groups.flatMap(::groupRows)).joinToString("") { it + "\n" }
+        )
         File(dir, "summary.md").writeText("```\n${podSummary(run)}```\n")
         return dir
+    }
+
+    /** A loud first line when the run did not finish — a partial report must never pass for a whole one. */
+    private fun StringBuilder.appendPartial(finished: Int, planned: Int, unit: String) {
+        if (finished < planned) {
+            appendLine("PARTIAL RUN:  $finished of $planned $unit finished — every finished one is whole, " +
+                "so this is an unbiased but smaller sample.")
+        }
+    }
+
+    /**
+     * Wall-clock timeouts, stated whenever the cap was on. They are draws for scoring, but unlike
+     * the turn and action caps they depend on machine load: a timed-out game is not reproducible
+     * from its seed, so a reader has to know how many there were.
+     */
+    private fun StringBuilder.appendTimeouts(timeouts: Int, cap: Duration?) {
+        if (cap == null && timeouts == 0) return
+        val limit = cap?.let { "${it.inWholeSeconds}s" } ?: "per-game"
+        if (timeouts == 0) {
+            appendLine("Timeouts:     0 (per-game wall-clock cap $limit)")
+        } else {
+            appendLine("TIMEOUTS:     $timeouts game(s) hit the $limit wall-clock cap — scored as draws, and " +
+                "NOT reproducible from their seed (the cap depends on machine load)")
+        }
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -243,6 +300,15 @@ object ArenaReport {
     // ─────────────────────────────────────────────────────────────────────────
 
     private fun csv(value: String) = value.replace(',', ';').replace('\n', ' ')
+
+    /**
+     * Resolve a path a person typed: as given if it exists, else against the repo root (Gradle
+     * runs tests from the module directory, so a repo-relative path would otherwise miss).
+     */
+    fun resolveUserPath(path: String): File {
+        val file = File(path)
+        return if (file.isAbsolute || file.exists()) file else File(repoRoot(), path)
+    }
 
     private fun outputDir(label: String): File {
         val stamp = LocalDateTime.now().format(TIMESTAMP)

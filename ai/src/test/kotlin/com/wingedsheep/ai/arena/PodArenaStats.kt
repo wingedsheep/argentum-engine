@@ -46,11 +46,25 @@ data class PodArenaStats(
 ) {
     val completionRate: Double get() = if (games > 0) completedGames.toDouble() / games else 0.0
 
+    /** Games the per-game wall-clock cap ended — nondeterministic, see [ArenaStats.timeouts]. */
+    val timeouts: Int get() = drawReasons[TableGameRunner.TIMEOUT_REASON] ?: 0
+
     /** A is a demonstrated improvement only if the whole interval clears the null share. */
     val beatsField: Boolean get() = winShareCi.low > nullShare
 
     companion object {
-        fun of(config: PodArenaConfig, groups: List<PodGroup>, bootstrapSeed: Long = 20260727L): PodArenaStats {
+        fun of(config: PodArenaConfig, groups: List<PodGroup>, bootstrapSeed: Long = 20260727L): PodArenaStats =
+            of(config.agentA.name, config.agentB.name, config.table, groups, bootstrapSeed)
+
+        /** By name, so a report can be rebuilt from a `results.csv` without resolving agents. */
+        fun of(
+            agentA: String,
+            agentB: String,
+            table: TableSetup,
+            groups: List<PodGroup>,
+            bootstrapSeed: Long = 20260727L,
+        ): PodArenaStats {
+            val nullShare = 1.0 / table.teamCount
             val games = groups.flatMap { it.games }
             val outcomes = games.map { it.outcome }
             val shares = groups.map { it.share }
@@ -59,9 +73,9 @@ data class PodArenaStats(
             val decisive = outcomes.count { it.winnerTeam != null }
 
             return PodArenaStats(
-                agentA = config.agentA.name,
-                agentB = config.agentB.name,
-                table = config.table.id,
+                agentA = agentA,
+                agentB = agentB,
+                table = table.id,
                 groups = groups.size,
                 games = games.size,
                 aWins = aWins,
@@ -69,8 +83,8 @@ data class PodArenaStats(
                 winShare = if (games.isEmpty()) 0.0 else aWins.toDouble() / games.size,
                 decisiveWinShare = if (decisive == 0) 0.0 else aWins.toDouble() / decisive,
                 winShareCi = ci,
-                nullShare = config.nullShare,
-                winsByTeamPosition = (0 until config.table.teamCount).map { team ->
+                nullShare = nullShare,
+                winsByTeamPosition = (0 until table.teamCount).map { team ->
                     outcomes.count { it.winnerTeam == team }
                 },
                 completedGames = outcomes.count { it.completed },

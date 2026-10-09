@@ -70,6 +70,12 @@ data class ArenaStats(
     val meanActions: Double,
     val meanGameMs: Double,
 ) {
+    /**
+     * Games the per-game wall-clock cap ended. Each is scored as a draw and is **not** reproducible
+     * from its seed, so the report shows this prominently rather than burying it in [drawReasons].
+     */
+    val timeouts: Int get() = drawReasons[TableGameRunner.TIMEOUT_REASON] ?: 0
+
     val seat0WinRate: Double get() = if (games > 0) seat0Wins.toDouble() / games else 0.0
     val completionRate: Double get() = if (games > 0) completedGames.toDouble() / games else 0.0
 
