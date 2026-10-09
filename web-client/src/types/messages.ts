@@ -117,6 +117,8 @@ export interface ReconnectedMessage {
   readonly contextId: string | null
   readonly aiEnabled?: boolean
   readonly availableSets?: readonly AvailableSet[]
+  /** The game's seat roster when `context` is 'game' — recovers account avatars after a refresh. */
+  readonly players?: readonly PlayerSeatInfo[]
 }
 
 /**
@@ -134,6 +136,8 @@ export interface GameCreatedMessage {
 export interface PlayerSeatInfo {
   readonly playerId: string
   readonly name: string
+  /** The seat's account avatar id (a preset portrait); absent for guests and AI. */
+  readonly avatar?: string | null
   readonly seatIndex: number
   readonly isYou: boolean
   readonly isAi: boolean

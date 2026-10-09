@@ -26,13 +26,13 @@ class BlocksController(
     private val blocks: BlockService,
     private val authSupport: AuthSupport,
 ) {
-    data class BlockedDto(val accountId: String, val displayName: String, val blockedAt: String)
+    data class BlockedDto(val accountId: String, val displayName: String, val blockedAt: String, val avatar: String?)
 
     @GetMapping
     fun list(@RequestHeader(HttpHeaders.AUTHORIZATION, required = false) auth: String?): List<BlockedDto> {
         val userId = authSupport.requireUser(auth).userId
         return blocks.listAccountBlocks(userId).map {
-            BlockedDto(it.accountId.toString(), it.displayName, it.blockedAt.toString())
+            BlockedDto(it.accountId.toString(), it.displayName, it.blockedAt.toString(), it.avatar)
         }
     }
 

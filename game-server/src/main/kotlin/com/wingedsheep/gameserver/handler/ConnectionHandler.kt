@@ -55,9 +55,9 @@ class ConnectionHandler(
     private fun linkAccount(identity: PlayerIdentity, authToken: String?) {
         val userId = resolveAccountUserId(authToken) ?: return
         identity.userId = userId
-        magicLinkService.ifAvailable?.findUser(userId)?.displayName
-            ?.takeIf { it.isNotBlank() }
-            ?.let { identity.playerName = it }
+        val user = magicLinkService.ifAvailable?.findUser(userId) ?: return
+        user.displayName.takeIf { it.isNotBlank() }?.let { identity.playerName = it }
+        identity.avatar = user.avatar
     }
 
     /** Tell a signed-in identity's friends that its visible-online state changed (no-op for guests). */
@@ -120,7 +120,8 @@ class ConnectionHandler(
         val playerSession = PlayerSession(
             webSocketSession = session,
             playerId = playerId,
-            playerName = identity.playerName
+            playerName = identity.playerName,
+            avatar = identity.avatar,
         )
 
         sessionRegistry.register(identity, session, playerSession)
@@ -217,7 +218,8 @@ class ConnectionHandler(
             webSocketSession = session,
             playerId = identity.playerId,
             playerName = identity.playerName,
-            currentGameSessionId = identity.currentGameSessionId
+            currentGameSessionId = identity.currentGameSessionId,
+            avatar = identity.avatar,
         )
         sessionRegistry.setPlayerSession(session.id, playerSession)
 
@@ -253,7 +255,13 @@ class ConnectionHandler(
             context = context,
             contextId = contextId,
             aiEnabled = aiGameManager.isEnabled,
-            availableSets = buildAvailableSetsList()
+            availableSets = buildAvailableSetsList(),
+            players = if (context == "game") {
+                // The account may have been linked on this very connect, so note its avatar first.
+                gameRepository.findById(contextId!!)
+                    ?.apply { rememberAvatar(playerSession) }
+                    ?.seatInfos(identity.playerId).orEmpty()
+            } else emptyList(),
         ))
         broadcastOnlinePlayersCount()
         broadcastFriendPresence(identity)

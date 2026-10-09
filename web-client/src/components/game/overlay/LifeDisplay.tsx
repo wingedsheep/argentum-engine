@@ -9,6 +9,7 @@ import { TheRingBadge } from './TheRingBadge'
 import { isLoneTargetRequirement } from '@/utils/targeting.ts'
 import { EmoteBubble } from '../../tableTalk/EmoteBubble'
 import { EmotePicker } from '../../tableTalk/EmotePicker'
+import { AvatarArt, hasAvatarArt } from '../../profile/AvatarArt'
 
 /**
  * Life total display - interactive when in targeting mode or when a pending decision requires player targeting.
@@ -71,6 +72,7 @@ export function LifeDisplay({
   const responsive = useResponsiveContext()
   const targetingState = useGameStore((state) => state.targetingState)
   const pendingDecision = useGameStore((state) => state.pendingDecision)
+  const avatarId = useGameStore((state) => state.avatarByPlayerId[playerId])
   const addTarget = useGameStore((state) => state.addTarget)
   const removeTarget = useGameStore((state) => state.removeTarget)
   const submitTargetsDecision = useGameStore((state) => state.submitTargetsDecision)
@@ -244,6 +246,9 @@ export function LifeDisplay({
   // instead, and drop the role tag (left/right position already says who's
   // who).
   const compactName = responsive.isMobile
+  // The seat's account portrait is painted inside the orb, under a scrim that keeps the life total
+  // legible. A team orb speaks for two seats (2HG shared life), so it shows none.
+  const portrait = !teamName && hasAvatarArt(avatarId)
 
   const nameLabel = (
     <div
@@ -319,15 +324,32 @@ export function LifeDisplay({
             position: 'relative',
           }}
         >
+          {portrait && (
+            <>
+              <AvatarArt avatar={avatarId} />
+              <span
+                aria-hidden
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  borderRadius: '50%',
+                  background: 'radial-gradient(circle at 50% 55%, rgba(6, 8, 14, 0.5) 0%, rgba(6, 8, 14, 0.22) 45%, rgba(6, 8, 14, 0) 75%)',
+                }}
+              />
+            </>
+          )}
           <span
             style={
               life <= 5
-                ? { color: '#ff4444' }
+                ? { position: 'relative', color: '#ff4444', textShadow: '0 1px 3px rgba(0, 0, 0, 0.9)' }
                 : {
+                    position: 'relative',
                     color: '#ffffff',
                     // Glow tinted by seat identity in multiplayer; falls back to the fixed
                     // blue (player) / orange (opponent) 2-player glow.
-                    textShadow: `0 0 6px ${seatColor ? `${seatColor}8C` : isPlayer ? 'rgba(80, 170, 240, 0.55)' : 'rgba(255, 130, 40, 0.55)'}, 0 1px 2px rgba(0, 0, 0, 0.75), 0 0 1px rgba(0, 0, 0, 0.9)`,
+                    textShadow: portrait
+                      ? '0 1px 2px rgba(0, 0, 0, 0.95), 0 0 6px rgba(0, 0, 0, 0.9), 0 0 12px rgba(0, 0, 0, 0.6)'
+                      : `0 0 6px ${seatColor ? `${seatColor}8C` : isPlayer ? 'rgba(80, 170, 240, 0.55)' : 'rgba(255, 130, 40, 0.55)'}, 0 1px 2px rgba(0, 0, 0, 0.75), 0 0 1px rgba(0, 0, 0, 0.9)`,
                   }
             }
           >

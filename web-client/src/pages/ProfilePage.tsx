@@ -19,6 +19,7 @@ import {
   listDecks,
 } from '@/api/account'
 import { LoginModal } from '@/components/auth/LoginModal'
+import { AvatarPicker } from '@/components/profile/AvatarPicker'
 import { DeckViewModal } from '@/components/profile/DeckViewModal'
 import { TournamentDetailModal } from '@/components/profile/TournamentDetailModal'
 import {
@@ -42,6 +43,7 @@ export function ProfilePage() {
   const init = useAuthStore((s) => s.init)
   const logout = useAuthStore((s) => s.logout)
   const updateDisplayName = useAuthStore((s) => s.updateDisplayName)
+  const updateAvatar = useAuthStore((s) => s.updateAvatar)
 
   const [stats, setStats] = useState<AccountStats | null>(null)
   const [decks, setDecks] = useState<DeckSummary[]>([])
@@ -51,6 +53,7 @@ export function ProfilePage() {
   const [tournaments, setTournaments] = useState<UserTournamentEntry[]>([])
   const [openTournament, setOpenTournament] = useState<number | null>(null)
   const [loginOpen, setLoginOpen] = useState(false)
+  const [avatarPickerOpen, setAvatarPickerOpen] = useState(false)
 
   const [editingName, setEditingName] = useState(false)
   const [nameDraft, setNameDraft] = useState('')
@@ -126,7 +129,20 @@ export function ProfilePage() {
       <AccountPage title="Profile">
         <section className={p.panel}>
           <div className={a.identity}>
-            <Avatar name={user.displayName} />
+            <button
+              type="button"
+              className={a.avatarEdit}
+              onClick={() => setAvatarPickerOpen(true)}
+              aria-label="Change avatar"
+              title="Change avatar"
+              data-testid="profile-avatar"
+            >
+              <Avatar name={user.displayName} avatar={user.avatar} />
+              <span className={a.avatarEditOverlay} aria-hidden>Change</span>
+              <span className={a.avatarEditBadge} aria-hidden>
+                <PencilIcon />
+              </span>
+            </button>
             <div className={a.identityText}>
               {editingName ? (
                 <div className={a.nameEdit}>
@@ -288,6 +304,14 @@ export function ProfilePage() {
         {openTournament != null && (
           <TournamentDetailModal tournamentId={openTournament} onClose={() => setOpenTournament(null)} />
         )}
+        {avatarPickerOpen && (
+          <AvatarPicker
+            name={user.displayName}
+            current={user.avatar ?? null}
+            onSave={updateAvatar}
+            onClose={() => setAvatarPickerOpen(false)}
+          />
+        )}
       </AccountPage>
     )
   }
@@ -351,6 +375,14 @@ const iconProps = {
   strokeLinecap: 'round' as const,
   strokeLinejoin: 'round' as const,
   'aria-hidden': true,
+}
+
+function PencilIcon() {
+  return (
+    <svg {...iconProps} width="12" height="12" strokeWidth={2.4}>
+      <path d="M4 20h4L19 9l-4-4L4 16v4zM13.5 6.5l4 4" />
+    </svg>
+  )
 }
 
 function ChartIcon() {

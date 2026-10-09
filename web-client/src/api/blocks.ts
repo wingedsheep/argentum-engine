@@ -13,6 +13,8 @@ function authHeaders(): Record<string, string> {
 export interface BlockedPlayer {
   readonly accountId: string
   readonly displayName: string
+  /** Preset avatar id, or null for the initial. */
+  readonly avatar?: string | null
   readonly blockedAt: string
 }
 

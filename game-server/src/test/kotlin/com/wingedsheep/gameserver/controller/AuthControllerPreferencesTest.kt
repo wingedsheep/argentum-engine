@@ -5,6 +5,7 @@ import com.wingedsheep.gameserver.auth.AuthSupport
 import com.wingedsheep.gameserver.auth.EmailService
 import com.wingedsheep.gameserver.auth.MagicLinkService
 import com.wingedsheep.gameserver.persistence.UserRow
+import com.wingedsheep.gameserver.session.SessionRegistry
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.mockk.every
@@ -30,7 +31,7 @@ class AuthControllerPreferencesTest : FunSpec({
         every { magicLinks.updatePreferences(userId, capture(saved)) } answers { user.copy(preferences = saved.captured) }
         val auth = mockk<AuthSupport>()
         every { auth.requireUser(header) } returns AuthClaims(uid = userId.toString(), email = "a@b.co", exp = Long.MAX_VALUE)
-        return AuthController(magicLinks, auth, mockk<EmailService>(), false) to magicLinks
+        return AuthController(magicLinks, auth, mockk<EmailService>(), SessionRegistry(), mockk(), false) to magicLinks
     }
 
     test("an account with no saved preferences reads as an empty object") {

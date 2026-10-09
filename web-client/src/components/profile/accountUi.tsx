@@ -10,6 +10,8 @@ import { colorForIdentity, colorLabel, gameModeLabel } from '@/components/admin/
 import { TournamentStatusBadge } from '@/components/tournament/TournamentStatusBadge'
 import { PageShell, pageStyles } from '@/components/ui/PageShell'
 import { formatDateTime } from '@/utils/datetime'
+import { AvatarArt, hasAvatarArt } from './AvatarArt'
+import { initialOf } from './avatars'
 import { EloCell, OpponentCell } from './gameHistoryCells'
 import a from './account.module.css'
 
@@ -46,12 +48,25 @@ export function MessageCard({ children, center = false }: { children: React.Reac
   )
 }
 
-/** The initial of a display name in a circle — the account's avatar until there are real ones. */
-export function Avatar({ name, small = false, online }: { name: string; small?: boolean; online?: boolean | undefined }) {
-  const initial = name.trim().charAt(0).toUpperCase() || '?'
+/**
+ * An account's avatar: its chosen preset portrait, or the display name's initial in a circle when it
+ * has none (or picked one this client has no art for).
+ */
+export function Avatar({
+  name,
+  avatar,
+  small = false,
+  online,
+}: {
+  name: string
+  avatar?: string | null | undefined
+  small?: boolean
+  online?: boolean | undefined
+}) {
+  const art = hasAvatarArt(avatar)
   return (
-    <span className={small ? a.avatarSmall : a.avatar} aria-hidden>
-      {initial}
+    <span className={small ? a.avatarSmall : a.avatar} data-portrait={art} aria-hidden>
+      {art ? <AvatarArt avatar={avatar} /> : initialOf(name)}
       {online !== undefined && <span className={a.presence} data-online={online} />}
     </span>
   )

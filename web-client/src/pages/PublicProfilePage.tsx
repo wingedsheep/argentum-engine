@@ -129,7 +129,7 @@ export function PublicProfilePage() {
         <>
           <section className={p.panel}>
             <div className={a.identity}>
-              <Avatar name={profile.displayName} />
+              <Avatar name={profile.displayName} avatar={profile.avatar} />
               <div className={a.identityText}>
                 <h1 className={p.h1}>{profile.displayName}</h1>
                 <p className={a.muted}>

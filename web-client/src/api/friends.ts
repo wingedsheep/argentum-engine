@@ -21,6 +21,8 @@ async function errorMessage(res: Response, fallback: string): Promise<string> {
 export interface Friend {
   readonly accountId: string
   readonly displayName: string
+  /** Preset avatar id, or null for the initial. */
+  readonly avatar?: string | null
   readonly online: boolean
 }
 
@@ -28,6 +30,8 @@ export interface FriendRequest {
   readonly requestId: string
   readonly accountId: string
   readonly displayName: string
+  /** Preset avatar id, or null for the initial. */
+  readonly avatar?: string | null
   readonly createdAt: string
 }
 
