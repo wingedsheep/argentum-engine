@@ -20,6 +20,8 @@ export interface AdminUserSummary {
   readonly email: string
   readonly displayName: string
   readonly isAdmin: boolean
+  /** Chosen avatar id (see components/profile/avatars), or null for the initial. */
+  readonly avatar?: string | null
   readonly createdAt: string
   readonly games: number
   readonly wins: number
@@ -39,6 +41,8 @@ export interface AdminUserDetail {
   readonly email: string
   readonly displayName: string
   readonly isAdmin: boolean
+  /** Chosen avatar id (see components/profile/avatars), or null for the initial. */
+  readonly avatar?: string | null
   readonly createdAt: string
   readonly stats: AdminUserStats
   readonly colors: StatBucket[]
