@@ -1379,7 +1379,7 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
     summary:
       'Finished games can be replayed frame by frame. Scrub with the timeline, step with the arrow keys, play/pause with space.',
     body: [
-      { kind: 'p', text: 'Replays in the top bar lists every game you finished, grouped by tournament, with who played, who won and how long it was. Replays are also linked from your profile, from a tournament’s Replays button, and from Watch Replay at the end of a game.' },
+      { kind: 'p', text: 'Replays in the top bar lists every game you finished, newest first, with who played, who won and how long it was; switch to Oldest first, or By tournament to group a tournament’s games in round order. Replays are also linked from your profile, from a tournament’s Replays button, and from Watch Replay at the end of a game.' },
       { kind: 'p', text: 'Every replay has its own link that anyone can open — they watch it as a spectator, so hidden cards stay hidden.' },
       { kind: 'h', text: 'Replay files' },
       { kind: 'p', text: 'Export saves a finished game as a compact replay file; Open file in the replay list plays one back (up to 8 MB). Uploaded replays can be watched but not re-shared.' },
