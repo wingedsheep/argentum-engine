@@ -42,7 +42,6 @@ import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.ActivatedAbility
-import com.wingedsheep.sdk.scripting.ExtraLoyaltyActivation
 import com.wingedsheep.sdk.scripting.TimingRule
 import com.wingedsheep.sdk.scripting.costs.CostAtom
 import com.wingedsheep.sdk.scripting.costs.manaCostOrNull
@@ -373,7 +372,7 @@ internal class ActivationValidator(
         // (Oath of Teferi, or a one-shot grant on this planeswalker, allows two per turn)
         val tracker = container.get<AbilityActivatedThisTurnComponent>()
         if (tracker != null && tracker.loyaltyActivationCount > 0) {
-            val playerMax = getMaxLoyaltyActivations(state, action.playerId)
+            val playerMax = castPermissionUtils.getMaxLoyaltyActivations(state, action.playerId, action.sourceId)
             if (tracker.hasReachedLoyaltyLimit(playerMax)) {
                 val maxActivations = tracker.effectiveLoyaltyLimit(playerMax)
                 return if (maxActivations > 1) {
@@ -678,22 +677,4 @@ internal class ActivationValidator(
         }
     }
 
-    /**
-     * Returns the maximum number of loyalty ability activations per planeswalker per turn
-     * for the given player. Normally 1, but ExtraLoyaltyActivation (Oath of Teferi) raises it to 2.
-     * Multiple copies do NOT stack beyond 2.
-     */
-    private fun getMaxLoyaltyActivations(state: GameState, playerId: EntityId): Int {
-        for (permanentId in state.getBattlefield()) {
-            val container = state.getEntity(permanentId) ?: continue
-            val controller = container.get<ControllerComponent>()?.playerId ?: continue
-            if (controller != playerId) continue
-            val card = container.get<CardComponent>() ?: continue
-            val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
-            if (cardDef.script.staticAbilities.any { it is ExtraLoyaltyActivation }) {
-                return 2
-            }
-        }
-        return 1
-    }
 }

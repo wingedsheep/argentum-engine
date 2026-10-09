@@ -1,0 +1,81 @@
+{
+  "player1Name": "Urza",
+  "player2Name": "Opponent",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": [
+      "Millstone",
+      "Divination",
+      "Cancel"
+    ],
+    "battlefield": [
+      {
+        "name": "Urza, Planeswalker",
+        "counters": {
+          "LOYALTY": 11
+        }
+      },
+      {
+        "name": "Saheeli, Filigree Master"
+      },
+      {
+        "name": "Ornithopter"
+      },
+      {
+        "name": "Grizzly Bears"
+      },
+      {
+        "name": "Island"
+      },
+      {
+        "name": "Island"
+      },
+      {
+        "name": "Island"
+      },
+      {
+        "name": "Island"
+      },
+      {
+        "name": "Island"
+      }
+    ],
+    "graveyard": [],
+    "library": [
+      "Island",
+      "Mountain",
+      "Forest",
+      "Island",
+      "Mountain",
+      "Forest"
+    ]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {
+        "name": "Ornithopter"
+      },
+      {
+        "name": "Grizzly Bears"
+      },
+      {
+        "name": "Forest"
+      }
+    ],
+    "graveyard": [],
+    "library": [
+      "Forest",
+      "Forest",
+      "Forest"
+    ]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [],
+  "player2StopAtSteps": [],
+  "player1OpponentStopAtSteps": [],
+  "player2OpponentStopAtSteps": []
+}

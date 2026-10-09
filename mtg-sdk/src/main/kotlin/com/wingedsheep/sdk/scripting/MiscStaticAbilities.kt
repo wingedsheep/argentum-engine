@@ -1454,18 +1454,29 @@ data class UntapLimitPerStep(
 }
 
 /**
- * You may activate loyalty abilities of planeswalkers you control an extra time each turn.
- * Used for Oath of Teferi: "You may activate the loyalty abilities of planeswalkers you control
- * twice each turn rather than only once."
- *
- * The engine checks for this static ability on the controller's battlefield when validating
- * planeswalker loyalty ability activations. Multiple copies do NOT stack — the maximum is
- * always two activations per planeswalker per turn regardless of how many copies are controlled.
+ * Sets the maximum loyalty activations each turn for permanents matching [filter].
+ * Defaults to Oath of Teferi's planeswalkers you control; `GameObjectFilter.Any.sourceItself()`
+ * expresses Urza, Planeswalker's self-only permission. Multiple permissions take the largest
+ * [times], never their sum, and do not change timing, costs, or activation prohibitions.
  */
 @SerialName("ExtraLoyaltyActivation")
 @Serializable
-data object ExtraLoyaltyActivation : StaticAbility {
-    override val description: String = "You may activate loyalty abilities of planeswalkers you control twice each turn rather than only once"
+data class ExtraLoyaltyActivation(
+    val filter: GameObjectFilter = GameObjectFilter.Planeswalker.youControl(),
+    val times: Int = 2,
+) : StaticAbility {
+    init {
+        require(times >= 2) { "A loyalty activation allowance must be at least two" }
+    }
+
+    override val description: String
+        get() = "You may activate loyalty abilities of ${filter.description} " +
+            (if (times == 2) "twice" else "$times times") + " each turn rather than only once"
+
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
+        val replaced = filter.applyTextReplacement(replacer)
+        return if (replaced !== filter) copy(filter = replaced) else this
+    }
 }
 
 /**
