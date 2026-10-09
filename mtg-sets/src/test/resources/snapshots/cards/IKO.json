@@ -3125,6 +3125,75 @@
     ]
 }
 
+// The Ozolith
+{
+    "name": "The Ozolith",
+    "manaCost": "{1}",
+    "typeLine": "Legendary Artifact",
+    "oracleText": "Whenever a creature you control leaves the battlefield, if it had counters on it, put those counters on The Ozolith.\nAt the beginning of combat on your turn, if The Ozolith has counters on it, you may move all counters from The Ozolith onto target creature.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "The Ozolith:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:you",
+                    "from": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "MoveAllLastKnownCounters",
+                    "target": "Self"
+                },
+                "interveningIf": "TriggeringEntityHadCounters"
+            },
+            {
+                "id": "The Ozolith:2",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "BEGIN_COMBAT"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "MoveAllCounters",
+                        "source": "Self",
+                        "destination": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                },
+                "interveningIf": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": {
+                        "statePredicates": [
+                            "HasAnyCounter"
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "237",
+        "rarity": "RARE",
+        "artist": "Sam Burley",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/3/9341ed06-53db-4604-b60a-3ea9129afbc2.jpg?1783931006"
+    },
+    "colorIdentityOverride": []
+}
+
 // Titanoth Rex
 {
     "name": "Titanoth Rex",
