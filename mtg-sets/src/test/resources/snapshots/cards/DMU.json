@@ -3130,6 +3130,40 @@
     ]
 }
 
+// Shivan Devastator
+{
+    "name": "Shivan Devastator",
+    "manaCost": "{X}{R}",
+    "typeLine": "Creature — Dragon Hydra",
+    "oracleText": "Flying, haste\nThis creature enters with X +1/+1 counters on it.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 0
+    },
+    "keywords": [
+        "FLYING",
+        "HASTE"
+    ],
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "EntersWithDynamicCounters",
+                "count": "XValue"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "143",
+        "rarity": "MYTHIC",
+        "artist": "Brent Hollowell",
+        "flavorText": "There were many reasons why Shiv was not high on Sheoldred's list of places to conquer: big, fiery reasons.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/f/1f5d274c-3a03-4f0d-97e8-7eef6508105d.jpg?1783921310"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Soaring Drake
 {
     "name": "Soaring Drake",
