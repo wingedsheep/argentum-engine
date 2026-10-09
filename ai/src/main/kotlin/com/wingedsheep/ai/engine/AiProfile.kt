@@ -1264,6 +1264,7 @@ data class AiProfile(
             id = "live",
             castabilityAwareCardSelection = true,
             informedChoiceDecisions = true,
+            refuseUnspendableGrants = true,
         )
 
         /**
