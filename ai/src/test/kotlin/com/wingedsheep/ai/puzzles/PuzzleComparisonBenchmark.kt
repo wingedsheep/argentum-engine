@@ -123,6 +123,9 @@ class PuzzleComparisonBenchmark : ScenarioTestBase() {
                 // Target polarity read off the effect, alone and on top of what is live.
                 AiProfile.PRODUCTION_POLARITY,
                 AiProfile.PRODUCTION_CANDIDATE_POLARITY,
+                // Chump blocks only when the life is needed, alone and on top of what is live.
+                AiProfile.PRODUCTION_CHUMPGATE,
+                AiProfile.PRODUCTION_CANDIDATE_CHUMPGATE,
                 // Phase 7's rollout evaluator, isolated from Phases 4 and 6 so the column is
                 // attributable to the rollouts alone.
                 AiProfile.PHASE7,
