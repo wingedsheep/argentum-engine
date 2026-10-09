@@ -57,8 +57,8 @@
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
   column-gap: 28px;
-  width: min(860px, calc(100vw - 32px));
-  padding: 16px 28px;
+  width: min(980px, calc(100vw - 32px));
+  padding: 18px 30px;
   box-sizing: border-box;
   border-radius: 18px;
   background: rgba(10, 12, 20, 0.58);
@@ -94,7 +94,9 @@
 .sideOpponent { justify-content: flex-start; text-align: left; }
 .sideOpponent .sideText { align-items: flex-start; }
 
-/* The seat's portrait: ringed in gold, it rises in with the band. */
+/* The seat's portrait: a gold-ringed medallion that rises out of the top of the band, so the face is
+   the first thing read while the band itself stays slim over the art. A thin dark gap between the
+   picture and the ring keeps the gold from bleeding into bright art. */
 .portrait,
 .portraitSmall {
   position: relative;
@@ -108,19 +110,27 @@
   font-weight: 600;
 }
 .portrait {
-  width: 76px;
-  height: 76px;
-  font-size: 34px;
-  box-shadow: 0 0 0 2px rgba(242, 180, 92, 0.85), 0 10px 28px rgba(0, 0, 0, 0.55);
+  width: 128px;
+  height: 128px;
+  /* Overhang the band's top edge; the negative margin keeps the row (and the band) as tall as the
+     names need, rather than as tall as the portrait. */
+  margin: -64px 0 -4px;
+  font-size: 46px;
+  box-shadow:
+    0 0 0 3px rgba(10, 12, 20, 0.9),
+    0 0 0 5px rgba(242, 180, 92, 0.9),
+    0 0 26px 4px rgba(242, 180, 92, 0.18),
+    0 16px 36px rgba(0, 0, 0, 0.6);
 }
 .portraitSmall {
-  width: 30px;
-  height: 30px;
-  font-size: 14px;
-  box-shadow: 0 0 0 1.5px rgba(242, 180, 92, 0.75);
+  width: 40px;
+  height: 40px;
+  font-size: 18px;
+  box-shadow: 0 0 0 2px rgba(10, 12, 20, 0.9), 0 0 0 3.5px rgba(242, 180, 92, 0.8);
 }
 
-.podRow { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.podRow { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.podRow + .podRow { margin-top: 6px; }
 .podName {
   margin: 0;
   min-width: 0;
@@ -193,7 +203,8 @@
   .sidePlayer, .sideOpponent { justify-content: flex-start; text-align: left; }
   .sidePlayer .sideText, .sideOpponent .sideText { align-items: flex-start; }
   .vs { flex-direction: row; gap: 8px; justify-content: center; width: 52px; }
-  .portrait { width: 52px; height: 52px; font-size: 24px; }
+  /* Stacked rows have no band edge to rise out of: a plain, still-generous medallion. */
+  .portrait { width: 72px; height: 72px; margin: 0; font-size: 32px; }
   /* Reversed so the portrait leads; flex-end is the left edge in a reversed row. */
   .sideOpponent { flex-direction: row-reverse; justify-content: flex-end; }
   .playerName { font-size: 21px; }
