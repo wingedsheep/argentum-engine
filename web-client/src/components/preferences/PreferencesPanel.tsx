@@ -235,7 +235,7 @@ export function PreferencesPanel({ compact = false }: { compact?: boolean }) {
           </header>
           <Toggle
             label="Message alerts away from home"
-            hint="In a game, a draft or the deckbuilder, light up the chat tab and preview new messages. When off, they wait quietly until you're back on the home screen."
+            hint="In a game, a draft or the deckbuilder, show an unread count on the chat button and preview new messages. When off, they wait quietly until you're back on the home screen."
             checked={prefs.messages.alertsAway}
             onChange={(alertsAway) => update('messages', { alertsAway })}
           />

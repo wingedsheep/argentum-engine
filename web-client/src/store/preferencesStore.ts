@@ -69,7 +69,7 @@ export interface Preferences {
   messages: {
     /**
      * Alert to new direct messages away from the home screen — in a game, a draft, the deckbuilder.
-     * When off the chat dock stays quiet there (no unread colour, no preview); the home screen always
+     * When off the chat button stays quiet there (no unread count, no preview); the home screen always
      * shows them.
      */
     alertsAway: boolean

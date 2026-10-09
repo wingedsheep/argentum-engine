@@ -19,6 +19,7 @@ import { useGameStore } from '@/store/gameStore.ts'
 import type { TournamentFormat } from '@/types'
 import { randomBackground } from '@/utils/background.ts'
 import { PreferencesButton } from '@/components/preferences/PreferencesButton'
+import { ChatButton } from '@/components/messages/ChatButton'
 import { ReplayViewer, type GameSummary } from '../admin/ReplayViewer'
 import type { ReplayData } from '@/replay/reconstructSnapshots.ts'
 import { labelForFormat } from '@/utils/deckLegality'
@@ -368,6 +369,7 @@ export function HomeScreen({
           <div className={home.topBarEnd}>
             <WhatsNew compact />
             <PreferencesButton />
+            <ChatButton />
             <FullscreenButton compact />
             <AuthWidget />
           </div>
@@ -493,6 +495,7 @@ export function HomeScreen({
         <div className={home.topBarEnd}>
           <WhatsNew compact />
           <PreferencesButton />
+          <ChatButton />
           <FullscreenButton compact />
           <AuthWidget />
         </div>

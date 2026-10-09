@@ -15,6 +15,7 @@ import { AuthWidget } from '@/components/auth/AuthWidget'
 import { useAuthStore } from '@/store/authStore'
 import { ArgentumMark } from './ArgentumMark'
 import { FullscreenButton } from './FullscreenButton'
+import { ChatButton } from '@/components/messages/ChatButton'
 import shell from './PageShell.module.css'
 
 export { shell as pageStyles }
@@ -63,6 +64,7 @@ export function PageShell({ title, actions, fit = false, width = 'normal', hideA
         )}
         <div className={shell.topBarEnd}>
           {actions}
+          <ChatButton />
           <FullscreenButton compact />
           {!hideAccount && <AuthWidget />}
         </div>

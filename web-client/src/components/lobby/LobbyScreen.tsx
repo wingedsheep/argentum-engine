@@ -27,6 +27,7 @@ import momirVigUrl from '@/assets/momir-vig.svg'
 import { DeckPicker, type DeckPickerTab } from '../ui/DeckPicker'
 import { DeckPickerModal } from '../ui/DeckPickerModal'
 import { FullscreenButton } from '../ui/FullscreenButton'
+import { ChatButton } from '@/components/messages/ChatButton'
 import { ArgentumMark } from '@/components/ui/ArgentumMark'
 import { JoinQrModal } from '../ui/JoinQrModal'
 import { SettingsLabel } from '../ui/SettingsLabel'
@@ -217,7 +218,7 @@ export function LobbyScreen() {
           <ArgentumMark size={34} />
           Argentum
         </span>
-        <div className={lobby.topBarEnd}><FullscreenButton compact /></div>
+        <div className={lobby.topBarEnd}><ChatButton /><FullscreenButton compact /></div>
       </header>
       <div className={lobby.page}>
       <div className={lobby.layout} data-two-col={showSettings}>

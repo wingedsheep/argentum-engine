@@ -1,120 +1,57 @@
 /*
- * The chat dock: a sliver on the right edge at rest, a tab on hover, a narrow glass panel when open.
- * Right edge, vertically centred — the corners belong to the game (log, pass button, fullscreen) and
- * to page chrome, the bottom centre to the hand. Layered under the game's decision overlays (2000+)
- * so a choice that pops up while you chat stays on top.
+ * The chat dock: a chat button in each screen's top-bar chrome, and the narrow glass panel and
+ * new-message preview that drop down from it. Layered under the game's decision overlays (2000+) so a
+ * choice that pops up while you chat stays on top.
  */
 
-/* ── Resting tab ───────────────────────────────────────────────────────── */
+/* ── The chat button (rendered by ChatButton, styled like its fullscreen neighbour) ── */
 
-.handle {
-  position: fixed;
-  right: 0;
-  top: 50%;
-  z-index: 1400;
-  width: 14px;
-  height: 64px;
-  margin-top: -32px;
-  padding: 0;
-  border: none;
-  background: transparent;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-}
-.handle[data-hidden='true'] { visibility: hidden; }
-.handle:focus-visible { outline: none; }
+.button { position: relative; }
+.button[data-open='true'] { color: #fff; border-color: rgba(242, 180, 92, 0.55) !important; }
 
-.tab {
+/* Unread: a small amber count on the corner, popping in when it changes. */
+.badge {
   position: absolute;
-  right: 0;
-  top: 50%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  width: 34px;
-  min-height: 46px;
-  padding: 8px 0;
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  border-right: none;
-  border-radius: 12px 0 0 12px;
-  background: rgba(22, 24, 34, 0.86);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  color: #c9cfdc;
-  opacity: 0.45;
-  /* Only the tab's left edge shows: a 4px sliver. */
-  transform: translate(calc(100% - 4px), -50%);
-  transition: transform 0.18s ease, opacity 0.18s ease, background 0.18s ease, box-shadow 0.18s ease;
-}
-
-.handle:hover .tab,
-.handle:focus-visible .tab {
-  opacity: 1;
-  transform: translate(0, -50%);
-  color: #fff;
-  box-shadow: -6px 6px 22px rgba(0, 0, 0, 0.45);
-}
-.handle:focus-visible .tab { outline: 2px solid var(--color-focus-ring); outline-offset: 2px; }
-
-/* Unread (and alerts on here): a slightly wider amber sliver. */
-.handle[data-alert='true'] .tab {
-  opacity: 1;
-  border-color: rgba(242, 180, 92, 0.9);
-  background: #f2b45c;
-  color: #1d1405;
-  transform: translate(calc(100% - 6px), -50%);
-}
-.handle[data-alert='true']:hover .tab,
-.handle[data-alert='true']:focus-visible .tab { transform: translate(0, -50%); }
-
-.count {
-  min-width: 18px;
+  top: -6px;
+  right: -6px;
+  min-width: 17px;
+  height: 17px;
   padding: 0 4px;
   border-radius: 999px;
-  background: rgba(29, 20, 5, 0.18);
-  font-size: 11px;
+  background: #f2b45c;
+  box-shadow: 0 0 0 2px rgba(10, 12, 20, 0.9);
+  color: #1d1405;
+  font-size: 10.5px;
   font-weight: 800;
-  line-height: 16px;
+  line-height: 17px;
   text-align: center;
   font-variant-numeric: tabular-nums;
-}
-
-/* The arrival ping: a glow off the sliver, twice. */
-.ping {
-  position: absolute;
-  right: 0;
-  top: 50%;
-  width: 6px;
-  height: 46px;
-  margin-top: -23px;
-  border-radius: 6px 0 0 6px;
   pointer-events: none;
-  animation: ping 1.3s ease-out 2;
+  animation: badgePop 0.35s ease-out;
 }
-@keyframes ping {
-  from { box-shadow: 0 0 0 0 rgba(242, 180, 92, 0.65); }
-  to { box-shadow: 0 0 0 12px rgba(242, 180, 92, 0); }
+@keyframes badgePop {
+  0% { transform: scale(0.4); }
+  60% { transform: scale(1.18); }
+  100% { transform: scale(1); }
 }
 
-/* A finger needs more than 14px to land on. */
-@media (pointer: coarse) {
-  .handle { width: 24px; }
-  .tab { opacity: 0.6; transform: translate(calc(100% - 6px), -50%); }
+/* A screen without top-bar chrome of its own (a draft) gets the button pinned top-right. */
+.fallback {
+  position: fixed;
+  top: 12px;
+  right: 12px;
+  z-index: 1400;
 }
 
 /* ── New-message preview ───────────────────────────────────────────────── */
 
 .preview {
+  /* top and left/right come from the button it hangs under. */
   position: fixed;
-  right: 14px;
-  top: 50%;
-  z-index: 1400;
+  z-index: 1900;
   display: flex;
   align-items: center;
-  width: min(300px, calc(100vw - 40px));
-  transform: translateY(-50%);
+  width: min(300px, calc(100vw - 16px));
   border: 1px solid rgba(242, 180, 92, 0.35);
   border-radius: 14px;
   background: rgba(18, 20, 30, 0.94);
@@ -124,8 +61,8 @@
   animation: previewIn 0.22s ease-out;
 }
 @keyframes previewIn {
-  from { opacity: 0; transform: translate(16px, -50%); }
-  to { opacity: 1; transform: translate(0, -50%); }
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: none; }
 }
 
 .previewBody {
@@ -189,16 +126,14 @@
 /* ── Panel ─────────────────────────────────────────────────────────────── */
 
 .panel {
+  /* top and left/right come from the button it drops down from (--panel-top is that top). */
   position: fixed;
-  right: 12px;
-  top: 50%;
   z-index: 1900;
   display: flex;
   flex-direction: column;
-  width: min(360px, calc(100vw - 24px));
-  height: min(560px, calc(100vh - 24px));
-  height: min(560px, calc(100dvh - 24px));
-  transform: translateY(-50%);
+  width: min(360px, calc(100vw - 16px));
+  height: min(560px, calc(100vh - var(--panel-top, 60px) - 12px));
+  height: min(560px, calc(100dvh - var(--panel-top, 60px) - 12px));
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 16px;
@@ -211,8 +146,8 @@
   animation: panelIn 0.18s ease-out;
 }
 @keyframes panelIn {
-  from { opacity: 0; transform: translate(14px, -50%); }
-  to { opacity: 1; transform: translate(0, -50%); }
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: none; }
 }
 
 .fill {
@@ -265,7 +200,7 @@
 /* A phone: the panel is the screen. */
 @media (max-width: 640px) {
   .panel {
-    inset: 0;
+    inset: 0 !important;
     width: auto;
     height: auto;
     transform: none;
@@ -280,9 +215,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .tab, .preview, .panel, .ping { transition: none; animation: none; }
+  .badge, .preview, .panel { animation: none; }
 }
-:global(html[data-motion='reduce']) .tab,
+:global(html[data-motion='reduce']) .badge,
 :global(html[data-motion='reduce']) .preview,
-:global(html[data-motion='reduce']) .panel,
-:global(html[data-motion='reduce']) .ping { transition: none; animation: none; }
+:global(html[data-motion='reduce']) .panel { animation: none; }
