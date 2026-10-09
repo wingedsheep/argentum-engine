@@ -142,8 +142,31 @@ interface GameGroup {
   games: GameSummary[]
 }
 
+/** How the list is laid out. A flat date order is the default — grouping is opt-in. */
+type ListOrder = 'newest' | 'oldest' | 'tournament'
+
+const ORDER_LABELS: Record<ListOrder, string> = {
+  newest: 'Newest first',
+  oldest: 'Oldest first',
+  tournament: 'By tournament',
+}
+
+function endedAtMillis(game: GameSummary): number {
+  const t = Date.parse(game.endedAt)
+  return Number.isNaN(t) ? 0 : t
+}
+
+/** Sorts by when the game ended; the endpoints don't agree on an order, so the list sets its own. */
+function sortByEnded(games: GameSummary[], direction: 'asc' | 'desc'): GameSummary[] {
+  const sign = direction === 'asc' ? 1 : -1
+  return [...games].sort((a, b) => sign * (endedAtMillis(a) - endedAtMillis(b)))
+}
+
+/**
+ * Tournaments first, most recently played first, each in the order its games were played (round
+ * order); casual games last, newest first.
+ */
 function groupByTournament(games: GameSummary[]): GameGroup[] {
-  const groups: GameGroup[] = []
   const tournamentMap = new Map<string, GameSummary[]>()
   const casual: GameSummary[] = []
 
@@ -160,11 +183,12 @@ function groupByTournament(games: GameSummary[]): GameGroup[] {
     }
   }
 
-  for (const [name, tournamentGames] of tournamentMap) {
-    groups.push({ label: name, games: tournamentGames })
-  }
+  const latest = (gs: GameSummary[]) => Math.max(...gs.map(endedAtMillis))
+  const groups: GameGroup[] = [...tournamentMap]
+    .sort(([, a], [, b]) => latest(b) - latest(a))
+    .map(([name, tournamentGames]) => ({ label: name, games: sortByEnded(tournamentGames, 'asc') }))
   if (casual.length > 0) {
-    groups.push({ label: 'Casual Games', games: casual })
+    groups.push({ label: 'Casual Games', games: sortByEnded(casual, 'desc') })
   }
   return groups
 }
@@ -186,8 +210,11 @@ function GameListView({
   loading: boolean
   error: string | null
 }) {
-  const groups = groupByTournament(games)
   const hasTournaments = games.some((g) => g.tournamentName)
+  const [order, setOrder] = useState<ListOrder>('newest')
+  // "By tournament" is only offered when there is a tournament to group by.
+  const effectiveOrder: ListOrder = order === 'tournament' && !hasTournaments ? 'newest' : order
+  const orders: ListOrder[] = hasTournaments ? ['newest', 'oldest', 'tournament'] : ['newest', 'oldest']
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   return (
@@ -238,23 +265,44 @@ function GameListView({
           </div>
         </div>
         {error && <p className={styles.error} role="alert">{error}</p>}
+        {games.length > 1 && (
+          <div className={pageStyles.tabs} role="tablist" aria-label="Order" style={{ alignSelf: 'flex-start' }}>
+            {orders.map((o) => (
+              <button
+                key={o}
+                type="button"
+                role="tab"
+                aria-selected={effectiveOrder === o}
+                onClick={() => setOrder(o)}
+                className={pageStyles.tab}
+              >
+                {ORDER_LABELS[o]}
+              </button>
+            ))}
+          </div>
+        )}
         <section className={pageStyles.panel}>
           {games.length === 0 ? (
             <div className={pageStyles.empty}>
               <p className={styles.emptyTitle}>{loading ? 'Loading games…' : 'No finished games yet'}</p>
               {!loading && <p className={pageStyles.muted}>Play a game and it shows up here when it ends.</p>}
             </div>
-          ) : hasTournaments ? (
+          ) : effectiveOrder === 'tournament' ? (
             <div className={styles.group} style={{ gap: 18 }}>
-              {groups.map((group) => (
+              {groupByTournament(games).map((group) => (
                 <div key={group.label} className={styles.group}>
                   <h2 className={styles.groupTitle}>{group.label}</h2>
-                  <GameTable games={group.games} onReplay={onReplay} showRound />
+                  <GameTable games={group.games} onReplay={onReplay} showRound showTournament={false} />
                 </div>
               ))}
             </div>
           ) : (
-            <GameTable games={games} onReplay={onReplay} showRound={false} />
+            <GameTable
+              games={sortByEnded(games, effectiveOrder === 'oldest' ? 'asc' : 'desc')}
+              onReplay={onReplay}
+              showRound
+              showTournament
+            />
           )}
         </section>
       </PageShell>
@@ -266,10 +314,13 @@ function GameTable({
   games,
   onReplay,
   showRound,
+  showTournament,
 }: {
   games: GameSummary[]
   onReplay: (gameId: string) => void
   showRound: boolean
+  /** In a flat list the tournament name is the only hint of which event a game belonged to. */
+  showTournament: boolean
 }) {
   return (
     <ul className={styles.rows} role="list">
@@ -280,6 +331,7 @@ function GameTable({
               {game.player1Name}<span className={styles.vs}>vs</span>{game.player2Name}
             </span>
             <span className={styles.meta}>
+              {showTournament && game.tournamentName && <span>{game.tournamentName}</span>}
               {showRound && game.tournamentRound != null && (
                 <span className={styles.round}>Round {game.tournamentRound + 1}</span>
               )}
