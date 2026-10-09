@@ -522,10 +522,11 @@ class CastPermissionUtils(
      * keyword. Delegates to [FlashTypeGrants] — the shared decision `CastZoneResolver.hasGrantedFlash`
      * also uses, so enumeration and the authoritative cast-time re-check can never disagree.
      */
-    fun hasGrantedFlash(state: GameState, spellCardId: EntityId): Boolean =
+    fun hasGrantedFlash(state: GameState, spellCardId: EntityId, casterId: EntityId): Boolean =
         FlashTypeGrants.hasGrantedFlash(
             state = state,
             spellCardId = spellCardId,
+            casterId = casterId,
             cardRegistry = cardRegistry,
             predicateEvaluator = predicateEvaluator,
             conditionEvaluator = conditionEvaluator,

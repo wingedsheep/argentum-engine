@@ -401,7 +401,9 @@ data class RingTemptedEvent(
 data class ScriedEvent(
     val playerId: EntityId,
     val count: Int,
-    val sourceName: String
+    val sourceName: String,
+    /** Number of cards the player chose to put on the bottom during this scry. */
+    val bottomCount: Int = 0
 ) : GameEvent
 
 /**

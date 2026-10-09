@@ -184,6 +184,8 @@ data class TriggerContext(
      * `null` when the trigger was not driven by a scry.
      */
     val scryCount: Int? = null,
+    /** Cards chosen for the bottom during the triggering scry; null for other events. */
+    val scryBottomCount: Int? = null,
     /**
      * Whether the clashing player this trigger is about **won** the clash that fired it
      * (CR 701.30d). Read by [com.wingedsheep.sdk.scripting.conditions.YouWonTheClash] so a
@@ -383,7 +385,8 @@ data class TriggerContext(
                 )
                 is com.wingedsheep.engine.core.ScriedEvent -> TriggerContext(
                     triggeringPlayerId = event.playerId,
-                    scryCount = event.count
+                    scryCount = event.count,
+                    scryBottomCount = event.bottomCount
                 )
                 // Surveil reuses the "cards looked at" count slot (TRIGGER_SCRY_COUNT) — the
                 // field is the number of cards looked at, common to scry and surveil.

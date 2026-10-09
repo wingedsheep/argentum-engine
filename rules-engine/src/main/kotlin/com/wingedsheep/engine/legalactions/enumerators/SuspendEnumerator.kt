@@ -42,7 +42,7 @@ class SuspendEnumerator : ActionEnumerator {
             // silently returns false regardless of what's actually printed. A battlefield-granted
             // flash (GrantFlashToSpellType, e.g. Quick Sliver) counts too.
             val hasFlash = cardDef.keywords.contains(Keyword.FLASH) ||
-                context.castPermissionUtils.hasGrantedFlash(state, cardId)
+                context.castPermissionUtils.hasGrantedFlash(state, cardId, context.playerId)
             val isInstantSpeed = cardComponent.typeLine.isInstant || hasFlash
             if (!isInstantSpeed && !context.canPlaySorcerySpeed) continue
 

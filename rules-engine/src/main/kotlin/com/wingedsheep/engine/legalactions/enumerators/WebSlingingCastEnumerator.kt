@@ -58,7 +58,7 @@ class WebSlingingCastEnumerator : ActionEnumerator {
             // speed. Spider-Sense (an instant) is castable whenever the player has priority.
             val isInstant = cardComponent.typeLine.isInstant
             val grantedFlash = cardDef.keywords.contains(Keyword.FLASH) ||
-                context.castPermissionUtils.hasGrantedFlash(state, cardId)
+                context.castPermissionUtils.hasGrantedFlash(state, cardId, context.playerId)
             if (!isInstant && !grantedFlash && !context.canPlaySorcerySpeed) continue
 
             // Honor cast restrictions exactly like the normal cast path (CR 601.3).

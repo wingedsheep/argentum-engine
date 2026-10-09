@@ -62,6 +62,16 @@ class LibraryMacroEffectTest : FunSpec({
         LibraryPatterns.surveilPipeline(0).effects.none { it is EmitSurveiledEventEffect } shouldBe true
     }
 
+    test("scry event collections and bottom-count amounts round trip") {
+        val tail: Effect = EmitScriedEventEffect(gatherCollection = "looked", bottomCollection = "chosen")
+        json.decodeFromString(Effect.serializer(), json.encodeToString(Effect.serializer(), tail)) shouldBe tail
+        val amount = com.wingedsheep.sdk.dsl.DynamicAmounts.triggerScryBottomCount()
+        val serializer = com.wingedsheep.sdk.scripting.values.DynamicAmount.serializer()
+        json.decodeFromString(serializer, json.encodeToString(serializer, amount)) shouldBe amount
+        val oldTail = json.decodeFromString(Effect.serializer(), """{"type":"EmitScriedEvent"}""")
+        oldTail.shouldBeInstanceOf<EmitScriedEventEffect>().bottomCollection shouldBe "toBottom"
+    }
+
     test("expandMacro returns null for a non-macro effect") {
         LibraryPatterns.expandMacro(EmitScriedEventEffect()) shouldBe null
     }

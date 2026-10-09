@@ -469,7 +469,7 @@ internal class CastValidator(
         // leaves this reading the card's own keywords. A *granted* flash below is a property of the
         // card object, not of a face, so it is unaffected.
         val faceKeywords = transformedFace?.keywords ?: cardDef?.keywords ?: emptySet()
-        val grantedFlash = faceKeywords.contains(Keyword.FLASH) || zoneResolver.hasGrantedFlash(state, action.cardId)
+        val grantedFlash = faceKeywords.contains(Keyword.FLASH) || zoneResolver.hasGrantedFlash(state, action.cardId, action.playerId)
         // A from-exile may-play permission with an "as though it had flash" rider (Azula, Cunning
         // Usurper) lets a non-instant exiled card be cast at instant speed (CR 702.8).
         val mayPlayFlash = state.activeMayPlayFor(action.cardId, action.playerId, conditionEvaluator, cardRegistry)

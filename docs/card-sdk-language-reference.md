@@ -7916,6 +7916,14 @@ Triggers.you.casts(GameObjectFilter.Noncreature or
   been placed on top/bottom. Pair with `DynamicAmount.ContextProperty(ContextPropertyKey.TRIGGER_SCRY_COUNT)`
   for "for each card looked at" payoffs (Celeborn the Wise, Elrond Master of Healing).
   Automatically emitted by `Patterns.Library.scry(N)`; no card has to opt in.
+  `DynamicAmounts.triggerScryBottomCount()` (`TRIGGER_SCRY_BOTTOM_COUNT`) reads the number
+  **chosen for the bottom** during that scry. Add a `triggerRestriction` comparing it to zero
+  for "whenever you choose to put one or more cards on the bottom ... while scrying" (The
+  Temporal Anchor). This captured count survives pauses and later library changes; a subsequent
+  `CardSource.BottomOfLibrary(count)` gathers the bottom cards at **resolution**, not necessarily
+  the cards originally scried. The internal `EmitScriedEventEffect.bottomCollection` defaults to
+  `"toBottom"`, the scry pipeline's selected collection; its size becomes `ScriedEvent.bottomCount`
+  and travels in `TriggerContext.scryBottomCount`. Surveil and non-scry contexts read zero.
 - `Triggers.you.surveils()` — the surveil twin (CR 701.25), fired once per surveil resolution.
   Automatically emitted by `Patterns.Library.surveil(N)`. Reads the same `TRIGGER_SCRY_COUNT`
   ("cards looked at"). Used by Golbez.
@@ -10423,7 +10431,10 @@ riders, matching how the engine already treats e.g. City of Brass's damage durin
   are thin delegates to the shared `FlashTypeGrants.hasGrantedFlash`, which is the single source of
   truth for every non-printed flash (the card's own `conditionalFlash`, the turn-scoped
   `Effects.GrantFlashToSpells` player grant, and this static), so enumeration and the cast handler
-  cannot disagree. Sibling of the durational `Effects.GrantFlashToSpells`; use the static for "as
+  cannot disagree. Both pass the actual caster explicitly: conditional flash, player grants, and
+  per-turn cast counts use that player even when a linked-exile permission lets them cast an
+  opponent-owned card. The owner's personal flash grants do not transfer with the card.
+  Sibling of the durational `Effects.GrantFlashToSpells`; use the static for "as
   long as this is on the battlefield" wording.
 
   **Gating it on a condition** — wrap it in a `ConditionalStaticAbility` (i.e. set `condition` on the
@@ -13445,7 +13456,7 @@ forbids `DynamicAmount.X` in card definitions.
   `distinctBendsThisTurn(player)`, `untappedLandsAtTurnStart(player)`, …).
 - **Every `ContextPropertyKey` a card reads has a named facade**: `triggerDamageAmount()`,
   `triggerExcessDamageAmount()`, `triggerRecipientToughness()`, `triggerLifeGained()`,
-  `triggerLifeLost()`, `triggerDiscardCount()`, `triggerScryCount()`, `triggerCountersPlaced()`,
+  `triggerLifeLost()`, `triggerDiscardCount()`, `triggerScryCount()`, `triggerScryBottomCount()`, `triggerCountersPlaced()`,
   `triggerCountersRemoved()`, `triggerDiscoverValue()`, `triggeringSpellManaValue()`,
   `manaSpentOnTriggeringSpell()`, `modesChosenOnTriggeringSpell()`, `lastKnownPlusOneCounters()`,
   `lastKnownCounterCount()`, `linkedExileCardCount()`, `linkedExileDistinctCardTypeCount()`,
@@ -14175,6 +14186,9 @@ Army just amassed by a sibling/action effect, or any cost-chosen entity. The plu
   - `TRIGGER_SCRY_COUNT` — cards looked at by the scry **or surveil** that fired the trigger
     (Celeborn the Wise, Elrond Master of Healing). Equals the scry/surveil N parameter unless the
     library held fewer cards.
+  - `TRIGGER_SCRY_BOTTOM_COUNT` — cards chosen for the bottom during the triggering scry,
+    independent of subsequent moves. Zero for other triggers, including surveil. Facade:
+    `DynamicAmounts.triggerScryBottomCount()`. Used by The Temporal Anchor.
   - `TRIGGER_DISCARD_COUNT` — cards discarded in the batch that fired the trigger (CR 603.2c) —
     Magmakin Artillerist's "whenever you discard one or more cards, this creature deals **that much**
     damage to each opponent." Populated from `CardsDiscardedEvent.cardIds.size`, so one event of

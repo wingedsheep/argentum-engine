@@ -690,10 +690,11 @@ class CastZoneResolver(
      * `CastPermissionUtils.hasGrantedFlash` also uses, so this authoritative cast-time re-check can
      * never disagree with what enumeration offered.
      */
-    fun hasGrantedFlash(state: GameState, spellCardId: EntityId): Boolean =
+    fun hasGrantedFlash(state: GameState, spellCardId: EntityId, casterId: EntityId): Boolean =
         FlashTypeGrants.hasGrantedFlash(
             state = state,
             spellCardId = spellCardId,
+            casterId = casterId,
             cardRegistry = cardRegistry,
             predicateEvaluator = predicateEvaluator,
             conditionEvaluator = conditionEvaluator,
