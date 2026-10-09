@@ -2919,6 +2919,51 @@
     ]
 }
 
+// Sengir Connoisseur
+{
+    "name": "Sengir Connoisseur",
+    "manaCost": "{3}{B}{B}",
+    "typeLine": "Creature — Vampire",
+    "oracleText": "Flying\nWhenever one or more other creatures die, put a +1/+1 counter on this creature. This ability triggers only once each turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sengir Connoisseur:1",
+                "trigger": {
+                    "type": "CreaturesYouControlDiedEvent",
+                    "filter": "creature ctrl:any",
+                    "excludeSelf": true
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                },
+                "oncePerTurn": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "104",
+        "rarity": "UNCOMMON",
+        "artist": "Irina Nordsol",
+        "flavorText": "\"We cannot afford to let the Phyrexians win. They taste terrible.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/c/7c9231f0-7733-46d9-b9c6-c6c5b7fe65dd.jpg?1783921328"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Shadow-Rite Priest
 {
     "name": "Shadow-Rite Priest",
