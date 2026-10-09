@@ -43,6 +43,9 @@ import org.springframework.web.socket.WebSocketSession
 /** The Jumpstart set a matchmade Jump In game deals from — the home screen's Jump In mode uses it too. */
 private const val MATCHMADE_JUMP_IN_SET = "J22"
 
+/** Fresh builds an AI premade seat gets when the lobby rejects one — at ~1% rejection, ample. */
+private const val MAX_AI_PREMADE_DECK_ATTEMPTS = 5
+
 @Component
 class LobbyHandler(
     private val sessionRegistry: SessionRegistry,
@@ -1688,44 +1691,53 @@ class LobbyHandler(
         val playerState = lobby.players[aiPlayerId] ?: return
         if (playerState.hasSubmittedDeck) return
 
-        val generated = runCatching {
-            randomDeckResolver.resolve(
-                playerState.aiDeckSpec,
-                lobby.deckFormat,
-                lobby.setCodes,
-                lobby.usesCommanderRules,
-            )
-        }
-            .onFailure { logger.error("Could not generate a deck for AI seat ${aiPlayerId.value}", it) }
-            .getOrNull() ?: return
+        // A generated deck can be one the lobby rejects: a sealed pool is free to hold five or six
+        // copies of a common (about 1 Portal build in 100), which the premade 4-of rule refuses.
+        // Leaving the seat empty would block the host's start gate for good, so roll again — each
+        // build is an independent draw. A host's fixed list is the same every time; no point.
+        val attempts = if (playerState.aiDeckSpec is AiDeckSpec.Fixed) 1 else MAX_AI_PREMADE_DECK_ATTEMPTS
+        repeat(attempts) {
+            val generated = runCatching {
+                randomDeckResolver.resolve(
+                    playerState.aiDeckSpec,
+                    lobby.deckFormat,
+                    lobby.setCodes,
+                    lobby.usesCommanderRules,
+                )
+            }
+                .onFailure { logger.error("Could not generate a deck for AI seat ${aiPlayerId.value}", it) }
+                .getOrNull() ?: return
 
-        val commander = generated.commander?.takeIf { lobby.usesCommanderRules }
-        // Under Commander rules a deck with no commander can't be seated at all, so leave the seat
-        // un-submitted rather than submit one: the lobby's own start gate then blocks on "not every
-        // seat has a deck", which is a state the host can fix by picking a deck for the AI.
-        if (lobby.usesCommanderRules && commander == null) {
-            logger.warn(
-                "No commander for AI seat {} in lobby {}; leaving the seat without a deck",
-                aiPlayerId.value,
-                lobby.lobbyId,
-            )
-            return
-        }
-        // Submitted in wire form — commander counted in, as `LobbyPlayerState.commander` documents
-        // and as the match handlers' strip-at-start expects.
-        val submitted = if (commander != null) generated.submissionList else generated.deckList
-        when (val result = lobby.submitDeck(aiPlayerId, submitted, commander = commander)) {
-            is TournamentLobby.DeckSubmissionResult.Success ->
-                logger.info(
-                    "AI {} brought a generated {} deck ({} cards{}) to premade lobby {}",
-                    playerState.identity.playerName,
-                    lobby.deckFormat?.displayName ?: "sealed",
-                    generated.totalCards,
-                    commander?.let { ", led by $it" } ?: "",
+            val commander = generated.commander?.takeIf { lobby.usesCommanderRules }
+            // Under Commander rules a deck with no commander can't be seated at all, so leave the seat
+            // un-submitted rather than submit one: the lobby's own start gate then blocks on "not every
+            // seat has a deck", which is a state the host can fix by picking a deck for the AI.
+            if (lobby.usesCommanderRules && commander == null) {
+                logger.warn(
+                    "No commander for AI seat {} in lobby {}; leaving the seat without a deck",
+                    aiPlayerId.value,
                     lobby.lobbyId,
                 )
-            is TournamentLobby.DeckSubmissionResult.Error ->
-                logger.warn("Generated AI deck rejected in lobby ${lobby.lobbyId}: ${result.message}")
+                return
+            }
+            // Submitted in wire form — commander counted in, as `LobbyPlayerState.commander` documents
+            // and as the match handlers' strip-at-start expects.
+            val submitted = if (commander != null) generated.submissionList else generated.deckList
+            when (val result = lobby.submitDeck(aiPlayerId, submitted, commander = commander)) {
+                is TournamentLobby.DeckSubmissionResult.Success -> {
+                    logger.info(
+                        "AI {} brought a generated {} deck ({} cards{}) to premade lobby {}",
+                        playerState.identity.playerName,
+                        lobby.deckFormat?.displayName ?: "sealed",
+                        generated.totalCards,
+                        commander?.let { ", led by $it" } ?: "",
+                        lobby.lobbyId,
+                    )
+                    return
+                }
+                is TournamentLobby.DeckSubmissionResult.Error ->
+                    logger.warn("Generated AI deck rejected in lobby ${lobby.lobbyId}: ${result.message}")
+            }
         }
     }
 
