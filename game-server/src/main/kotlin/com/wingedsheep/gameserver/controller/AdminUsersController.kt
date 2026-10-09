@@ -67,6 +67,7 @@ class AdminUsersController(
         // Pin the wire name (see SetAdminBody) — the client reads `detail.isAdmin` for the badge
         // and the promote/revoke toggle; without this Jackson emits `admin` and both misbehave.
         @JsonProperty("isAdmin") val isAdmin: Boolean,
+        val avatar: String?,
         val createdAt: String,
         val stats: StatsDto,
         val colors: List<StatBucket>,
@@ -108,6 +109,7 @@ class AdminUsersController(
                 email = user.email,
                 displayName = user.displayName,
                 isAdmin = user.isAdmin,
+                avatar = user.avatar,
                 createdAt = user.createdAt.toString(),
                 stats = StatsDto(
                     games = games,

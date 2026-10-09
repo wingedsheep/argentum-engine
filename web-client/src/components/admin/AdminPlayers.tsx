@@ -18,6 +18,7 @@ import {
 } from '@/api/adminUsers'
 import type { AdminAuth } from '@/api/adminAuth'
 import { TournamentDetailModal } from '@/components/profile/TournamentDetailModal'
+import { Avatar } from '@/components/profile/accountUi'
 import { colorForIdentity, colorLabel, mergeModeBuckets } from './statFormat'
 import { AdminScreen, Panel, StatCard, Table, adminTheme, cellStyle } from './adminUi'
 import { AdminDeckModal, AdminSavedDecks } from './AdminPlayerDecks'
@@ -78,10 +79,15 @@ export function AdminPlayers({ auth, onBack }: { auth: AdminAuth; onBack: () => 
                 <tr key={u.id} style={styles.row} onClick={() => setSelectedId(u.id)}>
                   <td style={cellStyle.td}>
                     <div style={styles.playerCell}>
-                      <span style={styles.playerName}>{u.displayName}</span>
-                      {u.isAdmin && <span style={styles.adminBadge}>ADMIN</span>}
+                      <Avatar name={u.displayName} avatar={u.avatar} small />
+                      <div>
+                        <div style={styles.playerNameRow}>
+                          <span style={styles.playerName}>{u.displayName}</span>
+                          {u.isAdmin && <span style={styles.adminBadge}>ADMIN</span>}
+                        </div>
+                        <div style={styles.playerEmail}>{u.email}</div>
+                      </div>
                     </div>
-                    <div style={styles.playerEmail}>{u.email}</div>
                   </td>
                   <td style={cellStyle.tdNum}>{u.games}</td>
                   <td style={cellStyle.tdNum}>{u.wins}</td>
@@ -182,6 +188,11 @@ function PlayerDetail({
         <p style={cellStyle.muted}>Loading…</p>
       ) : (
         <>
+          <div style={styles.identity}>
+            <Avatar name={detail.displayName} avatar={detail.avatar} />
+            <div style={styles.meta}>Joined {detail.createdAt.slice(0, 10)}</div>
+          </div>
+
           {detail.isAdmin && (
             <div style={styles.adminNotice}>
               <span style={styles.adminBadge}>ADMIN</span>
@@ -199,8 +210,6 @@ function PlayerDetail({
               accent
             />
           </div>
-
-          <div style={styles.meta}>Joined {detail.createdAt.slice(0, 10)}</div>
 
           {detail.colors.length > 0 && (
             <Panel title="Colors played">
@@ -370,7 +379,8 @@ function prettyMode(mode: string | null): string {
 const styles: Record<string, React.CSSProperties> = {
   error: { color: adminTheme.bad, fontSize: 13, margin: 0 },
   row: { cursor: 'pointer' },
-  playerCell: { display: 'flex', alignItems: 'center', gap: 8 },
+  playerCell: { display: 'flex', alignItems: 'center', gap: 12 },
+  playerNameRow: { display: 'flex', alignItems: 'center', gap: 8 },
   playerName: { color: adminTheme.text, fontWeight: 600 },
   playerEmail: { color: adminTheme.textMuted, fontSize: 12, marginTop: 2 },
   adminBadge: {
@@ -386,6 +396,7 @@ const styles: Record<string, React.CSSProperties> = {
   viewLink: { color: adminTheme.accent, fontSize: 13, whiteSpace: 'nowrap' },
   cardRow: { display: 'flex', gap: 12, flexWrap: 'wrap' },
   meta: { color: adminTheme.textMuted, fontSize: 13 },
+  identity: { display: 'flex', alignItems: 'center', gap: 16 },
   adminNotice: {
     display: 'flex',
     alignItems: 'center',

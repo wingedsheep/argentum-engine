@@ -225,6 +225,8 @@ data class AdminUserStat(
     // Pin the wire name (see SetAdminBody) — the admin Players list reads `u.isAdmin` for the ADMIN
     // badge; without this Jackson emits `admin` and the badge never shows for promoted accounts.
     @JsonProperty("isAdmin") val isAdmin: Boolean,
+    /** Chosen avatar id (see `profile.Avatars`); null shows the display name's initial. */
+    val avatar: String?,
     val createdAt: String,
     val games: Long,
     val wins: Long,
@@ -876,14 +878,14 @@ class StatsQueryService(
     fun allUsersWithStats(): List<AdminUserStat> = jdbc.query(
         """
         SELECT u.id AS id, u.email AS email, u.display_name AS display_name, u.is_admin AS is_admin,
-               u.created_at AS created_at,
+               u.avatar AS avatar, u.created_at AS created_at,
                count(p.id) AS games,
                count(p.id) FILTER (WHERE p.won) AS wins,
                max(r.ended_at) AS last_played
         FROM users u
         LEFT JOIN match_participants p ON p.user_id = u.id
         LEFT JOIN match_results r ON r.id = p.match_id
-        GROUP BY u.id, u.email, u.display_name, u.is_admin, u.created_at
+        GROUP BY u.id, u.email, u.display_name, u.is_admin, u.avatar, u.created_at
         ORDER BY games DESC, u.created_at ASC
         """.trimIndent(),
     ) { rs, _ ->
@@ -892,6 +894,7 @@ class StatsQueryService(
             email = rs.getString("email"),
             displayName = rs.getString("display_name"),
             isAdmin = rs.getBoolean("is_admin"),
+            avatar = rs.getString("avatar"),
             createdAt = rs.getTimestamp("created_at").toInstant().toString(),
             games = rs.getLong("games"),
             wins = rs.getLong("wins"),
