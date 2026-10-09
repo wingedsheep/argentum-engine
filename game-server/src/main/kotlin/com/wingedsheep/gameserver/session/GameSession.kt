@@ -320,6 +320,21 @@ class GameSession(
     var lastActionAt: Instant? = null
         private set
 
+    /** When this session object was made — the activity clock for a game that never started. */
+    val createdAt: Instant = Instant.now()
+
+    /**
+     * Since when no human seat has had an open socket, or null while one does. Kept by
+     * [com.wingedsheep.gameserver.session.ZombieSessionSweeper] (so it is only as fine-grained as its
+     * sweep) and read by [AbandonedGamePolicy] to end games nobody is playing any more.
+     */
+    @Volatile
+    var unattendedSince: Instant? = null
+
+    /** Why an admin or the sweeper ended this game early — see [abandon]. */
+    @Volatile
+    private var abandonMessage: String? = null
+
     /** Per-player cache of last sent ClientGameState for delta computation */
     private val lastSentState = java.util.concurrent.ConcurrentHashMap<EntityId, ClientGameState>()
 
@@ -1698,7 +1713,22 @@ class GameSession(
      * own terms. Preferred over the engine's stock reason text because "Draw" alone reads like a
      * rules outcome the players caused.
      */
-    fun stallMessage(): String? = stallGuard.stall?.playerMessage
+    fun stallMessage(): String? = stallGuard.stall?.playerMessage ?: abandonMessage
+
+    /**
+     * End a started game as a draw because nobody is playing it any more (or an admin said so),
+     * exactly the way [enforceProgress] ends a stalled one: `gameOver` with no winner, so the normal
+     * game-over path notifies, saves the replay and frees the session. [message] becomes the
+     * [stallMessage]. Returns false — and changes nothing — when the game hasn't started or is
+     * already over, so a racing natural ending is never overwritten.
+     */
+    fun abandon(message: String): Boolean = synchronized(stateLock) {
+        val state = gameState ?: return false
+        if (state.gameOver) return false
+        abandonMessage = message
+        gameState = state.copy(gameOver = true, winnerId = null)
+        true
+    }
 
     /**
      * Record that [playerId]'s action was rejected and no fallback could be applied either, and

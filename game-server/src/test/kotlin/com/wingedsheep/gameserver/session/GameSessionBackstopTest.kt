@@ -99,6 +99,24 @@ class GameSessionBackstopTest : ScenarioTestBase() {
             session.getEliminationOrder() shouldBe emptyList()
         }
 
+        test("an abandoned game ends as a draw that explains itself, once") {
+            val session = startedGame(GameStallGuard(), replayCap = 10_000)
+
+            session.abandon("Nobody is here.") shouldBe true
+
+            session.isGameOver() shouldBe true
+            session.getWinnerId() shouldBe null
+            session.getGameOverReason() shouldBe GameOverReason.DRAW
+            session.stallMessage() shouldBe "Nobody is here."
+            // A game that already ended keeps its ending — the sweeper racing a real result must lose.
+            session.abandon("Again.") shouldBe false
+            session.stallMessage() shouldBe "Nobody is here."
+        }
+
+        test("an unstarted game can't be abandoned through the session") {
+            GameSession(cardRegistry = cardRegistry, maxPlayers = 2).abandon("Nobody is here.") shouldBe false
+        }
+
         test("an ordinary game is neither truncated nor called stalled") {
             val session = startedGame(GameStallGuard(), replayCap = 10_000)
 
