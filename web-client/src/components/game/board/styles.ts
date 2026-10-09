@@ -1048,11 +1048,24 @@ export const styles: Record<string, React.CSSProperties> = {
     boxShadow: '0 2px 4px rgba(0, 0, 0, 0.5)',
     zIndex: 10,
   } as React.CSSProperties,
-  stackCastProvenanceBadge: {
+  // The stack card's top badge row — provenance on the left, mana paid on the right. The caller
+  // sets `top` and `right`; the children lay out in it rather than being positioned on their own.
+  stackTopBadgeRow: {
     position: 'absolute',
     top: 4,
     left: 4,
-    maxWidth: 'calc(100% - 8px)',
+    right: 4,
+    display: 'flex',
+    alignItems: 'center',
+    gap: 3,
+    zIndex: 10,
+    // The row spans the card's width; only the badges themselves take the pointer (their tooltips).
+    pointerEvents: 'none',
+  } as React.CSSProperties,
+  stackCastProvenanceBadge: {
+    flex: '0 1 auto',
+    minWidth: 0,
+    pointerEvents: 'auto',
     backgroundColor: 'rgba(52, 84, 148, 0.95)',
     color: 'white',
     padding: '2px 5px',
@@ -1086,12 +1099,12 @@ export const styles: Record<string, React.CSSProperties> = {
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap',
   } as React.CSSProperties,
-  // The mana actually spent on an alternative-cost cast. Right-aligned (the caller sets `right`) so
-  // it shares the top row with the provenance badge — the only row a covered stack card still shows.
+  // The mana actually spent on an alternative-cost cast. Pushed to the right end of the top badge
+  // row it shares with the provenance badge — the only row a covered stack card still shows.
   stackManaPaidBadge: {
-    position: 'absolute',
-    top: 4,
-    maxWidth: 'calc(60% - 8px)',
+    flex: '0 0 auto',
+    marginLeft: 'auto',
+    pointerEvents: 'auto',
     display: 'flex',
     alignItems: 'center',
     gap: 3,

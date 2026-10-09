@@ -161,6 +161,7 @@ export const createTargetingSlice: SliceCreator<TargetingSlice> = (set, get) => 
             ...(targetingState.requiresDamageDistribution
               ? { requiresDamageDistribution: true }
               : {}),
+            ...(targetingState.sourceCardName ? { sourceCardName: targetingState.sourceCardName } : {}),
             // Snapshot the outgoing requirement so goBackTargeting can restore it.
             previousRequirementStates: [
               ...(targetingState.previousRequirementStates ?? []),

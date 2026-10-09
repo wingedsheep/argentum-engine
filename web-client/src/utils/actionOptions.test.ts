@@ -263,6 +263,34 @@ describe('buildActionOptions — casting a single face', () => {
     )
     expect(options.map((o) => o.label)).toEqual(['Cast Leech Collector'])
   })
+
+  it('a disturb cast is named after the back face it casts, and says it is disturb', () => {
+    // Mischievous Catgeist lies in the graveyard front face up, but disturb puts Catlike Curiosity
+    // on the stack (CR 712.8c). It used to read "Cast Mischievous Catgeist" over a back-face hint.
+    const catgeist = card('{1}{U}', {
+      name: 'Mischievous Catgeist',
+      typeLine: 'Creature — Cat Spirit',
+      backFaceName: 'Catlike Curiosity',
+      backFaceTypeLine: 'Enchantment — Aura',
+    } as Partial<ClientCard>)
+    const options = buildActionOptions(catgeist, [action({
+      actionType: 'CastWithDisturb',
+      description: 'Cast Catlike Curiosity (Disturb)',
+      manaCostString: '{2}{U}',
+      castsTransformed: true,
+    })])
+    expect(options.map((o) => [o.label, o.manaCost, o.face, o.hint])).toEqual([
+      ['Cast Catlike Curiosity (Disturb)', '{2}{U}', 'back', 'Back face — Enchantment — Aura'],
+    ])
+  })
+
+  it('a lone graveyard keyword cast names its mechanic', () => {
+    const options = buildActionOptions(
+      card('{R}', { name: 'Faithless Looting' } as Partial<ClientCard>),
+      [action({ actionType: 'CastWithFlashback', description: 'Cast Faithless Looting (Flashback)' })],
+    )
+    expect(options.map((o) => o.label)).toEqual(['Cast Faithless Looting (Flashback)'])
+  })
 })
 
 describe('playLadderOptions', () => {
