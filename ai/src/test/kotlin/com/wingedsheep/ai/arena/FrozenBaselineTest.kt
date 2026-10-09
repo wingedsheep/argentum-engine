@@ -152,7 +152,13 @@ class FrozenBaselineTest : FunSpec({
          * (CR 508.2), so the stream gains a pass from each player there. With a vanilla deck and
          * nothing castable at instant speed, a pass is the only legal action in that window. Seat 1
          * still wins on turn 20 at life -8 / 16.
+         *
+         * Re-blessed 2026-10-09 for optional life-funded cost reductions adding
+         * `CastSpell.optionalCostPayments`. **`LEGACY_V0` did not move.** With
+         * `", optionalCostPayments=[]"` stripped from the recorded action text, this branch
+         * reproduces the previous golden `bc675a46de11e5b2` exactly. Seat 1 still wins on turn
+         * 20 at life -8 / 16.
          */
-        private const val GOLDEN_HASH = "bc675a46de11e5b2"
+        private const val GOLDEN_HASH = "29c7f715f4f197d4"
     }
 }
