@@ -9,9 +9,10 @@
  * width, and the pages it opens are "things about *your* account", so they belong together rather
  * than in the main navigation.
  *
- * Unread messages, friends online and pending friend requests show on the trigger itself — spelled out on a quiet
- * line under your name, or as count badges on the avatar on narrow screens — so they're visible
- * without opening the menu.
+ * Friends online and pending friend requests show on the trigger itself — spelled out on a quiet line
+ * under your name, or as count badges on the avatar on narrow screens — so they're visible without
+ * opening the menu. Unread messages don't: the chat button beside this menu carries that count, and
+ * repeating it here read as two different notifications. The Messages item in the menu still has it.
  *
  * Anonymous visitors see a single Log in button that opens the magic-link modal. Renders nothing
  * when the server has accounts disabled — a login form there could only fail.
@@ -95,7 +96,6 @@ export function AuthWidget() {
     logout()
   }
   const statusParts = [
-    ...(unreadMessages > 0 ? [`${unreadMessages} unread ${unreadMessages === 1 ? 'message' : 'messages'}`] : []),
     ...(onlineCount > 0 ? [`${onlineCount} ${onlineCount === 1 ? 'friend' : 'friends'} online`] : []),
     ...(incomingCount > 0 ? [`${incomingCount} pending friend ${incomingCount === 1 ? 'request' : 'requests'}`] : []),
   ]
@@ -115,20 +115,13 @@ export function AuthWidget() {
       >
         <span className={styles.avatar} data-portrait={portrait} aria-hidden>
           {portrait ? <AvatarArt avatar={user.avatar} /> : initialOf(user.displayName)}
-          {incomingCount + unreadMessages > 0 && (
-            <span className={styles.avatarRequests}>{incomingCount + unreadMessages}</span>
-          )}
+          {incomingCount > 0 && <span className={styles.avatarRequests}>{incomingCount}</span>}
           {onlineCount > 0 && <span className={styles.avatarOnline}>{onlineCount}</span>}
         </span>
         <span className={styles.identity}>
           <span className={styles.name}>{user.displayName}</span>
-          {(onlineCount > 0 || incomingCount > 0 || unreadMessages > 0) && (
+          {(onlineCount > 0 || incomingCount > 0) && (
             <span className={styles.status} aria-hidden>
-              {unreadMessages > 0 && (
-                <span className={styles.unread} data-testid="account-menu-unread-count">
-                  {unreadMessages} unread
-                </span>
-              )}
               {onlineCount > 0 && (
                 <span className={styles.presence} data-testid="account-menu-online-count">
                   <span className={styles.onlineDot} />
