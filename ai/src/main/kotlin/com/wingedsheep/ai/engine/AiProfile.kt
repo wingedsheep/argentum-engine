@@ -341,6 +341,32 @@ data class AiProfile(
      */
     val holdExpiringGrantsForCombat: Boolean = false,
     /**
+     * Aim a spell or ability at the side of the table its effect is *for*, derived from the effect
+     * by [com.wingedsheep.ai.engine.knowledge.TargetPolarityAnalyzer] rather than from the one
+     * shape the ranker used to recognise (a fixed stat boost on an activated ability).
+     *
+     * Three things change, all from the same reading:
+     *
+     *  1. **Ranking.** A beneficial slot — a damage shield, a pump spell, an evasion Aura — ranks
+     *     our own best permanent first. Everything else used to rank as removal, which is how a
+     *     Daru Healer spent its "prevent the next 1 damage to any target" on the opponent's
+     *     Gustcloak Harrier (2026-10-09 AI-vs-AI log, game 18 turn 26): an opponent's permanent is
+     *     always the best *removal* target, and the simulated board does not price a shield.
+     *  2. **Wrong-side veto.** A candidate with a mandatory slot whose every legal target is on the
+     *     wrong side is dropped, so the card is held: Blossombind on our own Explosive Prodigy
+     *     because the opponent had no creatures (game 15 turn 12), Prohibit on our own Treefolk
+     *     Healer — above its mana-value cap, so it did nothing at all — at 4 life (game 3 turn 21).
+     *  3. **The unkicked cast stays a candidate.** `preferKickerVariants` dropped it whenever the
+     *     kicked one was affordable, on the theory that a kicker only adds. A kicker adds an
+     *     *effect*, whose target the cast cannot see: kicked Tolarian Emissary destroyed our own
+     *     Traveler's Cloak, the only enchantment on the table (game 3 turn 19).
+     *
+     * Every slot the analyzer cannot read confidently is UNKNOWN and keeps the old behaviour.
+     * Needs [useCardIntent]: the polarity is read off the card definition, which only the intent
+     * catalog can reach.
+     */
+    val targetPolarityFromEffect: Boolean = false,
+    /**
      * The two `BoardPresence.creatureValue` corrections [PRODUCTION_RACECLOCK]'s KDoc named as the
      * reason its arena win came with a puzzle trade — the damaged-creature discount and the flat
      * multiplier on "can't attack". Both are off by default; see
@@ -1265,6 +1291,7 @@ data class AiProfile(
             castabilityAwareCardSelection = true,
             informedChoiceDecisions = true,
             refuseUnspendableGrants = true,
+            targetPolarityFromEffect = true,
         )
 
         /**
@@ -1284,6 +1311,25 @@ data class AiProfile(
         val PRODUCTION_CANDIDATE_CHOICES = PRODUCTION_CANDIDATE_EXPIRING.copy(
             id = "production-candidate-choices",
             informedChoiceDecisions = true,
+        )
+
+        /**
+         * [targetPolarityFromEffect] alone on top of [PRODUCTION], so a puzzle or arena point that
+         * moves is attributable to it.
+         */
+        val PRODUCTION_POLARITY = PRODUCTION.copy(
+            id = "production-polarity",
+            targetPolarityFromEffect = true,
+        )
+
+        /**
+         * The promotion candidate: [PRODUCTION_CANDIDATE_EXPIRING] — the
+         * candidate [LIVE] starts from — plus
+         * [targetPolarityFromEffect].
+         */
+        val PRODUCTION_CANDIDATE_POLARITY = PRODUCTION_CANDIDATE_EXPIRING.copy(
+            id = "production-candidate-polarity",
+            targetPolarityFromEffect = true,
         )
 
         /**
