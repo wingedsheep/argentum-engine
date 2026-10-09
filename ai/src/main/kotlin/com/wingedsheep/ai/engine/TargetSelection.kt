@@ -9,6 +9,7 @@ import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.core.GameAction
 import com.wingedsheep.engine.legalactions.LegalAction
 import com.wingedsheep.engine.legalactions.ModalLegalEnumeration
+import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils.toEntityId
 import com.wingedsheep.engine.legalactions.TargetInfo
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
@@ -239,10 +240,12 @@ object TargetSelection {
         val chosenTargets = mutableListOf<ChosenTarget>()
         val chosenIds = mutableSetOf<EntityId>()
         for ((index, info) in targetInfos.withIndex()) {
+            val candidates = info.validTargetsByPrefix?.get(chosenTargets.joinToString(",") { it.toEntityId().toString() })
+                ?: if (info.validTargetsByPrefix == null) info.validTargets else emptyList()
             val available = if (info.mustDifferFromEarlier) {
-                info.validTargets.filterNot(chosenIds::contains)
+                candidates.filterNot(chosenIds::contains)
             } else {
-                info.validTargets
+                candidates
             }
             // Nothing left for this slot. [fillableRequirements] guarantees `validTargets` is not
             // empty, so the only way here is an "other target" requirement (CR 601.2c) whose every
@@ -290,10 +293,12 @@ object TargetSelection {
             val chosen = mutableListOf<ChosenTarget>()
             val chosenIds = mutableSetOf<EntityId>()
             for (info in mode.targetRequirements) {
+                val candidates = info.validTargetsByPrefix?.get(chosen.joinToString(",") { it.toEntityId().toString() })
+                    ?: if (info.validTargetsByPrefix == null) info.validTargets else emptyList()
                 val available = if (info.mustDifferFromEarlier) {
-                    info.validTargets.filterNot(chosenIds::contains)
+                    candidates.filterNot(chosenIds::contains)
                 } else {
-                    info.validTargets
+                    candidates
                 }
                 if (available.isEmpty() && info.minTargets == 0) continue
                 val selectedId = available.maxByOrNull { rank(state, it, playerId, intents) }

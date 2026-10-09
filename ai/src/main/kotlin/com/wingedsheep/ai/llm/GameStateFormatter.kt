@@ -542,7 +542,8 @@ class GameStateFormatter(
                 val targetReqs = action.targetRequirements
                 val validTargets = action.validTargets
                 val allTargets = if (!targetReqs.isNullOrEmpty()) {
-                    targetReqs.flatMap { req ->
+                    val displayed = if (targetReqs.any { it.validTargetsByPrefix != null }) targetReqs.take(1) else targetReqs
+                    displayed.flatMap { req ->
                         req.validTargets.map { tid ->
                             formatTarget(tid, state, labels)
                         }

@@ -141,9 +141,12 @@ export const createTargetingSlice: SliceCreator<TargetingSlice> = (set, get) => 
           // instance, so an earlier pick stays legal here (Seeds of Strength) unless the
           // requirement says "another target".
           const alreadySelected = allSelected.flat()
+          const choices = nextReq.validTargetsByPrefix
+            ? nextReq.validTargetsByPrefix[alreadySelected.join(',')] ?? []
+            : nextReq.validTargets
           const filteredValidTargets = nextReq.mustDifferFromEarlier
-            ? nextReq.validTargets.filter((t) => !alreadySelected.includes(t))
-            : [...nextReq.validTargets]
+            ? choices.filter((t) => !alreadySelected.includes(t))
+            : [...choices]
           startTargeting({
             action: pipelineState.accumulatedAction,
             validTargets: filteredValidTargets,

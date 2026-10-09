@@ -348,6 +348,9 @@ class TargetEnumerationUtils(
         sourceId: EntityId? = null,
         targetingSourceType: TargetingSourceType = TargetingSourceType.ANY
     ): List<TargetInfo> {
+        if (com.wingedsheep.engine.handlers.DependentTargetSelection.isRequired(targetReqs)) {
+            return dependentTargetInfos(state, playerId, targetReqs, sourceId, targetingSourceType)
+        }
         return targetReqs.mapIndexed { index, req ->
             // A board-state count ("X target creatures, where X is …") is knowable now; an X from
             // the cost is not, and stays at the static bounds until the player announces it.
@@ -388,6 +391,42 @@ class TargetEnumerationUtils(
                 xConstrainsCount = requirementXConstrainsCount(req),
                 xConstrainsCountExactly = requirementXConstrainsCountExactly(req),
                 differentControllers = (req as? TargetObject)?.differentControllers == true,
+            )
+        }
+    }
+
+    private fun dependentTargetInfos(
+        state: GameState,
+        playerId: EntityId,
+        requirements: List<TargetRequirement>,
+        sourceId: EntityId?,
+        sourceType: TargetingSourceType,
+    ): List<TargetInfo> {
+        val tables = requirements.map { linkedMapOf<String, List<EntityId>>() }
+        val finder = com.wingedsheep.engine.handlers.TargetFinder(predicateEvaluator)
+        val context = PredicateContext(controllerId = playerId, sourceId = sourceId)
+        fun visit(prefix: List<List<EntityId>>) {
+            val index = prefix.size
+            val legal = com.wingedsheep.engine.handlers.DependentTargetSelection.legalNext(
+                state, requirements, prefix, context, finder, sourceType,
+            )
+            tables[index][prefix.flatten().joinToString(",")] = legal
+            if (index < requirements.lastIndex) {
+                legal.forEach { visit(prefix + listOf(listOf(it))) }
+            }
+        }
+        visit(emptyList())
+        return requirements.mapIndexed { index, req ->
+            val legal = tables[index].values.flatten().distinct()
+            TargetInfo(
+                index = index,
+                description = req.description,
+                minTargets = if (com.wingedsheep.engine.handlers.DependentTargetSelection.canStopAt(requirements, index)) 0
+                    else maxOf(1, req.effectiveMinCount),
+                maxTargets = if (req.unlimited) legal.size else req.count,
+                validTargets = legal,
+                targetZone = getTargetZone(req),
+                validTargetsByPrefix = if (index == 0) null else tables[index],
             )
         }
     }

@@ -97,9 +97,12 @@ internal class JevActions(
         "Choose creatures with total power at least ${info.tapForPowerRequired}",
         info.tapForPowerCreatures.orEmpty().map { it.entityId })
 
-    private fun targets(requirements: List<LegalActionTargetInfo>, x: Int?): List<ChosenTarget> =
-        requirements.flatMap { r ->
-            val options = r.validTargets.filter { id ->
+    private fun targets(requirements: List<LegalActionTargetInfo>, x: Int?): List<ChosenTarget> {
+        val chosenIds = mutableListOf<EntityId>()
+        for (r in requirements) {
+            val candidates = r.validTargetsByPrefix?.get(chosenIds.joinToString(","))
+                ?: if (r.validTargetsByPrefix == null) r.validTargets else emptyList()
+            val options = candidates.filter { id ->
                 val card = state.cards[id]
                 (x == null || !r.xConstrainsManaValue || card == null || card.manaValue <= x) &&
                     (x == null || !r.xConstrainsManaValueExactly || card?.manaValue == x) &&
@@ -107,8 +110,10 @@ internal class JevActions(
             }
             val max = if (r.xConstrainsCount && x != null) x else r.maxTargets
             val min = if (r.xConstrainsCountExactly && x != null) x else minOf(r.minTargets, max)
-            cards(r.description, options, min, max).map(::target)
+            chosenIds += cards(r.description, options, min, max)
         }
+        return chosenIds.map(::target)
+    }
 
     private fun target(id: EntityId): ChosenTarget {
         if (state.players.any { it.playerId == id }) return ChosenTarget.Player(id)

@@ -161,3 +161,24 @@ describe('targetingSlice — multi-target back navigation', () => {
     })
   })
 })
+
+
+describe('dependent spell targets', () => {
+  it('uses server branches and recomputes after changing the earlier choice', () => {
+    const { store } = makeStore()
+    const s = store.getState() as unknown as TargetingSlice
+    const base = twoRequirementState(store.getState().pipelineState!.accumulatedAction)
+    s.startTargeting({ ...base, targetRequirements: [base.targetRequirements![0]!, {
+      ...base.targetRequirements![1]!, mustDifferFromEarlier: false,
+      validTargetsByPrefix: { a: [id('b')], c: [id('a')] },
+    }] })
+    s.addTarget(id('a'))
+    s.confirmTargeting('test-epoch')
+    expect(targeting(store).validTargets).toEqual([id('b')])
+    store.getState().goBackTargeting()
+    store.getState().removeTarget(id('a'))
+    store.getState().addTarget(id('c'))
+    store.getState().confirmTargeting('test-epoch')
+    expect(targeting(store).validTargets).toEqual([id('a')])
+  })
+})
