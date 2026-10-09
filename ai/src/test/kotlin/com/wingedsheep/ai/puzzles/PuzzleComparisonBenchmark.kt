@@ -106,6 +106,9 @@ class PuzzleComparisonBenchmark : ScenarioTestBase() {
                 // negative controls and must not.
                 AiProfile.PRODUCTION_EXPIRING,
                 AiProfile.PRODUCTION_CANDIDATE_EXPIRING,
+                // Castability-aware card selection, alone and on top of what is live.
+                AiProfile.PRODUCTION_CARDSELECT,
+                AiProfile.PRODUCTION_CANDIDATE_CARDSELECT,
                 // Phase 7's rollout evaluator, isolated from Phases 4 and 6 so the column is
                 // attributable to the rollouts alone.
                 AiProfile.PHASE7,
