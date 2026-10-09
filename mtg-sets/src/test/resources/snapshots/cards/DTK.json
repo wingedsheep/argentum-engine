@@ -39,6 +39,82 @@
     ]
 }
 
+// Ancestral Statue
+{
+    "name": "Ancestral Statue",
+    "manaCost": "{4}",
+    "typeLine": "Artifact Creature — Golem",
+    "oracleText": "When this creature enters, return a nonland permanent you control to its owner's hand.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ancestral Statue:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "BattlefieldMatching",
+                                "filter": "nonland permanent",
+                                "player": "You"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected1",
+                            "prompt": "Choose a nonland permanent you control to return to its owner's hand",
+                            "useTargetingUI": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "234",
+        "artist": "Tomasz Jedruszek",
+        "flavorText": "The mage awakened the statue in hopes of learning the lost lore of her clan, but the statue was interested only in war.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/7/c7124a6f-b690-4326-93b5-036a8c520c1f.jpg?1783938569",
+        "rulings": [
+            {
+                "date": "2015-02-25",
+                "text": "Ancestral Statue's ability is mandatory. If Ancestral Statue is the only nonland permanent you control when its ability resolves, you must return it to its owner's hand."
+            },
+            {
+                "date": "2015-02-25",
+                "text": "The triggered ability doesn't target any permanent. You choose which one to return as the ability resolves. No player can respond to this choice once the ability starts resolving."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Ancient Carp
 {
     "name": "Ancient Carp",

@@ -494,6 +494,64 @@
     ]
 }
 
+// Phyrexian Metamorph
+{
+    "name": "Phyrexian Metamorph",
+    "manaCost": "{3}{U/P}",
+    "typeLine": "Artifact Creature — Phyrexian Shapeshifter",
+    "oracleText": "({U/P} can be paid with either {U} or 2 life.)\nYou may have this creature enter as a copy of any artifact or creature on the battlefield, except it's an artifact in addition to its other types.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 0
+    },
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "EntersAsCopy",
+                "copyFilter": {
+                    "cardPredicates": [
+                        {
+                            "type": "Or",
+                            "predicates": [
+                                "IsCreature",
+                                "IsArtifact"
+                            ]
+                        }
+                    ]
+                },
+                "exceptions": {
+                    "addedCardTypes": [
+                        "ARTIFACT"
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "42",
+        "rarity": "RARE",
+        "artist": "Jana Schirmer & Johannes Voss",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/2/d2e27911-87cb-49a0-a34f-6afe4bddd592.jpg?1783941318",
+        "rulings": [
+            {
+                "date": "2011-06-01",
+                "text": "If Phyrexian Metamorph copies a noncreature artifact, it is no longer a creature."
+            },
+            {
+                "date": "2011-06-01",
+                "text": "If the chosen creature is copying something else (for example, if the chosen creature is a Clone), then your Phyrexian Metamorph enters as whatever the chosen creature copied, except it's also an artifact."
+            },
+            {
+                "date": "2011-06-01",
+                "text": "You can choose not to copy anything. In that case, Phyrexian Metamorph simply enters as a 0/0 artifact creature and is put into its owner's graveyard as a state-based action (unless something else is raising its toughness)."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Phyrexian Obliterator
 {
     "name": "Phyrexian Obliterator",

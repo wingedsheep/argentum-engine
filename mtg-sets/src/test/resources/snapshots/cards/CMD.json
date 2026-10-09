@@ -1,3 +1,93 @@
+// Animar, Soul of Elements
+{
+    "name": "Animar, Soul of Elements",
+    "manaCost": "{G}{U}{R}",
+    "typeLine": "Legendary Creature — Elemental",
+    "oracleText": "Protection from white and from black\nWhenever you cast a creature spell, put a +1/+1 counter on Animar.\nCreature spells you cast cost {1} less to cast for each +1/+1 counter on Animar.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywordAbilities": [
+        {
+            "type": "Protection",
+            "scope": {
+                "type": "ProtectionScope.Colors",
+                "colors": [
+                    "WHITE",
+                    "BLACK"
+                ]
+            }
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Animar, Soul of Elements:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": {
+                    "type": "YouCast",
+                    "filter": "creature"
+                },
+                "modification": {
+                    "type": "ReduceGenericBy",
+                    "source": {
+                        "type": "Dynamic",
+                        "amount": {
+                            "type": "EntityProperty",
+                            "entity": "Self",
+                            "numericProperty": {
+                                "type": "CounterCount",
+                                "counterType": "PLUS_ONE_PLUS_ONE"
+                            }
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "181",
+        "rarity": "MYTHIC",
+        "artist": "Peter Mohrbacher",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/b/cb073d5b-9515-492d-9b2d-0f64e85f1da8.jpg?1783941186",
+        "rulings": [
+            {
+                "date": "2018-03-16",
+                "text": "Animar's triggered ability triggers only when a creature spell is cast, after costs are paid. The counter put on Animar for a creature spell won't affect the cost of that creature spell, only future ones."
+            },
+            {
+                "date": "2018-03-16",
+                "text": "Animar's triggered ability resolves before the creature spell that causes it to trigger. The ability will resolve even if that spell is countered."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE",
+        "RED"
+    ]
+}
+
 // Command Tower
 {
     "name": "Command Tower",

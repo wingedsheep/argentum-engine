@@ -85,6 +85,65 @@
     ]
 }
 
+// Consecrated Sphinx
+{
+    "name": "Consecrated Sphinx",
+    "manaCost": "{4}{U}{U}",
+    "typeLine": "Creature — Sphinx",
+    "oracleText": "Flying\nWhenever an opponent draws a card, you may draw two cards.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 6
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Consecrated Sphinx:1",
+                "trigger": {
+                    "type": "DrawEvent",
+                    "player": "EachOpponent"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "21",
+        "rarity": "MYTHIC",
+        "artist": "Mark Zug",
+        "flavorText": "Blessed by the hands of Jin-Gitaxias.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/7/b7f6b20c-9871-433c-8557-44493447e914.jpg?1783941389",
+        "rulings": [
+            {
+                "date": "2017-11-17",
+                "text": "You may either draw two cards or not draw at all. You can't choose to draw only one card."
+            },
+            {
+                "date": "2017-11-17",
+                "text": "The ability triggers once for each card an opponent draws. You choose whether to draw two cards as each of those abilities resolves."
+            },
+            {
+                "date": "2017-11-17",
+                "text": "If each player controls a Consecrated Sphinx, their abilities will cause each other to trigger until one player chooses not to draw cards."
+            }
+        ]
+    }
+}
+
 // Green Sun's Zenith
 {
     "name": "Green Sun's Zenith",

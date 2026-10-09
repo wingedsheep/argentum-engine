@@ -2639,6 +2639,110 @@
     ]
 }
 
+// The Great Henge
+{
+    "name": "The Great Henge",
+    "manaCost": "{7}{G}{G}",
+    "typeLine": "Legendary Artifact",
+    "oracleText": "This spell costs {X} less to cast, where X is the greatest power among creatures you control.\n{T}: Add {G}{G}. You gain 2 life.\nWhenever a nontoken creature you control enters, put a +1/+1 counter on it and draw a card.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "The Great Henge:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature nontoken ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 1,
+                            "target": "TriggeringEntity"
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "The Great Henge:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddMana",
+                            "color": "GREEN",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        }
+                    ]
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "ReduceGenericBy",
+                    "source": {
+                        "type": "GreatestPropertyAmongPermanentsYouControl",
+                        "property": "Power",
+                        "filter": "creature"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "161",
+        "rarity": "MYTHIC",
+        "artist": "Adam Paquette",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/f/af915ed2-1f34-43f6-85f5-2430325b720f.jpg?1783932609",
+        "rulings": [
+            {
+                "date": "2025-10-02",
+                "text": "The first step of casting a spell is to move it to the stack. If this causes the greatest power among creatures you control to change, that new power will be used to determine the cost reduction."
+            },
+            {
+                "date": "2025-10-02",
+                "text": "The cost reduction ability reduces only the generic mana in The Great Henge's cost. The colored mana must still be paid."
+            },
+            {
+                "date": "2025-10-02",
+                "text": "Once The Great Henge's last ability has triggered, you'll draw a card even if you can't put a +1/+1 counter on the creature for some reason (most likely because it has left the battlefield)."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Thrill of Possibility
 {
     "name": "Thrill of Possibility",
