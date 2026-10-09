@@ -3273,6 +3273,98 @@
     ]
 }
 
+// Scout the Wilderness
+{
+    "name": "Scout the Wilderness",
+    "manaCost": "{2}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Kicker {1}{W} (You may pay an additional {1}{W} as you cast this spell.)\nSearch your library for a basic land card, put it onto the battlefield tapped, then shuffle. If this spell was kicked, create two 1/1 white Soldier creature tokens.",
+    "keywordAbilities": [
+        {
+            "type": "Kicker",
+            "manaCost": "{1}{W}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Library",
+                        "filter": "basicland"
+                    },
+                    "storeAs": "searchable",
+                    "search": true
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "searchable",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "storeSelected": "found"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "found",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Battlefield",
+                        "placement": "Tapped"
+                    }
+                },
+                "ShuffleLibrary",
+                "EmitLibrarySearchedEvent",
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": "WasKicked"
+                    },
+                    "then": {
+                        "type": "CreateToken",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "power": 1,
+                        "toughness": 1,
+                        "colors": [
+                            "WHITE"
+                        ],
+                        "creatureTypes": [
+                            "Soldier"
+                        ],
+                        "imageUri": "https://cards.scryfall.io/normal/front/8/c/8c4b0257-2ca5-4015-9d63-d7cf6e87ab9d.jpg?1783921132"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "176",
+        "artist": "A. M. Sartor",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/c/5ccd67d4-1a22-4378-804d-6e2c93dc4938.jpg?1783921295",
+        "rulings": [
+            {
+                "date": "2022-09-09",
+                "text": "If Scout the Wilderness was kicked, you will put two 1/1 white Soldier tokens onto the battlefield whether you found a land card while searching your library or not."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "GREEN"
+    ]
+}
+
 // Sengir Connoisseur
 {
     "name": "Sengir Connoisseur",
