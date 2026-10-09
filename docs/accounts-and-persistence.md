@@ -15,6 +15,8 @@ the rules engine is untouched.
   email.
 - **Friends** — request → accept friendships, an unfriend action, live **online presence**, and a
   per-account **hide-my-online-status** toggle (see "Friends & presence" below).
+- **Direct messages** — private conversations between accounts; a non-friend's first messages arrive
+  as a request to accept, delete or block (see "Direct messages" below).
 - **Saved decks** stored per account (the deckbuilder's `SharedDeck` JSON), reachable from any device.
 - **Stats** — one row per finished game; per-account win/loss, preferred colors/sets, game modes
   played, head-to-head vs specific opponents, and a game history, all computed on demand.
@@ -384,6 +386,32 @@ socket **and** hasn't set `hide_presence`. Updates are pushed in real time: `Fri
 when a request arrives. These carry no game events, so they need no `ClientEvent.kt` branch. The client
 also fetches `/api/friends` on load and on a slow poll as the catch-all for the passive side of an
 accept/unfriend.
+
+## Direct messages
+
+All under `/api/messages` (Bearer; only mounted with accounts enabled). A conversation is addressed by
+the **other account's id**, so opening one needs no thread to exist yet.
+
+| Method | Path | Notes |
+|--------|------|-------|
+| GET | `/api/messages` | your conversations, newest first: other party, `state`, `isFriend`, last message, `unread` |
+| GET | `/api/messages/{accountId}?before=` | newest 50 messages (or the page before an ISO timestamp), `state`, `requestMessagesLeft`, `maxLength`. 404 when the account doesn't exist or a block stands between you |
+| POST | `/api/messages/{accountId}` | `{ body }` → send. 400 empty / too long (1000) / self · 404 can't message · 409 request cap reached · 429 rate limited (20/min) |
+| POST | `/api/messages/{accountId}/accept` | accept their request |
+| POST | `/api/messages/{accountId}/read` | mark read |
+| DELETE | `/api/messages/{accountId}` | delete the conversation for yourself (also declines a request) |
+| POST | `/api/messages/{accountId}/block` | block the other side of a conversation you share |
+
+`V15__direct_messages.sql` stores one `dm_threads` row per pair (canonical `user_low`/`user_high`
+order, `initiator_id`, `accepted`, and per-side `*_read_at` / `*_cleared_at` markers) and the
+`dm_messages` under it. `DirectMessageService` holds the rules: friends talk freely; anyone else's
+thread is an `INCOMING_REQUEST` for the recipient until they accept or reply, and the initiator can
+send only three messages meanwhile (counted from the recipient's clear marker, so declining resets
+it). Deleting only moves your own clear marker — the thread reappears for you when a new message
+arrives. A block either way (`BlockService.accountBlocks`) hides the thread and rejects sends, reading
+as "can't message this player". New messages are pushed to every open socket of both sides as
+`ServerMessage.DirectMessage` (via `UserSockets`); reads, accepts and deletes send a
+`DirectMessagesChanged` hint and the client refetches.
 
 ## Frontend
 

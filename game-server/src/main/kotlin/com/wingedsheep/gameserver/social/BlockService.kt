@@ -64,9 +64,16 @@ class BlockService(private val store: AccountBlockStore) {
     fun unblockAccount(blocker: UUID, blocked: UUID): Boolean =
         store.unblock(blocker, blocked).also { invalidate(blocker, blocked) }
 
+    /** Block by account id — for places that know both accounts but no session (a message thread). */
+    fun blockAccount(blocker: UUID, blocked: UUID) {
+        store.block(blocker, blocked)
+        invalidate(blocker, blocked)
+    }
+
     fun listAccountBlocks(blocker: UUID): List<BlockedAccount> = store.list(blocker)
 
-    private fun accountBlocks(userId: UUID): Set<UUID> =
+    /** Accounts [userId] has blocked or been blocked by. */
+    fun accountBlocks(userId: UUID): Set<UUID> =
         accountCache.computeIfAbsent(userId) { store.blockedEitherWay(it) }
 
     private fun invalidate(a: UUID, b: UUID) {

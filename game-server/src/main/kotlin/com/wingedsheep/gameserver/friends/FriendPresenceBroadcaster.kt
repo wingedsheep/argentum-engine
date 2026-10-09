@@ -1,11 +1,10 @@
 package com.wingedsheep.gameserver.friends
 
-import com.wingedsheep.gameserver.handler.MessageSender
 import com.wingedsheep.gameserver.persistence.FriendshipRepository
 import com.wingedsheep.gameserver.persistence.FriendshipStatus
 import com.wingedsheep.gameserver.persistence.UserRepository
 import com.wingedsheep.gameserver.protocol.ServerMessage
-import com.wingedsheep.gameserver.session.SessionRegistry
+import com.wingedsheep.gameserver.session.UserSockets
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.stereotype.Component
 import java.util.UUID
@@ -25,8 +24,7 @@ class FriendPresenceBroadcaster(
     private val friendships: FriendshipRepository,
     private val users: UserRepository,
     private val presence: PresenceService,
-    private val sessionRegistry: SessionRegistry,
-    private val sender: MessageSender,
+    private val sockets: UserSockets,
 ) {
     /** A user connected, disconnected, or toggled visibility — tell their friends their new state. */
     fun broadcastOwnPresence(userId: UUID) {
@@ -55,12 +53,5 @@ class FriendPresenceBroadcaster(
             .filter { it.status == FriendshipStatus.ACCEPTED.name }
             .map { if (it.requesterId == userId) it.addresseeId else it.requesterId }
 
-    private fun sendToUser(userId: UUID, message: ServerMessage) {
-        sessionRegistry.getAllIdentities().forEach { identity ->
-            if (!identity.isAi && identity.userId == userId) {
-                val ws = identity.webSocketSession
-                if (ws != null && ws.isOpen) sender.send(ws, message)
-            }
-        }
-    }
+    private fun sendToUser(userId: UUID, message: ServerMessage) = sockets.send(userId, message)
 }

@@ -343,6 +343,8 @@ export type {
   RespondToMatchMessage,
   FriendPresenceMessage,
   FriendRequestReceivedMessage,
+  DirectMessageMessage,
+  DirectMessagesChangedMessage,
   Emote,
   EmoteMessage,
   FriendshipState,
