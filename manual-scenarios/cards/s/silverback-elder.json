@@ -1,0 +1,67 @@
+{
+  "player1Name": "Elder",
+  "player2Name": "Opponent",
+  "player1": {
+    "lifeTotal": 12,
+    "hand": [
+      "Grizzly Bears",
+      "Grizzly Bears",
+      "Grizzly Bears"
+    ],
+    "battlefield": [
+      {
+        "name": "Silverback Elder"
+      },
+      {
+        "name": "Forest"
+      },
+      {
+        "name": "Forest"
+      },
+      {
+        "name": "Forest"
+      },
+      {
+        "name": "Forest"
+      },
+      {
+        "name": "Forest"
+      },
+      {
+        "name": "Forest"
+      }
+    ],
+    "graveyard": [],
+    "library": [
+      "Forest",
+      "Grizzly Bears",
+      "Forest",
+      "Grizzly Bears",
+      "Forest",
+      "Forest",
+      "Grizzly Bears"
+    ]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {
+        "name": "Grizzly Bears"
+      },
+      {
+        "name": "Pacifism",
+        "attachedTo": "Grizzly Bears"
+      }
+    ],
+    "graveyard": [],
+    "library": [
+      "Forest",
+      "Forest",
+      "Forest"
+    ]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1
+}

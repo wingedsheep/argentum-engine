@@ -3809,6 +3809,138 @@
     ]
 }
 
+// Silverback Elder
+{
+    "name": "Silverback Elder",
+    "manaCost": "{2}{G}{G}{G}",
+    "typeLine": "Creature — Ape Shaman",
+    "oracleText": "Whenever you cast a creature spell, choose one —\n• Destroy target artifact or enchantment.\n• Look at the top five cards of your library. You may put a land card from among them onto the battlefield tapped. Put the rest on the bottom of your library in a random order.\n• You gain 4 life.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 7
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Silverback Elder:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "MoveToZone",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "destination": "Graveyard",
+                                "byDestruction": true
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": "artifact|enchantment"
+                                    },
+                                    "id": "t0"
+                                }
+                            ],
+                            "description": "Destroy target artifact or enchantment"
+                        },
+                        {
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "TopOfLibrary",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 5
+                                            }
+                                        },
+                                        "storeAs": "looked"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "looked",
+                                        "selection": {
+                                            "type": "ChooseUpTo",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "filter": "land",
+                                        "storeSelected": "kept",
+                                        "storeRemainder": "rest",
+                                        "prompt": "You may put a land card from among them onto the battlefield tapped",
+                                        "showAllCards": true
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "kept",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Battlefield",
+                                            "placement": "Tapped"
+                                        }
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "rest",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Library",
+                                            "placement": "Bottom"
+                                        },
+                                        "order": "Random"
+                                    }
+                                ]
+                            },
+                            "description": "Look at the top five cards and put up to one land onto the battlefield tapped"
+                        },
+                        {
+                            "effect": {
+                                "type": "GainLife",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 4
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "177",
+        "rarity": "MYTHIC",
+        "artist": "Alexander Mokhov",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/9/b987664f-0b74-4c0a-b306-14767a55559a.jpg?1783921295",
+        "rulings": [
+            {
+                "date": "2022-09-09",
+                "text": "Silverback Elder’s triggered ability resolves before the spell that caused it to trigger. The ability will resolve even if that spell is countered."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Soaring Drake
 {
     "name": "Soaring Drake",
