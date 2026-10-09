@@ -3739,6 +3739,66 @@
     ]
 }
 
+// Timeless Lotus
+{
+    "name": "Timeless Lotus",
+    "manaCost": "{5}",
+    "typeLine": "Legendary Artifact",
+    "oracleText": "Timeless Lotus enters tapped.\n{T}: Add {W}{U}{B}{R}{G}.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Timeless Lotus:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddMana",
+                            "color": "WHITE"
+                        },
+                        {
+                            "type": "AddMana",
+                            "color": "BLUE"
+                        },
+                        {
+                            "type": "AddMana",
+                            "color": "BLACK"
+                        },
+                        {
+                            "type": "AddMana",
+                            "color": "RED"
+                        },
+                        {
+                            "type": "AddMana",
+                            "color": "GREEN"
+                        }
+                    ]
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ],
+        "replacementEffects": [
+            "EntersTapped"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "239",
+        "rarity": "MYTHIC",
+        "artist": "Lindsey Look",
+        "flavorText": "Urza exploited nature to power his war machines; in time, nature exploited his war machines to renew itself.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/f/6f566387-3342-4325-ba4c-eee7626072ac.jpg?1783921266"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE",
+        "BLACK",
+        "RED",
+        "GREEN"
+    ]
+}
+
 // Tolarian Terror
 {
     "name": "Tolarian Terror",
