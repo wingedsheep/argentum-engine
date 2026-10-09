@@ -5680,8 +5680,11 @@ object Effects {
      * Target player can't cast spells this turn.
      * Used for cards like Xantid Swarm.
      */
-    fun CantCastSpells(target: EffectTarget, duration: Duration = Duration.EndOfTurn): Effect =
-        CantCastSpellsEffect(target, duration)
+    fun CantCastSpells(
+        target: EffectTarget,
+        duration: Duration = Duration.EndOfTurn,
+        spellFilter: GameObjectFilter = GameObjectFilter.Any
+    ): Effect = CantCastSpellsEffect(target, duration, spellFilter)
 
     /**
      * Target player(s) can't search libraries for the duration (default: this turn). Pass

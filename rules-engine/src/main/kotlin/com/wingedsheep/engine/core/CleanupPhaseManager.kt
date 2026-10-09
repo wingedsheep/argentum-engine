@@ -730,8 +730,10 @@ class CleanupPhaseManager(
                     result = result.without<PlayerCantPlayFromHandComponent>()
                 }
                 val cantCast = result.get<CantCastSpellsComponent>()
-                if (cantCast?.removeOn == PlayerEffectRemoval.EndOfTurn) {
-                    result = result.without<CantCastSpellsComponent>()
+                if (cantCast != null) {
+                    val remaining = cantCast.restrictions.filter { it.removeOn != PlayerEffectRemoval.EndOfTurn }
+                    result = if (remaining.isEmpty()) result.without<CantCastSpellsComponent>()
+                        else result.with(cantCast.copy(restrictions = remaining))
                 }
                 val cantSearch = result.get<CantSearchLibrariesComponent>()
                 if (cantSearch?.removeOn == PlayerEffectRemoval.EndOfTurn) {

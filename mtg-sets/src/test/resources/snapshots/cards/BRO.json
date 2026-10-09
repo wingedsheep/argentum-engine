@@ -984,6 +984,61 @@
     ]
 }
 
+// Calamity's Wake
+{
+    "name": "Calamity's Wake",
+    "manaCost": "{1}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Exile all graveyards. Players can't cast noncreature spells this turn. Exile Calamity's Wake.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Graveyard",
+                        "player": "Each"
+                    },
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "gathered0",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Exile"
+                    }
+                },
+                {
+                    "type": "CantCastSpells",
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "Each"
+                    },
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsNoncreature"
+                        ]
+                    }
+                }
+            ]
+        },
+        "selfExileOnResolve": true
+    },
+    "metadata": {
+        "collectorNumber": "4",
+        "rarity": "UNCOMMON",
+        "artist": "Slawomir Maniak",
+        "flavorText": "The sylex's blast had razed the land, leaving behind only snow and sorrow. Urza stood alone in the sudden silence.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/1/013bed2b-25db-4dfc-9283-e80c9ac6c841.jpg?1783920135"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Citanul Stalwart
 {
     "name": "Citanul Stalwart",

@@ -357,7 +357,7 @@ internal class CastValidator(
         // Single cast-legality chokepoint: per-turn spell limit (Yawgmoth's Agenda), Silence-style
         // can't-cast, Mana Maze color sharing, and PlayersCantCastSpells (Voice of Victory, …) all
         // resolve to a reason here, or null if the cast is allowed.
-        castPermissionUtils.reasonCannotCast(state, action.playerId, action.cardId)?.let { return it }
+        castPermissionUtils.reasonCannotCast(state, action.playerId, action.cardId, action)?.let { return it }
 
         // The spell being cast can't be one of the three cards it exiles to pay for itself, so it's
         // excluded from the forage exile pool here just as it is at payment time.

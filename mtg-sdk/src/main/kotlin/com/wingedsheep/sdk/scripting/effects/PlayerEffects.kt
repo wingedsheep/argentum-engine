@@ -544,19 +544,28 @@ enum class HijackScope {
 }
 
 /**
- * Target player can't cast spells for the specified duration.
+ * Target player can't cast matching spells for the specified duration.
  * Used for cards like Xantid Swarm: "Whenever this creature attacks, defending player can't cast spells this turn."
  *
- * @param target The player who can't cast spells
- * @param duration How long the restriction lasts (default: EndOfTurn)
+ * @param target The player(s) who can't cast matching spells
+ * @param duration EndOfTurn (default) or Permanent
+ * @param spellFilter Which announced spells are prohibited; Any preserves the blanket ban.
  */
 @SerialName("CantCastSpells")
 @Serializable
 data class CantCastSpellsEffect(
     val target: EffectTarget,
-    val duration: Duration = Duration.EndOfTurn
+    val duration: Duration = Duration.EndOfTurn,
+    val spellFilter: GameObjectFilter = GameObjectFilter.Any
 ) : Effect {
-    override val description: String = "${target.description.replaceFirstChar { it.uppercase() }} can't cast spells ${duration.description}"
+    override val description: String = buildString {
+        append("${target.description.replaceFirstChar { it.uppercase() }} can't cast ")
+        if (spellFilter != GameObjectFilter.Any) append("${spellFilter.description} ")
+        append("spells ${duration.description}")
+    }
+
+    override fun applyTextReplacement(replacer: TextReplacer): Effect =
+        copy(spellFilter = spellFilter.applyTextReplacement(replacer))
 }
 
 /**
