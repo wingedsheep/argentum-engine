@@ -57,8 +57,8 @@
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
   column-gap: 28px;
-  width: min(860px, calc(100vw - 32px));
-  padding: 16px 28px;
+  width: min(980px, calc(100vw - 32px));
+  padding: 18px 30px;
   box-sizing: border-box;
   border-radius: 18px;
   background: rgba(10, 12, 20, 0.58);
@@ -94,9 +94,11 @@
 .sideOpponent { justify-content: flex-start; text-align: left; }
 .sideOpponent .sideText { align-items: flex-start; }
 
-/* The seat's portrait: ringed in gold, it rises in with the band. */
+/* The seat's portrait: a gold-ringed medallion that rises out of the top of the band, so the face is
+   the first thing read while the band itself stays slim over the art. A thin dark gap between the
+   picture and the ring keeps the gold from bleeding into bright art. */
 .portrait,
-.portraitSmall {
+.portraitSeat {
   position: relative;
   flex: none;
   display: grid;
@@ -108,26 +110,59 @@
   font-weight: 600;
 }
 .portrait {
-  width: 76px;
-  height: 76px;
-  font-size: 34px;
-  box-shadow: 0 0 0 2px rgba(242, 180, 92, 0.85), 0 10px 28px rgba(0, 0, 0, 0.55);
+  width: 128px;
+  height: 128px;
+  /* Overhang the band's top edge; the negative margin keeps the row (and the band) as tall as the
+     names need, rather than as tall as the portrait. */
+  margin: -64px 0 -4px;
+  font-size: 46px;
+  box-shadow:
+    0 0 0 3px rgba(10, 12, 20, 0.9),
+    0 0 0 5px rgba(242, 180, 92, 0.9),
+    0 0 26px 4px rgba(242, 180, 92, 0.18),
+    0 16px 36px rgba(0, 0, 0, 0.6);
 }
-.portraitSmall {
-  width: 30px;
-  height: 30px;
-  font-size: 14px;
-  box-shadow: 0 0 0 1.5px rgba(242, 180, 92, 0.75);
+/* A pod's opponents: a row of smaller medallions that rise out of the band like the 1v1 portraits,
+   each name centred beneath. --seat shrinks as the table fills so five still fit half the band. */
+.pod {
+  --seat: 96px;
+  min-width: 0;
+  display: flex;
+  gap: 18px;
+  /* Lift the row by half a medallion so the faces overhang the band's top edge. */
+  margin-top: calc(var(--seat) / -2);
 }
+.pod[data-count='3'] { --seat: 84px; gap: 16px; }
+.pod[data-count='4'] { --seat: 72px; gap: 12px; }
+.pod[data-count='5'] { --seat: 62px; gap: 10px; }
 
-.podRow { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.podSeat {
+  min-width: 0;
+  /* Equal columns, so the medallions sit evenly whatever the names' lengths. */
+  flex: 0 1 calc(var(--seat) + 28px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.portraitSeat {
+  width: var(--seat);
+  height: var(--seat);
+  font-size: calc(var(--seat) * 0.38);
+  box-shadow:
+    0 0 0 2.5px rgba(10, 12, 20, 0.9),
+    0 0 0 4px rgba(242, 180, 92, 0.85),
+    0 12px 28px rgba(0, 0, 0, 0.55);
+}
 .podName {
   margin: 0;
-  min-width: 0;
+  max-width: 100%;
   font-family: var(--font-display);
-  font-size: 19px;
+  font-size: 16px;
   font-weight: 600;
+  line-height: 1.15;
   color: #f4f5f9;
+  text-align: center;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -193,10 +228,27 @@
   .sidePlayer, .sideOpponent { justify-content: flex-start; text-align: left; }
   .sidePlayer .sideText, .sideOpponent .sideText { align-items: flex-start; }
   .vs { flex-direction: row; gap: 8px; justify-content: center; width: 52px; }
-  .portrait { width: 52px; height: 52px; font-size: 24px; }
+  /* Stacked rows have no band edge to rise out of: a plain, still-generous medallion. */
+  .portrait { width: 72px; height: 72px; margin: 0; font-size: 32px; }
   /* Reversed so the portrait leads; flex-end is the left edge in a reversed row. */
   .sideOpponent { flex-direction: row-reverse; justify-content: flex-end; }
   .playerName { font-size: 21px; }
+  /* Stacked: the pod is its own row with no band edge to rise out of, wrapping if it must. */
+  /* Stacked: the pod is its own row with no band edge to rise out of — one line of equal columns,
+     sized so a full table of five still fits a phone. */
+  .pod {
+    --seat: 56px;
+    --col: calc(var(--seat) + 20px);
+    margin-top: 4px;
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(0, var(--col));
+    gap: 10px;
+  }
+  .pod[data-count='3'] { --seat: 52px; gap: 8px; }
+  .pod[data-count='4'] { --seat: 48px; --col: calc(var(--seat) + 16px); gap: 6px; }
+  .pod[data-count='5'] { --seat: 42px; --col: calc(var(--seat) + 16px); gap: 6px; }
+  .podName { font-size: 13px; }
   .vsText { font-size: 22px; }
 }
 
