@@ -30,7 +30,7 @@ val OathOfTeferi = card("Oath of Teferi") {
     }
 
     staticAbility {
-        ability = ExtraLoyaltyActivation
+        ability = ExtraLoyaltyActivation()
     }
 
     metadata {

@@ -58,7 +58,7 @@ class AllowLoyaltyActivationsThisTurnScenarioTest : ScenarioTestBase() {
         manaCost = "{3}"
         typeLine = "Enchantment"
         oracleText = "You may activate the loyalty abilities of planeswalkers you control twice each turn rather than only once."
-        staticAbility { ability = ExtraLoyaltyActivation }
+        staticAbility { ability = ExtraLoyaltyActivation() }
     }
 
     private fun board(vararg extra: String, rushes: Int = 1): TestGame {
