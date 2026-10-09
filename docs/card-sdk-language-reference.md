@@ -9388,6 +9388,14 @@ in the declare-blockers step, even before the turn-based block action has comple
 
 **Spell cost statics — `ModifySpellCost`**
 
+`ModifySpellCost` also works in `Effects.CreatePermanentEmblem(ownedStaticAbilities = …)`.
+The cost calculator reads each emblem independently alongside battlefield permanents; `YouCast`
+filters and source-relative dynamic amounts bind to the emblem's controller. Reductions persist
+after the creator leaves, stack across emblems, and apply to alternative mana costs through the
+same modifier pipeline. **Saheeli, Filigree Master** combines an artifact-creature +1/+1 emblem
+bonus with `YouCast(Artifact)` + `ReduceGeneric(1)`. Generic reductions preserve colored and
+colorless mana requirements and cannot reduce generic mana below zero. No new SDK type is needed.
+
 Replaces the per-shape cost classes. Use directly as the `ability` of a `staticAbility { }` block.
 
 ```kotlin
