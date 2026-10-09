@@ -1863,6 +1863,75 @@
     ]
 }
 
+// Hurloon Battle Hymn
+{
+    "name": "Hurloon Battle Hymn",
+    "manaCost": "{2}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Kicker {W} (You may pay an additional {W} as you cast this spell.)\nHurloon Battle Hymn deals 4 damage to target creature or planeswalker. If this spell was kicked, you gain 4 life.",
+    "keywordAbilities": [
+        {
+            "type": "Kicker",
+            "manaCost": "{W}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 4
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": "WasKicked"
+                    },
+                    "then": {
+                        "type": "GainLife",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 4
+                        }
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetCreatureOrPlaneswalker",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "131",
+        "rarity": "UNCOMMON",
+        "artist": "Dominik Mayer",
+        "flavorText": "The magical echoes of the Hurloon mountain range greatly increase the potency of spells based on song or speech.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/f/ff252e80-c155-467b-8df3-9bddc5cc45c3.jpg?1783921315",
+        "rulings": [
+            {
+                "date": "2022-09-09",
+                "text": "If the target creature or planeswalker is an illegal target as Hurloon Battle Hymn tries to resolve, it won't do anything, even if it was kicked."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "RED"
+    ]
+}
+
 // Idyllic Beachfront
 {
     "name": "Idyllic Beachfront",
@@ -2898,6 +2967,67 @@
     ]
 }
 
+// Runic Shot
+{
+    "name": "Runic Shot",
+    "manaCost": "{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Kicker {U} (You may pay an additional {U} as you cast this spell.)\nDestroy target tapped creature. If this spell was kicked, scry 2.",
+    "keywordAbilities": [
+        {
+            "type": "Kicker",
+            "manaCost": "{U}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": "WasKicked"
+                    },
+                    "then": {
+                        "type": "Scry",
+                        "count": 2
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature tapped"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "30",
+        "rarity": "UNCOMMON",
+        "artist": "Cristi Balanescu",
+        "flavorText": "\"Target acquired.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/5/f54413be-7d73-478d-a25a-8fe06f6491a5.jpg?1783921361"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
+    ]
+}
+
 // Sacred Peaks
 {
     "name": "Sacred Peaks",
@@ -3326,6 +3456,94 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Strength of the Coalition
+{
+    "name": "Strength of the Coalition",
+    "manaCost": "{G}",
+    "typeLine": "Instant",
+    "oracleText": "Kicker {2}{W} (You may pay an additional {2}{W} as you cast this spell.)\nTarget creature you control gets +2/+2 until end of turn. If this spell was kicked, put a +1/+1 counter on each creature you control.",
+    "keywordAbilities": [
+        {
+            "type": "Kicker",
+            "manaCost": "{2}{W}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": "WasKicked"
+                    },
+                    "then": {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Group",
+                            "filter": {
+                                "baseFilter": "creature ctrl:you"
+                            }
+                        },
+                        "body": {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 1,
+                            "target": "IterationEntity"
+                        }
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "180",
+        "rarity": "UNCOMMON",
+        "artist": "Justine Cruz",
+        "flavorText": "\"Root and wing, claw and sword; this will be a memorable stand, indeed.\"\n—Lyra Dawnbringer",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/4/8418c504-24fe-470f-8102-dcad68ba1520.jpg?1783921294",
+        "rulings": [
+            {
+                "date": "2022-09-09",
+                "text": "If the target creature is an illegal target as Strength of the Coalition tries to resolve, none of its effects will occur. You won't put a +1/+1 counter on any creatures, even if it was kicked."
+            },
+            {
+                "date": "2022-09-09",
+                "text": "If the spell is kicked, the target creature will get both a +1/+1 counter and +2/+2 until end of turn."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "GREEN"
     ]
 }
 
