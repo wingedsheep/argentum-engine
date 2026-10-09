@@ -262,6 +262,17 @@ class StaticsTest : StringSpec({
 
     // …and its activated twin, over the same printed shape. The two are disjoint by what the quoted
     // text can be, so nothing here is left choosing.
+    "a battlefield lord sentence cannot silently drop an activated grant's recipient zone" {
+        val original = fragment("Creatures you control have \"{T}: Add {G}.\"")
+        val grant = original.script.staticAbilities.single().shouldBeInstanceOf<GrantActivatedAbility>()
+        for (zone in listOf(Zone.GRAVEYARD, Zone.HAND)) {
+            val zoned = original.copy(script = original.script.copy(
+                staticAbilities = listOf(grant.copy(recipientZone = zone))
+            ))
+            Grammar.abilityLine.printLine(zoned) shouldBe null
+        }
+    }
+
     "a quoted activated ability is granted to the attached creature" {
         val line = "Enchanted creature has \"{T}: Draw a card.\""
         fragment(line).script.staticAbilities.single().shouldBeInstanceOf<GrantActivatedAbility>()

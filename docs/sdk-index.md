@@ -1719,7 +1719,7 @@ Families:
 - `FreeFirstEquipEachTurn` — The controller may pay {0} rather than the equip cost of the first equip ability they activate each turn (Kíli the Resourceful; Forge Anew narrows the usable timing to its controller's turns).
 - `GainActivatedAbilitiesOfPermanents(grantedTo: GroupFilter, sourceFilter: GameObjectFilter, includeManaAbilities: Boolean)` — Permanents matching grantedTo gain copies of the activated abilities of every permanent matching sourceFilter (CR 113.7; the copy uses the gaining permanent as its source, so "this permanent" / `Sa…
 - `GainKeywordsOfGraveyardCreatureCards(keywords: List<Keyword>, anyLandwalk: Boolean, anyProtection: Boolean, filter: GroupFilter)` — "As long as a creature card with flying is in a graveyard, this creature has flying.
-- `GrantActivatedAbility(ability: ActivatedAbility, filter: GroupFilter)` — Grants an activated ability to a filtered set of permanents.
+- `GrantActivatedAbility(ability: ActivatedAbility, filter: GroupFilter, recipientZone: Zone)` — Grants an activated ability to a filtered set of objects in recipientZone.
 - `GrantAdditionalLandDrop(count: Int?, affected: Player)` — You may play additional lands on each of your turns (CR 305.2 — a continuous effect that increases the number of lands a player can play).
 - `GrantAdditionalTypesToGroup(filter: GroupFilter, addCardTypes: List<String>, addSubtypes: List<String>)` — Adds card types and subtypes to a group of permanents, in addition to their existing types.
 - `GrantAlternativeCastingCost(cost: String, additionalCosts: List<AdditionalCost>, spellFilter: GameObjectFilter, asThoughFlash: Boolean)` — Grants an alternative casting cost for spells cast by this permanent's controller.

@@ -114,7 +114,7 @@ class ActivatedAbilityEnumerator(
                 generateClassLevelUpAbilities(cardDef, classLevelComponent)
             } else emptyList()
 
-            val nonManaAbilities = ownNonManaAbilities + levelUpAbilities + allAbilities.filter { !it.isManaAbility }
+            val nonManaAbilities = ownNonManaAbilities + levelUpAbilities + allAbilities.filter { !it.isManaAbility && it.activateFromZone == Zone.BATTLEFIELD }
 
             // Apply text-changing effects to ability costs and targets
             val textReplacement = TextChanges.merge(context.globalTextChanges, container.get<TextReplacementComponent>())

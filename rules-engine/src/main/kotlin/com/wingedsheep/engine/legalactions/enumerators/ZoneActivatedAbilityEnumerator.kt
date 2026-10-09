@@ -45,6 +45,8 @@ class ZoneActivatedAbilityEnumerator(private val zone: Zone, private val predica
         val playerId = context.playerId
 
         val zoneCards = state.getZone(playerId, zone)
+        if (zoneCards.isEmpty()) return emptyList()
+        val hasStaticGrants = context.castPermissionUtils.hasStaticActivatedAbilityGrantsInZone(state, zone)
         for (entityId in zoneCards) {
             val container = state.getEntity(entityId) ?: continue
             val cardComponent = container.get<CardComponent>() ?: continue
@@ -60,7 +62,11 @@ class ZoneActivatedAbilityEnumerator(private val zone: Zone, private val predica
                 ?.script?.activatedAbilities
                 ?.filter { it.activateFromZone == zone }
                 .orEmpty()
-            val zoneAbilities = printedZoneAbilities + grantedZoneAbilities
+            val staticZoneAbilities = if (hasStaticGrants) context.castPermissionUtils
+                .getStaticGrantedActivatedAbilities(entityId, state)
+                .filter { it.activateFromZone == zone } else emptyList()
+            val zoneAbilities = (printedZoneAbilities + grantedZoneAbilities + staticZoneAbilities)
+                .distinctBy { it.id }
             if (zoneAbilities.isEmpty()) continue
 
             for (ability in zoneAbilities) {
