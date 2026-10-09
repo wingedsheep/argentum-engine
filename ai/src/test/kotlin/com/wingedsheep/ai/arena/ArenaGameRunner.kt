@@ -3,6 +3,7 @@ package com.wingedsheep.ai.arena
 import com.wingedsheep.ai.engine.safeFallbackAction
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.sdk.model.Deck
+import kotlin.time.Duration
 
 /**
  * Result of one arena game, recorded **by seat**, never by agent.
@@ -66,6 +67,8 @@ object ArenaGameRunner {
         recordActionStream: Boolean = false,
         featureCollector: ArenaFeatureCollector? = null,
         preserveGraveyardOrder: Boolean = true,
+        /** Wall-clock cap; null for none. Nondeterministic — see [TableGameRunner.play]. */
+        gameTimeout: Duration? = null,
     ): ArenaGameOutcome {
         val game = TableGameRunner.play(
             registry = registry,
@@ -79,6 +82,7 @@ object ArenaGameRunner {
             recordActionStream = recordActionStream,
             featureCollector = featureCollector,
             preserveGraveyardOrder = preserveGraveyardOrder,
+            gameTimeout = gameTimeout,
         )
         return ArenaGameOutcome(
             pairId = pairId,
