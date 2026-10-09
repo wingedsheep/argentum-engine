@@ -6557,6 +6557,107 @@
     ]
 }
 
+// Visions of Phyrexia
+{
+    "name": "Visions of Phyrexia",
+    "manaCost": "{2}{R}{R}",
+    "typeLine": "Enchantment",
+    "oracleText": "At the beginning of your upkeep, exile the top card of your library. You may play that card this turn.\nAt the beginning of your end step, if you didn't play a card from exile this turn, create a tapped Powerstone token. (It's an artifact with \"{T}: Add {C}. This mana can't be spent to cast a nonartifact spell.\")",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Visions of Phyrexia:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeAs": "impulseExiled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "impulseExiled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        },
+                        {
+                            "type": "GrantMayPlayFromExile",
+                            "from": "impulseExiled"
+                        }
+                    ]
+                }
+            },
+            {
+                "id": "Visions of Phyrexia:2",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Powerstone",
+                    "tapped": true
+                },
+                "interveningIf": {
+                    "type": "Not",
+                    "condition": {
+                        "type": "Any",
+                        "conditions": [
+                            {
+                                "type": "PlayerPlayedLandThisTurn",
+                                "fromZone": "Exile"
+                            },
+                            {
+                                "type": "PlayerCastSpellsThisTurn",
+                                "atLeast": 1,
+                                "fromZone": "Exile"
+                            }
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "156",
+        "rarity": "RARE",
+        "artist": "Dominik Mayer",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/9/e922ef35-b62a-4cf8-9282-319f6de150b0.jpg?1783920057",
+        "rulings": [
+            {
+                "date": "2022-10-14",
+                "text": "You must follow all normal timing rules for a card you play using Visions of Phyrexia's first ability and, if it's a spell, you must pay its costs to cast it."
+            },
+            {
+                "date": "2022-10-14",
+                "text": "If you played a card from exile for any reason, the ability won't trigger, even if it wasn't the card you exiled with the first ability."
+            },
+            {
+                "date": "2022-10-14",
+                "text": "If the card you exiled with the first ability is an instant, you may play it during your end step after Visions of Phyrexia's last ability has already resolved and created a Powerstone token. We call this having your cake and compleating it too."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Whirling Strike
 {
     "name": "Whirling Strike",
