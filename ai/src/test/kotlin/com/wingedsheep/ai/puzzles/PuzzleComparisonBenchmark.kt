@@ -114,6 +114,12 @@ class PuzzleComparisonBenchmark : ScenarioTestBase() {
                 // a no-regression check, not where the gain shows.
                 AiProfile.PRODUCTION_CHOICES,
                 AiProfile.PRODUCTION_CANDIDATE_CHOICES,
+                // End-of-turn payoffs nothing can spend, alone and on top of the expiring floor.
+                // `instants-18` … `-21` are the verdicts that should move; `instants-15` and `-17`
+                // (a grant bought for a fight that is still coming) and `instants-22` (a trick on
+                // the attacker that is in the fight) are the negative controls and must not.
+                AiProfile.PRODUCTION_NOOP,
+                AiProfile.PRODUCTION_CANDIDATE_NOOP,
                 // Phase 7's rollout evaluator, isolated from Phases 4 and 6 so the column is
                 // attributable to the rollouts alone.
                 AiProfile.PHASE7,

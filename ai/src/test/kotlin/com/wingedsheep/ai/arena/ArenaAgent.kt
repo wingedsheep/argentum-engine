@@ -140,6 +140,11 @@ object ArenaAgents {
         // production-candidate-expiring production-candidate-cardselect 300` is the promotion gate.
         ArenaAgent("production-cardselect", AiProfile.PRODUCTION_CARDSELECT),
         ArenaAgent("production-candidate-cardselect", AiProfile.PRODUCTION_CANDIDATE_CARDSELECT),
+        // End-of-turn payoffs refused where nothing left this turn can spend them. `just arena
+        // production production-noop 300` prices the term on its own; `just arena
+        // production-candidate-expiring production-candidate-noop 300` is the promotion gate.
+        ArenaAgent("production-noop", AiProfile.PRODUCTION_NOOP),
+        ArenaAgent("production-candidate-noop", AiProfile.PRODUCTION_CANDIDATE_NOOP),
         // What EngineAiPlayerController plays: production-candidate-expiring plus every fix shipped
         // since. `just arena production-candidate-expiring live 300` prices the stack.
         ArenaAgent("live", AiProfile.LIVE),

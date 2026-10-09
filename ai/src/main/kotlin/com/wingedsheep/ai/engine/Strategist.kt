@@ -113,6 +113,11 @@ class Strategist(
      */
     private val holdExpiringGrantsForCombat: Boolean = false,
     /**
+     * [AiProfile.refuseUnspendableGrants] — passed straight through to [HoldPolicy], which hands
+     * the activation half to [com.wingedsheep.ai.engine.knowledge.ExpiringGrantWindow].
+     */
+    private val refuseUnspendableGrants: Boolean = false,
+    /**
      * The profile's `EvaluationWeights.boardPresence`. Only [HoldPolicy] reads it, to quote a
      * patience discount in the same units the leaf score prices board value in.
      */
@@ -139,6 +144,7 @@ class Strategist(
         cashCantripsInTheEndStep = cashCantripsInTheEndStep,
         holdFlashPermanentsForAmbush = holdFlashPermanentsForAmbush,
         holdExpiringGrantsForCombat = holdExpiringGrantsForCombat,
+        refuseUnspendableGrants = refuseUnspendableGrants,
         boardPresenceWeight = boardPresenceWeight,
     )
 

@@ -36,7 +36,7 @@ class PuzzleSuiteTest : ScenarioTestBase() {
                     PuzzleCatalog.byCategory(category).size shouldBeGreaterThanOrEqual 6
                 }
             }
-            PuzzleCatalog.all.size shouldBe 98
+            PuzzleCatalog.all.size shouldBe 103
         }
 
         test("every KNOWN_FAILURES id names a real puzzle") {
@@ -248,6 +248,24 @@ class PuzzleSuiteTest : ScenarioTestBase() {
             // the card cleanup was taking anyway) and `instants-17` (our own begin combat, the
             // release that keeps the floor from talking the AI out of the attack).
             "instants-14",
+
+            // ── End-of-turn payoffs nothing can spend ──
+            // Three positions off the 2026-10-09 log review. The leaf prices a grant on the board as
+            // it stands, which is before cleanup, so it pays for one wherever it is bought: deathtouch
+            // on turn 24 in a main phase (`instants-18`, the deferral floor switched off by
+            // `Patience`'s long-game release), a team pump in a main phase (`instants-19`, a group
+            // pump the deferral could not read), and the same pump after combat with no fight left
+            // (`instants-20`).
+            //
+            // **Closed by `AiProfile.refuseUnspendableGrants`.** `AiProfile.PRODUCTION_NOOP` closes
+            // `instants-20` alone; the other two need the deferral floor it widens, so it is
+            // `AiProfile.PRODUCTION_CANDIDATE_NOOP` that closes all three. Listed here because
+            // [AiProfile.PRODUCTION] is the frozen baseline this set describes. `instants-21` (a trick
+            // on a creature out of the fight) passes on this baseline already — it is the live
+            // profile's rollouts that cast it — and `instants-22` is its control.
+            "instants-18",
+            "instants-19",
+            "instants-20",
         )
     }
 }

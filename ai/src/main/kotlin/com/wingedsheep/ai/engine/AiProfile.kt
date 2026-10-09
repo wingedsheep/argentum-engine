@@ -414,6 +414,30 @@ data class AiProfile(
      * search's own determinizer assumes.
      */
     val informedChoiceDecisions: Boolean = false,
+    /**
+     * Refuse to pay for an until-end-of-turn payoff that nothing can spend this turn: an activation
+     * or a combat trick whose every effect wears off at cleanup, in a window where the creature it
+     * buys for is not in a combat that is still ahead of it.
+     *
+     * The leaf score reads an end-of-turn grant as permanent — `BoardPresence` prices deathtouch,
+     * +1/+1 or a new land type on the board as it stands, and the board as it stands is before
+     * cleanup. So it pays for the grant wherever it is bought, and off a 24-game log review it was
+     * bought wherever the AI had spare mana: Esquire of the King's team pump in our precombat main on
+     * six turns that declared no attack, Poison Dart Frog's deathtouch on turns the Frog never
+     * attacked (four activations in one main phase, two of them on a Frog already granted it), Dream
+     * Thrush turning an opponent's tapped land into a Plains on our own turn and staying tapped
+     * through their attack at 4 life, Acrobatic Leap cast on a Market Gnome that was not in the
+     * combat it was cast in. See [com.wingedsheep.ai.engine.knowledge.ExpiringGrantWindow] for the
+     * activation half and [com.wingedsheep.ai.engine.knowledge.HoldPolicy] for the trick half.
+     *
+     * With [holdExpiringGrantsForCombat] also on, two things change about that flag's deferral
+     * floor: it reads the same wider set of shapes (a group pump, a land-type change, an ability
+     * that taps its own source as a drawback), and it stops inheriting `Patience`'s long-game
+     * release. That release is a bet that a *better card* is coming; the deferral is a claim about
+     * a window later *this turn*, which a long game does not weaken — and it was the release that
+     * let the Frog's deathtouch through from turn 14 on. Needs [useCardIntent].
+     */
+    val refuseUnspendableGrants: Boolean = false,
     /** Non-null profiles may only be selected automatically for this set. Arena selection stays explicit. */
     val restrictedToSet: String? = null,
 ) {
@@ -1196,6 +1220,31 @@ data class AiProfile(
         val PRODUCTION_CANDIDATE_CARDSELECT = PRODUCTION_CANDIDATE_EXPIRING.copy(
             id = "production-candidate-cardselect",
             castabilityAwareCardSelection = true,
+        )
+
+        /**
+         * [refuseUnspendableGrants] alone on top of [PRODUCTION], so a puzzle or an arena point
+         * that moves is attributable to it and nothing else.
+         *
+         * Without [holdExpiringGrantsForCombat] this column carries only the "nothing can spend
+         * it" floors — a grant no fight left this turn can use, one already in force, a trick on a
+         * creature out of combat. The deferral floor, and the long-game release this flag removes
+         * from it, belong to [PRODUCTION_CANDIDATE_NOOP].
+         */
+        val PRODUCTION_NOOP = PRODUCTION.copy(
+            id = "production-noop",
+            refuseUnspendableGrants = true,
+        )
+
+        /**
+         * The promotion candidate: [PRODUCTION_CANDIDATE_EXPIRING] plus [refuseUnspendableGrants]
+         * — the agent that stops buying end-of-turn payoffs it has nothing to spend on. Stacked on
+         * the profile the 24-game log review was taken from, so the positions it cites are the
+         * ones this changes.
+         */
+        val PRODUCTION_CANDIDATE_NOOP = PRODUCTION_CANDIDATE_EXPIRING.copy(
+            id = "production-candidate-noop",
+            refuseUnspendableGrants = true,
         )
 
         /**
