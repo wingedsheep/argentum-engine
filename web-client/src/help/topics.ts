@@ -194,17 +194,18 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
     section: 'getting-started',
     title: 'Guest vs. account',
     summary:
-      'Guests can play everything. An account (one magic link, no password) adds decks that follow you between devices, friends, ranked play, stats and saved replays.',
+      'Guests can play everything. An account (one magic link, no password) adds decks that follow you between devices, friends, messages, ranked play, stats and saved replays.',
     body: [
       { kind: 'p', text: 'Signing in later keeps the decks you built as a guest — you are offered a one-click migration.' },
       { kind: 'ul', items: [
         'Decks saved to the account instead of this browser',
         'Friends list and online presence',
+        'Private messages with other players',
         'Ranked games (every player in the game must be signed in, otherwise it silently plays unranked)',
         'Full stats dashboard and permanent replays',
       ] },
     ],
-    related: ['ranked', 'replays'],
+    related: ['ranked', 'replays', 'messages'],
   },
   {
     id: 'first-game',
@@ -590,14 +591,32 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
       { kind: 'ul', items: [
         'Add a friend — paste their code and Send request, or use + Add friend on their public profile.',
         'Requests — accept or decline incoming ones; cancel ones you sent. A red dot on the account menu means a request is waiting.',
-        'Your friends — online or offline, a link to their profile, and Unfriend.',
+        'Your friends — online or offline, Message, a link to their profile, and Unfriend.',
         'Hide my online status — friends will always see you as offline.',
-        'Blocked — players you blocked from a result screen, with Unblock.',
+        'Blocked — players you blocked from a result screen or a conversation, with Unblock.',
       ] },
       { kind: 'p', text: 'After a game against someone, you can also add them from the result screen.' },
       { kind: 'p', text: 'To play a friend, send them your lobby’s invite code or link; there is no in-app invite.' },
     ],
-    related: ['roster-friend', 'profile', 'invite-codes', 'after-the-game'],
+    related: ['messages', 'roster-friend', 'profile', 'invite-codes', 'after-the-game'],
+  },
+  {
+    id: 'messages',
+    section: 'community',
+    title: 'Messages',
+    summary:
+      'Send private messages to other signed-in players from Messages in the account menu. Friends can message each other freely; a message from anyone else arrives as a request you accept, delete or block.',
+    body: [
+      { kind: 'ul', items: [
+        'Start a conversation — Message on a friend’s row on the Friends page, or on any player’s profile.',
+        'Requests — a message from someone who isn’t your friend waits under the Requests tab. Accept it to reply (replying also accepts it), Delete it, or Block them. They aren’t told which you chose.',
+        'Writing to someone who isn’t your friend — your first messages arrive as a request, and you can send three until they accept.',
+        'Delete conversation — removes it for you only; if either of you writes again it starts fresh.',
+        'Block — they can’t message you, you won’t be matched against each other, and their emotes stop reaching you. It also ends a friendship. Unblock from the Friends page.',
+      ] },
+      { kind: 'p', text: 'The number on the account menu counts unread messages and new requests. Messages need an account — guests can’t send or receive them.' },
+    ],
+    related: ['friends', 'after-the-game', 'guest-vs-account'],
   },
   {
     id: 'after-the-game',
@@ -613,7 +632,7 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
       ] },
       { kind: 'p', text: 'A guest can block too; the block lasts until the server restarts.' },
     ],
-    related: ['matchmaking', 'friends', 'emotes'],
+    related: ['matchmaking', 'friends', 'messages', 'emotes'],
   },
   {
     id: 'axis-limits',

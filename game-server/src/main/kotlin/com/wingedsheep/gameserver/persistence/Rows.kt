@@ -247,6 +247,48 @@ data class UserBlockRow(
 )
 
 /**
+ * A direct-message thread between two accounts, stored once per pair in a canonical order. See
+ * `V15__direct_messages.sql` for the request / read / clear semantics.
+ */
+@Table("dm_threads")
+data class DmThreadRow(
+    @Id val id: UUID? = null,
+    val userLow: UUID,
+    val userHigh: UUID,
+    val initiatorId: UUID,
+    val accepted: Boolean = false,
+    val createdAt: Instant,
+    val lastMessageAt: Instant,
+    val lowReadAt: Instant? = null,
+    val highReadAt: Instant? = null,
+    val lowClearedAt: Instant? = null,
+    val highClearedAt: Instant? = null,
+) {
+    fun other(userId: UUID): UUID = if (userId == userLow) userHigh else userLow
+    fun readAt(userId: UUID): Instant? = if (userId == userLow) lowReadAt else highReadAt
+    fun clearedAt(userId: UUID): Instant? = if (userId == userLow) lowClearedAt else highClearedAt
+    fun withReadAt(userId: UUID, at: Instant) =
+        if (userId == userLow) copy(lowReadAt = at) else copy(highReadAt = at)
+    fun withClearedAt(userId: UUID, at: Instant) =
+        if (userId == userLow) copy(lowClearedAt = at) else copy(highClearedAt = at)
+
+    companion object {
+        /** The pair in its stored order — by text form, which is how Postgres orders UUIDs too. */
+        fun ordered(a: UUID, b: UUID): Pair<UUID, UUID> = if (a.toString() < b.toString()) a to b else b to a
+    }
+}
+
+/** One message in a [DmThreadRow]. */
+@Table("dm_messages")
+data class DmMessageRow(
+    @Id val id: UUID? = null,
+    val threadId: UUID,
+    val senderId: UUID,
+    val body: String,
+    val createdAt: Instant,
+)
+
+/**
  * A signed-in account's current ELO rating in one ranked [mode] (RankedMode name). Created lazily on
  * the account's first ranked game in that mode; absence means "unrated" (treated as the starting
  * rating). [gamesPlayed] drives the provisional placement window and the displayed tier.

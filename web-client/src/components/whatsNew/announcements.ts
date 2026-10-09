@@ -30,6 +30,14 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: readonly Announcement[] = [
   {
+    id: 'feature-messages',
+    date: '2026-10-09',
+    kind: 'feature',
+    title: 'Messages',
+    body:
+      'Message other players from Messages in the account menu, or from a friend’s row or any player’s profile. Friends can talk freely; a message from someone you haven’t friended arrives as a request you can accept, delete or block.',
+  },
+  {
     id: 'mode-matchmaking',
     date: '2026-10-08',
     kind: 'mode',

@@ -47,7 +47,7 @@ export function MessageCard({ children, center = false }: { children: React.Reac
 }
 
 /** The initial of a display name in a circle — the account's avatar until there are real ones. */
-export function Avatar({ name, small = false, online }: { name: string; small?: boolean; online?: boolean }) {
+export function Avatar({ name, small = false, online }: { name: string; small?: boolean; online?: boolean | undefined }) {
   const initial = name.trim().charAt(0).toUpperCase() || '?'
   return (
     <span className={small ? a.avatarSmall : a.avatar} aria-hidden>

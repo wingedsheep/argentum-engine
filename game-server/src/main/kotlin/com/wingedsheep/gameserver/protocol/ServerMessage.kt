@@ -1339,6 +1339,32 @@ sealed interface ServerMessage {
     @SerialName("friendRequestReceived")
     data class FriendRequestReceived(val fromAccountId: String, val fromName: String) : ServerMessage
 
+    /** One direct message, as pushed live and as listed over REST. */
+    @Serializable
+    data class DirectMessageInfo(val id: String, val senderId: String, val body: String, val createdAt: String)
+
+    /**
+     * A direct message in your conversation with [withAccountId] — one you received, or one you sent
+     * from another tab. [request] is true when, for you, the conversation is a message request you
+     * haven't accepted yet.
+     */
+    @Serializable
+    @SerialName("directMessage")
+    data class DirectMessage(
+        val withAccountId: String,
+        val withName: String,
+        val message: DirectMessageInfo,
+        val request: Boolean,
+    ) : ServerMessage
+
+    /**
+     * Your conversation with [withAccountId] changed in a way other than a new message — read, accepted,
+     * deleted or blocked, possibly from another tab. Refetch it.
+     */
+    @Serializable
+    @SerialName("directMessagesChanged")
+    data class DirectMessagesChanged(val withAccountId: String) : ServerMessage
+
     /** [playerId] sent the table an [emote]. Not delivered to anyone who has blocked the sender. */
     @Serializable
     @SerialName("emote")

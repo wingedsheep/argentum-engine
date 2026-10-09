@@ -295,6 +295,56 @@ class FlywayMigrationTest : FunSpec({
         }
     }
 
+    test("V15 direct messages: one thread per pair, paged newest first, cascades").config(enabled = dockerAvailable) {
+        val postgres = PostgreSQLContainer<Nothing>(DockerImageName.parse("postgres:16-alpine"))
+        postgres.start()
+        try {
+            migrateAll(postgres)
+            val bob = "22222222-2222-2222-2222-222222222222"
+
+            DriverManager.getConnection(postgres.jdbcUrl, postgres.username, postgres.password).use { conn ->
+                conn.createStatement().use { st ->
+                    st.execute("INSERT INTO users(id, email, display_name) VALUES ('$alice', 'a@test.com', 'Alice')")
+                    st.execute("INSERT INTO users(id, email, display_name) VALUES ('$bob', 'b@test.com', 'Bob')")
+                    st.execute(
+                        "INSERT INTO dm_threads(id, user_low, user_high, initiator_id) " +
+                            "VALUES ('33333333-3333-3333-3333-333333333333', '$alice', '$bob', '$alice')"
+                    )
+                    // The pair is unique.
+                    runCatching {
+                        st.execute("INSERT INTO dm_threads(user_low, user_high, initiator_id) VALUES ('$alice', '$bob', '$bob')")
+                    }.isFailure shouldBe true
+
+                    val thread = "33333333-3333-3333-3333-333333333333"
+                    st.execute("INSERT INTO dm_messages(thread_id, sender_id, body, created_at) VALUES ('$thread', '$alice', 'one', now() - interval '2 minutes')")
+                    st.execute("INSERT INTO dm_messages(thread_id, sender_id, body, created_at) VALUES ('$thread', '$bob', 'two', now() - interval '1 minute')")
+                    st.execute("INSERT INTO dm_messages(thread_id, sender_id, body) VALUES ('$thread', '$alice', 'three')")
+
+                    // The page query: newest first, bounded by a clear marker below.
+                    st.executeQuery(
+                        """
+                        SELECT body FROM dm_messages
+                        WHERE thread_id = '$thread' AND created_at > now() - interval '90 seconds'
+                          AND created_at < '9999-01-01T00:00:00Z'
+                        ORDER BY created_at DESC LIMIT 5
+                        """.trimIndent()
+                    ).use { rs ->
+                        rs.next(); rs.getString(1) shouldBe "three"
+                        rs.next(); rs.getString(1) shouldBe "two"
+                        rs.next() shouldBe false
+                    }
+
+                    // Deleting an account cascades its threads and their messages.
+                    st.execute("DELETE FROM users WHERE id = '$bob'")
+                    st.executeQuery("SELECT count(*) FROM dm_threads").use { rs -> rs.next(); rs.getInt(1) shouldBe 0 }
+                    st.executeQuery("SELECT count(*) FROM dm_messages").use { rs -> rs.next(); rs.getInt(1) shouldBe 0 }
+                }
+            }
+        } finally {
+            postgres.stop()
+        }
+    }
+
     test("databaseStats reports per-table row counts and sizes").config(enabled = dockerAvailable) {
         val postgres = PostgreSQLContainer<Nothing>(DockerImageName.parse("postgres:16-alpine"))
         postgres.start()

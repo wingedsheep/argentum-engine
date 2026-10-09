@@ -2482,7 +2482,7 @@ function GameCardImpl({
       {!faceDown && card.copyOf && copyBadgeHoverPos && (
         <HoverCardPreview
           name={card.copyOf}
-          imageUri={null}
+          imageUri={card.copyOfImageUri ?? null}
           pos={copyBadgeHoverPos}
         />
       )}

@@ -14,7 +14,7 @@ const DISMISS_KEY = 'argentum-account-benefits-dismissed'
 
 const BENEFITS: { icon: string; text: string }[] = [
   { icon: '☁️', text: 'Save your decks in the cloud, on any device' },
-  { icon: '👥', text: 'Add friends and see when they’re online' },
+  { icon: '👥', text: 'Add friends, see when they’re online and message them' },
   { icon: '🏆', text: 'Ranked play with ELO and win/loss stats' },
   { icon: '🎬', text: 'Rewatch and share your game replays' },
 ]

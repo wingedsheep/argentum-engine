@@ -123,6 +123,16 @@ arena A B GAMES="300" SET="BLB" SEED="20260727" ARTIFACT_DIR="":
         -DarenaA={{A}} -DarenaB={{B}} -DarenaGames={{GAMES}} -DarenaSet={{SET}} -DarenaSeed={{SEED}} \
         -Dargentum.ai.apprentice.dir={{ARTIFACT_DIR}}
 
+# Play AI-vs-AI games with sealed decks from random sets (a different set per seat) and write one
+# readable log per game — board, hand, every action, and what was on offer when the AI passed.
+# For reading where the AI misplays; logs land in ai/build/game-logs/.
+[group: 'ai']
+ai-game-logs GAMES="24" SEED="20261009" AGENT="production-candidate-expiring":
+    rm -rf ai/build/game-logs
+    scripts/gradle-locked :ai:test --tests "*.GameLogBenchmark" -Dbenchmark=true -DgameLog=true \
+        -DgameLogGames={{GAMES}} -DgameLogSeed={{SEED}} -DgameLogAgent={{AGENT}} \
+        -DgameLogDir={{justfile_directory()}}/ai/build/game-logs
+
 # ECL apprentice promotion ladder. Artifacts are installed outside the repository and selected with
 # -Dargentum.ai.apprentice.dir; missing or invalid files safely use the production evaluator.
 [group: 'ai']

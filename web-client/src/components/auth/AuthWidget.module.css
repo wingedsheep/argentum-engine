@@ -104,6 +104,18 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* Unread direct messages, in the site's amber. */
+.unread {
+  padding: 0 5px;
+  border-radius: 999px;
+  background: rgba(242, 180, 92, 0.2);
+  color: #f6cf8f;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
 /* Counts on the avatar — only where the status line is hidden (narrow screens). */
 .avatarOnline,
 .avatarRequests {
@@ -206,6 +218,19 @@
   font-weight: 700;
   line-height: 18px;
   text-align: center;
+}
+
+.unreadCount {
+  min-width: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: #f2b45c;
+  color: #1d1405;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 18px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
 }
 
 .separator { height: 1px; margin: 4px 6px; background: rgba(255, 255, 255, 0.08); }

@@ -8,7 +8,7 @@
  * relationship is derived entirely from the already-loaded friends store (friends / outgoing /
  * incoming lists are all keyed by account id, which equals this profile's userId), so no extra
  * request or endpoint is needed — sending or accepting reuses the same store actions as the friends
- * page.
+ * page. A Message button opens the conversation with them (a message request if you aren't friends).
  */
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
@@ -139,6 +139,9 @@ export function PublicProfilePage() {
               </div>
               {canBefriend && (
                 <div className={a.identityActions}>
+                  <button type="button" className={p.button} onClick={() => navigate(`/messages/${userId}`)}>
+                    Message
+                  </button>
                   {isFriend ? (
                     <span className={a.badgeFriends}>✓ Friends</span>
                   ) : incomingRequest ? (

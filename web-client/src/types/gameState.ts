@@ -496,6 +496,9 @@ export interface ClientCard {
   /** Original card name when this permanent is a copy (e.g., "Clever Impersonator") */
   readonly copyOf?: string | null
 
+  /** Art of the original card's own printing when this permanent is a copy */
+  readonly copyOfImageUri?: string | null
+
   /**
    * True when the printed card is legendary but this permanent's projected type line is not —
    * a copy effect explicitly stripped legendariness ("except it isn't legendary" /

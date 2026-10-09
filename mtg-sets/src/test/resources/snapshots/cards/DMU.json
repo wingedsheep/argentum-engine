@@ -29,6 +29,71 @@
     ]
 }
 
+// Aron, Benalia's Ruin
+{
+    "name": "Aron, Benalia's Ruin",
+    "manaCost": "{W}{W}{B}",
+    "typeLine": "Legendary Creature — Phyrexian Human",
+    "oracleText": "Menace (This creature can't be blocked except by two or more creatures.)\n{W}{B}, {T}, Sacrifice another creature: Put a +1/+1 counter on each creature you control.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "MENACE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Aron, Benalia's Ruin:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{W}{B}"
+                            }
+                        },
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "creature",
+                                "excludeSelf": true
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": "IterationEntity"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "193",
+        "rarity": "UNCOMMON",
+        "artist": "Mark Winters",
+        "flavorText": "\"He may look like my father, but the man I knew and loved is gone.\"\n—Danitha",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/1/f1f8bf98-8911-4c86-978a-427377700544.jpg?1783921288"
+    }
+}
+
 // Automatic Librarian
 {
     "name": "Automatic Librarian",
@@ -834,6 +899,79 @@
     "colorIdentityOverride": [
         "WHITE"
     ]
+}
+
+// Elas il-Kor, Sadistic Pilgrim
+{
+    "name": "Elas il-Kor, Sadistic Pilgrim",
+    "manaCost": "{W}{B}",
+    "typeLine": "Legendary Creature — Phyrexian Kor Cleric",
+    "oracleText": "Deathtouch\nWhenever another creature you control enters, you gain 1 life.\nWhenever another creature you control dies, each opponent loses 1 life.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "DEATHTOUCH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Elas il-Kor, Sadistic Pilgrim:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            },
+            {
+                "id": "Elas il-Kor, Sadistic Pilgrim:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:you",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "EachOpponent"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "198",
+        "rarity": "UNCOMMON",
+        "artist": "G-host Lee",
+        "flavorText": "\"All will bow to the Whispering One.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/c/1c3f0ffe-cf51-4c30-8cd5-9e3c7e92c019.jpg?1783921287",
+        "rulings": [
+            {
+                "date": "2022-09-09",
+                "text": "If one or more other creatures enter the battlefield under your control at the same time that Elas il-Kor enters the battlefield, its second ability will trigger for each of those other creatures."
+            },
+            {
+                "date": "2022-09-09",
+                "text": "If one or more other creatures you control die at the same time that Elas il-Kor dies, its last ability triggers for each of those other creatures."
+            }
+        ]
+    }
 }
 
 // Electrostatic Infantry

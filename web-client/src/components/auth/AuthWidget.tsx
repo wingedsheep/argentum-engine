@@ -2,13 +2,14 @@
  * The account menu in the landing screen's top bar.
  *
  * One button — your initial and display name — that opens a menu of every account-scoped page:
- * Profile, Stats, Friends (with who's online and pending requests), Admin for admins, and Log out.
+ * Profile, Stats, Messages (with unread count), Friends (with who's online and pending requests), Admin
+ * for admins, and Log out.
  * It used to be a row of five frosted pills beside the navigation, which crowded the top bar and
  * wrapped onto a second line on anything narrower than a desktop; a menu is one control at every
  * width, and the pages it opens are "things about *your* account", so they belong together rather
  * than in the main navigation.
  *
- * Friends online and pending friend requests show on the trigger itself — spelled out on a quiet
+ * Unread messages, friends online and pending friend requests show on the trigger itself — spelled out on a quiet
  * line under your name, or as count badges on the avatar on narrow screens — so they're visible
  * without opening the menu.
  *
@@ -20,6 +21,7 @@ import { useNavigate } from 'react-router-dom'
 import { LoginModal } from '@/components/auth/LoginModal'
 import { useAuthStore } from '@/store/authStore'
 import { useFriendsStore } from '@/store/friendsStore'
+import { unreadBadgeCount, useMessagesStore } from '@/store/messagesStore'
 import styles from './AuthWidget.module.css'
 
 export function AuthWidget() {
@@ -32,16 +34,24 @@ export function AuthWidget() {
   const onlineCount = useFriendsStore((s) => s.friends.filter((f) => f.online).length)
   const loadFriends = useFriendsStore((s) => s.load)
   const resetFriends = useFriendsStore((s) => s.reset)
+  const unreadMessages = useMessagesStore((s) => unreadBadgeCount(s.threads))
+  const loadThreads = useMessagesStore((s) => s.loadThreads)
+  const resetMessages = useMessagesStore((s) => s.reset)
   const [loginOpen, setLoginOpen] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const rootRef = useRef<HTMLDivElement | null>(null)
 
-  // Keep the friends data (and the incoming-request badge) populated app-wide once signed in; clear
-  // it on sign-out. Live updates then arrive via the WebSocket push (see friendsStore).
+  // Keep the friends and messages data (and their badges) populated app-wide once signed in; clear
+  // them on sign-out. Live updates then arrive via the WebSocket push (see friendsStore, messagesStore).
   useEffect(() => {
-    if (status === 'authenticated') void loadFriends()
-    else if (status === 'anonymous') resetFriends()
-  }, [status, loadFriends, resetFriends])
+    if (status === 'authenticated') {
+      void loadFriends()
+      void loadThreads()
+    } else if (status === 'anonymous') {
+      resetFriends()
+      resetMessages()
+    }
+  }, [status, loadFriends, resetFriends, loadThreads, resetMessages])
 
   useEffect(() => {
     if (!menuOpen) return
@@ -79,9 +89,11 @@ export function AuthWidget() {
   const signOut = () => {
     setMenuOpen(false)
     resetFriends()
+    resetMessages()
     logout()
   }
   const statusParts = [
+    ...(unreadMessages > 0 ? [`${unreadMessages} unread ${unreadMessages === 1 ? 'message' : 'messages'}`] : []),
     ...(onlineCount > 0 ? [`${onlineCount} ${onlineCount === 1 ? 'friend' : 'friends'} online`] : []),
     ...(incomingCount > 0 ? [`${incomingCount} pending friend ${incomingCount === 1 ? 'request' : 'requests'}`] : []),
   ]
@@ -101,13 +113,20 @@ export function AuthWidget() {
       >
         <span className={styles.avatar} aria-hidden>
           {initial}
-          {incomingCount > 0 && <span className={styles.avatarRequests}>{incomingCount}</span>}
+          {incomingCount + unreadMessages > 0 && (
+            <span className={styles.avatarRequests}>{incomingCount + unreadMessages}</span>
+          )}
           {onlineCount > 0 && <span className={styles.avatarOnline}>{onlineCount}</span>}
         </span>
         <span className={styles.identity}>
           <span className={styles.name}>{user.displayName}</span>
-          {(onlineCount > 0 || incomingCount > 0) && (
+          {(onlineCount > 0 || incomingCount > 0 || unreadMessages > 0) && (
             <span className={styles.status} aria-hidden>
+              {unreadMessages > 0 && (
+                <span className={styles.unread} data-testid="account-menu-unread-count">
+                  {unreadMessages} unread
+                </span>
+              )}
               {onlineCount > 0 && (
                 <span className={styles.presence} data-testid="account-menu-online-count">
                   <span className={styles.onlineDot} />
@@ -144,6 +163,16 @@ export function AuthWidget() {
             title="Your win rate, ELO and game history"
           >
             Stats
+          </button>
+          <button type="button" role="menuitem" className={styles.item} onClick={() => go('/messages')}>
+            Messages
+            {unreadMessages > 0 && (
+              <span className={styles.itemMeta}>
+                <span className={styles.unreadCount} aria-label={`${unreadMessages} unread`}>
+                  {unreadMessages > 99 ? '99+' : unreadMessages}
+                </span>
+              </span>
+            )}
           </button>
           <button type="button" role="menuitem" className={styles.item} onClick={() => go('/friends')}>
             Friends
