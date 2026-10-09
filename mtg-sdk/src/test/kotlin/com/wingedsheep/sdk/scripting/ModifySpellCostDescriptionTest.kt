@@ -5,6 +5,17 @@ import io.kotest.matchers.shouldBe
 
 class ModifySpellCostDescriptionTest : DescribeSpec({
 
+    describe("optional life payment") {
+        it("round trips the payment axis without changing an ordinary modifier") {
+            val json = com.wingedsheep.sdk.serialization.CardSerialization.json
+            val ordinary = ModifySpellCost(SpellCostTarget.YouCast(GameObjectFilter.Permanent), CostModification.ReduceColored("{U}"))
+            val optional = ordinary.copy(optionalLifePayment = 2)
+            val encoded = json.encodeToString(StaticAbility.serializer(), optional)
+            json.decodeFromString(StaticAbility.serializer(), encoded) shouldBe optional
+            json.decodeFromString(StaticAbility.serializer(), json.encodeToString(StaticAbility.serializer(), ordinary)) shouldBe ordinary
+        }
+    }
+
     describe("ModifySpellCost.description with NthOfTypePerTurn gating") {
 
         it("renders the unconstrained Any filter without a leaked 'card' adjective (Uthros Psionicist)") {

@@ -35,7 +35,7 @@ import com.wingedsheep.sdk.scripting.values.EntityNumericProperty
  *      └── whose spells: this one, yours, everyone's
  * ```
  *
- * `ModifySpellCost(target, modification, gating)` has exactly those three fields, so the grammar is
+ * `ModifySpellCost(target, modification, gating)` models these readings; optional life payments are a separate unread band, so the grammar is
  * the product of three small vocabularies rather than one rule per printed sentence — the same move
  * the cost band made when it read `CostAtom` as "the one cost language" instead of writing a second
  * one. The subject is a *slot* ([subject]) shared by every sentence below, which is why adding
@@ -413,6 +413,7 @@ object SpellCosts {
         }
         match { value ->
             val modify = value as? ModifySpellCost ?: return@match null
+            if (modify.optionalLifePayment != null) return@match null
             val cost = fixedCost(direction, modify.modification) ?: return@match null
             val modification = fixedModification(direction, cost) ?: return@match null
             if (value != ModifySpellCost(modify.target, modification)) return@match null
@@ -473,6 +474,7 @@ object SpellCosts {
         }
         match { value ->
             val modify = value as? ModifySpellCost ?: return@match null
+            if (modify.optionalLifePayment != null) return@match null
             val reduce = modify.modification as? CostModification.ReduceGeneric ?: return@match null
             if (reduce.amount < 0) return@match null
             val gate = modify.gating as? CostGating.OnlyIf ?: return@match null
@@ -509,6 +511,7 @@ object SpellCosts {
         }
         match { value ->
             val modify = value as? ModifySpellCost ?: return@match null
+            if (modify.optionalLifePayment != null) return@match null
             val parts = targetParts(direction, modify.modification) ?: return@match null
             val (amount, filter) = parts
             if (amount < 0) return@match null
@@ -576,6 +579,7 @@ object SpellCosts {
         }
         match { value ->
             val modify = value as? ModifySpellCost ?: return@match null
+            if (modify.optionalLifePayment != null) return@match null
             val reduce = modify.modification as? CostModification.ReduceGenericBy ?: return@match null
             val amount = perUnitAmount(reduce.source)?.takeIf { it >= 0 } ?: return@match null
             val counted = withPerUnitAmount(reduce.source, 1) ?: return@match null
@@ -619,6 +623,7 @@ object SpellCosts {
         }
         match { value ->
             val modify = value as? ModifySpellCost ?: return@match null
+            if (modify.optionalLifePayment != null) return@match null
             val reduce = modify.modification as? CostModification.ReduceGenericBy ?: return@match null
             if (aggregateParts(reduce.source) == null &&
                 reduce.source !is CostReductionSource.DifferentlyNamedPermanentsYouControl
@@ -661,6 +666,7 @@ object SpellCosts {
             }
             match { value ->
                 val modify = value as? ModifySpellCost ?: return@match null
+                if (modify.optionalLifePayment != null) return@match null
                 if (modify.gating != CostGating.OnlyIf(condition)) return@match null
                 bind("inner" to modify.copy(gating = CostGating.None))
             }

@@ -120,7 +120,7 @@ internal object PayXLifeCostKind : SpellCostKind<AdditionalCost.PayXLife> {
     // Surface the cap (current life total) so the client can bound the X slider (0..payXLifeMaxX).
     override fun enumerate(env: SpellCostEnumeration, cost: AdditionalCost.PayXLife, offer: SpellCostOffer): Boolean {
         // CR 119.8 — a player who can't lose life can pay only X = 0.
-        val currentLife = if (env.state.isLifeLossLocked(env.playerId)) 0 else env.state.lifeTotal(env.playerId)
+        val currentLife = if (env.state.isLifeLossLocked(env.playerId)) 0 else (env.state.lifeTotal(env.playerId) - env.reservedLife - offer.lifeRequired).coerceAtLeast(0)
         offer.payXLifeCost = cost
         offer.payXLifeMaxX = currentLife
         return currentLife >= cost.minCount

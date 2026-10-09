@@ -10,6 +10,7 @@ data class ManaActionPaymentContinuation(
     val action: GameAction,
     val cost: ManaCost,
     val lockedCastCost: ManaCost? = null,
+    val lockedAdditionalCosts: List<com.wingedsheep.sdk.scripting.AdditionalCost>? = null,
     val lockedAbilityCost: AbilityCost? = null,
     val lockedAbilityX: Int? = null,
     val excludedSources: Set<com.wingedsheep.sdk.model.EntityId> = emptySet(),

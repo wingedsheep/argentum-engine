@@ -72,7 +72,7 @@ class ManaPaymentContinuationResumer(
             val strategy = if (response.autoPay) PaymentStrategy.AutoPay
                 else PaymentStrategy.Explicit(response.selectedSources)
             return services.castSpellHandler.executeWithLockedManaCost(state.withPriority(player),
-                cast.copy(paymentStrategy = strategy), continuation.lockedCastCost)
+                cast.copy(paymentStrategy = strategy), continuation.lockedCastCost, continuation.lockedAdditionalCosts)
         }
         val decision = services.manaSolver.findAvailableManaSources(state, player, continuation.paymentContext)
             .filter { it.entityId !in continuation.excludedSources && it.tapPermanentsSubCost == null &&
@@ -87,7 +87,7 @@ class ManaPaymentContinuationResumer(
         if (!floated.paid) return ExecutionResult.error(state, "Selected sources cannot pay the announced cost")
         val current = floated.state.withPriority(player)
         val result = when (val action = continuation.action) {
-            is CastSpell -> services.castSpellHandler.executeWithLockedManaCost(current, action, continuation.lockedCastCost)
+            is CastSpell -> services.castSpellHandler.executeWithLockedManaCost(current, action, continuation.lockedCastCost, continuation.lockedAdditionalCosts)
             is ActivateAbility -> com.wingedsheep.engine.handlers.actions.ability.ActivateAbilityHandler.create(services).executeWithLockedCost(current, action,
                 continuation.lockedAbilityCost ?: return ExecutionResult.error(state, "Missing locked ability cost"), continuation.lockedAbilityX)
             else -> return ExecutionResult.error(state, "Unsupported mana-payment action")

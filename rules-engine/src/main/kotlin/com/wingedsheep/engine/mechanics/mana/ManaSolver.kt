@@ -352,11 +352,17 @@ private const val WASTED_MANA_PENALTY = 15
 /** How many snow-source reservations [ManaSolver.solve] tries for a cost's `{S}` pips. */
 private const val MAX_SNOW_RESERVATIONS = 64
 
-class ManaSolver(
+class ManaSolver private constructor(
     private val cardRegistry: CardRegistry,
     private val predicateEvaluator: PredicateEvaluator,
-    private val scopedPlanner: (() -> ScopedManaActivationPlanner)? = null
+    private val scopedPlanner: (() -> ScopedManaActivationPlanner)?,
+    private val reservedLife: Int,
 ) {
+    constructor(cardRegistry: CardRegistry, predicateEvaluator: PredicateEvaluator,
+        scopedPlanner: (() -> ScopedManaActivationPlanner)? = null) : this(cardRegistry, predicateEvaluator, scopedPlanner, 0)
+
+    fun reservingLife(amount: Int): ManaSolver = ManaSolver(cardRegistry, predicateEvaluator, scopedPlanner, amount)
+
     private val conditionEvaluator = predicateEvaluator.conditions
     private val dynamicAmountEvaluator = predicateEvaluator.amounts
 
@@ -2602,7 +2608,7 @@ class ManaSolver(
         val pipColors = cost.phyrexianSymbols.mapNotNull { it.phyrexianLifeColor }
         if (pipColors.isEmpty()) return emptyList()
         // CR 119.8 — a player who can't lose life pays no Phyrexian pip with life.
-        val life = if (state.isLifeLossLocked(playerId)) 0 else state.lifeTotal(playerId)
+        val life = if (state.isLifeLossLocked(playerId)) 0 else (state.lifeTotal(playerId) - reservedLife).coerceAtLeast(0)
         for (lifePips in 0..pipColors.size) {
             // A player can't pay more life than they have (CR 119.4).
             if (lifePips * 2 > life) return null
@@ -2657,7 +2663,7 @@ class ManaSolver(
         // choice before the mana-only solver below; recursive calls see a strictly smaller cost.
         // Paying down to exactly 0 is legal, though state-based actions will make the player lose.
         // CR 119.8 — a player who can't lose life pays no Phyrexian pip with life.
-        val life = if (state.isLifeLossLocked(playerId)) 0 else state.lifeTotal(playerId)
+        val life = if (state.isLifeLossLocked(playerId)) 0 else (state.lifeTotal(playerId) - reservedLife).coerceAtLeast(0)
         if (phyrexianLifePipsCommitted > 0 && phyrexianLifePipsCommitted * 2 > life) return false
         if (allowPhyrexianLife && (phyrexianLifePipsCommitted + 1) * 2 <= life) {
             val triedColors = mutableSetOf<Color>()
@@ -2704,7 +2710,7 @@ class ManaSolver(
             if (spellContext?.isAbilityActivation != true && scopedPlanner != null) {
                 return scopedPlanner.invoke().plan(state, playerId, cost, spellContext,
                     xValue * cost.xCount.coerceAtLeast(1), xManaRestriction, excludeSources,
-                    reservedLife = phyrexianLifePipsCommitted * 2) is ScopedManaPlanResult.Found
+                    reservedLife = reservedLife + phyrexianLifePipsCommitted * 2) is ScopedManaPlanResult.Found
             }
             val sources = if (independentTapEnvironment(state, playerId))
                 findAvailableManaSources(state, playerId, spellContext).filter {
@@ -2871,7 +2877,7 @@ class ManaSolver(
     private fun playerActionMana(state: GameState, playerId: EntityId, committedLife: Int = 0): TapPermanentsBonusMana {
         if (state.isLifeLossLocked(playerId)) return TapPermanentsBonusMana()
         var bestProduction = 0L
-        val life = (state.lifeTotal(playerId) - committedLife).coerceAtLeast(0)
+        val life = (state.lifeTotal(playerId) - committedLife - reservedLife).coerceAtLeast(0)
         for (permission in state.playerActionPermissions) {
             if (permission.playerId != playerId || permission.action.timing != com.wingedsheep.sdk.scripting.effects.PlayerActionTiming.ManaAbility) continue
             val cost = (permission.action.cost as? com.wingedsheep.sdk.scripting.costs.PayCost.Atom)?.atom as? CostAtom.PayLife ?: continue

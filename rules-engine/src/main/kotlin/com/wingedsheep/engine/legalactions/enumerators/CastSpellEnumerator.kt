@@ -2077,13 +2077,14 @@ class CastSpellEnumerator(
                     // Calculate kicked/offspring cost. The base cost is priced *for this branch*: a
                     // "costs {2} less to cast if it's bargained" reduction (Hamlet Glutton) is gated on the
                     // declaration, so it only applies to the variant that declares it.
-                    val baseCost = context.costCalculator.calculateEffectiveCost(
+                    val baseCost = context.costCalculator.withOptionalPayments(emptyList()).calculateEffectiveCost(
                         state, cardDef, playerId, declaredCostSlot = declaredSlot,
                     )
                     val kickedManaCost = optionalCostsManaPaid(
                         kickers.filter { it.manaCost != null && it.keyword != Keyword.OFFSPRING }, times
                     ) ?: offspringAbility?.manaCost
-                    val kickedCost = if (kickedManaCost != null) baseCost + kickedManaCost else baseCost
+                    val kickedCost = context.costCalculator.applyOptionalPayments(state, cardDef, playerId,
+                        if (kickedManaCost != null) baseCost + kickedManaCost else baseCost, declaredCostSlot = declaredSlot)
                     val kickedSpellContext = spellPaymentContextFor(cardComponent, isKicked = declaredSlot == ChoiceSlot.KICKED)
                     val canAffordKickedMana = context.manaSolver.canPay(state, playerId, kickedCost, spellContext = kickedSpellContext, precomputedSources = context.availableManaSources)
                     val kickedCostString = kickedCost.toString()

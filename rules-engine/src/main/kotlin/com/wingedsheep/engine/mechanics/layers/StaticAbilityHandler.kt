@@ -646,6 +646,9 @@ class StaticAbilityHandler(
      */
     private fun convertStaticAbility(ability: StaticAbility): ContinuousEffectData? {
         return when (ability) {
+            is ModifySpellCost -> if (ability.optionalLifePayment != null) ContinuousEffectData(
+                modification = Modification.GrantStaticAbility(ability), affectsFilter = AffectsFilter.Self,
+            ) else null
             is com.wingedsheep.sdk.scripting.Enlist -> ContinuousEffectData(
                 modification = Modification.GrantStaticAbility(ability),
                 affectsFilter = AffectsFilter.Self,
@@ -1115,7 +1118,6 @@ class StaticAbilityHandler(
 
             // Spell costs (CostCalculator):
             is GrantAlternativeCastingCost,
-            is ModifySpellCost,
 
             // Plot special-action cost (PlotCostReducer / PlotEnumerator / PlotCardHandler):
             is ModifyPlotCost,

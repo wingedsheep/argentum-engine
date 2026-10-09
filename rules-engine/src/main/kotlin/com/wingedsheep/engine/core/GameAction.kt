@@ -124,6 +124,8 @@ data class CastSpell(
      * to this spell; the permanent the spell becomes enters with N extra counters.
      */
     val additionalManaForCounters: Int = 0,
+    /** Battlefield cost-modifier instances elected during spell announcement. */
+    val optionalCostPayments: List<CostModifierPayment> = emptyList(),
     /**
      * The opponent promised this spell's **gift** (CR 702.174a, Bloomburrow — "as an additional
      * cost to cast this spell, you may choose an opponent"), or `null` when the gift wasn't
@@ -817,3 +819,7 @@ data class UnlockRoomDoor(
 @Serializable
 @SerialName("TakePlayerAction")
 data class TakePlayerAction(override val playerId: EntityId, val permissionId: String) : GameAction
+
+/** Identifies one projected static-ability instance; equal abilities retain distinct indices. */
+@Serializable
+data class CostModifierPayment(val sourceId: EntityId, val abilityIndex: Int)

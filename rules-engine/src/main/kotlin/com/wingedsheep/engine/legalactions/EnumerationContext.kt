@@ -52,6 +52,11 @@ class EnumerationContext(
     val turnManager: TurnManager,
     val mode: EnumerationMode = EnumerationMode.FULL
 ) {
+    val reservedLife: Int by lazy {
+        costCalculator.optionalCostPayments.sumOf { costCalculator.optionalModifier(state, it)?.optionalLifePayment ?: 0 }
+    }
+    fun canPayLife(amount: Int): Boolean = state.canPayLife(playerId, amount + reservedLife)
+
     val skipAutoTapPreview: Boolean get() = mode == EnumerationMode.ACTIONS_ONLY
     // Granted-keyword resolver (e.g., convoke granted by Eirdu via GrantKeywordToOwnSpells)
     val grantedKeywordResolver by lazy { GrantedKeywordResolver(cardRegistry) }

@@ -314,7 +314,7 @@ class CastFromZoneEnumerator(
                     val freeCastFromTop = topAltCost?.withoutPayingManaCost == true
                     val payLifeMv = topAltCost?.additionalCost is AdditionalCost.PayLifeEqualToManaValueOfSpell
                     val lifeForThisCard = if (payLifeMv) topCardComponent.manaCost.cmc else 0
-                    val lifeAffordable = !payLifeMv || state.canPayLife(playerId, lifeForThisCard)
+                    val lifeAffordable = !payLifeMv || context.canPayLife(lifeForThisCard)
                     val topAltAdditionalCostInfo = if (payLifeMv) {
                         AdditionalCostData(description = "Pay $lifeForThisCard life", costType = "PayLife")
                     } else null
@@ -611,7 +611,7 @@ class CastFromZoneEnumerator(
                         buildRuntimeAdditionalCostInfo(state, playerId, cardId, comp)
                     }
                     val canPayAdditionalCost = exileAdditionalCostInfo == null ||
-                        checkRuntimeAdditionalCostAffordability(state, playerId, cardId, runtimeAdditionalCost)
+                        checkRuntimeAdditionalCostAffordability(state, playerId, cardId, runtimeAdditionalCost, context.reservedLife)
 
                     // Honour the card's printed BlightOrPay additional cost when casting from exile
                     // (e.g. Cinder Strike granted via Sanar's "you may cast" permission). If the
@@ -913,7 +913,7 @@ class CastFromZoneEnumerator(
                     // and display are computed here rather than once-per-granter.
                     val payLifeMv = grantAbility.additionalCost is AdditionalCost.PayLifeEqualToManaValueOfSpell
                     val lifeForThisCard = if (payLifeMv) exiledCard.manaCost.cmc else 0
-                    val lifeAffordable = !payLifeMv || state.canPayLife(playerId, lifeForThisCard)
+                    val lifeAffordable = !payLifeMv || context.canPayLife(lifeForThisCard)
                     val perCardAdditionalCostInfo = if (payLifeMv) {
                         AdditionalCostData(
                             description = "Pay $lifeForThisCard life",
@@ -2488,7 +2488,7 @@ class CastFromZoneEnumerator(
 
                 // Check life affordability (only when there is a life cost)
                 // CR 810.9a — team's shared total; CR 119.8 — nor while the player can't lose life.
-                if (!state.canPayLife(playerId, lifeCost)) continue
+                if (!context.canPayLife(lifeCost)) continue
 
                 // The grant's own additional cost (Six's continuous retrace: "discard a land card") —
                 // unpayable means no action, like an unaffordable life cost.
@@ -2637,13 +2637,14 @@ class CastFromZoneEnumerator(
 
                 // Calculate the cost for this branch — a declaration-gated reduction ("costs {2} less
                 // to cast if it's bargained") applies only to the variant that declares it.
-                val baseCost = context.costCalculator.calculateEffectiveCost(
+                val baseCost = context.costCalculator.withOptionalPayments(emptyList()).calculateEffectiveCost(
                     state, cardDef, playerId, declaredCostSlot = declaredSlot,
                 )
                 val kickedManaCost = optionalCostsManaPaid(
                     kickers.filter { it.manaCost != null && it.keyword != Keyword.OFFSPRING }, 1
                 ) ?: offspringAbility?.manaCost
-                val kickedCost = if (kickedManaCost != null) baseCost + kickedManaCost else baseCost
+                val kickedCost = context.costCalculator.applyOptionalPayments(state, cardDef, playerId,
+                        if (kickedManaCost != null) baseCost + kickedManaCost else baseCost, declaredCostSlot = declaredSlot)
                 // This enumerator only enumerates non-hand-zone casts (command, library, exile,
                 // graveyard, …) — `sourceZone` is never "HAND" here. Mark accordingly so
                 // [ManaRestriction.CastFromNonHandOnly] mana is eligible for the kicked variant.
@@ -2855,7 +2856,8 @@ class CastFromZoneEnumerator(
         state: GameState,
         playerId: EntityId,
         cardId: EntityId,
-        component: PlayWithAdditionalCostComponent
+        component: PlayWithAdditionalCostComponent,
+        reservedLife: Int = 0,
     ): Boolean {
         for (cost in component.additionalCosts) {
             when (val atom = (cost as? AdditionalCost.Atom)?.atom) {
@@ -2865,7 +2867,7 @@ class CastFromZoneEnumerator(
                 }
                 else -> if (cost is AdditionalCost.PayLifeEqualToManaValueOfSpell) {
                     val amount = state.getEntity(cardId)?.get<CardComponent>()?.manaCost?.cmc ?: 0
-                    if (!state.canPayLife(playerId, amount)) return false
+                    if (!state.canPayLife(playerId, amount + reservedLife)) return false
                 }
             }
         }

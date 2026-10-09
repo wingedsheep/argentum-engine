@@ -223,8 +223,8 @@ class CastSpellHandler(
      */
     override fun execute(state: GameState, action: CastSpell): ExecutionResult = executeWithLockedManaCost(state, action, null)
 
-    internal fun executeWithLockedManaCost(state: GameState, action: CastSpell, lockedCost: ManaCost?): ExecutionResult {
-        val result = executeAnnounced(state, action, lockedCost)
+    internal fun executeWithLockedManaCost(state: GameState, action: CastSpell, lockedCost: ManaCost?, lockedAdditionalCosts: List<AdditionalCost>? = null): ExecutionResult {
+        val result = executeAnnounced(state, action, lockedCost, lockedAdditionalCosts)
         // An unfinished cost/target picker still presents a card in its original zone. Rebuild
         // the announcement when resumed; cancellation must not leave Aura characteristics behind.
         return if (action.cardId !in result.state.stack && action.cardId !in result.state.getBattlefield()) {
@@ -259,7 +259,7 @@ class CastSpellHandler(
         )
     }
 
-    private fun executeAnnounced(inputState: GameState, action: CastSpell, lockedCost: ManaCost? = null): ExecutionResult {
+    private fun executeAnnounced(inputState: GameState, action: CastSpell, lockedCost: ManaCost? = null, lockedAdditionalCosts: List<AdditionalCost>? = null): ExecutionResult {
         val state = com.wingedsheep.engine.mechanics.CastCharacteristics.announce(inputState, action, cardRegistry)
         val cardComponent = state.getEntity(action.cardId)?.get<CardComponent>()
             ?: return ExecutionResult.error(state, "Card not found")
@@ -282,7 +282,7 @@ class CastSpellHandler(
         // recast) before additional costs run — a behold-and-exile cost on this same cast will attach
         // a fresh one afterwards.
         val announcedState = state.updateEntity(action.cardId) { c -> c.without<LinkedExileComponent>() }
-        val rawCosts = castCostPayer.owedAdditionalCosts(announcedState, action, cardDef)
+        val rawCosts = lockedAdditionalCosts ?: castCostPayer.owedAdditionalCosts(announcedState, action, cardDef)
         SpellCosts.validateChoiceDeclarations(rawCosts, action.additionalCostChoices)?.let {
             return ExecutionResult.error(state, it)
         }
@@ -306,8 +306,8 @@ class CastSpellHandler(
             // server-initiated cast that skipped it; pay the printed cost rather than nothing.
             ?: cardComponent.manaCost
 
-        val owedCosts = reduceCostAlternatives(
-            castCostPayer.owedAdditionalCosts(announcedState, action, cardDef), announcedState, action.playerId, action.additionalCostPayment, action.additionalCostChoices
+        val owedCosts = lockedAdditionalCosts ?: reduceCostAlternatives(
+            rawCosts, announcedState, action.playerId, action.additionalCostPayment, action.additionalCostChoices
         )
         // The declared optional cost, put through the *same* reduction as the full list, so payment
         // can recognise it by equality. Reducing both sides is what makes the match survive an
@@ -353,7 +353,7 @@ class CastSpellHandler(
                             DecisionContext(sourceId = action.cardId, sourceName = cardComponent.name, phase = DecisionPhase.CASTING),
                             true, manaSolver, spellContext = castCostPayer.spellPaymentContext(announcedState, action, cardComponent),
                         ) },
-                        answer = com.wingedsheep.engine.core.ManaActionPaymentContinuation(action, cost, lockedCastCost = totalCost,
+                        answer = com.wingedsheep.engine.core.ManaActionPaymentContinuation(action, cost, lockedCastCost = totalCost, lockedAdditionalCosts = owedCosts,
                             paymentContext = castCostPayer.spellPaymentContext(announcedState, action, cardComponent)),
                     )
                 }
