@@ -1,0 +1,297 @@
+#!/usr/bin/env bash
+#!/usr/bin/env bash
+# Implement the cards the most popular Commander decks run, with headless Claude Code or Codex,
+# one fresh session per step, finishing EDHREC's top decks one at a time (scripts/commander-staples).
+#   just commander-loop [model] [top]    e.g. just commander-loop astra 50
+# Stop it with Ctrl-C, or `touch .claude/loop-runs/commander.stop` to stop after the current step.
+# When the subscription's usage limit is hit, it waits and retries.
+set -uo pipefail
+
+models() {
+  cat <<'EOF2'
+Model       CLI           Selection
+sonnet      Claude Code   Claude's sonnet alias
+opus        Claude Code   Claude's opus alias
+astra       Codex         gpt-6-astra
+
+Full claude-* and gpt-* model IDs also work.
+Use codex:<model-id> to select any Codex model ID.
+GPT model IDs are normalized to lowercase; other IDs pass through unchanged.
+Omitting the model uses MODEL, or claude-opus-5-5 when MODEL is unset.
+EOF2
+}
+
+usage() {
+  cat <<'EOF2'
+Usage: just commander-loop [model] [top]
+
+Makes EDHREC's most popular Commander decks playable, one reviewed PR at a time: it finishes the
+decks in the order scripts/commander-staples ranks them (most real decks gained per missing card),
+taking each deck's most widely played cards first. [top] is how many top commanders count
+(default 100). Ledger and queue live in .claude/loop-runs/commander-*.md.
+
+Examples:
+  just commander-loop                        # claude-opus-5-5, top 100 commanders
+  just commander-loop sonnet
+  just commander-loop astra 50
+  just commander-loop codex:gpt-6-sol
+  just commander-loop pick                   # Choose from a menu
+  just commander-loop --models               # Show model shortcuts
+
+EOF2
+  models
+}
+
+case "${1:-}" in
+  -h|--help) usage; exit 0 ;;
+  --models) models; exit 0 ;;
+esac
+if [ "$#" -gt 2 ]; then usage >&2; exit 2; fi
+
+TOP=${2:-100}
+case "$TOP" in
+  ''|*[!0-9]*|0) echo "commander-loop: top must be a positive number, got '$TOP'" >&2; exit 2 ;;
+esac
+MODEL=${1:-${MODEL:-claude-opus-5-5}}
+if [ "$MODEL" = pick ]; then
+  if [ ! -t 0 ]; then
+    echo "commander-loop: pick needs a terminal; pass sonnet, opus, astra, or a full model ID" >&2
+    exit 2
+  fi
+  PS3="Choose a model (Ctrl-C to cancel): "
+  select choice in sonnet opus astra "Custom Codex model"; do
+    case "$choice" in
+      "Custom Codex model")
+        read -r -p "Codex model ID: " custom_model || exit 2
+        if [ -z "$custom_model" ]; then
+          echo "Enter a model ID." >&2
+          continue
+        fi
+        MODEL="codex:$custom_model"
+        break
+        ;;
+      "") echo "Choose 1, 2, 3, or 4." >&2 ;;
+      *) MODEL=$choice; break ;;
+    esac
+  done
+  [ "$MODEL" != pick ] || exit 2
+fi
+# Codex's picker displays GPT names with capitals, but its model IDs are lowercase.
+# Normalize only GPT IDs so custom provider IDs keep their original spelling.
+case "$MODEL" in
+  [gG][pP][tT]-*|codex:[gG][pP][tT]-*)
+    NORMALIZED_MODEL=$(printf '%s' "$MODEL" | tr '[:upper:]' '[:lower:]')
+    if [ "$MODEL" != "$NORMALIZED_MODEL" ]; then
+      echo "commander-loop: model '$MODEL' normalized to '$NORMALIZED_MODEL'"
+      MODEL=$NORMALIZED_MODEL
+    fi
+    ;;
+esac
+case "$MODEL" in
+  codex:)
+    echo "commander-loop: codex: requires a model ID" >&2
+    exit 2
+    ;;
+  codex:*) MODEL=${MODEL#codex:}; HARNESS=codex ;;
+  astra) MODEL=gpt-6-astra; HARNESS=codex ;;
+  gpt-*) HARNESS=codex ;;
+  *) HARNESS=claude ;;
+esac
+command -v "$HARNESS" >/dev/null || { echo "commander-loop: $HARNESS is not installed" >&2; exit 1; }
+REPO=$(cd "$(git rev-parse --git-common-dir)/.." && pwd)
+RUNS="$REPO/.claude/loop-runs"
+mkdir -p "$RUNS"
+
+PROMPT="You are one iteration of an unattended loop that makes EDHREC's top $TOP Commander decks playable in
+Argentum, one reviewed PR at a time. You are a fresh session: your memory is the ledger at
+$RUNS/commander-cards.md (create it if missing), the triage at $RUNS/commander-gaps.md, the queue at
+$RUNS/commander-queue.md, and GitHub. None of them is committed. Do exactly ONE of the steps below, then stop.
+
+The queue decides the order. \`scripts/commander-staples --top $TOP --out $RUNS/commander-queue.md\`, run from a
+worktree on fresh origin/main, lists the top commanders' average decks in the order that finishes the most
+real decks per card added, and under each deck only the missing cards no earlier deck already needs, most
+widely played first. It reads what's implemented from the checkout it runs in, so regenerate it at the start of
+every step 5-7 rather than trusting an old copy. The 'current deck' is the first deck in the queue that still
+has missing cards that aren't blocked on a [!] gap or marked dropped in the triage.
+
+Other loops may be running at the same time, so everything this loop owns is named by the prefix 'loop-cmdr-':
+every branch you create is 'loop-cmdr-<short-slug>', and its worktree is
+$REPO/.claude/worktrees/loop-cmdr-<short-slug>. Find our open PR by branch name only:
+\`gh pr list --author @me --state open --json number,headRefName --jq '.[] | select(.headRefName | startswith(\"loop-cmdr-\"))'\`
+Never touch a PR, branch or worktree without our prefix. Work on our PR in its worktree (recreate it with
+\`git worktree add\` if missing). Never work in the main checkout. A card another open PR (any author) already
+adds is skipped, not duplicated.
+
+Triage format ($RUNS/commander-gaps.md), three sections:
+'## Gaps' — one line per distinct missing capability: \`- [ ] G<n> <capability> — unlocks <k>: <cards> — first deck: <queue rank> — deps: <G ids or none>\`.
+  Collapse near-duplicates; a gap is engine/SDK vocabulary, never a single card's quirk composition can express.
+  Commander-only rules (\"if you control a commander\", command-zone casting, commander tax, partner) are gaps like any other.
+'## Ready' — cards that compose from existing primitives today, one per line, with their queue deck rank.
+'## Triaged decks' — the queue ranks already triaged, so a later step knows where to resume.
+
+1. PR open, CI failed -> read only the failing log tail (\`gh run view <id> --log-failed | tail -200\`),
+   fix it, re-run the affected gate per the verify skill, push. A known-flaky test: \`gh run rerun --failed\` instead.
+2. PR open, has merge conflicts -> rebase on origin/main (re-bless snapshot goldens instead of hand-merging), gate, push.
+3. PR open, CI green, not yet reviewed (no 'loop-reviewed' comment) -> review it with the review-changes skill,
+   fix what holds up, gate, push, and post a PR comment starting 'loop-reviewed' listing fixes and declines.
+4. PR open, CI green, reviewed, nothing pushed since -> \`gh pr merge --squash --delete-branch\` (from $REPO, after
+   \`git worktree remove\` of its worktree), record the unit in the ledger. If it closed a gap, tick it \`[x]\` and move
+   the cards it unlocked (minus any it shipped) into '## Ready'. Remove shipped cards from '## Ready'.
+5. No PR open, the current deck or any of the next 9 decks with missing cards is not in '## Triaged decks' -> triage,
+   no PR. \`git fetch\`, worktree 'loop-cmdr-triage' off origin/main, regenerate the queue there. Take the missing
+   cards of up to 10 untriaged decks, starting at the current deck. Fan them out to subagents in chunks, each checking
+   Scryfall oracle text (and rulings) against docs/card-sdk-language-reference.md and the source, returning one line
+   per card: READY, or BLOCKED on a named missing capability. \`just assay compile \"<Card>\"\` printing a whole
+   CardDefinition is strong evidence for READY. Merge the answers into the triage file (re-verify any existing gap
+   line a card would join — they go stale), order '## Gaps' by dependencies first, then earliest first deck, then
+   most cards unlocked. Remove the worktree. Stop after writing it.
+6. No PR open, the current deck has no '## Ready' cards left, and an unticked gap that blocks it has all deps \`[x]\`
+   -> engine gap. \`git fetch\`, new worktree + 'loop-cmdr-' branch from origin/main. Take the first such gap, mark it
+   \`[~]\`, and build it with the add-feature skill: the capability, its SDK reference entry, engine tests, plus one or
+   two of the cards it unlocks as proof (one scenario test file per card). Gate, commit, push, open a PR titled
+   '[agent-loop: $MODEL] <capability> for Commander staples' whose body names the gap, the cards and decks it
+   unlocks, the gate run, and that nothing was play-tested. Record the unit in the ledger.
+7. No PR open, '## Ready' has cards in the current deck or a later one -> card batch. \`git fetch\`, new worktree +
+   'loop-cmdr-' branch from origin/main, regenerate the queue there. Take up to 15 '## Ready' cards in queue order
+   (the current deck first, most widely played first, then spill into the next decks). Fan them out to subagents,
+   one card each, with the add-card skill: each canonical in its earliest real printing's set, \`Printing\` rows in
+   every scaffolded set that reprints it (\`scripts/generate-reprints.py --since origin/main\`), a scenario test only
+   when add-card says the card earns one (one test file per card, never a shared one). A card that turns out to need
+   new vocabulary is dropped from the batch and added to '## Gaps' as a new \`[ ]\` gap. Gate once per the verify skill
+   (\`just build\`, \`just rebless-cards\` moving only your cards, \`just check-card-printing\` per card), regenerate the
+   queue to see which decks became playable, commit, push, and open a PR titled
+   '[agent-loop: $MODEL] Add <N> Commander staples' whose body has a table of the cards (card, real decks running it,
+   canonical set + number, what it's built from), the decks this PR makes fully playable, dropped cards with the
+   gap they need, the gate run, and that nothing was play-tested. Record the unit in the ledger.
+
+PR open, CI still pending or running -> do nothing; don't poll or wait on it — the loop waits for CI
+between sessions. Answer WAITING_CI.
+
+A card whose earliest real printing is in a set that isn't scaffolded yet (\`just check-card-printing\` says NOT
+SCAFFOLDED) is an ordinary '## Ready' card, never needs-human and never a reason to answer STUCK: scaffold that set
+yourself. Add its \`MtgSet\` object in the era module for its release year (mirror a neighbour; set
+\`override val incomplete = true\`, plus \`sealedSupported = false\` unless it is a draftable expansion), put the
+canonical there, and give every card of that set that is already implemented its \`Printing\` row too. To do that,
+list the set's Scryfall cards that already have a \`card(\"Name\")\` in mtg-sets, run \`just check-card-printing\` on
+each one (that refreshes its cache), then run \`scripts/generate-reprints.py --set <CODE> --cards-from <list>\`.
+Relocate any canonical it reports as misplaced. If that comes to more than about 15 rows, ship the scaffold and its
+rows as their own PR first ('[agent-loop: $MODEL] Scaffold <set name> for <card>'), and add the card in the next unit.
+
+If a step fails twice for the same PR, comment on it, mark it needs-human in the ledger (and the gap \`[!]\` if it
+was one), and move on. Cards blocked on a \`[!]\` gap are skipped, and so is a deck whose only missing cards are.
+When the regenerated queue shows every one of the top $TOP decks playable, answer COMMANDER_COMPLETE. When every
+deck still missing cards is missing only cards blocked on \`[!]\` gaps, answer STUCK naming those gaps.
+Follow AGENTS.md. Never revert or stash work that isn't yours.
+An unrelated failure on origin/main (a test in a module your change doesn't touch) is NOT a reason to answer
+STUCK: run the gates for the modules you changed, note the unrelated failure in the ledger and the PR body,
+and carry on. Only answer STUCK when the failure is inside code your unit changed or depends on. If the
+failure is a trivial stale test, you may fix it in a separate one-commit PR.
+
+A human watches your text live, one line at a time, so keep them posted in short lines (under 150 chars each):
+- once you know which step you're taking: 'Working on: <step and unit, e.g. step 7, 12 cards for Baylen + Animar>'
+- whenever you learn something that changes the plan — a gap found, a card dropped as needing vocabulary, a
+  failure's cause, a review finding you fixed or declined: 'Finding: <one line>'
+- just before your final line, one to three lines: 'Summary: <what you did / what's next>'
+No other long prose.
+End your reply with exactly one line: STEP <n> DONE | WAITING_CI | COMMANDER_COMPLETE | STUCK <reason>"
+if [ "$HARNESS" = codex ]; then
+  PROMPT="$PROMPT
+
+Read the applicable skill files in .agents/skills/ (add-card/SKILL.md, add-feature/SKILL.md,
+review-changes/SKILL.md, verify/SKILL.md). If subagents are unavailable, perform their steps inline."
+elif [ "$MODEL" = sonnet ] || [ "$MODEL" = opus ]; then
+  PROMPT="$PROMPT
+
+The requested model '$MODEL' is a Claude alias. Before opening a PR, resolve the actual driving
+model ID from your session's system information and use it instead of '$MODEL' in every
+[agent-loop: ...] title and model attribution. Never guess a version; if it cannot be determined,
+answer STUCK cannot determine driving model ID."
+fi
+
+# Everything the loop prints also goes to the run log.
+LOGDIR="$RUNS/commander-logs"
+mkdir -p "$LOGDIR"
+exec > >(tee -a "$RUNS/commander.log") 2>&1
+log() { echo "[$(date '+%F %T')] $*"; }
+
+# One line per action the session takes, streamed live: its messages and each tool call.
+PRETTY='select(.type == "assistant") | .message.content[]? |
+  (if .type == "text" then
+     ([.text | split("\n")[] | select(test("^(Working on|Finding|Summary):"))]) as $m
+     | if ($m | length) > 0 then $m[]
+         | (if startswith("Working on") then "   🔨 " elif startswith("Finding") then "   🔎 " else "   📋 " end) + .[0:200]
+       else "   💬 " + (.text | split("\n")[0] | .[0:160]) end
+   elif .type == "tool_use" then "   → " + .name + ": " +
+     ((.input.description // .input.command // .input.skill // .input.file_path // .input.pattern
+       // .input.prompt // "") | tostring | split("\n")[0] | .[0:140])
+   else empty end)'
+
+if [ "$HARNESS" = codex ]; then
+  PRETTY='if .type == "item.completed" and .item.type == "agent_message" then
+      .item.text | split("\n")[] | select(length > 0) | "   💬 " + .[0:200]
+    elif .type == "item.started" and .item.type == "command_execution" then
+      "   → " + (.item.command | split("\n")[0] | .[0:140])
+    elif .type == "error" or .type == "turn.failed" then
+      "   ! " + (.message // .error.message // "Codex turn failed")
+    else empty end'
+fi
+
+log "commander-loop started (top $TOP, harness $HARNESS, model $MODEL, log $RUNS/commander.log)"
+N=0
+while [ ! -e "$RUNS/commander.stop" ]; do
+  N=$((N + 1))
+  # Wait on CI for free instead of spending a session on it.
+  PR=$(gh pr list --author @me --state open --json number,headRefName \
+        --jq "[.[] | select(.headRefName | startswith(\"loop-cmdr-\"))][0].number // empty")
+  if [ -n "$PR" ]; then
+    log "waiting for CI on PR #$PR"
+    sleep 60
+    gh pr checks "$PR" --watch >/dev/null 2>&1
+    log "CI on PR #$PR: $(gh pr checks "$PR" --json bucket --jq '[.[].bucket] | group_by(.) | map("\(.[0])=\(length)") | join(" ")' 2>/dev/null)"
+  fi
+
+  TRANSCRIPT="$LOGDIR/$(date '+%Y%m%d-%H%M%S')-iter$N.jsonl"
+  log "iteration $N (PR: ${PR:-none}) — transcript $TRANSCRIPT"
+  if [ "$HARNESS" = codex ]; then
+    FINAL_FILE="${TRANSCRIPT%.jsonl}.txt"
+    # A failed launch must never reuse a stale completion marker.
+    rm -f "$FINAL_FILE"
+    (cd "$REPO" && codex exec --model "$MODEL" --approve-for-me --json \
+        --output-last-message "$FINAL_FILE" "$PROMPT" 2>&1) \
+      | tee "$TRANSCRIPT" | jq -Rr --unbuffered "fromjson? | $PRETTY"
+    SESSION_STATUS=$?
+    RESULT=$(cat "$FINAL_FILE" 2>/dev/null || true)
+    FINAL=$RESULT
+    STATS="exit $SESSION_STATUS"
+  else
+    (cd "$REPO" && claude -p "$PROMPT" --model "$MODEL" --permission-mode "${PERMISSION_MODE:-auto}" \
+        --output-format stream-json --verbose 2>&1) \
+      | tee "$TRANSCRIPT" | jq -Rr --unbuffered "fromjson? | $PRETTY"
+
+    FINAL=$(jq -Rc 'fromjson? | select(.type == "result")' "$TRANSCRIPT" 2>/dev/null | tail -1)
+    RESULT=$(echo "$FINAL" | jq -r '.result // empty' 2>/dev/null)
+
+    STATS=$(echo "$FINAL" | jq -r '"\(.num_turns // "?") turns, \((.duration_ms // 0) / 60000 | floor) min"' 2>/dev/null)
+  fi
+  LAST=$(echo "$RESULT" | tail -1)
+  log "iteration $N finished: ${LAST:-<no result>} ($STATS)"
+
+  if grep -qiE 'usage limit|session limit|hit your limit|rate limit|overloaded|quota exceeded' <<<"$RESULT$(tail -5 "$TRANSCRIPT")"; then
+    log "limit reached — waiting 15 min"; sleep 900; continue
+  fi
+  if [ "$HARNESS" = codex ] && { [ "$SESSION_STATUS" -ne 0 ] || [ -z "$FINAL" ]; }; then
+    log "Codex failed or returned no final message — see $TRANSCRIPT"
+    tail -5 "$TRANSCRIPT"
+    exit 1
+  fi
+  if [ -z "$FINAL" ]; then
+    log "no result — waiting 30 min"; sleep 1800; continue
+  fi
+  case $LAST in
+    WAITING_CI*)   log "session saw CI pending — waiting on it next iteration" ;;
+    COMMANDER_COMPLETE*) log "top $TOP commander decks playable"; exit 0 ;;
+    STUCK*)        log "stuck — see the ledger at $RUNS/commander-cards.md"; exit 1 ;;
+  esac
+done
+log "stop file found — stopping"
+rm -f "$RUNS/commander.stop"
