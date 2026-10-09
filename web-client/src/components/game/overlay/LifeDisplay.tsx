@@ -246,9 +246,12 @@ export function LifeDisplay({
   // instead, and drop the role tag (left/right position already says who's
   // who).
   const compactName = responsive.isMobile
-  // The seat's account portrait is painted inside the orb, under a scrim that keeps the life total
-  // legible. A team orb speaks for two seats (2HG shared life), so it shows none.
+  // A seat with an account portrait shows it as a hero medallion: a little larger than the plain orb,
+  // the face left uncovered, and the life total on a plate across its lower rim. A team orb speaks
+  // for two seats (2HG shared life), so it shows none.
   const portrait = !teamName && hasAvatarArt(avatarId)
+  const compactHud = responsive.isMobile || responsive.viewportHeight < 560
+  const orbSize = portrait ? size + (compactHud ? 6 : 14) : size
 
   const nameLabel = (
     <div
@@ -313,9 +316,11 @@ export function LifeDisplay({
           onClick={handleClick}
           style={{
             ...styles.lifeDisplay,
-            width: size,
-            height: size,
+            width: orbSize,
+            height: orbSize,
             fontSize: responsive.fontSize.large,
+            // Room under the medallion for the life plate that hangs off its rim.
+            marginBottom: portrait ? (compactHud ? 7 : 10) : 0,
             backgroundColor: bgColor,
             borderColor: borderColor,
             cursor,
@@ -324,37 +329,56 @@ export function LifeDisplay({
             position: 'relative',
           }}
         >
-          {portrait && (
+          {portrait ? (
             <>
               <AvatarArt avatar={avatarId} />
               <span
-                aria-hidden
+                data-life-plate
                 style={{
                   position: 'absolute',
-                  inset: 0,
-                  borderRadius: '50%',
-                  background: 'radial-gradient(circle at 50% 55%, rgba(6, 8, 14, 0.5) 0%, rgba(6, 8, 14, 0.22) 45%, rgba(6, 8, 14, 0) 75%)',
+                  left: '50%',
+                  bottom: compactHud ? -8 : -11,
+                  transform: 'translateX(-50%)',
+                  minWidth: compactHud ? 24 : 30,
+                  height: compactHud ? 16 : 21,
+                  padding: compactHud ? '0 5px' : '0 7px',
+                  boxSizing: 'border-box',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRadius: 999,
+                  // The plate wears the orb's ring colour, so targeting and seat identity read on it too.
+                  border: `1.5px solid ${borderColor}`,
+                  background: 'linear-gradient(180deg, rgba(22, 26, 38, 0.97), rgba(8, 10, 16, 0.97))',
+                  boxShadow: '0 2px 6px rgba(0, 0, 0, 0.6)',
+                  fontSize: compactHud ? 11 : 15,
+                  lineHeight: 1,
+                  fontVariantNumeric: 'tabular-nums',
+                  letterSpacing: '0.2px',
+                  color: life <= 5 ? '#ff5a5a' : '#ffffff',
+                  textShadow: '0 1px 1px rgba(0, 0, 0, 0.8)',
                 }}
-              />
+              >
+                {life}
+              </span>
             </>
+          ) : (
+            <span
+              style={
+                life <= 5
+                  ? { position: 'relative', color: '#ff4444', textShadow: '0 1px 3px rgba(0, 0, 0, 0.9)' }
+                  : {
+                      position: 'relative',
+                      color: '#ffffff',
+                      // Glow tinted by seat identity in multiplayer; falls back to the fixed
+                      // blue (player) / orange (opponent) 2-player glow.
+                      textShadow: `0 0 6px ${seatColor ? `${seatColor}8C` : isPlayer ? 'rgba(80, 170, 240, 0.55)' : 'rgba(255, 130, 40, 0.55)'}, 0 1px 2px rgba(0, 0, 0, 0.75), 0 0 1px rgba(0, 0, 0, 0.9)`,
+                    }
+              }
+            >
+              {life}
+            </span>
           )}
-          <span
-            style={
-              life <= 5
-                ? { position: 'relative', color: '#ff4444', textShadow: '0 1px 3px rgba(0, 0, 0, 0.9)' }
-                : {
-                    position: 'relative',
-                    color: '#ffffff',
-                    // Glow tinted by seat identity in multiplayer; falls back to the fixed
-                    // blue (player) / orange (opponent) 2-player glow.
-                    textShadow: portrait
-                      ? '0 1px 2px rgba(0, 0, 0, 0.95), 0 0 6px rgba(0, 0, 0, 0.9), 0 0 12px rgba(0, 0, 0, 0.6)'
-                      : `0 0 6px ${seatColor ? `${seatColor}8C` : isPlayer ? 'rgba(80, 170, 240, 0.55)' : 'rgba(255, 130, 40, 0.55)'}, 0 1px 2px rgba(0, 0, 0, 0.75), 0 0 1px rgba(0, 0, 0, 0.9)`,
-                  }
-            }
-          >
-            {life}
-          </span>
 
           {/* The seat's last emote, over the orb: above yours (bottom of the screen), below theirs. */}
           <EmoteBubble playerId={playerId} placement={isPlayer ? 'above' : 'below'} />

@@ -77,25 +77,30 @@ class AiGameManager(
     }
 
     companion object {
-        private val AI_NAMES = listOf(
-            "Cruel Optimus",
-            "Thought Harvester",
-            "The Stack Tyrant",
-            "Mindripper Prime",
-            "Soulless Topdeckr",
-            "The Unblinkable",
-            "Dread Calculus",
-            "Synapse Ravager",
-            "Neural Butcher",
-            "The Iron Oracle",
-            "Phyrexian Brainframe",
-            "Darksteel Nemesis",
-            "Voltaic Mastermind",
-            "Myr Overlord",
-            "Blightsteel Brain",
+        /**
+         * The AI's table identities: a name and the preset portrait it sits behind, so an AI seat shows
+         * a face on the match intro and life orb instead of its initial. Every avatar must be a
+         * [com.wingedsheep.gameserver.profile.Avatars] preset the client has art for.
+         */
+        internal val AI_PERSONAS = listOf(
+            AiPersona("Cruel Optimus", "construct-colossus"),
+            AiPersona("Thought Harvester", "lich-lord"),
+            AiPersona("The Stack Tyrant", "demon-tyrant"),
+            AiPersona("Mindripper Prime", "phyrexian-horror"),
+            AiPersona("Soulless Topdeckr", "artificer-golem"),
+            AiPersona("The Unblinkable", "crystal-elemental"),
+            AiPersona("Dread Calculus", "specter-rider"),
+            AiPersona("Synapse Ravager", "sliver-hive"),
+            AiPersona("Neural Butcher", "eldrazi-titan"),
+            AiPersona("The Iron Oracle", "sphinx-sage"),
+            AiPersona("Phyrexian Brainframe", "vedalken-artificer"),
+            AiPersona("Darksteel Nemesis", "gargoyle-sentinel"),
+            AiPersona("Voltaic Mastermind", "storm-archmage"),
+            AiPersona("Myr Overlord", "myr-sentinel"),
+            AiPersona("Blightsteel Brain", "thopter-swarm"),
         )
 
-        fun randomAiName(): String = "[AI] ${AI_NAMES.random()}"
+        fun randomAiPersona(): AiPersona = AI_PERSONAS.random()
     }
 
     val isEnabled: Boolean get() {
@@ -275,6 +280,7 @@ class AiGameManager(
         gameSession: GameSession,
         aiPlayerId: EntityId,
         playerName: String,
+        avatar: String? = null,
         controller: AiPlayerController,
         modelOverride: String? = null,
         onActionReady: (EntityId, GameAction, String?) -> Unit,
@@ -295,7 +301,8 @@ class AiGameManager(
         val playerSession = PlayerSession(
             webSocketSession = aiSession,
             playerId = aiPlayerId,
-            playerName = playerName
+            playerName = playerName,
+            avatar = avatar,
         )
 
         val identity = PlayerIdentity(
@@ -305,6 +312,7 @@ class AiGameManager(
             isAi = true,
             aiModelOverride = modelOverride
         )
+        identity.avatar = avatar
         identity.webSocketSession = aiSession
         identity.currentGameSessionId = gameSession.sessionId
         sessionRegistry.register(identity, aiSession, playerSession)
@@ -344,7 +352,8 @@ class AiGameManager(
         require(isEnabled) { "AI is not enabled. Set game.ai.enabled=true." }
 
         val aiPlayerId = EntityId("ai-${UUID.randomUUID().toString().take(8)}")
-        val aiName = randomAiName() + if (gameProperties.ai.mode.trim().equals("jev", ignoreCase = true)) " (Jev)" else ""
+        val persona = randomAiPersona()
+        val aiName = persona.displayName + if (gameProperties.ai.mode.trim().equals("jev", ignoreCase = true)) " (Jev)" else ""
 
         val controller = createController(aiPlayerId, gameSession)
 
@@ -352,6 +361,7 @@ class AiGameManager(
             gameSession = gameSession,
             aiPlayerId = aiPlayerId,
             playerName = aiName,
+            avatar = persona.avatar,
             controller = controller,
             onActionReady = onActionReady,
             onMulliganKeep = onMulliganKeep,
@@ -459,7 +469,8 @@ class AiGameManager(
         val effectiveModel = modelOverride ?: if (gameProperties.ai.isLlmMode) gameProperties.ai.model else null
         val modelSuffix = effectiveModel?.substringAfterLast('/')?.let { " ($it)" } ?: ""
         val suffix = if (gameProperties.ai.mode.trim().equals("jev", ignoreCase = true) && modelOverride == null) " (Jev)" else modelSuffix
-        val aiName = randomAiName() + suffix
+        val persona = randomAiPersona()
+        val aiName = persona.displayName + suffix
         val identity = PlayerIdentity(
             token = "ai-token-${UUID.randomUUID().toString().take(8)}",
             playerId = aiPlayerId,
@@ -467,12 +478,14 @@ class AiGameManager(
             isAi = true,
             aiModelOverride = modelOverride
         )
+        identity.avatar = persona.avatar
         identity.webSocketSession = aiSession
 
         val playerSession = PlayerSession(
             webSocketSession = aiSession,
             playerId = aiPlayerId,
-            playerName = aiName
+            playerName = aiName,
+            avatar = persona.avatar,
         )
         sessionRegistry.register(identity, aiSession, playerSession)
 
@@ -517,7 +530,8 @@ class AiGameManager(
         val playerSession = PlayerSession(
             webSocketSession = aiSession,
             playerId = aiPlayerId,
-            playerName = identity.playerName
+            playerName = identity.playerName,
+            avatar = identity.avatar,
         )
         sessionRegistry.register(identity, aiSession, playerSession)
 
@@ -574,7 +588,8 @@ class AiGameManager(
             val playerSession = PlayerSession(
                 webSocketSession = newSession,
                 playerId = aiPlayerId,
-                playerName = identity.playerName
+                playerName = identity.playerName,
+                avatar = identity.avatar,
             )
             sessionRegistry.setPlayerSession(newSession.id, playerSession)
         }
@@ -623,4 +638,9 @@ class AiGameManager(
     fun hasAiPlayer(gameSessionId: String): Boolean =
         activeSessions[gameSessionId]?.isNotEmpty() == true
 
+}
+
+/** An AI seat's table identity: its name (shown with the `[AI]` tag) and its preset portrait. */
+data class AiPersona(val name: String, val avatar: String) {
+    val displayName: String get() = "[AI] $name"
 }
