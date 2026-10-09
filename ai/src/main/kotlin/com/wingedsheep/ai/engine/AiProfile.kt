@@ -104,6 +104,13 @@ data class AiProfile(
      */
     val priceCrackBackAsLife: Boolean = false,
     /**
+     * With [priceCrackBackAsLife], charge the life a crack-back would cost *without* chump blocks,
+     * keeping chump blocks only for deciding whether the crack-back is lethal. See [CombatAdvisor]'s
+     * constructor. Without it the life-priced crack-back holds a 2/2 home to chump a tapped 3/3
+     * rather than attack past it — `race-06`, which [priceCrackBackAsLife] alone breaks.
+     */
+    val crackBackWithoutChumps: Boolean = false,
+    /**
      * Stop charging a land drop as card loss. A land moving from hand to battlefield is not a card
      * spent, it is a card converted to mana — and mana is what [EvaluationWeights.tempo] and
      * `BoardPresence` already price.
@@ -511,6 +518,29 @@ data class AiProfile(
      * value is real option value.
      */
     val permanentCastIsNotCardLoss: Boolean = false,
+    /**
+     * Score `ThreatAssessment`'s evasion term the way it reads after an attack, so attacking with a
+     * flier the opponent cannot block stops reading as a loss.
+     *
+     * An attack plan is scored on the post-combat state, and two things in the evasive-power term
+     * read that state wrong:
+     * - **It dropped every tapped attacker.** Everything that just attacked is tapped, so sending a
+     *   flier the opponent cannot block erased exactly the evasion that made the attack free.
+     *   `ThreatAssessment.attackPotential` already refuses to filter by tapped for this reason; this
+     *   applies its argument to the evasion term. The defenders' tapped fliers still do not count —
+     *   a tapped creature genuinely cannot block.
+     * - **It counted a flier that can't block as air cover.** Aesthir Glider at home "blocked" the
+     *   opponent's fliers, so attacking with it read as opening the skies.
+     *
+     * At 0.5 a point under the 1.2 threat weight the first costs 0.6 per point of power, more than
+     * the 0.5 a point of opponent life above 15 is worth, so the AI sat on its fliers: three to four
+     * of them into a board with no flier or reach for three turns running (AI game-log review
+     * 2026-10-09, game 21 turns 12–16), and a can't-block Aesthir Glider held home while the
+     * opponent's only flier was tapped (game 22 turn 13).
+     *
+     * Reaches only the composite evaluator, like every other evaluator flag here.
+     */
+    val evasionAfterAttacking: Boolean = false,
     /** Non-null profiles may only be selected automatically for this set. Arena selection stays explicit. */
     val restrictedToSet: String? = null,
 ) {
@@ -1356,6 +1386,43 @@ data class AiProfile(
         )
 
         /**
+         * The attack-decision fixes from the 2026-10-09 AI game-log review, on top of [PRODUCTION],
+         * so a puzzle or an arena point can be attributed to them alone.
+         *
+         * Two flags, one per half of the attack decision that review found broken:
+         * - [priceCrackBackAsLife] — the hold-back half. The flat −3.0 only fires at exactly lethal,
+         *   and the evaluator prices the attack's own damage on a curve that is steepest at low
+         *   life, so near the end of a race it routinely outbid the crack-back: at 8 life against
+         *   15 power, swinging two creatures at an opponent on 7 bought 8.0 of life value against a
+         *   3.0 penalty, and the AI died to the swing back (game 17 turn 21). Charged as life the
+         *   same crack-back costs `lifeValue(8) − lifeValue(dead)` = 118. Also game 13 turn 17
+         *   (sent its only blocker at 9 life, took 6) and game 23 turns 15–17 (a deathtouch 1/1
+         *   attacking for one into a 7/7 it was the only answer to). Existing flag, never measured
+         *   in the arena: its puzzle target was `race-03`, which it does not close.
+         *   [crackBackWithoutChumps] rides with it: priced as life, a crack-back that lets every
+         *   creature at home chump for free made holding a 2/2 back look better than attacking past
+         *   a tapped 3/3 (`race-06`).
+         * - [evasionAfterAttacking] — the free-attack half; see its KDoc.
+         */
+        val PRODUCTION_ATTACKS = PRODUCTION.copy(
+            id = "production-attacks",
+            priceCrackBackAsLife = true,
+            crackBackWithoutChumps = true,
+            evasionAfterAttacking = true,
+        )
+
+        /**
+         * The attribution candidate: [PRODUCTION_CANDIDATE_EXPIRING], the last pinned baseline, plus
+         * the attack flags of [PRODUCTION_ATTACKS]. All three also ship in [LIVE].
+         */
+        val PRODUCTION_CANDIDATE_ATTACKS = PRODUCTION_CANDIDATE_EXPIRING.copy(
+            id = "production-candidate-attacks",
+            priceCrackBackAsLife = true,
+            crackBackWithoutChumps = true,
+            evasionAfterAttacking = true,
+        )
+
+        /**
          * **What real players face.** [EngineAiPlayerController] builds this and nothing else.
          *
          * A named, stable home for the live configuration so a fix can ship by turning its flag on
@@ -1376,6 +1443,9 @@ data class AiProfile(
             targetPolarityFromEffect = true,
             chumpOnlyWhenInDanger = true,
             permanentCastIsNotCardLoss = true,
+            priceCrackBackAsLife = true,
+            crackBackWithoutChumps = true,
+            evasionAfterAttacking = true,
         )
 
         /**

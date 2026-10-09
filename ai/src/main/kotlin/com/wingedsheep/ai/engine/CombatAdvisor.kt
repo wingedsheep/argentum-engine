@@ -53,6 +53,18 @@ class CombatAdvisor(
      * dominant at lethal because `lifeValue` prices death at −100.
      */
     private val priceCrackBackAsLife: Boolean = false,
+    /**
+     * Under [priceCrackBackAsLife], charge the crack-back a defender would actually take rather
+     * than the one it could survive by chump-blocking with everything.
+     *
+     * The estimate behind the crack-back lets every untapped creature soak a hit, so a 2/2 kept home
+     * "prevents" a 3/3's three damage for free — and priced as life, that makes holding a creature
+     * back to chump look better than attacking with it. That is `race-06` (the 3/3 is tapped, the
+     * 2/2 should get in): life-priced alone, the AI held the Bears. Chump blocks are still how the
+     * AI survives, so they stay in the *lethal* test; the life charged is the damage taken without
+     * them, capped one short of dead, since below that the AI would chump rather than die.
+     */
+    private val crackBackWithoutChumps: Boolean = false,
     /** The composite evaluator's `life` coefficient, so the two are in the same units. */
     private val lifeWeight: Double = 1.0,
     /**
@@ -924,11 +936,15 @@ class CombatAdvisor(
         state: GameState,
         projected: ProjectedState,
         playerId: EntityId,
-        myBlockers: List<EntityId>
+        myBlockers: List<EntityId>,
+        chumpBlocks: Boolean = true,
     ): Int {
         val sides = state.sidesFor(playerId) ?: return 0
+        // A creature that can't block is no defence, however untapped it is. Counting it made
+        // attacking with one (Aesthir Glider) look like it opened the crack-back it never closed.
+        val blockers = myBlockers.filterNot { projected.cantBlock(it) }
         return sides.opponents.maxOf { team ->
-            team.sumOf { CombatMath.estimateNextTurnDamage(state, projected, it, myBlockers) }
+            team.sumOf { CombatMath.estimateNextTurnDamage(state, projected, it, blockers, chumpBlocks) }
         }
     }
 
@@ -1106,11 +1122,19 @@ class CombatAdvisor(
         }
         val nextTurnDamage = incomingNextTurnDamage(postCombat, postProjected, playerId, myBlockers)
         val myLife = postCombat.lifeTotal(playerId)
+        val lifeLost = if (priceCrackBackAsLife && crackBackWithoutChumps && nextTurnDamage < myLife) {
+            val withoutChumps = incomingNextTurnDamage(
+                postCombat, postProjected, playerId, myBlockers, chumpBlocks = false,
+            )
+            maxOf(nextTurnDamage, minOf(withoutChumps, myLife - 1))
+        } else {
+            nextTurnDamage
+        }
 
         // Penalty for plans that hand the opponent a crack-back. See [priceCrackBackAsLife] for
         // why the flat version is a cliff and what replaces it.
         val crackBackPenalty = if (priceCrackBackAsLife) {
-            val after = myLife - nextTurnDamage
+            val after = myLife - lifeLost
             -(LifeDifferential.lifeValue(myLife) - LifeDifferential.lifeValue(after)) * lifeWeight
         } else if (nextTurnDamage >= myLife) {
             -3.0
