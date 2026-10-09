@@ -1,9 +1,11 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.SelectCardsDecision
+import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.engine.view.ClientStateTransformer
 import com.wingedsheep.mtg.sets.definitions.j22.cards.PiratedCopy
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Step
@@ -83,5 +85,16 @@ class PiratedCopyScenarioTest : FunSpec({
         d.castCopying(null)
 
         d.getGraveyardCardNames(d.player1).contains("Pirated Copy") shouldBe true
+    }
+
+    test("the copy badge previews Pirated Copy's own printing, not a by-name lookup") {
+        val d = driver()
+        val theirBear = d.putPermanentOnBattlefield(d.player2, "Grizzly Bears")
+        val copy = d.castCopying(theirBear)
+
+        val card = ClientStateTransformer(cardRegistry = d.cardRegistry, predicateEvaluator = PredicateEvaluator(cardRegistry = null))
+            .transform(d.state, viewingPlayerId = d.player1).cards[copy]!!
+        card.copyOf shouldBe "Pirated Copy"
+        card.copyOfImageUri shouldBe PiratedCopy.metadata.imageUri
     }
 })

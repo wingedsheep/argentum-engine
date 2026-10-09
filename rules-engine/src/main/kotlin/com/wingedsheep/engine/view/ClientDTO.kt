@@ -552,6 +552,13 @@ data class ClientCard(
     val copyOf: String? = null,
 
     /**
+     * Art of the original card's own printing when this permanent is a copy, so the copy badge's
+     * preview shows the version the player actually has (a Jumpstart 2022 Pirated Copy) rather
+     * than whatever printing a by-name lookup lands on.
+     */
+    val copyOfImageUri: String? = null,
+
+    /**
      * True when this permanent's printed card has the Legendary supertype but it is not legendary
      * now — i.e. a copy effect explicitly stripped legendariness ("except it isn't legendary" /
      * Impostor Syndrome). Lets the UI flag the difference between an original legendary creature

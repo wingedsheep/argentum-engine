@@ -572,6 +572,10 @@ internal class CardProjector(
             copyOf = container.get<CopyOfComponent>()?.let { copyComp ->
                 cardRegistry.getCard(copyComp.originalCardDefinitionId)?.name
             },
+            copyOfImageUri = container.get<CopyOfComponent>()?.let { copyComp ->
+                copyComp.originalCardComponent?.imageUri
+                    ?: cardRegistry.getCard(copyComp.originalCardDefinitionId)?.metadata?.imageUri
+            },
             // The two legendary flags are complements, and the `!in supertypes` clause is what
             // makes them so: a non-legendary copy that an effect then makes legendary again (Impostor
             // Syndrome's copy designated Ring-bearer) is simply legendary, so "not legendary" is a lie
