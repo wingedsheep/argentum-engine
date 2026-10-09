@@ -1,5 +1,6 @@
 package com.wingedsheep.ai.llm
 
+import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils.toEntityId
 import com.wingedsheep.ai.ActionResponse
 import com.wingedsheep.ai.AiPlayerController
 import com.wingedsheep.ai.llm.decision.AiDecisionHandlerRegistry
@@ -351,6 +352,10 @@ class LlmAiPlayerController(
         if (!chosen.requiresTargets) return null
 
         val targetReqs = chosen.targetRequirements
+        if (targetReqs?.any { it.validTargetsByPrefix != null } == true) {
+            val first = targetReqs.first().validTargets.getOrNull(targetNum) ?: return null
+            return ActionResponse.SubmitAction(maybeAddTargets(chosen, state, first))
+        }
         val chosenValidTargets = chosen.validTargets
         val allValidTargets = if (!targetReqs.isNullOrEmpty()) {
             targetReqs.flatMap { req -> req.validTargets }
@@ -381,7 +386,7 @@ class LlmAiPlayerController(
      * If a legal action requires targets, auto-select the first valid target for each requirement
      * and return the action with targets filled in.
      */
-    private fun maybeAddTargets(legalAction: LegalActionInfo, state: ClientGameState? = null): GameAction {
+    private fun maybeAddTargets(legalAction: LegalActionInfo, state: ClientGameState? = null, firstTarget: EntityId? = null): GameAction {
         if (!legalAction.requiresTargets) return legalAction.action
 
         val playerIds = state?.players?.map { it.playerId }?.toSet() ?: emptySet()
@@ -391,9 +396,14 @@ class LlmAiPlayerController(
         val laValidTargets = legalAction.validTargets
         if (!laTargetReqs.isNullOrEmpty()) {
             for (req in laTargetReqs) {
-                val validTargets = req.validTargets
-                if (validTargets.isEmpty()) continue
-                val targetId = pickBestTarget(validTargets, legalAction, state)
+                val validTargets = req.validTargetsByPrefix?.get(targets.joinToString(",") { it.toEntityId().toString() })
+                    ?: if (req.validTargetsByPrefix == null) req.validTargets else emptyList()
+                if (validTargets.isEmpty()) {
+                    if (req.minTargets > 0) return legalAction.action
+                    continue
+                }
+                val targetId = firstTarget?.takeIf { targets.isEmpty() && it in validTargets }
+                    ?: pickBestTarget(validTargets, legalAction, state)
                 val target = resolveTargetType(targetId, req.targetZone, playerIds)
                 targets.add(target)
                 logger.info("AI auto-targeting req {}: {} -> {} ({})", req.index, req.description, targetId.value, target::class.simpleName)

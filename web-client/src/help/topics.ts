@@ -1120,6 +1120,7 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
       'Drag a card from your hand onto the battlefield to cast it, drag an attacker onto a defender to attack, and drag a blocker onto an attacker to block. Clicking works everywhere dragging does.',
     body: [
       { kind: 'p', text: 'Clicking a card with more than one way to play opens its action menu — Cast, Play, Turn Face-Up, an activated ability, or View card. A permanent’s abilities are in the same menu.' },
+      { kind: 'p', text: 'Some spells ask for targets in sequence. Choose the player or permanent first, then Confirm to see the valid next targets. Back lets you change an earlier choice and updates the later choices.' },
       { kind: 'p', text: 'Attacking: Attack All sends every creature that can attack, Skip Attacking declares none, and after choosing some the button reads Attack with N. In multiplayer each attacker needs a defender; the banner says who you are allowed to attack.' },
       { kind: 'p', text: 'Blocking: drag each blocker to an attacker, then Confirm Blocks — or No Blocks. Clear resets your choices.' },
       { kind: 'p', text: 'Crowded combat: hover any attacker or blocker (long-press on a phone) to pick out its block. Everything tied to it lights up — its blockers or the attackers it blocks, their other blockers, and the rest of its band — the rest of the board dims, and a caption on the card names who it is blocking or blocked by.' },

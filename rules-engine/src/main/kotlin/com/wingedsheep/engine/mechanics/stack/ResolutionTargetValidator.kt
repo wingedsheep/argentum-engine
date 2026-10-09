@@ -196,10 +196,18 @@ internal class ResolutionTargetValidator(
     ): Boolean {
         // Player is valid if they exist and haven't lost...
         if (!state.hasEntity(target.playerId)) return false
+        if (com.wingedsheep.engine.mechanics.targeting.ControllerShroud.appliesTo(
+                state, target.playerId, predicateEvaluator = predicateEvaluator)) return false
+        if (target.playerId != controllerId && com.wingedsheep.engine.mechanics.targeting.ControllerHexproof.appliesTo(
+                state, target.playerId, predicateEvaluator = predicateEvaluator)) return false
+        if (com.wingedsheep.engine.mechanics.targeting.PlayerProtectionRules.isProtectedFromSource(
+                state, target.playerId, sourceId, controllerId, predicateEvaluator = predicateEvaluator)) return false
         // ...and (CR 608.2b) the player-target restriction still holds. A player who
         // gained life above the threshold, or whose "lost life this turn" never
         // happened, is removed at resolution.
         val requirement = getRequirementForTargetIndex(index, targetRequirements)
+        if ((requirement is TargetOpponent || requirement is TargetOpponentOrPlaneswalker) &&
+            target.playerId == controllerId) return false
         val restriction = when (requirement) {
             is TargetPlayer -> requirement.restriction
             is TargetOpponent -> requirement.restriction

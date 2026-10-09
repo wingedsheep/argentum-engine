@@ -75,7 +75,8 @@ object DependentTargetSelection {
         requirements: List<TargetRequirement>,
         chosen: List<List<EntityId>>,
         context: PredicateContext,
-        targetFinder: TargetFinder
+        targetFinder: TargetFinder,
+        targetingSourceType: TargetingSourceType = TargetingSourceType.TRIGGERED_ABILITY
     ): List<EntityId> {
         require(requirements.all { req -> req !is TargetObject || req.filter.zone == Zone.BATTLEFIELD } &&
             requirements.dropLast(1).all { req -> req.count == 1 && !req.unlimited }) {
@@ -88,7 +89,7 @@ object DependentTargetSelection {
             return targetFinder.findLegalTargets(
                 state, requirements[prefix.size], context.controllerId,
                 sourceId = context.sourceId,
-                targetingSourceType = TargetingSourceType.TRIGGERED_ABILITY,
+                targetingSourceType = targetingSourceType,
                 triggeringEntityId = context.triggeringEntityId,
                 pipelineContext = context.copy(
                     targets = prefixTargets,

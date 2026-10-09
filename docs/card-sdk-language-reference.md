@@ -5517,6 +5517,13 @@ This is the player-arm prerequisite for the planned composable mixed `TargetUnio
   `PlayerRef(Player.EnchantedPlayer)` (below). The predicate's own description follows the target,
   so these read as "defending player controls" / "enchanted player controls" rather than the fixed
   "target player controls" — neither is targeting anyone.
+  On a **spell's** target slot bound to an earlier target of that spell, the same filter is
+  supported at announcement and resolution (The Fall of Kroog). Legal actions carry
+  `validTargetsByPrefix` tables computed by the engine: the UI and AI select the branch for
+  their earlier choices, and direct submissions are validated with those named bindings.
+  First choices that cannot complete the required targets are excluded. As with triggered
+  selection below, earlier slots are single targets and only the last may take several;
+  optional slots must form a trailing suffix. No new SDK type is needed.
   On a **triggered ability's** target slot bound to an earlier target of the same ability
   (`targetPlayerControls(player)` after `val player = target(Targets.Player)`), the trigger chooses
   its targets one slot at a time, offering each slot only what the earlier choices allow

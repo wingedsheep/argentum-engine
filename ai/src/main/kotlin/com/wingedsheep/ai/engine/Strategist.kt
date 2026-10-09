@@ -796,6 +796,9 @@ class Strategist(
         val targetInfos = TargetSelection.fillableRequirements(action, useMeaningfulFilter)
             ?: return heuristicTargets(state, action, playerId)
 
+        if (targetInfos.any { it.validTargetsByPrefix != null }) {
+            return heuristicTargets(state, action, playerId)
+        }
         val rankTarget = TargetSelection.ranker(state, action, playerId, intents, targetPolarityFromEffect)
         // Heuristic baseline for every requirement, then refine each one by simulation.
         val chosenTargets = mutableListOf<com.wingedsheep.engine.state.components.stack.ChosenTarget>()

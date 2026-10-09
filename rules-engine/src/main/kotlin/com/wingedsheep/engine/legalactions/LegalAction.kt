@@ -303,6 +303,8 @@ data class TargetInfo(
     val minTargets: Int,
     val maxTargets: Int,
     val validTargets: List<EntityId>,
+    /** Server-computed choices keyed by the comma-joined earlier target IDs, in slot order. */
+    val validTargetsByPrefix: Map<String, List<EntityId>>? = null,
     val targetZone: String? = null,
     /** A target in this slot must differ from every target chosen for an earlier slot. */
     val mustDifferFromEarlier: Boolean = false,

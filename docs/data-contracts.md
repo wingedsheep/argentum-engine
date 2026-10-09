@@ -878,3 +878,16 @@ themes are sampled for each offer, then one available variant per theme; a theme
 in the second offer. This provides Arena-style choices over paper lists, without Arena's card
 substitutions or rarity-weighted offering algorithm. Initially the newly completed starter themes
 are Archaeology, Goblins, and Unicorns. Other themes unlock automatically as cards are implemented.
+
+
+### Dependent target choices
+
+A legal action's per-slot `targetRequirements` may carry `validTargetsByPrefix`.
+This maps the comma-joined entity IDs selected for earlier slots, in order, to the
+legal choices for this slot. IDs are UUIDs. A missing key means no legal choices;
+a null/absent table means the ordinary `validTargets` list applies. The latter is
+the union for dependent slots, not permission to combine arbitrary choices.
+The engine excludes earlier choices with no legal completion. The web client uses
+the table when advancing targeting and rebuilds that branch after Back changes an
+earlier choice. No hidden-zone data is included: dependent slots currently select
+players and battlefield permanents only.

@@ -847,6 +847,8 @@ export type PendingDecision =
  * Includes valid targets so the client knows which entities can be selected.
  */
 export interface LegalActionTargetInfo {
+  /** Server-computed choices for the comma-joined earlier target IDs. */
+  readonly validTargetsByPrefix?: Readonly<Record<string, readonly EntityId[]>> | null
   readonly index: number
   readonly description: string
   readonly minTargets: number

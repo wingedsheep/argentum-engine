@@ -202,6 +202,9 @@ class TargetValidator(
         retainedTargetIndices: Set<Int>?
     ): String? {
         val starts = counts.runningFold(0, Int::plus)
+        val namedTargets = EffectContext.buildNamedTargets(
+            requirements.mapIndexed { i, req -> req.withCount(counts[i]) }, targets,
+        )
         for ((index, requirement) in requirements.withIndex()) {
             val startIdx = starts[index]
             val endIdx = starts[index + 1]
@@ -215,7 +218,7 @@ class TargetValidator(
             // Validate each target against the requirement
             for ((offset, target) in targetsForReq.withIndex()) {
                 if (retainedTargetIndices?.contains(startIdx + offset) == true) continue
-                val error = validateSingleTarget(state, target, requirement, casterId, sourceColors, sourceSubtypes, sourceId, xValue, targets, targetingSourceType)
+                val error = validateSingleTarget(state, target, requirement, casterId, sourceColors, sourceSubtypes, sourceId, xValue, targets, targetingSourceType, namedTargets)
                 if (error != null) return error
             }
 
@@ -417,7 +420,8 @@ class TargetValidator(
         sourceId: EntityId? = null,
         xValue: Int? = null,
         allTargets: List<ChosenTarget> = emptyList(),
-        targetingSourceType: TargetingSourceType = TargetingSourceType.ANY
+        targetingSourceType: TargetingSourceType = TargetingSourceType.ANY,
+        namedTargets: Map<String, ChosenTarget> = emptyMap()
     ): String? {
         // A separately-chosen player target (target index 0 for "target player's graveyard"
         // spells) — lets a later requirement's filter resolve `OwnedByTargetPlayer` /
@@ -448,8 +452,10 @@ class TargetValidator(
             is TargetPlayerOrPlaneswalker -> validatePlayerOrPlaneswalkerTarget(state, target, casterId)
             is TargetCreatureOrPlaneswalker -> validateCreatureOrPlaneswalkerTarget(state, target)
             is TargetSpellOrPermanent -> validateSpellOrPermanentTarget(state, target, requirement, casterId, sourceId, xValue)
-            is TargetObject -> validateObjectTarget(state, target, requirement.filter, casterId, sourceId, xValue, chosenPlayerTarget)
-            is TargetOther -> validateSingleTarget(state, target, requirement.baseRequirement, casterId, sourceColors, sourceSubtypes, sourceId, xValue, allTargets, targetingSourceType)
+            is TargetObject -> validateObjectTarget(state, target, requirement.filter, casterId, sourceId, xValue, chosenPlayerTarget,
+                PredicateContext(controllerId = casterId, sourceId = sourceId, xValue = xValue,
+                    targets = allTargets, namedTargets = namedTargets, targetPlayerId = chosenPlayerTarget))
+            is TargetOther -> validateSingleTarget(state, target, requirement.baseRequirement, casterId, sourceColors, sourceSubtypes, sourceId, xValue, allTargets, targetingSourceType, namedTargets)
         }
         if (error != null) return error
 
@@ -745,7 +751,8 @@ class TargetValidator(
         filter: TargetFilter,
         casterId: EntityId,
         sourceId: EntityId? = null,
-        xValue: Int? = null
+        xValue: Int? = null,
+        targetContext: PredicateContext? = null
     ): String? {
         if (target !is ChosenTarget.Permanent) {
             return "Target must be a permanent"
@@ -768,7 +775,7 @@ class TargetValidator(
 
         // Use unified filter with projection (face-down creatures have CMC 0 per Rule 708.2)
         val projected = state.projectedState
-        val predicateContext = PredicateContext(controllerId = casterId, sourceId = sourceId, xValue = xValue)
+        val predicateContext = targetContext ?: PredicateContext(controllerId = casterId, sourceId = sourceId, xValue = xValue)
         val matches = predicateEvaluator.matches(state, projected, target.entityId, filter.baseFilter, predicateContext)
         if (!matches) {
             return "Target does not match filter: ${filter.description}"
@@ -1053,7 +1060,8 @@ class TargetValidator(
         casterId: EntityId,
         sourceId: EntityId? = null,
         xValue: Int? = null,
-        targetPlayerId: EntityId? = null
+        targetPlayerId: EntityId? = null,
+        targetContext: PredicateContext? = null
     ): String? {
         // Cross-zone union: the target is legal if it satisfies *any* clause. Validate against each
         // single-zone clause; succeed on the first that accepts, otherwise report that clause's
@@ -1061,7 +1069,7 @@ class TargetValidator(
         // filter). Each clause has no alternatives, so this recursion terminates.
         if (filter.isUnion) {
             val clauseErrors = filter.clauses().map { clause ->
-                validateObjectTarget(state, target, clause, casterId, sourceId, xValue, targetPlayerId)
+                validateObjectTarget(state, target, clause, casterId, sourceId, xValue, targetPlayerId, targetContext)
             }
             if (clauseErrors.any { it == null }) return null
             return clauseErrors.firstOrNull { it != null }
@@ -1069,7 +1077,7 @@ class TargetValidator(
         }
         return when (filter.zone) {
             Zone.GRAVEYARD -> validateGraveyardTarget(state, target, filter, casterId, sourceId, xValue, targetPlayerId)
-            Zone.BATTLEFIELD -> validatePermanentTarget(state, target, filter, casterId, sourceId, xValue)
+            Zone.BATTLEFIELD -> validatePermanentTarget(state, target, filter, casterId, sourceId, xValue, targetContext)
             Zone.STACK -> validateSpellTarget(state, target, filter, casterId, xValue, sourceId)
             else -> validateCardInZoneTarget(state, target, filter, casterId, xValue, sourceId)
         }

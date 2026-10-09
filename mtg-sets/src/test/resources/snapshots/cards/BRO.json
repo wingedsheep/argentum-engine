@@ -5174,6 +5174,103 @@
     ]
 }
 
+// The Fall of Kroog
+{
+    "name": "The Fall of Kroog",
+    "manaCost": "{4}{R}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Choose target opponent. Destroy target land that player controls. The Fall of Kroog deals 3 damage to that player and 1 damage to each creature they control.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ],
+                                "controllerPredicate": {
+                                    "type": "ControlledByReferencedPlayer",
+                                    "target": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "body": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": "IterationEntity"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetOpponent",
+                "id": "t0"
+            },
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsLand"
+                        ],
+                        "controllerPredicate": {
+                            "type": "ControlledByReferencedPlayer",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    }
+                },
+                "id": "t1"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "133",
+        "rarity": "UNCOMMON",
+        "artist": "David Auden Nash",
+        "flavorText": "As retaliation for the Warlord's ambush at the peace summit, Mishra leveled Yotia's capital city.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/4/f454583d-d227-4fc8-842e-128e025880e4.jpg?1783920068"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // The Mightstone and Weakstone
 {
     "name": "The Mightstone and Weakstone",
