@@ -1,6 +1,7 @@
 import { useLayoutEffect, useRef, useState, type CSSProperties } from 'react'
 import type { EntityId } from '@/types'
 import type { BlockEdge, CombatClique } from './combatClique'
+import type { ViewportBounds } from './combatFocusBounds'
 
 /**
  * Hover focus for combat: a spotlight over the hovered creature's clique (see computeCombatClique)
@@ -16,9 +17,12 @@ const BAND_TONE = '#c084fc'
 const SCRIM_OPACITY = 0.5
 const RING_PAD = 5
 const RING_RADIUS = 12
-/** Mirrors HoverCardPreview: its gap from the cursor, and roughly the room it needs beside it. */
-const PREVIEW_CURSOR_GAP = 40
-const PREVIEW_ROOM = 340
+/**
+ * How far the published bounds reach past the cards: the ring, plus the caption pill — above or
+ * below the hovered card, and, centred on a narrow card, overhanging it a little on each side.
+ */
+const BOUNDS_PAD_X = RING_PAD + 40
+const BOUNDS_PAD_Y = 44
 const VIEWPORT_MARGIN = 8
 
 export interface FocusCaption {
@@ -76,10 +80,33 @@ export function measureClique(clique: CombatClique): Map<EntityId, Rect> {
   return rects
 }
 
+/** Bounding box of the measured clique, padded to take in its rings and the caption pill. */
+export function cliqueBounds(rects: ReadonlyMap<EntityId, Rect>): ViewportBounds | null {
+  let left = Infinity, top = Infinity, right = -Infinity, bottom = -Infinity
+  for (const r of rects.values()) {
+    left = Math.min(left, r.left)
+    top = Math.min(top, r.top)
+    right = Math.max(right, r.right)
+    bottom = Math.max(bottom, r.bottom)
+  }
+  if (left === Infinity) return null
+  return {
+    left: left - BOUNDS_PAD_X,
+    top: top - BOUNDS_PAD_Y,
+    right: right + BOUNDS_PAD_X,
+    bottom: bottom + BOUNDS_PAD_Y,
+  }
+}
+
 /**
  * The spotlight, drawn under the arrows: a scrim with a rounded hole over every clique card,
  * plus a ring in the card's combat role colour (white on the hovered card). `visible` fades the
- * scrim out without unmounting it, so leaving a creature eases back instead of snapping.
+ * scrim out before the caller unmounts it, so leaving a creature eases back instead of snapping.
+ *
+ * Its own full-viewport `<svg>`, promoted to a compositor layer, rather than a group inside the
+ * arrow overlay: the masked scrim is the most expensive thing on screen to rasterize, and sharing
+ * a layer with the arrows re-rasterized it on every frame of every arrow's dim/undim transition.
+ * On its own layer it is painted once per clique and the fades are pure compositor opacity.
  */
 export function CliqueSpotlight({
   clique,
@@ -100,29 +127,40 @@ export function CliqueSpotlight({
     rx: RING_RADIUS,
   })
   return (
-    <g style={{ opacity: visible ? 1 : 0, transition: 'opacity 180ms ease-out' }}>
-      <style>{'.combat-focus-in { animation: combat-focus-in 180ms ease-out; } @keyframes combat-focus-in { from { opacity: 0; } to { opacity: 1; } }'}</style>
-      <g className="combat-focus-in">
-        <defs>
-          <mask id="combat-focus-mask" maskUnits="userSpaceOnUse">
-            <rect x={0} y={0} width="100%" height="100%" fill="white" />
-            {[...rects.values()].map((r, i) => <rect key={i} {...hole(r)} fill="black" />)}
-          </mask>
-        </defs>
-        <rect x={0} y={0} width="100%" height="100%" fill="#04060b" fillOpacity={SCRIM_OPACITY}
-          mask="url(#combat-focus-mask)" />
-        {[...rects.entries()].map(([id, r]) => {
-          const tone = clique.blockers.has(id) ? BLOCKER_TONE : ATTACKER_TONE
-          const hovered = id === focusId
-          return (
-            <g key={id}>
-              <rect {...hole(r)} fill="none" stroke={tone} strokeOpacity={0.28} strokeWidth={9} />
-              <rect {...hole(r)} fill="none" stroke={hovered ? '#ffffff' : tone} strokeWidth={hovered ? 2.5 : 2} />
-            </g>
-          )
-        })}
-      </g>
-    </g>
+    <svg
+      className="combat-focus-in"
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        width: '100vw',
+        height: '100vh',
+        pointerEvents: 'none',
+        zIndex: 2000,
+        opacity: visible ? 1 : 0,
+        transition: 'opacity 180ms ease-out',
+        willChange: 'opacity',
+      }}
+    >
+      <defs>
+        <mask id="combat-focus-mask" maskUnits="userSpaceOnUse">
+          <rect x={0} y={0} width="100%" height="100%" fill="white" />
+          {[...rects.values()].map((r, i) => <rect key={i} {...hole(r)} fill="black" />)}
+        </mask>
+      </defs>
+      <rect x={0} y={0} width="100%" height="100%" fill="#04060b" fillOpacity={SCRIM_OPACITY}
+        mask="url(#combat-focus-mask)" />
+      {[...rects.entries()].map(([id, r]) => {
+        const tone = clique.blockers.has(id) ? BLOCKER_TONE : ATTACKER_TONE
+        const hovered = id === focusId
+        return (
+          <g key={id}>
+            <rect {...hole(r)} fill="none" stroke={tone} strokeOpacity={0.28} strokeWidth={9} />
+            <rect {...hole(r)} fill="none" stroke={hovered ? '#ffffff' : tone} strokeWidth={hovered ? 2.5 : 2} />
+          </g>
+        )
+      })}
+    </svg>
   )
 }
 
@@ -134,7 +172,7 @@ const ROLE_LABEL: Record<NonNullable<FocusCaption['role']>, string> = {
 
 /**
  * Caption pill on the hovered creature. It sits on the card's outer edge (the centre-facing edge
- * is where arrows and attack chevrons leave) and stays clear of the hover preview. Measured
+ * is where arrows and attack chevrons leave); the hover preview keeps clear of it. Measured
  * after layout so it can be clamped on-screen.
  */
 export function CliqueCaption({
@@ -159,15 +197,9 @@ export function CliqueCaption({
   }, [key])
 
   const below = rect.top + rect.height / 2 > window.innerHeight / 2
-  const previewOnRight = rect.left + rect.width / 2 + PREVIEW_ROOM < window.innerWidth
   const w = width ?? 0
-  // The preview opens above the cursor, so under a lower-half card the pill can simply centre;
-  // over an upper-half card it would sit beside the preview, so it hangs off the far corner.
-  const idealLeft = below
-    ? rect.left + rect.width / 2 - w / 2
-    : previewOnRight
-      ? rect.left + PREVIEW_CURSOR_GAP - 4 - w
-      : rect.right - PREVIEW_CURSOR_GAP + 4
+  // The hover preview opens beside the clique (see cliqueBounds), so the pill can simply centre.
+  const idealLeft = rect.left + rect.width / 2 - w / 2
   const left = Math.min(Math.max(idealLeft, VIEWPORT_MARGIN), window.innerWidth - w - VIEWPORT_MARGIN)
   const top = below ? rect.bottom + RING_PAD + 6 : rect.top - RING_PAD - 6
 
@@ -211,7 +243,6 @@ export function CliqueCaption({
 
   return (
     <div ref={ref} style={style} data-testid="combat-focus-caption">
-      <style>{'@keyframes combat-caption-in { from { opacity: 0; translate: 0 4px; } to { opacity: 1; translate: 0 0; } }'}</style>
       {caption.role && <span style={chip(roleTone)}>{ROLE_LABEL[caption.role]}</span>}
       {names && (
         <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
