@@ -1,0 +1,76 @@
+{
+  "player1Name": "Mishra",
+  "player2Name": "Opponent",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {
+        "name": "Mishra, Tamer of Mak Fawa"
+      },
+      {
+        "name": "Swamp"
+      },
+      {
+        "name": "Swamp"
+      },
+      {
+        "name": "Mountain"
+      },
+      {
+        "name": "Mountain"
+      },
+      {
+        "name": "Island"
+      },
+      {
+        "name": "Island"
+      }
+    ],
+    "graveyard": [
+      "Ornithopter",
+      "Sol Ring",
+      "Yotian Frontliner"
+    ],
+    "library": [
+      "Swamp",
+      "Mountain",
+      "Swamp"
+    ]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [
+      "Unsummon",
+      "Disenchant"
+    ],
+    "battlefield": [
+      {
+        "name": "Island"
+      },
+      {
+        "name": "Plains"
+      },
+      {
+        "name": "Plains"
+      },
+      {
+        "name": "Grizzly Bears"
+      }
+    ],
+    "library": [
+      "Island",
+      "Plains",
+      "Island"
+    ]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [
+    "END"
+  ],
+  "player2StopAtSteps": [
+    "END"
+  ]
+}
