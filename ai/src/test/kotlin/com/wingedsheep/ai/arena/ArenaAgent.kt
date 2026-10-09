@@ -145,6 +145,11 @@ object ArenaAgents {
         // production-candidate-expiring production-candidate-noop 300` is the promotion gate.
         ArenaAgent("production-noop", AiProfile.PRODUCTION_NOOP),
         ArenaAgent("production-candidate-noop", AiProfile.PRODUCTION_CANDIDATE_NOOP),
+        // Blocking search may not add a chump block unless the life it saves is needed.
+        // `just arena production production-chumpgate 300` prices the term on its own; `just arena
+        // production-candidate-expiring production-candidate-chumpgate 300` is the promotion gate.
+        ArenaAgent("production-chumpgate", AiProfile.PRODUCTION_CHUMPGATE),
+        ArenaAgent("production-candidate-chumpgate", AiProfile.PRODUCTION_CANDIDATE_CHUMPGATE),
         // What EngineAiPlayerController plays: production-candidate-expiring plus every fix shipped
         // since. `just arena production-candidate-expiring live 300` prices the stack.
         ArenaAgent("live", AiProfile.LIVE),

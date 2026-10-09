@@ -279,6 +279,7 @@ class AIPlayer(
                 simulator, evaluator, cardRegistry, advisorRegistry,
                 priceCrackBackAsLife = profile.priceCrackBackAsLife,
                 lifeWeight = EvalWeights.resolve(profile.evalWeightsId).life,
+                chumpOnlyWhenInDanger = profile.chumpOnlyWhenInDanger,
             )
             val responder = DecisionResponder(
                 simulator, evaluator,

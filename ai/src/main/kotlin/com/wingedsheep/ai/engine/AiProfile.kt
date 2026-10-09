@@ -464,6 +464,26 @@ data class AiProfile(
      * let the Frog's deathtouch through from turn 14 on. Needs [useCardIntent].
      */
     val refuseUnspendableGrants: Boolean = false,
+    /**
+     * Blocking local search may not add a chump block — a blocker that dies while everything it
+     * blocked survives — unless the life it saves is life we need: this hit is lethal, or it leaves
+     * us dead to the attack after (`CombatAdvisor.isLifeInDanger`, counting every creature that
+     * will have untapped by then rather than only today's untapped ones).
+     *
+     * Fixes the high-life chump blocks in the 2026-10-09 AI-vs-AI logs: a 2/3 in front of a 5/5
+     * first-striking trampler at 18 life (it saved three points and lost the creature), a 0/3 wall
+     * in front of a 3/3 at 18, a 1/1 in front of a 2/2 at 12, a 3/1 in front of a 6/4 at 20 with
+     * the opponent at 8, a 1/1 in front of a 2/3 at 25. None came from the chump passes — every
+     * one was a local-search "add a blocker" mutation the one-ply evaluator scored a fraction of a
+     * point higher than taking the hit. The evaluator prices a creature by what it is worth on the
+     * board after this combat; it cannot see that a creature alive next turn blocks again, so it
+     * sells bodies for life it does not need. The chump passes already encode the policy ("chump
+     * only when facing lethal"); this stops the search from routing around it.
+     *
+     * A losing block the heuristic seed already chose is left alone — the gate is on what search
+     * *adds*. Read off the simulated combat, not predicted, so first strike and deathtouch count.
+     */
+    val chumpOnlyWhenInDanger: Boolean = false,
     /** Non-null profiles may only be selected automatically for this set. Arena selection stays explicit. */
     val restrictedToSet: String? = null,
 ) {
@@ -1274,6 +1294,25 @@ data class AiProfile(
         )
 
         /**
+         * [chumpOnlyWhenInDanger] alone on top of [PRODUCTION], so a puzzle or an arena point that
+         * moves is attributable to it.
+         */
+        val PRODUCTION_CHUMPGATE = PRODUCTION.copy(
+            id = "production-chumpgate",
+            chumpOnlyWhenInDanger = true,
+        )
+
+        /**
+         * [chumpOnlyWhenInDanger] on top of [PRODUCTION_CANDIDATE_EXPIRING] — the last pinned
+         * candidate [LIVE] builds on, so the arena gate `just arena production-candidate-expiring
+         * production-candidate-chumpgate` measures this flag and nothing else. [LIVE] ships it.
+         */
+        val PRODUCTION_CANDIDATE_CHUMPGATE = PRODUCTION_CANDIDATE_EXPIRING.copy(
+            id = "production-candidate-chumpgate",
+            chumpOnlyWhenInDanger = true,
+        )
+
+        /**
          * **What real players face.** [EngineAiPlayerController] builds this and nothing else.
          *
          * A named, stable home for the live configuration so a fix can ship by turning its flag on
@@ -1292,6 +1331,7 @@ data class AiProfile(
             informedChoiceDecisions = true,
             refuseUnspendableGrants = true,
             targetPolarityFromEffect = true,
+            chumpOnlyWhenInDanger = true,
         )
 
         /**
