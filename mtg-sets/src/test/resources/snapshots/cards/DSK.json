@@ -1881,7 +1881,9 @@
                                             "amount": 1
                                         }
                                     },
-                                    "storeSelected": "found"
+                                    "storeSelected": "found",
+                                    "prompt": "Search your library for a Room card that doesn't have the same name as a Room you control to put into your hand",
+                                    "selectedLabel": "Put into your hand"
                                 },
                                 {
                                     "type": "MoveCollection",
@@ -3158,7 +3160,9 @@
                                         "amount": 1
                                     }
                                 },
-                                "storeSelected": "found"
+                                "storeSelected": "found",
+                                "prompt": "Search your library for a card to put into your graveyard",
+                                "selectedLabel": "Put into your graveyard"
                             },
                             {
                                 "type": "MoveCollection",
@@ -3601,7 +3605,9 @@
                                 "amount": 1
                             }
                         },
-                        "storeSelected": "found"
+                        "storeSelected": "found",
+                        "prompt": "Search your library for a card to put into your hand",
+                        "selectedLabel": "Put into your hand"
                     },
                     {
                         "type": "MoveCollection",
@@ -3638,7 +3644,9 @@
                                 "amount": 1
                             }
                         },
-                        "storeSelected": "found"
+                        "storeSelected": "found",
+                        "prompt": "Search your library for a Demon card to put into your hand",
+                        "selectedLabel": "Put into your hand"
                     },
                     {
                         "type": "MoveCollection",
@@ -9805,7 +9813,9 @@
                                     "amount": 1
                                 }
                             },
-                            "storeSelected": "found"
+                            "storeSelected": "found",
+                            "prompt": "Search your library for a basic land card to put into your hand",
+                            "selectedLabel": "Put into your hand"
                         },
                         {
                             "type": "MoveCollection",
@@ -11644,7 +11654,9 @@
                                             "amount": 1
                                         }
                                     },
-                                    "storeSelected": "found"
+                                    "storeSelected": "found",
+                                    "prompt": "Search your library for a basic land card to put onto the battlefield tapped",
+                                    "selectedLabel": "Put onto the battlefield tapped"
                                 },
                                 {
                                     "type": "MoveCollection",
@@ -16839,7 +16851,9 @@
                                     "amount": 1
                                 }
                             },
-                            "storeSelected": "found"
+                            "storeSelected": "found",
+                            "prompt": "Search your library for a basic land card to put into your hand",
+                            "selectedLabel": "Put into your hand"
                         },
                         {
                             "type": "MoveCollection",
@@ -18278,7 +18292,9 @@
                                     "amount": 1
                                 }
                             },
-                            "storeSelected": "found"
+                            "storeSelected": "found",
+                            "prompt": "Search your library for a basic land card to put onto the battlefield tapped",
+                            "selectedLabel": "Put onto the battlefield tapped"
                         },
                         {
                             "type": "MoveCollection",

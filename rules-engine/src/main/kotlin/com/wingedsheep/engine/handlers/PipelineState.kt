@@ -44,6 +44,15 @@ data class PipelineState(
         fun shownKey(collection: String, playerId: EntityId): String = "__shown:${playerId.value}:$collection"
 
         /**
+         * Reserved metadata collection published by a library-searching gather
+         * (`GatherCardsEffect.search`) alongside [collection]: the cards that search found. A
+         * SelectFromCollection over [collection] reads it to mark its decision as a library
+         * search ([com.wingedsheep.engine.core.SelectCardsDecision.librarySearch]). Empty when a
+         * later non-search gather reused the name.
+         */
+        fun searchedKey(collection: String): String = "__searched:$collection"
+
+        /**
          * Pipeline collection name under which a batch trigger seeds the entities it captured
          * (the matching permanents in a `PermanentsEnteredEvent` batch). Aliases the SDK-side
          * contract [com.wingedsheep.sdk.scripting.effects.IterationSpace.TRIGGER_CAPTURED_COLLECTION]

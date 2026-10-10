@@ -1581,7 +1581,9 @@
                                         "amount": 1
                                     }
                                 },
-                                "storeSelected": "found"
+                                "storeSelected": "found",
+                                "prompt": "Search your library for a Goblin card to put on top of your library",
+                                "selectedLabel": "Put on top of your library"
                             },
                             "ShuffleLibrary",
                             {
@@ -4716,7 +4718,9 @@
                                         "amount": 1
                                     }
                                 },
-                                "storeSelected": "found"
+                                "storeSelected": "found",
+                                "prompt": "Search your library for an Elf card to put on top of your library",
+                                "selectedLabel": "Put on top of your library"
                             },
                             "ShuffleLibrary",
                             {
@@ -5224,7 +5228,9 @@
                                         "amount": 1
                                     }
                                 },
-                                "storeSelected": "found"
+                                "storeSelected": "found",
+                                "prompt": "Search your library for a Faerie card to put on top of your library",
+                                "selectedLabel": "Put on top of your library"
                             },
                             "ShuffleLibrary",
                             {
@@ -6021,7 +6027,9 @@
                                         "amount": 1
                                     }
                                 },
-                                "storeSelected": "found"
+                                "storeSelected": "found",
+                                "prompt": "Search your library for an Elemental card to put on top of your library",
+                                "selectedLabel": "Put on top of your library"
                             },
                             "ShuffleLibrary",
                             {
@@ -6639,7 +6647,9 @@
                                         "amount": 1
                                     }
                                 },
-                                "storeSelected": "found"
+                                "storeSelected": "found",
+                                "prompt": "Search your library for a Giant card to put on top of your library",
+                                "selectedLabel": "Put on top of your library"
                             },
                             "ShuffleLibrary",
                             {
@@ -9895,7 +9905,9 @@
                                         "amount": 1
                                     }
                                 },
-                                "storeSelected": "found"
+                                "storeSelected": "found",
+                                "prompt": "Search your library for a Kithkin card to put on top of your library",
+                                "selectedLabel": "Put on top of your library"
                             },
                             "ShuffleLibrary",
                             {
@@ -10553,7 +10565,9 @@
                                     "amount": 1
                                 }
                             },
-                            "storeSelected": "found"
+                            "storeSelected": "found",
+                            "prompt": "Search your library for a card to put on top of your library",
+                            "selectedLabel": "Put on top of your library"
                         },
                         "ShuffleLibrary",
                         {
@@ -11228,7 +11242,9 @@
                                         "amount": 1
                                     }
                                 },
-                                "storeSelected": "found"
+                                "storeSelected": "found",
+                                "prompt": "Search your library for a Merfolk card to put on top of your library",
+                                "selectedLabel": "Put on top of your library"
                             },
                             "ShuffleLibrary",
                             {
@@ -13430,7 +13446,9 @@
                                         "amount": 1
                                     }
                                 },
-                                "storeSelected": "found"
+                                "storeSelected": "found",
+                                "prompt": "Search your library for a creature card to put into your hand",
+                                "selectedLabel": "Put into your hand"
                             },
                             {
                                 "type": "MoveCollection",
@@ -14474,7 +14492,9 @@
                                         "amount": 3
                                     }
                                 },
-                                "storeSelected": "found"
+                                "storeSelected": "found",
+                                "prompt": "Search your library for up to three Forest land cards to put onto the battlefield tapped",
+                                "selectedLabel": "Put onto the battlefield tapped"
                             },
                             {
                                 "type": "MoveCollection",
@@ -17416,7 +17436,9 @@
                                     "amount": 1
                                 }
                             },
-                            "storeSelected": "found"
+                            "storeSelected": "found",
+                            "prompt": "Search your library for a Treefolk or Forest card to put on top of your library",
+                            "selectedLabel": "Put on top of your library"
                         },
                         "ShuffleLibrary",
                         {
@@ -18140,7 +18162,9 @@
                                     "amount": 1
                                 }
                             },
-                            "storeSelected": "found"
+                            "storeSelected": "found",
+                            "prompt": "Search your library for a basic land card to put into your hand",
+                            "selectedLabel": "Put into your hand"
                         },
                         {
                             "type": "MoveCollection",

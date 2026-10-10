@@ -353,10 +353,13 @@ class DecisionResponder(
 
         // Context-aware ranking
         val prompt = decision.prompt.lowercase()
-        val isDiscard = prompt.contains("discard")
-        val isSacrifice = prompt.contains("sacrifice")
-        val isScryBottom = decision.selectedLabel?.lowercase()?.contains("bottom") == true
-        val isSurveilGraveyard = decision.selectedLabel?.lowercase()?.contains("graveyard") == true
+        // A library search says so on the decision; its prompt and label name the filter and the
+        // destination ("… to put into your graveyard"), so the word-matching below must not read it.
+        val isSearch = decision.librarySearch
+        val isDiscard = !isSearch && prompt.contains("discard")
+        val isSacrifice = !isSearch && prompt.contains("sacrifice")
+        val isScryBottom = !isSearch && decision.selectedLabel?.lowercase()?.contains("bottom") == true
+        val isSurveilGraveyard = !isSearch && decision.selectedLabel?.lowercase()?.contains("graveyard") == true
         val isChooseToKeep = prompt.contains("put") && prompt.contains("hand")
 
         if (selectionCountsByValue && !isDiscard && (isScryBottom || isSurveilGraveyard) &&
@@ -396,10 +399,10 @@ class DecisionResponder(
                 val ranked = rankCardsContextual(state, options, playerId, wantToKeep = true)
                 CardsSelectedResponse(decision.id, ranked.take(max))
             }
-            selectionCountsByValue && decision.selectedLabel == null && max > 0 -> {
-                // An unlabelled "choose up to N" is a gain — the pipeline's library search is one
-                // (a Landscape's [Plains]). The branch above already takes N when the options
-                // outnumber it; taking `min` (zero) here declined every search with ≤ N candidates.
+            selectionCountsByValue && (isSearch || decision.selectedLabel == null) && max > 0 -> {
+                // A library search is a gain (a Landscape's [Plains]), as is any other unlabelled
+                // "choose up to N". The branch above already takes N when the options outnumber
+                // it; taking `min` (zero) here declined every search with ≤ N candidates.
                 val ranked = rankCardsContextual(state, options, playerId, wantToKeep = true)
                 CardsSelectedResponse(decision.id, ranked.take(max.coerceAtMost(options.size)))
             }

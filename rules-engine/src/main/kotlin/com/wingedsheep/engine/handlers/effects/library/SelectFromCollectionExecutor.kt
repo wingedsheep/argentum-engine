@@ -2,6 +2,7 @@ package com.wingedsheep.engine.handlers.effects.library
 
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.EffectContext
+import com.wingedsheep.engine.handlers.PipelineState
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.handlers.effects.ChooserResolution
@@ -511,6 +512,9 @@ class SelectFromCollectionExecutor(
             else -> "Choose $minSelections to $maxSelections cards"
         }
 
+        val librarySearch = context.pipeline.storedCollections[PipelineState.searchedKey(effect.from)]
+            .orEmpty().isNotEmpty()
+
         val decision = { decisionId: String -> SelectCardsDecision(
             id = decisionId,
             playerId = playerId,
@@ -553,7 +557,9 @@ class SelectFromCollectionExecutor(
                     }
                 }
                 .singleOrNull()?.max,
-            conditionalMinimums = conditionalMinimums
+            conditionalMinimums = conditionalMinimums,
+            librarySearch = librarySearch,
+            declineLabel = if (librarySearch && minSelections == 0) "Fail to find" else null
         ) }
 
         val continuation = SelectFromCollectionContinuation(

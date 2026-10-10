@@ -52,17 +52,20 @@ class SelectionCountsByValueTest : FunSpec({
         maxSelections: Int,
         selectedLabel: String?,
         flag: Boolean,
+        librarySearch: Boolean = false,
+        prompt: String = "Choose up to $maxSelections card${if (maxSelections != 1) "s" else ""}",
     ): List<EntityId> {
         val decision = SelectCardsDecision(
             id = "test",
             playerId = me,
-            prompt = "Choose up to $maxSelections card${if (maxSelections != 1) "s" else ""}",
+            prompt = prompt,
             context = DecisionContext(phase = DecisionPhase.RESOLUTION),
             options = options,
             minSelections = 0,
             maxSelections = maxSelections,
             selectedLabel = selectedLabel,
-            remainderLabel = selectedLabel?.let { "Put on top" },
+            remainderLabel = selectedLabel?.takeUnless { librarySearch }?.let { "Put on top" },
+            librarySearch = librarySearch,
         )
         val responder = DecisionResponder(
             GameSimulator(d.cardRegistry),
@@ -80,6 +83,23 @@ class SelectionCountsByValueTest : FunSpec({
 
         choose(d, me, listOf(land), 1, selectedLabel = null, flag = false) shouldBe emptyList()
         choose(d, me, listOf(land), 1, selectedLabel = null, flag = true) shouldBe listOf(land)
+    }
+
+    test("a labelled search whose only candidate fits the count still takes it") {
+        val (d, me) = floodedGame()
+        val land = d.putCardOnTopOfLibrary(me, "Swamp")
+
+        choose(
+            d, me, listOf(land), 1, "Put onto the battlefield tapped", flag = true, librarySearch = true,
+            prompt = "Search your library for a basic land card to put onto the battlefield tapped",
+        ) shouldBe listOf(land)
+        // A graveyard-bound search is not a surveil, though its label names the graveyard: the
+        // castable creature a surveil would keep on top is still found.
+        val creature = d.putCardOnTopOfLibrary(me, "Diregraf Scavenger")
+        choose(
+            d, me, listOf(creature), 1, "Put into your graveyard", flag = true, librarySearch = true,
+            prompt = "Search your library for a card to put into your graveyard",
+        ) shouldBe listOf(creature)
     }
 
     test("g1 T12: scry keeps a castable creature on top while flooded") {

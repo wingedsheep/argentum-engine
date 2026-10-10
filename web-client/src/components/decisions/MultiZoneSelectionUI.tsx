@@ -232,7 +232,7 @@ export function MultiZoneSelectionUI({
             onClick={handleSkip}
             className={styles.confirmButton}
           >
-            Select None
+            {decision.declineLabel ?? 'Select None'}
           </button>
         ) : (
           <button

@@ -37,6 +37,7 @@ import com.wingedsheep.sdk.scripting.effects.ZonePlacement
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
+import com.wingedsheep.sdk.scripting.util.numberToWord
 
 /**
  * Effect patterns for library manipulation: search, scry, surveil, mill,
@@ -653,7 +654,9 @@ object LibraryPatterns {
             SelectFromCollectionEffect(
                 from = "searchable",
                 selection = SelectionMode.ChooseUpTo(count),
-                storeSelected = "found"
+                storeSelected = "found",
+                prompt = searchPrompt("your library", filter, count, destination, entersTapped),
+                selectedLabel = searchSelectedLabel(destination, entersTapped)
             )
         )
 
@@ -692,6 +695,57 @@ object LibraryPatterns {
         return CompositeEffect(effects)
     }
 
+    /**
+     * The player-facing prompt for a search's pick, derived from what it looks for and where the
+     * found cards go: "Search your library for a basic land card to put onto the battlefield
+     * tapped". The filter wording is [GameObjectFilter.description]'s, so it improves with it.
+     */
+    private fun searchPrompt(
+        zonePhrase: String,
+        filter: GameObjectFilter,
+        count: DynamicAmount,
+        destination: SearchDestination,
+        entersTapped: Boolean
+    ): String {
+        val fixed = (count as? DynamicAmount.Fixed)?.amount
+        val what = when (fixed) {
+            1 -> searchNoun(filter, plural = false).let { "${if (it.first().lowercaseChar() in "aeiou") "an" else "a"} $it" }
+            null -> "${searchNoun(filter, plural = true)} (up to ${count.description})"
+            else -> "up to ${numberToWord(fixed)} ${searchNoun(filter, plural = true)}"
+        }
+        val where = when (destination) {
+            SearchDestination.HAND -> "into your hand"
+            SearchDestination.BATTLEFIELD -> if (entersTapped) "onto the battlefield tapped" else "onto the battlefield"
+            SearchDestination.GRAVEYARD -> "into your graveyard"
+            SearchDestination.TOP_OF_LIBRARY -> "on top of your library"
+        }
+        return "Search $zonePhrase for $what to put $where"
+    }
+
+    /**
+     * [filter]'s description as a card noun: "basic land card", "creature card with power 2 or
+     * less", "card named Avarax" — the word "card" goes ahead of the first qualifying clause.
+     */
+    private fun searchNoun(filter: GameObjectFilter, plural: Boolean): String {
+        val description = filter.description.trim()
+        val qualifiers = listOf("with ", "named ", "that ", "whose ", "has ")
+        val split = qualifiers.mapNotNull { q ->
+            if (description.startsWith(q)) 0 else description.indexOf(" $q").takeIf { it >= 0 }
+        }.minOrNull() ?: description.length
+        val head = description.substring(0, split).trim().let { if (it == "card") "" else it.removeSuffix(" card") }
+        val tail = description.substring(split).trim()
+        return listOf(head, if (plural) "cards" else "card", tail).filter { it.isNotEmpty() }.joinToString(" ")
+    }
+
+    /** Where a search's found cards go, for the selection UI's "Selected →" label. */
+    private fun searchSelectedLabel(destination: SearchDestination, entersTapped: Boolean): String =
+        when (destination) {
+            SearchDestination.HAND -> "Put into your hand"
+            SearchDestination.BATTLEFIELD -> if (entersTapped) "Put onto the battlefield tapped" else "Put onto the battlefield"
+            SearchDestination.GRAVEYARD -> "Put into your graveyard"
+            SearchDestination.TOP_OF_LIBRARY -> "Put on top of your library"
+        }
+
     fun searchMultipleZones(
         zones: List<Zone>,
         filter: GameObjectFilter = GameObjectFilter.Any,
@@ -714,7 +768,12 @@ object LibraryPatterns {
             SelectFromCollectionEffect(
                 from = "searchable",
                 selection = SelectionMode.ChooseUpTo(DynamicAmount.Fixed(count)),
-                storeSelected = "found"
+                storeSelected = "found",
+                prompt = searchPrompt(
+                    "your " + zones.joinToString(" and/or ") { it.name.lowercase() },
+                    filter, DynamicAmount.Fixed(count), destination, entersTapped
+                ),
+                selectedLabel = searchSelectedLabel(destination, entersTapped)
             )
         )
 
@@ -974,7 +1033,9 @@ object LibraryPatterns {
             SelectFromCollectionEffect(
                 from = "searchable",
                 selection = SelectionMode.ChooseUpTo(count),
-                storeSelected = "found"
+                storeSelected = "found",
+                prompt = searchPrompt("your library", filter, count, SearchDestination.HAND, entersTapped = false),
+                selectedLabel = searchSelectedLabel(SearchDestination.HAND, entersTapped = false)
             ),
             MoveCollectionEffect(
                 from = "found",
