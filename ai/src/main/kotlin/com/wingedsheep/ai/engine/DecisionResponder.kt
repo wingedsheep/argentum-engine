@@ -67,8 +67,9 @@ class DecisionResponder(
     /**
      * [AiProfile.selectionCountsByValue]: an unlabelled "choose up to N" takes N even when the
      * options don't outnumber it, and a scry-to-bottom or surveil-to-graveyard choice sends exactly
-     * the cards worth less than [LOOK_KEEP_THRESHOLD] — possibly none, possibly all. Off is the
-     * historical count logic.
+     * the cards worth less than the draw that would replace them — possibly none, possibly all.
+     * Also makes every [CardSelectionValue] land price its colours per pip still short. Off is
+     * the historical count logic.
      */
     private val selectionCountsByValue: Boolean = false,
 ) {
@@ -330,20 +331,47 @@ class DecisionResponder(
     }
 
     /**
-     * Scry / surveil: send away exactly the looked-at cards not worth drawing — every card whose
-     * [CardSelectionValue] falls below [LOOK_KEEP_THRESHOLD], widened to the decision's minimum
-     * with the least valuable cards and capped at its maximum. Zero is a legal and common answer.
+     * Scry / surveil: send away exactly the looked-at cards not worth drawing, deciding one card at
+     * a time, best first. Each step keeps the best remaining card while its [CardSelectionValue]
+     * is no more than [LOOK_KEEP_MARGIN] below the expected value of the draw that would replace
+     * it; the first card under that bar goes, and so does everything ranked below it. The kept
+     * count is clamped so the cards sent away stay within the decision's minimum and maximum.
+     * Zero is a legal and common answer.
+     *
+     * Every step re-prices the position as if the cards already kept were in hand, so the first
+     * kept land makes a second one worth less: with exactly one land needed, a scry 2 over two
+     * lands keeps one and bottoms the other.
+     *
+     * The replacement draw is the mean [CardSelectionValue] of the rest of the player's library —
+     * its *contents*, which the player knows from the decklist, never its order — re-priced with
+     * the same kept cards, so the same mediocre land stays on top of a library of lands and goes
+     * from a library of spells. An empty rest of library falls back to [LOOK_KEEP_FALLBACK].
      */
     private fun cardsBelowKeepThreshold(
         state: GameState,
         decision: SelectCardsDecision,
         playerId: EntityId,
     ): List<EntityId> {
-        val value = CardSelectionValue.of(state, playerId, intents)
-        val scored = decision.options.map { it to value.score(it) }.sortedBy { it.second }
-        val count = scored.count { it.second < LOOK_KEEP_THRESHOLD }
-            .coerceIn(decision.minSelections.coerceAtMost(decision.maxSelections), decision.maxSelections)
-        return scored.take(count).map { it.first }
+        val options = decision.options
+        val looked = options.toSet()
+        val rest = state.getZone(playerId, Zone.LIBRARY).filterNot { it in looked }
+        val minSent = decision.minSelections.coerceIn(0, decision.maxSelections)
+        val maxKeep = options.size - minSent
+        val minKeep = (options.size - decision.maxSelections).coerceAtLeast(0)
+
+        val kept = mutableListOf<EntityId>()
+        val remaining = options.toMutableList()
+        while (remaining.isNotEmpty() && kept.size < maxKeep) {
+            val value = CardSelectionValue.of(
+                state, playerId, intents, extraHand = kept, pipAwareLandColors = selectionCountsByValue,
+            )
+            val replacement = if (rest.isEmpty()) LOOK_KEEP_FALLBACK else rest.sumOf { value.score(it) } / rest.size
+            val (best, score) = remaining.map { it to value.score(it) }.maxBy { it.second }
+            if (kept.size >= minKeep && score < replacement - LOOK_KEEP_MARGIN) break
+            kept.add(best)
+            remaining.remove(best)
+        }
+        return remaining
     }
 
     /**
@@ -815,7 +843,7 @@ class DecisionResponder(
         legacyOnly: Boolean = false,
     ): List<EntityId> {
         if (castabilityAwareCardSelection && !legacyOnly) {
-            val value = CardSelectionValue.of(state, playerId, intents)
+            val value = CardSelectionValue.of(state, playerId, intents, pipAwareLandColors = selectionCountsByValue)
             // A stable sort on the score keeps the decision's own order for ties, so identical
             // copies resolve the same way they always did.
             val scored = cards.map { it to value.score(it) }
@@ -1097,11 +1125,18 @@ class DecisionResponder(
         const val DRAW_VALUE_SAMPLES = 5
 
         /**
-         * [CardSelectionValue] below which a scried / surveiled card is not worth drawing. A spell
-         * castable within a turn or two scores well above it; a land with six or more already
-         * coming (1.5 or less) and a spell several land draws away fall below it.
+         * How far below the expected replacement draw a scried / surveiled card must score before
+         * it goes. A card about as good as the average draw stays: digging past it is a coin flip
+         * that costs the known card.
          */
-        const val LOOK_KEEP_THRESHOLD = 2.0
+        const val LOOK_KEEP_MARGIN = 0.25
+
+        /**
+         * The replacement draw's value when nothing else is left in the library. A spell castable
+         * within a turn or two scores well above it; a land with six or more already coming (1.5
+         * or less) and a spell several land draws away fall below it.
+         */
+        const val LOOK_KEEP_FALLBACK = 2.0
 
         val CREATURE_TYPES_LOWER: Set<String> = Subtype.ALL_CREATURE_TYPES.mapTo(HashSet()) { it.lowercase() }
     }

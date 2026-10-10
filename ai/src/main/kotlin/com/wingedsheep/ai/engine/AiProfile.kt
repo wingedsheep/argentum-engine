@@ -464,7 +464,14 @@ data class AiProfile(
      *   (game 1) and Refute Destiny (game 2) kept every card on top.
      *
      * With it on, an unlabelled "choose up to N" takes N, and scry / surveil send away exactly the
-     * cards whose [CardSelectionValue] falls below a keep threshold — zero, some or all.
+     * cards whose [CardSelectionValue] falls below the draw that would replace them — the mean
+     * value of the rest of the player's library, whose contents (not order) the player knows —
+     * zero, some or all. They decide one card at a time, best first, re-pricing the rest as if
+     * the cards already kept were in hand, so a second land is worth less once the first is kept.
+     *
+     * It also makes [CardSelectionValue] price a land's colours per pip still short instead of
+     * only when *no* source makes the colour: a {2}{B}{B} spell with one Swamp out now wants the
+     * second Swamp. That reaches every answer [castabilityAwareCardSelection] ranks.
      */
     val selectionCountsByValue: Boolean = false,
     /**

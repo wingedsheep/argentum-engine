@@ -58,6 +58,8 @@ internal class CardSelectionValue private constructor(
     private val libraryLandsByColor: Map<Color, Int>,
     /** Names of legendary permanents this player controls. */
     private val legendsInPlay: Set<String>,
+    /** [AiProfile.selectionCountsByValue]: price a land's colours per pip still short. See [landScore]. */
+    private val pipAwareLandColors: Boolean,
 ) {
 
     /** Higher = more valuable to keep. */
@@ -140,7 +142,9 @@ internal class CardSelectionValue private constructor(
 
         // A colour nothing else provides, which spells in hand are waiting on.
         val produces = landColors(card)
-        if (produces.isNotEmpty()) {
+        if (produces.isNotEmpty() && pipAwareLandColors) {
+            score += pipCredit(produces, inPlayColors + otherHandLands.map { it.second }, coming)
+        } else if (produces.isNotEmpty()) {
             val available = inPlayColors + otherHandLands.map { it.second }
             val unlocked = handSpells.count { (_, spell) ->
                 spell.manaCost.colorCount.keys.any { color -> color in produces && available.none { color in it } }
@@ -148,6 +152,24 @@ internal class CardSelectionValue private constructor(
             score += minOf(unlocked, 3) * 1.0
         }
         return score
+    }
+
+    /**
+     * The pip-aware colour credit: for each spell in hand, one point per colour [produces] where
+     * the spell needs more pips of it than [available] sources make. The legacy reading credited a
+     * colour only when *no* source made it, so a {2}{B}{B} spell with one Swamp out gained nothing
+     * from a second. A spell castable as soon as this land arrives counts in full, one further away
+     * at [LATER_SPELL_COLOR_WEIGHT]. Capped at [COLOR_CREDIT_CAP] like the legacy count.
+     */
+    private fun pipCredit(produces: Set<Color>, available: List<Set<Color>>, coming: Int): Double {
+        var credit = 0.0
+        for ((_, spell) in handSpells) {
+            val weight = if (spell.manaValue <= coming + 1) 1.0 else LATER_SPELL_COLOR_WEIGHT
+            for ((color, needed) in spell.manaCost.colorCount) {
+                if (color in produces && needed > available.count { color in it }) credit += weight
+            }
+        }
+        return minOf(credit, COLOR_CREDIT_CAP)
     }
 
     private fun controlsCreature(): Boolean =
@@ -169,6 +191,8 @@ internal class CardSelectionValue private constructor(
         private const val MANA_VALUE_WEIGHT = 0.3
         private const val REMOVAL_BONUS = 2.0
         private const val LEGEND_DUPLICATE_PENALTY = 2.5
+        private const val LATER_SPELL_COLOR_WEIGHT = 0.75
+        private const val COLOR_CREDIT_CAP = 3.0
         private val REMOVAL_TAGS = listOf(
             IntentTag.REMOVAL, IntentTag.EXILE_REMOVAL, IntentTag.SWEEPER, IntentTag.FIGHT, IntentTag.NEUTRALIZE,
         )
@@ -196,7 +220,18 @@ internal class CardSelectionValue private constructor(
             return colors
         }
 
-        fun of(state: GameState, playerId: EntityId, intents: IntentCatalog): CardSelectionValue {
+        /**
+         * [extraHand] prices the position as if those cards were already in hand on top of the
+         * real one — a scry that has decided to keep a card counts it toward the lands or spells
+         * coming before it judges the next one.
+         */
+        fun of(
+            state: GameState,
+            playerId: EntityId,
+            intents: IntentCatalog,
+            extraHand: List<EntityId> = emptyList(),
+            pipAwareLandColors: Boolean = false,
+        ): CardSelectionValue {
             val projected = state.projectedState
             val myPermanents = projected.getBattlefieldControlledBy(playerId)
             val landsInPlay = myPermanents.filter { projected.hasType(it, "LAND") }
@@ -206,7 +241,7 @@ internal class CardSelectionValue private constructor(
                 fromSubtypes.toSet() + printed
             }
 
-            val hand = state.getZone(playerId, Zone.HAND)
+            val hand = (state.getZone(playerId, Zone.HAND) + extraHand)
                 .mapNotNull { id -> state.getEntity(id)?.get<CardComponent>()?.let { id to it } }
             val handLands = hand.filter { it.second.isLand }.map { it.first to landColors(it.second) }
             val handSpells = hand.filter { !it.second.isLand }
@@ -239,6 +274,7 @@ internal class CardSelectionValue private constructor(
                 libraryLands = libraryLands.size,
                 libraryLandsByColor = byColor,
                 legendsInPlay = legends,
+                pipAwareLandColors = pipAwareLandColors,
             )
         }
     }

@@ -20,18 +20,22 @@ import io.kotest.matchers.shouldBe
  * logs. Each test also pins the legacy count, so the misplay it documents stays visible.
  *
  * The board is the flooded one from game 1 turn 12: six lands out, only lands in hand. A castable
- * four-drop creature is worth drawing; another land is not.
+ * four-drop creature is worth drawing; another land is worth drawing only when the rest of the
+ * library is no better, since scry and surveil price a card against the draw that replaces it.
  */
 class SelectionCountsByValueTest : FunSpec({
 
     val vow = MtgSetCatalog.requireByCode("VOW")
     val allCards = (vow.cards + vow.basicLands).distinctBy { it.name }
 
-    /** A game at [me]'s precombat main: six Swamps out, two in hand, the rest in the library. */
-    fun floodedGame(): Pair<GameTestDriver, EntityId> {
+    /** Half lands, half castable creatures: the average draw is well worth more than a seventh land. */
+    val mixedDeck = Deck.of("Swamp" to 20, "Diregraf Scavenger" to 20)
+
+    /** A game at [me]'s precombat main with an empty hand; the rest of [deck] is the library. */
+    fun game(deck: Deck): Pair<GameTestDriver, EntityId> {
         val d = GameTestDriver().apply {
             registerCards(allCards)
-            initMirrorMatch(Deck.of("Swamp" to 40))
+            initMirrorMatch(deck)
             passPriorityUntil(Step.PRECOMBAT_MAIN)
         }
         val me = d.activePlayer!!
@@ -40,6 +44,12 @@ class SelectionCountsByValueTest : FunSpec({
             s = s.moveToZone(id, ZoneKey(me, Zone.HAND), ZoneKey(me, Zone.LIBRARY))
         }
         d.replaceState(s)
+        return d to me
+    }
+
+    /** [game] with six Swamps out and two in hand. */
+    fun floodedGame(deck: Deck = mixedDeck): Pair<GameTestDriver, EntityId> {
+        val (d, me) = game(deck)
         repeat(6) { d.putLandOnBattlefield(me, "Swamp") }
         repeat(2) { d.putCardInHand(me, "Swamp") }
         return d to me
@@ -107,5 +117,43 @@ class SelectionCountsByValueTest : FunSpec({
 
         val creature = d.putCardOnTopOfLibrary(me, "Diregraf Scavenger")
         choose(d, me, listOf(creature), 1, "Put in graveyard", flag = true) shouldBe emptyList()
+    }
+
+    test("the replacement draw sets the bar: a seventh land stays on top of a library of lands") {
+        // Same land, same board; only the rest of the library differs. An absolute cut-off would
+        // mill it both times — but surveilling it away into another Swamp gains nothing.
+        val (lands, me1) = floodedGame(Deck.of("Swamp" to 40))
+        val onLands = lands.putCardOnTopOfLibrary(me1, "Swamp")
+        choose(lands, me1, listOf(onLands), 1, "Put in graveyard", flag = true) shouldBe emptyList()
+
+        val (mixed, me2) = floodedGame(mixedDeck)
+        val onMixed = mixed.putCardOnTopOfLibrary(me2, "Swamp")
+        choose(mixed, me2, listOf(onMixed), 1, "Put in graveyard", flag = true) shouldBe listOf(onMixed)
+    }
+
+    test("scry 2 over two lands keeps the one land it needs and bottoms the second") {
+        // Three Swamps out and a four-drop in hand: one more land is exactly what the hand wants.
+        // Judged together both lands clear the bar; judged in turn, the first one kept makes the
+        // second a fifth land coming.
+        val (d, me) = game(mixedDeck)
+        repeat(3) { d.putLandOnBattlefield(me, "Swamp") }
+        d.putCardInHand(me, "Diregraf Scavenger")
+        val first = d.putCardOnTopOfLibrary(me, "Swamp")
+        val second = d.putCardOnTopOfLibrary(me, "Swamp")
+
+        choose(d, me, listOf(second, first), 2, "Put on bottom", flag = true).size shouldBe 1
+    }
+
+    test("scry 2 keeps the Swamp a {2}{B}{B} spell is short of and bottoms the Plains") {
+        // One black source for two black pips. The legacy colour credit fired only when no source
+        // made the colour, so it priced the Swamp and the Plains the same and kept the first listed.
+        val (d, me) = game(Deck.of("Plains" to 10, "Swamp" to 10, "Diregraf Scavenger" to 20))
+        repeat(2) { d.putLandOnBattlefield(me, "Plains") }
+        d.putLandOnBattlefield(me, "Swamp")
+        d.putCardInHand(me, "Bleed Dry")
+        val swamp = d.putCardOnTopOfLibrary(me, "Swamp")
+        val plains = d.putCardOnTopOfLibrary(me, "Plains")
+
+        choose(d, me, listOf(plains, swamp), 2, "Put on bottom", flag = true) shouldBe listOf(plains)
     }
 })
