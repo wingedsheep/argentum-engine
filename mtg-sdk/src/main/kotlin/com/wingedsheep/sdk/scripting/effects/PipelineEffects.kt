@@ -57,14 +57,19 @@ sealed interface CardSource {
      * Top N cards of a player's library.
      *
      * [isMill] marks this gather as the library half of a *mill* (top N → graveyard), so the
-     * count site applies `ModifyMillAmount` replacement effects (CR 701.17 "mill that many plus
+     * count site applies mill `ModifyKeywordActionAmount` replacement effects (CR 701.17 "mill that many plus
      * four instead"). Only the `Patterns.Library.mill(...)` pipeline sets this; other top-N
      * gathers (scry, surveil, exile-top, look-at-top) leave it `false` so they are never affected
      * by mill-amount replacements.
      *
      * [isScry] is the scry twin (CR 701.22): set only by the scry pipeline
-     * (`Patterns.Library.scryPipeline`), it makes the count site apply `ModifyScryAmount`
-     * replacement effects ("scry that many cards plus one instead"). At most one of the two is set.
+     * (`Patterns.Library.scryPipeline`), it makes the count site apply scry `ModifyKeywordActionAmount`
+     * replacement effects ("scry that many cards plus one instead").
+     *
+     * [isSurveil] is the surveil twin (CR 701.25): set only by the surveil pipeline
+     * (`Patterns.Library.surveilPipeline`), it makes the count site apply surveil `ModifyKeywordActionAmount`
+     * replacement effects ("look at an additional two cards each time you surveil"). At most one of
+     * the three is set.
      */
     @SerialName("TopOfLibrary")
     @Serializable
@@ -72,10 +77,13 @@ sealed interface CardSource {
         val count: DynamicAmount,
         val player: Player = Player.You,
         val isMill: Boolean = false,
-        val isScry: Boolean = false
+        val isScry: Boolean = false,
+        val isSurveil: Boolean = false
     ) : CardSource {
         init {
-            require(!(isMill && isScry)) { "TopOfLibrary can't be both a mill and a scry" }
+            require(listOf(isMill, isScry, isSurveil).count { it } <= 1) {
+                "TopOfLibrary can be at most one of a mill, a scry and a surveil"
+            }
         }
 
         /** The top [count] cards — a constant count ("look at the top three cards"). */

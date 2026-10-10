@@ -10150,24 +10150,15 @@
                                                 "type": "CounterCount",
                                                 "counterType": null
                                             }
-                                        }
+                                        },
+                                        "isSurveil": true
                                     },
                                     "storeAs": "surveiled"
                                 },
                                 {
                                     "type": "SelectFromCollection",
                                     "from": "surveiled",
-                                    "selection": {
-                                        "type": "ChooseUpTo",
-                                        "count": {
-                                            "type": "EntityProperty",
-                                            "entity": "TriggeringEntity",
-                                            "numericProperty": {
-                                                "type": "CounterCount",
-                                                "counterType": null
-                                            }
-                                        }
-                                    },
+                                    "selection": "ChooseAnyNumber",
                                     "storeSelected": "toGraveyard",
                                     "storeRemainder": "toTop",
                                     "selectedLabel": "Put in graveyard",

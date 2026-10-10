@@ -78,7 +78,7 @@ sealed interface CostAtom : TextReplaceable<CostAtom> {
      * Takes no selection: the cards milled are the top [count], not a player choice. Per CR 701.17b
      * a player *can't pay a cost that includes milling more cards than their library holds*, so
      * affordability is a plain library-size check — unlike the mill *effect*, which mills as many as
-     * possible. A `ModifyMillAmount` replacement (Bruvac) still applies to the announced number when
+     * possible. A mill `ModifyKeywordActionAmount` replacement (Bruvac) still applies to the announced number when
      * the cost is actually paid, and the resulting library→graveyard zone changes fire mill triggers
      * exactly as an effect's mill does.
      */

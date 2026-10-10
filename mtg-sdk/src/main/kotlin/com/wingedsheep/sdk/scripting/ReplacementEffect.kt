@@ -142,7 +142,7 @@ sealed interface ReplacementEffect : TextReplaceable<ReplacementEffect> {
      *
      * Types that carry a `restrictions` field (e.g. [ModifyDrawAmount],
      * [PreventDamage], [DoubleDamage], [ModifyLifeGain], [ModifyLifeLoss],
-     * [ModifyMillAmount], [ModifyScryAmount], [LifeLossFloor]) override this automatically.
+     * [ModifyKeywordActionAmount], [LifeLossFloor]) override this automatically.
      */
     val restrictions: List<Condition> get() = emptyList()
 }
@@ -1294,25 +1294,41 @@ data class ModifyDrawAmount(
 }
 
 /**
- * Modify how many cards a player mills (CR 701.13). Additive: a [modifier] of `+4` makes a
- * player who would mill N instead mill `N + 4`; negative values reduce the mill (clamped to ≥ 0
- * by the caller). Applied at the mill announcement, once per mill instruction, exactly like
- * [ModifyDrawAmount] — so a paused-and-resumed mill never double-modifies.
+ * Modify how many cards a player mills, scries or surveils — "mill that many cards plus four
+ * instead", "scry that many cards plus one instead", "look at an additional two cards each time you
+ * surveil". Additive: a [modifier] of `+N` turns the announced count C into `C + N`; negative values
+ * reduce it (clamped to ≥ 0 by the caller). One type across these keyword actions rather than one
+ * per action, like [ModifyKeywordAction]: [appliesTo] says which action and whose —
  *
- * The [appliesTo] [EventPattern.MillEvent] gates which player's mills are affected relative to
- * the source's controller (`Player.You` / `Player.EachOpponent` / `Player.Each`). [restrictions]
- * are additional [Condition]s evaluated against the milling player as controller; ALL must hold.
+ *  - [EventPattern.MillEvent] — mill (CR 701.17). Applied at the mill announcement: the mill
+ *    pipeline's gather and the mill cost atom.
+ *  - [EventPattern.ScryEvent] — scry (CR 701.22). Applied at the scry pipeline's gather, so the
+ *    bigger look carries through to the top/bottom choice and the `ScriedEvent` count.
+ *  - [EventPattern.SurveilEvent] — surveil (CR 701.25). Applied at the surveil pipeline's gather,
+ *    so the extra cards are part of what is surveiled (CR 701.25b): each may go to the graveyard or
+ *    back on top, and the `SurveiledEvent` count includes them.
  *
- * Example — The Water Crystal: "If an opponent would mill one or more cards, they mill that many
- * cards plus four instead" → `ModifyMillAmount(4, appliesTo = MillEvent(Player.EachOpponent))`.
+ * Each pattern's `player` gates whose action is affected relative to the source's controller
+ * (`Player.You` / `Player.EachOpponent` / `Player.Each`). Applied once per instruction, so a
+ * paused-and-resumed pipeline never double-modifies; a count of 0 is no event (CR 701.22b /
+ * 701.25c) and is never modified; multiple instances sum. [restrictions] are additional
+ * [Condition]s evaluated against the acting player as controller; ALL must hold.
+ *
+ * Why not [ModifyDrawAmount]: a draw is not a keyword action and has its own announcement site
+ * (`DrawReplacementDispatcher`), with "N or more" draw gating these actions don't have.
+ *
+ * Examples — The Water Crystal: `ModifyKeywordActionAmount(MillEvent(Player.EachOpponent), 4)`;
+ * Kenessos, Priest of Thassa: `ModifyKeywordActionAmount(ScryEvent(), 1)`; Enhanced Surveillance:
+ * `ModifyKeywordActionAmount(SurveilEvent(), 2)`.
  */
-@SerialName("ModifyMillAmount")
+@SerialName("ModifyKeywordActionAmount")
 @Serializable
-data class ModifyMillAmount(
+data class ModifyKeywordActionAmount(
+    override val appliesTo: EventPattern.KeywordActionCountEvent,
     val modifier: Int,
-    override val restrictions: List<Condition> = emptyList(),
-    override val appliesTo: EventPattern = EventPattern.MillEvent()
+    override val restrictions: List<Condition> = emptyList()
 ) : ReplacementEffect {
+
     override val description: String = buildString {
         val restrictionDesc = restrictions.joinToString(" and ") { it.description.removePrefix("if ") }
         if (restrictionDesc.isNotEmpty()) {
@@ -1322,58 +1338,19 @@ data class ModifyMillAmount(
             append("If ")
         }
         append(appliesTo.description)
-        append(", they mill that many cards plus $modifier instead")
-    }
-
-    override fun applyTextReplacement(replacer: TextReplacer): ReplacementEffect {
-        val newAppliesTo = appliesTo.applyTextReplacement(replacer)
-        val newRestrictions = restrictions.map { it.applyTextReplacement(replacer) }
-        val anyChanged = newAppliesTo !== appliesTo ||
-            newRestrictions.zip(restrictions).any { (n, o) -> n !== o }
-        return if (anyChanged) copy(appliesTo = newAppliesTo, restrictions = newRestrictions) else this
-    }
-}
-
-/**
- * Modify how many cards a player scries (CR 701.22) — the scry twin of [ModifyMillAmount]. A
- * [modifier] of `+1` makes a player who would scry N instead scry `N + 1`; negative values reduce
- * it (clamped to ≥ 0 by the caller). Applied once at the scry announcement — the scry pipeline's
- * gather — so a paused-and-resumed scry never double-modifies, and the bigger look carries
- * through to the top/bottom choice and the `ScriedEvent` count. A scry 0 is no scry event
- * (CR 701.22b) and is never modified.
- *
- * The [appliesTo] [EventPattern.ScryEvent] gates which player's scries are affected relative to
- * the source's controller. [restrictions] are additional [Condition]s evaluated against the
- * scrying player as controller; ALL must hold.
- *
- * Example — Kenessos, Priest of Thassa: "If you would scry a number of cards, scry that many cards
- * plus one instead" → `ModifyScryAmount(1)`.
- */
-@SerialName("ModifyScryAmount")
-@Serializable
-data class ModifyScryAmount(
-    val modifier: Int,
-    override val restrictions: List<Condition> = emptyList(),
-    override val appliesTo: EventPattern = EventPattern.ScryEvent()
-) : ReplacementEffect {
-    override val description: String = buildString {
-        val restrictionDesc = restrictions.joinToString(" and ") { it.description.removePrefix("if ") }
-        if (restrictionDesc.isNotEmpty()) {
-            append(restrictionDesc.replaceFirstChar { it.uppercase() })
-            append(", if ")
-        } else {
-            append("If ")
+        val verb = when (appliesTo) {
+            is EventPattern.MillEvent -> "mill"
+            is EventPattern.ScryEvent -> "scry"
+            is EventPattern.SurveilEvent -> "surveil"
         }
-        append(appliesTo.description)
-        append(", they scry that many cards plus $modifier instead")
+        append(", they $verb that many cards plus $modifier instead")
     }
 
     override fun applyTextReplacement(replacer: TextReplacer): ReplacementEffect {
-        val newAppliesTo = appliesTo.applyTextReplacement(replacer)
+        // A keyword-action pattern carries only a Player — no replaceable text.
         val newRestrictions = restrictions.map { it.applyTextReplacement(replacer) }
-        val anyChanged = newAppliesTo !== appliesTo ||
-            newRestrictions.zip(restrictions).any { (n, o) -> n !== o }
-        return if (anyChanged) copy(appliesTo = newAppliesTo, restrictions = newRestrictions) else this
+        val anyChanged = newRestrictions.zip(restrictions).any { (n, o) -> n !== o }
+        return if (anyChanged) copy(restrictions = newRestrictions) else this
     }
 }
 

@@ -12,7 +12,7 @@ import com.wingedsheep.sdk.model.Rarity
  * Target player mills ten cards.
  *
  * [Patterns.Library.mill] publishes the whole recipe — a `GatherCards(TopOfLibrary, isMill = true)`
- * and one `MoveCollection` to the graveyard. The `isMill` flag is load-bearing: CR 701.13 applies
+ * and one `MoveCollection` to the graveyard. The `isMill` flag is load-bearing: CR 701.17 applies
  * "mill that many plus N instead" at the count site, so a same-shaped plain move is a different
  * thing.
  */

@@ -1805,7 +1805,7 @@ families behind four cards are worth a hundred and forty.
 
 **Mill was not in the grammar at all.** `Patterns.Library.mill` had a reader in `Amounts` for
 Dreamborn Muse's "that player mills X cards, where X is …" and `Costs` knew it as a cost atom, but
-the plain effect clause — "Mill two cards." — had no rule, so 93 cards were blocked on CR 701.13's
+the plain effect clause — "Mill two cards." — had no rule, so 93 cards were blocked on CR 701.17's
 one-word verb. It is this file's pipeline with the middle taken out (a gather and one move, no
 selection and no second pile), which is why it reads as a family beside the look/keep/rest layers
 rather than a row inside them; the miller is a template per row for `Hand`'s reason, and
@@ -1852,7 +1852,7 @@ Sandbender Scavengers, plus Unlucky Cabbage Merchant and Lightless Evangel that 
 outside the compared set. CR 603.2c makes the singular wording per-permanent: sacrificing two Blood
 tokens to one cost is two triggers and two life, and the batch spec paid once. The other three:
 Falkenrath Forebear's "return this card **from your graveyard**" had lost its `fromZone` guard,
-Mysterio's Phantasm hand-built the mill pipeline and lost `isMill` with it (so CR 701.13's "mills
+Mysterio's Phantasm hand-built the mill pipeline and lost `isMill` with it (so CR 701.17's "mills
 that many plus four instead" could not see it), and Angel's Tomb wrote `addTypes = CREATURE` — a
 type `BecomeCreature` adds anyway — where the printed word is "artifact".
 

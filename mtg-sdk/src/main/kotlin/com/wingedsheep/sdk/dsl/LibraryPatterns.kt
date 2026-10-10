@@ -506,7 +506,7 @@ object LibraryPatterns {
     ): CompositeEffect = CompositeEffect(
         listOfNotNull(
             GatherCardsEffect(
-                // isScry: the gather is the scry announcement, where ModifyScryAmount
+                // isScry: the gather is the scry announcement, where scry ModifyKeywordActionAmount
                 // ("scry that many plus one") replacements resize the look.
                 source = CardSource.TopOfLibrary(count, player, isScry = true),
                 storeAs = "scried"
@@ -553,12 +553,16 @@ object LibraryPatterns {
     fun surveilPipeline(count: Int, storeGraveyardAs: String? = null): CompositeEffect = CompositeEffect(
         listOfNotNull(
             GatherCardsEffect(
-                source = CardSource.TopOfLibrary(DynamicAmount.Fixed(count)),
+                // isSurveil: the gather is the surveil announcement, where surveil ModifyKeywordActionAmount
+                // ("look at an additional two cards") replacements resize the look.
+                source = CardSource.TopOfLibrary(DynamicAmount.Fixed(count), isSurveil = true),
                 storeAs = "surveiled"
             ),
             SelectFromCollectionEffect(
                 from = "surveiled",
-                selection = SelectionMode.ChooseUpTo(DynamicAmount.Fixed(count)),
+                // Any number of the cards actually looked at — the gather bounds the collection,
+                // and a surveil replacement can make it larger than [count].
+                selection = SelectionMode.ChooseAnyNumber,
                 storeSelected = "toGraveyard",
                 storeRemainder = "toTop",
                 selectedLabel = "Put in graveyard",
@@ -594,12 +598,12 @@ object LibraryPatterns {
     fun surveilPipeline(count: DynamicAmount): CompositeEffect = CompositeEffect(
         listOf(
             GatherCardsEffect(
-                source = CardSource.TopOfLibrary(count),
+                source = CardSource.TopOfLibrary(count, isSurveil = true),
                 storeAs = "surveiled"
             ),
             SelectFromCollectionEffect(
                 from = "surveiled",
-                selection = SelectionMode.ChooseUpTo(count),
+                selection = SelectionMode.ChooseAnyNumber,
                 storeSelected = "toGraveyard",
                 storeRemainder = "toTop",
                 selectedLabel = "Put in graveyard",

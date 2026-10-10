@@ -82,12 +82,13 @@ class TriggerMatcher(
             is EventPattern.DrawEvent -> {
                 event is CardsDrawnEvent && matchesPlayer(state, trigger.player, event.playerId, controllerId)
             }
-            // MillEvent is a replacement-only pattern (ModifyMillAmount); it never matches a
-            // triggered ability. Applied at the mill announcement by MillAmountModifier.
-            is EventPattern.MillEvent -> false
-            // ScryEvent is likewise replacement-only (ModifyScryAmount), applied at the scry
-            // announcement by ScryAmountModifier; "whenever you scry" is ScriedEvent.
-            is EventPattern.ScryEvent -> false
+            // MillEvent / ScryEvent / SurveilEvent are replacement-only patterns
+            // (ModifyKeywordActionAmount); they never match a triggered ability. Applied at each
+            // action's announcement by KeywordActionAmountModifier; "whenever you scry / surveil"
+            // is ScriedEvent / SurveiledEvent.
+            is EventPattern.MillEvent,
+            is EventPattern.ScryEvent,
+            is EventPattern.SurveilEvent -> false
             // DrawCardsEvent is a replacement-only pattern (ModifyDrawAmount for "N or more" draws);
             // it never matches a triggered ability. Checked at the draw announcement by
             // DrawReplacementDispatcher.checkDrawAmount.

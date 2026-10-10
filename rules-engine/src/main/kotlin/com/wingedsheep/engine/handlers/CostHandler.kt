@@ -8,7 +8,7 @@ import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.effects.DamageUtils
 import com.wingedsheep.engine.handlers.effects.ReplacementEffectUtils
 import com.wingedsheep.engine.handlers.effects.ZoneTransitionService
-import com.wingedsheep.engine.handlers.effects.library.MillAmountModifier
+import com.wingedsheep.engine.handlers.effects.library.KeywordActionAmountModifier
 import com.wingedsheep.engine.handlers.effects.life.LifePaymentService
 import com.wingedsheep.engine.mechanics.SummoningSicknessRules
 import com.wingedsheep.engine.mechanics.cost.CostPaymentService
@@ -714,7 +714,7 @@ class CostHandler(private val zones: ZoneTransitionService) {
             com.wingedsheep.engine.handlers.costs.GraveyardTotalExileResolver
                 .canPay(state, controllerId, atom.measure, atom.minTotal, atom.filter, excludeCardId = sourceId.takeIf { atom.excludeSelf }, predicateEvaluator = predicateEvaluator)
         // CR 701.17b — a player can't pay a cost that includes milling more cards than their
-        // library holds. Checked against the printed count; a ModifyMillAmount replacement only
+        // library holds. Checked against the printed count; a mill ModifyKeywordActionAmount replacement only
         // enlarges the mill once the cost is actually being paid.
         is CostAtom.Mill -> state.getZone(ZoneKey(controllerId, Zone.LIBRARY)).size >= atom.count
         // CR 118.3 — Arc-Slogger with nine cards left can't activate at all; there is no
@@ -900,12 +900,12 @@ class CostHandler(private val zones: ZoneTransitionService) {
         }
         is CostAtom.Mill -> {
             // Same announcement semantics as the mill effect (GatherCardsExecutor): apply
-            // ModifyMillAmount replacements once to the announced count (CR 616), then take that
+            // mill ModifyKeywordActionAmount replacements once to the announced count (CR 616), then take that
             // many off the top. `take` clamps, so a replacement that enlarges the mill past the
             // library mills as many as possible — the affordability check above already guaranteed
             // the printed count is available. Emits plain library→graveyard zone changes, which is
             // what mill triggers match on.
-            val effectiveCount = MillAmountModifier.apply(state, controllerId, atom.count, predicateEvaluator = predicateEvaluator)
+            val effectiveCount = KeywordActionAmountModifier.mill(state, controllerId, atom.count, predicateEvaluator = predicateEvaluator)
             val milled = state.getZone(ZoneKey(controllerId, Zone.LIBRARY)).take(effectiveCount)
             val result = zones.moveToZoneBatch(state, milled, Zone.GRAVEYARD)
             CostPaymentResult.success(result.state, manaPool, result.events)

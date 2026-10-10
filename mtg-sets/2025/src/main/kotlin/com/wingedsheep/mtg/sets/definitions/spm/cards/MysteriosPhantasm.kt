@@ -25,7 +25,7 @@ val MysteriosPhantasm = card("Mysterio's Phantasm") {
     triggeredAbility {
         trigger = Triggers.self.attacks()
         // The published recipe, not a hand-built pipeline: `Patterns.Library.mill` stamps
-        // `isMill = true` on the gather, which is what CR 701.13's "mills that many cards plus
+        // `isMill = true` on the gather, which is what CR 701.17's "mills that many cards plus
         // four instead" replacements key off. The hand-rolled version lost that flag.
         effect = Patterns.Library.mill(1)
     }

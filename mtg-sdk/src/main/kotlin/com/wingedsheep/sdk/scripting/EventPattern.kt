@@ -313,22 +313,32 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
     }
 
     /**
-     * When a player would mill one or more cards (CR 701.13). Used by
-     * [com.wingedsheep.sdk.scripting.ModifyMillAmount] to adjust the count at the mill
+     * A player would perform a counted library keyword action — mill, scry or surveil. The
+     * replacement-only family [com.wingedsheep.sdk.scripting.ModifyKeywordActionAmount] resizes;
+     * [player] is whose action it is, relative to the replacement's controller.
+     */
+    @Serializable
+    sealed interface KeywordActionCountEvent : EventPattern {
+        val player: Player
+    }
+
+    /**
+     * When a player would mill one or more cards (CR 701.17). Used by
+     * [com.wingedsheep.sdk.scripting.ModifyKeywordActionAmount] to adjust the count at the mill
      * announcement (e.g. The Water Crystal: "If an opponent would mill one or more cards,
      * they mill that many cards plus four instead").
      */
     @SerialName("MillEvent")
     @Serializable
     data class MillEvent(
-        val player: Player = Player.You
-    ) : EventPattern {
+        override val player: Player = Player.You
+    ) : KeywordActionCountEvent {
         override val description: String = "${player.description} would mill one or more cards"
     }
 
     /**
      * When a player would scry a number of cards (CR 701.22). Replacement-only, like [MillEvent]:
-     * used by [com.wingedsheep.sdk.scripting.ModifyScryAmount] to adjust the count at the scry
+     * used by [com.wingedsheep.sdk.scripting.ModifyKeywordActionAmount] to adjust the count at the scry
      * announcement (Kenessos, Priest of Thassa: "If you would scry a number of cards, scry that
      * many cards plus one instead"). Never matches a triggered ability — "whenever you scry" is
      * [ScriedEvent].
@@ -336,9 +346,24 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
     @SerialName("ScryEvent")
     @Serializable
     data class ScryEvent(
-        val player: Player = Player.You
-    ) : EventPattern {
+        override val player: Player = Player.You
+    ) : KeywordActionCountEvent {
         override val description: String = "${player.description} would scry a number of cards"
+    }
+
+    /**
+     * When a player would surveil a number of cards (CR 701.25). Replacement-only, the surveil twin
+     * of [ScryEvent]: used by [com.wingedsheep.sdk.scripting.ModifyKeywordActionAmount] to adjust the count
+     * at the surveil announcement (Enhanced Surveillance: "You may look at an additional two cards
+     * each time you surveil"). Never matches a triggered ability — "whenever you surveil" is
+     * [SurveiledEvent].
+     */
+    @SerialName("SurveilEvent")
+    @Serializable
+    data class SurveilEvent(
+        override val player: Player = Player.You
+    ) : KeywordActionCountEvent {
+        override val description: String = "${player.description} would surveil a number of cards"
     }
 
     /**

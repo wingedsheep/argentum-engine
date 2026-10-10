@@ -19,7 +19,7 @@ import com.wingedsheep.engine.core.GameEvent as EngineGameEvent
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.engine.handlers.PredicateContext
-import com.wingedsheep.engine.handlers.effects.library.MillAmountModifier
+import com.wingedsheep.engine.handlers.effects.library.KeywordActionAmountModifier
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.state.nameVisibleToAll
 import com.wingedsheep.engine.replacement.PendingReplacementRider
@@ -3162,7 +3162,7 @@ object DamageUtils {
                 // and the top cards are snapshotted before moving so a shrinking library isn't
                 // re-read.
                 if (effect.damagedPlayerMills && targetId in state.turnOrder) {
-                    val millCount = MillAmountModifier.apply(newState, targetId, amount, predicateEvaluator = zones.predicateEvaluator)
+                    val millCount = KeywordActionAmountModifier.mill(newState, targetId, amount, predicateEvaluator = zones.predicateEvaluator)
                     for (cardId in newState.getLibrary(targetId).take(millCount)) {
                         val result = zones.moveToZone(newState, cardId, Zone.GRAVEYARD)
                         newState = result.state

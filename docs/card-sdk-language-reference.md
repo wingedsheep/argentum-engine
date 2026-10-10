@@ -542,7 +542,7 @@ counts a hybrid Phyrexian pip paid with life like any other Phyrexian pip.
   Per **CR 701.17b** a player *can't pay a cost that includes milling more cards than their library
   holds*, so — unlike the mill *effect*, which mills as many as possible — the cost is **unpayable**
   on a short library and gates legal-action enumeration (including mana-ability enumeration). A
-  `ModifyMillAmount` replacement (Bruvac) still applies to the announced count when the cost is
+  mill `ModifyKeywordActionAmount` replacement (Bruvac) still applies to the announced count when the cost is
   actually paid, and the library→graveyard moves go through `ZoneTransitionService`, so mill triggers
   fire exactly as they do for an effect's mill.
 - `Costs.ExileTopOfLibrary(count)` — exile the top `count` cards of your library as a cost
@@ -550,7 +550,7 @@ counts a hybrid Phyrexian pip paid with life like any other Phyrexian pip.
   no player selection (the cards are the top of the library), and per **CR 118.3** — a player can't
   pay a cost without the resources to pay it fully — the cost is **unpayable** on a short library and
   gates legal-action enumeration, rather than exiling as many as possible the way the exile *effect*
-  would. Unlike mill, no `ModifyMillAmount` replacement applies: exiling from the top is not milling
+  would. Unlike mill, no `ModifyKeywordActionAmount` replacement applies: exiling from the top is not milling
   (CR 701.17a), so the announced count is the paid count. Distinct from the `ExileFromGraveyard`-style
   *chosen*-card costs, which mean "choose N", not "the top N".
 - `Costs.ExileSelf` — exile this permanent (or graveyard card, for graveyard-activated abilities).
@@ -4593,10 +4593,10 @@ effect = Effects.Pipeline {
 }
 ```
 
-**Library-end sources.** `CardSource.TopOfLibrary(count, player = You, isMill = false, isScry = false)` gathers the top
+**Library-end sources.** `CardSource.TopOfLibrary(count, player = You, isMill = false, isScry = false, isSurveil = false)` gathers the top
 `count` cards; `CardSource.BottomOfLibrary(count, player = You)` is its mirror, the bottom `count` cards (in
 library order). Moving a card off the bottom is not a mill (CR 701.17a mills from the top), so it has no
-`isMill` axis and mill replacements never see it (`isScry` is the scry pipeline's twin marker for `ModifyScryAmount`). **Cellar Door**: "Target player puts the bottom card of
+`isMill` axis and mill replacements never see it (`isScry` / `isSurveil` are the scry / surveil pipelines' twin markers for `ModifyKeywordActionAmount`). **Cellar Door**: "Target player puts the bottom card of
 their library into their graveyard. If it's a creature card, you create a 2/2 black Zombie" —
 `Pipeline { val bottom = gather(CardSource.BottomOfLibrary(1, player)); toGraveyard(bottom) }` then
 `Effects.If(CollectionContainsMatch(bottom, Creature), CreateToken(…))`.
@@ -15750,29 +15750,33 @@ not update an existing copy.
   order giving 7. Several applicable announcement effects are cumulative — two doublers quadruple
   the draw. `restrictions` is also the seam a "Max speed —" gate folds into — declare the replacement
   inside `maxSpeed { replacementEffect(…) }` and the builder fills the slot.
-- `ModifyMillAmount(modifier, restrictions, appliesTo)` — modify the number of cards a *mill* announces
-  by a fixed amount (the mill twin of `ModifyDrawAmount`): a player who would mill N instead mills
-  `N + modifier`, clamped to ≥ 0. `appliesTo` is an `EventPattern.MillEvent` whose `player` filter
-  (`Player.You` / `Player.EachOpponent` / `Player.Each`) gates which players' mills are affected,
-  relative to the source's controller. `restrictions` (a `List<Condition>`, ALL must hold, evaluated
-  against the milling player as controller) gates *when* it applies. Applied **once** per mill
-  instruction at the announcement site (`GatherCardsExecutor`'s `CardSource.TopOfLibrary(isMill = true)`
-  branch, which only the `Patterns.Library.mill(...)` pipeline sets — scry / surveil / exile-top /
-  look-at-top gathers leave `isMill = false` and are never affected), so a paused-and-resumed mill
-  never double-modifies. A base mill of 0 is left untouched ("would mill one or more cards"). Multiple
-  instances sum. Use for "if an opponent would mill one or more cards, they mill that many cards plus
-  four instead" (The Water Crystal:
-  `ModifyMillAmount(modifier = 4, appliesTo = EventPattern.MillEvent(player = Player.EachOpponent))`).
-- `ModifyScryAmount(modifier, restrictions, appliesTo)` — the scry twin of `ModifyMillAmount` (CR 701.22):
-  a player who would scry N instead scries `N + modifier`, clamped to ≥ 0. `appliesTo` is the
-  replacement-only `EventPattern.ScryEvent(player)` (default `Player.You`, relative to the source's
-  controller); "whenever you scry" triggers stay on `ScriedEvent`. Applied once at the scry
-  announcement — the scry pipeline's gather, `CardSource.TopOfLibrary(isScry = true)`, which only
-  `Patterns.Library.scry` / `Effects.Scry` sets — so the larger look carries through to the
-  top/bottom choice (which selects any number of the looked-at cards) and to the `ScriedEvent`
-  count. A scry 0 is no scry event (CR 701.22b) and is never modified. Multiple instances sum.
-  Kenessos, Priest of Thassa: "If you would scry a number of cards, scry that many cards plus one
-  instead" → `ModifyScryAmount(modifier = 1)`.
+- `ModifyKeywordActionAmount(appliesTo, modifier, restrictions)` — resize the count a **mill, scry or
+  surveil** announces by a fixed amount (the keyword-action twin of `ModifyDrawAmount`): a player who
+  would act on N cards instead acts on `N + modifier`, clamped to ≥ 0. One type across the three
+  actions, like `ModifyKeywordAction`: `appliesTo` names the action and whose — an
+  `EventPattern.KeywordActionCountEvent`, the replacement-only family
+  `EventPattern.MillEvent(player)` (CR 701.17), `EventPattern.ScryEvent(player)` (CR 701.22) or
+  `EventPattern.SurveilEvent(player)` (CR 701.25), `player` (`Player.You` / `Player.EachOpponent` /
+  `Player.Each`) relative to the source's (projected) controller; any other pattern doesn't compile.
+  "Whenever you scry / surveil" triggers stay on `ScriedEvent` / `SurveiledEvent`. `restrictions` (a
+  `List<Condition>`, ALL must hold, evaluated against the acting player as controller) gates *when*
+  it applies, and is the slot a `maxSpeed { }` gate folds into.
+
+  Applied **once** per instruction at the action's announcement — the flagged gather
+  `CardSource.TopOfLibrary(isMill | isScry | isSurveil = true)` that only `Patterns.Library.mill` /
+  `scry` / `surveil` (and `Effects.Scry` / `Effects.Surveil`, every surveil spelling) set, plus the
+  mill cost atom — so a paused-and-resumed pipeline never double-modifies, and exile-top / look-at-top
+  gathers are never affected. The bigger look carries through: the scry top/bottom choice and the
+  surveil graveyard choice select *any number* of the looked-at cards, so the extra cards are part of
+  what is scried or surveiled (CR 701.25b), and the `ScriedEvent` / `SurveiledEvent` count includes
+  them. A count of 0 is no event (CR 701.22b / 701.25c) and is never modified. Multiple instances sum.
+  - The Water Crystal: "If an opponent would mill one or more cards, they mill that many cards plus
+    four instead" → `ModifyKeywordActionAmount(EventPattern.MillEvent(Player.EachOpponent), modifier = 4)`.
+  - Kenessos, Priest of Thassa: "If you would scry a number of cards, scry that many cards plus one
+    instead" → `ModifyKeywordActionAmount(EventPattern.ScryEvent(), modifier = 1)`.
+  - Enhanced Surveillance: "You may look at an additional two cards each time you surveil" →
+    `ModifyKeywordActionAmount(EventPattern.SurveilEvent(), modifier = 2)` (the "may" is a superset
+    choice — every extra card can go back on top — so it isn't modelled).
 - `ModifyKeywordAction(prefixEffect, appliesTo)` — insert an extra effect *in front of* a keyword
   action (CR 614): replaces "[a matching permanent] <acts>" with "[prefixEffect], then that permanent
   <acts>". One type across keyword actions rather than one per action — `appliesTo` carries which

@@ -357,7 +357,8 @@ class TriggerIndex(
                 is SdkGameEvent.CounterSpellEvent,
                 is SdkGameEvent.LifePaymentEvent,
                 is SdkGameEvent.MillEvent,
-                is SdkGameEvent.ScryEvent -> emptyList()
+                is SdkGameEvent.ScryEvent,
+                is SdkGameEvent.SurveilEvent -> emptyList()
 
                 // Synthetic: StateTriggerPoller produces these pending triggers directly.
                 is SdkGameEvent.StateConditionMetEvent -> emptyList()

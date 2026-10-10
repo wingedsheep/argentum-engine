@@ -16,7 +16,7 @@ import io.kotest.matchers.shouldBe
  *  - If an opponent would mill one or more cards, they mill that many cards plus four instead.
  *  - {4}{U}{U}, {T}: Each opponent mills cards equal to the number of cards in your hand.
  *
- * Exercises the new [com.wingedsheep.sdk.scripting.ModifyMillAmount] mill-amount replacement
+ * Exercises the new [com.wingedsheep.sdk.scripting.ModifyKeywordActionAmount] mill-amount replacement
  * (the +4 boost on opponent mills, including stacking and the "would mill one or more" gate) and
  * the activated ability (each opponent mills equal to *your* hand size). The {1}-less cost
  * reduction reuses the existing ModifySpellCost primitive (covered by The Wind Crystal), so it

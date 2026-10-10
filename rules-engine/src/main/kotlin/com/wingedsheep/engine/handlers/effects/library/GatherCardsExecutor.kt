@@ -54,13 +54,14 @@ class GatherCardsExecutor(
                 val playerIds = resolvePlayers(source.player, context, state)
                     ?: return EffectResult.error(state, "Could not resolve player for GatherCards")
                 playerIds.flatMap { playerId ->
-                    // For a mill, apply ModifyMillAmount replacement effects to the announced
-                    // count per milling player (CR 701.13 — "mill that many plus four instead").
-                    // A scry likewise applies ModifyScryAmount (CR 701.22 — "scry that many
-                    // cards plus one instead").
+                    // For a mill, scry or surveil, apply ModifyKeywordActionAmount replacement
+                    // effects to the announced count per acting player — "mill that many plus
+                    // four instead" (CR 701.17), "scry that many cards plus one instead"
+                    // (CR 701.22), "look at an additional two cards" (CR 701.25b).
                     val effectiveCount = when {
-                        source.isMill -> MillAmountModifier.apply(state, playerId, count, predicateEvaluator)
-                        source.isScry -> ScryAmountModifier.apply(state, playerId, count, predicateEvaluator)
+                        source.isMill -> KeywordActionAmountModifier.mill(state, playerId, count, predicateEvaluator)
+                        source.isScry -> KeywordActionAmountModifier.scry(state, playerId, count, predicateEvaluator)
+                        source.isSurveil -> KeywordActionAmountModifier.surveil(state, playerId, count, predicateEvaluator)
                         else -> count
                     }
                     state.getZone(ZoneKey(playerId, Zone.LIBRARY)).take(effectiveCount)
