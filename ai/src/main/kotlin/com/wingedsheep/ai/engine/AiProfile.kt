@@ -541,6 +541,24 @@ data class AiProfile(
      * Reaches only the composite evaluator, like every other evaluator flag here.
      */
     val evasionAfterAttacking: Boolean = false,
+    /**
+     * Count the land drop still to come as mana when [sequenceLandsByUsableMana] decides whether
+     * tapped lands were idle — so playing an untapped land can never score below passing.
+     *
+     * The idle-mana refund asks whether anything in hand would become castable if the tapped lands
+     * untapped, and it read the answer off the battlefield alone. Playing a land slid that window up
+     * by one: tapped out on four lands holding only 5-drops, the four tapped lands were refunded as
+     * idle (+1.2); play the fifth and the 5-drops became "castable but for the tapped lands", the
+     * refund vanished, and the land drop lost to passing. AI game-log review 2026-10-10 (profile
+     * `production-candidate-expiring`), game 3 turn 11: after tapping out for Aerie Auxiliary the AI
+     * passed both main phases with "Play Shattered Landscape" on offer. Rollouts cannot break the
+     * tie, because the playout policy plays the land on both branches.
+     *
+     * See [com.wingedsheep.ai.engine.evaluation.BoardPresence]'s `landSequencing`. Only the states
+     * *before* a land drop move; every post-drop state, and so every tapland-vs-basic comparison,
+     * scores as before. Needs [sequenceLandsByUsableMana]; reaches only the composite evaluator.
+     */
+    val pendingLandDropIsMana: Boolean = false,
     /** Non-null profiles may only be selected automatically for this set. Arena selection stays explicit. */
     val restrictedToSet: String? = null,
 ) {
@@ -1446,6 +1464,7 @@ data class AiProfile(
             priceCrackBackAsLife = true,
             crackBackWithoutChumps = true,
             evasionAfterAttacking = true,
+            pendingLandDropIsMana = true,
         )
 
         /**

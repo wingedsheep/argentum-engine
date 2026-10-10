@@ -275,6 +275,7 @@ class AIPlayer(
                 creatureValuation = profile.creatureValuation,
                 priceLandsInHandAsMana = profile.priceLandsInHandAsMana,
                 evasionAfterAttacking = profile.evasionAfterAttacking,
+                pendingLandDropIsMana = profile.pendingLandDropIsMana,
             )
             val combatAdvisor = CombatAdvisor(
                 simulator, evaluator, cardRegistry, advisorRegistry,
