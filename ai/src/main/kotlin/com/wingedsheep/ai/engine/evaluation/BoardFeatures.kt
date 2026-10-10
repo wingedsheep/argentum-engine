@@ -153,10 +153,15 @@ object BoardPresence : BoardFeature {
         intents: IntentCatalog,
         sequenceLandsByUsableMana: Boolean = false,
         creatureValuation: CreatureValuation = CreatureValuation.LEGACY,
+        pendingLandDropIsMana: Boolean = false,
     ): Double {
         val sides = state.sidesFor(playerId) ?: return 0.0
         val mine = boardValue(state, projected, sides.mine, intents, creatureValuation) +
-            if (sequenceLandsByUsableMana) landSequencing(state, projected, playerId, intents) else 0.0
+            if (sequenceLandsByUsableMana) {
+                landSequencing(state, projected, playerId, intents, pendingLandDropIsMana)
+            } else {
+                0.0
+            }
         return sides.against(OpponentAggregate.THREAT) { opponent ->
             mine - boardValue(state, projected, opponent, intents, creatureValuation)
         }
@@ -212,12 +217,22 @@ object BoardPresence : BoardFeature {
      * only has to rank two land drops against each other and a solver call per evaluated state is
      * not affordable. And the untap check counts lands, the same thing [Tempo] counts, not every
      * permanent that could make mana.
+     *
+     * **The land drop still to come is mana too** ([pendingLandDropIsMana]). Without it the window
+     * "castable once the tapped lands untap" is read off the battlefield alone, so it slides up by
+     * one the moment a land is played: tapped out on four lands with only 5-drops in hand, the four
+     * tapped lands are refunded as idle; play the fifth land and the 5-drops fall into the window,
+     * the refund (4 × [IDLE_MANA_REFUND]) vanishes, and the land drop scores *below* passing. On our
+     * own turn, with a land drop left and a land in hand, that land counts as one more untapped
+     * land — so playing an untapped land leaves the window exactly where it was and is worth its
+     * full [LAND_UNTAPPED], while a tapland still pays for the mana it withholds.
      */
     private fun landSequencing(
         state: GameState,
         projected: ProjectedState,
         playerId: EntityId,
         intents: IntentCatalog,
+        pendingLandDropIsMana: Boolean,
     ): Double {
         // Projection on the battlefield, base state in hand: an animated Mishra's Factory is still a
         // land and a Dryad Arbor is one from the moment it arrives, and only the projection knows.
@@ -230,8 +245,17 @@ object BoardPresence : BoardFeature {
         val hand = state.getZone(playerId, Zone.HAND)
             .mapNotNull { state.getEntity(it)?.get<CardComponent>() }
 
+        val pending = if (
+            pendingLandDropIsMana &&
+            state.activePlayerId == playerId &&
+            state.getEntity(playerId)?.get<LandDropsComponent>()?.canPlayLand == true &&
+            hand.any { it.isLand }
+        ) 1 else 0
+
         var score = 0.0
-        if (tapped > 0 && hand.none { !it.isLand && it.manaValue in (untapped + 1)..lands.size }) {
+        if (tapped > 0 &&
+            hand.none { !it.isLand && it.manaValue in (untapped + pending + 1)..(lands.size + pending) }
+        ) {
             score += tapped * IDLE_MANA_REFUND
         }
         score -= TAPLAND_IN_HAND * hand.count {

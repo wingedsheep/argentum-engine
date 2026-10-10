@@ -170,6 +170,7 @@ object CardIntentAnalyzer {
         var cardsDrawn: Int? = null
         var expiringPump = false
         var pumpToughness = 0
+        var expiringGroupPump = false
 
         for (effect in leaves) {
             tags += tagsOf(effect)
@@ -179,6 +180,7 @@ object CardIntentAnalyzer {
                 expiringPump = true
                 pumpToughness = maxOf(pumpToughness, expiringToughnessOf(effect))
             }
+            if (isExpiringGroupPump(effect)) expiringGroupPump = true
         }
 
         var anthemBonus = 0
@@ -218,6 +220,7 @@ object CardIntentAnalyzer {
             flashPermanent = card.typeLine.isPermanent && Keyword.FLASH in card.keywords,
             hasHaste = Keyword.HASTE in card.keywords,
             targetsOnlyOurPermanents = targetsOnlyOurPermanents(scripts),
+            expiringGroupPump = expiringGroupPump,
         )
         return intent.copy(staticPriorValue = priorValueOf(card, intent))
     }
@@ -374,6 +377,17 @@ object CardIntentAnalyzer {
         val toughness = fixed(effect.toughnessModifier) ?: 0
         return power > 0 || toughness > 0
     }
+
+    /**
+     * A group `ForEach` whose body pumps each member until end of turn — the lowered form of
+     * "creatures you control get +2/+1 until end of turn". Only the group's own members are
+     * pumped ([EffectTarget.IterationEntity]); a body aimed anywhere else is not this shape.
+     */
+    private fun isExpiringGroupPump(effect: Effect): Boolean =
+        effect is ForEachEffect && effect.space is IterationSpace.Group &&
+            EffectWalker.leaves(effect.body).any {
+                isExpiringPump(it) && (it as ModifyStatsEffect).target == EffectTarget.IterationEntity
+            }
 
     private fun drawsOf(effect: Effect): Int? = when (effect) {
         is DrawCardsEffect -> fixed(effect.count)

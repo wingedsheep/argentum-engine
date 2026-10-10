@@ -48,12 +48,14 @@ data class EvaluationWeights(
         creatureValuation: CreatureValuation = CreatureValuation.LEGACY,
         priceLandsInHandAsMana: Boolean = false,
         evasionAfterAttacking: Boolean = false,
+        pendingLandDropIsMana: Boolean = false,
     ): BoardEvaluator = CompositeBoardEvaluator(
         listOf(
             life to LifeDifferential,
             boardPresence to BoardFeature { state, projected, playerId ->
                 BoardPresence.score(
                     state, projected, playerId, intents, sequenceLandsByUsableMana, creatureValuation,
+                    pendingLandDropIsMana,
                 )
             },
             cardAdvantage to BoardFeature { state, projected, playerId ->
@@ -135,7 +137,7 @@ object EvalWeights {
 
     /**
      * [landDropIsNotCardLoss], [sequenceLandsByUsableMana], [discountedRaceClock],
-     * [creatureValuation], [priceLandsInHandAsMana] and [evasionAfterAttacking] reach only the composite fallback: the raw Phase 9 vectors price
+     * [creatureValuation], [priceLandsInHandAsMana], [evasionAfterAttacking] and [pendingLandDropIsMana] reach only the composite fallback: the raw Phase 9 vectors price
      * `myHandSize` linearly, so a land drop already costs them one fitted coefficient with no cliff
      * to step off, and changing what any of them count would silently invalidate the fit.
      */
@@ -148,12 +150,13 @@ object EvalWeights {
         creatureValuation: CreatureValuation = CreatureValuation.LEGACY,
         priceLandsInHandAsMana: Boolean = false,
         evasionAfterAttacking: Boolean = false,
+        pendingLandDropIsMana: Boolean = false,
     ): BoardEvaluator =
         apprenticeWeights[id]?.takeIf(RawEvaluationWeights::isValid)?.toEvaluator(intents)
             ?: rawResourceWeights[id]?.takeIf(RawEvaluationWeights::isValid)?.toEvaluator(intents)
             ?: resolve(id).toEvaluator(
                 intents, landDropIsNotCardLoss, sequenceLandsByUsableMana, discountedRaceClock,
-                creatureValuation, priceLandsInHandAsMana, evasionAfterAttacking,
+                creatureValuation, priceLandsInHandAsMana, evasionAfterAttacking, pendingLandDropIsMana,
             )
 
     /** Whether [id] selects a complete, finite raw vector rather than the composite fallback. */

@@ -139,6 +139,18 @@ data class CardIntent(
      * ambush policy most wants — from being mistaken for one that aims at us.
      */
     val targetsOnlyOurPermanents: Boolean = false,
+    /**
+     * Whether the card carries an **untargeted group pump that expires** — "creatures you control
+     * get +2/+1 until end of turn" (Rabbit Response), which `Patterns.Group.modifyStatsForAll`
+     * lowers to a `ForEachEffect` over a group.
+     *
+     * [EffectWalker] treats a `ForEach` as a leaf, so such a card never reaches
+     * [IntentTag.COMBAT_TRICK] and [HoldPolicy] never asks whether there is a fight to spend it in.
+     * Kept as its own field rather than folded into that tag so the tag — and every profile that
+     * reads it — stays exactly as it was; the one consumer is [HoldPolicy] behind
+     * [com.wingedsheep.ai.engine.AiProfile.holdUnusablePumps].
+     */
+    val expiringGroupPump: Boolean = false,
 ) {
     operator fun contains(tag: IntentTag): Boolean = tag in tags
 

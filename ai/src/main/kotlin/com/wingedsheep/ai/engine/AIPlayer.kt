@@ -275,6 +275,7 @@ class AIPlayer(
                 creatureValuation = profile.creatureValuation,
                 priceLandsInHandAsMana = profile.priceLandsInHandAsMana,
                 evasionAfterAttacking = profile.evasionAfterAttacking,
+                pendingLandDropIsMana = profile.pendingLandDropIsMana,
             )
             val combatAdvisor = CombatAdvisor(
                 simulator, evaluator, cardRegistry, advisorRegistry,
@@ -290,7 +291,9 @@ class AIPlayer(
                 intents = intents,
                 castabilityAwareCardSelection = profile.castabilityAwareCardSelection,
                 informedChoices = profile.informedChoiceDecisions,
+                fillUpToMaxTargets = profile.fillUpToMaxTargets,
                 selectionCountsByValue = profile.selectionCountsByValue,
+                holdUnusablePumps = profile.holdUnusablePumps,
             )
 
             // Wire up the decision resolver so simulations can resolve non-trivial
@@ -318,6 +321,7 @@ class AIPlayer(
                     holdFlashPermanentsForAmbush = profile.holdFlashPermanentsForAmbush,
                     holdExpiringGrantsForCombat = profile.holdExpiringGrantsForCombat,
                     refuseUnspendableGrants = profile.refuseUnspendableGrants,
+                    holdUnusablePumps = profile.holdUnusablePumps,
                     targetPolarityFromEffect = profile.targetPolarityFromEffect,
                     permanentCastIsNotCardLoss = profile.permanentCastIsNotCardLoss,
                     // Same seam as `CombatAdvisor`'s `lifeWeight`: a raw Phase 9 profile resolves

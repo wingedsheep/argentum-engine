@@ -119,6 +119,8 @@ class Strategist(
      * the activation half to [com.wingedsheep.ai.engine.knowledge.ExpiringGrantWindow].
      */
     private val refuseUnspendableGrants: Boolean = false,
+    /** [AiProfile.holdUnusablePumps] — passed straight through to [HoldPolicy]. */
+    private val holdUnusablePumps: Boolean = false,
     /**
      * [AiProfile.targetPolarityFromEffect]: rank targets by what the effect does to them, drop a
      * candidate whose every legal target is on the wrong side, and keep "cast without the kicker"
@@ -158,6 +160,7 @@ class Strategist(
         holdFlashPermanentsForAmbush = holdFlashPermanentsForAmbush,
         holdExpiringGrantsForCombat = holdExpiringGrantsForCombat,
         refuseUnspendableGrants = refuseUnspendableGrants,
+        holdUnusablePumps = holdUnusablePumps,
         boardPresenceWeight = boardPresenceWeight,
     )
 

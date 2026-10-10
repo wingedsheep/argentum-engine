@@ -164,6 +164,12 @@ object ArenaAgents {
         // is the promotion gate.
         ArenaAgent("production-selectcount", AiProfile.PRODUCTION_SELECTCOUNT),
         ArenaAgent("production-candidate-selectcount", AiProfile.PRODUCTION_CANDIDATE_SELECTCOUNT),
+        // End-of-turn pumps held when nothing this turn can use them: a team pump with no creature
+        // in the fight, an optional payment for a grant on creatures that cannot attack or block.
+        // `just arena production production-unusablepumps 300` prices it alone; `just arena
+        // production-candidate-expiring production-candidate-unusablepumps 300` is the promotion gate.
+        ArenaAgent("production-unusablepumps", AiProfile.PRODUCTION_UNUSABLEPUMPS),
+        ArenaAgent("production-candidate-unusablepumps", AiProfile.PRODUCTION_CANDIDATE_UNUSABLEPUMPS),
         // Choice decisions answered by what they are for: colour/land-type tie-breaks, shortlisted
         // card names, and a skipped draw priced as a card. `just arena production
         // production-choices 300` prices it alone; `just arena production-candidate-expiring
@@ -182,6 +188,11 @@ object ArenaAgents {
         // agent the 2026-10-09 game logs were taken with.
         ArenaAgent("production-deploy", AiProfile.PRODUCTION_DEPLOY),
         ArenaAgent("production-candidate-deploy", AiProfile.PRODUCTION_CANDIDATE_DEPLOY),
+        // "Up to N targets" answered with as many targets as improve the result, not always one.
+        // `just arena production production-upto 300` prices it alone; `just arena
+        // production-candidate-expiring production-candidate-upto 300` is the promotion gate.
+        ArenaAgent("production-upto", AiProfile.PRODUCTION_UPTO),
+        ArenaAgent("production-candidate-upto", AiProfile.PRODUCTION_CANDIDATE_UPTO),
         ArenaAgent("production-targeted", AiProfile.PRODUCTION_TARGETED),
         // Explicit ECL candidates. Their resource-backed weights fail closed to production's
         // evaluator until a validated artifact is installed; automatic selection is set-gated.
