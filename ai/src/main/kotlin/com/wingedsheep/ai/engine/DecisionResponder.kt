@@ -289,7 +289,14 @@ class DecisionResponder(
                     val card = state.getEntity(entityId)?.get<CardComponent>() ?: return@sortedBy 0.0
                     BoardPresence.permanentValue(state, state.projectedState, entityId, card, intents)
                 }
-                CardsSelectedResponse(decision.id, ranked.take(min.coerceAtLeast(1).coerceAtMost(max)))
+                val pick = CardsSelectedResponse(decision.id, ranked.take(min.coerceAtLeast(1).coerceAtMost(max)))
+                if (min > 0) return pick
+                // An optional sacrifice ("you may sacrifice …. If you do, …") asked as one pick:
+                // weigh paying with the cheapest permanent against declining, as the yes/no did.
+                val decline = CardsSelectedResponse(decision.id, emptyList())
+                val pickScore = evaluateChoice(simulator.simulateDecision(state, pick), playerId)
+                val declineScore = evaluateChoice(simulator.simulateDecision(state, decline), playerId)
+                if (pickScore >= declineScore) pick else decline
             }
             isChooseToKeep -> {
                 // Keep best cards

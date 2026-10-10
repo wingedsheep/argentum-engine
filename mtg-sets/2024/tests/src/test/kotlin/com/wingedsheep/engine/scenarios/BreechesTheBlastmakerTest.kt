@@ -4,7 +4,6 @@ import com.wingedsheep.engine.core.ChooseTargetsDecision
 import com.wingedsheep.engine.core.CoinFlipEvent
 import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.engine.core.SelectCardsDecision
-import com.wingedsheep.engine.core.YesNoDecision
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
@@ -90,14 +89,11 @@ class BreechesTheBlastmakerTest : FunSpec({
                     // Breeches' "any target" for the lose-flip damage — point it at the opponent.
                     submitTargetSelection(you, listOf(opponent))
                 }
-                decision is YesNoDecision && !answeredGate -> {
+                decision is SelectCardsDecision && !answeredGate -> {
+                    // The may-pay sacrifice is one pick: the artifact, or none to decline.
                     answeredGate = true
-                    flips += submitYesNo(you, acceptSacrifice).events.filterIsInstance<CoinFlipEvent>()
-                }
-                decision is SelectCardsDecision -> {
-                    // Choosing which artifact to sacrifice for the may-pay cost.
-                    flips += submitCardSelection(you, listOf(artifact)).events
-                        .filterIsInstance<CoinFlipEvent>()
+                    flips += submitCardSelection(you, if (acceptSacrifice) listOf(artifact) else emptyList())
+                        .events.filterIsInstance<CoinFlipEvent>()
                 }
                 else -> autoResolveDecision()
             }

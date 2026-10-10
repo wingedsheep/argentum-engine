@@ -6,7 +6,6 @@ import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 
 /**
  * The Sackville-Bagginses — The Hobbit #83
@@ -39,14 +38,9 @@ val TheSackvilleBagginses = card("The Sackville-Bagginses") {
 
     triggeredAbility {
         trigger = Triggers.self.enters()
-        val sacrificed = target(
-            TargetFilter(
-                    GameObjectFilter.Creature.youControl().or(GameObjectFilter.Artifact.youControl())
-                ).other(),
-        )
-        effect = Effects.May(
-            Effects.SacrificeTarget(sacrificed) then
-                Effects.DrawCards(1) then
+        effect = Effects.MayPay(
+            Effects.SacrificeOwn(GameObjectFilter.Creature.or(GameObjectFilter.Artifact), excludeSource = true),
+            then = Effects.DrawCards(1) then
                 Effects.CreateTreasure()
         )
         description = "When The Sackville-Bagginses enter, you may sacrifice another creature or " +

@@ -40,9 +40,9 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  *  - ETB (front): a mandatory [Effects.Move] `GRAVEYARD → BATTLEFIELD` reanimation of a single
  *    target creature card in your graveyard, restricted to `manaValueAtMost(1)` (the same
  *    graveyard-target idiom as Reya Dawnbringer / Daily Bugle Reporters).
- *  - Attack trigger (back): `Triggers.self.attacks()` + [Effects.May] wrapping the optional sacrifice of
- *    another creature ([Effects.SacrificeTarget] over a `.other()` creature you control), so "If
- *    you do" gates the payoff on actually sacrificing. The sacrificed creature's mana value is read
+ *  - Attack trigger (back): `Triggers.self.attacks()` + [Effects.MayPay] whose cost is sacrificing
+ *    another creature ([Effects.SacrificeOwn] with `excludeSource` — the sacrifice doesn't target),
+ *    so "If you do" gates the payoff on actually sacrificing. The sacrificed creature's mana value is read
  *    from last-known information via [EffectTarget.SacrificedAsCost] — the same capture Memorial Vault
  *    / Eldritch Evolution rely on — and feeds two downstream reads: the draw count
  *    ([DynamicAmount.EntityProperty] `Sacrificed.ManaValue`) and the from-hand eligibility filter
@@ -109,12 +109,11 @@ private val VenomLethalProtector = card("Venom, Lethal Protector") {
     // X is the sacrificed creature's mana value.
     triggeredAbility {
         trigger = Triggers.self.attacks()
-        val sacrificed = target(TargetFilter(GameObjectFilter.Creature.youControl()).other())
         // X = the sacrificed creature's mana value (last-known info via EffectTarget.SacrificedAsCost).
         val x = DynamicAmounts.manaValueOf(EffectTarget.SacrificedAsCost(0))
-        effect = Effects.May(
-            Effects.SacrificeTarget(sacrificed) then
-                Effects.DrawCards(x) then
+        effect = Effects.MayPay(
+            Effects.SacrificeOwn(GameObjectFilter.Creature, excludeSource = true),
+            then = Effects.DrawCards(x) then
                 Effects.Pipeline {
                     // Gather every permanent card in hand; the mana-value cap is enforced by
                     // the selection restriction below rather than a card filter, because a
