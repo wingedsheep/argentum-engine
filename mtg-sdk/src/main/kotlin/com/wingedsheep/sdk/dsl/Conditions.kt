@@ -2030,6 +2030,15 @@ object Conditions {
         com.wingedsheep.sdk.scripting.conditions.SourceDealtDamageToPlayerThisTurn(Player.Candidate)
 
     /**
+     * Candidate restriction: the player being considered has the most life or is tied for the
+     * most. Backs "choose a player with the most life or tied for most life" (The Black Gate) —
+     * pair it with a non-targeting `selectTarget`, so the choice is made, and the restriction
+     * read, as the ability resolves.
+     */
+    fun candidateHasMostLife(): ConditionInterface =
+        com.wingedsheep.sdk.scripting.conditions.PlayerHasMostLife(Player.Candidate)
+
+    /**
      * Candidate-target restriction: the player being targeted has [n] or less life.
      * Backs "target player with N or less life". The restriction is re-checked at resolution
      * (CR 608.2b), so a player who gains above the threshold after being targeted is removed.

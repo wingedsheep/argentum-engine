@@ -2743,6 +2743,11 @@ data class PredicateContext(
             is EffectTarget.BoundVariable -> namedTargets[target.name]
             is EffectTarget.ContextTarget -> targets.getOrNull(target.index)
             EffectTarget.Controller -> return controllerId
+            // A player baked into a lasting effect when it was created — the player The Black
+            // Gate chose, frozen into the "can't be blocked by creatures that player controls"
+            // grant by GrantStaticAbilityExecutor. Only a player id resolves; anything else
+            // matches no controller.
+            is EffectTarget.SpecificEntity -> return target.entityId
             is EffectTarget.PlayerRef -> return when (target.player) {
                 Player.You -> controllerId
                 Player.TriggeringPlayer -> triggeringPlayerId
