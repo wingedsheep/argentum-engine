@@ -12794,6 +12794,10 @@ answer it and would silently return `false`.
   facade for `Compare(LeastAmongPlayers(Player.EachOpponent, LifeTotal(Player.You)), LTE, Fixed(n))`. Unlike
   `APlayerLifeAtMost`, the controller's own life total never satisfies it; this is the conditional
   static-ability gate for Bloodghast's haste. Team games read the shared team total (CR 810.9a).
+- `Conditions.AnOpponentCastSpellsThisTurnAtLeast(n)` — a *single* opponent cast ≥N spells this turn: a facade
+  for `Compare(GreatestAmongPlayers(Player.EachOpponent, SpellsCastThisTurn(Player.You)), GTE, Fixed(n))`. Three
+  opponents casting one spell each don't add up; casts count whether or not they resolved. Mindbreak Trap's
+  `SelfAlternativeCost` gate.
 - `PoisonCountersAtLeast(n, player = Player.You)` — a single player has ≥N poison counters. Under a
   `ForEachPlayer` / `countPlayersWith` rebind `Player.You` is the player being tested ("each opponent who has
   three or more poison counters loses 3 life" — Feed the Infection); `Player.ControllerOf("target")` is "if its
