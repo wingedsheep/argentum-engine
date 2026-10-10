@@ -3,7 +3,6 @@ package com.wingedsheep.engine.scenarios
 import com.wingedsheep.engine.core.CardsSelectedResponse
 import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.core.PaymentStrategy
-import com.wingedsheep.engine.core.ReorderLibraryDecision
 import com.wingedsheep.engine.core.SelectCardsDecision
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
@@ -75,9 +74,7 @@ class ConsumingAshesTest : FunSpec({
         // Mill the top card to the graveyard, keep the second on top.
         driver.submitDecision(me, CardsSelectedResponse(decisionId = select.id, selectedCards = listOf(top1)))
 
-        driver.isPaused shouldBe true
-        val reorder = driver.pendingDecision as ReorderLibraryDecision
-        driver.submitOrderedResponse(me, reorder.cards)
+        // One card stays on top and the surveil just showed it: no order prompt.
         driver.isPaused shouldBe false
 
         driver.getGraveyard(me).contains(top1) shouldBe true

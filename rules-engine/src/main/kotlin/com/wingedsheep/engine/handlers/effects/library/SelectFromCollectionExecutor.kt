@@ -567,7 +567,8 @@ class SelectFromCollectionExecutor(
             storeRemainder = effect.storeRemainder,
             storedCollections = context.pipeline.storedCollections,
             restrictions = effect.restrictions,
-            spellFaces = spellFaces
+            spellFaces = spellFaces,
+            shownCards = allDisplayCards
         )
 
         return EffectResult.from(state.suspendForDecision(decision, continuation))

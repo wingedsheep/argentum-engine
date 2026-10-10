@@ -16,11 +16,19 @@ object GraveyardOrdering {
         val events = result.events.map { if (it is ZoneChangeEvent && it.toZone == Zone.GRAVEYARD) it.copy(graveyardOrderFinalized = true) else it }
         val groups = result.events.filterIsInstance<ZoneChangeEvent>()
             .filter { it.toZone == Zone.GRAVEYARD && !it.graveyardOrderFinalized && it.entityId in result.state.getGraveyard(it.ownerId) && result.state.getEntity(it.entityId)?.has<TokenComponent>() != true }
-            .groupBy { it.ownerId }.mapValues { (_, moves) -> moves.map { it.entityId }.distinct() }.filterValues { it.size > 1 }
+            .groupBy { it.ownerId }.mapValues { (_, moves) -> moves.map { it.entityId }.distinct() }
+            .filterValues { it.size > 1 && !allSameCard(result.state, it) }
         if (groups.isEmpty()) return result.copy(events = events)
         val paused = ask(result.state, groups, events, result.updatedCollections, result.updatedStoredNumbers, result.updatedChosenValues, result.updatedSubtypeGroups, result.updatedSacrificedPermanents)
         return result.copy(state = paused.state, events = paused.events, outcome = paused.outcome)
     }
+
+    /**
+     * Copies of one card are interchangeable in a graveyard, so every order of them is the same
+     * graveyard: don't ask the owner to sort two Pond Prophets that died together.
+     */
+    private fun allSameCard(state: GameState, cards: List<EntityId>): Boolean =
+        cards.map { state.getEntity(it)?.get<CardComponent>()?.cardDefinitionId ?: return false }.distinct().size == 1
 
     fun finish(result: ExecutionResult): ExecutionResult =
         finish(EffectResult.from(result)).toExecutionResult()

@@ -1,6 +1,5 @@
 package com.wingedsheep.engine.scenarios
 
-import com.wingedsheep.engine.core.ReorderLibraryDecision
 import com.wingedsheep.engine.core.SelectCardsDecision
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.support.ScenarioTestBase
@@ -62,8 +61,6 @@ class DeeprootWayfinderScenarioTest : ScenarioTestBase() {
             game.attackAndAwaitSurveil()
 
             game.skipSelection().error shouldBe null
-            (game.state.pendingDecision is ReorderLibraryDecision) shouldBe true
-            game.keepLibraryOrder().error shouldBe null
             (game.state.pendingDecision is SelectCardsDecision) shouldBe true
             game.skipSelection().error shouldBe null
             game.resolveStack()

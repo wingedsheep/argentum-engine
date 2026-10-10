@@ -45,6 +45,12 @@ data class SelectFromCollectionContinuation(
      */
     val restrictions: List<SelectionRestriction> = emptyList(),
     val objectReferences: com.wingedsheep.engine.handlers.ObjectReferenceEnvironment = com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(),
+    /**
+     * Every card the decision displayed to [playerId] — selectable or not. The resumer publishes
+     * the shown part of the remainder under [com.wingedsheep.engine.handlers.PipelineState.shownKey].
+     */
+    @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
+    val shownCards: List<EntityId>? = null,
 ) : AnswerContinuation
 
 /**

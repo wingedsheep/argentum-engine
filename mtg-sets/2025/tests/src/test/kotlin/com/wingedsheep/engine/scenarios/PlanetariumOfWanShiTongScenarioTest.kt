@@ -38,10 +38,9 @@ class PlanetariumOfWanShiTongScenarioTest : ScenarioTestBase() {
         }
         cardRegistry.register(listOf(scrySpell))
 
-        /** Resolve a scry's "which cards to the bottom" + "reorder the top" prompts. */
+        /** Resolve a scry 1's "which cards to the bottom" prompt (one kept card needs no ordering). */
         fun TestGame.answerScry() {
             skipSelection()
-            keepLibraryOrder()
         }
 
         fun newGame() = scenario()

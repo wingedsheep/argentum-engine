@@ -1,8 +1,6 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.CardsSelectedResponse
-import com.wingedsheep.engine.core.OrderedResponse
-import com.wingedsheep.engine.core.ReorderLibraryDecision
 import com.wingedsheep.engine.core.Outcome
 import com.wingedsheep.engine.core.SelectCardsDecision
 import com.wingedsheep.engine.state.ZoneKey
@@ -58,8 +56,6 @@ class PhyrexianVivisectorScenarioTest : FunSpec({
         d.bothPass()
         val choice = d.pendingDecision.shouldBeInstanceOf<SelectCardsDecision>()
         d.submitDecision(d.player1, CardsSelectedResponse(choice.id, emptyList()))
-        val order = d.pendingDecision.shouldBeInstanceOf<ReorderLibraryDecision>()
-        d.submitDecision(d.player1, OrderedResponse(order.id, order.cards))
         d.pendingDecision shouldBe null
         d.stackSize shouldBe 0
     }

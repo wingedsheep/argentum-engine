@@ -21,7 +21,8 @@ import java.util.UUID
 
 /**
  * Surveil N: look at the top N cards; send any chosen subset to the graveyard,
- * then put the rest back on top in controller-chosen order.
+ * then put the rest back on top in controller-chosen order (no order prompt when only one
+ * card stays — the player saw it in the selection).
  *
  * Covered scenario: Surveil 2 — player puts the top card (A) into the graveyard
  * and keeps the second card (B) on top; the cards below (C, D) must remain in
@@ -107,14 +108,7 @@ class SurveilNTest : FunSpec({
             )
         )
 
-        // Engine pauses: controller orders the remaining card(s) back on top
-        driver.isPaused shouldBe true
-        driver.pendingDecision.shouldBeInstanceOf<ReorderLibraryDecision>()
-        val reorderDecision = driver.pendingDecision as ReorderLibraryDecision
-        reorderDecision.cards.size shouldBe 1
-        reorderDecision.cards[0] shouldBe cardB
-        driver.submitOrderedResponse(activePlayer, reorderDecision.cards)
-
+        // One card stays on top and the player just saw it: nothing to order, no prompt
         driver.isPaused shouldBe false
 
         // Card A is now in the graveyard

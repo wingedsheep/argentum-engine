@@ -71,6 +71,19 @@ class GraveyardOrderingTest : ScenarioTestBase() {
             cards.map { game.state.objectRef(it) } shouldBe refs
             game.state.getGraveyard(game.player1Id).first() shouldBe game.findCardsInGraveyard(1, "Swamp").single()
         }
+        test("copies of one card arriving together are not offered for ordering") {
+            val game = scenario().withPlayers("Owner", "Opponent").withCardInGraveyard(1, "Swamp")
+                .withCardInHand(1, "Grizzly Bears").withCardInHand(1, "Grizzly Bears").build()
+            game.state = game.state.copy(preserveGraveyardOrder = true)
+            val cards = game.state.getHand(game.player1Id)
+            val result = services.effectExecutorRegistry.execute(game.state,
+                MoveCollectionEffect("cards", CardDestination.ToZone(Zone.GRAVEYARD)),
+                EffectContext(controllerId = game.player1Id, sourceId = null, pipeline = PipelineState(storedCollections = mapOf("cards" to cards))))
+            result.outcome shouldBe Outcome.Done
+            result.state.pendingDecision shouldBe null
+            result.state.getGraveyard(game.player1Id).takeLast(2).toSet() shouldBe cards.toSet()
+            result.events.filterIsInstance<ZoneChangeEvent>().all { it.graveyardOrderFinalized } shouldBe true
+        }
         test("mixed owners order their own arrivals in APNAP order") {
             val game = scenario().withPlayers("Owner", "Opponent").withCardInHand(1, "Island").withCardInHand(1, "Swamp")
                 .withCardInHand(2, "Mountain").withCardInHand(2, "Forest")

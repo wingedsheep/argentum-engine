@@ -36,8 +36,7 @@ class DimirMachinationsScenarioTest : ScenarioTestBase() {
             val bears = game.findCardsInLibrary(2, "Grizzly Bears").single()
             val giant = game.findCardsInLibrary(2, "Hill Giant").single()
             game.selectCards(listOf(bears, giant)).error shouldBe null
-            // Even a single returning card goes through the "in any order" prompt.
-            game.keepLibraryOrder().error shouldBe null
+            // A single returning card was just shown in the selection, so there is no order prompt.
             game.resolveStack()
 
             game.isInExile(2, "Grizzly Bears") shouldBe true

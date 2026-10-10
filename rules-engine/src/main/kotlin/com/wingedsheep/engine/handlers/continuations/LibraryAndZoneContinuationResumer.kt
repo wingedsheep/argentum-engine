@@ -644,6 +644,12 @@ class LibraryAndZoneContinuationResumer(
         val updatedCollections = mutableMapOf(continuation.storeSelected to selected)
         if (continuation.storeRemainder != null) {
             updatedCollections[continuation.storeRemainder] = remainder
+            // The chooser just saw these cards, so a one-card "put the rest back on top" has
+            // nothing left to show them (scry 1 / surveil 1 keeping the card).
+            val shown = continuation.shownCards?.let { s -> remainder.filter { it in s } }.orEmpty()
+            if (shown.isNotEmpty()) {
+                updatedCollections[com.wingedsheep.engine.handlers.PipelineState.shownKey(continuation.storeRemainder, continuation.playerId)] = shown
+            }
         }
 
         // Inject updated collections into the consumer frame beneath (if any)

@@ -1,7 +1,6 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.CardsSelectedResponse
-import com.wingedsheep.engine.core.ReorderLibraryDecision
 import com.wingedsheep.engine.core.SelectCardsDecision
 import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.engine.support.GameTestDriver
@@ -73,11 +72,9 @@ class NeutralizeTheGuardsScenarioTest : FunSpec({
         select.shouldBeInstanceOf<SelectCardsDecision>()
         select.options.size shouldBe 2
 
-        // Mill the top card; reorder the rest.
+        // Mill the top card; keep the second on top.
         driver.submitDecision(me, CardsSelectedResponse(decisionId = select.id, selectedCards = listOf(top1)))
-        driver.isPaused shouldBe true
-        val reorder = driver.pendingDecision as ReorderLibraryDecision
-        driver.submitOrderedResponse(me, reorder.cards)
+        // One card stays on top and the surveil just showed it: no order prompt.
         driver.isPaused shouldBe false
 
         // After resolution completes, SBAs reduce the opponent's 0/0 Lions and it dies.
