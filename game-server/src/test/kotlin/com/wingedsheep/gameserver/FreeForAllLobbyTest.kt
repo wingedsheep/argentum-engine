@@ -691,6 +691,8 @@ class FreeForAllLobbyTest : FunSpec() {
             // The axis is reported back on its own field, and it did not drag a deck restriction in.
             host.latestLobbyUpdate()?.settings?.rules shouldBe "COMMANDER"
             host.latestLobbyUpdate()?.settings?.deckFormat shouldBe null
+            // Commander defaults the attack rule to any opponent, not the attack-left of other pods.
+            host.latestLobbyUpdate()?.settings?.attackMode shouldBe "MULTIPLE"
 
             for (client in pod) {
                 client.send(ClientMessage.SubmitSealedDeck(
@@ -721,6 +723,9 @@ class FreeForAllLobbyTest : FunSpec() {
                 state.shouldNotBeNull()
                 state.players shouldHaveSize 4
                 state.players.all { it.life == 40 } shouldBe true
+                // A Commander pod the host didn't configure attacks any opponent (CR 802); the
+                // client state omits MULTIPLE.
+                state.attackMode shouldBe null
                 for (player in state.players) {
                     val commandZone = state.zones.firstOrNull {
                         it.zoneId.ownerId == player.playerId &&

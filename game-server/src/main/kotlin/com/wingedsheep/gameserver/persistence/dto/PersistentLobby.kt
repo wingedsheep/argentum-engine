@@ -59,8 +59,8 @@ data class PersistentTournamentLobby(
     val aiAssistEnabled: Boolean = true,
     /** Lobby mode axis: LobbyGameMode enum name ("TOURNAMENT" / "FREE_FOR_ALL"). */
     val gameMode: String = "TOURNAMENT",
-    /** FFA attack rule: AttackMode enum name ("MULTIPLE" / "LEFT" / "RIGHT"). */
-    val attackMode: String = "MULTIPLE",
+    /** FFA attack rule the host picked: AttackMode enum name ("MULTIPLE" / "LEFT" / "RIGHT"); null = the rules' default. */
+    val attackMode: String? = null,
     /** 2HG: true = random teams each game, false = host-set teams via [teamAssignments]. */
     val randomTeams: Boolean = true,
     /** 2HG manual team assignment: playerId -> team index (0 or 1). Empty when unset/random. */

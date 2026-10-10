@@ -380,12 +380,10 @@ class TournamentLobby(
      */
     var gameMode: LobbyGameMode = LobbyGameMode.TOURNAMENT,
     /**
-     * Which opponents creatures may attack in a Free-for-All game (CR 802 / 803; CR 806.2b requires
-     * exactly one). Only meaningful when [gameMode] is FREE_FOR_ALL — ignored by the tournament
-     * bracket (whose matches are always two-player). Defaults to [AttackMode.LEFT]: one neighbour to
-     * attack keeps a big table from ganging up on whoever is ahead, and the game moving round the table.
+     * The Free-for-All attack rule the host picked, or null when they haven't — then [attackMode]
+     * falls back to the rules' default. Read [attackMode], not this.
      */
-    var attackMode: com.wingedsheep.sdk.core.AttackMode = com.wingedsheep.sdk.core.AttackMode.LEFT,
+    var chosenAttackMode: com.wingedsheep.sdk.core.AttackMode? = null,
     /**
      * Team games only (2HG / Team vs. Team): when true (the default) the seats are split into two
      * even random teams at game start, re-rolled each game. When false the host sets the teams by
@@ -538,6 +536,20 @@ class TournamentLobby(
      * even observe it. Everything now reads this.
      */
     val usesCommanderRules: Boolean get() = rules.usesCommanders
+
+    /**
+     * Which opponents creatures may attack in a Free-for-All game (CR 802 / 803; CR 806.2b requires
+     * exactly one). Only meaningful when [gameMode] is FREE_FOR_ALL — ignored by the tournament
+     * bracket (whose matches are always two-player). The host's pick wins; otherwise a Commander pod
+     * attacks any opponent, the way Commander is played, and any other pod attacks left — one
+     * neighbour keeps a big table from ganging up on whoever is ahead. The default follows the Rules
+     * axis, so switching to Commander moves an untouched lobby with it.
+     */
+    var attackMode: com.wingedsheep.sdk.core.AttackMode
+        get() = chosenAttackMode
+            ?: if (usesCommanderRules) com.wingedsheep.sdk.core.AttackMode.MULTIPLE
+            else com.wingedsheep.sdk.core.AttackMode.LEFT
+        set(value) { chosenAttackMode = value }
 
     /**
      * Why this lobby's Rules and Table contradict each other, or null. See

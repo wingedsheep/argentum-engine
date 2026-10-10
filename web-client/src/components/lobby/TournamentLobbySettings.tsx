@@ -162,9 +162,9 @@ export function TournamentLobbySettings({
           <div className={styles.variantGroup}>
             <div className={styles.settingsButtons}>
               {([
-                ['LEFT', 'Left only', 'Each creature may attack only the player to your left (CR 803) — the default'],
+                ['LEFT', 'Left only', 'Each creature may attack only the player to your left (CR 803) — the default outside Commander'],
                 ['RIGHT', 'Right only', 'Each creature may attack only the player to your right (CR 803)'],
-                ['MULTIPLE', 'Any opponent', 'Each creature may attack any opponent (CR 802)'],
+                ['MULTIPLE', 'Any opponent', 'Each creature may attack any opponent (CR 802) — the Commander default'],
               ] as const).map(([mode, label, title]) => (
                 <button
                   key={mode}
