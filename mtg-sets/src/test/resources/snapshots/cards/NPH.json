@@ -494,6 +494,45 @@
     ]
 }
 
+// Noxious Revival
+{
+    "name": "Noxious Revival",
+    "manaCost": "{G/P}",
+    "typeLine": "Instant",
+    "oracleText": "({G/P} can be paid with either {G} or 2 life.)\nPut target card from a graveyard on top of its owner's library.",
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "destination": "Library",
+            "placement": "Top"
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {},
+                    "zone": "Graveyard"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "118",
+        "rarity": "UNCOMMON",
+        "artist": "Matt Stewart",
+        "flavorText": "\"Dead or alive, my creations are stronger than Jin-Gitaxias's septic minions.\"\n—Vorinclex, Voice of Hunger",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/b/1bdd1243-1d14-496a-9b7a-0c5b34461361.jpg?1783941300"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Phyrexian Metamorph
 {
     "name": "Phyrexian Metamorph",

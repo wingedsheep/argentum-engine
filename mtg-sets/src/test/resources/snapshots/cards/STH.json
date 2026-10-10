@@ -118,6 +118,76 @@
     ]
 }
 
+// Burgeoning
+{
+    "name": "Burgeoning",
+    "manaCost": "{G}",
+    "typeLine": "Enchantment",
+    "oracleText": "Whenever an opponent plays a land, you may put a land card from your hand onto the battlefield.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Burgeoning:1",
+                "trigger": {
+                    "type": "LandPlayedEvent",
+                    "player": "EachOpponent"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand",
+                                "filter": "land"
+                            },
+                            "storeAs": "put_candidates"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "put_candidates",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "putting"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "putting",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "102",
+        "rarity": "RARE",
+        "artist": "Randy Gallegos",
+        "flavorText": "\"The plants said, 'We will fight the stone with root and stem and seed. We are patient. We will win.'\"\n—Skyshroud myth of the forest",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/a/fa9af8e5-bc97-4704-ae5c-e3d2d5b72586.jpg?1783946552",
+        "rulings": [
+            {
+                "date": "2004-10-04",
+                "text": "Playing a land will trigger it, but putting a land onto the battlefield as part of an effect will not."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Hermit Druid
 {
     "name": "Hermit Druid",

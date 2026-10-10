@@ -1161,6 +1161,72 @@
     ]
 }
 
+// Culling Ritual
+{
+    "name": "Culling Ritual",
+    "manaCost": "{2}{B}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Destroy each nonland permanent with mana value 2 or less. Add {B} or {G} for each permanent destroyed this way.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "BattlefieldMatching",
+                                "filter": "nonland permanent mv<=2"
+                            },
+                            "storeAs": "destroyAll_gathered"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "destroyAll_gathered",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Destroy",
+                            "storeMovedAs": "stored0"
+                        }
+                    ]
+                },
+                {
+                    "type": "AddDynamicMana",
+                    "amountSource": {
+                        "type": "VariableReference",
+                        "variableName": "stored0_count"
+                    },
+                    "allowedColors": [
+                        "BLACK",
+                        "GREEN"
+                    ]
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "172",
+        "rarity": "RARE",
+        "artist": "Lorenzo Mastroianni",
+        "flavorText": "\"Your own frailty is your undoing. I am merely the one to expose it.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/f/8f6f91d3-cc07-4a42-99a0-5fb83b29cc25.jpg?1783927321",
+        "rulings": [
+            {
+                "date": "4/16/2021",
+                "text": "You can choose to add either {B} or {G} for each permanent destroyed. You aren't limited to one color."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
+    ]
+}
+
 // Daemogoth Titan
 {
     "name": "Daemogoth Titan",

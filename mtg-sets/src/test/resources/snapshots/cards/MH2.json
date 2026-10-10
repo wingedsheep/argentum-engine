@@ -4021,3 +4021,45 @@
         "BLACK"
     ]
 }
+
+// Yavimaya, Cradle of Growth
+{
+    "name": "Yavimaya, Cradle of Growth",
+    "manaCost": "",
+    "typeLine": "Legendary Land",
+    "oracleText": "Each land is a Forest in addition to its other land types.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantAdditionalTypesToGroup",
+                "filter": {
+                    "baseFilter": "land"
+                },
+                "addSubtypes": [
+                    "Forest"
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "261",
+        "rarity": "RARE",
+        "artist": "Sarah Finnigan",
+        "flavorText": "\"Multani's heart is a seed, and all of Yavimaya is its flower. There is as much life here as in the rest of Dominaria together.\"\n—Karn",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/e/4e4b6e22-93b2-4896-bba5-0ceaa5d8ea3c.jpg?1783926791",
+        "rulings": [
+            {
+                "date": "2021-06-18",
+                "text": "Yavimaya, Cradle of Growth isn't a Forest while it's not on the battlefield."
+            },
+            {
+                "date": "2021-06-18",
+                "text": "Land cards not on the battlefield aren't Forests while Yavimaya is on the battlefield."
+            },
+            {
+                "date": "2021-06-18",
+                "text": "Yavimaya's ability causes each land on the battlefield to have the land type Forest. Any land that's a Forest has the ability \"{T}: Add {G}.\" Nothing else changes about those lands, including their names, other subtypes, and whether they're legendary, basic, or snow."
+            }
+        ]
+    }
+}

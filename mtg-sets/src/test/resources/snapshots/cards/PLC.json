@@ -2910,6 +2910,49 @@
     ]
 }
 
+// Urborg, Tomb of Yawgmoth
+{
+    "name": "Urborg, Tomb of Yawgmoth",
+    "manaCost": "",
+    "typeLine": "Legendary Land",
+    "oracleText": "Each land is a Swamp in addition to its other land types.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantAdditionalTypesToGroup",
+                "filter": {
+                    "baseFilter": "land"
+                },
+                "addSubtypes": [
+                    "Swamp"
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "165",
+        "rarity": "RARE",
+        "artist": "John Avon",
+        "flavorText": "\"Yawgmoth's corpse is a wound in the universe. His foul blood seeps out, infecting the land with his final curse.\"\n—Lord Windgrace",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/9/19e1224f-82cb-4f41-8739-f880cba61bbb.jpg?1783943133",
+        "rulings": [
+            {
+                "date": "2021-03-19",
+                "text": "Urborg's ability causes each land on the battlefield to have the land type Swamp. Any land that's a Swamp has the ability \"{T}: Add {B}.\" Nothing else changes about those lands, including their names, other subtypes, other abilities, and whether they're legendary, basic, or snow."
+            },
+            {
+                "date": "2021-03-19",
+                "text": "Land cards not on the battlefield aren't Swamps while Urborg is on the battlefield."
+            },
+            {
+                "date": "2021-03-19",
+                "text": "If an effect such as that of Magus of the Moon causes Urborg to lose its abilities by setting it to a basic land type not in addition to its other types, it won't turn lands into Swamps, no matter in what order those effects started to apply."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Vitaspore Thallid
 {
     "name": "Vitaspore Thallid",

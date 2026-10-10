@@ -35,6 +35,105 @@
     "colorIdentityOverride": []
 }
 
+// Counterbalance
+{
+    "name": "Counterbalance",
+    "manaCost": "{U}{U}",
+    "typeLine": "Enchantment",
+    "oracleText": "Whenever an opponent casts a spell, you may reveal the top card of your library. If you do, counter that spell if it has the same mana value as the revealed card.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Counterbalance:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "player": "EachOpponent"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayDecide",
+                        "prompt": "Reveal the top card of your library?"
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "TopOfLibrary",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeAs": "gathered0"
+                            },
+                            {
+                                "type": "RevealCollection",
+                                "from": "gathered0"
+                            },
+                            {
+                                "type": "Gated",
+                                "gate": {
+                                    "type": "Gate.WhenCondition",
+                                    "condition": {
+                                        "type": "All",
+                                        "conditions": [
+                                            {
+                                                "type": "CollectionContainsMatch",
+                                                "collection": "gathered0"
+                                            },
+                                            {
+                                                "type": "Compare",
+                                                "left": {
+                                                    "type": "StoredCardManaValue",
+                                                    "collectionName": "gathered0"
+                                                },
+                                                "operator": "EQ",
+                                                "right": {
+                                                    "type": "EntityProperty",
+                                                    "entity": "TriggeringEntity",
+                                                    "numericProperty": "ManaValue"
+                                                }
+                                            }
+                                        ]
+                                    }
+                                },
+                                "then": {
+                                    "type": "Counter",
+                                    "targetSource": "CounterTargetSource.TriggeringEntity"
+                                }
+                            }
+                        ]
+                    }
+                },
+                "descriptionOverride": "Whenever an opponent casts a spell, you may reveal the top card of your library. If you do, counter that spell if it has the same mana value as the revealed card."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "31",
+        "rarity": "UNCOMMON",
+        "artist": "John Zeleznik",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/3/c329ff2b-0331-4934-a8df-870dd7bf402b.jpg?1783943361",
+        "rulings": [
+            {
+                "date": "2017-04-18",
+                "text": "If an opponent casts half of a split card (for example, Hit), it won't be countered if you reveal that same split card. The mana value of a split card is determined by the combined mana cost of its two halves, but the mana value of Hit is determined using only that half's mana cost."
+            },
+            {
+                "date": "2006-07-15",
+                "text": "If an opponent casts a spell with X in its mana cost, the mana value of that spell takes the value of X into account. If you reveal a card with X in its mana cost, X is 0. For example, if your opponent casts Blaze with X=1, Counterbalance will counter that spell if you reveal a card with mana value 2, but it won't counter that spell if you reveal a Blaze of your own."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Deathmark
 {
     "name": "Deathmark",

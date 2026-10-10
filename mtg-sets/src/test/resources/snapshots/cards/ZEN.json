@@ -3010,6 +3010,51 @@
     ]
 }
 
+// Oracle of Mul Daya
+{
+    "name": "Oracle of Mul Daya",
+    "manaCost": "{3}{G}",
+    "typeLine": "Creature — Elf Shaman",
+    "oracleText": "You may play an additional land on each of your turns.\nPlay with the top card of your library revealed.\nYou may play lands from the top of your library.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "staticAbilities": [
+            "GrantAdditionalLandDrop",
+            "RevealTopOfLibrary",
+            {
+                "type": "PlayLandsAndCastFilteredFromTopOfLibrary",
+                "spellFilter": null
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "172",
+        "rarity": "RARE",
+        "artist": "Vance Kovacs",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/f/7f89a173-0b2f-4a6a-b706-9aed8dbcabec.jpg?1783942133",
+        "rulings": [
+            {
+                "date": "2009-10-01",
+                "text": "If you control more than one Oracle of Mul Daya, the effects of their first abilities are cumulative. If you control two, for example, you can play three lands on your turn."
+            },
+            {
+                "date": "2009-10-01",
+                "text": "Oracle of Mul Daya doesn't change the times when you can play a land card from the top of your library. You can play a land only during your main phase when you have priority and the stack is empty. Doing so counts as one of your land plays for the turn."
+            },
+            {
+                "date": "2009-10-01",
+                "text": "If you play your first land of the turn from the top of your library, and the new top card is another land card, you can play that one too."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Oran-Rief Survivalist
 {
     "name": "Oran-Rief Survivalist",
