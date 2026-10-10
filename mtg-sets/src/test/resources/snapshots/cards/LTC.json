@@ -1,1 +1,52 @@
-
+// Farmer Cotton
+{
+    "name": "Farmer Cotton",
+    "manaCost": "{X}{G}{W}",
+    "typeLine": "Legendary Creature — Halfling Peasant",
+    "oracleText": "When this creature enters, create X 1/1 white Halfling creature tokens and X Food tokens. (They're artifacts with \"{2}, {T}, Sacrifice this token: You gain 3 life.\")",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Farmer Cotton:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CreateToken",
+                            "count": "XValue",
+                            "power": 1,
+                            "toughness": 1,
+                            "colors": [
+                                "WHITE"
+                            ],
+                            "creatureTypes": [
+                                "Halfling"
+                            ],
+                            "imageUri": "https://cards.scryfall.io/normal/front/b/b/bbd9ff58-4d38-4d34-9dfc-6f788830297e.jpg?1783916062"
+                        },
+                        {
+                            "type": "CreatePredefinedToken",
+                            "tokenType": "Food",
+                            "dynamicCount": "XValue"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "55",
+        "rarity": "RARE",
+        "artist": "Tomas Duchek",
+        "flavorText": "\"So it's begun at last! I've been itching for trouble all this year.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/5/25b49eaa-13e7-4f4e-b0dc-56ebd28a4a22.jpg?1783916019"
+    }
+}

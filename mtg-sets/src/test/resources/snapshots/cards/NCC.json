@@ -95,6 +95,135 @@
     ]
 }
 
+// Master of Ceremonies
+{
+    "name": "Master of Ceremonies",
+    "manaCost": "{3}{W}",
+    "typeLine": "Creature — Rhino Druid",
+    "oracleText": "At the beginning of your upkeep, each opponent chooses money, friends, or secrets. For each player who chose money, you and that player each create a Treasure token. For each player who chose friends, you and that player each create a 1/1 green and white Citizen creature token. For each player who chose secrets, you and that player each draw a card.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Master of Ceremonies:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "EachOpponent"
+                    },
+                    "body": {
+                        "type": "ChooseAction",
+                        "choices": [
+                            {
+                                "label": "Money (each of you creates a Treasure)",
+                                "effect": {
+                                    "type": "Composite",
+                                    "effects": [
+                                        {
+                                            "type": "CreatePredefinedToken",
+                                            "tokenType": "Treasure",
+                                            "controller": "Controller"
+                                        },
+                                        {
+                                            "type": "CreatePredefinedToken",
+                                            "tokenType": "Treasure",
+                                            "controller": {
+                                                "type": "PlayerRef",
+                                                "player": "ControllerOfSource"
+                                            }
+                                        }
+                                    ]
+                                }
+                            },
+                            {
+                                "label": "Friends (each of you creates a 1/1 Citizen)",
+                                "effect": {
+                                    "type": "Composite",
+                                    "effects": [
+                                        {
+                                            "type": "CreateToken",
+                                            "power": 1,
+                                            "toughness": 1,
+                                            "colors": [
+                                                "GREEN",
+                                                "WHITE"
+                                            ],
+                                            "creatureTypes": [
+                                                "Citizen"
+                                            ],
+                                            "controller": "Controller"
+                                        },
+                                        {
+                                            "type": "CreateToken",
+                                            "power": 1,
+                                            "toughness": 1,
+                                            "colors": [
+                                                "GREEN",
+                                                "WHITE"
+                                            ],
+                                            "creatureTypes": [
+                                                "Citizen"
+                                            ],
+                                            "controller": {
+                                                "type": "PlayerRef",
+                                                "player": "ControllerOfSource"
+                                            }
+                                        }
+                                    ]
+                                }
+                            },
+                            {
+                                "label": "Secrets (each of you draws a card)",
+                                "effect": {
+                                    "type": "Composite",
+                                    "effects": [
+                                        {
+                                            "type": "DrawCards",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        {
+                                            "type": "DrawCards",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            },
+                                            "target": {
+                                                "type": "PlayerRef",
+                                                "player": "ControllerOfSource"
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "18",
+        "rarity": "RARE",
+        "artist": "Milivoj Ćeran",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/1/d152cfa8-00b7-4aa0-855e-bbd57a5f4b23.jpg?1783923374"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Prosperous Partnership
 {
     "name": "Prosperous Partnership",

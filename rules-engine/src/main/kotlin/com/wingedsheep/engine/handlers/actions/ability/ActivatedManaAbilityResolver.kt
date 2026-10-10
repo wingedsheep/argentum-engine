@@ -269,6 +269,11 @@ internal class ActivatedManaAbilityResolver(
         // reflexive "when you do" half, which is not itself a mana ability, CR 605.1a), and the
         // land-tapped event Mana Flare-style triggers watch. Such triggered abilities still use
         // the stack even though the mana ability itself resolves off it.
+        //
+        // All of these key on the source being *tapped* for mana, so a mana ability without {T}
+        // in its cost (Ashnod's Altar, a Gold token) gets none of them — Kinnan's ruling — the
+        // same gate the scoped-production path applies.
+        if (!costsTap) return ExecutionResult.success(currentState, eventsWithMana + effectResult.events)
         return manaPipeline.finishTapBonuses(
             currentState, action.sourceId, cardComponent, action.playerId,
             manaEvent, eventsWithMana + effectResult.events
