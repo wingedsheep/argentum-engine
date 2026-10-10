@@ -2094,17 +2094,17 @@
                     "trigger": "AttackEvent",
                     "effect": {
                         "type": "Gated",
-                        "gate": "Gate.MayDecide",
+                        "gate": {
+                            "type": "Gate.MayPay",
+                            "cost": {
+                                "type": "Sacrifice",
+                                "filter": "creature",
+                                "excludeSource": true
+                            }
+                        },
                         "then": {
                             "type": "Composite",
                             "effects": [
-                                {
-                                    "type": "SacrificeTarget",
-                                    "target": {
-                                        "type": "BoundVariable",
-                                        "name": "t0"
-                                    }
-                                },
                                 {
                                     "type": "DrawCards",
                                     "count": {
@@ -2160,14 +2160,6 @@
                                 }
                             ]
                         }
-                    },
-                    "targetRequirement": {
-                        "type": "TargetObject",
-                        "filter": {
-                            "baseFilter": "creature ctrl:you",
-                            "excludeSelf": true
-                        },
-                        "id": "t0"
                     },
                     "descriptionOverride": "Whenever Venom attacks, you may sacrifice another creature. If you do, draw X cards, then you may put a permanent card with mana value X or less from your hand onto the battlefield, where X is the sacrificed creature's mana value."
                 }

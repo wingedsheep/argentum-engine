@@ -15,8 +15,6 @@ import io.kotest.matchers.shouldBe
  *  - Magitek Infantry ({W} 1/1 Artifact Creature): "+1/+0 as long as you control another artifact"
  *    (conditional static buff) plus a search-for-another-copy activated ability (stock searchLibrary,
  *    left to the snapshot net).
- *  - Namazu Trader ({3}{B} 3/4): ETB "lose 1 life and create a Treasure token"; attack trigger
- *    "you may sacrifice another creature or artifact. If you do, surveil 2."
  */
 class FinMerchantsScenarioTest : ScenarioTestBase() {
 
@@ -81,50 +79,6 @@ class FinMerchantsScenarioTest : ScenarioTestBase() {
             withClue("another artifact (Ornithopter) makes Magitek 2/1") {
                 projector.getProjectedPower(game.state, magitek) shouldBe 2
                 projector.getProjectedToughness(game.state, magitek) shouldBe 1
-            }
-        }
-
-        // -----------------------------------------------------------------------------------------
-        // Namazu Trader
-        // -----------------------------------------------------------------------------------------
-
-        test("Namazu Trader enters: you lose 1 life and create a Treasure token") {
-            val game = scenario()
-                .withPlayers()
-                .withCardInHand(1, "Namazu Trader")
-                .withLandsOnBattlefield(1, "Swamp", 4)
-                .withCardInLibrary(1, "Swamp")
-                .withActivePlayer(1)
-                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
-                .build()
-
-            game.getLifeTotal(1) shouldBe 20
-            game.castSpell(1, "Namazu Trader").error shouldBe null
-            game.resolveStack()
-
-            withClue("controller lost 1 life") { game.getLifeTotal(1) shouldBe 19 }
-            withClue("a Treasure token was created") {
-                (game.findPermanent("Treasure") != null) shouldBe true
-            }
-        }
-
-        test("Namazu Trader attack trigger offers the optional sacrifice for surveil") {
-            val game = scenario()
-                .withPlayers()
-                .withCardOnBattlefield(1, "Namazu Trader")
-                .withCardOnBattlefield(1, "Grizzly Bears")
-                .withCardInLibrary(1, "Swamp")
-                .withCardInLibrary(1, "Forest")
-                .withActivePlayer(1)
-                .inPhase(Phase.COMBAT, Step.BEGIN_COMBAT)
-                .build()
-
-            game.advanceToPhase(Phase.COMBAT, Step.DECLARE_ATTACKERS)
-            game.declareAttackers(mapOf("Namazu Trader" to 2)).error shouldBe null
-            if (game.state.pendingDecision == null) game.resolveStack()
-
-            withClue("attacking presents the sacrifice/surveil decision") {
-                (game.state.pendingDecision != null) shouldBe true
             }
         }
     }

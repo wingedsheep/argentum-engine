@@ -4,7 +4,6 @@ import com.wingedsheep.engine.core.ChooseTargetsDecision
 import com.wingedsheep.engine.core.DistributeDecision
 import com.wingedsheep.engine.core.DistributionResponse
 import com.wingedsheep.engine.core.SelectCardsDecision
-import com.wingedsheep.engine.core.YesNoDecision
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.mtg.sets.definitions.mbs.cards.KuldothaFlamefiend
@@ -43,14 +42,13 @@ class KuldothaFlamefiendScenarioTest : FunSpec({
         while (pendingDecision !is ChooseTargetsDecision && safety++ < 20) bothPass()
     }
 
-    /** Answers the "may sacrifice" gate and resolves the trigger. */
+    /** Answers the "may sacrifice" pick (the artifact, or none to decline) and resolves the trigger. */
     fun GameTestDriver.resolveGate(you: EntityId, artifact: EntityId, sacrifice: Boolean) {
         var safety = 0
         while ((state.stack.isNotEmpty() || pendingDecision != null) && safety++ < 20) {
             when (val decision = pendingDecision) {
                 null -> bothPass()
-                is YesNoDecision -> submitYesNo(you, sacrifice)
-                is SelectCardsDecision -> submitCardSelection(you, listOf(artifact))
+                is SelectCardsDecision -> submitCardSelection(you, if (sacrifice) listOf(artifact) else emptyList())
                 else -> error("unexpected decision ${decision::class.simpleName}")
             }
         }

@@ -268,7 +268,12 @@ data class SelectCardsDecision(
      */
     val maxTotalPower: Int? = null,
     /** Conditional lower minimums for decisions like "discard two unless one is a creature". */
-    val conditionalMinimums: List<ConditionalSelectionMinimum> = emptyList()
+    val conditionalMinimums: List<ConditionalSelectionMinimum> = emptyList(),
+    /**
+     * Label for submitting an empty selection when [minSelections] is 0 and selecting nothing
+     * means declining ("Don't sacrifice"). null falls back to the client's generic wording.
+     */
+    val declineLabel: String? = null
 ) : PendingDecision
 
 @Serializable

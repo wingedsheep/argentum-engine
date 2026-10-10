@@ -419,6 +419,11 @@ export interface SelectCardsDecision extends PendingDecisionBase {
   readonly maxTotalPower?: number | null
   /** Conditional lower minimums for choices like "select two unless one matches this subset". */
   readonly conditionalMinimums?: readonly ConditionalSelectionMinimum[]
+  /**
+   * Label for submitting an empty selection when selecting nothing means declining
+   * ("Don't sacrifice"). Absent: the generic "Select None".
+   */
+  readonly declineLabel?: string | null
 }
 
 export interface ConditionalSelectionMinimum {

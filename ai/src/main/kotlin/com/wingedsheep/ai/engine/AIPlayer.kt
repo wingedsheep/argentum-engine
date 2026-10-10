@@ -291,6 +291,7 @@ class AIPlayer(
                 castabilityAwareCardSelection = profile.castabilityAwareCardSelection,
                 informedChoices = profile.informedChoiceDecisions,
                 fillUpToMaxTargets = profile.fillUpToMaxTargets,
+                selectionCountsByValue = profile.selectionCountsByValue,
             )
 
             // Wire up the decision resolver so simulations can resolve non-trivial

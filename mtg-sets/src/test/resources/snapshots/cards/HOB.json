@@ -12787,17 +12787,17 @@
                 },
                 "effect": {
                     "type": "Gated",
-                    "gate": "Gate.MayDecide",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "Sacrifice",
+                            "filter": "creature|artifact",
+                            "excludeSource": true
+                        }
+                    },
                     "then": {
                         "type": "Composite",
                         "effects": [
-                            {
-                                "type": "SacrificeTarget",
-                                "target": {
-                                    "type": "BoundVariable",
-                                    "name": "t0"
-                                }
-                            },
                             {
                                 "type": "DrawCards",
                                 "count": {
@@ -12811,14 +12811,6 @@
                             }
                         ]
                     }
-                },
-                "targetRequirement": {
-                    "type": "TargetObject",
-                    "filter": {
-                        "baseFilter": "creature|artifact ctrl:you",
-                        "excludeSelf": true
-                    },
-                    "id": "t0"
                 },
                 "descriptionOverride": "When The Sackville-Bagginses enter, you may sacrifice another creature or artifact. If you do, draw a card and create a Treasure token."
             },
@@ -12838,12 +12830,12 @@
                     },
                     "target": {
                         "type": "BoundVariable",
-                        "name": "t1"
+                        "name": "t0"
                     }
                 },
                 "targetRequirement": {
                     "type": "TargetOpponent",
-                    "id": "t1"
+                    "id": "t0"
                 },
                 "descriptionOverride": "Whenever you sacrifice a token, target opponent loses 1 life."
             }

@@ -37,6 +37,7 @@ import com.wingedsheep.sdk.scripting.effects.GatedEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.RemoveCountersEffect
+import com.wingedsheep.sdk.scripting.effects.SacrificeEffect
 import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.effects.PayDynamicLifeEffect
 import com.wingedsheep.sdk.scripting.effects.PayDynamicManaCostEffect
@@ -239,6 +240,13 @@ class GatedEffectExecutor(
                 ?: EffectResult.success(state)
         }
 
+        // "You may sacrifice a [permanent]. If you do, …" — *whether* and *which* are one choice, so
+        // ask it once: pick the permanent on the battlefield, or decline. A yes/no followed by the
+        // pick asks the player to commit before showing what they'd be giving up.
+        optionalSacrificeOf(gate, playerId, context)?.let { sacrifice ->
+            return executeOptionalSacrificePick(state, playerId, sacrifice, effect, context)
+        }
+
         // An optional *mana* payment (the lowered Effects.MayPay shape) keeps its bespoke UX —
         // a "Pay {cost}?" yes/no that, on "yes", routes through the mana-source-selection
         // continuations rather than the generic auto-tapping cost composite. See [OptionalManaPayment].
@@ -296,6 +304,68 @@ class GatedEffectExecutor(
 
         return EffectResult.from(state.suspendForDecision(decision, continuation))
     }
+
+    /**
+     * The [Gate.MayPay] whose whole cost is sacrificing one of the controller's own permanents —
+     * the shape [executeOptionalSacrificePick] collapses into a single pick. A cost owed by another
+     * player, a multi-permanent sacrifice (a partial pick has no meaning) and "any number" keep
+     * the yes/no.
+     */
+    private fun optionalSacrificeOf(gate: Gate, playerId: EntityId, context: EffectContext): SacrificeEffect? =
+        ((gate as? Gate.MayPay)?.cost as? SacrificeEffect)
+            ?.takeIf { !it.any && it.count == 1 && playerId == context.controllerId }
+
+    /**
+     * "You may sacrifice a [permanent]. If you do, [then]." as one battlefield pick: choosing a
+     * permanent sacrifices it and runs [GatedEffect.then]; choosing none runs
+     * [GatedEffect.otherwise]. Affordability was checked by the caller, so there is a candidate.
+     * Resumed by `resumeGatedEffect` on its [CardsSelectedResponse] branch.
+     */
+    private fun executeOptionalSacrificePick(
+        state: GameState,
+        playerId: EntityId,
+        sacrifice: SacrificeEffect,
+        effect: GatedEffect,
+        context: EffectContext
+    ): EffectResult {
+        val sourceName = context.sourceId?.let { state.getEntity(it)?.get<CardComponent>()?.name }
+        val decision = { decisionId: String -> SelectCardsDecision(
+            id = decisionId,
+            playerId = playerId,
+            prompt = effect.description,
+            context = decisionContext(context, sourceName),
+            options = sacrificeFodder(state, playerId, sacrifice, context),
+            minSelections = 0,
+            maxSelections = 1,
+            useTargetingUI = true,
+            declineLabel = "Don't sacrifice"
+        ) }
+        val continuation = GatedEffectContinuation(
+            gate = effect.gate,
+            then = effect.then,
+            otherwise = effect.otherwise,
+            effectContext = context
+        )
+        return EffectResult.from(state.suspendForDecision(decision, continuation))
+    }
+
+    /**
+     * The permanents [playerId] could sacrifice to pay [cost]: `SacrificeExecutor`'s pool, less any
+     * that "can't be sacrificed" — picking one would pay nothing and still earn the payoff.
+     */
+    private fun sacrificeFodder(
+        state: GameState,
+        playerId: EntityId,
+        cost: SacrificeEffect,
+        context: EffectContext
+    ): List<EntityId> =
+        BattlefieldFilterUtils.findMatchingOnBattlefield(
+            state, cost.filter.youControl(), PredicateContext(controllerId = playerId),
+            predicateEvaluator = predicateEvaluator
+        ).filterNot {
+            (cost.excludeSource && it == context.sourceId) ||
+                state.projectedState.hasKeyword(it, com.wingedsheep.sdk.core.AbilityFlag.CANT_BE_SACRIFICED)
+        }
 
     /**
      * The optional-mana-payment yes/no — formerly `MayPayManaExecutor`. Affordability is already
@@ -715,13 +785,7 @@ class GatedEffectExecutor(
             // permanents (`any = true`, "sacrifice any number", is always payable: zero is legal).
             // Without this the gate fails open and offers an impossible "yes": Pippin's Bravery with
             // no Food still lets you choose "Sacrifice a Food" and wrongly take the +4/+4 branch.
-            is com.wingedsheep.sdk.scripting.effects.SacrificeEffect -> cost.any || run {
-                val fodder = BattlefieldFilterUtils.findMatchingOnBattlefield(
-                    state, cost.filter.youControl(), PredicateContext(controllerId = playerId),
-                    predicateEvaluator = predicateEvaluator
-                ).filterNot { cost.excludeSource && it == context.sourceId }
-                fodder.size >= cost.count
-            }
+            is SacrificeEffect -> cost.any || sacrificeFodder(state, playerId, cost, context).size >= cost.count
             else -> true
         }
 

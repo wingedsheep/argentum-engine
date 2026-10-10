@@ -2723,6 +2723,72 @@
     ]
 }
 
+// Mindbreak Trap
+{
+    "name": "Mindbreak Trap",
+    "manaCost": "{2}{U}{U}",
+    "typeLine": "Instant — Trap",
+    "oracleText": "If an opponent cast three or more spells this turn, you may pay {0} rather than pay this spell's mana cost.\nExile any number of target spells.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": "IterationSpace.Targets",
+            "body": "ExileTargetSpell"
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "unlimited": true,
+                "filter": {
+                    "baseFilter": {},
+                    "zone": "Stack"
+                },
+                "id": "t0"
+            }
+        ],
+        "selfAlternativeCost": {
+            "manaCost": "{0}",
+            "condition": {
+                "type": "Compare",
+                "left": {
+                    "type": "GreatestAmongPlayers",
+                    "players": "EachOpponent",
+                    "inner": "SpellsCastThisTurn"
+                },
+                "operator": "GTE",
+                "right": {
+                    "type": "Fixed",
+                    "amount": 3
+                }
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "57",
+        "rarity": "MYTHIC",
+        "artist": "Christopher Moeller",
+        "flavorText": "\"Life is a maze. This is one of its dead ends.\"\n—Noyan Dar, Tazeem lullmage",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/f/4f51140b-6254-431a-8810-94307bfdfbbe.jpg?1783942162",
+        "rulings": [
+            {
+                "date": "2025-09-19",
+                "text": "Mindbreak Trap's alternative cost condition checks whether an opponent cast three or more spells this turn, not whether those spells have resolved."
+            },
+            {
+                "date": "2025-09-19",
+                "text": "For Mindbreak Trap's alternative cost to apply, a single opponent must cast three or more spells. Three opponents each casting a single spell won't work, for example."
+            },
+            {
+                "date": "2025-09-19",
+                "text": "If a spell is exiled, it's removed from the stack and thus will not resolve. The spell isn't countered; it just no longer exists. This works on spells that can't be countered."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Mire Blight
 {
     "name": "Mire Blight",
