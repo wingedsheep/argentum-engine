@@ -540,16 +540,27 @@ data class StormCopyModalTargetContinuation(
 ) : AnswerContinuation
 
 /**
- * Resume after Meddle's controller chooses a new creature target for a spell.
+ * Resume after Meddle's controller chooses a new creature target for a spell — or, when
+ * [fixedNewTarget] is set, after Spellskite's controller chooses *which* of a multi-target spell's
+ * targets changes to that fixed object.
  *
  * @property spellEntityId The spell whose target is being changed
  * @property sourceId The source of the change-target effect (Meddle)
+ * @property fixedNewTarget The object every candidate slot would change to; the answer then names
+ *   the current target being replaced, not the new one
+ * @property candidateSlots Target slots that may legally change to [fixedNewTarget]
  */
 @Serializable
 data class ChangeSpellTargetContinuation(
     val spellEntityId: EntityId,
     val sourceId: EntityId?,
     val objectReferences: com.wingedsheep.engine.handlers.ObjectReferenceEnvironment = com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(),
+    @OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
+    @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
+    val fixedNewTarget: EntityId? = null,
+    @OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
+    @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
+    val candidateSlots: List<Int> = emptyList(),
 ) : AnswerContinuation
 
 /**

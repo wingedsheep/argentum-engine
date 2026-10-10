@@ -34,6 +34,7 @@ import io.kotest.matchers.shouldNotBe
 /**
  * `Effects.ChangeTarget(to = …)` — "change the target of target spell with a single target to this
  * creature" — and the `withSingleTarget()` targeting restriction (`StatePredicate.HasSingleTarget`).
+ * Without that restriction it's Spellskite's "change *a* target …": one of several targets changes.
  *
  * CR 115.7a: a target can be changed only to another legal target; if it can't be, it's unchanged.
  * Legality is judged for the redirected spell, from its controller's side.
@@ -42,7 +43,7 @@ class ChangeTargetToSpecifiedObjectTest : FunSpec({
 
     val redirectId = AbilityId("redirector-redirect")
 
-    fun redirector(name: String, vararg keywords: Keyword) = CardDefinition(
+    fun redirector(name: String, vararg keywords: Keyword, singleTarget: Boolean = true) = CardDefinition(
         name = name,
         manaCost = ManaCost.parse("{3}"),
         typeLine = TypeLine.parse("Artifact Creature — Construct"),
@@ -54,13 +55,19 @@ class ChangeTargetToSpecifiedObjectTest : FunSpec({
                 id = redirectId,
                 cost = AbilityCost.Free,
                 effect = Effects.ChangeTarget(to = EffectTarget.Self),
-                targetRequirements = listOf(TargetObject(filter = TargetFilter.SpellOnStack.withSingleTarget())),
+                targetRequirements = listOf(
+                    TargetObject(
+                        filter = if (singleTarget) TargetFilter.SpellOnStack.withSingleTarget() else TargetFilter.SpellOnStack
+                    )
+                ),
             )
         )
     )
 
     val Redirector = redirector("Redirector")
     val HexproofRedirector = redirector("Hexproof Redirector", Keyword.HEXPROOF)
+    /** Spellskite's shape: "change *a* target of target spell to this creature" — no single-target restriction. */
+    val Skite = redirector("Skite", singleTarget = false)
 
     val MindSap = CardDefinition(
         name = "Mind Sap",
@@ -84,11 +91,24 @@ class ChangeTargetToSpecifiedObjectTest : FunSpec({
         )
     )
 
+    val SapAndZap = CardDefinition(
+        name = "Sap and Zap",
+        manaCost = ManaCost.parse("{R}"),
+        typeLine = TypeLine.parse("Instant"),
+        oracleText = "Target player loses 1 life. Sap and Zap deals 1 damage to target creature.",
+        script = CardScript.spell(
+            effect = Effects.LoseLife(1, EffectTarget.ContextTarget(0))
+                .then(Effects.DealDamage(1, EffectTarget.ContextTarget(1))),
+            TargetPlayer(),
+            TargetObject(filter = TargetFilter.Creature)
+        )
+    )
+
     data class Setup(val driver: GameTestDriver, val me: EntityId, val opponent: EntityId)
 
     fun setup(): Setup {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(Redirector, HexproofRedirector, MindSap, DoubleZap))
+        driver.registerCards(TestCards.all + listOf(Redirector, HexproofRedirector, Skite, MindSap, DoubleZap, SapAndZap))
         driver.initMirrorMatch(deck = Deck.of("Island" to 40))
         val me = driver.activePlayer!!
         val opponent = driver.getOpponent(me)
@@ -190,5 +210,60 @@ class ChangeTargetToSpecifiedObjectTest : FunSpec({
         driver.passPriority(opponent)
 
         driver.redirect(me, redirector, bolt).error shouldBe null
+    }
+
+    test("no single-target restriction: the controller picks which of several targets changes") {
+        val (driver, me, opponent) = setup()
+        val bears = driver.putPermanentOnBattlefield(me, "Grizzly Bears")
+        val skite = driver.putPermanentOnBattlefield(me, "Skite")
+        driver.passPriority(me)
+        val zap = driver.cast(
+            opponent, "Double Zap", Color.RED,
+            listOf(ChosenTarget.Permanent(bears), ChosenTarget.Player(me))
+        )
+        driver.passPriority(opponent)
+
+        driver.redirect(me, skite, zap).error shouldBe null
+        driver.bothPass()
+
+        driver.state.pendingDecision shouldNotBe null
+        driver.submitCardSelection(me, listOf(bears)).error shouldBe null
+        driver.targetsOf(zap) shouldBe listOf(ChosenTarget.Permanent(skite), ChosenTarget.Player(me))
+    }
+
+    test("only a slot the named object is legal for can change — no choice when that's one slot") {
+        val (driver, me, opponent) = setup()
+        val bears = driver.putPermanentOnBattlefield(me, "Grizzly Bears")
+        val skite = driver.putPermanentOnBattlefield(me, "Skite")
+        driver.passPriority(me)
+        val spell = driver.cast(
+            opponent, "Sap and Zap", Color.RED,
+            listOf(ChosenTarget.Player(me), ChosenTarget.Permanent(bears))
+        )
+        driver.passPriority(opponent)
+
+        driver.redirect(me, skite, spell).error shouldBe null
+        driver.bothPass()
+
+        driver.state.pendingDecision shouldBe null
+        driver.targetsOf(spell) shouldBe listOf(ChosenTarget.Player(me), ChosenTarget.Permanent(skite))
+    }
+
+    test("CR 115.3: the named object already chosen for the same 'target' word can't fill a second slot of it") {
+        val (driver, me, opponent) = setup()
+        val bears = driver.putPermanentOnBattlefield(me, "Grizzly Bears")
+        val skite = driver.putPermanentOnBattlefield(me, "Skite")
+        driver.passPriority(me)
+        val zap = driver.cast(
+            opponent, "Double Zap", Color.RED,
+            listOf(ChosenTarget.Permanent(bears), ChosenTarget.Permanent(skite))
+        )
+        driver.passPriority(opponent)
+
+        driver.redirect(me, skite, zap).error shouldBe null
+        driver.bothPass()
+
+        driver.state.pendingDecision shouldBe null
+        driver.targetsOf(zap) shouldBe listOf(ChosenTarget.Permanent(bears), ChosenTarget.Permanent(skite))
     }
 })

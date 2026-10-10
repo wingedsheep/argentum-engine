@@ -759,14 +759,19 @@ data class ChangeTargetEffect(
     /**
      * The object the target is changed *to* — "change the target of target spell … to this
      * creature" (Hydroelectric Specimen, Spellskite). Null (the default) lets the controller choose
-     * among the spell's legal new targets. When set there is no choice: the target changes only if
-     * [newTarget] is a legal target for the spell, judged from the spell's controller (CR 115.7a —
-     * a target can be changed only to another legal target; otherwise it is unchanged).
+     * among the spell's legal new targets. When set there is no choice of new target: a target
+     * changes only if [newTarget] is a legal target for that slot, judged from the spell's
+     * controller (CR 115.7a — a target can be changed only to another legal target; otherwise it is
+     * unchanged). This form also reads "change *a* target …": on a spell or ability with several
+     * targets, one of the slots [newTarget] could legally fill changes, and the controller picks
+     * which when there is more than one (Spellskite). "With a single target" wordings (Hydroelectric
+     * Specimen) say so with `withSingleTarget()` on the targeting filter.
      */
     val newTarget: EffectTarget? = null,
 ) : Effect {
     override val description: String = buildString {
-        append("Change the target of target spell or ability with a single target")
+        if (newTarget != null) append("Change a target of target spell or ability")
+        else append("Change the target of target spell or ability with a single target")
         if (onlyIfCurrentTargetIsController) append(" if that target is you")
         if (newTarget != null) append(" to ${newTarget.description}")
         if (newTargetMustBePlayer) append(". The new target must be a player")
