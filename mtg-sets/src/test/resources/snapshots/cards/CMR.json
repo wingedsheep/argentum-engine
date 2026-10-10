@@ -1,3 +1,67 @@
+// Aesi, Tyrant of Gyre Strait
+{
+    "name": "Aesi, Tyrant of Gyre Strait",
+    "manaCost": "{4}{G}{U}",
+    "typeLine": "Legendary Creature — Serpent",
+    "oracleText": "You may play an additional land on each of your turns.\nLandfall — Whenever a land you control enters, you may draw a card.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Aesi, Tyrant of Gyre Strait:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "land ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    }
+                }
+            }
+        ],
+        "staticAbilities": [
+            "GrantAdditionalLandDrop"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "365",
+        "rarity": "MYTHIC",
+        "artist": "Viktor Titov",
+        "flavorText": "\"To sail through those waters is to offer oneself as tribute.\"\n—Captain Hoyrik",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/6/d607b003-6b48-429c-a7fd-45b8dd1bb4f9.jpg?1783928734",
+        "rulings": [
+            {
+                "date": "2020-11-10",
+                "text": "Aesi's ability is cumulative with other effects that let you play additional lands, such as the one from Exploration."
+            },
+            {
+                "date": "2024-11-08",
+                "text": "A landfall ability triggers whenever a land you control enters for any reason. It triggers whenever you play a land, as well as whenever a spell or ability puts a land onto the battlefield under your control."
+            },
+            {
+                "date": "2024-11-08",
+                "text": "A landfall ability doesn't trigger if a permanent already on the battlefield becomes a land."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "GREEN"
+    ]
+}
+
 // Annoyed Altisaur
 {
     "name": "Annoyed Altisaur",

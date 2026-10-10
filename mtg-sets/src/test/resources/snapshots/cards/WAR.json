@@ -2481,6 +2481,156 @@
     ]
 }
 
+// Jace, Wielder of Mysteries
+{
+    "name": "Jace, Wielder of Mysteries",
+    "manaCost": "{1}{U}{U}{U}",
+    "typeLine": "Legendary Planeswalker — Jace",
+    "oracleText": "If you would draw a card while your library has no cards in it, you win the game instead.\n+1: Target player mills two cards. Draw a card.\n−8: Draw seven cards. Then if your library has no cards in it, you win the game.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Jace, Wielder of Mysteries:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                },
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "isMill": true
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetPlayer",
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Jace, Wielder of Mysteries:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -8
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 7
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Exists",
+                                    "player": "You",
+                                    "zone": "Library",
+                                    "negate": true
+                                }
+                            },
+                            "then": {
+                                "type": "WinGame",
+                                "message": "Jace, Wielder of Mysteries: your library has no cards in it."
+                            }
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "ReplaceDrawWith",
+                "replacementEffect": "WinGame",
+                "restrictions": [
+                    {
+                        "type": "Exists",
+                        "player": "You",
+                        "zone": "Library",
+                        "negate": true
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "54",
+        "rarity": "RARE",
+        "artist": "Anna Steinbauer",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/a/6adb7d73-4482-4930-8497-cffd169b57e2.jpg?1783933463",
+        "rulings": [
+            {
+                "date": "2019-05-03",
+                "text": "If for some reason you can't win the game (because your opponent controls Platinum Angel, for example), you won't lose for having tried to draw a card from a library with no cards in it. The draw was still replaced."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "If two or more players control Jace, Wielder of Mysteries and each player is instructed to draw a number of cards, first the player whose turn it is draws that many cards. If this causes that player to win the game instead, the game is immediately over. If the game isn't over yet, repeat this process for each other player in turn order."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "If the target player is an illegal target when Jace's first loyalty ability tries to resolve, it doesn't resolve. You won't draw a card."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "Follow the instructions in the order listed on Jace's first loyalty ability: if you target yourself, you'll put the top two cards of your library into your graveyard and then draw a card."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "If your library has fewer than seven cards in it while resolving Jace's last ability, and Jace has already left the battlefield, you'll draw as many cards as you can and then win the game before state-based actions would cause you to lose the game for trying to draw from an empty library."
+            }
+        ]
+    },
+    "startingLoyalty": 4,
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Jaya's Greeting
 {
     "name": "Jaya's Greeting",

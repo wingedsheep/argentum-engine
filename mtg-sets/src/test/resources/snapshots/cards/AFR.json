@@ -1,3 +1,118 @@
+// Druid Class
+{
+    "name": "Druid Class",
+    "manaCost": "{1}{G}",
+    "typeLine": "Enchantment — Class",
+    "oracleText": "(Gain the next level as a sorcery to add its ability.)\nLandfall — Whenever a land you control enters, you gain 1 life.\n{2}{G}: Level 2 — You may play an additional land on each of your turns.\n{4}{G}: Level 3 — When this Class becomes level 3, target land you control becomes a creature with haste and \"This creature's power and toughness are each equal to the number of lands you control.\" It's still a land.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Druid Class:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "land ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "descriptionOverride": "Landfall — Whenever a land you control enters, you gain 1 life."
+            }
+        ],
+        "classLevels": [
+            {
+                "level": 2,
+                "cost": "{2}{G}",
+                "staticAbilities": [
+                    "GrantAdditionalLandDrop"
+                ]
+            },
+            {
+                "level": 3,
+                "cost": "{4}{G}",
+                "triggeredAbilities": [
+                    {
+                        "id": "Druid Class:2",
+                        "trigger": {
+                            "type": "ZoneChangeEvent",
+                            "to": "Battlefield"
+                        },
+                        "effect": {
+                            "type": "BecomeCreature",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "power": {
+                                "type": "Fixed",
+                                "amount": 0
+                            },
+                            "toughness": {
+                                "type": "Fixed",
+                                "amount": 0
+                            },
+                            "keywords": [
+                                "HASTE"
+                            ],
+                            "duration": "Permanent",
+                            "dynamicPower": {
+                                "type": "AggregateBattlefield",
+                                "player": "You",
+                                "filter": "land"
+                            },
+                            "dynamicToughness": {
+                                "type": "AggregateBattlefield",
+                                "player": "You",
+                                "filter": "land"
+                            }
+                        },
+                        "targetRequirement": {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "land ctrl:you"
+                            },
+                            "id": "t0"
+                        },
+                        "descriptionOverride": "When this Class becomes level 3, target land you control becomes a creature with haste and \"This creature's power and toughness are each equal to the number of lands you control.\" It's still a land."
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "180",
+        "rarity": "UNCOMMON",
+        "artist": "Svetlin Velinov",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/9/09278e95-eaae-4cd4-a0d8-a2d15b0abb58.jpg?1783926464",
+        "rulings": [
+            {
+                "date": "2021-07-23",
+                "text": "Gaining a level is a normal activated ability. It uses the stack and can be responded to."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "Gaining a level won't remove abilities that a Class had at a previous level."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "If you have more than one Druid Class at level 2 or higher, you can play that many additional lands per turn. For example, with two Druid Classes at level 2, you can play three lands during your turn."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "For the third ability, the power and toughness of the creature will change as the number of lands you control changes."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Improvised Weaponry
 {
     "name": "Improvised Weaponry",

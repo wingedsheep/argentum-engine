@@ -7,6 +7,7 @@ import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.identity.RoomFaceStatics
 import com.wingedsheep.engine.state.components.player.LandDropsComponent
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
@@ -44,10 +45,12 @@ object LandDropUtils {
     ): Boolean {
         val projected = state.projectedState
         for (entityId in state.getBattlefield()) {
-            val card = state.getEntity(entityId)?.get<CardComponent>() ?: continue
+            val container = state.getEntity(entityId) ?: continue
+            val card = container.get<CardComponent>() ?: continue
             val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
             val sourceController = projected.getController(entityId) ?: continue
-            for (ability in cardDef.script.staticAbilities) {
+            // Class levels and unlocked Room doors carry statics outside `script.staticAbilities`.
+            for (ability in RoomFaceStatics.activeStaticAbilities(container, cardDef)) {
                 val lock = when (ability) {
                     is PlayersCantPlayLands -> ability
                     is ConditionalStaticAbility -> {
@@ -92,13 +95,14 @@ object LandDropUtils {
      */
     fun anyFilteredLandLockPresent(state: GameState, cardRegistry: CardRegistry): Boolean =
         state.getBattlefield().any { id ->
-            val cardDef = state.getEntity(id)?.get<CardComponent>()
-                ?.let { cardRegistry.getCard(it.cardDefinitionId) }
-            cardDef?.script?.staticAbilities?.any { ability ->
+            val container = state.getEntity(id) ?: return@any false
+            val cardDef = container.get<CardComponent>()
+                ?.let { cardRegistry.getCard(it.cardDefinitionId) } ?: return@any false
+            RoomFaceStatics.activeStaticAbilities(container, cardDef).any { ability ->
                 val lock = ability as? PlayersCantPlayLands
                     ?: (ability as? ConditionalStaticAbility)?.ability as? PlayersCantPlayLands
                 lock != null && lock.landFilter != GameObjectFilter.Any
-            } == true
+            }
         }
 
     /**
@@ -139,10 +143,12 @@ object LandDropUtils {
         val projected = state.projectedState
         var bonus = 0
         for (entityId in state.getBattlefield()) {
-            val card = state.getEntity(entityId)?.get<CardComponent>() ?: continue
+            val container = state.getEntity(entityId) ?: continue
+            val card = container.get<CardComponent>() ?: continue
             val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
             val sourceController = projected.getController(entityId) ?: continue
-            for (ability in cardDef.script.staticAbilities) {
+            // Class levels and unlocked Room doors carry statics outside `script.staticAbilities`.
+            for (ability in RoomFaceStatics.activeStaticAbilities(container, cardDef)) {
                 val grant = when (ability) {
                     is GrantAdditionalLandDrop -> ability
                     is ConditionalStaticAbility -> {

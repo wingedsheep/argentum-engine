@@ -1,3 +1,62 @@
+// Ancient Greenwarden
+{
+    "name": "Ancient Greenwarden",
+    "manaCost": "{4}{G}{G}",
+    "typeLine": "Creature — Elemental",
+    "oracleText": "Reach (This creature can block creatures with flying.)\nYou may play lands from your graveyard.\nIf a land entering causes a triggered ability of a permanent you control to trigger, that ability triggers an additional time.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 7
+    },
+    "keywords": [
+        "REACH"
+    ],
+    "script": {
+        "staticAbilities": [
+            "MayPlayLandsFromGraveyard",
+            {
+                "type": "AdditionalETBOrLTBTriggers",
+                "filter": "land",
+                "mustBeYouControl": false,
+                "description": "If a land entering causes a triggered ability of a permanent you control to trigger, that ability triggers an additional time"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "178",
+        "rarity": "MYTHIC",
+        "artist": "Grzegorz Rutkowski",
+        "flavorText": "When the ruins awakened, so did their defenses.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/f/dfe08e59-fdc4-436f-b05c-6ad386c46310.jpg?1783929342",
+        "rulings": [
+            {
+                "date": "2020-09-25",
+                "text": "Ancient Greenwarden doesn't change the times when you can play those lands. You can still play only one land per turn, and only during your main phase when you have priority and the stack is empty."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "Ancient Greenwarden allows you to play a modal double-faced card's land face, but not a nonland face."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "Ancient Greenwarden's third ability affects a land's own enters-the-battlefield triggered abilities as well as other triggered abilities that trigger when that land enters the battlefield, such as landfall abilities."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "Replacement effects are unaffected by Ancient Greenwarden's third ability."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "An ability that triggers whenever you play a land won't trigger an additional time."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "If you control two Ancient Greenwardens, a land entering the battlefield causes abilities to trigger three times, not four."
+            }
+        ]
+    }
+}
+
 // Attended Healer
 {
     "name": "Attended Healer",
@@ -1425,6 +1484,177 @@
     ]
 }
 
+// Omnath, Locus of Creation
+{
+    "name": "Omnath, Locus of Creation",
+    "manaCost": "{R}{G}{W}{U}",
+    "typeLine": "Legendary Creature — Elemental",
+    "oracleText": "When Omnath enters, draw a card.\nLandfall — Whenever a land you control enters, you gain 4 life if this is the first time this ability has resolved this turn. If it's the second time, add {R}{G}{W}{U}. If it's the third time, Omnath deals 4 damage to each opponent and each planeswalker you don't control.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Omnath, Locus of Creation:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            },
+            {
+                "id": "Omnath, Locus of Creation:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "land ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        "IncrementAbilityResolutionCount",
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "SourceAbilityResolvedNTimesThisTurn",
+                                    "count": 1
+                                }
+                            },
+                            "then": {
+                                "type": "GainLife",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 4
+                                }
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "SourceAbilityResolvedNTimesThisTurn",
+                                    "count": 2
+                                }
+                            },
+                            "then": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "AddMana",
+                                        "color": "RED"
+                                    },
+                                    {
+                                        "type": "AddMana",
+                                        "color": "GREEN"
+                                    },
+                                    {
+                                        "type": "AddMana",
+                                        "color": "WHITE"
+                                    },
+                                    {
+                                        "type": "AddMana",
+                                        "color": "BLUE"
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "SourceAbilityResolvedNTimesThisTurn",
+                                    "count": 3
+                                }
+                            },
+                            "then": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "DealDamage",
+                                        "amount": {
+                                            "type": "Fixed",
+                                            "amount": 4
+                                        },
+                                        "target": {
+                                            "type": "PlayerRef",
+                                            "player": "EachOpponent"
+                                        }
+                                    },
+                                    {
+                                        "type": "ForEach",
+                                        "space": {
+                                            "type": "IterationSpace.Group",
+                                            "filter": {
+                                                "baseFilter": {
+                                                    "cardPredicates": [
+                                                        "IsPlaneswalker"
+                                                    ],
+                                                    "controllerPredicate": {
+                                                        "type": "ControllerNot",
+                                                        "predicate": "ControlledByYou"
+                                                    }
+                                                }
+                                            }
+                                        },
+                                        "body": {
+                                            "type": "DealDamage",
+                                            "amount": {
+                                                "type": "Fixed",
+                                                "amount": 4
+                                            },
+                                            "target": "IterationEntity"
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Landfall — Whenever a land you control enters, you gain 4 life if this is the first time this ability has resolved this turn. If it's the second time, add {R}{G}{W}{U}. If it's the third time, Omnath deals 4 damage to each opponent and each planeswalker you don't control."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "232",
+        "rarity": "MYTHIC",
+        "artist": "Chris Rahn",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/e/4e4fb50c-a81f-44d3-93c5-fa9a0b37f617.jpg?1783929320",
+        "rulings": [
+            {
+                "date": "2020-09-25",
+                "text": "Omnath's landfall ability has no effect each time beyond the third it resolves in a turn."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "Omnath's landfall ability always uses the stack and players may respond to it. It isn't a mana ability because the event that causes it to trigger isn't a mana ability, even if it's the second time the ability has resolved in a turn."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "In a Two-Headed Giant game, Omnath's second ability causes the opposing team to lose 8 life the third time it resolves. Each other player's planeswalkers—including your teammate's—are dealt 4 damage."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN",
+        "WHITE",
+        "BLUE"
+    ]
+}
+
 // Prowling Felidar
 {
     "name": "Prowling Felidar",
@@ -1611,6 +1841,88 @@
             {
                 "date": "2020-09-25",
                 "text": "You don't play a land as Scale the Heights resolves; Scale the Heights fully resolves first and you draw a card, perhaps including a land you'll play later. If it's not your turn, you won't be able to play a land this turn at all."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Scute Swarm
+{
+    "name": "Scute Swarm",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Insect",
+    "oracleText": "Landfall — Whenever a land you control enters, create a 1/1 green Insect creature token. If you control six or more lands, create a token that's a copy of this creature instead.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Scute Swarm:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "land ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "AggregateBattlefield",
+                                "player": "You",
+                                "filter": "land"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 6
+                            }
+                        }
+                    },
+                    "then": "CreateTokenCopyOfSource",
+                    "otherwise": {
+                        "type": "CreateToken",
+                        "power": 1,
+                        "toughness": 1,
+                        "colors": [
+                            "GREEN"
+                        ],
+                        "creatureTypes": [
+                            "Insect"
+                        ],
+                        "imageUri": "https://cards.scryfall.io/normal/front/8/4/84da9c36-5d9c-4e29-b6cc-c5c10e490f2e.jpg?1783929499"
+                    }
+                },
+                "descriptionOverride": "Landfall — Whenever a land you control enters, create a 1/1 green Insect creature token. If you control six or more lands, create a token that's a copy of this creature instead."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "203",
+        "rarity": "RARE",
+        "artist": "Alex Konstad",
+        "flavorText": "\"Survival rule 782: There are *always* more scute bugs.\"\n—Zurdi, goblin shortcutter",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/1/61f42823-8a48-4b81-a037-664ba1c69f29.jpg?1783929333",
+        "rulings": [
+            {
+                "date": "2020-09-25",
+                "text": "The token copy will have Scute Swarm's ability. It will also be able to create copies of itself."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "The token copy won't copy counters or damage marked on Scute Swarm, nor will it copy other effects that have changed Scute Swarm's power, toughness, types, color, and so on. Normally, this means the token will simply be a Scute Swarm, but if any copy effects have affected the original Scute Swarm, the token will take those into account."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "If Scute Swarm leaves the battlefield before its triggered ability resolves, the token will still enter the battlefield as a copy of Scute Swarm, using Scute Swarm's copiable values from when it was last on the battlefield."
             }
         ]
     },
