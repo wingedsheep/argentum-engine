@@ -201,6 +201,8 @@ object ArenaAgents {
         // A fetch whose library holds nothing it can find is refused, not cracked for nothing.
         ArenaAgent("production-deadsearch", AiProfile.PRODUCTION_DEADSEARCH),
         ArenaAgent("production-candidate-deadsearch", AiProfile.PRODUCTION_CANDIDATE_DEADSEARCH),
+        ArenaAgent("production-fuelloyalty", AiProfile.PRODUCTION_FUELLOYALTY),
+        ArenaAgent("production-candidate-fuelloyalty", AiProfile.PRODUCTION_CANDIDATE_FUELLOYALTY),
         ArenaAgent("production-targeted", AiProfile.PRODUCTION_TARGETED),
         // Explicit ECL candidates. Their resource-backed weights fail closed to production's
         // evaluator until a validated artifact is installed; automatic selection is set-gated.

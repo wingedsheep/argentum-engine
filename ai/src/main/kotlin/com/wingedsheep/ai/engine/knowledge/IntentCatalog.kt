@@ -10,6 +10,7 @@ import com.wingedsheep.engine.state.components.stack.AbilityOnStackComponent
 import com.wingedsheep.engine.state.components.stack.ActivatedAbilityOnStackComponent
 import com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComponent
 import com.wingedsheep.sdk.model.CardDefinition
+import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.AbilityId
 import com.wingedsheep.sdk.scripting.ActivatedAbility
 import com.wingedsheep.sdk.scripting.effects.Effect
@@ -138,6 +139,28 @@ class IntentCatalog private constructor(private val registry: CardRegistry?) {
         definition.script.activatedAbilities.find { it.id == abilityId }?.let { return it }
         return definition.cardFaces.firstNotNullOfOrNull { face ->
             face.script.activatedAbilities.find { it.id == abilityId }
+        }
+    }
+
+    /**
+     * Whether the planeswalker called [cardName] can only *spend* loyalty: it prints at least one
+     * loyalty ability and every one of them costs −N or −X. The empower-Jace token
+     * ("−1: Surveil 1. −3: Draw a card.") is the shape. Such a walker's loyalty is nothing but a
+     * budget of activations, so a counter it does not spend this turn is not saved for anything a
+     * later turn could not also spend it on.
+     *
+     * Printed abilities only, like [activatedAbility]: a "+1" granted by another permanent is not
+     * seen, and false (no information) is the answer for anything the catalog cannot read.
+     */
+    fun loyaltyIsOnlyFuel(cardName: String): Boolean {
+        val definition = registry?.getCard(cardName) ?: return false
+        val loyalty = definition.script.activatedAbilities.filter { it.isPlaneswalkerAbility }
+        return loyalty.isNotEmpty() && loyalty.all { ability ->
+            when (val cost = ability.cost) {
+                is AbilityCost.Loyalty -> cost.change < 0
+                AbilityCost.LoyaltyX -> true
+                else -> false
+            }
         }
     }
 

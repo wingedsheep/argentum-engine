@@ -651,6 +651,30 @@ data class AiProfile(
      * [com.wingedsheep.ai.engine.knowledge.DeadSearch]. Needs [useCardIntent].
      */
     val refuseDeadSearches: Boolean = false,
+    /**
+     * Stop charging a minus-only planeswalker's loyalty as board value when it spends it.
+     *
+     * The board evaluator prices a planeswalker at its loyalty (0.8 a counter before the
+     * board-presence weight), so a −N loyalty ability has to buy more than N counters' worth of
+     * visible board to beat passing. The empower-Jace token of Reality Fracture ("−1: Surveil 1.
+     * −3: Draw a card.") never could: surveil changes nothing the evaluator reads, and one card in
+     * hand is worth less than three counters. In the 2026-10-10 `live` AI-vs-AI logs (FRA vs BLB,
+     * game 2) it was offered every main phase from turn 5 to turn 24 and never activated, not even
+     * with its controller at 1 life. Walkers with a + ability are fine — the + adds loyalty, and a
+     * minus there really does trade against it.
+     *
+     * With this on, `Strategist` refunds what the evaluator charged for the spent counters when
+     * every printed loyalty ability of the source costs loyalty (its loyalty is only a budget of
+     * activations, and one skipped is lost) and the walker survives the activation. Spending its
+     * last counter still costs the walker. Needs [useCardIntent].
+     *
+     * Measured: `just arena production-candidate-expiring production-candidate-fuelloyalty 150 FRA`
+     * (FRA, where the token appears) — pair win 48.7%, CI [44.7%, 52.0%], 2 timeouts scored as
+     * draws: not distinguishable from parity, as expected of a fix that only touches games with a
+     * Jace token in them. Shipped for the misplay, not for a measured win; `LoyaltyActivationAiTest`
+     * pins the decision. `just arena-puzzles` unchanged.
+     */
+    val fuelLoyaltyIsNotBoardValue: Boolean = false,
     /** Non-null profiles may only be selected automatically for this set. Arena selection stays explicit. */
     val restrictedToSet: String? = null,
 ) {
@@ -1562,6 +1586,26 @@ data class AiProfile(
             fillUpToMaxTargets = true,
             refuseDeadSearches = true,
             pumpsNeedAPlannedAttack = true,
+            fuelLoyaltyIsNotBoardValue = true,
+        )
+
+        /**
+         * [fuelLoyaltyIsNotBoardValue] alone on top of [PRODUCTION], so a puzzle or an arena point
+         * that moves is attributable to it.
+         */
+        val PRODUCTION_FUELLOYALTY = PRODUCTION.copy(
+            id = "production-fuelloyalty",
+            fuelLoyaltyIsNotBoardValue = true,
+        )
+
+        /**
+         * [fuelLoyaltyIsNotBoardValue] on top of [PRODUCTION_CANDIDATE_EXPIRING] — the last pinned
+         * candidate [LIVE] builds on — so `just arena production-candidate-expiring
+         * production-candidate-fuelloyalty` measures this flag and nothing else. [LIVE] ships it.
+         */
+        val PRODUCTION_CANDIDATE_FUELLOYALTY = PRODUCTION_CANDIDATE_EXPIRING.copy(
+            id = "production-candidate-fuelloyalty",
+            fuelLoyaltyIsNotBoardValue = true,
         )
 
         /**

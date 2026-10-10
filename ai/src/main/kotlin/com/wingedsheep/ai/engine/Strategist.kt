@@ -31,9 +31,11 @@ import com.wingedsheep.engine.handlers.costs.GraveyardTotalExileResolver
 import com.wingedsheep.engine.legalactions.LegalAction
 import com.wingedsheep.engine.legalactions.MeaningfulActionFilter
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
+import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Format
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.ManaSymbol
@@ -137,6 +139,11 @@ class Strategist(
      * permanent cast. See [deploymentCredit].
      */
     private val permanentCastIsNotCardLoss: Boolean = false,
+    /**
+     * [AiProfile.fuelLoyaltyIsNotBoardValue] — refund the board price of loyalty a minus-only
+     * planeswalker spends on a loyalty ability. See [fuelLoyaltyCredit].
+     */
+    private val fuelLoyaltyIsNotBoardValue: Boolean = false,
     /**
      * The profile's `EvaluationWeights.boardPresence`. Only [HoldPolicy] reads it, to quote a
      * patience discount in the same units the leaf score prices board value in.
@@ -663,9 +670,14 @@ class Strategist(
         passScore: Double,
         leafState: GameState,
     ): AdjustedScore {
-        val credit = deploymentCredit(state, action, leafState, playerId)
+        val deployed = deploymentCredit(state, action, leafState, playerId)
+        val fuel = fuelLoyaltyCredit(state, action, leafState, playerId)
+        val credit = deployed + fuel
         val leafScore = rawLeafScore + credit
-        val creditNote = if (credit > 0.0) "deployed, not spent %+.2f".format(credit) else null
+        val creditNote = listOfNotNull(
+            if (deployed > 0.0) "deployed, not spent %+.2f".format(deployed) else null,
+            if (fuel > 0.0) "loyalty is only fuel %+.2f".format(fuel) else null,
+        ).joinToString("; ").ifEmpty { null }
         val cardName = resolveCardName(state, action) ?: return AdjustedScore(leafScore, creditNote)
 
         // Phase 6: what the board looks like after this resolves is only half the question; the
@@ -752,6 +764,45 @@ class Strategist(
         val without = root.removeFromZone(hand, cast.cardId)
         val charge = evaluator.evaluate(root, root.projectedState, playerId) -
             evaluator.evaluate(without, without.projectedState, playerId)
+        return charge.coerceAtLeast(0.0)
+    }
+
+    /**
+     * What the evaluator charged for the loyalty a loyalty ability spent, refunded when the walker
+     * can only ever spend it — [AiProfile.fuelLoyaltyIsNotBoardValue].
+     *
+     * `BoardFeatures.permanentValue` prices a planeswalker at its loyalty, so a −N activation is
+     * charged N counters' worth of board value and has to buy more than that on the board to beat
+     * passing. For a walker with a + ability that is a real trade-off. For one whose every loyalty
+     * ability costs loyalty (the empower-Jace token) it is not: an activation it skips is lost for
+     * good, and the counters it keeps can only be spent later on the same abilities. Measured with
+     * the evaluator itself, as [deploymentCredit] is: `evaluate(leaf with the spent loyalty put
+     * back) − evaluate(leaf)`.
+     *
+     * Only while the walker survives the activation: one that spends its last counter dies, and
+     * losing the permanent is still charged — a −1 at one loyalty must buy the walker's worth.
+     * Never negative.
+     */
+    private fun fuelLoyaltyCredit(
+        root: GameState,
+        action: LegalAction,
+        leaf: GameState,
+        playerId: EntityId,
+    ): Double {
+        if (!fuelLoyaltyIsNotBoardValue) return 0.0
+        val activation = action.action as? ActivateAbility ?: return 0.0
+        val sourceId = activation.sourceId
+        val name = root.getEntity(sourceId)?.get<CardComponent>()?.name ?: return 0.0
+        if (intents.activatedAbility(name, activation.abilityId)?.isPlaneswalkerAbility != true) return 0.0
+        if (!intents.loyaltyIsOnlyFuel(name)) return 0.0
+        if (sourceId !in leaf.getBattlefield(playerId)) return 0.0
+        val before = root.getEntity(sourceId)?.get<CountersComponent>()?.getCount(CounterType.LOYALTY) ?: return 0.0
+        val counters = leaf.getEntity(sourceId)?.get<CountersComponent>() ?: return 0.0
+        val spent = before - counters.getCount(CounterType.LOYALTY)
+        if (spent <= 0) return 0.0
+        val restored = leaf.updateEntity(sourceId) { it.with(counters.withAdded(CounterType.LOYALTY, spent)) }
+        val charge = evaluator.evaluate(restored, restored.projectedState, playerId) -
+            evaluator.evaluate(leaf, leaf.projectedState, playerId)
         return charge.coerceAtLeast(0.0)
     }
 
