@@ -83,6 +83,13 @@ class HoldPolicy(
      */
     private val refuseDeadSearches: Boolean = false,
     /**
+     * [AiProfile.holdUnusablePumps][com.wingedsheep.ai.engine.AiProfile.holdUnusablePumps] — read
+     * an untargeted team pump ([CardIntent.expiringGroupPump]) as a combat trick, refuse it once the
+     * fight has left every creature of ours out, and defer any trick out of our own
+     * beginning-of-combat step to the declare-attackers window.
+     */
+    private val holdUnusablePumps: Boolean = false,
+    /**
      * The profile's `EvaluationWeights.boardPresence`, so [RemovalPatience] can quote its discount
      * in the same currency as the board value it compares against. The default is the compiled
      * fallback's, which is what every profile that does not opt in would have used anyway.
@@ -236,8 +243,16 @@ class HoldPolicy(
             // step it is cast in — Acrobatic Leap on a Market Gnome in our own declare-blockers
             // step, with only the Guardian attacking. So that shape gets the same reading as any
             // window outside combat: only a spell on the stack can still make it worth a card.
-            IntentTag.COMBAT_TRICK in intent.tags -> when {
-                refuseUnspendableGrants && cast != null && trickTargetSitsOutTheFight(state, playerId, cast) ->
+            //
+            // [holdUnusablePumps] widens the branch to an untargeted team pump (Rabbit Response),
+            // whose whole team sits the fight out when no creature of ours is in it. It also moves
+            // a trick out of our own beginning-of-combat step: we get priority again once attackers
+            // are declared, and a pump spent before then is one the attack may not use at all.
+            IntentTag.COMBAT_TRICK in intent.tags || (holdUnusablePumps && intent.expiringGroupPump) -> when {
+                (refuseUnspendableGrants || holdUnusablePumps) && cast != null &&
+                    trickTargetSitsOutTheFight(state, playerId, cast, intent) ->
+                    responseWindowFor(state, playerId, intent)
+                holdUnusablePumps && state.isActiveTurnFor(playerId) && state.step == Step.BEGIN_COMBAT ->
                     responseWindowFor(state, playerId, intent)
                 state.step in combatWindow -> TimingVerdict.Adjust(COMBAT_WINDOW)
                 else -> responseWindowFor(state, playerId, intent)
@@ -324,8 +339,18 @@ class HoldPolicy(
      * Every target must be one of ours, untapped and out of combat. An opposing target, a tapped
      * one (an "untap it" rider is a lasting payoff), or a target that is attacking or blocking
      * keeps the ordinary window — this only fires where the trick provably buys nothing.
+     *
+     * An untargeted team pump ([CardIntent.expiringGroupPump], under [holdUnusablePumps]) names no
+     * targets; it sits the fight out when none of our creatures is attacking or blocking — Rabbit
+     * Response cast in our declare-attackers step after we declared no attack (2026-10-10 logs,
+     * game 1 turn 13).
      */
-    private fun trickTargetSitsOutTheFight(state: GameState, playerId: EntityId, cast: CastSpell): Boolean {
+    private fun trickTargetSitsOutTheFight(
+        state: GameState,
+        playerId: EntityId,
+        cast: CastSpell,
+        intent: CardIntent,
+    ): Boolean {
         val fightSet = if (state.isActiveTurnFor(playerId)) {
             state.step in ATTACKERS_DECLARED_STEPS
         } else {
@@ -335,6 +360,14 @@ class HoldPolicy(
         val damageDealt = state.step == Step.COMBAT_DAMAGE || state.step == Step.END_COMBAT
 
         val projected = state.projectedState
+        if (cast.targets.isEmpty() && holdUnusablePumps && intent.expiringGroupPump) {
+            return damageDealt || projected.getBattlefieldControlledBy(playerId).none { id ->
+                val entity = state.getEntity(id)
+                projected.isCreature(id) && entity != null &&
+                    (entity.has<AttackingComponent>() || entity.has<BlockingComponent>())
+            }
+        }
+        if (!refuseUnspendableGrants) return false
         val targets = cast.targets.map { (it as? ChosenTarget.Permanent)?.entityId ?: return false }
         if (targets.isEmpty()) return false
         return targets.all { id ->

@@ -164,6 +164,12 @@ object ArenaAgents {
         // is the promotion gate.
         ArenaAgent("production-selectcount", AiProfile.PRODUCTION_SELECTCOUNT),
         ArenaAgent("production-candidate-selectcount", AiProfile.PRODUCTION_CANDIDATE_SELECTCOUNT),
+        // End-of-turn pumps held when nothing this turn can use them: a team pump with no creature
+        // in the fight, an optional payment for a grant on creatures that cannot attack or block.
+        // `just arena production production-unusablepumps 300` prices it alone; `just arena
+        // production-candidate-expiring production-candidate-unusablepumps 300` is the promotion gate.
+        ArenaAgent("production-unusablepumps", AiProfile.PRODUCTION_UNUSABLEPUMPS),
+        ArenaAgent("production-candidate-unusablepumps", AiProfile.PRODUCTION_CANDIDATE_UNUSABLEPUMPS),
         // Choice decisions answered by what they are for: colour/land-type tie-breaks, shortlisted
         // card names, and a skipped draw priced as a card. `just arena production
         // production-choices 300` prices it alone; `just arena production-candidate-expiring

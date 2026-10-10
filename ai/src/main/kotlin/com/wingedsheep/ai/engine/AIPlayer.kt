@@ -293,6 +293,7 @@ class AIPlayer(
                 informedChoices = profile.informedChoiceDecisions,
                 fillUpToMaxTargets = profile.fillUpToMaxTargets,
                 selectionCountsByValue = profile.selectionCountsByValue,
+                holdUnusablePumps = profile.holdUnusablePumps,
             )
 
             // Wire up the decision resolver so simulations can resolve non-trivial
@@ -321,6 +322,7 @@ class AIPlayer(
                     holdExpiringGrantsForCombat = profile.holdExpiringGrantsForCombat,
                     refuseUnspendableGrants = profile.refuseUnspendableGrants,
                     refuseDeadSearches = profile.refuseDeadSearches,
+                    holdUnusablePumps = profile.holdUnusablePumps,
                     targetPolarityFromEffect = profile.targetPolarityFromEffect,
                     permanentCastIsNotCardLoss = profile.permanentCastIsNotCardLoss,
                     // Same seam as `CombatAdvisor`'s `lifeWeight`: a raw Phase 9 profile resolves

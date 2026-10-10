@@ -119,6 +119,8 @@ class Strategist(
      * the activation half to [com.wingedsheep.ai.engine.knowledge.ExpiringGrantWindow].
      */
     private val refuseUnspendableGrants: Boolean = false,
+    /** [AiProfile.holdUnusablePumps] — passed straight through to [HoldPolicy]. */
+    private val holdUnusablePumps: Boolean = false,
     /**
      * [AiProfile.refuseDeadSearches] — passed straight through to [HoldPolicy], which hands it to
      * [com.wingedsheep.ai.engine.knowledge.DeadSearch].
@@ -164,6 +166,7 @@ class Strategist(
         holdExpiringGrantsForCombat = holdExpiringGrantsForCombat,
         refuseUnspendableGrants = refuseUnspendableGrants,
         refuseDeadSearches = refuseDeadSearches,
+        holdUnusablePumps = holdUnusablePumps,
         boardPresenceWeight = boardPresenceWeight,
     )
 

@@ -236,6 +236,14 @@ internal object ExpiringGrantWindow {
     }
 
     /**
+     * [canStillFight] for a grant that does not come from an activation — no source of ours taps
+     * to pay for it. The yes/no half of
+     * [com.wingedsheep.ai.engine.AiProfile.holdUnusablePumps] reads it.
+     */
+    fun creatureCanStillFight(state: GameState, playerId: EntityId, creature: EntityId): Boolean =
+        canStillFight(state, state.projectedState, playerId, creature, sourceId = creature, sourceTaps = false)
+
+    /**
      * Whether [creature] can still be in a fight this turn that a grant on it would change.
      *
      * Read off the step, from the seat of whoever is asking:
