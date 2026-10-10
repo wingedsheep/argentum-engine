@@ -186,7 +186,7 @@
                         "type": "Gated",
                         "gate": {
                             "type": "Gate.MayDecide",
-                            "prompt": "Accept the tempting offer? (Look at land cards in your library. Choose up to 1 of those cards. Put those cards onto the battlefield. Shuffle your library. )"
+                            "prompt": "Accept the tempting offer? (Search your library for a land card, put it onto the battlefield, then shuffle)"
                         },
                         "then": {
                             "type": "StorePlayer",

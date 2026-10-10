@@ -13464,8 +13464,7 @@
                             "ShuffleLibrary",
                             "EmitLibrarySearchedEvent"
                         ]
-                    },
-                    "description": "Search your library for a creature card, reveal it, put it into your hand, then shuffle"
+                    }
                 }
             ],
             "chooseCount": 2

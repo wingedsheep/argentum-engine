@@ -24,8 +24,9 @@ import kotlinx.serialization.Serializable
 /**
  * Multiple effects that happen together.
  *
- * By default, [description] and [runtimeDescription] concatenate each sub-effect's
- * own text with ". ". For cards whose pipeline produces a verbose or implementation-leaking
+ * By default, [description] and [runtimeDescription] join each sub-effect's own text with
+ * ". ", fusing the runs that only read as one sentence (a library search; a battlefield gather
+ * and the step that consumes it; see [describeSteps]). For cards whose pipeline produces a verbose or implementation-leaking
  * join (e.g., intermediate `StoreNumber` steps), supply [descriptionOverride] to render
  * a single hand-written sentence instead. Use `{0}`, `{1}`, ... placeholders paired with
  * [descriptionAmounts] to interpolate evaluated dynamic values at runtime — the static
@@ -40,7 +41,7 @@ data class CompositeEffect(
     val descriptionAmounts: List<DynamicAmount> = emptyList()
 ) : Effect {
     override val description: String =
-        descriptionOverride ?: effects.joinToString(". ") { it.description }
+        descriptionOverride ?: describeSteps(effects) { it.description }
 
     /** No override, no early stop: a sequence [Effect.then] may extend in place. */
     internal fun isPlainSequence(): Boolean =
@@ -48,7 +49,7 @@ data class CompositeEffect(
 
     override fun runtimeDescription(resolver: (DynamicAmount) -> Int?): String {
         val template = descriptionOverride
-            ?: return effects.joinToString(". ") { it.runtimeDescription(resolver) }
+            ?: return describeSteps(effects) { it.runtimeDescription(resolver) }
         var rendered = template
         descriptionAmounts.forEachIndexed { index, amount ->
             // Undeterminable slot: substitute the amount's own wording rather than a bogus "0".

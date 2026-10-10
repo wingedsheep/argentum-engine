@@ -400,7 +400,7 @@ data class AddCountersToCollectionEffect(
         if (amount != null) {
             "Put ${amount.description} ${counterType.printed} counters on each of those permanents"
         } else {
-            "Put $count ${counterType.printed} counter${if (count != 1) "s" else ""} on each of those permanents"
+            "Put ${if (count == 1) "a" else "$count"} ${counterType.printed} counter${if (count != 1) "s" else ""} on each of those permanents"
         }
 }
 

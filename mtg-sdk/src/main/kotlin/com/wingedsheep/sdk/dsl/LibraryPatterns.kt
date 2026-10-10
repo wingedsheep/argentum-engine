@@ -37,7 +37,7 @@ import com.wingedsheep.sdk.scripting.effects.ZonePlacement
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
-import com.wingedsheep.sdk.scripting.util.numberToWord
+import com.wingedsheep.sdk.scripting.effects.SearchText
 
 /**
  * Effect patterns for library manipulation: search, scry, surveil, mill,
@@ -520,6 +520,7 @@ object LibraryPatterns {
                 chooser = chooser,
                 storeSelected = "toBottom",
                 storeRemainder = "toTop",
+                prompt = scryPrompt(count, player, chooser),
                 selectedLabel = "Put on bottom",
                 remainderLabel = "Put on top"
             ),
@@ -536,6 +537,34 @@ object LibraryPatterns {
             tail
         )
     )
+
+    /**
+     * The scry pick's prompt — "Scry 2: choose cards to put on the bottom of your library" — so the
+     * decision says which keyword action it is and what a selected card means. The library is named
+     * from the chooser's side: a target or triggering player who scries is choosing for their own.
+     */
+    private fun scryPrompt(count: DynamicAmount, player: Player, chooser: Chooser): String {
+        val library = when (chooser) {
+            Chooser.Controller -> "${player.possessive} library"
+            Chooser.TargetPlayer, Chooser.TriggeringPlayer -> "your library"
+            else -> "the library"
+        }
+        return "${keywordAction("Scry", count)}: choose cards to put on the bottom of $library"
+    }
+
+    /** The surveil pick's prompt — "Surveil 1: choose cards to put into your graveyard". */
+    private fun surveilPrompt(count: DynamicAmount): String =
+        "${keywordAction("Surveil", count)}: choose cards to put into your graveyard"
+
+    /**
+     * A keyword action with its number as printed — "Scry 2", "Scry X" — or bare when the count is
+     * some other resolution-time amount whose wording doesn't fit after the keyword.
+     */
+    private fun keywordAction(keyword: String, count: DynamicAmount): String = when (count) {
+        is DynamicAmount.Fixed -> "$keyword ${count.amount}"
+        DynamicAmount.XValue -> "$keyword X"
+        else -> keyword
+    }
 
     /**
      * Run a keyword action's event [tail] only when its dynamic [count] resolves above zero — "scry 0"
@@ -566,6 +595,7 @@ object LibraryPatterns {
                 selection = SelectionMode.ChooseAnyNumber,
                 storeSelected = "toGraveyard",
                 storeRemainder = "toTop",
+                prompt = surveilPrompt(DynamicAmount.Fixed(count)),
                 selectedLabel = "Put in graveyard",
                 remainderLabel = "Put on top"
             ),
@@ -607,6 +637,7 @@ object LibraryPatterns {
                 selection = SelectionMode.ChooseAnyNumber,
                 storeSelected = "toGraveyard",
                 storeRemainder = "toTop",
+                prompt = surveilPrompt(count),
                 selectedLabel = "Put in graveyard",
                 remainderLabel = "Put on top"
             ),
@@ -707,34 +738,13 @@ object LibraryPatterns {
         destination: SearchDestination,
         entersTapped: Boolean
     ): String {
-        val fixed = (count as? DynamicAmount.Fixed)?.amount
-        val what = when (fixed) {
-            1 -> searchNoun(filter, plural = false).let { "${if (it.first().lowercaseChar() in "aeiou") "an" else "a"} $it" }
-            null -> "${searchNoun(filter, plural = true)} (up to ${count.description})"
-            else -> "up to ${numberToWord(fixed)} ${searchNoun(filter, plural = true)}"
+        val (zone, placement) = when (destination) {
+            SearchDestination.HAND -> Zone.HAND to ZonePlacement.Default
+            SearchDestination.BATTLEFIELD -> Zone.BATTLEFIELD to if (entersTapped) ZonePlacement.Tapped else ZonePlacement.Default
+            SearchDestination.GRAVEYARD -> Zone.GRAVEYARD to ZonePlacement.Default
+            SearchDestination.TOP_OF_LIBRARY -> Zone.LIBRARY to ZonePlacement.Top
         }
-        val where = when (destination) {
-            SearchDestination.HAND -> "into your hand"
-            SearchDestination.BATTLEFIELD -> if (entersTapped) "onto the battlefield tapped" else "onto the battlefield"
-            SearchDestination.GRAVEYARD -> "into your graveyard"
-            SearchDestination.TOP_OF_LIBRARY -> "on top of your library"
-        }
-        return "Search $zonePhrase for $what to put $where"
-    }
-
-    /**
-     * [filter]'s description as a card noun: "basic land card", "creature card with power 2 or
-     * less", "card named Avarax" — the word "card" goes ahead of the first qualifying clause.
-     */
-    private fun searchNoun(filter: GameObjectFilter, plural: Boolean): String {
-        val description = filter.description.trim()
-        val qualifiers = listOf("with ", "named ", "that ", "whose ", "has ")
-        val split = qualifiers.mapNotNull { q ->
-            if (description.startsWith(q)) 0 else description.indexOf(" $q").takeIf { it >= 0 }
-        }.minOrNull() ?: description.length
-        val head = description.substring(0, split).trim().let { if (it == "card") "" else it.removeSuffix(" card") }
-        val tail = description.substring(split).trim()
-        return listOf(head, if (plural) "cards" else "card", tail).filter { it.isNotEmpty() }.joinToString(" ")
+        return "Search $zonePhrase for ${SearchText.counted(filter, count)} to put ${SearchText.destination(zone, placement)}"
     }
 
     /** Where a search's found cards go, for the selection UI's "Selected →" label. */
