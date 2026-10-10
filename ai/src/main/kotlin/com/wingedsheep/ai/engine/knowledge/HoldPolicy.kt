@@ -83,6 +83,13 @@ class HoldPolicy(
      */
     private val refuseDeadSearches: Boolean = false,
     /**
+     * [AiProfile.refuseEmptyPayoffs][com.wingedsheep.ai.engine.AiProfile.refuseEmptyPayoffs]
+     * — refuse an activation whose whole payoff lands on nothing: a group effect over an empty
+     * group, an attach to the current host, or another Equipment move after combat. See
+     * [EmptyPayoff], which is where the whole idea lives.
+     */
+    private val refuseEmptyPayoffs: Boolean = false,
+    /**
      * [AiProfile.holdUnusablePumps][com.wingedsheep.ai.engine.AiProfile.holdUnusablePumps] — read
      * an untargeted team pump ([CardIntent.expiringGroupPump]) as a combat trick, refuse it once the
      * fight has left every creature of ours out, and defer any trick out of our own
@@ -194,7 +201,7 @@ class HoldPolicy(
         activation: ActivateAbility?,
     ): TimingVerdict {
         if (activation == null) return TimingVerdict.Neutral
-        if (!(holdExpiringGrantsForCombat || refuseUnspendableGrants || refuseDeadSearches)) {
+        if (!(holdExpiringGrantsForCombat || refuseUnspendableGrants || refuseDeadSearches || refuseEmptyPayoffs)) {
             return TimingVerdict.Neutral
         }
         val ability = intents.activatedAbility(cardName, activation.abilityId)
@@ -205,6 +212,10 @@ class HoldPolicy(
             if (predicates != null && DeadSearch.holds(state, playerId, ability, activation, predicates)) {
                 return TimingVerdict.NoWindow
             }
+        }
+        // An activation that changes nothing is a waste of its cost, in every window.
+        if (refuseEmptyPayoffs && EmptyPayoff.holds(state, playerId, ability, activation, intents.predicates)) {
+            return TimingVerdict.NoWindow
         }
         if (!(holdExpiringGrantsForCombat || refuseUnspendableGrants)) return TimingVerdict.Neutral
         val holds = ExpiringGrantWindow.holds(

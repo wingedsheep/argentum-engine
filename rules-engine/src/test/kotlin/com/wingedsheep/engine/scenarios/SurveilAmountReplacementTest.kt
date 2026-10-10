@@ -138,6 +138,8 @@ class SurveilAmountReplacementTest : FunSpec({
         val d = setup()
         val you = d.activePlayer!!
         d.putPermanentOnBattlefield(you, "Your Surveil Lens")
+        // Distinct cards: copies of one card have no order to choose, so no prompt.
+        listOf("Grizzly Bears", "Island", "Plains", "Forest").forEach { d.putCardOnTopOfLibrary(you, it) }
         val looked = d.library(you).take(4)
         val libraryBefore = d.library(you).size
 

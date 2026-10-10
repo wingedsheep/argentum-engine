@@ -184,8 +184,10 @@ class CostPaymentService(private val services: EngineServices) {
                 // takes the counter, on the battlefield rather than in an overlay.
                 is CostAtom.PutCountersOnPermanent ->
                     selectionPrompt(state, payerId, resolved, sourceId, sourceName, ctx, candidates, 1, useTargetingUI = true)
-                is CostAtom.PayPlayerCounters ->
-                    yesNoPrompt(state, payerId, resolved, sourceId, sourceName, ctx, "${atom.description}?", atom.description)
+                is CostAtom.PayPlayerCounters -> {
+                    val label = atom.description.replaceFirstChar { it.uppercase() }
+                    yesNoPrompt(state, payerId, resolved, sourceId, sourceName, ctx, "$label?", label)
+                }
                 is CostAtom.RemoveCounters -> {
                     val count = when (val c = atom.count) {
                         is com.wingedsheep.sdk.scripting.values.DynamicAmount.Fixed -> c.amount
@@ -237,14 +239,16 @@ class CostPaymentService(private val services: EngineServices) {
         prompt: String,
         yesText: String
     ): PaymentResult {
+        // A pay-or-suffer caller names what declining costs: "Pay {E}, or sacrifice Static Prison?"
+        val consequence = ctx.consequence
         val result = decisionHandler.createYesNoDecision(
             state = state,
             playerId = payerId,
             sourceId = sourceId,
             sourceName = sourceName,
-            prompt = prompt,
+            prompt = if (consequence == null) prompt else "${prompt.removeSuffix("?")}, or $consequence?",
             yesText = yesText,
-            noText = "Don't pay",
+            noText = consequence?.replaceFirstChar { it.uppercase() } ?: "Don't pay",
             phase = DecisionPhase.RESOLUTION,
             answer = continuation(payerId, sourceId, sourceName, cost, ctx)
         )

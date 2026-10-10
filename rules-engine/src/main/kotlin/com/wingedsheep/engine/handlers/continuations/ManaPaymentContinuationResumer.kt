@@ -219,7 +219,7 @@ class ManaPaymentContinuationResumer(
                 prompt = "Pay ${continuation.manaCost}",
                 context = DecisionContext(
                     sourceId = continuation.sourceId,
-                    sourceName = continuation.sourceName ?: "Counter unless pays",
+                    sourceName = continuation.sourceName,
                     phase = DecisionPhase.RESOLUTION
                 ),
                 availableSources = sourceOptions,

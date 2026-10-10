@@ -216,8 +216,9 @@ class KayaSpiritsJusticeScenarioTest : ScenarioTestBase() {
                 .withCardOnBattlefield(1, "Kaya, Spirits' Justice")
                 .withCardOnBattlefield(1, "Clue", isToken = true)
                 .withCardInGraveyard(1, "Grizzly Bears")
+                // Two different cards, so keeping both on top still asks for their order.
                 .withCardInLibrary(1, "Plains")
-                .withCardInLibrary(1, "Plains")
+                .withCardInLibrary(1, "Island")
                 .withActivePlayer(1)
                 .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
                 .build()

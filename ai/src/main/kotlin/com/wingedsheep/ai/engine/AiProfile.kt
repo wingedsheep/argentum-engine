@@ -651,6 +651,29 @@ data class AiProfile(
      * [com.wingedsheep.ai.engine.knowledge.DeadSearch]. Needs [useCardIntent].
      */
     val refuseDeadSearches: Boolean = false,
+    /**
+     * Refuse an activated ability whose whole payoff provably lands on nothing — [refuseDeadSearches]
+     * generalised past library searches.
+     *
+     * 2026-10-10 AI-vs-AI logs under [LIVE]: Oakhollow Village's "{G}, {T}: put a +1/+1 counter on
+     * each Frog, Rabbit, Raccoon, or Squirrel you control that entered this turn" activated on four
+     * turns when none had entered (game 1, turns 19–25); Mandibular Kite re-equipped to the Eldrazi
+     * Repurposer already wearing it (game 3 turn 19, four mana for nothing); Dúnedain Blade moved
+     * three times in one postcombat main phase (game 1 turn 32). With this on, `HoldPolicy` floors
+     * below passing: a group effect (counters, tap/untap) over a battlefield group nothing matches,
+     * an attach to the permanent's current host (CR 701.3b: it does nothing), and an equip in our
+     * postcombat main of an Equipment already activated this turn. Only plain-resource costs (mana,
+     * tap, life). See [com.wingedsheep.ai.engine.knowledge.EmptyPayoff]. Needs [useCardIntent].
+     *
+     * Measured 2026-10-10: `just arena production-candidate-expiring production-candidate-emptypayoff
+     * 150` (BLB, seed 20260727) — 75W-75L-0D, every pair split, pair win 50.0% CI [50.0%, 50.0%],
+     * 0 illegal actions, no timeouts. A paired run where every pair splits means the two agents played
+     * identical games: the floor never changed a decision in BLB sealed on that seed (Oakhollow
+     * Village is the only BLB card in its reach, and Equipment is scarce there). It is a no-op there,
+     * not a demonstrated gain; the evidence for it is the three logged positions, pinned by
+     * `EmptyPayoffTest`. `PuzzleSuiteTest` unchanged (it runs [PRODUCTION]).
+     */
+    val refuseEmptyPayoffs: Boolean = false,
     /** Non-null profiles may only be selected automatically for this set. Arena selection stays explicit. */
     val restrictedToSet: String? = null,
 ) {
@@ -1562,6 +1585,7 @@ data class AiProfile(
             fillUpToMaxTargets = true,
             refuseDeadSearches = true,
             pumpsNeedAPlannedAttack = true,
+            refuseEmptyPayoffs = true,
         )
 
         /**
@@ -1581,6 +1605,25 @@ data class AiProfile(
         val PRODUCTION_CANDIDATE_DEADSEARCH = PRODUCTION_CANDIDATE_EXPIRING.copy(
             id = "production-candidate-deadsearch",
             refuseDeadSearches = true,
+        )
+
+        /**
+         * [refuseEmptyPayoffs] alone on top of [PRODUCTION], so a puzzle or an arena point that
+         * moves is attributable to it.
+         */
+        val PRODUCTION_EMPTYPAYOFF = PRODUCTION.copy(
+            id = "production-emptypayoff",
+            refuseEmptyPayoffs = true,
+        )
+
+        /**
+         * [refuseEmptyPayoffs] on top of [PRODUCTION_CANDIDATE_EXPIRING] — the last pinned
+         * candidate [LIVE] builds on — so `just arena production-candidate-expiring
+         * production-candidate-emptypayoff` measures this flag and nothing else. [LIVE] ships it.
+         */
+        val PRODUCTION_CANDIDATE_EMPTYPAYOFF = PRODUCTION_CANDIDATE_EXPIRING.copy(
+            id = "production-candidate-emptypayoff",
+            refuseEmptyPayoffs = true,
         )
 
         /**

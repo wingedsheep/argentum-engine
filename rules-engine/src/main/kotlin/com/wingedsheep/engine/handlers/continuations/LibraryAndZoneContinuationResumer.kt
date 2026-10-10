@@ -642,14 +642,19 @@ class LibraryAndZoneContinuationResumer(
 
         // Build the updated collections
         val updatedCollections = mutableMapOf(continuation.storeSelected to selected)
+        // The chooser just saw these cards, so a later move that would pause only to show them
+        // again — one card back on top, or copies of one card with no order to pick — can skip it
+        // (scry / surveil keeping them on top, or sending identical cards to the bottom).
+        fun publishShown(collection: String, cards: List<EntityId>) {
+            val shown = continuation.shownCards?.let { s -> cards.filter { it in s } }.orEmpty()
+            if (shown.isNotEmpty()) {
+                updatedCollections[com.wingedsheep.engine.handlers.PipelineState.shownKey(collection, continuation.playerId)] = shown
+            }
+        }
+        publishShown(continuation.storeSelected, selected)
         if (continuation.storeRemainder != null) {
             updatedCollections[continuation.storeRemainder] = remainder
-            // The chooser just saw these cards, so a one-card "put the rest back on top" has
-            // nothing left to show them (scry 1 / surveil 1 keeping the card).
-            val shown = continuation.shownCards?.let { s -> remainder.filter { it in s } }.orEmpty()
-            if (shown.isNotEmpty()) {
-                updatedCollections[com.wingedsheep.engine.handlers.PipelineState.shownKey(continuation.storeRemainder, continuation.playerId)] = shown
-            }
+            publishShown(continuation.storeRemainder, remainder)
         }
 
         // Inject updated collections into the consumer frame beneath (if any)
