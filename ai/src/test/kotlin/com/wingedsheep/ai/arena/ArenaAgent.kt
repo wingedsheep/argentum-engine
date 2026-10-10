@@ -188,6 +188,11 @@ object ArenaAgents {
         // agent the 2026-10-09 game logs were taken with.
         ArenaAgent("production-deploy", AiProfile.PRODUCTION_DEPLOY),
         ArenaAgent("production-candidate-deploy", AiProfile.PRODUCTION_CANDIDATE_DEPLOY),
+        // "Up to N targets" answered with as many targets as improve the result, not always one.
+        // `just arena production production-upto 300` prices it alone; `just arena
+        // production-candidate-expiring production-candidate-upto 300` is the promotion gate.
+        ArenaAgent("production-upto", AiProfile.PRODUCTION_UPTO),
+        ArenaAgent("production-candidate-upto", AiProfile.PRODUCTION_CANDIDATE_UPTO),
         ArenaAgent("production-targeted", AiProfile.PRODUCTION_TARGETED),
         // Explicit ECL candidates. Their resource-backed weights fail closed to production's
         // evaluator until a validated artifact is installed; automatic selection is set-gated.

@@ -585,6 +585,41 @@ data class AiProfile(
      * which is not built until declare attackers. Needs [useCardIntent] for the trick half.
      */
     val holdUnusablePumps: Boolean = false,
+    /**
+     * Count the land drop still to come as mana when [sequenceLandsByUsableMana] decides whether
+     * tapped lands were idle — so playing an untapped land can never score below passing.
+     *
+     * The idle-mana refund asks whether anything in hand would become castable if the tapped lands
+     * untapped, and it read the answer off the battlefield alone. Playing a land slid that window up
+     * by one: tapped out on four lands holding only 5-drops, the four tapped lands were refunded as
+     * idle (+1.2); play the fifth and the 5-drops became "castable but for the tapped lands", the
+     * refund vanished, and the land drop lost to passing. AI game-log review 2026-10-10 (profile
+     * `production-candidate-expiring`), game 3 turn 11: after tapping out for Aerie Auxiliary the AI
+     * passed both main phases with "Play Shattered Landscape" on offer. Rollouts cannot break the
+     * tie, because the playout policy plays the land on both branches.
+     *
+     * See [com.wingedsheep.ai.engine.evaluation.BoardPresence]'s `landSequencing`. Only the states
+     * *before* a land drop move; every post-drop state, and so every tapland-vs-basic comparison,
+     * scores as before. Needs [sequenceLandsByUsableMana]; reaches only the composite evaluator.
+     */
+    val pendingLandDropIsMana: Boolean = false,
+    /**
+     * Answer an "up to N targets" decision with as many targets as help, not always exactly one.
+     *
+     * `DecisionResponder` simulated each legal target alone and returned the best single one, so
+     * every multi-target requirement got one target whatever its maximum: Aerie Auxiliary's
+     * "support 2" put its counter on one creature with a second friendly one standing beside it
+     * (2026-10-10 AI-vs-AI logs, game 3 turns 11 and 25), and a mandatory "two target creatures"
+     * trigger was answered with an illegal single target. With this on, the answer grows greedily
+     * from the best single pick: each round adds the remaining candidate whose simulated result is
+     * best, and stops when nothing improves on the answer so far or the maximum is reached — so a
+     * counter is never handed to the opponent's creature just because a slot was free. Below the
+     * requirement's minimum a legal pick is added whatever it scores.
+     *
+     * The decision half only. `Strategist` fills the targets of a spell or ability it casts the
+     * same way, which this leaves alone.
+     */
+    val fillUpToMaxTargets: Boolean = false,
     /** Non-null profiles may only be selected automatically for this set. Arena selection stays explicit. */
     val restrictedToSet: String? = null,
 ) {
@@ -1490,8 +1525,29 @@ data class AiProfile(
             priceCrackBackAsLife = true,
             crackBackWithoutChumps = true,
             evasionAfterAttacking = true,
+            pendingLandDropIsMana = true,
             selectionCountsByValue = true,
             holdUnusablePumps = true,
+            fillUpToMaxTargets = true,
+        )
+
+        /**
+         * [fillUpToMaxTargets] alone on top of [PRODUCTION], so a puzzle or an arena point that
+         * moves is attributable to it.
+         */
+        val PRODUCTION_UPTO = PRODUCTION.copy(
+            id = "production-upto",
+            fillUpToMaxTargets = true,
+        )
+
+        /**
+         * [fillUpToMaxTargets] on top of [PRODUCTION_CANDIDATE_EXPIRING] — the last pinned
+         * candidate [LIVE] builds on, so `just arena production-candidate-expiring
+         * production-candidate-upto 300` measures this flag and nothing else. [LIVE] ships it.
+         */
+        val PRODUCTION_CANDIDATE_UPTO = PRODUCTION_CANDIDATE_EXPIRING.copy(
+            id = "production-candidate-upto",
+            fillUpToMaxTargets = true,
         )
 
         /**

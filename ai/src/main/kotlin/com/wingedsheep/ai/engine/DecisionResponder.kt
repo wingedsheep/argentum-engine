@@ -69,6 +69,12 @@ class DecisionResponder(
      */
     private val informedChoices: Boolean = false,
     /**
+     * [AiProfile.fillUpToMaxTargets]: grow an "up to N" target answer past its first pick while
+     * each added target improves the simulated result, and always fill a requirement to its
+     * minimum. Off answers every requirement with exactly one target, as it always has.
+     */
+    private val fillUpToMaxTargets: Boolean = false,
+    /**
      * [AiProfile.selectionCountsByValue]: an unlabelled "choose up to N" takes N even when the
      * options don't outnumber it, and a scry-to-bottom or surveil-to-graveyard choice sends exactly
      * the cards worth less than [LOOK_KEEP_THRESHOLD] — possibly none, possibly all. Off is the
@@ -171,7 +177,14 @@ class DecisionResponder(
             val best = pickBestBySimulation(state, candidates, playerId) { target ->
                 TargetsResponse(decision.id, mapOf(req.index to listOf(target)))
             }
-            val bestResponse = TargetsResponse(decision.id, mapOf(req.index to listOf(best)))
+            val picks = if (fillUpToMaxTargets) {
+                growTargets(state, playerId, req, best, candidates, targets) { picked ->
+                    TargetsResponse(decision.id, mapOf(req.index to picked))
+                }
+            } else {
+                listOf(best)
+            }
+            val bestResponse = TargetsResponse(decision.id, mapOf(req.index to picks))
 
             // For optional targets (minTargets == 0), also consider picking no targets
             if (req.minTargets == 0) {
@@ -202,20 +215,63 @@ class DecisionResponder(
                 val best = pickBestBySimulation(state, targets.take(maxCandidates), playerId) { target ->
                     TargetsResponse(decision.id, selected + (req.index to listOf(target)))
                 }
+                val picks = if (fillUpToMaxTargets) {
+                    growTargets(state, playerId, req, best, targets.take(maxCandidates), targets) { picked ->
+                        TargetsResponse(decision.id, selected + (req.index to picked))
+                    }
+                } else {
+                    listOf(best)
+                }
                 // For optional targets, compare best pick against skipping
                 if (req.minTargets == 0) {
-                    val pickResponse = TargetsResponse(decision.id, selected + (req.index to listOf(best)))
+                    val pickResponse = TargetsResponse(decision.id, selected + (req.index to picks))
                     val skipResponse = TargetsResponse(decision.id, selected + (req.index to emptyList()))
                     val pickScore = evaluateResult(simulator.simulateDecision(state, pickResponse), playerId)
                     val skipScore = evaluateResult(simulator.simulateDecision(state, skipResponse), playerId)
                     if (skipScore >= pickScore) emptyList()
-                    else listOf(best)
+                    else picks
                 } else {
-                    listOf(best)
+                    picks
                 }
             }
         }
         return TargetsResponse(decision.id, selected.toMap())
+    }
+
+    /**
+     * Grow a one-target answer for [req] toward [TargetRequirementInfo.maxTargets], under
+     * [fillUpToMaxTargets]. Each round simulates every remaining candidate added to the picks so
+     * far and keeps the best one if it beats the current answer — "up to two other target
+     * creatures" takes the second counter when a second creature is worth countering, and stops
+     * before one on the opponent's side. Below [TargetRequirementInfo.minTargets] a pick is taken
+     * whatever it scores (only a legal one), drawing on [allTargets] once [candidates] run out: a
+     * mandatory "two target creatures" answered with one is not a weaker answer but an illegal one.
+     */
+    private fun growTargets(
+        state: GameState,
+        playerId: EntityId,
+        req: TargetRequirementInfo,
+        first: EntityId,
+        candidates: List<EntityId>,
+        allTargets: List<EntityId>,
+        respond: (List<EntityId>) -> DecisionResponse,
+    ): List<EntityId> {
+        val picks = mutableListOf(first)
+        if (req.maxTargets <= 1 && req.minTargets <= 1) return picks
+        var score = evaluateResult(simulator.simulateDecision(state, respond(picks)), playerId)
+        while (picks.size < req.maxTargets) {
+            val mandatory = picks.size < req.minTargets
+            val pool = (if (mandatory) candidates + allTargets else candidates).distinct().filterNot(picks::contains)
+            val scored = pool.map { it to evaluateResult(simulator.simulateDecision(state, respond(picks + it)), playerId) }
+            val (next, nextScore) = scored.maxByOrNull { it.second } ?: break
+            // Short of the minimum every probe is illegal, so an unscorable pick is still taken.
+            val stillShort = picks.size + 1 < req.minTargets
+            if (nextScore == Double.NEGATIVE_INFINITY && !stillShort) break
+            if (!mandatory && nextScore <= score) break
+            picks += next
+            score = nextScore
+        }
+        return picks
     }
 
     /** Heuristic for pre-ranking targets before simulation. Higher = better target. */

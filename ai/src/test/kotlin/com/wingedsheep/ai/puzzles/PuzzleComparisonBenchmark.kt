@@ -132,6 +132,9 @@ class PuzzleComparisonBenchmark : ScenarioTestBase() {
                 // the negative controls, since an instant's hand value is real option value.
                 AiProfile.PRODUCTION_DEPLOY,
                 AiProfile.PRODUCTION_CANDIDATE_DEPLOY,
+                // "Up to N targets" filled past one while each extra target helps.
+                AiProfile.PRODUCTION_UPTO,
+                AiProfile.PRODUCTION_CANDIDATE_UPTO,
                 // Attack decisions from the 2026-10-09 game-log review — crack-back priced as life,
                 // tapped fliers keeping their evasion — alone and on top of what is live.
                 AiProfile.PRODUCTION_ATTACKS,
