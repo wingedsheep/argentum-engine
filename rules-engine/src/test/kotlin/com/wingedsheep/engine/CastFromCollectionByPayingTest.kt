@@ -199,7 +199,7 @@ class CastFromCollectionByPayingTest : FunSpec({
             com.wingedsheep.sdk.dsl.CollectionSlot("card"), energyEqualToManaValue
         ) as CastFromCollectionWithoutPayingCostEffect
         effect.description shouldBe
-            "Cast that card by paying an amount of energy counters equal to its mana value rather than paying its mana cost"
+            "Cast that card by paying an amount of {E} equal to its mana value rather than paying its mana cost"
         shouldThrow<IllegalArgumentException> {
             CastFromCollectionWithoutPayingCostEffect(from = "card", payManaCost = true, alternativeCost = energyEqualToManaValue)
         }

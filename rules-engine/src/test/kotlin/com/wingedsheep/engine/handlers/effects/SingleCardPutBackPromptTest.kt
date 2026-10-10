@@ -43,15 +43,21 @@ class SingleCardPutBackPromptTest : FunSpec({
     val (scryer, scryAbility) = looker("Scry Adept", Patterns.Library.scry(1))
     val (surveiler, surveilAbility) = looker("Surveil Adept", Patterns.Library.surveil(1))
     val (peeker, peekAbility) = looker("Peek Adept", Patterns.Library.lookAtTopAndReorder(1))
+    val (scryer2, scry2Ability) = looker("Scry Savant", Patterns.Library.scry(2))
+    val (peeker2, peek2Ability) = looker("Peek Savant", Patterns.Library.lookAtTopAndReorder(2))
 
     /** Activates [name]'s ability with a known top card and resolves it; returns (driver, player, top card). */
-    fun activate(name: String, abilityId: AbilityId): Triple<GameTestDriver, com.wingedsheep.sdk.model.EntityId, com.wingedsheep.sdk.model.EntityId> {
+    fun activate(
+        name: String,
+        abilityId: AbilityId,
+        topCards: List<String> = listOf("Grizzly Bears"),
+    ): Triple<GameTestDriver, com.wingedsheep.sdk.model.EntityId, com.wingedsheep.sdk.model.EntityId> {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(scryer, surveiler, peeker))
+        driver.registerCards(TestCards.all + listOf(scryer, surveiler, peeker, scryer2, peeker2))
         driver.initMirrorMatch(deck = Deck.of("Island" to 30, "Mountain" to 30), startingLife = 20)
         val player = driver.activePlayer!!
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
-        val top = driver.putCardOnTopOfLibrary(player, "Grizzly Bears")
+        val top = topCards.reversed().map { driver.putCardOnTopOfLibrary(player, it) }.last()
         val source = driver.putCreatureOnBattlefield(player, name)
         driver.removeSummoningSickness(source)
         driver.giveMana(player, Color.BLUE, 1)
@@ -87,5 +93,31 @@ class SingleCardPutBackPromptTest : FunSpec({
 
         driver.isPaused shouldBe false
         driver.state.getZone(ZoneKey(player, Zone.LIBRARY)).first() shouldBe top
+    }
+
+    // Copies of one card have no order to choose either: every order is the same library.
+
+    test("scry 2 keeping two copies of one card on top skips the reorder prompt") {
+        val (driver, player, _) = activate("Scry Savant", scry2Ability, listOf("Grizzly Bears", "Grizzly Bears"))
+        val select = driver.pendingDecision.shouldBeInstanceOf<SelectCardsDecision>()
+        select.options.size shouldBe 2
+        driver.submitDecision(player, CardsSelectedResponse(select.id, emptyList()))
+
+        driver.isPaused shouldBe false
+        driver.state.getZone(ZoneKey(player, Zone.LIBRARY)).take(2).map { driver.getCardName(it) } shouldBe
+            listOf("Grizzly Bears", "Grizzly Bears")
+    }
+
+    test("scry 2 keeping two different cards still asks for their order") {
+        val (driver, player, _) = activate("Scry Savant", scry2Ability, listOf("Grizzly Bears", "Lightning Bolt"))
+        val select = driver.pendingDecision.shouldBeInstanceOf<SelectCardsDecision>()
+        driver.submitDecision(player, CardsSelectedResponse(select.id, emptyList()))
+
+        driver.pendingDecision.shouldBeInstanceOf<ReorderLibraryDecision>().cards.size shouldBe 2
+    }
+
+    test("looking at two copies of one card still shows them — the prompt is the look") {
+        val (driver, _, _) = activate("Peek Savant", peek2Ability, listOf("Grizzly Bears", "Grizzly Bears"))
+        driver.pendingDecision.shouldBeInstanceOf<ReorderLibraryDecision>().cards.size shouldBe 2
     }
 })

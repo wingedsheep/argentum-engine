@@ -18,7 +18,8 @@ class RansackScenarioTest : ScenarioTestBase() {
                 .withCardInHand(1, "Ransack")
                 .withLandsOnBattlefield(1, "Island", 4)
                 .withCardInLibrary(1, "Island")
-                .apply { repeat(7) { withCardInLibrary(2, "Forest") } }
+                // Distinct cards: copies of one card have no order to choose, so no prompt.
+                .apply { listOf("Forest", "Island", "Mountain", "Plains", "Swamp", "Grizzly Bears", "Forest").forEach { withCardInLibrary(2, it) } }
                 .withActivePlayer(1)
                 .withPriorityPlayer(1)
                 .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
@@ -65,7 +66,7 @@ class RansackScenarioTest : ScenarioTestBase() {
                     .withPlayers()
                     .withCardInHand(1, "Ransack")
                     .withLandsOnBattlefield(1, "Island", 4)
-                    .apply { repeat(3) { withCardInLibrary(1, "Forest") } }
+                    .apply { listOf("Forest", "Plains", "Swamp").forEach { withCardInLibrary(1, it) } }
                     .withCardInLibrary(2, "Island")
                     .withActivePlayer(1)
                     .withPriorityPlayer(1)

@@ -22,6 +22,8 @@ import com.wingedsheep.sdk.scripting.effects.Effect
  * @property namedTargets named targets from the originating pipeline.
  * @property storedCollections pipeline collections carried into the follow-up so it can reference
  *   cards gathered earlier in the same resolution.
+ * @property consequence player-facing wording of what declining costs ("sacrifice Static Prison"),
+ *   for a yes/no payment prompt to spell out. Display only — [onDeclined] is what actually runs.
  */
 data class CostPaymentContext(
     val objectReferences: com.wingedsheep.engine.handlers.ObjectReferenceEnvironment = com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(),
@@ -32,4 +34,5 @@ data class CostPaymentContext(
     val storedCollections: Map<String, List<EntityId>> = emptyMap(),
     /** Preserve the resolving effect's perspective when its payer is a different player. */
     val effectContext: com.wingedsheep.engine.handlers.EffectContext? = null,
+    val consequence: String? = null,
 )
