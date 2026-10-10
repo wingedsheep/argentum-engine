@@ -7,9 +7,11 @@ import com.wingedsheep.ai.engine.budget.DecisionBudget
 import com.wingedsheep.ai.engine.budget.LegacyBudgetPolicy
 import com.wingedsheep.ai.engine.evaluation.BoardEvaluator
 import com.wingedsheep.ai.engine.evaluation.BoardPresence
+import com.wingedsheep.ai.engine.knowledge.ExpiringGrantWindow
 import com.wingedsheep.ai.engine.knowledge.IntentCatalog
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
@@ -18,10 +20,12 @@ import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.player.LandDropsComponent
 import com.wingedsheep.engine.state.components.player.SkipDrawStepComponent
 import com.wingedsheep.sdk.core.Color
+import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.Duration
 
 /**
  * Handles all [PendingDecision] types by evaluating possible responses
@@ -71,6 +75,12 @@ class DecisionResponder(
      * historical count logic.
      */
     private val selectionCountsByValue: Boolean = false,
+    /**
+     * [AiProfile.holdUnusablePumps]: decline an optional payment whose only payoff is an
+     * end-of-turn grant on creatures that cannot attack or block this turn. Off is the historical
+     * tie-to-yes.
+     */
+    private val holdUnusablePumps: Boolean = false,
 ) {
     private val priors: ChoicePriors? = if (informedChoices) ChoicePriors(simulator.cardRegistry) else null
 
@@ -390,8 +400,65 @@ class DecisionResponder(
         val noResult = simulator.simulateDecision(state, YesNoResponse(decision.id, false))
         val yesScore = evaluateChoice(yesResult, playerId)
         val noScore = evaluateChoice(noResult, playerId)
+        if (holdUnusablePumps && yesScore >= noScore && payoffIsUnspendable(state, yesResult, noResult, yesScore, noScore, playerId)) {
+            return YesNoResponse(decision.id, false)
+        }
         return YesNoResponse(decision.id, yesScore >= noScore)
     }
+
+    /**
+     * Whether saying yes buys nothing but end-of-turn grants on creatures that cannot use them —
+     * the yes/no half of [AiProfile.holdUnusablePumps].
+     *
+     * The leaf reads an until-end-of-turn pump as if it were permanent, so a "you may pay {E}{E}.
+     * When you do, …" whose payoff is a pump always scores at least as well as declining — and the
+     * energy it spends has no price at all. 2026-10-10 logs, game 3 turn 15: Voltstorm Angel paid
+     * {E}{E} at the beginning of combat the turn it was cast, to give itself vigilance and lifelink
+     * it could not attack with.
+     *
+     * Read off the simulation rather than the card: the grants are the floating effects the yes
+     * branch created, so a modal payoff is judged by the mode the AI would actually pick. Each one
+     * that lasts until end of turn and lands only on our creatures, none of which can still attack
+     * or block this turn ([ExpiringGrantWindow.creatureCanStillFight]), is stripped, and the yes
+     * branch is re-scored without them. Anything else it bought — a card, a counter, a token —
+     * survives the strip, so yes still wins when it buys something real; a bare tie goes to no.
+     *
+     * The same tie with nothing stripped — a mode that pumped nobody — goes to no when yes spent
+     * energy: the leaf has no price for energy, so a tie there is a resource given away for nothing.
+     */
+    private fun payoffIsUnspendable(
+        state: GameState,
+        yesResult: SimulationResult,
+        noResult: SimulationResult,
+        yesScore: Double,
+        noScore: Double,
+        playerId: EntityId,
+    ): Boolean {
+        if (yesResult !is SimulationResult.Terminal && yesResult !is SimulationResult.NeedsDecision) return false
+        val yesState = yesResult.state
+        if (yesState.gameOver) return false
+        val before = state.floatingEffects.mapTo(HashSet()) { it.id }
+        val projected = state.projectedState
+        val unspendable = yesState.floatingEffects.filter { effect ->
+            effect.id !in before &&
+                effect.duration == Duration.EndOfTurn &&
+                effect.effect.dynamicGroupFilter == null &&
+                effect.effect.affectedEntities.isNotEmpty() &&
+                effect.effect.affectedEntities.all { id ->
+                    projected.isCreature(id) && projected.getController(id) == playerId &&
+                        !ExpiringGrantWindow.creatureCanStillFight(state, playerId, id)
+                }
+        }
+        if (unspendable.isEmpty()) {
+            return yesScore == noScore && energyOf(yesState, playerId) < energyOf(noResult.state, playerId)
+        }
+        val stripped = yesState.copy(floatingEffects = yesState.floatingEffects - unspendable.toSet())
+        val strippedScore = evaluateChoice(SimulationResult.Terminal(stripped, yesResult.events), playerId)
+        return strippedScore <= noScore
+    }
+
+    private fun energyOf(state: GameState, playerId: EntityId): Int =
+        state.getEntity(playerId)?.get<CountersComponent>()?.getCount(CounterType.ENERGY) ?: 0
 
     /**
      * Batched "you may …" raised once for a run of identical optional triggers. The AI evaluates the

@@ -561,6 +561,30 @@ data class AiProfile(
      * Reaches only the composite evaluator, like every other evaluator flag here.
      */
     val evasionAfterAttacking: Boolean = false,
+    /**
+     * Stop spending an until-end-of-turn pump that nothing this turn can use. Two misplays from the
+     * 2026-10-10 engine-vs-engine logs (`production-candidate-expiring`):
+     *
+     * - **An untargeted team pump was never a combat trick.** Rabbit Response ("creatures you
+     *   control get +2/+1 until end of turn") lowers to a group `ForEach`, which `EffectWalker`
+     *   treats as a leaf, so `HoldPolicy` never saw a trick and the AI cast it in its own
+     *   declare-attackers step after declaring no attack (game 1 turn 13). With this on it reads
+     *   as one ([com.wingedsheep.ai.engine.knowledge.CardIntent.expiringGroupPump]), sits the fight
+     *   out when no creature of ours is attacking or blocking, and any trick in our own
+     *   beginning-of-combat step defers to declare attackers.
+     * - **An optional payment for an end-of-turn grant is bought whatever it lands on.** Voltstorm
+     *   Angel paid {E}{E} at the beginning of combat the turn it was cast (game 3 turn 15), and the
+     *   mode the AI picks there — vigilance and lifelink on the Angel — lands on a creature that
+     *   cannot attack: the leaf prices the grant as permanent and energy not at all. With this on,
+     *   `DecisionResponder` strips the yes branch's end-of-turn grants on creatures that cannot
+     *   attack or block this turn and declines unless what is left still beats no; a bare tie that
+     *   spent energy also goes to no.
+     *
+     * Not covered: a creature that *can* attack but then doesn't (game 3 turn 19, and turn 15 if
+     * the team mode was picked with Aerie Auxiliary ready) — knowing that needs the attack plan,
+     * which is not built until declare attackers. Needs [useCardIntent] for the trick half.
+     */
+    val holdUnusablePumps: Boolean = false,
     /** Non-null profiles may only be selected automatically for this set. Arena selection stays explicit. */
     val restrictedToSet: String? = null,
 ) {
@@ -1467,6 +1491,25 @@ data class AiProfile(
             crackBackWithoutChumps = true,
             evasionAfterAttacking = true,
             selectionCountsByValue = true,
+            holdUnusablePumps = true,
+        )
+
+        /**
+         * [holdUnusablePumps] alone on top of [PRODUCTION], so a puzzle or an arena point that
+         * moves is attributable to it.
+         */
+        val PRODUCTION_UNUSABLEPUMPS = PRODUCTION.copy(
+            id = "production-unusablepumps",
+            holdUnusablePumps = true,
+        )
+
+        /**
+         * [PRODUCTION_CANDIDATE_EXPIRING] — the profile the cited game logs were taken with — plus
+         * [holdUnusablePumps].
+         */
+        val PRODUCTION_CANDIDATE_UNUSABLEPUMPS = PRODUCTION_CANDIDATE_EXPIRING.copy(
+            id = "production-candidate-unusablepumps",
+            holdUnusablePumps = true,
         )
 
         /**
