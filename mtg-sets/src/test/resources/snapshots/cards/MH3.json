@@ -2273,7 +2273,7 @@
                                 }
                             },
                             "storeSelected": "found",
-                            "prompt": "Search your library for a basic land Forest, Island, Mountain card to put onto the battlefield tapped",
+                            "prompt": "Search your library for a basic Forest, Island, or Mountain card to put onto the battlefield tapped",
                             "selectedLabel": "Put onto the battlefield tapped"
                         },
                         {
@@ -3397,7 +3397,7 @@
                                 }
                             },
                             "storeSelected": "found",
-                            "prompt": "Search your library for a basic land Plains, Island, Swamp card to put onto the battlefield tapped",
+                            "prompt": "Search your library for a basic Plains, Island, or Swamp card to put onto the battlefield tapped",
                             "selectedLabel": "Put onto the battlefield tapped"
                         },
                         {
@@ -4201,7 +4201,7 @@
                                 }
                             },
                             "storeSelected": "found",
-                            "prompt": "Search your library for a basic land Plains, Swamp, Forest card to put onto the battlefield tapped",
+                            "prompt": "Search your library for a basic Plains, Swamp, or Forest card to put onto the battlefield tapped",
                             "selectedLabel": "Put onto the battlefield tapped"
                         },
                         {
@@ -7816,7 +7816,7 @@
                                 }
                             },
                             "storeSelected": "found",
-                            "prompt": "Search your library for a basic land Swamp, Forest, Island card to put onto the battlefield tapped",
+                            "prompt": "Search your library for a basic Swamp, Forest, or Island card to put onto the battlefield tapped",
                             "selectedLabel": "Put onto the battlefield tapped"
                         },
                         {
@@ -13787,7 +13787,7 @@
                                 }
                             },
                             "storeSelected": "found",
-                            "prompt": "Search your library for a basic land Island, Mountain, Plains card to put onto the battlefield tapped",
+                            "prompt": "Search your library for a basic Island, Mountain, or Plains card to put onto the battlefield tapped",
                             "selectedLabel": "Put onto the battlefield tapped"
                         },
                         {
@@ -17041,7 +17041,7 @@
                                 }
                             },
                             "storeSelected": "found",
-                            "prompt": "Search your library for a basic land Island, Swamp, Mountain card to put onto the battlefield tapped",
+                            "prompt": "Search your library for a basic Island, Swamp, or Mountain card to put onto the battlefield tapped",
                             "selectedLabel": "Put onto the battlefield tapped"
                         },
                         {
@@ -17239,7 +17239,7 @@
                                 }
                             },
                             "storeSelected": "found",
-                            "prompt": "Search your library for a basic land Mountain, Plains, Swamp card to put onto the battlefield tapped",
+                            "prompt": "Search your library for a basic Mountain, Plains, or Swamp card to put onto the battlefield tapped",
                             "selectedLabel": "Put onto the battlefield tapped"
                         },
                         {
@@ -17342,7 +17342,7 @@
                                 }
                             },
                             "storeSelected": "found",
-                            "prompt": "Search your library for a basic land Mountain, Forest, Plains card to put onto the battlefield tapped",
+                            "prompt": "Search your library for a basic Mountain, Forest, or Plains card to put onto the battlefield tapped",
                             "selectedLabel": "Put onto the battlefield tapped"
                         },
                         {
@@ -21645,7 +21645,7 @@
                                 }
                             },
                             "storeSelected": "found",
-                            "prompt": "Search your library for a basic land Forest, Plains, Island card to put onto the battlefield tapped",
+                            "prompt": "Search your library for a basic Forest, Plains, or Island card to put onto the battlefield tapped",
                             "selectedLabel": "Put onto the battlefield tapped"
                         },
                         {
@@ -21991,7 +21991,7 @@
                                 }
                             },
                             "storeSelected": "found",
-                            "prompt": "Search your library for a basic land Swamp, Mountain, Forest card to put onto the battlefield tapped",
+                            "prompt": "Search your library for a basic Swamp, Mountain, or Forest card to put onto the battlefield tapped",
                             "selectedLabel": "Put onto the battlefield tapped"
                         },
                         {

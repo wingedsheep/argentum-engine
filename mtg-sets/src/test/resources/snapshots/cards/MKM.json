@@ -15508,7 +15508,7 @@
                                 }
                             },
                             "storeSelected": "found",
-                            "prompt": "Search your library for a land Plains, Island, Swamp, Mountain, Forest card to put into your hand",
+                            "prompt": "Search your library for a land Plains, Island, Swamp, Mountain, or Forest card to put into your hand",
                             "selectedLabel": "Put into your hand"
                         },
                         {

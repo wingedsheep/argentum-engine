@@ -5420,7 +5420,7 @@
                                 }
                             },
                             "storeSelected": "found",
-                            "prompt": "Search your library for a Mountain basic land card to put onto the battlefield tapped",
+                            "prompt": "Search your library for a basic Mountain card to put onto the battlefield tapped",
                             "selectedLabel": "Put onto the battlefield tapped"
                         },
                         {

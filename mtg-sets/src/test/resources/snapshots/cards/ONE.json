@@ -9179,7 +9179,7 @@
                                 }
                             },
                             "storeSelected": "found",
-                            "prompt": "Search your library for a Mountain basic land card to put into your hand",
+                            "prompt": "Search your library for a basic Mountain card to put into your hand",
                             "selectedLabel": "Put into your hand"
                         },
                         {

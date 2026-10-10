@@ -117,7 +117,7 @@
                                 }
                             },
                             "storeSelected": "found",
-                            "prompt": "Search your library for a basic land Plains, Swamp, Forest card to put into your hand",
+                            "prompt": "Search your library for a basic Plains, Swamp, or Forest card to put into your hand",
                             "selectedLabel": "Put into your hand"
                         },
                         {
@@ -7895,7 +7895,7 @@
                                 }
                             },
                             "storeSelected": "found",
-                            "prompt": "Search your library for a basic land Island, Mountain, Plains card to put into your hand",
+                            "prompt": "Search your library for a basic Island, Mountain, or Plains card to put into your hand",
                             "selectedLabel": "Put into your hand"
                         },
                         {
@@ -9851,7 +9851,7 @@
                                 }
                             },
                             "storeSelected": "found",
-                            "prompt": "Search your library for a basic land Mountain, Plains, Swamp card to put into your hand",
+                            "prompt": "Search your library for a basic Mountain, Plains, or Swamp card to put into your hand",
                             "selectedLabel": "Put into your hand"
                         },
                         {
@@ -16011,7 +16011,7 @@
                                 }
                             },
                             "storeSelected": "found",
-                            "prompt": "Search your library for a basic land Swamp, Forest, Island card to put into your hand",
+                            "prompt": "Search your library for a basic Swamp, Forest, or Island card to put into your hand",
                             "selectedLabel": "Put into your hand"
                         },
                         {
@@ -16785,7 +16785,7 @@
                                 }
                             },
                             "storeSelected": "found",
-                            "prompt": "Search your library for a basic land Forest, Island, Mountain card to put into your hand",
+                            "prompt": "Search your library for a basic Forest, Island, or Mountain card to put into your hand",
                             "selectedLabel": "Put into your hand"
                         },
                         {

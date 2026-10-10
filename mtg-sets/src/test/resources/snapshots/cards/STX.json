@@ -2355,7 +2355,7 @@
                         }
                     },
                     "storeSelected": "found",
-                    "prompt": "Search your library for a Forest basic land card to put onto the battlefield tapped",
+                    "prompt": "Search your library for a basic Forest card to put onto the battlefield tapped",
                     "selectedLabel": "Put onto the battlefield tapped"
                 },
                 {
@@ -4404,7 +4404,7 @@
                                     }
                                 },
                                 "storeSelected": "found",
-                                "prompt": "Search your library for a Plains basic land card to put into your hand",
+                                "prompt": "Search your library for a basic Plains card to put into your hand",
                                 "selectedLabel": "Put into your hand"
                             },
                             {
