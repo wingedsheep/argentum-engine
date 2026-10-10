@@ -371,6 +371,79 @@
     ]
 }
 
+// Titania, Protector of Argoth
+{
+    "name": "Titania, Protector of Argoth",
+    "manaCost": "{3}{G}{G}",
+    "typeLine": "Legendary Creature — Elemental",
+    "oracleText": "When Titania enters, return target land card from your graveyard to the battlefield.\nWhenever a land you control is put into a graveyard from the battlefield, create a 5/3 green Elemental creature token.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Titania, Protector of Argoth:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Battlefield",
+                    "fromZone": "Graveyard"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "land own:you",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "When Titania enters, return target land card from your graveyard to the battlefield."
+            },
+            {
+                "id": "Titania, Protector of Argoth:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "land ctrl:you",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 5,
+                    "toughness": 3,
+                    "colors": [
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Elemental"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/1/4/1449862b-309e-4c58-ac94-13d1acdd363f.jpg?1783938795"
+                },
+                "descriptionOverride": "Whenever a land you control is put into a graveyard from the battlefield, create a 5/3 green Elemental creature token."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "50",
+        "rarity": "MYTHIC",
+        "artist": "Magali Villeneuve",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/2/224d904a-5972-4152-878a-9a922e7a55b6.jpg?1783938864"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Unstable Obelisk
 {
     "name": "Unstable Obelisk",

@@ -670,6 +670,76 @@
     ]
 }
 
+// Eerie Ultimatum
+{
+    "name": "Eerie Ultimatum",
+    "manaCost": "{W}{W}{B}{B}{B}{G}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Return any number of permanent cards with different names from your graveyard to the battlefield.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Graveyard",
+                        "filter": "permanent"
+                    },
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered0",
+                    "selection": "ChooseAnyNumber",
+                    "storeSelected": "selected1",
+                    "prompt": "Return any number of permanent cards with different names to the battlefield",
+                    "selectedLabel": "Return to the battlefield",
+                    "remainderLabel": "Leave in your graveyard",
+                    "restrictions": [
+                        "OnePerCardName"
+                    ]
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "selected1",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Battlefield"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "184",
+        "rarity": "RARE",
+        "artist": "Jason A. Engle",
+        "flavorText": "\"The ground under our feet is a record of every slight against the world, to be avenged at a time of its choosing.\"\n—Gavi, nest warden",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/a/3a9fb2db-228f-4d48-acdf-6330baf356c7.jpg?1783931025",
+        "rulings": [
+            {
+                "date": "2025-04-04",
+                "text": "You choose which permanent cards to return while Eerie Ultimatum is resolving. No player may take actions between the time you choose and the time those cards return to the battlefield."
+            },
+            {
+                "date": "2025-04-04",
+                "text": "You may choose to return just one permanent card, regardless of its name."
+            },
+            {
+                "date": "2025-04-04",
+                "text": "An Aura being put onto the battlefield this way can't enchant anything else that is being put onto the battlefield at the same time."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK",
+        "GREEN"
+    ]
+}
+
 // Facet Reader
 {
     "name": "Facet Reader",
