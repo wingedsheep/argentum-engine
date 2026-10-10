@@ -6,7 +6,6 @@ import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 /**
@@ -34,10 +33,9 @@ val VampireGourmand = card("Vampire Gourmand") {
 
     triggeredAbility {
         trigger = Triggers.self.attacks()
-        val sacrificeTarget = target(TargetFilter(GameObjectFilter.Creature.youControl()).other())
-        effect = Effects.May(
-            Effects.SacrificeTarget(sacrificeTarget) then
-                Effects.DrawCards(1) then
+        effect = Effects.MayPay(
+            Effects.SacrificeOwn(GameObjectFilter.Creature, excludeSource = true),
+            then = Effects.DrawCards(1) then
                 Effects.GrantKeyword(AbilityFlag.CANT_BE_BLOCKED, EffectTarget.Self)
         )
         description = "Whenever this creature attacks, you may sacrifice another creature. If you do, " +

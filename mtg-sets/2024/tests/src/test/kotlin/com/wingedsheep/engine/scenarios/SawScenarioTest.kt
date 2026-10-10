@@ -1,7 +1,6 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.SelectCardsDecision
-import com.wingedsheep.engine.core.YesNoDecision
 import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.support.ScenarioTestBase
@@ -84,12 +83,7 @@ class SawScenarioTest : ScenarioTestBase() {
             game.declareAttackers(mapOf("Grizzly Bears" to 2))
             game.resolveStack() // attack trigger goes on the stack; resolving pauses at the "may"
 
-            withClue("attack offers the optional sacrifice") {
-                (game.getPendingDecision() is YesNoDecision) shouldBe true
-            }
-            game.answerYesNo(true)
-
-            withClue("a select-a-permanent-to-sacrifice prompt is offered") {
+            withClue("attack asks which permanent to sacrifice, if any") {
                 (game.getPendingDecision() is SelectCardsDecision) shouldBe true
             }
             val food = game.findPermanents("Food")
@@ -132,8 +126,8 @@ class SawScenarioTest : ScenarioTestBase() {
             game.declareAttackers(mapOf("Grizzly Bears" to 2))
             game.resolveStack()
 
-            (game.getPendingDecision() is YesNoDecision) shouldBe true
-            game.answerYesNo(false)
+            (game.getPendingDecision() is SelectCardsDecision) shouldBe true
+            game.selectCards(emptyList())
             game.resolveStack()
 
             withClue("Food remains; nothing drawn") {

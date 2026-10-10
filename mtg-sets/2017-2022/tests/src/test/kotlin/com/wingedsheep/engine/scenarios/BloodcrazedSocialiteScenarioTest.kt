@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.scenarios
 
-import com.wingedsheep.engine.core.YesNoDecision
+import com.wingedsheep.engine.core.SelectCardsDecision
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
@@ -56,10 +56,10 @@ class BloodcrazedSocialiteScenarioTest : ScenarioTestBase() {
                 game.declareAttackers(mapOf("Bloodcrazed Socialite" to 2)).error shouldBe null
                 game.resolveStack()
 
-                withClue("the attack trigger offers a yes/no to sacrifice the Blood token") {
-                    game.getPendingDecision().shouldBeInstanceOf<YesNoDecision>()
+                withClue("the attack trigger asks which Blood token to sacrifice, if any") {
+                    game.getPendingDecision().shouldBeInstanceOf<SelectCardsDecision>()
                 }
-                game.answerYesNo(true)
+                game.selectCards(listOf(game.findPermanent("Blood")!!))
                 game.resolveStack()
 
                 withClue("the Blood token was sacrificed") {
@@ -86,8 +86,8 @@ class BloodcrazedSocialiteScenarioTest : ScenarioTestBase() {
                 game.declareAttackers(mapOf("Bloodcrazed Socialite" to 2)).error shouldBe null
                 game.resolveStack()
 
-                game.getPendingDecision().shouldBeInstanceOf<YesNoDecision>()
-                game.answerYesNo(false)
+                game.getPendingDecision().shouldBeInstanceOf<SelectCardsDecision>()
+                game.selectCards(emptyList())
                 game.resolveStack()
 
                 withClue("the Blood token is not sacrificed") {

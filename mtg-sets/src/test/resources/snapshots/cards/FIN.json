@@ -12790,31 +12790,18 @@
                 "trigger": "AttackEvent",
                 "effect": {
                     "type": "Gated",
-                    "gate": "Gate.MayDecide",
-                    "then": {
-                        "type": "Composite",
-                        "effects": [
-                            {
-                                "type": "SacrificeTarget",
-                                "target": {
-                                    "type": "BoundVariable",
-                                    "name": "t0"
-                                }
-                            },
-                            {
-                                "type": "Surveil",
-                                "count": 2
-                            }
-                        ]
-                    }
-                },
-                "targetRequirement": {
-                    "type": "TargetObject",
-                    "filter": {
-                        "baseFilter": "creature|artifact ctrl:you",
-                        "excludeSelf": true
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "Sacrifice",
+                            "filter": "creature|artifact",
+                            "excludeSource": true
+                        }
                     },
-                    "id": "t0"
+                    "then": {
+                        "type": "Surveil",
+                        "count": 2
+                    }
                 }
             }
         ]

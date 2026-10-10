@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.scenarios
 
-import com.wingedsheep.engine.core.YesNoDecision
+import com.wingedsheep.engine.core.SelectCardsDecision
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.CounterType
@@ -43,10 +43,10 @@ class WeddingSecurityScenarioTest : ScenarioTestBase() {
                 game.declareAttackers(mapOf("Wedding Security" to 2)).error shouldBe null
                 game.resolveStack()
 
-                withClue("the attack trigger offers a yes/no to sacrifice the Blood token") {
-                    game.getPendingDecision().shouldBeInstanceOf<YesNoDecision>()
+                withClue("the attack trigger asks which permanent to sacrifice, if any the Blood token") {
+                    game.getPendingDecision().shouldBeInstanceOf<SelectCardsDecision>()
                 }
-                game.answerYesNo(true)
+                game.selectCards(listOf(game.findPermanent("Blood")!!))
                 game.resolveStack()
 
                 withClue("the Blood token was sacrificed") {
@@ -76,8 +76,8 @@ class WeddingSecurityScenarioTest : ScenarioTestBase() {
                 game.declareAttackers(mapOf("Wedding Security" to 2)).error shouldBe null
                 game.resolveStack()
 
-                game.getPendingDecision().shouldBeInstanceOf<YesNoDecision>()
-                game.answerYesNo(false)
+                game.getPendingDecision().shouldBeInstanceOf<SelectCardsDecision>()
+                game.selectCards(emptyList())
                 game.resolveStack()
 
                 withClue("the Blood token is not sacrificed") {

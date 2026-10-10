@@ -21,7 +21,7 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  *
  * "Enters or attacks" is two triggered abilities sharing one effect (CR 603.2 — the two events
  * trigger independently), each a `may sacrifice another creature or artifact -> two +1/+1 counters`
- * (the Comet Crawler / Swarm Culler shape: a `Effects.May` over `SacrificeTarget then AddCounters`).
+ * (the Comet Crawler / Swarm Culler shape: `Effects.MayPay` with an untargeted `SacrificeOwn` cost).
  * The leaves-the-battlefield trigger reuses the shared `MoveAllLastKnownCounters` pattern (cf.
  * Dockworker Drone, Servant of the Scale); since Hei Bai only ever bears +1/+1 counters, moving all
  * last-known counters matches "put its counters on target creature you control".
@@ -39,14 +39,9 @@ val HeiBaiSpiritOfBalance = card("Hei Bai, Spirit of Balance") {
     // Whenever Hei Bai enters, you may sacrifice another creature or artifact for two +1/+1 counters.
     triggeredAbility {
         trigger = Triggers.self.enters()
-        val sacrificeTarget = target(
-            TargetFilter(
-                    GameObjectFilter.Creature.youControl().or(GameObjectFilter.Artifact.youControl())
-                ).other(),
-        )
-        effect = Effects.May(
-            Effects.SacrificeTarget(sacrificeTarget)
-                then Effects.AddCounters(CounterType.PLUS_ONE_PLUS_ONE, 2, EffectTarget.Self)
+        effect = Effects.MayPay(
+            Effects.SacrificeOwn(GameObjectFilter.Creature.or(GameObjectFilter.Artifact), excludeSource = true),
+            then = Effects.AddCounters(CounterType.PLUS_ONE_PLUS_ONE, 2, EffectTarget.Self)
         )
         description = "Whenever Hei Bai enters, you may sacrifice another creature or artifact. " +
             "If you do, put two +1/+1 counters on Hei Bai."
@@ -55,14 +50,9 @@ val HeiBaiSpiritOfBalance = card("Hei Bai, Spirit of Balance") {
     // Whenever Hei Bai attacks, you may sacrifice another creature or artifact for two +1/+1 counters.
     triggeredAbility {
         trigger = Triggers.self.attacks()
-        val sacrificeTarget = target(
-            TargetFilter(
-                    GameObjectFilter.Creature.youControl().or(GameObjectFilter.Artifact.youControl())
-                ).other(),
-        )
-        effect = Effects.May(
-            Effects.SacrificeTarget(sacrificeTarget)
-                then Effects.AddCounters(CounterType.PLUS_ONE_PLUS_ONE, 2, EffectTarget.Self)
+        effect = Effects.MayPay(
+            Effects.SacrificeOwn(GameObjectFilter.Creature.or(GameObjectFilter.Artifact), excludeSource = true),
+            then = Effects.AddCounters(CounterType.PLUS_ONE_PLUS_ONE, 2, EffectTarget.Self)
         )
         description = "Whenever Hei Bai attacks, you may sacrifice another creature or artifact. " +
             "If you do, put two +1/+1 counters on Hei Bai."

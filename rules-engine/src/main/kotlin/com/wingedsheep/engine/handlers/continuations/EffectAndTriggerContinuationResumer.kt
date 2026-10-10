@@ -14,6 +14,8 @@ import com.wingedsheep.sdk.scripting.effects.DividedDamageEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.effects.Gate
 import com.wingedsheep.sdk.scripting.effects.GatedEffect
+import com.wingedsheep.sdk.scripting.effects.SacrificeTargetEffect
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.targets.TargetRequirement
 import com.wingedsheep.sdk.scripting.targets.withCount
 
@@ -461,11 +463,23 @@ class EffectAndTriggerContinuationResumer(
         response: DecisionResponse,
         checkForMore: CheckForMore
     ): ExecutionResult {
-        if (response !is YesNoResponse) {
+        // An optional sacrifice is asked as a single pick (GatedEffectExecutor.executeOptionalSacrificePick):
+        // the chosen permanent is the paid cost, and picking none is the decline.
+        val effectToExecute: Effect? = if (response is CardsSelectedResponse) {
+            val chosen = response.selectedCards.firstOrNull()
+            if (continuation.gate !is Gate.MayPay) {
+                return ExecutionResult.error(state, "Unexpected card selection for gated effect")
+            } else if (chosen == null) {
+                continuation.otherwise
+            } else {
+                CompositeEffect(
+                    listOf(SacrificeTargetEffect(EffectTarget.SpecificEntity(chosen)), continuation.then),
+                    stopOnError = true
+                )
+            }
+        } else if (response !is YesNoResponse) {
             return ExecutionResult.error(state, "Expected yes/no response for gated effect")
-        }
-
-        val effectToExecute: Effect? = if (response.choice) {
+        } else if (response.choice) {
             when (val gate = continuation.gate) {
                 is Gate.MayDecide -> continuation.then
                 is Gate.MayPay ->

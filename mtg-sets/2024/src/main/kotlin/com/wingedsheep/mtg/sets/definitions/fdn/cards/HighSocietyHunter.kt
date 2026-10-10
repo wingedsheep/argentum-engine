@@ -7,7 +7,6 @@ import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 /**
@@ -36,10 +35,9 @@ val HighSocietyHunter = card("High-Society Hunter") {
 
     triggeredAbility {
         trigger = Triggers.self.attacks()
-        val sacrificeTarget = target(TargetFilter(GameObjectFilter.Creature.youControl()).other())
-        effect = Effects.May(
-            Effects.SacrificeTarget(sacrificeTarget) then
-                Effects.AddCounters(CounterType.PLUS_ONE_PLUS_ONE, 1, EffectTarget.Self)
+        effect = Effects.MayPay(
+            Effects.SacrificeOwn(GameObjectFilter.Creature, excludeSource = true),
+            then = Effects.AddCounters(CounterType.PLUS_ONE_PLUS_ONE, 1, EffectTarget.Self)
         )
         description = "Whenever this creature attacks, you may sacrifice another creature. " +
             "If you do, put a +1/+1 counter on this creature."
