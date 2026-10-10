@@ -516,6 +516,43 @@
     ]
 }
 
+// Ramunap Excavator
+{
+    "name": "Ramunap Excavator",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Snake Cleric",
+    "oracleText": "You may play lands from your graveyard.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "staticAbilities": [
+            "MayPlayLandsFromGraveyard"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "129",
+        "rarity": "RARE",
+        "artist": "Mark Behm",
+        "flavorText": "\"This world was once so much more than the confines of Naktamun.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/0/90a54d18-8403-441d-a115-ee462fabdabb.jpg?1783936015",
+        "rulings": [
+            {
+                "date": "2017-07-14",
+                "text": "Ramunap Excavator doesn't change the times when you can play those land cards. You can still play only one land per turn, and only during your main phase when you have priority and the stack is empty."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "Ramunap Excavator doesn't allow you to activate activated abilities (such as cycling) of land cards in your graveyard."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Tragic Lesson
 {
     "name": "Tragic Lesson",

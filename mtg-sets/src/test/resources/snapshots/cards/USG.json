@@ -2023,6 +2023,29 @@
     "colorIdentityOverride": []
 }
 
+// Exploration
+{
+    "name": "Exploration",
+    "manaCost": "{G}",
+    "typeLine": "Enchantment",
+    "oracleText": "You may play an additional land on each of your turns.",
+    "script": {
+        "staticAbilities": [
+            "GrantAdditionalLandDrop"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "250",
+        "rarity": "RARE",
+        "artist": "Brian Snõddy",
+        "flavorText": "The first explorers found Argoth a storehouse of natural wealth—towering forests grown over rich veins of ore.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/f/2f09e451-0246-45a2-8bfd-07d3c65ddfe6.jpg?1783946316"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Expunge
 {
     "name": "Expunge",
