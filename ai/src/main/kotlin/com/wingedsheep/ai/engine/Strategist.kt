@@ -120,6 +120,11 @@ class Strategist(
      */
     private val refuseUnspendableGrants: Boolean = false,
     /**
+     * [AiProfile.refuseDeadSearches] — passed straight through to [HoldPolicy], which hands it to
+     * [com.wingedsheep.ai.engine.knowledge.DeadSearch].
+     */
+    private val refuseDeadSearches: Boolean = false,
+    /**
      * [AiProfile.targetPolarityFromEffect]: rank targets by what the effect does to them, drop a
      * candidate whose every legal target is on the wrong side, and keep "cast without the kicker"
      * as a candidate beside the kicked cast.
@@ -158,6 +163,7 @@ class Strategist(
         holdFlashPermanentsForAmbush = holdFlashPermanentsForAmbush,
         holdExpiringGrantsForCombat = holdExpiringGrantsForCombat,
         refuseUnspendableGrants = refuseUnspendableGrants,
+        refuseDeadSearches = refuseDeadSearches,
         boardPresenceWeight = boardPresenceWeight,
     )
 

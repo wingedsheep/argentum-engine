@@ -320,6 +320,7 @@ class AIPlayer(
                     holdFlashPermanentsForAmbush = profile.holdFlashPermanentsForAmbush,
                     holdExpiringGrantsForCombat = profile.holdExpiringGrantsForCombat,
                     refuseUnspendableGrants = profile.refuseUnspendableGrants,
+                    refuseDeadSearches = profile.refuseDeadSearches,
                     targetPolarityFromEffect = profile.targetPolarityFromEffect,
                     permanentCastIsNotCardLoss = profile.permanentCastIsNotCardLoss,
                     // Same seam as `CombatAdvisor`'s `lifeWeight`: a raw Phase 9 profile resolves

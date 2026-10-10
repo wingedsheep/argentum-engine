@@ -596,6 +596,20 @@ data class AiProfile(
      * same way, which this leaves alone.
      */
     val fillUpToMaxTargets: Boolean = false,
+    /**
+     * Refuse an activated ability whose whole payoff is a search of our own library when nothing in
+     * that library matches — a fetch land with its basics gone.
+     *
+     * 2026-10-10 AI-vs-AI logs, game 3 turn 17: Seething Landscape (search for a basic Island, Swamp
+     * or Mountain) was cracked in response to Spell Stutter from a Forest/Plains deck, losing a land
+     * for nothing. The leaf score was against it; the likeliest reason it won anyway is rollout
+     * noise, since the activation's shuffle reorders the library and unpairs its playouts from the
+     * pass line's. With this on, `HoldPolicy` floors such an activation below
+     * passing. Only the whole-payoff shape is refused: tap/mana/life/sacrifice-self costs, a search
+     * pipeline and nothing else, from a non-creature source. See
+     * [com.wingedsheep.ai.engine.knowledge.DeadSearch]. Needs [useCardIntent].
+     */
+    val refuseDeadSearches: Boolean = false,
     /** Non-null profiles may only be selected automatically for this set. Arena selection stays explicit. */
     val restrictedToSet: String? = null,
 ) {
@@ -1504,6 +1518,26 @@ data class AiProfile(
             pendingLandDropIsMana = true,
             selectionCountsByValue = true,
             fillUpToMaxTargets = true,
+            refuseDeadSearches = true,
+        )
+
+        /**
+         * [refuseDeadSearches] alone on top of [PRODUCTION], so a puzzle or an arena point that
+         * moves is attributable to it.
+         */
+        val PRODUCTION_DEADSEARCH = PRODUCTION.copy(
+            id = "production-deadsearch",
+            refuseDeadSearches = true,
+        )
+
+        /**
+         * [refuseDeadSearches] on top of [PRODUCTION_CANDIDATE_EXPIRING] — the profile the cited
+         * game log was played on — so `just arena production-candidate-expiring
+         * production-candidate-deadsearch 300` measures this flag and nothing else. [LIVE] ships it.
+         */
+        val PRODUCTION_CANDIDATE_DEADSEARCH = PRODUCTION_CANDIDATE_EXPIRING.copy(
+            id = "production-candidate-deadsearch",
+            refuseDeadSearches = true,
         )
 
         /**

@@ -77,6 +77,12 @@ class HoldPolicy(
      */
     private val refuseUnspendableGrants: Boolean = false,
     /**
+     * [AiProfile.refuseDeadSearches][com.wingedsheep.ai.engine.AiProfile.refuseDeadSearches]
+     * — refuse an activation whose whole payoff is a library search our library cannot satisfy.
+     * See [DeadSearch], which is where the whole idea lives.
+     */
+    private val refuseDeadSearches: Boolean = false,
+    /**
      * The profile's `EvaluationWeights.boardPresence`, so [RemovalPatience] can quote its discount
      * in the same currency as the board value it compares against. The default is the compiled
      * fallback's, which is what every profile that does not opt in would have used anyway.
@@ -180,11 +186,20 @@ class HoldPolicy(
         cardName: String,
         activation: ActivateAbility?,
     ): TimingVerdict {
-        if (!(holdExpiringGrantsForCombat || refuseUnspendableGrants) || activation == null) {
+        if (activation == null) return TimingVerdict.Neutral
+        if (!(holdExpiringGrantsForCombat || refuseUnspendableGrants || refuseDeadSearches)) {
             return TimingVerdict.Neutral
         }
         val ability = intents.activatedAbility(cardName, activation.abilityId)
             ?: return TimingVerdict.Neutral
+        // A search that can find nothing is a lost permanent and a shuffle, in every window.
+        if (refuseDeadSearches) {
+            val predicates = intents.predicates
+            if (predicates != null && DeadSearch.holds(state, playerId, ability, activation, predicates)) {
+                return TimingVerdict.NoWindow
+            }
+        }
+        if (!(holdExpiringGrantsForCombat || refuseUnspendableGrants)) return TimingVerdict.Neutral
         val holds = ExpiringGrantWindow.holds(
             state, playerId, ability, intents,
             activation = activation,
