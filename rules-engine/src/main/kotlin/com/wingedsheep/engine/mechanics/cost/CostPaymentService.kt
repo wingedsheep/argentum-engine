@@ -22,7 +22,7 @@ import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.handlers.effects.BattlefieldFilterUtils
 import com.wingedsheep.engine.handlers.effects.ZoneMovementUtils
 import com.wingedsheep.engine.handlers.effects.ZoneTransitionService
-import com.wingedsheep.engine.handlers.effects.library.MillAmountModifier
+import com.wingedsheep.engine.handlers.effects.library.KeywordActionAmountModifier
 import com.wingedsheep.engine.handlers.effects.life.LifePaymentService
 import com.wingedsheep.engine.mechanics.mana.ManaPool
 import com.wingedsheep.engine.mechanics.mana.ManaSolver
@@ -627,12 +627,12 @@ class CostPaymentService(private val services: EngineServices) {
 
     /**
      * Mill the top [count] cards as a cost payment (CR 701.17a). Mirrors `CostHandler.payAtom`'s
-     * mill branch: the announced count runs through the [MillAmountModifier] replacement chokepoint
+     * mill branch: the announced count runs through the [KeywordActionAmountModifier] replacement chokepoint
      * (CR 616) and the library→graveyard moves go through [ZoneTransitionService] so mill triggers
      * and animations see the canonical zone changes.
      */
     private fun millTop(state: GameState, payerId: EntityId, count: Int): CostPaymentExecution {
-        val effectiveCount = MillAmountModifier.apply(state, payerId, count, predicateEvaluator = predicateEvaluator)
+        val effectiveCount = KeywordActionAmountModifier.mill(state, payerId, count, predicateEvaluator = predicateEvaluator)
         val milled = state.getZone(ZoneKey(payerId, Zone.LIBRARY)).take(effectiveCount)
         val result = services.zones.moveToZoneBatch(state, milled, Zone.GRAVEYARD)
         return CostPaymentExecution(result.state, result.events, success = true)

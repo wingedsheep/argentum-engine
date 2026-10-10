@@ -22762,12 +22762,12 @@
         ],
         "replacementEffects": [
             {
-                "type": "ModifyMillAmount",
-                "modifier": 4,
+                "type": "ModifyKeywordActionAmount",
                 "appliesTo": {
                     "type": "MillEvent",
                     "player": "EachOpponent"
-                }
+                },
+                "modifier": 4
             }
         ]
     },

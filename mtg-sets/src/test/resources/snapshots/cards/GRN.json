@@ -1166,6 +1166,74 @@
     ]
 }
 
+// Enhanced Surveillance
+{
+    "name": "Enhanced Surveillance",
+    "manaCost": "{1}{U}",
+    "typeLine": "Enchantment",
+    "oracleText": "You may look at an additional two cards each time you surveil.\nExile this enchantment: Shuffle your graveyard into your library.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Enhanced Surveillance:1",
+                "cost": "CostExileSelf",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Graveyard"
+                            },
+                            "storeAs": "graveyardCards"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "graveyardCards",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Shuffled"
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "ModifyKeywordActionAmount",
+                "appliesTo": "SurveilEvent",
+                "modifier": 2
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "40",
+        "rarity": "UNCOMMON",
+        "artist": "Grzegorz Rutkowski",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/7/971d254e-da25-494b-a16d-3d7d6bb75c73.jpg?1783934188",
+        "rulings": [
+            {
+                "date": "2018-10-05",
+                "text": "The additional cards you look at due to Enhanced Surveillance's ability are part of what you surveil. You may put those cards into your graveyard or back on top in any order along with the others."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "If you control a second Enhanced Surveillance, their effects both apply and you may look at an additional four cards. If you control a third, may look at an additional six cards, and so on."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "Enhanced Surveillance's last ability can be activated only while it's on the battlefield."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Erstwhile Trooper
 {
     "name": "Erstwhile Trooper",

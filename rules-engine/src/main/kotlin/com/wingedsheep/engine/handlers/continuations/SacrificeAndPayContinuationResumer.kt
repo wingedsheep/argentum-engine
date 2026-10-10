@@ -9,7 +9,7 @@ import com.wingedsheep.engine.handlers.effects.zones.ForceSacrificeExecutor
 import com.wingedsheep.engine.handlers.effects.ZoneTransitionService
 import com.wingedsheep.engine.handlers.effects.ReplacementEffectUtils
 import com.wingedsheep.engine.handlers.effects.DamageUtils
-import com.wingedsheep.engine.handlers.effects.library.MillAmountModifier
+import com.wingedsheep.engine.handlers.effects.library.KeywordActionAmountModifier
 import com.wingedsheep.engine.handlers.DecisionHandler
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.PipelineState
@@ -560,7 +560,7 @@ class SacrificeAndPayContinuationResumer(
      *
      * Affordability was settled before the prompt — CR 701.17b forbids paying a mill cost deeper
      * than the library — so a yes here always pays. Mill *replacement* effects apply now, which is
-     * why the count goes through [MillAmountModifier] rather than being taken literally.
+     * why the count goes through [KeywordActionAmountModifier] rather than being taken literally.
      */
     private fun resumePayOrSufferMill(
         state: GameState,
@@ -577,7 +577,7 @@ class SacrificeAndPayContinuationResumer(
         }
 
         val playerId = continuation.playerId
-        val count = MillAmountModifier.apply(state, playerId, continuation.requiredCount, predicateEvaluator = services.predicateEvaluator)
+        val count = KeywordActionAmountModifier.mill(state, playerId, continuation.requiredCount, predicateEvaluator = services.predicateEvaluator)
         val milled = state.getZone(ZoneKey(playerId, Zone.LIBRARY)).take(count)
         val result = services.zones.moveToZoneBatch(state, milled, Zone.GRAVEYARD)
 

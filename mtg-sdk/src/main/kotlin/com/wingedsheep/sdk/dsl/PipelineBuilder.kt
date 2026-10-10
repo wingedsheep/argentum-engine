@@ -294,7 +294,7 @@ class PipelineBuilder private constructor(private val shared: Shared) {
     )
 
     /**
-     * Mill [count] cards from [player]'s library (CR 701.13) and return the milled cards —
+     * Mill [count] cards from [player]'s library (CR 701.17) and return the milled cards —
      * "mill three cards, then … a creature card milled this way".
      */
     fun mill(count: DynamicAmount, player: Player = Player.You): CollectionSlot {

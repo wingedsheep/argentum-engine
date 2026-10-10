@@ -6,7 +6,8 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.ModifyScryAmount
+import com.wingedsheep.sdk.scripting.EventPattern
+import com.wingedsheep.sdk.scripting.ModifyKeywordActionAmount
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardOrder
 import com.wingedsheep.sdk.scripting.effects.CardSource
@@ -23,7 +24,7 @@ import com.wingedsheep.sdk.scripting.effects.CardSource
  * battlefield, you may put it on the bottom of your library.
  *
  * Notes:
- *  - The scry replacement is [ModifyScryAmount], applied at the scry announcement: the look, the
+ *  - The scry replacement is [ModifyKeywordActionAmount], applied at the scry announcement: the look, the
  *    top/bottom choice and the "whenever you scry" count all see N + 1. A scry 0 is no scry event
  *    (CR 701.22b) and stays 0.
  *  - The activated ability is Bucolic Ranch's shape with the battlefield as the first destination;
@@ -40,7 +41,7 @@ val KenessosPriestOfThassa = card("Kenessos, Priest of Thassa") {
         "the battlefield, you may put it on the bottom of your library."
 
     // If you would scry a number of cards, scry that many cards plus one instead.
-    replacementEffect(ModifyScryAmount(modifier = 1))
+    replacementEffect(ModifyKeywordActionAmount(EventPattern.ScryEvent(), modifier = 1))
 
     // {3}{G/U}: Look at the top card of your library. …
     activatedAbility {

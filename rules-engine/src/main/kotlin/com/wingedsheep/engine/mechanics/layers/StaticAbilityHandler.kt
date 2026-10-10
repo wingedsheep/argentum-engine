@@ -1289,10 +1289,8 @@ class StaticAbilityHandler(
             is com.wingedsheep.sdk.scripting.OptionalEffectDiscardDestination,
             is com.wingedsheep.sdk.scripting.OptionalSkipTurnWith,
             is com.wingedsheep.sdk.scripting.ModifyDrawAmount,
-            // Mill:
-            is com.wingedsheep.sdk.scripting.ModifyMillAmount,
-            // Scry:
-            is com.wingedsheep.sdk.scripting.ModifyScryAmount,
+            // Mill / scry / surveil counts:
+            is com.wingedsheep.sdk.scripting.ModifyKeywordActionAmount,
             // Counter placement:
             is com.wingedsheep.sdk.scripting.ModifyCounterPlacement,
             is com.wingedsheep.sdk.scripting.DoubleCounterPlacement,

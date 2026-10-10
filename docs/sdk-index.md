@@ -298,7 +298,7 @@ Families:
 - `CardSource.Self` — The ability's own source card (com.wingedsheep.sdk.scripting.references sourceId).
 - `CardSource.SourceLinkedBattlefield(key: String)` — Still-current battlefield objects recorded by this source's original battlefield visit.
 - `CardSource.TappedAsCost` — Permanents that were tapped as part of the ability's activation cost.
-- `CardSource.TopOfLibrary(count: DynamicAmount, player: Player, isMill: Boolean, isScry: Boolean)` — Top N cards of a player's library.
+- `CardSource.TopOfLibrary(count: DynamicAmount, player: Player, isMill: Boolean, isScry: Boolean, isSurveil: Boolean)` — Top N cards of a player's library.
 - `CardSource.TriggeringEntity` — The entity that caused the trigger to fire (`EffectContext.triggeringEntityId`) — the gatherable counterpart of com.wingedsheep.sdk.scripting.targets.EffectTarget.TriggeringEntity.
 
 ## CastRestriction
@@ -1164,7 +1164,7 @@ Families:
 - `EventPattern.LifeLossEvent(player: Player)` — When a player would lose life.
 - `EventPattern.LifePaymentEvent(player: Player)` — When a player would **pay** life — life spent to satisfy a cost (CR 118.8), as opposed to life lost to damage or to a "loses N life" effect.
 - `EventPattern.ManifestedDreadEvent(player: Player)` — Whenever a player manifests dread (CR 701.60).
-- `EventPattern.MillEvent(player: Player)` — When a player would mill one or more cards (CR 701.13).
+- `EventPattern.MillEvent(player: Player)` — When a player would mill one or more cards (CR 701.17).
 - `EventPattern.NthCardDrawnEvent(nthCard: Int, player: Player)` — Fires on a `CardsDrawnEvent` when the drawing player's per-turn draw count crosses the specified threshold (CR 121.2 — each card drawn is an individual draw, so a single multi-card draw fires at mo…
 - `EventPattern.NthSpellCastEvent(nthSpell: Int, player: Player, spellFilter: GameObjectFilter?)` — When a player casts their Nth spell in a turn.
 - `EventPattern.OneOrMoreDealCombatDamageToPlayerEvent(sourceFilter: GameObjectFilter, orBattle: Boolean)` — Whenever one or more creatures matching sourceFilter you control deal combat damage to a player.
@@ -1189,6 +1189,7 @@ Families:
 - `EventPattern.SpellOrAbilityOnStackEvent` — When a spell or ability is put onto the stack.
 - `EventPattern.StateConditionMetEvent` — Synthetic "trigger" event used to wrap a StateTriggeredAbility's effect into a TriggeredAbility when the engine enqueues a state trigger onto the stack (CR 603.8).
 - `EventPattern.StepEvent(step: Step, player: Player)` — At the beginning of a step.
+- `EventPattern.SurveilEvent(player: Player)` — When a player would surveil a number of cards (CR 701.25).
 - `EventPattern.SurveiledEvent(player: Player)` — Whenever a player surveils (CR 701.25).
 - `EventPattern.TapEvent(filter: GameObjectFilter?, batch: Boolean, tapper: Player?, reason: TapReason?, firstTimeEachTurn: Boolean)` — When a permanent becomes tapped.
 - `EventPattern.TargetsChosenEvent(player: Player)` — When a player chooses one or more targets.
@@ -1459,10 +1460,9 @@ Families:
 - `ModifyDamageAmount(modifier: Int, dynamicModifier: DynamicAmount?, restrictions: List<Condition>, appliesTo: EventPattern)` — Modify damage dealt by an additive amount — either a fixed modifier or, when dynamicModifier is supplied, an amount computed at damage time against the replacement's *source* permanent.
 - `ModifyDrawAmount(modifier: Int, multiplier: Int, restrictions: List<Condition>, appliesTo: EventPattern.DrawCardsEvent)` — Modify the number of cards a draw event draws — `(count * multiplier) + modifier`, clamped to ≥ 0 — optionally gated by additional restrictions.
 - `ModifyKeywordAction(prefixEffect: Effect, appliesTo: EventPattern)` — Insert an extra effect *in front of* a keyword action (CR 614).
+- `ModifyKeywordActionAmount(appliesTo: EventPattern, modifier: Int, restrictions: List<Condition>)` — Modify how many cards a player mills, scries or surveils — "mill that many cards plus four instead", "scry that many cards plus one instead", "look at an additional two cards each time you surveil".
 - `ModifyLifeGain(multiplier: Int, modifier: Int, appliesTo: EventPattern, restrictions: List<Condition>)` — Modify life gain amount.
 - `ModifyLifeLoss(multiplier: Int, modifier: Int, restrictions: List<Condition>, appliesTo: EventPattern)` — Modify life loss amount.
-- `ModifyMillAmount(modifier: Int, restrictions: List<Condition>, appliesTo: EventPattern)` — Modify how many cards a player mills (CR 701.13).
-- `ModifyScryAmount(modifier: Int, restrictions: List<Condition>, appliesTo: EventPattern)` — Modify how many cards a player scries (CR 701.22) — the scry twin of ModifyMillAmount.
 - `ModifyTokenCount(modifier: Int, appliesTo: EventPattern)` — Modify the number of tokens created by a fixed amount.
 - `MultiplyTokenCreation(factor: Int, appliesTo: EventPattern)` — Double the number of tokens created.
 - `OnEnterRun(effect: Effect, appliesTo: EventPattern)` — Generic "as ~ enters the battlefield, run effect" replacement.

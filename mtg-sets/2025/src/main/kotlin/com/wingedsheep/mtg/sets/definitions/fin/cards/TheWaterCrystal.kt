@@ -9,7 +9,7 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.CostModification
 import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.ModifyMillAmount
+import com.wingedsheep.sdk.scripting.ModifyKeywordActionAmount
 import com.wingedsheep.sdk.scripting.ModifySpellCost
 import com.wingedsheep.sdk.scripting.SpellCostTarget
 import com.wingedsheep.sdk.scripting.references.Player
@@ -29,7 +29,7 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  *    (Scryfall ruling 2025-06-06); modeled with [CostModification.ReduceGeneric], exactly like
  *    its cycle siblings (The Wind Crystal, etc.).
  *  - "they mill that many cards plus four instead" is the mill twin of The Wind Crystal's
- *    [com.wingedsheep.sdk.scripting.ModifyLifeGain]: a [ModifyMillAmount] additive replacement
+ *    [com.wingedsheep.sdk.scripting.ModifyLifeGain]: a [ModifyKeywordActionAmount] additive replacement
  *    scoped to mills by an opponent ([EventPattern.MillEvent] with [Player.EachOpponent]).
  *    Applied at the mill announcement, so it boosts *any* source's opponent mill — not just this
  *    card's activated ability. Two copies add eight, three add twelve, etc. (Scryfall ruling
@@ -60,9 +60,9 @@ val TheWaterCrystal = card("The Water Crystal") {
 
     // If an opponent would mill one or more cards, they mill that many cards plus four instead.
     replacementEffect(
-        ModifyMillAmount(
-            modifier = 4,
+        ModifyKeywordActionAmount(
             appliesTo = EventPattern.MillEvent(player = Player.EachOpponent),
+            modifier = 4,
         )
     )
 

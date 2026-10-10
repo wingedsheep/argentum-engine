@@ -17,14 +17,14 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.EventPattern
-import com.wingedsheep.sdk.scripting.ModifyScryAmount
+import com.wingedsheep.sdk.scripting.ModifyKeywordActionAmount
 import com.wingedsheep.sdk.scripting.references.Player
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.shouldBe
 
 /**
- * [ModifyScryAmount] (CR 701.22): "If you would scry a number of cards, scry that many cards plus
+ * Scry [ModifyKeywordActionAmount] (CR 701.22): "If you would scry a number of cards, scry that many cards plus
  * one instead." Applied once at the scry pipeline's gather, so the look, the top/bottom choice and
  * the [ScriedEvent] count all see the modified number; a scry 0 is no scry event (CR 701.22b) and
  * is never modified.
@@ -54,12 +54,12 @@ class ScryAmountReplacementTest : FunSpec({
     val yourLens = card("Your Scry Lens") {
         manaCost = "{0}"
         typeLine = "Artifact"
-        replacementEffect(ModifyScryAmount(modifier = 1))
+        replacementEffect(ModifyKeywordActionAmount(EventPattern.ScryEvent(), modifier = 1))
     }
     val opponentsLens = card("Opponents' Scry Lens") {
         manaCost = "{0}"
         typeLine = "Artifact"
-        replacementEffect(ModifyScryAmount(modifier = 2, appliesTo = EventPattern.ScryEvent(Player.EachOpponent)))
+        replacementEffect(ModifyKeywordActionAmount(EventPattern.ScryEvent(Player.EachOpponent), modifier = 2))
     }
 
     fun setup(): GameTestDriver = GameTestDriver().apply {

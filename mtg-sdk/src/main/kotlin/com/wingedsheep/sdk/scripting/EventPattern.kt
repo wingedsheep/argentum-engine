@@ -313,8 +313,8 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
     }
 
     /**
-     * When a player would mill one or more cards (CR 701.13). Used by
-     * [com.wingedsheep.sdk.scripting.ModifyMillAmount] to adjust the count at the mill
+     * When a player would mill one or more cards (CR 701.17). Used by
+     * [com.wingedsheep.sdk.scripting.ModifyKeywordActionAmount] to adjust the count at the mill
      * announcement (e.g. The Water Crystal: "If an opponent would mill one or more cards,
      * they mill that many cards plus four instead").
      */
@@ -328,7 +328,7 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
 
     /**
      * When a player would scry a number of cards (CR 701.22). Replacement-only, like [MillEvent]:
-     * used by [com.wingedsheep.sdk.scripting.ModifyScryAmount] to adjust the count at the scry
+     * used by [com.wingedsheep.sdk.scripting.ModifyKeywordActionAmount] to adjust the count at the scry
      * announcement (Kenessos, Priest of Thassa: "If you would scry a number of cards, scry that
      * many cards plus one instead"). Never matches a triggered ability — "whenever you scry" is
      * [ScriedEvent].
@@ -339,6 +339,21 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
         val player: Player = Player.You
     ) : EventPattern {
         override val description: String = "${player.description} would scry a number of cards"
+    }
+
+    /**
+     * When a player would surveil a number of cards (CR 701.25). Replacement-only, the surveil twin
+     * of [ScryEvent]: used by [com.wingedsheep.sdk.scripting.ModifyKeywordActionAmount] to adjust the count
+     * at the surveil announcement (Enhanced Surveillance: "You may look at an additional two cards
+     * each time you surveil"). Never matches a triggered ability — "whenever you surveil" is
+     * [SurveiledEvent].
+     */
+    @SerialName("SurveilEvent")
+    @Serializable
+    data class SurveilEvent(
+        val player: Player = Player.You
+    ) : EventPattern {
+        override val description: String = "${player.description} would surveil a number of cards"
     }
 
     /**

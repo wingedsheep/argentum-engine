@@ -18,7 +18,8 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
-import com.wingedsheep.sdk.scripting.ModifyScryAmount
+import com.wingedsheep.sdk.scripting.EventPattern
+import com.wingedsheep.sdk.scripting.ModifyKeywordActionAmount
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldNotContain
@@ -47,7 +48,7 @@ class KenessosPriestOfThassaScenarioTest : FunSpec({
     val scryLens = card("Test Scry Lens") {
         manaCost = "{1}"
         typeLine = "Artifact"
-        replacementEffect(ModifyScryAmount(modifier = 1))
+        replacementEffect(ModifyKeywordActionAmount(EventPattern.ScryEvent(), modifier = 1))
     }
 
     fun setup(): GameTestDriver = GameTestDriver().apply {
