@@ -1417,6 +1417,7 @@ Families:
 - `ProtectionScope.Multicolored` — From multicolored — matches a source with two or more colors (CR 105.2b: a multicolored object has two or more colors).
 - `ProtectionScope.NonColor(color: Color)` — The complement of a single color — "from nongreen".
 - `ProtectionScope.PermanentsCastThisTurn` — From permanents that were cast this turn — a battlefield source that entered this turn by resolving as a cast spell (not a copy, a token, or a permanent put onto the battlefield), and hasn't left s…
+- `ProtectionScope.RingBearers` — From Ring-bearers — a battlefield source that is its controller's Ring-bearer (CR 701.54).
 - `ProtectionScope.Spells` — From spells — the quality of *being a spell* (CR 702.16a: the quality "can be any characteristic value or information").
 - `ProtectionScope.Subtype(subtype: String)` — Protection from a creature subtype — "from Goblins".
 - `ProtectionScope.Supertype(supertype: String)` — Protection from a supertype — "from legendary creatures" (Tsabo Tavoc).
@@ -1752,6 +1753,7 @@ Families:
 - `GrantProtectionFromChosenColorToGroup(filter: GroupFilter)` — Grants protection from the chosen color to a group of creatures.
 - `GrantProtectionFromControlledColors(filter: GroupFilter)` — Grants each affected creature protection from the colors of permanents the source's controller currently controls.
 - `GrantProtectionFromLinkedExiledCardTypes(filter: GroupFilter)` — Grants protection from **each card type of the cards exiled with this permanent** — the Imprint payoff (CR 702.15) behind Mirror Golem ("Mirror Golem has protection from each of the exiled card's c…
+- `GrantProtectionFromToGroup(scope: ProtectionScope, filter: GroupFilter)` — Grants each affected permanent "protection from scope" (CR 702.16) — the protection twin of GrantHexproofFromToGroup, for lords whose quality isn't a single color or card type.
 - `GrantProtectionToController(scope: ProtectionScope)` — You have protection from scope (CR 702.16).
 - `GrantShroudToController` — You have shroud.
 - `GrantSubtype(subtype: String, filter: GroupFilter)` — Grants a creature subtype to a group of permanents.

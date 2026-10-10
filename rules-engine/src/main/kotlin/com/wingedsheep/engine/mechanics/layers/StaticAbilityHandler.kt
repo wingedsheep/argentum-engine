@@ -64,6 +64,7 @@ import com.wingedsheep.sdk.scripting.GrantProtectionFromControlledColors
 import com.wingedsheep.sdk.scripting.GrantProtectionFromLinkedExiledCardTypes
 import com.wingedsheep.sdk.scripting.GrantHexproofFromOwnColorsToGroup
 import com.wingedsheep.sdk.scripting.GrantHexproofFromToGroup
+import com.wingedsheep.sdk.scripting.GrantProtectionFromToGroup
 import com.wingedsheep.sdk.scripting.AnimateLandGroup
 import com.wingedsheep.sdk.scripting.GrantAdditionalTypesToGroup
 import com.wingedsheep.sdk.scripting.SetLandTypesForGroup
@@ -729,6 +730,14 @@ class StaticAbilityHandler(
                 ContinuousEffectData(
                     modification = Modification.GrantHexproofFrom(
                         com.wingedsheep.engine.mechanics.targeting.HexproofFromRules.keywordsFor(ability.scope)
+                    ),
+                    affectsFilter = convertGroupFilter(ability.filter)
+                )
+            }
+            is GrantProtectionFromToGroup -> {
+                ContinuousEffectData(
+                    modification = Modification.GrantProtectionFrom(
+                        com.wingedsheep.engine.mechanics.targeting.ProtectionKeywords.keywordsFor(ability.scope)
                     ),
                     affectsFilter = convertGroupFilter(ability.filter)
                 )

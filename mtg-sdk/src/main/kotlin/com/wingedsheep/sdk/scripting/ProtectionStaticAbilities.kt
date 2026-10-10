@@ -145,10 +145,56 @@ data class GrantHexproofFromToGroup(
         fun isSupported(scope: ProtectionScope): Boolean = when (scope) {
             is ProtectionScope.Color, is ProtectionScope.Colors, is ProtectionScope.NonColor,
             ProtectionScope.Monocolored, ProtectionScope.Multicolored, is ProtectionScope.CardType,
-            ProtectionScope.Spells, ProtectionScope.PermanentsCastThisTurn,
+            ProtectionScope.Spells, ProtectionScope.PermanentsCastThisTurn, ProtectionScope.RingBearers,
             ProtectionScope.ActivatedAbilities, ProtectionScope.TriggeredAbilities -> true
             is ProtectionScope.Subtype, is ProtectionScope.Supertype,
             ProtectionScope.Everything, ProtectionScope.EachOpponent -> false
+        }
+    }
+}
+
+/**
+ * Grants each affected permanent "protection from [scope]" (CR 702.16) — the protection twin of
+ * [GrantHexproofFromToGroup], for lords whose quality isn't a single color or card type.
+ *
+ * - `ProtectionScope.RingBearers` — Lord of the Nazgûl ("Wraiths you control have protection from
+ *   Ring-bearers").
+ *
+ * Realized as the same projected `PROTECTION_FROM_*` keyword a printed [KeywordAbility.Protection]
+ * with that scope projects, so every leg that enforces printed protection (targeting, damage,
+ * enchanting/equipping, blocking) honors the granted one unchanged. Only the scopes with such a
+ * keyword are accepted ([isSupported]); a single color or card type keeps its older spellings,
+ * [GrantProtection] and [GrantProtectionFromCardType].
+ *
+ * @property scope The quality the protection is from
+ * @property filter The group of permanents that gain the protection (default: the equipped or
+ *   enchanted creature)
+ */
+@SerialName("GrantProtectionFromToGroup")
+@Serializable
+data class GrantProtectionFromToGroup(
+    val scope: ProtectionScope,
+    val filter: GroupFilter = GroupFilter.attachedCreature()
+) : StaticAbility {
+    init {
+        require(isSupported(scope)) { "GrantProtectionFromToGroup has no protection keyword for $scope" }
+    }
+
+    override val description: String = "${filter.description} have protection from ${scope.protectionDescription()}"
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
+        val newFilter = filter.applyTextReplacement(replacer)
+        return if (newFilter !== filter) copy(filter = newFilter) else this
+    }
+
+    companion object {
+        /** Whether the engine projects a `PROTECTION_FROM_*` keyword for [scope]. */
+        fun isSupported(scope: ProtectionScope): Boolean = when (scope) {
+            is ProtectionScope.Color, is ProtectionScope.Colors, ProtectionScope.Multicolored,
+            is ProtectionScope.CardType, is ProtectionScope.Subtype, is ProtectionScope.Supertype,
+            ProtectionScope.EachOpponent,
+            ProtectionScope.Spells, ProtectionScope.PermanentsCastThisTurn, ProtectionScope.RingBearers,
+            ProtectionScope.ActivatedAbilities, ProtectionScope.TriggeredAbilities -> true
+            is ProtectionScope.NonColor, ProtectionScope.Monocolored, ProtectionScope.Everything -> false
         }
     }
 }
@@ -324,6 +370,7 @@ data class GrantProtectionToController(
             ProtectionScope.EachOpponent -> "each of your opponents"
             ProtectionScope.Spells -> "spells"
             ProtectionScope.PermanentsCastThisTurn -> "permanents that were cast this turn"
+            ProtectionScope.RingBearers -> "Ring-bearers"
             ProtectionScope.ActivatedAbilities -> "activated abilities"
             ProtectionScope.TriggeredAbilities -> "triggered abilities"
         }

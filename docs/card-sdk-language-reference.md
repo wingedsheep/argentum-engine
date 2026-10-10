@@ -8734,12 +8734,22 @@ staticAbility {
   uses (`HexproofFromRules.keywordsFor`), so it blocks targeting by matching spells and abilities
   opponents control; the controller can still target their own permanents. Accepts the scopes with a
   hexproof keyword — `Color`, `Colors`, `NonColor`, `Monocolored`, `Multicolored`, `CardType`, `Spells`,
-  `PermanentsCastThisTurn`, `ActivatedAbilities`, `TriggeredAbilities`; the rest are rejected at
+  `PermanentsCastThisTurn`, `RingBearers`, `ActivatedAbilities`, `TriggeredAbilities`; the rest are rejected at
   construction. `ProtectionScope.Monocolored` = exactly one color (CR 105.2a): Dragonfire Blade
   (`GrantHexproofFromToGroup(ProtectionScope.Monocolored)`). `ProtectionScope.Multicolored` = two or more
   colors (CR 105.2b): Niv-Mizzet, Guildpact, printed on itself
   (`GrantHexproofFromToGroup(ProtectionScope.Multicolored, GroupFilter.source())`). "Hexproof from each of
   its colors" varies per creature and is `GrantHexproofFromOwnColorsToGroup`.
+- `GrantProtectionFromToGroup(scope, filter = attachedCreature())` — "[filter] have protection from [scope]"
+  (CR 702.16): the protection twin of `GrantHexproofFromToGroup`. Adds the same projected `PROTECTION_FROM_*`
+  keyword a printed `KeywordAbility.Protection(scope)` uses (`ProtectionKeywords.keywordsFor`), so every
+  protection leg — targeting, damage, enchanting/equipping, blocking — honours it with no extra wiring.
+  Accepts `Color`, `Colors`, `Multicolored`, `CardType`, `Subtype`, `Supertype`, `EachOpponent`, and the
+  source kinds (`Spells`, `PermanentsCastThisTurn`, `RingBearers`, `ActivatedAbilities`,
+  `TriggeredAbilities`); `NonColor`, `Monocolored` and `Everything` are rejected at construction. Lord of
+  the Nazgûl: `GrantProtectionFromToGroup(ProtectionScope.RingBearers,
+  GroupFilter(GameObjectFilter.Permanent.withSubtype("Wraith").youControl()))`. A single color or card type
+  keeps its older spellings, `GrantProtection` / `GrantProtectionFromCardType`.
 - `CantBeTargetedBySourceTypeAbilities(sourceType, filter = attachedCreature())` — "[filter] can't be the
   target of abilities from [sourceType] sources" — hexproof keyed to a source *card type* (e.g.
   `CardType.ARTIFACT`) rather than a controller or color. Projects the keyword
@@ -11456,6 +11466,13 @@ composite abilities).
 - `ProtectionScope.Monocolored` — the exactly-one-color twin (CR 105.2a). Engine-wired for granted hexproof
   (`GrantHexproofFromToGroup` — Dragonfire Blade) and player protection; creature *protection* from
   monocolored is not projected.
+- `ProtectionScope.RingBearers` — "protection from Ring-bearers" (CR 701.54; the designation is a quality
+  per CR 702.16a). Matches a battlefield source that is its controller's Ring-bearer — the same reading as
+  `StatePredicate.IsRingBearer`, so a stolen bearer stops matching. Enforced like
+  `PermanentsCastThisTurn` through `SourceKindProtection`: damage, blocking, enchanting/equipping, and
+  targeting by abilities whose source is a Ring-bearer (CR 702.16b). Printed (`KeywordAbility.Protection`),
+  granted to a group (`GrantProtectionFromToGroup` — Lord of the Nazgûl), as hexproof, or as player
+  protection.
 - `Protection(ProtectionScope.Supertype("Legendary"))` / `KeywordAbility.protectionFromSupertype("Legendary")` — protection from a supertype, e.g. "protection from legendary creatures" (Tsabo Tavoc). Enforced across targeting, blocking, and combat damage via projected `PROTECTION_FROM_SUPERTYPE_<X>` keywords.
 - `Protection(ProtectionScope.CardType("Instant"))` — protection from a card type, e.g. "protection from
   instants" (Emrakul, the Promised End). Projected as `PROTECTION_FROM_CARDTYPE_<TYPE>` — the same keyword

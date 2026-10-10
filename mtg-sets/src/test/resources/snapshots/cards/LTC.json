@@ -291,6 +291,122 @@
     ]
 }
 
+// Lord of the Nazgûl
+{
+    "name": "Lord of the Nazgûl",
+    "manaCost": "{3}{U}{B}",
+    "typeLine": "Legendary Creature — Wraith Noble",
+    "oracleText": "Flying\nWraiths you control have protection from Ring-bearers.\nWhenever you cast an instant or sorcery spell, create a 3/3 black Wraith creature token with menace. Then if you control nine or more Wraiths, Wraiths you control have base power and toughness 9/9 until end of turn.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Lord of the Nazgûl:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    "IsInstant",
+                                    "IsSorcery"
+                                ]
+                            }
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CreateToken",
+                            "power": 3,
+                            "toughness": 3,
+                            "colors": [
+                                "BLACK"
+                            ],
+                            "creatureTypes": [
+                                "Wraith"
+                            ],
+                            "keywords": [
+                                "MENACE"
+                            ]
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "AggregateBattlefield",
+                                        "player": "You",
+                                        "filter": "permanent Wraith"
+                                    },
+                                    "operator": "GTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 9
+                                    }
+                                }
+                            },
+                            "then": {
+                                "type": "ForEach",
+                                "space": {
+                                    "type": "IterationSpace.Group",
+                                    "filter": {
+                                        "baseFilter": "permanent Wraith ctrl:you"
+                                    }
+                                },
+                                "body": {
+                                    "type": "SetBaseStats",
+                                    "target": "IterationEntity",
+                                    "power": {
+                                        "type": "Fixed",
+                                        "amount": 9
+                                    },
+                                    "toughness": {
+                                        "type": "Fixed",
+                                        "amount": 9
+                                    },
+                                    "duration": "EndOfTurn"
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantProtectionFromToGroup",
+                "scope": "ProtectionScope.RingBearers",
+                "filter": {
+                    "baseFilter": "permanent Wraith ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "60",
+        "rarity": "RARE",
+        "artist": "Anton Solovianchyk",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/1/41e3d118-8f97-4c68-acff-2f90a055af5b.jpg?1783916019"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
+    ]
+}
+
 // Moria Scavenger
 {
     "name": "Moria Scavenger",

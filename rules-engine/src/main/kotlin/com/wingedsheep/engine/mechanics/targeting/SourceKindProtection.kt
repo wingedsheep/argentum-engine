@@ -7,6 +7,7 @@ import com.wingedsheep.engine.state.components.battlefield.WasCastComponent
 import com.wingedsheep.engine.state.components.battlefield.EnteredThisTurnComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
+import com.wingedsheep.engine.state.components.identity.RingBearerComponent
 import com.wingedsheep.engine.state.components.stack.SpellOnStackComponent
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.ProtectionScope
@@ -14,13 +15,14 @@ import kotlinx.serialization.Serializable
 
 /**
  * A protection/hexproof quality that is a *kind of source* rather than a characteristic:
- * spells, permanents that were cast this turn, activated abilities, triggered abilities
- * (CR 702.16a — the quality "can be any characteristic value or information").
+ * spells, permanents that were cast this turn, Ring-bearers, activated abilities, triggered
+ * abilities (CR 702.16a — the quality "can be any characteristic value or information").
  */
 @Serializable
 enum class SourceKind(val phrase: String) {
     SPELL("spells"),
     PERMANENT_CAST_THIS_TURN("permanents that were cast this turn"),
+    RING_BEARER("Ring-bearers"),
     ACTIVATED_ABILITY("activated abilities"),
     TRIGGERED_ABILITY("triggered abilities");
 
@@ -29,6 +31,7 @@ enum class SourceKind(val phrase: String) {
         fun of(scope: ProtectionScope): SourceKind? = when (scope) {
             ProtectionScope.Spells -> SPELL
             ProtectionScope.PermanentsCastThisTurn -> PERMANENT_CAST_THIS_TURN
+            ProtectionScope.RingBearers -> RING_BEARER
             ProtectionScope.ActivatedAbilities -> ACTIVATED_ABILITY
             ProtectionScope.TriggeredAbilities -> TRIGGERED_ABILITY
             else -> null
@@ -67,11 +70,28 @@ object SourceKindProtection {
     }
 
     /**
+     * A Ring-bearer (CR 701.54): on the battlefield, carrying the designation, and controlled by
+     * the player who chose it — the same reading as `StatePredicate.IsRingBearer`, so a stolen
+     * Ring-bearer stops being one for protection too.
+     */
+    fun isRingBearer(state: GameState, entityId: EntityId): Boolean {
+        if (entityId !in state.getBattlefield()) return false
+        val bearer = state.getEntity(entityId)?.get<RingBearerComponent>() ?: return false
+        return state.projectedState.getController(entityId) == bearer.ownerId
+    }
+
+    /** The object kinds — those that describe [sourceId] itself rather than a spell-or-ability. */
+    private fun objectKinds(state: GameState, sourceId: EntityId): Set<SourceKind> = buildSet {
+        if (isPermanentCastThisTurn(state, sourceId)) add(SourceKind.PERMANENT_CAST_THIS_TURN)
+        if (isRingBearer(state, sourceId)) add(SourceKind.RING_BEARER)
+    }
+
+    /**
      * The kinds a spell or ability from [sourceId] has *as a targeting source*. A spell is known
      * from [targetingSourceType] (at cast time the card is still in hand, not yet on the stack);
      * an unknown type falls back to the source being a spell on the stack. Abilities additionally
-     * carry their source's "permanent cast this turn" quality (CR 702.16b: "abilities from a source
-     * with the stated quality").
+     * carry their source's object qualities — "permanent cast this turn", "Ring-bearer" — (CR
+     * 702.16b: "abilities from a source with the stated quality").
      */
     fun targetingKinds(
         state: GameState,
@@ -84,9 +104,9 @@ object SourceKindProtection {
             TargetingSourceType.TRIGGERED_ABILITY -> add(SourceKind.TRIGGERED_ABILITY)
             TargetingSourceType.ANY -> if (sourceId != null && isSpell(state, sourceId)) add(SourceKind.SPELL)
         }
-        if (targetingSourceType != TargetingSourceType.SPELL && sourceId != null &&
-            isPermanentCastThisTurn(state, sourceId)
-        ) add(SourceKind.PERMANENT_CAST_THIS_TURN)
+        if (targetingSourceType != TargetingSourceType.SPELL && sourceId != null) {
+            addAll(objectKinds(state, sourceId))
+        }
     }
 
     /**
@@ -119,14 +139,14 @@ object SourceKindProtection {
 
     /**
      * True when [protectedId] has protection from [sourceId] as an *object* — the damage,
-     * attachment and blocking legs (CR 702.16c–f). Only [SourceKind.SPELL] and
-     * [SourceKind.PERMANENT_CAST_THIS_TURN] describe objects; ability kinds never match here.
+     * attachment and blocking legs (CR 702.16c–f). Only [SourceKind.SPELL] and the object kinds
+     * ([SourceKind.PERMANENT_CAST_THIS_TURN], [SourceKind.RING_BEARER]) describe objects; ability
+     * kinds never match here.
      */
     fun isProtectedFromObject(state: GameState, protectedId: EntityId, sourceId: EntityId?): Boolean {
         if (sourceId == null) return false
         val projected = state.projectedState
         if (projected.hasKeyword(protectedId, protectionKeyword(SourceKind.SPELL)) && isSpell(state, sourceId)) return true
-        return projected.hasKeyword(protectedId, protectionKeyword(SourceKind.PERMANENT_CAST_THIS_TURN)) &&
-            isPermanentCastThisTurn(state, sourceId)
+        return objectKinds(state, sourceId).any { projected.hasKeyword(protectedId, protectionKeyword(it)) }
     }
 }

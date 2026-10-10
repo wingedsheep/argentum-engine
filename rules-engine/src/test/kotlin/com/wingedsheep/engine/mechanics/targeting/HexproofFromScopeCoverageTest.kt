@@ -2,6 +2,7 @@ package com.wingedsheep.engine.mechanics.targeting
 
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.scripting.GrantHexproofFromToGroup
+import com.wingedsheep.sdk.scripting.GrantProtectionFromToGroup
 import com.wingedsheep.sdk.scripting.ProtectionScope
 import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.FunSpec
@@ -11,7 +12,8 @@ import io.kotest.matchers.shouldBe
  * The SDK's [GrantHexproofFromToGroup.isSupported] and the engine's [HexproofFromRules.keywordsFor]
  * say the same thing twice — which scopes have a projected `HEXPROOF_FROM_*` keyword. If they drift,
  * a grant the SDK accepts projects nothing and the hexproof silently does nothing. Pin them together
- * for every [ProtectionScope] kind.
+ * for every [ProtectionScope] kind. The protection twin, [GrantProtectionFromToGroup.isSupported] and
+ * [ProtectionKeywords.keywordsFor], is pinned the same way.
  */
 class HexproofFromScopeCoverageTest : FunSpec({
 
@@ -28,6 +30,7 @@ class HexproofFromScopeCoverageTest : FunSpec({
         ProtectionScope.EachOpponent,
         ProtectionScope.Spells,
         ProtectionScope.PermanentsCastThisTurn,
+        ProtectionScope.RingBearers,
         ProtectionScope.ActivatedAbilities,
         ProtectionScope.TriggeredAbilities,
     )
@@ -40,6 +43,14 @@ class HexproofFromScopeCoverageTest : FunSpec({
         samples.forEach { scope ->
             withClue(scope) {
                 GrantHexproofFromToGroup.isSupported(scope) shouldBe HexproofFromRules.keywordsFor(scope).isNotEmpty()
+            }
+        }
+    }
+
+    test("a scope the SDK accepts for a protection grant is exactly one the engine projects") {
+        samples.forEach { scope ->
+            withClue(scope) {
+                GrantProtectionFromToGroup.isSupported(scope) shouldBe ProtectionKeywords.keywordsFor(scope).isNotEmpty()
             }
         }
     }

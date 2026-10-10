@@ -190,6 +190,7 @@ fun ProtectionScope.protectionDescription(): String = when (this) {
     ProtectionScope.EachOpponent -> "each opponent"
     ProtectionScope.Spells -> "spells"
     ProtectionScope.PermanentsCastThisTurn -> "permanents that were cast this turn"
+    ProtectionScope.RingBearers -> "Ring-bearers"
     ProtectionScope.ActivatedAbilities -> "activated abilities"
     ProtectionScope.TriggeredAbilities -> "triggered abilities"
 }

@@ -579,6 +579,17 @@ sealed interface Modification {
     }
 
     /**
+     * Grants "protection from <quality>" to each affected entity — adds the projected
+     * `PROTECTION_FROM_*` [keywords] a printed protection with that scope projects
+     * ([com.wingedsheep.engine.mechanics.targeting.ProtectionKeywords.keywordsFor]). Used for
+     * Lord of the Nazgûl (Ring-bearers).
+     */
+    @Serializable
+    data class GrantProtectionFrom(val keywords: Set<String>) : Modification {
+        override val layer get() = Layer.ABILITY
+    }
+
+    /**
      * Grants each affected entity "protection from the colors of permanents the source's
      * controller controls". Read at apply-time: collects the projected colors of every
      * battlefield permanent controlled by the source's (projected) controller, then adds

@@ -322,6 +322,9 @@ internal class EffectApplicator(
                 is Modification.GrantHexproofFrom -> {
                     values.keywords.addAll(mod.keywords)
                 }
+                is Modification.GrantProtectionFrom -> {
+                    values.keywords.addAll(mod.keywords)
+                }
                 is Modification.GrantProtectionFromControlledColors -> {
                     // Protection from the colors of permanents the source's controller controls
                     // (e.g., Pledge of Loyalty). Read the projected controller + projected colors

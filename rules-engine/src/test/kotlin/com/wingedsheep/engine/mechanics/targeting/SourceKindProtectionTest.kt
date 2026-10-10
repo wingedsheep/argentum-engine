@@ -3,6 +3,7 @@ package com.wingedsheep.engine.mechanics.targeting
 import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.state.components.battlefield.DamageComponent
+import com.wingedsheep.engine.state.components.identity.RingBearerComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
@@ -29,7 +30,7 @@ import io.kotest.matchers.shouldNotBe
 
 /**
  * Protection and hexproof from a *kind of source* (CR 702.16a, 702.11d) — spells, permanents that
- * were cast this turn, activated abilities, triggered abilities. Each leg of protection is pinned:
+ * were cast this turn, Ring-bearers, activated abilities, triggered abilities. Each leg of protection is pinned:
  * targeting (702.16b), damage (702.16e), blocking (702.16f), plus hexproof's opponents-only reach.
  */
 class SourceKindProtectionTest : FunSpec({
@@ -97,12 +98,36 @@ class SourceKindProtectionTest : FunSpec({
         keywords(Keyword.FLASH)
     }
 
+    // Lord of the Nazgûl's grant, printed on a 2/2.
+    val wraith = card("Test Warded Wraith") {
+        manaCost = "{2}"
+        typeLine = "Creature — Wraith"
+        power = 2
+        toughness = 2
+        keywordAbility(KeywordAbility.Protection(ProtectionScope.RingBearers))
+    }
+    val pingingBearer = card("Test Pinging Bearer") {
+        manaCost = "{1}"
+        typeLine = "Creature — Halfling"
+        power = 1
+        toughness = 1
+        activatedAbility {
+            cost = Costs.Mana("{1}")
+            val t = target(Targets.Any)
+            effect = Effects.DealDamage(1, t)
+        }
+    }
+
     fun driver() = GameTestDriver().also {
-        it.registerCards(TestCards.all + listOf(titan, drake, pinger, shocker, sweeper, raider, flashBear))
+        it.registerCards(TestCards.all + listOf(titan, drake, pinger, shocker, sweeper, raider, flashBear, wraith, pingingBearer))
         it.initMirrorMatch(Deck.of("Forest" to 40), skipMulligans = true, startingPlayer = 0)
         it.passPriorityUntil(Step.PRECOMBAT_MAIN)
     }
     val pingId = pinger.script.activatedAbilities.single().id
+    val bearerPingId = pingingBearer.script.activatedAbilities.single().id
+    fun GameTestDriver.makeRingBearer(id: EntityId, owner: EntityId) {
+        replaceState(state.updateEntity(id) { it.with(RingBearerComponent(owner)) })
+    }
     fun GameTestDriver.damage(id: EntityId) = state.getEntity(id)?.get<DamageComponent>()?.amount ?: 0
     fun GameTestDriver.ping(player: EntityId, source: EntityId, target: EntityId) = run {
         giveColorlessMana(player, 1)
@@ -256,5 +281,49 @@ class SourceKindProtectionTest : FunSpec({
         )
         d.bothPass()
         d.damage(theirs) shouldBe 0
+    }
+
+    context("protection from Ring-bearers") {
+        fun GameTestDriver.bearerPing(player: EntityId, source: EntityId, target: EntityId) = run {
+            giveColorlessMana(player, 1)
+            submit(ActivateAbility(player, source, bearerPingId, listOf(ChosenTarget.Permanent(target))))
+        }
+
+        test("an ability whose source is a Ring-bearer can't target it; the same source undesignated can") {
+            val d = driver()
+            val warded = d.putCreatureOnBattlefield(d.player1, wraith.name)
+            val source = d.putCreatureOnBattlefield(d.player2, pingingBearer.name)
+            d.removeSummoningSickness(source)
+            d.passPriority(d.player1)
+            d.bearerPing(d.player2, source, warded).error shouldBe null
+            d.bothPass()
+            d.damage(warded) shouldBe 1
+
+            d.makeRingBearer(source, d.player2)
+            d.bearerPing(d.player2, source, warded).error shouldNotBe null
+        }
+
+        test("a Ring-bearer whose control changed is no longer one (CR 701.54e)") {
+            val d = driver()
+            val warded = d.putCreatureOnBattlefield(d.player1, wraith.name)
+            val source = d.putCreatureOnBattlefield(d.player2, pingingBearer.name)
+            d.removeSummoningSickness(source)
+            // Designated by player 1, but controlled by player 2.
+            d.makeRingBearer(source, d.player1)
+            d.passPriority(d.player1)
+            d.bearerPing(d.player2, source, warded).error shouldBe null
+        }
+
+        test("a Ring-bearer can't block it") {
+            val d = driver()
+            val warded = d.putCreatureOnBattlefield(d.player1, wraith.name)
+            d.removeSummoningSickness(warded)
+            val bearer = d.putCreatureOnBattlefield(d.player2, "Grizzly Bears")
+            d.makeRingBearer(bearer, d.player2)
+            d.passPriorityUntil(Step.DECLARE_ATTACKERS)
+            d.declareAttackers(d.player1, listOf(warded), d.player2).error shouldBe null
+            d.passPriorityUntil(Step.DECLARE_BLOCKERS)
+            d.declareBlockers(d.player2, mapOf(bearer to listOf(warded))).error shouldNotBe null
+        }
     }
 })

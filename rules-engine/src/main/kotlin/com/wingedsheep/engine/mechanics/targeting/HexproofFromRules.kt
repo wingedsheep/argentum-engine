@@ -45,6 +45,7 @@ object HexproofFromRules {
         is ProtectionScope.CardType -> setOf("HEXPROOF_FROM_CARDTYPE_${scope.cardType.uppercase()}")
         ProtectionScope.Spells,
         ProtectionScope.PermanentsCastThisTurn,
+        ProtectionScope.RingBearers,
         ProtectionScope.ActivatedAbilities,
         ProtectionScope.TriggeredAbilities ->
             setOf(SourceKindProtection.hexproofKeyword(checkNotNull(SourceKind.of(scope))))

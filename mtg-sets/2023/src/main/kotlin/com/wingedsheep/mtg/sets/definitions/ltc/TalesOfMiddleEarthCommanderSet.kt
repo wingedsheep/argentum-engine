@@ -4,6 +4,7 @@ import com.wingedsheep.mtg.sets.discovery.CardDiscovery
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.MtgSet
 import com.wingedsheep.sdk.model.Printing
+import com.wingedsheep.sdk.model.TokenPrinting
 
 /**
  * Tales of Middle-earth Commander (2023)
@@ -28,6 +29,16 @@ object TalesOfMiddleEarthCommanderSet : MtgSet {
     override val printings: List<Printing> by lazy {
         CardDiscovery.findPrintingsIn(CARDS_PACKAGE)
     }
+
+    override val tokenArt: List<TokenPrinting> = listOf(
+        // tltc #7 — Lord of the Nazgûl's 3/3 black Wraith with menace.
+        TokenPrinting(
+            name = "Wraith",
+            imageUri = "https://cards.scryfall.io/normal/front/9/a/9afb58e8-f5a7-49f9-8287-77757bd3268c.jpg?1783916058",
+            power = 3,
+            toughness = 3,
+        ),
+    )
 
     private const val CARDS_PACKAGE = "com.wingedsheep.mtg.sets.definitions.ltc.cards"
 }
