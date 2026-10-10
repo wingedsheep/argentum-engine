@@ -2,6 +2,7 @@ package com.wingedsheep.engine.handlers.effects
 
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.BattlefieldEntryTimestampComponent
+import com.wingedsheep.engine.state.components.identity.TokenComponent
 import com.wingedsheep.engine.state.components.player.EnteredPermanentRecord
 import com.wingedsheep.engine.state.components.player.PermanentsEnteredUnderControlThisTurnComponent
 import com.wingedsheep.sdk.core.CardType
@@ -63,7 +64,12 @@ object PermanentEntryTracker {
                 ?: PermanentsEnteredUnderControlThisTurnComponent()
             container.with(
                 PermanentsEnteredUnderControlThisTurnComponent(
-                    existing.entries + EnteredPermanentRecord(entityId, cardTypes, subtypes)
+                    existing.entries + EnteredPermanentRecord(
+                        entityId,
+                        cardTypes,
+                        subtypes,
+                        isToken = stamped.getEntity(entityId)?.has<TokenComponent>() == true,
+                    )
                 )
             )
         }

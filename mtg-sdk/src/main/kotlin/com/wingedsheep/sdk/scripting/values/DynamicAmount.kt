@@ -129,6 +129,16 @@ enum class TurnTracker {
      * (Spider-UK). Reach for the threshold form via `Conditions.CreaturesEnteredThisTurn`.
      */
     CREATURES_ENTERED_UNDER_CONTROL,
+    /**
+     * The number of tokens the player created this turn — the token slice of the same per-player
+     * entry log behind [NONLAND_PERMANENTS_ENTERED]. The player who creates a token is its owner and
+     * it enters under that player's control (CR 111.2), so "you created a token" is exactly "a token
+     * entered the battlefield under your control"; a token that later changes controller stays
+     * counted for its creator, and one gained by a control change is never counted. Tokens can't
+     * re-enter (CR 111.7, 111.8), so each entry is one creation. Backs "activate only if you created
+     * a token this turn" (Idol of Oblivion) — reach for it via `Conditions.CreatedTokenThisTurn`.
+     */
+    TOKENS_CREATED,
     /** Indicator (0 or 1) that the player sacrificed at least one Food this turn. */
     FOOD_SACRIFICED,
     /**
@@ -358,6 +368,7 @@ enum class TurnTracker {
         LANDS_ENTERED_UNDER_CONTROL -> "the number of lands that entered the battlefield under ${player.possessive} control this turn"
         NONLAND_PERMANENTS_ENTERED -> "the number of nonland permanents that entered the battlefield under ${player.possessive} control this turn"
         CREATURES_ENTERED_UNDER_CONTROL -> "the number of creatures that entered the battlefield under ${player.possessive} control this turn"
+        TOKENS_CREATED -> "the number of tokens ${player.description} created this turn"
         FOOD_SACRIFICED -> "whether ${player.description} sacrificed a Food this turn"
         SCRIED_OR_SURVEILED -> "whether ${player.description} scried or surveilled this turn"
         ARTIFACT_SACRIFICED -> "whether ${player.description} sacrificed an artifact this turn"

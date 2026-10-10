@@ -1908,6 +1908,21 @@ object Conditions {
         )
 
     /**
+     * "If [player] created [atLeast] or more tokens this turn" — Idol of Oblivion's "activate only
+     * if you created a token this turn". Turn history over `TurnTracker.TOKENS_CREATED`: the tokens
+     * need not still exist.
+     */
+    fun CreatedTokenThisTurn(
+        atLeast: Int = 1,
+        player: Player = Player.You
+    ): ConditionInterface =
+        trackerAtLeast(
+            com.wingedsheep.sdk.scripting.values.TurnTracker.TOKENS_CREATED,
+            atLeast,
+            player,
+        )
+
+    /**
      * If an opponent lost life this turn (from any source).
      * Used for cards like Hired Claw: "Activate only if an opponent lost life this turn"
      */
