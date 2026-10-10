@@ -2,7 +2,6 @@ package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.core.CardsSelectedResponse
-import com.wingedsheep.engine.core.ReorderLibraryDecision
 import com.wingedsheep.engine.core.SelectCardsDecision
 import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.engine.mechanics.mana.CostCalculator
@@ -58,8 +57,7 @@ class ValkyrieAerialUnitTest : FunSpec({
 
         // Mill the top card; keep the second.
         driver.submitDecision(me, CardsSelectedResponse(decisionId = select.id, selectedCards = listOf(top1)))
-        val reorder = driver.pendingDecision.shouldBeInstanceOf<ReorderLibraryDecision>()
-        driver.submitOrderedResponse(me, reorder.cards)
+        driver.isPaused shouldBe false
 
         driver.getGraveyard(me).contains(top1) shouldBe true
         driver.state.getLibrary(me).first() shouldBe top2

@@ -66,8 +66,7 @@ class BitterChillScenarioTest : ScenarioTestBase() {
                 // "You may pay {1}. If you do, scry 1, then draw a card."
                 game.answerYesNo(true)
                 game.submitManaSourcesAutoPay()
-                game.skipSelection()    // scry 1: nothing to the bottom
-                game.keepLibraryOrder() // …and leave the top card where it is
+                game.skipSelection()    // scry 1: nothing to the bottom, the card stays on top
                 game.resolveStack()
 
                 withClue("Doom Blade left the hand and the refund drew a card back — net zero") {

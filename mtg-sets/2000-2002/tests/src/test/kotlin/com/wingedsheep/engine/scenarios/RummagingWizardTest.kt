@@ -151,13 +151,7 @@ class RummagingWizardTest : FunSpec({
             )
         )
 
-        // Should get a reorder decision for the card going back on top
-        driver.isPaused shouldBe true
-        driver.pendingDecision.shouldBeInstanceOf<ReorderLibraryDecision>()
-        val reorderDecision = driver.pendingDecision as ReorderLibraryDecision
-        reorderDecision.cards.size shouldBe 1
-        driver.submitOrderedResponse(activePlayer, reorderDecision.cards)
-
+        // The player just saw the one card going back on top: no reorder prompt follows
         driver.isPaused shouldBe false
 
         // Card should still be on top of library

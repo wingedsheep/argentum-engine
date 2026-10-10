@@ -45,9 +45,8 @@ class SanctumLurkerScenarioTest : ScenarioTestBase() {
             game.execute(surveil.action).error shouldBe null
             loyalty() shouldBe 0
             game.resolveStack()
-            // Surveil 1: keep the card, then confirm its (one-card) order.
+            // Surveil 1: keep the card (one card on top needs no ordering).
             game.skipSelection()
-            game.keepLibraryOrder()
 
             game.findPermanents("Jace") shouldBe listOf(jace)
 

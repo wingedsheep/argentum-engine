@@ -222,7 +222,6 @@ class DredgeTest : ScenarioTestBase() {
             game.resolveStack()
             game.answerYesNo(true).error shouldBe null
             game.selectCards(emptyList()).error shouldBe null
-            game.keepLibraryOrder().error shouldBe null
             (game.state.pendingDecision as YesNoDecision).context.sourceName shouldBe "Test Scry Replacement"
             game.answerYesNo(false).error shouldBe null
             game.resolveStack()

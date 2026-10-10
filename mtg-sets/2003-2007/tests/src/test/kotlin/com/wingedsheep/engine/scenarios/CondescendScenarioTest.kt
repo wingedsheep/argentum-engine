@@ -1,9 +1,7 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.CastSpell
-import com.wingedsheep.engine.core.OrderedResponse
 import com.wingedsheep.engine.core.PaymentStrategy
-import com.wingedsheep.engine.core.ReorderLibraryDecision
 import com.wingedsheep.engine.core.SelectCardsDecision
 import com.wingedsheep.engine.core.YesNoDecision
 import com.wingedsheep.engine.state.ZoneKey
@@ -58,9 +56,7 @@ class CondescendScenarioTest : FunSpec({
             scry.playerId shouldBe d.player2
             scry.options shouldContainExactlyInAnyOrder listOf(first, second)
             d.submitCardSelection(d.player2, listOf(first)).error shouldBe null
-            val order = d.pendingDecision.shouldBeInstanceOf<ReorderLibraryDecision>()
-            order.cards shouldBe listOf(second)
-            d.submitDecision(d.player2, OrderedResponse(order.id, listOf(second))).error shouldBe null
+            // One card stays on top and the scry just showed it: nothing left to order.
             d.pendingDecision shouldBe null
 
             val library = d.state.getZone(ZoneKey(d.player2, Zone.LIBRARY))

@@ -141,7 +141,7 @@ class MoveCollectionExecutor(
 
         var result = when (destination) {
             is CardDestination.ToZone ->
-                moveToZone(state, context, cards, destination, effect.order, effect.revealed, effect.moveType, effect.faceDown, effect.noRegenerate, effect.storeMovedAs, effect.underOwnersControl, effect.revealToSelf)
+                moveToZone(state, context, cards, destination, effect.order, effect.revealed, effect.moveType, effect.faceDown, effect.noRegenerate, effect.storeMovedAs, effect.underOwnersControl, effect.revealToSelf, fromCollection = effect.from)
             is CardDestination.ToZoneExiledFrom ->
                 moveToZonesExiledFrom(state, context, cards, destination, effect)
         }
@@ -446,7 +446,8 @@ class MoveCollectionExecutor(
         noRegenerate: Boolean = false,
         storeMovedAs: String? = null,
         underOwnersControl: Boolean = false,
-        revealToSelf: Boolean = true
+        revealToSelf: Boolean = true,
+        fromCollection: String? = null
     ): EffectResult {
         val destPlayerId = resolvePlayer(destination.player, context, state)
             ?: return EffectResult.error(state, "Could not resolve destination player for MoveCollection")
@@ -456,10 +457,16 @@ class MoveCollectionExecutor(
         // ControllerChooses ordering: pause for player to see/reorder cards going to library
         if ((order == CardOrder.ControllerChooses || order == CardOrder.OwnerChooses) && destZone == Zone.LIBRARY) {
             val isBottom = destination.placement == ZonePlacement.Bottom
-            // For top placement: always pause (even for 1 card, so player can see it)
-            // For bottom placement: only pause when there are multiple cards to order
-            if (!isBottom || cards.size > 1) {
-                val chooserId = if (order == CardOrder.OwnerChooses) destPlayerId else context.controllerId
+            val chooserId = if (order == CardOrder.OwnerChooses) destPlayerId else context.controllerId
+            // One card has no order to choose. On top it still pauses, because for "look at the
+            // top card of your library" (lookAtTopAndReorder with a count of one) that prompt is
+            // the only look the player gets — unless a selection in this same pipeline just
+            // displayed the card to the chooser (scry 1 / surveil 1 keeping it on top).
+            val alreadySeen = cards.size == 1 && fromCollection != null &&
+                cards.single() in context.pipeline.storedCollections[
+                    com.wingedsheep.engine.handlers.PipelineState.shownKey(fromCollection, chooserId)
+                ].orEmpty()
+            if ((!isBottom || cards.size > 1) && !alreadySeen) {
                 return pauseForOrderDecision(state, context, cards, destZone, destPlayerId, destination.placement, chooserId)
             }
         }

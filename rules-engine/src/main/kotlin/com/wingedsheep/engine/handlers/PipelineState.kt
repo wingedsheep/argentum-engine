@@ -36,6 +36,14 @@ data class PipelineState(
         fun spellFaceKey(collection: String): String = "$collection:spellFace"
 
         /**
+         * Reserved metadata collection published by a SelectFromCollection decision alongside its
+         * remainder: the remainder cards that decision displayed to [playerId]. A later move that
+         * would pause only so that player can *look* at those cards (a one-card "put back on top")
+         * reads it to skip a prompt showing a card they just saw — scry 1 / surveil 1.
+         */
+        fun shownKey(collection: String, playerId: EntityId): String = "__shown:${playerId.value}:$collection"
+
+        /**
          * Pipeline collection name under which a batch trigger seeds the entities it captured
          * (the matching permanents in a `PermanentsEnteredEvent` batch). Aliases the SDK-side
          * contract [com.wingedsheep.sdk.scripting.effects.IterationSpace.TRIGGER_CAPTURED_COLLECTION]

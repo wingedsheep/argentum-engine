@@ -1,9 +1,7 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.CastSpell
-import com.wingedsheep.engine.core.OrderedResponse
 import com.wingedsheep.engine.core.PaymentStrategy
-import com.wingedsheep.engine.core.ReorderLibraryDecision
 import com.wingedsheep.engine.core.SelectCardsDecision
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
@@ -47,8 +45,6 @@ class RunicShotScenarioTest : ScenarioTestBase() {
                     val choice = game.state.pendingDecision.shouldBeInstanceOf<SelectCardsDecision>()
                     choice.options shouldBe library.take(2)
                     game.selectCards(listOf(library.first())).error shouldBe null
-                    val order = game.state.pendingDecision.shouldBeInstanceOf<ReorderLibraryDecision>()
-                    game.submitDecision(OrderedResponse(order.id, order.cards)).error shouldBe null
                     game.state.getZone(ZoneKey(game.player1Id, Zone.LIBRARY)) shouldBe
                         listOf(library[1], library[2], library[0])
                 } else {

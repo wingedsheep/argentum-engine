@@ -65,7 +65,6 @@ class NoEscapeScenarioTest : ScenarioTestBase() {
                     scry.options.size shouldBe 1
                 }
                 game.skipSelection()
-                game.keepLibraryOrder()
                 game.resolveStack()
 
                 withClue("Grizzly Bears is exiled, not in the graveyard or on the battlefield") {
@@ -101,7 +100,6 @@ class NoEscapeScenarioTest : ScenarioTestBase() {
                     scry.options.size shouldBe 1
                 }
                 game.skipSelection()
-                game.keepLibraryOrder()
                 game.resolveStack()
 
                 withClue("Vexing Beetle resolves onto the battlefield, neither exiled nor graveyarded") {
