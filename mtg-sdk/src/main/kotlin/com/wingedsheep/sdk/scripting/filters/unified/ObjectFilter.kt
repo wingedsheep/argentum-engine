@@ -71,6 +71,7 @@ data class GameObjectFilter(
      */
     val indefiniteArticle: String
         get() {
+            if (basicLandWithSubtypes()) return "a"
             val typeWord = orderedCardPredicates().firstOrNull()?.description?.trim()
                 ?: if (anyOf.isNotEmpty()) return anyOf.first().indefiniteArticle
                 else description.trim()
@@ -88,6 +89,14 @@ data class GameObjectFilter(
         return subtypes + rest
     }
 
+    /**
+     * A basic land narrowed by land type reads the way Oracle prints it — "basic Island, Swamp, or
+     * Mountain", not "basic land Island, Swamp, or Mountain": the subtype names the land on its own.
+     */
+    private fun basicLandWithSubtypes(): Boolean =
+        CardPredicate.IsBasicLand in cardPredicates &&
+            cardPredicates.any { it is CardPredicate.HasSubtype || it is CardPredicate.HasAnyOfSubtypes }
+
     private fun buildDescription(): String = buildString {
         controllerPredicate?.let {
             if (it.description.isNotEmpty()) {
@@ -99,9 +108,20 @@ data class GameObjectFilter(
             append(predicate.description)
             append(" ")
         }
-        orderedCardPredicates().forEach { predicate ->
-            append(predicate.description)
-            append(" ")
+        if (basicLandWithSubtypes()) {
+            val (subtypes, rest) = cardPredicates
+                .filter { it != CardPredicate.IsBasicLand }
+                .partition { it is CardPredicate.HasSubtype || it is CardPredicate.HasAnyOfSubtypes }
+            append("basic ")
+            (subtypes + rest).forEach { predicate ->
+                append(predicate.description)
+                append(" ")
+            }
+        } else {
+            orderedCardPredicates().forEach { predicate ->
+                append(predicate.description)
+                append(" ")
+            }
         }
         if (anyOf.isNotEmpty()) {
             append(anyOf.joinToString(" or ") { it.description })

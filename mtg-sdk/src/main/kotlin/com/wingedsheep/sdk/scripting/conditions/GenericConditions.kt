@@ -343,7 +343,7 @@ data class Exists(
         }
         append(player.possessive)
         append(" ")
-        append(zone.displayName.removePrefix("a ").removePrefix("the "))
+        append(zone.noun)
     }
     override fun applyTextReplacement(replacer: TextReplacer): Condition {
         val newFilter = filter.applyTextReplacement(replacer)

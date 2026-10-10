@@ -294,7 +294,11 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
     @SerialName("HasAnyOfSubtypes")
     @Serializable
     data class HasAnyOfSubtypes(val subtypes: List<Subtype>) : CardPredicate {
-        override val description: String = subtypes.joinToString(", ") { it.value }
+        override val description: String = when (subtypes.size) {
+            0, 1 -> subtypes.joinToString { it.value }
+            2 -> "${subtypes[0].value} or ${subtypes[1].value}"
+            else -> subtypes.dropLast(1).joinToString(", ") { it.value } + ", or " + subtypes.last().value
+        }
         override fun applyTextReplacement(replacer: TextReplacer): CardPredicate {
             val newSubtypes = subtypes.map { replacer.replaceSubtype(it) }
             return if (newSubtypes == subtypes) this else HasAnyOfSubtypes(newSubtypes)

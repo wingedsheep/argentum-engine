@@ -265,7 +265,7 @@ data class SourceInZone(val zones: Set<Zone>) : Condition {
 @SerialName("WasCastFromZone")
 @Serializable
 data class WasCastFromZone(val zone: Zone) : Condition {
-    override val description: String = "this spell was cast from a ${zone.displayName.lowercase()}"
+    override val description: String = "this spell was cast from ${zone.displayName}"
 }
 
 /**

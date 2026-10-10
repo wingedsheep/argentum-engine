@@ -266,7 +266,7 @@ sealed interface SpellCastPredicate {
             Zone.HAND -> "from your hand"
             Zone.GRAVEYARD -> "from your graveyard"
             Zone.EXILE -> "from exile"
-            else -> "from your ${zone.displayName.lowercase()}"
+            else -> "from your ${zone.noun}"
         }
     }
 
@@ -282,7 +282,7 @@ sealed interface SpellCastPredicate {
     data class CastFromZoneOtherThan(val zone: Zone) : SpellCastPredicate {
         override val description = when (zone) {
             Zone.HAND -> "from anywhere other than your hand"
-            else -> "from anywhere other than your ${zone.displayName.lowercase()}"
+            else -> "from anywhere other than your ${zone.noun}"
         }
     }
 

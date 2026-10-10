@@ -660,7 +660,7 @@ data class MoveTrackedBattlefieldObjectEffect(
     val enteredBattlefieldTimestamp: Long? = null
 ) : Effect {
     override val description: String =
-        "Move ${target.description} to its owner's ${destination.displayName}"
+        "Move ${target.description} to its owner's ${destination.noun}"
 }
 
 /**
