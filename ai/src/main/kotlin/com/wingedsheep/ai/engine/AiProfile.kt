@@ -448,6 +448,26 @@ data class AiProfile(
      */
     val informedChoiceDecisions: Boolean = false,
     /**
+     * Choose *how many* cards a selection takes by what they are worth, not by the decision's
+     * bounds. Three misplays from the 2026-10-10 engine-vs-engine logs (`production-candidate-expiring`),
+     * all in [DecisionResponder]'s generic card-selection fallbacks:
+     *
+     * - **A search with no more candidates than it may take found nothing.** The pipeline's library
+     *   search arrives as an unlabelled "choose up to N", and the fallback took `min` (zero)
+     *   whenever `max` was not smaller than the option count. Game 3 turns 19/22/25: a Landscape
+     *   sacrificed with [Plains] as the only option, three times, leaving the AI on four lands
+     *   with a seven-drop in hand.
+     * - **Scry always bottomed a card.** The bottom pile reused the discard path's
+     *   `coerceAtLeast(1)`: game 1 turn 12, Lembas bottomed Celeborn the Wise with six lands out
+     *   and only lands in hand.
+     * - **Surveil never milled.** "Put in graveyard" matched no branch and took zero: Hidden Grotto
+     *   (game 1) and Refute Destiny (game 2) kept every card on top.
+     *
+     * With it on, an unlabelled "choose up to N" takes N, and scry / surveil send away exactly the
+     * cards whose [CardSelectionValue] falls below a keep threshold — zero, some or all.
+     */
+    val selectionCountsByValue: Boolean = false,
+    /**
      * Refuse to pay for an until-end-of-turn payoff that nothing can spend this turn: an activation
      * or a combat trick whose every effect wears off at cleanup, in a window where the creature it
      * buys for is not in a combat that is still ahead of it.
@@ -559,6 +579,23 @@ data class AiProfile(
      * scores as before. Needs [sequenceLandsByUsableMana]; reaches only the composite evaluator.
      */
     val pendingLandDropIsMana: Boolean = false,
+    /**
+     * Answer an "up to N targets" decision with as many targets as help, not always exactly one.
+     *
+     * `DecisionResponder` simulated each legal target alone and returned the best single one, so
+     * every multi-target requirement got one target whatever its maximum: Aerie Auxiliary's
+     * "support 2" put its counter on one creature with a second friendly one standing beside it
+     * (2026-10-10 AI-vs-AI logs, game 3 turns 11 and 25), and a mandatory "two target creatures"
+     * trigger was answered with an illegal single target. With this on, the answer grows greedily
+     * from the best single pick: each round adds the remaining candidate whose simulated result is
+     * best, and stops when nothing improves on the answer so far or the maximum is reached — so a
+     * counter is never handed to the opponent's creature just because a slot was free. Below the
+     * requirement's minimum a legal pick is added whatever it scores.
+     *
+     * The decision half only. `Strategist` fills the targets of a spell or ability it casts the
+     * same way, which this leaves alone.
+     */
+    val fillUpToMaxTargets: Boolean = false,
     /** Non-null profiles may only be selected automatically for this set. Arena selection stays explicit. */
     val restrictedToSet: String? = null,
 ) {
@@ -1465,6 +1502,45 @@ data class AiProfile(
             crackBackWithoutChumps = true,
             evasionAfterAttacking = true,
             pendingLandDropIsMana = true,
+            selectionCountsByValue = true,
+            fillUpToMaxTargets = true,
+        )
+
+        /**
+         * [fillUpToMaxTargets] alone on top of [PRODUCTION], so a puzzle or an arena point that
+         * moves is attributable to it.
+         */
+        val PRODUCTION_UPTO = PRODUCTION.copy(
+            id = "production-upto",
+            fillUpToMaxTargets = true,
+        )
+
+        /**
+         * [fillUpToMaxTargets] on top of [PRODUCTION_CANDIDATE_EXPIRING] — the last pinned
+         * candidate [LIVE] builds on, so `just arena production-candidate-expiring
+         * production-candidate-upto 300` measures this flag and nothing else. [LIVE] ships it.
+         */
+        val PRODUCTION_CANDIDATE_UPTO = PRODUCTION_CANDIDATE_EXPIRING.copy(
+            id = "production-candidate-upto",
+            fillUpToMaxTargets = true,
+        )
+
+        /**
+         * [selectionCountsByValue] alone on top of [PRODUCTION], so a puzzle or an arena point that
+         * moves is attributable to it.
+         */
+        val PRODUCTION_SELECTCOUNT = PRODUCTION.copy(
+            id = "production-selectcount",
+            selectionCountsByValue = true,
+        )
+
+        /**
+         * [PRODUCTION_CANDIDATE_EXPIRING] — the profile the cited game logs were taken with — plus
+         * [selectionCountsByValue].
+         */
+        val PRODUCTION_CANDIDATE_SELECTCOUNT = PRODUCTION_CANDIDATE_EXPIRING.copy(
+            id = "production-candidate-selectcount",
+            selectionCountsByValue = true,
         )
 
         /**

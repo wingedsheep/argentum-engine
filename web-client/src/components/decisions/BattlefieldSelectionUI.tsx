@@ -90,7 +90,7 @@ export function BattlefieldSelectionUI({
       <div className={styles.buttonContainerSmall}>
         {canSkip && selectedCount === 0 && (
           <button onClick={handleSkip} className={`${styles.confirmButton} ${styles.confirmButtonSmall}`}>
-            Select None
+            {decision.declineLabel ?? 'Select None'}
           </button>
         )}
         {selectedCount > 0 && (

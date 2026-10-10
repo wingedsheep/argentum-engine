@@ -7,7 +7,6 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 
 /**
  * Comet Crawler
@@ -29,13 +28,9 @@ val CometCrawler = card("Comet Crawler") {
     // Triggered ability: When attacks, may sacrifice another creature or artifact for +2/+0
     triggeredAbility {
         trigger = Triggers.self.attacks()
-        val sacrificeTarget = target(
-            TargetFilter(
-                    GameObjectFilter.Creature.youControl().or(GameObjectFilter.Artifact.youControl())
-                ).other(),
-        )
-        effect = Effects.May(
-            Effects.SacrificeTarget(sacrificeTarget) then Effects.ModifyStats(2, 0, EffectTarget.Self)
+        effect = Effects.MayPay(
+            Effects.SacrificeOwn(GameObjectFilter.Creature.or(GameObjectFilter.Artifact), excludeSource = true),
+            then = Effects.ModifyStats(2, 0, EffectTarget.Self)
         )
     }
 

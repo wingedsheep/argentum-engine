@@ -2129,39 +2129,26 @@
                 "trigger": "AttackEvent",
                 "effect": {
                     "type": "Gated",
-                    "gate": "Gate.MayDecide",
-                    "then": {
-                        "type": "Composite",
-                        "effects": [
-                            {
-                                "type": "SacrificeTarget",
-                                "target": {
-                                    "type": "BoundVariable",
-                                    "name": "t0"
-                                }
-                            },
-                            {
-                                "type": "ModifyStats",
-                                "powerModifier": {
-                                    "type": "Fixed",
-                                    "amount": 2
-                                },
-                                "toughnessModifier": {
-                                    "type": "Fixed",
-                                    "amount": 0
-                                },
-                                "target": "Self"
-                            }
-                        ]
-                    }
-                },
-                "targetRequirement": {
-                    "type": "TargetObject",
-                    "filter": {
-                        "baseFilter": "creature|artifact ctrl:you",
-                        "excludeSelf": true
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "Sacrifice",
+                            "filter": "creature|artifact",
+                            "excludeSource": true
+                        }
                     },
-                    "id": "t0"
+                    "then": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 0
+                        },
+                        "target": "Self"
+                    }
                 }
             }
         ]
@@ -15756,34 +15743,21 @@
                 "trigger": "TapEvent",
                 "effect": {
                     "type": "Gated",
-                    "gate": "Gate.MayDecide",
-                    "then": {
-                        "type": "Composite",
-                        "effects": [
-                            {
-                                "type": "SacrificeTarget",
-                                "target": {
-                                    "type": "BoundVariable",
-                                    "name": "t0"
-                                }
-                            },
-                            {
-                                "type": "DrawCards",
-                                "count": {
-                                    "type": "Fixed",
-                                    "amount": 1
-                                }
-                            }
-                        ]
-                    }
-                },
-                "targetRequirement": {
-                    "type": "TargetObject",
-                    "filter": {
-                        "baseFilter": "creature|artifact ctrl:you",
-                        "excludeSelf": true
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "Sacrifice",
+                            "filter": "creature|artifact",
+                            "excludeSource": true
+                        }
                     },
-                    "id": "t0"
+                    "then": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    }
                 },
                 "descriptionOverride": "Whenever this creature becomes tapped, you may sacrifice another creature or artifact. If you do, draw a card."
             }

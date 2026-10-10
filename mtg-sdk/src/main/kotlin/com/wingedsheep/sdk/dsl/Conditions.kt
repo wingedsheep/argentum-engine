@@ -758,6 +758,22 @@ object Conditions {
         )
 
     /**
+     * If a single opponent cast [count] or more spells this turn (Mindbreak Trap) — existential
+     * per opponent, so three opponents casting one spell each never satisfy it: the greatest
+     * `SpellsCastThisTurn` among your opponents is at least [count]. Counts casts, not
+     * resolutions, so countered spells still count.
+     */
+    fun AnOpponentCastSpellsThisTurnAtLeast(count: Int): ConditionInterface =
+        Compare(
+            DynamicAmount.GreatestAmongPlayers(
+                Player.EachOpponent,
+                DynamicAmount.SpellsCastThisTurn(Player.You)
+            ),
+            ComparisonOperator.GTE,
+            DynamicAmount.Fixed(count)
+        )
+
+    /**
      * If your life total is N or more.
      */
     fun LifeAtLeast(threshold: Int): ConditionInterface =

@@ -3111,7 +3111,12 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   from `Effects.Sacrifice`, which is the edict and names the player who must sacrifice — writing the
   bare form as `Sacrifice(filter, 1, EffectTarget.Controller)` says the same thing the long way round.
   Controlling fewer than `count` matches sacrifices all of them (CR 609.3); as a `MayPay` cost it is
-  offered only while `count` are available.
+  offered only while `count` are available. **"You may sacrifice another creature. If you do, …" is
+  `Effects.MayPay(Effects.SacrificeOwn(filter, excludeSource = true), then = …)`** — never a
+  `target(...)` + `Effects.May(SacrificeTarget(...) then …)`: the sacrifice doesn't target, and a
+  target makes the trigger demand a pick before the "may" and fizzle with no fodder (Namazu Trader,
+  Comet Crawler, Hei Bai). With `count = 1` the controller is asked once — pick the permanent on the
+  battlefield, or "Don't sacrifice" — and `EffectTarget.SacrificedAsCost(0)` reads the paid one.
 - `Effects.SacrificeAnyNumber(filter, excludeSource = false)`
   (= `SacrificeEffect(filter, any = true, excludeSource)`) — the *resolving*
   player chooses 0+ of their own permanents matching `filter` to sacrifice. Distinct from
@@ -3588,7 +3593,10 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
     assumed payable) skips the prompt straight to `otherwise`. On "yes", the cost is paid then `then`
     runs (`stopOnError`: an unpayable cost aborts the payoff). For a recognized mana cost the "yes"
     button is labeled with the concrete amount — a dynamic cost shows its computed total ("Pay {8}"),
-    not the formula. When the cost is a
+    not the formula. A cost that is a single `SacrificeEffect` (`count = 1`, not `any`, paid by the
+    controller) skips the yes/no: the player picks the permanent to sacrifice or declines, in one
+    battlefield `SelectCardsDecision` (`minSelections = 0`, `declineLabel = "Don't sacrifice"`).
+    When the cost is a
     `PayDynamicManaCostEffect` with a non-default `payer` (e.g. the "each player's upkeep, that player
     may pay …" shape — Magnetic Mountain), set `decisionMaker` to that same player so the one who is
     charged is the one prompted; affordability is already gauged against the `payer` regardless.
@@ -12786,6 +12794,10 @@ answer it and would silently return `false`.
   facade for `Compare(LeastAmongPlayers(Player.EachOpponent, LifeTotal(Player.You)), LTE, Fixed(n))`. Unlike
   `APlayerLifeAtMost`, the controller's own life total never satisfies it; this is the conditional
   static-ability gate for Bloodghast's haste. Team games read the shared team total (CR 810.9a).
+- `Conditions.AnOpponentCastSpellsThisTurnAtLeast(n)` — a *single* opponent cast ≥N spells this turn: a facade
+  for `Compare(GreatestAmongPlayers(Player.EachOpponent, SpellsCastThisTurn(Player.You)), GTE, Fixed(n))`. Three
+  opponents casting one spell each don't add up; casts count whether or not they resolved. Mindbreak Trap's
+  `SelfAlternativeCost` gate.
 - `PoisonCountersAtLeast(n, player = Player.You)` — a single player has ≥N poison counters. Under a
   `ForEachPlayer` / `countPlayersWith` rebind `Player.You` is the player being tested ("each opponent who has
   three or more poison counters loses 3 life" — Feed the Infection); `Player.ControllerOf("target")` is "if its

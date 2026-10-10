@@ -6,7 +6,6 @@ import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 
 /**
  * Swarm Culler
@@ -28,13 +27,9 @@ val SwarmCuller = card("Swarm Culler") {
 
     triggeredAbility {
         trigger = Triggers.self.becomesTapped()
-        val sacrificeTarget = target(
-            TargetFilter(
-                    GameObjectFilter.Creature.youControl().or(GameObjectFilter.Artifact.youControl())
-                ).other(),
-        )
-        effect = Effects.May(
-            Effects.SacrificeTarget(sacrificeTarget) then Effects.DrawCards(1)
+        effect = Effects.MayPay(
+            Effects.SacrificeOwn(GameObjectFilter.Creature.or(GameObjectFilter.Artifact), excludeSource = true),
+            then = Effects.DrawCards(1)
         )
         description = "Whenever this creature becomes tapped, you may sacrifice another creature or artifact. If you do, draw a card."
     }

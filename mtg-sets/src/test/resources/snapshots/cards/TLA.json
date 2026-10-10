@@ -10347,33 +10347,20 @@
                 },
                 "effect": {
                     "type": "Gated",
-                    "gate": "Gate.MayDecide",
-                    "then": {
-                        "type": "Composite",
-                        "effects": [
-                            {
-                                "type": "SacrificeTarget",
-                                "target": {
-                                    "type": "BoundVariable",
-                                    "name": "t0"
-                                }
-                            },
-                            {
-                                "type": "AddCounters",
-                                "counterType": "PLUS_ONE_PLUS_ONE",
-                                "count": 2,
-                                "target": "Self"
-                            }
-                        ]
-                    }
-                },
-                "targetRequirement": {
-                    "type": "TargetObject",
-                    "filter": {
-                        "baseFilter": "creature|artifact ctrl:you",
-                        "excludeSelf": true
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "Sacrifice",
+                            "filter": "creature|artifact",
+                            "excludeSource": true
+                        }
                     },
-                    "id": "t0"
+                    "then": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 2,
+                        "target": "Self"
+                    }
                 },
                 "descriptionOverride": "Whenever Hei Bai enters, you may sacrifice another creature or artifact. If you do, put two +1/+1 counters on Hei Bai."
             },
@@ -10382,33 +10369,20 @@
                 "trigger": "AttackEvent",
                 "effect": {
                     "type": "Gated",
-                    "gate": "Gate.MayDecide",
-                    "then": {
-                        "type": "Composite",
-                        "effects": [
-                            {
-                                "type": "SacrificeTarget",
-                                "target": {
-                                    "type": "BoundVariable",
-                                    "name": "t1"
-                                }
-                            },
-                            {
-                                "type": "AddCounters",
-                                "counterType": "PLUS_ONE_PLUS_ONE",
-                                "count": 2,
-                                "target": "Self"
-                            }
-                        ]
-                    }
-                },
-                "targetRequirement": {
-                    "type": "TargetObject",
-                    "filter": {
-                        "baseFilter": "creature|artifact ctrl:you",
-                        "excludeSelf": true
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "Sacrifice",
+                            "filter": "creature|artifact",
+                            "excludeSource": true
+                        }
                     },
-                    "id": "t1"
+                    "then": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 2,
+                        "target": "Self"
+                    }
                 },
                 "descriptionOverride": "Whenever Hei Bai attacks, you may sacrifice another creature or artifact. If you do, put two +1/+1 counters on Hei Bai."
             },
@@ -10422,7 +10396,7 @@
                     "type": "MoveAllLastKnownCounters",
                     "target": {
                         "type": "BoundVariable",
-                        "name": "t2"
+                        "name": "t0"
                     }
                 },
                 "targetRequirement": {
@@ -10430,7 +10404,7 @@
                     "filter": {
                         "baseFilter": "creature ctrl:you"
                     },
-                    "id": "t2"
+                    "id": "t0"
                 },
                 "descriptionOverride": "When Hei Bai leaves the battlefield, put its counters on target creature you control."
             }
