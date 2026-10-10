@@ -614,7 +614,8 @@ function HomeFooter({ children }: { children?: ReactNode }) {
       <div className={home.footerBar}>
         <p className={home.credits}>
           <span>
-            Made by <a href={MAKER_PORTFOLIO_URL} target="_blank" rel="noopener noreferrer">wingedsheep</a>
+            Made by <a href={MAKER_PORTFOLIO_URL} target="_blank" rel="noopener noreferrer">wingedsheep</a> and{' '}
+            <a href={`${GITHUB_REPOSITORY_URL}/graphs/contributors`} target="_blank" rel="noopener noreferrer">contributors</a>
             <span className={home.creditsDot} aria-hidden>·</span>
             Card images via <a href="https://scryfall.com" target="_blank" rel="noopener noreferrer">Scryfall</a>
             <span className={home.creditsDot} aria-hidden>·</span>
