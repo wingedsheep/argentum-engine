@@ -9528,7 +9528,8 @@
                             "Beast"
                         ],
                         "imageUri": "https://cards.scryfall.io/normal/front/4/4/44675b6a-ea5a-44f1-9f2c-3725cdfcc814.jpg?1783934353"
-                    }
+                    },
+                    "description": "Create a 5/5 green Beast creature token"
                 },
                 {
                     "effect": {

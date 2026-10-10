@@ -802,7 +802,8 @@
                             "effect": {
                                 "type": "CreatePredefinedToken",
                                 "tokenType": "Treasure"
-                            }
+                            },
+                            "description": "Create a Treasure token"
                         }
                     ]
                 },
@@ -2448,7 +2449,8 @@
                             },
                             "id": "t0"
                         }
-                    ]
+                    ],
+                    "description": "Counter target spell unless its controller pays {4}"
                 },
                 {
                     "effect": {
@@ -6046,7 +6048,8 @@
                                     "type": "Fixed",
                                     "amount": 1
                                 }
-                            }
+                            },
+                            "description": "Draw a card"
                         }
                     ],
                     "excludePreviouslyChosenModes": true,
@@ -6115,7 +6118,8 @@
                                     "type": "Fixed",
                                     "amount": 1
                                 }
-                            }
+                            },
+                            "description": "Draw a card"
                         }
                     ],
                     "excludePreviouslyChosenModes": true,

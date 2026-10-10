@@ -161,7 +161,8 @@
                                     "type": "Fixed",
                                     "amount": 5
                                 }
-                            }
+                            },
+                            "description": "You gain 5 life"
                         }
                     ],
                     "countsAsModalSpell": false

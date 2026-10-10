@@ -56,8 +56,11 @@ data class GrantKeywordEffect(
 
     override val description: String = buildString {
         if (condition != null) append("${condition.description.replaceFirstChar { it.uppercase() }}, ")
-        append("${target.description} gains ${keyword.lowercase().replace('_', ' ')}")
-        if (duration.description.isNotEmpty()) append(" ${duration.description}")
+        val grant = com.wingedsheep.sdk.scripting.util.describeKeywordGrant(target.description, keyword)
+        append(grant)
+        // "assigns no combat damage this turn" already carries its own end-of-turn duration
+        val durationSaid = duration == Duration.EndOfTurn && grant.endsWith(" this turn")
+        if (duration.description.isNotEmpty() && !durationSaid) append(" ${duration.description}")
     }
 }
 
@@ -79,7 +82,7 @@ data class RemoveKeywordEffect(
         this(keyword.name, target, duration)
 
     override val description: String = buildString {
-        append("${target.description} loses ${keyword.lowercase().replace('_', ' ')}")
+        append(com.wingedsheep.sdk.scripting.util.describeKeywordLoss(target.description, keyword))
         if (duration.description.isNotEmpty()) append(" ${duration.description}")
     }
 }

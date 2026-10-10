@@ -3792,7 +3792,8 @@
                             },
                             "id": "t0"
                         }
-                    ]
+                    ],
+                    "description": "Counter target spell"
                 },
                 {
                     "effect": {
@@ -3837,7 +3838,8 @@
                             "type": "Fixed",
                             "amount": 1
                         }
-                    }
+                    },
+                    "description": "Draw a card"
                 }
             ],
             "chooseCount": 2
@@ -5875,7 +5877,7 @@
                             }
                         ]
                     },
-                    "descriptionOverride": "Clash with an opponent. If you win, target gets +2/+2 until end of turn. target gains trample until end of turn"
+                    "descriptionOverride": "Clash with an opponent. If you win, target creature gets +2/+2 until end of turn. target creature gains trample until end of turn"
                 }
             ]
         },
@@ -15990,7 +15992,7 @@
                             "name": "t0"
                         }
                     },
-                    "descriptionOverride": "Clash with an opponent. If you win, target gains double strike until end of turn"
+                    "descriptionOverride": "Clash with an opponent. If you win, target creature gains double strike until end of turn"
                 },
                 "targetRequirement": {
                     "type": "TargetObject",
@@ -18706,7 +18708,7 @@
                 },
                 "destination": "Hand"
             },
-            "descriptionOverride": "Clash with an opponent. If you win, put that creature on top of its owner's library?. Otherwise, return target to its owner's hand"
+            "descriptionOverride": "Clash with an opponent. If you win, put that creature on top of its owner's library?. Otherwise, return target creature to its owner's hand"
         },
         "targetRequirements": [
             {

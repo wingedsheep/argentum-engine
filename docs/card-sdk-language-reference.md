@@ -5193,7 +5193,11 @@ spell {
   through `TargetFilter.targetPhrase()` — adjectives, type noun, controller, qualifiers, zone
   ("target creature you control with power 2 or less", "up to two target creature cards in your
   graveyard", "another target nonland permanent", "one or two target creatures"). A prompt that
-  reads wrong is fixed in that renderer, never by naming the target.
+  reads wrong is fixed in that renderer, never by naming the target. A single-target handle from
+  `target(…)` also carries that phrase as its display noun (`BoundVariable.requirementDescription`),
+  so generated ability text reads "{T}: target creature gets +1/+1", not "target gets +1/+1". It is
+  display only — not serialized, not part of equality — which is why `Mode.description` is always
+  encoded.
 - `kickerTarget(filter | requirement)` / `cleaveTarget(filter | requirement)` declare the alternate
   branch's targets the same way. (`overloadEffect` has no target counterpart — an overloaded spell
   never targets, CR 702.96b.)

@@ -621,7 +621,10 @@ sealed interface AbilityCost : TextReplaceable<AbilityCost> {
     data class TapXPermanents(
         val filter: GameObjectFilter = GameObjectFilter.Creature
     ) : AbilityCost {
-        override val description: String = "Tap X untapped ${filter.description}s you control"
+        override val description: String =
+            "Tap X untapped ${com.wingedsheep.sdk.scripting.util.pluralNounPhrase(
+                filter.copy(controllerPredicate = null).description
+            )} you control"
 
         override fun applyTextReplacement(replacer: TextReplacer): AbilityCost {
             val newFilter = filter.applyTextReplacement(replacer)

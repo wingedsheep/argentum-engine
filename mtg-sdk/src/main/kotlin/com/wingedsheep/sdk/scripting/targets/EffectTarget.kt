@@ -145,7 +145,30 @@ sealed interface EffectTarget {
     @SerialName("BoundVariable")
     @Serializable
     data class BoundVariable(val name: String) : SingleEntity {
-        override val description: String = "target"
+        /**
+         * What this handle targets, as its requirement words it ("target creature you control"),
+         * so an effect over the handle reads "target creature you control gets +1/+1" rather than
+         * a bare "target gets +1/+1". Display only: stamped by the DSL's `target(...)` declaration,
+         * which is the one place the requirement is known; it takes no part in equality or
+         * serialization, so a handle built from its [name] alone still binds the same target.
+         */
+        @kotlinx.serialization.Transient
+        var requirementDescription: String? = null
+            private set
+
+        constructor(name: String, requirementDescription: String?) : this(name) {
+            this.requirementDescription = requirementDescription
+        }
+
+        /**
+         * The `description` key older encodings carried (a persisted game state, a captured
+         * suspension) — read so they still decode, and preferred as the noun when present. Never
+         * set by new code, so new encodings never write it.
+         */
+        @SerialName("description")
+        private val encodedDescription: String? = null
+
+        override val description: String get() = requirementDescription ?: encodedDescription ?: "target"
 
         /**
          * This target read as a player, for the slots typed as [Player] — "the cards in *that

@@ -910,7 +910,7 @@ data class GrantKeywordToSpellEffect(
     constructor(keyword: Keyword, target: EffectTarget = EffectTarget.TriggeringEntity) :
         this(keyword.name, target)
 
-    override val description: String = "${target.description} gains ${keyword.lowercase().replace('_', ' ')}"
+    override val description: String = com.wingedsheep.sdk.scripting.util.describeKeywordGrant(target.description, keyword)
 }
 
 @SerialName("CopyTargetSpell")

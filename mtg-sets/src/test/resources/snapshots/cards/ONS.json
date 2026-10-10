@@ -16788,7 +16788,8 @@
                             "Insect"
                         ],
                         "imageUri": "https://cards.scryfall.io/normal/front/a/a/aa47df37-f246-4f80-a944-008cdf347dad.jpg?1561757793"
-                    }
+                    },
+                    "description": "Create a 1/1 green Insect creature token"
                 },
                 {
                     "effect": {

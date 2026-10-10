@@ -9791,7 +9791,8 @@
                                     "type": "Fixed",
                                     "amount": 1
                                 }
-                            }
+                            },
+                            "description": "Draw a card"
                         }
                     ]
                 }
@@ -17225,7 +17226,8 @@
                                 "zone": "Stack"
                             }
                         }
-                    ]
+                    ],
+                    "description": "Counter target spell"
                 },
                 {
                     "effect": {

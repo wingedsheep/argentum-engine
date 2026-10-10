@@ -840,7 +840,8 @@
                             },
                             "id": "t0"
                         }
-                    ]
+                    ],
+                    "description": "Counter target spell"
                 },
                 {
                     "effect": {

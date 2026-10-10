@@ -5611,19 +5611,22 @@
                                 "counterType": "PLUS_ONE_PLUS_ONE",
                                 "count": 1,
                                 "target": "Self"
-                            }
+                            },
+                            "description": "Put 1 +1/+1 counter on this creature"
                         },
                         {
                             "effect": {
                                 "type": "CreatePredefinedToken",
                                 "tokenType": "Food"
-                            }
+                            },
+                            "description": "Create a Food token"
                         },
                         {
                             "effect": {
                                 "type": "Scry",
                                 "count": 1
-                            }
+                            },
+                            "description": "Scry 1"
                         }
                     ],
                     "excludePreviouslyChosenModes": true,

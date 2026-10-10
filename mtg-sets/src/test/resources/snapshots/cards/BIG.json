@@ -2156,19 +2156,22 @@
                             "effect": {
                                 "type": "CreatePredefinedToken",
                                 "tokenType": "Blood"
-                            }
+                            },
+                            "description": "Create a Blood token"
                         },
                         {
                             "effect": {
                                 "type": "CreatePredefinedToken",
                                 "tokenType": "Clue"
-                            }
+                            },
+                            "description": "Create a Clue token"
                         },
                         {
                             "effect": {
                                 "type": "CreatePredefinedToken",
                                 "tokenType": "Food"
-                            }
+                            },
+                            "description": "Create a Food token"
                         }
                     ],
                     "countsAsModalSpell": false

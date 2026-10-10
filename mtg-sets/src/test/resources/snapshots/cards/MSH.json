@@ -800,13 +800,15 @@
                             "effect": {
                                 "type": "CreatePredefinedToken",
                                 "tokenType": "Food"
-                            }
+                            },
+                            "description": "Create a Food token"
                         },
                         {
                             "effect": {
                                 "type": "CreatePredefinedToken",
                                 "tokenType": "Treasure"
-                            }
+                            },
+                            "description": "Create a Treasure token"
                         }
                     ],
                     "countsAsModalSpell": false

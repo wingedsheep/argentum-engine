@@ -85,6 +85,14 @@ data class CompositeEffect(
 data class Mode(
     val effect: Effect,
     val targetRequirements: List<TargetRequirement> = emptyList(),
+    /**
+     * Always written. The default is re-derived from [effect] on decode, and a bound target's
+     * noun ([EffectTarget.BoundVariable.requirementDescription]) is display-only state the JSON
+     * doesn't carry — so an omitted description would come back as "Destroy target" where the
+     * card said "Destroy target artifact" (a replay pin, a loaded card).
+     */
+    @OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
+    @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.ALWAYS)
     val description: String = effect.description,
     val additionalManaCost: String? = null,
     val additionalCosts: List<AdditionalCost>? = null

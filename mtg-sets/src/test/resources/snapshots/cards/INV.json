@@ -1100,7 +1100,8 @@
                             "effect": {
                                 "type": "GainLife",
                                 "amount": "XValue"
-                            }
+                            },
+                            "description": "You gain X life"
                         }
                     ]
                 },

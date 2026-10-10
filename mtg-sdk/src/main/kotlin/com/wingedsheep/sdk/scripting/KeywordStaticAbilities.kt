@@ -28,7 +28,7 @@ data class GrantKeyword(
         this(keyword.name, filter)
 
     override val description: String =
-        "${filter.description} have ${keyword.lowercase().replace('_', ' ')}"
+        "${filter.description} have ${com.wingedsheep.sdk.scripting.util.keywordDisplayText(keyword)}"
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
         val newFilter = filter.applyTextReplacement(replacer)
         return if (newFilter !== filter) copy(filter = newFilter) else this
@@ -90,7 +90,7 @@ data class RemoveKeywordStatic(
     constructor(keyword: Keyword, filter: GroupFilter = GroupFilter.attachedCreature()) :
         this(keyword.name, filter)
 
-    override val description: String = "Removes ${keyword.lowercase().replace('_', ' ')}"
+    override val description: String = "Removes ${com.wingedsheep.sdk.scripting.util.keywordDisplayText(keyword)}"
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
         val newFilter = filter.applyTextReplacement(replacer)
         return if (newFilter !== filter) copy(filter = newFilter) else this

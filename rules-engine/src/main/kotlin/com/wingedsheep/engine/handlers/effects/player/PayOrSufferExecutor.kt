@@ -1291,15 +1291,10 @@ class PayOrSufferExecutor(
      * Build prompt for tap cost.
      */
     private fun buildTapPrompt(cost: CostAtom.TapPermanents, sourceName: String, effect: PayOrSufferEffect): String {
-        val desc = cost.filter.description
-        val typeText = if (cost.count == 1) {
-            // The article always precedes "untapped", so it is always "an".
-            "an untapped $desc you control"
-        } else {
-            "${cost.count} untapped ${desc}s you control"
-        }
+        // The atom's own phrase ("tap two untapped creatures you control") — one wording for the
+        // cost wherever it is shown, including a filter that already carries "you control".
         val consequence = describeConsequence(effect, sourceName)
-        return "Tap $typeText or $consequence"
+        return "${cost.description.replaceFirstChar { it.uppercase() }} or $consequence"
     }
 
     /**

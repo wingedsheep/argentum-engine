@@ -38,7 +38,10 @@ interface TargetDeclarations {
 
     /** Declare one target of any shape — `target(Targets.Player)`, `target(Targets.Any)`. */
     fun target(requirement: TargetRequirement): EffectTarget.BoundVariable =
-        EffectTarget.BoundVariable(declareTarget(requirement))
+        EffectTarget.BoundVariable(
+            declareTarget(requirement),
+            requirement.description.takeIf { requirement.count == 1 && !requirement.unlimited }
+        )
 
     /**
      * Declare one target of any shape that may be left unchosen — `target(Targets.CreatureOrPlaneswalker,

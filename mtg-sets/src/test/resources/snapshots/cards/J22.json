@@ -3995,7 +3995,8 @@
                             },
                             "id": "t0"
                         }
-                    ]
+                    ],
+                    "description": "Counter target spell unless its controller pays {4}"
                 },
                 {
                     "effect": {

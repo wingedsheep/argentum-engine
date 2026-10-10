@@ -8586,7 +8586,8 @@
                                     "creatureTypes": [
                                         "Elemental"
                                     ]
-                                }
+                                },
+                                "description": "Create a 4/4 white and blue Elemental creature token"
                             },
                             {
                                 "effect": {
@@ -12732,7 +12733,8 @@
                             "type": "PlayerRef",
                             "player": "Each"
                         }
-                    }
+                    },
+                    "description": "Each player loses 4 life"
                 },
                 {
                     "effect": {
@@ -14000,13 +14002,15 @@
                             "Human"
                         ],
                         "imageUri": "https://cards.scryfall.io/normal/front/5/0/50240867-3a3e-4a8d-9569-816ab4a3671a.jpg?1783914992"
-                    }
+                    },
+                    "description": "Create a 1/1 white Human creature token"
                 },
                 {
                     "effect": {
                         "type": "CreatePredefinedToken",
                         "tokenType": "Food"
-                    }
+                    },
+                    "description": "Create a Food token"
                 }
             ],
             "chooseCount": 2

@@ -139,7 +139,8 @@
                                     "type": "Fixed",
                                     "amount": 2
                                 }
-                            }
+                            },
+                            "description": "You gain 2 life"
                         },
                         {
                             "effect": {

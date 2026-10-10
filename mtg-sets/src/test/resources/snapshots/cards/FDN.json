@@ -329,7 +329,8 @@
                                     "type": "Fixed",
                                     "amount": 4
                                 }
-                            }
+                            },
+                            "description": "You gain 4 life"
                         }
                     ]
                 }
@@ -5849,7 +5850,8 @@
                                 "keywords": [
                                     "FLYING"
                                 ]
-                            }
+                            },
+                            "description": "Create a 1/1 white Spirit creature token with flying"
                         }
                     ]
                 }
@@ -9245,7 +9247,8 @@
                                     "type": "Fixed",
                                     "amount": 2
                                 }
-                            }
+                            },
+                            "description": "You gain 2 life"
                         },
                         {
                             "effect": {
