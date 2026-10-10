@@ -176,6 +176,6 @@ data class ReturnSelfFromZoneTransformedEffect(
     val tapped: Boolean = false,
 ) : Effect {
     override val description: String =
-        "Return this card from your ${fromZone.displayName.lowercase()} to the battlefield transformed" +
+        "Return this card from your ${fromZone.noun} to the battlefield transformed" +
             if (tapped) " tapped" else ""
 }

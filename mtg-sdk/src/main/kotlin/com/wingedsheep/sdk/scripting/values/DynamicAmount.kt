@@ -610,13 +610,6 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
             }
             return (words.dropLast(1) + plural).joinToString(" ")
         }
-
-        /**
-         * Strip article from zone displayName for use with possessives.
-         * "a graveyard" → "graveyard", "the battlefield" → "battlefield"
-         */
-        internal fun zoneSimpleName(zone: Zone): String =
-            zone.displayName.removePrefix("a ").removePrefix("the ")
     }
 
     /**
@@ -1318,7 +1311,7 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
                     append("in ")
                     append(player.possessive)
                     append(" ")
-                    append(zoneSimpleName(zone))
+                    append(zone.noun)
                 }
             }
         }
@@ -1671,7 +1664,7 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
             append(" in ")
             append(player.possessive)
             append(" ")
-            append(zoneSimpleName(zone))
+            append(zone.noun)
         }
     }
 

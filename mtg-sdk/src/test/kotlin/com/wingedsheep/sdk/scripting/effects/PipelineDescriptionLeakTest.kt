@@ -1,5 +1,6 @@
 package com.wingedsheep.sdk.scripting.effects
 
+import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
@@ -77,6 +78,29 @@ class PipelineDescriptionLeakTest : DescribeSpec({
                 FilterCollectionEffect(key, storeMatching = "out").description,
                 StoreCardNameEffect(key).description,
             ).forEach { it shouldNotContain key }
+        }
+    }
+
+    describe("a possessive zone reads without an article") {
+
+        it("a Landscape's gather reads \"basic Island, Swamp, or Mountain cards in your library\"") {
+            val source = CardSource.FromZone(
+                zone = Zone.LIBRARY,
+                player = Player.You,
+                filter = GameObjectFilter.BasicLand.withAnyOfSubtypes(
+                    listOf(Subtype.ISLAND, Subtype.SWAMP, Subtype.MOUNTAIN)
+                ),
+            )
+            source.description shouldBe "basic Island, Swamp, or Mountain cards in your library"
+        }
+
+        it("no zone ever reads \"your a …\"") {
+            Zone.entries.forEach { zone ->
+                CardSource.FromZone(zone).description shouldNotContain "your a "
+                CardSource.FromZone(zone).description shouldNotContain "your the "
+            }
+            CardSource.FromMultipleZones(listOf(Zone.GRAVEYARD, Zone.HAND, Zone.LIBRARY)).description shouldBe
+                "cards in your graveyard, hand, or library"
         }
     }
 })

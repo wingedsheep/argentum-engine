@@ -20,6 +20,10 @@ import kotlinx.serialization.Serializable
 // Pipeline Vocabulary Types
 // =============================================================================
 
+/** "basic land cards", but a bare filter reads "cards" — never "card cards". */
+private fun cardsPhrase(filter: GameObjectFilter): String =
+    filter.description.let { if (it == "card") "cards" else "$it cards" }
+
 /**
  * Where to gather cards from.
  */
@@ -135,7 +139,7 @@ sealed interface CardSource {
         val excludeSacrificedThisWay: Boolean = false
     ) : CardSource {
         override val description: String = buildString {
-            append("${filter.description} cards in ${player.possessive} ${zone.displayName}")
+            append("${cardsPhrase(filter)} in ${player.possessive} ${zone.noun}")
             if (excludeSacrificedThisWay) append(" other than one sacrificed this way")
         }
     }
@@ -155,7 +159,9 @@ sealed interface CardSource {
         val player: Player = Player.You,
         val filter: GameObjectFilter = GameObjectFilter.Companion.Any
     ) : CardSource {
-        override val description: String = "${filter.description} cards in ${player.possessive} ${zones.joinToString(", ") { it.displayName }}"
+        override val description: String = "${cardsPhrase(filter)} in ${player.possessive} ${zones.map { it.noun }.let { nouns ->
+            if (nouns.size <= 2) nouns.joinToString(" or ") else nouns.dropLast(1).joinToString(", ") + ", or " + nouns.last()
+        }}"
     }
 
     /**
