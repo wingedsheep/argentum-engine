@@ -1423,6 +1423,192 @@
     "layout": "MODAL_DFC"
 }
 
+// Nissa of Shadowed Boughs
+{
+    "name": "Nissa of Shadowed Boughs",
+    "manaCost": "{2}{B}{G}",
+    "typeLine": "Legendary Planeswalker — Nissa",
+    "oracleText": "Landfall — Whenever a land you control enters, put a loyalty counter on Nissa.\n+1: Untap target land you control. You may have it become a 3/3 Elemental creature with haste and menace until end of turn. It's still a land.\n−5: You may put a creature card with mana value less than or equal to the number of lands you control onto the battlefield from your hand or graveyard with two +1/+1 counters on it.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Nissa of Shadowed Boughs:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "land ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "LOYALTY",
+                    "count": 1,
+                    "target": "Self"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Nissa of Shadowed Boughs:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "TapUntap",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "tap": false
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": "Gate.MayDecide",
+                            "then": {
+                                "type": "BecomeCreature",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "power": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                },
+                                "toughness": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                },
+                                "keywords": [
+                                    "HASTE",
+                                    "MENACE"
+                                ],
+                                "creatureTypes": [
+                                    "Elemental"
+                                ]
+                            },
+                            "descriptionOverride": "You may have it become a 3/3 Elemental creature with haste and menace until end of turn. It's still a land."
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "land ctrl:you"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Nissa of Shadowed Boughs:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -5
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromMultipleZones",
+                                "zones": [
+                                    "Hand",
+                                    "Graveyard"
+                                ],
+                                "filter": {
+                                    "cardPredicates": [
+                                        "IsCreature",
+                                        {
+                                            "type": "ManaValueAtMostDynamic",
+                                            "amount": {
+                                                "type": "AggregateBattlefield",
+                                                "player": "You",
+                                                "filter": "land"
+                                            }
+                                        }
+                                    ]
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected1",
+                            "prompt": "You may put a creature card with mana value less than or equal to the number of lands you control onto the battlefield"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            },
+                            "storeMovedAs": "moved2"
+                        },
+                        {
+                            "type": "AddCountersToCollection",
+                            "collectionName": "moved2",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 2
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "231",
+        "rarity": "MYTHIC",
+        "artist": "Yongjae Choi",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/d/6d69f943-d474-47c0-bc6b-1b247a5dd6f3.jpg?1783929321",
+        "rulings": [
+            {
+                "date": "2020-09-25",
+                "text": "Nissa's middle ability can target a land that's already untapped or that's already a creature."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "Nissa's middle ability doesn't remove any abilities the land creature has."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "Nissa's middle ability overwrites any previous effects that set the land creature's power and/or toughness to specific values. Other effects that set these characteristics to specific values that start to apply after the ability resolves will overwrite that part of the effect."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "The creature card's mana value is checked only in your hand or graveyard. You may put a creature card onto the battlefield whose mana value becomes greater than the number of lands you control once it's on the battlefield, most likely because it enters as a copy of another permanent."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "If a card in a player's hand or graveyard has {X} in its mana cost, X is considered to be 0."
+            }
+        ]
+    },
+    "startingLoyalty": 4,
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
+    ]
+}
+
 // Nullpriest of Oblivion
 {
     "name": "Nullpriest of Oblivion",

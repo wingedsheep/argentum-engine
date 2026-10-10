@@ -1271,6 +1271,72 @@
     ]
 }
 
+// Nightscape Familiar
+{
+    "name": "Nightscape Familiar",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Zombie",
+    "oracleText": "Blue spells and red spells you cast cost {1} less to cast.\n{1}{B}: Regenerate this creature.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Nightscape Familiar:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{B}"
+                    }
+                },
+                "effect": {
+                    "type": "Regenerate",
+                    "target": "Self"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": {
+                    "type": "YouCast",
+                    "filter": "blue|red"
+                },
+                "modification": {
+                    "type": "ReduceGeneric",
+                    "amount": 1
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "48",
+        "artist": "Jeff Easley",
+        "flavorText": "Nightscape masters don't stop at raising the spirit of a fallen battlemage. They raise the flesh along with it.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/4/24fa6853-09b0-4c9f-a138-9dd005780255.jpg?1783945620",
+        "rulings": [
+            {
+                "date": "2022-12-08",
+                "text": "A spell you cast that's blue and red costs {1} less, not {2} less."
+            },
+            {
+                "date": "2004-10-04",
+                "text": "Can never affect the colored part of the cost."
+            },
+            {
+                "date": "2004-10-04",
+                "text": "If this card is sacrificed to pay part of a spell's cost, the cost reduction still applies."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Orim's Chant
 {
     "name": "Orim's Chant",

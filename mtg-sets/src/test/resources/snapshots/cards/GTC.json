@@ -1109,6 +1109,92 @@
     ]
 }
 
+// Thespian's Stage
+{
+    "name": "Thespian's Stage",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "{T}: Add {C}.\n{2}, {T}: This land becomes a copy of target land, except it has this ability.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Thespian's Stage:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Thespian's Stage:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "EachPermanentBecomesCopyOfTarget",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "affected": "Self",
+                    "retainActivatingAbility": true
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "land"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{2}, {T}: This land becomes a copy of target land, except it has this ability."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "248",
+        "rarity": "RARE",
+        "artist": "John Avon",
+        "flavorText": "Amid rumors of war, the third act of *The Absolution of the Guildpact* was quickly rewritten as a tragedy.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/6/b6f27909-e5cd-44c0-91c4-21624f692fd9.jpg?1783940087",
+        "rulings": [
+            {
+                "date": "2018-12-07",
+                "text": "The copy effect created by the last activated ability doesn't have a duration. It will last until Thespian's Stage leaves the battlefield or another copy effect overwrites it. The permanent will no longer have the first ability of Thespian's Stage."
+            },
+            {
+                "date": "2018-12-07",
+                "text": "A land's copiable values are those printed on it, as modified by other copy effects. Counters and other effects aren't copied. Notably, if you copy a land that is also a creature because of a temporary effect (such as Celestial Colonnade), Thespian's Stage will become just the \"unanimated\" land."
+            },
+            {
+                "date": "2018-12-07",
+                "text": "Thespian's Stage doesn't become untapped when it becomes a copy, even if the target land is untapped."
+            },
+            {
+                "date": "2018-12-07",
+                "text": "No enters-the-battlefield abilities of the land Thespian's Stage is copying will trigger. Thespian's Stage was already on the battlefield. Similarly, no \"as this land enters the battlefield\" or \"this land enters the battlefield with\" effects, such as that of Dark Depths, will apply."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Totally Lost
 {
     "name": "Totally Lost",

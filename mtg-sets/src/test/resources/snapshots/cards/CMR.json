@@ -414,6 +414,123 @@
     "colorIdentityOverride": []
 }
 
+// Jeska's Will
+{
+    "name": "Jeska's Will",
+    "manaCost": "{2}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Choose one. If you control a commander as you cast this spell, you may choose both instead.\n• Add {R} for each card in target opponent's hand.\n• Exile the top three cards of your library. You may play them this turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "AddMana",
+                        "color": "RED",
+                        "amount": {
+                            "type": "Count",
+                            "player": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "zone": "Hand"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetOpponent",
+                            "id": "t0"
+                        }
+                    ],
+                    "description": "Add {R} for each card in target opponent's hand"
+                },
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "TopOfLibrary",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 3
+                                    }
+                                },
+                                "storeAs": "impulseExiled"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "impulseExiled",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Exile"
+                                }
+                            },
+                            {
+                                "type": "GrantMayPlayFromExile",
+                                "from": "impulseExiled"
+                            }
+                        ]
+                    },
+                    "description": "Exile the top three cards of your library. You may play them this turn"
+                }
+            ],
+            "chooseCount": 2,
+            "minChooseCount": 1,
+            "dynamicChooseCount": {
+                "type": "Conditional",
+                "condition": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsPermanent"
+                        ],
+                        "statePredicates": [
+                            "IsCommander"
+                        ]
+                    }
+                },
+                "ifTrue": {
+                    "type": "Fixed",
+                    "amount": 2
+                },
+                "ifFalse": {
+                    "type": "Fixed",
+                    "amount": 1
+                }
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "187",
+        "rarity": "RARE",
+        "artist": "Izzy",
+        "flavorText": "\"Gather your strength. Prepare yourself.\"\n—Jeska, to Radha",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/e/4e91d96d-cc69-439b-b876-a7d57039022c.jpg?1783928812",
+        "rulings": [
+            {
+                "date": "2026-03-20",
+                "text": "Use the number of cards in the target opponent's hand as Jeska's Will resolves to determine how much {R} to add."
+            },
+            {
+                "date": "2026-03-20",
+                "text": "Even though the card is named after a specific character, controlling any commander will satisfy its condition. The commander you control doesn't have to be your commander."
+            },
+            {
+                "date": "2026-03-20",
+                "text": "Once you've chosen both modes for the spell, it doesn't matter whether you continue to control a commander."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Kangee, Sky Warden
 {
     "name": "Kangee, Sky Warden",
