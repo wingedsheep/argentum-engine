@@ -2,7 +2,7 @@
 
 **Set Size:** 312 cards
 **Release Date:** August 2, 2024
-**Implemented:** 148 / 312
+**Implemented:** 149 / 312
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 37    | 0    |
@@ -242,7 +242,7 @@
 - [ ] Second Harvest
 - [ ] Secret Rendezvous
 - [x] Selfless Spirit
-- [ ] Selvala, Explorer Returned
+- [x] Selvala, Explorer Returned
 - [ ] Shamanic Revelation
 - [x] Sheltered Thicket
 - [ ] Shield Broker

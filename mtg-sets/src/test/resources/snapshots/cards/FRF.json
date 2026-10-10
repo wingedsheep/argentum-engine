@@ -427,6 +427,76 @@
     ]
 }
 
+// Humble Defector
+{
+    "name": "Humble Defector",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Human Rogue",
+    "oracleText": "{T}: Draw two cards. Target opponent gains control of this creature. Activate only during your turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Humble Defector:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        },
+                        {
+                            "type": "GiveControlToTargetPlayer",
+                            "permanent": "Self",
+                            "newController": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetOpponent",
+                        "id": "t0"
+                    }
+                ],
+                "restrictions": [
+                    "OnlyDuringYourTurn"
+                ],
+                "descriptionOverride": "{T}: Draw two cards. Target opponent gains control of this creature. Activate only during your turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "104",
+        "rarity": "UNCOMMON",
+        "artist": "Slawomir Maniak",
+        "flavorText": "\"You were once Mardu, so your body and will are strong. Now we must train your mind.\"\n—Houn, Jeskai elder",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/b/4bb0c13f-6cea-48b4-a5c8-2c0cfcfea7fd.jpg?1783938687",
+        "rulings": [
+            {
+                "date": "2020-11-10",
+                "text": "If Humble Defector isn't on the battlefield as its ability resolves, but the target player is still a legal target, the ability will resolve. You'll draw two cards, even though the player doesn't gain control of Humble Defector."
+            },
+            {
+                "date": "2020-11-10",
+                "text": "Humble Defector's ability can be activated any time during your turn, including in response to a spell or ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Mardu Strike Leader
 {
     "name": "Mardu Strike Leader",

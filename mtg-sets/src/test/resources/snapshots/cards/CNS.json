@@ -41,3 +41,97 @@
         "GREEN"
     ]
 }
+
+// Selvala, Explorer Returned
+{
+    "name": "Selvala, Explorer Returned",
+    "manaCost": "{1}{G}{W}",
+    "typeLine": "Legendary Creature — Elf Scout",
+    "oracleText": "Parley — {T}: Each player reveals the top card of their library. For each nonland card revealed this way, add {G} and you gain 1 life. Then each player draws a card. (Activate only as an instant.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Selvala, Explorer Returned:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "player": "Each"
+                            },
+                            "storeAs": "gathered0",
+                            "revealed": true
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "gathered0",
+                            "filter": "nonland",
+                            "storeMatching": "matching1"
+                        },
+                        {
+                            "type": "AddMana",
+                            "color": "GREEN",
+                            "amount": {
+                                "type": "VariableReference",
+                                "variableName": "matching1_count"
+                            }
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "VariableReference",
+                                "variableName": "matching1_count"
+                            }
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Players",
+                                "players": "Each"
+                            },
+                            "body": {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "51",
+        "rarity": "RARE",
+        "artist": "Tyler Jacobson",
+        "flavorText": "\"The Lowlands refuse to suffer at the whims of the High City.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/9/89d4786c-e022-4ae5-9ef3-75886db51f49.jpg?1783939370",
+        "rulings": [
+            {
+                "date": "2026-08-05",
+                "text": "Selvala's ability is not a mana ability. Players can respond to it, and it can't be activated in the middle of paying for a cost. A recent update to rule 605.1a has made any abilities that move cards to or from libraries no longer mana abilities."
+            },
+            {
+                "date": "2014-05-29",
+                "text": "Except in some very rare cases, the card each player draws will be the card revealed from the top of their library."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE"
+    ]
+}

@@ -1647,6 +1647,67 @@
     ]
 }
 
+// Noble Hierarch
+{
+    "name": "Noble Hierarch",
+    "manaCost": "{G}",
+    "typeLine": "Creature — Human Druid",
+    "oracleText": "Exalted (Whenever a creature you control attacks alone, that creature gets +1/+1 until end of turn.)\n{T}: Add {G}, {W}, or {U}.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 1
+    },
+    "keywords": [
+        "EXALTED"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Noble Hierarch:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "GREEN"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Noble Hierarch:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "WHITE"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Noble Hierarch:3",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "BLUE"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "87",
+        "rarity": "RARE",
+        "artist": "Mark Zug",
+        "flavorText": "She protects the sacred groves from blight, drought, and the Unbeholden.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/a/6adfe928-1305-444d-b709-1e714544daaf.jpg?1783942473"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE",
+        "BLUE"
+    ]
+}
+
 // Obelisk of Alara
 {
     "name": "Obelisk of Alara",

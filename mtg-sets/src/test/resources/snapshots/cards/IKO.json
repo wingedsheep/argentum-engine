@@ -1539,6 +1539,124 @@
     ]
 }
 
+// Kinnan, Bonder Prodigy
+{
+    "name": "Kinnan, Bonder Prodigy",
+    "manaCost": "{G}{U}",
+    "typeLine": "Legendary Creature — Human Druid",
+    "oracleText": "Whenever you tap a nonland permanent for mana, add one mana of any type that permanent produced.\n{5}{G}{U}: Look at the top five cards of your library. You may put a non-Human creature card from among them onto the battlefield. Put the rest on the bottom of your library in a random order.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Kinnan, Bonder Prodigy:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{5}{G}{U}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 5
+                                }
+                            },
+                            "storeAs": "looked"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "looked",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "filter": {
+                                "cardPredicates": [
+                                    "IsCreature",
+                                    {
+                                        "type": "NotSubtype",
+                                        "subtype": "Human"
+                                    }
+                                ]
+                            },
+                            "storeSelected": "kept",
+                            "storeRemainder": "rest",
+                            "prompt": "You may put a non-Human creature card from among them onto the battlefield",
+                            "showAllCards": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "kept",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            }
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "rest",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Bottom"
+                            },
+                            "order": "Random"
+                        }
+                    ]
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "AdditionalManaOnSourceTap",
+                "sourceFilter": "nonland permanent ctrl:you"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "192",
+        "rarity": "MYTHIC",
+        "artist": "Jason Rainville",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/3/63cda4a0-0dff-4edb-ae67-a2b7e2971350.jpg?1783931023",
+        "rulings": [
+            {
+                "date": "2020-04-17",
+                "text": "You're \"tapping a permanent for mana\" only if you're activating a mana ability of that permanent that includes the {T} symbol in its cost. A mana ability produces mana as part of its effect."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "The types of mana are white, blue, black, red, green, and colorless."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "The additional mana is produced by Kinnan, not by the nonland permanent that you tapped for mana."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "Kinnan doesn't care about any restrictions or riders the nonland permanent put on the mana it produced. The additional mana Kinnan produces won't have any restrictions or riders."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ]
+}
+
 // Lava Serpent
 {
     "name": "Lava Serpent",

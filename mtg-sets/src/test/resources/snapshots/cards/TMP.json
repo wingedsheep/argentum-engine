@@ -3048,6 +3048,85 @@
     ]
 }
 
+// Living Death
+{
+    "name": "Living Death",
+    "manaCost": "{3}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Each player exiles all creature cards from their graveyard, then sacrifices all creatures they control, then puts all cards they exiled this way onto the battlefield.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Graveyard",
+                        "player": "Each",
+                        "filter": "creature"
+                    },
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "gathered0",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Exile"
+                    },
+                    "storeMovedAs": "moved1"
+                },
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "BattlefieldMatching",
+                        "filter": "creature"
+                    },
+                    "storeAs": "gathered2"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "gathered2",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard"
+                    },
+                    "moveType": "Sacrifice"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "moved1",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Battlefield"
+                    },
+                    "underOwnersControl": true
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "142",
+        "rarity": "RARE",
+        "artist": "Charles Gillespie",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/c/6c820476-fbda-4073-baf6-51e71f45ed58.jpg?1783946637",
+        "rulings": [
+            {
+                "date": "2018-03-16",
+                "text": "As Living Death resolves, all players exile their creature cards from graveyards at the same time. Then all players sacrifice all creatures they control at the same time. Then all players put all creatures they exiled onto the battlefield at the same time."
+            },
+            {
+                "date": "2018-03-16",
+                "text": "Only cards exiled by Living Death's first instruction are put onto the battlefield. If a replacement effect (such as that of Leyline of the Void) causes any of the sacrificed creatures to be exiled instead of put into a graveyard, those cards aren't returned to the battlefield."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Lotus Petal
 {
     "name": "Lotus Petal",
