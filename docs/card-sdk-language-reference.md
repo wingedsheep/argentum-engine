@@ -4774,7 +4774,10 @@ A resolving nonpermanent spell retains its stack instance through serialized eff
 - `EffectTarget.SacrificedAsCost(index = 0)` — a permanent **sacrificed to pay this spell's or
   ability's cost** ("the sacrificed creature"). Read as a value it uses the snapshot taken as the cost
   was paid — `EntityProperty(SacrificedAsCost(), ManaValue)` for "the sacrificed creature's mana
-  value" (Sidisi, Regent of the Mire).
+  value" (Sidisi, Regent of the Mire). A pipeline `sacrifice(...)` step earlier in the same resolution
+  appends to the same list, so "you may sacrifice X. If you do, … it …" reads it too (The Gitrog,
+  Ravenous Ride; Braids, Arisen Nightmare). The snapshot carries the projected type line, so a
+  `sharingCardTypeWith(SacrificedAsCost())` filter compares the types the permanent last had.
 - `EffectTarget.TappedAsCost(index = 0)` — a permanent **tapped to pay this activation's cost**, read
   from `EffectContext.tappedPermanents`; the tap counterpart of `DiscardedAsCost`. Every printed use taps
   exactly one, hence the `index` default. Used by Vodalian War Machine (FEM), whose abilities each tap an
@@ -5658,7 +5661,13 @@ This is the player-arm prerequisite for the planned composable mixed `TargetUnio
   out, so two *legendary* permanents don't share a card type by being legendary, and subtypes belong to
   `.sharingCreatureTypeWith`. A reference that resolves to nothing matches nothing. Evaluated for real in
   targeting/search/count contexts; inert (false) in static-projection, permissive (true) in
-  cost-calculation.
+  cost-calculation. **A reference that has left the battlefield is read as it last existed there**
+  (CR 608.2h) whenever it carries a snapshot — `SacrificedAsCost`, `TappedAsCost`, `PipelineTarget`,
+  `TriggeringEntity`, `Self` — so "each opponent may sacrifice a permanent that shares a card type with
+  it" after a pipeline `sacrifice(...)` sees an animated land as the artifact creature land it was
+  (Braids, Arisen Nightmare: `gather(Permanent.sharingCardTypeWith(EffectTarget.SacrificedAsCost()))`
+  inside `forEachPlayerCollecting(EachOpponent)`). `.sharingCreatureTypeWith` takes the same
+  last-known read for its subtypes. A reference still on the battlefield is always read live.
 - `.sharingCardTypeWithLinkedExile()` — `CardPredicate.SharesCardTypeWithLinkedExile`: shares ≥1 card type
   with **any** card still exiled with the filtering ability's source (CR 607 linked abilities). The
   pile-wide form of `.sharingCardTypeWith(EffectTarget.LinkedExiledCard())`, which reads one index —
