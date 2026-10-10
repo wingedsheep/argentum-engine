@@ -448,6 +448,26 @@ data class AiProfile(
      */
     val informedChoiceDecisions: Boolean = false,
     /**
+     * Choose *how many* cards a selection takes by what they are worth, not by the decision's
+     * bounds. Three misplays from the 2026-10-10 engine-vs-engine logs (`production-candidate-expiring`),
+     * all in [DecisionResponder]'s generic card-selection fallbacks:
+     *
+     * - **A search with no more candidates than it may take found nothing.** The pipeline's library
+     *   search arrives as an unlabelled "choose up to N", and the fallback took `min` (zero)
+     *   whenever `max` was not smaller than the option count. Game 3 turns 19/22/25: a Landscape
+     *   sacrificed with [Plains] as the only option, three times, leaving the AI on four lands
+     *   with a seven-drop in hand.
+     * - **Scry always bottomed a card.** The bottom pile reused the discard path's
+     *   `coerceAtLeast(1)`: game 1 turn 12, Lembas bottomed Celeborn the Wise with six lands out
+     *   and only lands in hand.
+     * - **Surveil never milled.** "Put in graveyard" matched no branch and took zero: Hidden Grotto
+     *   (game 1) and Refute Destiny (game 2) kept every card on top.
+     *
+     * With it on, an unlabelled "choose up to N" takes N, and scry / surveil send away exactly the
+     * cards whose [CardSelectionValue] falls below a keep threshold — zero, some or all.
+     */
+    val selectionCountsByValue: Boolean = false,
+    /**
      * Refuse to pay for an until-end-of-turn payoff that nothing can spend this turn: an activation
      * or a combat trick whose every effect wears off at cleanup, in a window where the creature it
      * buys for is not in a combat that is still ahead of it.
@@ -1446,6 +1466,25 @@ data class AiProfile(
             priceCrackBackAsLife = true,
             crackBackWithoutChumps = true,
             evasionAfterAttacking = true,
+            selectionCountsByValue = true,
+        )
+
+        /**
+         * [selectionCountsByValue] alone on top of [PRODUCTION], so a puzzle or an arena point that
+         * moves is attributable to it.
+         */
+        val PRODUCTION_SELECTCOUNT = PRODUCTION.copy(
+            id = "production-selectcount",
+            selectionCountsByValue = true,
+        )
+
+        /**
+         * [PRODUCTION_CANDIDATE_EXPIRING] — the profile the cited game logs were taken with — plus
+         * [selectionCountsByValue].
+         */
+        val PRODUCTION_CANDIDATE_SELECTCOUNT = PRODUCTION_CANDIDATE_EXPIRING.copy(
+            id = "production-candidate-selectcount",
+            selectionCountsByValue = true,
         )
 
         /**

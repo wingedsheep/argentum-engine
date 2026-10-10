@@ -158,6 +158,12 @@ object ArenaAgents {
         // What EngineAiPlayerController plays: production-candidate-expiring plus every fix shipped
         // since. `just arena production-candidate-expiring live 300` prices the stack.
         ArenaAgent("live", AiProfile.LIVE),
+        // Selection counts by value: searches take what they may, scry/surveil send away only the
+        // cards not worth drawing. `just arena production production-selectcount 300` prices it
+        // alone; `just arena production-candidate-expiring production-candidate-selectcount 300`
+        // is the promotion gate.
+        ArenaAgent("production-selectcount", AiProfile.PRODUCTION_SELECTCOUNT),
+        ArenaAgent("production-candidate-selectcount", AiProfile.PRODUCTION_CANDIDATE_SELECTCOUNT),
         // Choice decisions answered by what they are for: colour/land-type tie-breaks, shortlisted
         // card names, and a skipped draw priced as a card. `just arena production
         // production-choices 300` prices it alone; `just arena production-candidate-expiring

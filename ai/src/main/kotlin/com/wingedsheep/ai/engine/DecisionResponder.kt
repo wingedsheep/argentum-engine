@@ -64,6 +64,13 @@ class DecisionResponder(
      * step" marker as the card it costs. Off is the historical behaviour, byte for byte.
      */
     private val informedChoices: Boolean = false,
+    /**
+     * [AiProfile.selectionCountsByValue]: an unlabelled "choose up to N" takes N even when the
+     * options don't outnumber it, and a scry-to-bottom or surveil-to-graveyard choice sends exactly
+     * the cards worth less than [LOOK_KEEP_THRESHOLD] — possibly none, possibly all. Off is the
+     * historical count logic.
+     */
+    private val selectionCountsByValue: Boolean = false,
 ) {
     private val priors: ChoicePriors? = if (informedChoices) ChoicePriors(simulator.cardRegistry) else null
 
@@ -275,7 +282,14 @@ class DecisionResponder(
         val isDiscard = prompt.contains("discard")
         val isSacrifice = prompt.contains("sacrifice")
         val isScryBottom = decision.selectedLabel?.lowercase()?.contains("bottom") == true
+        val isSurveilGraveyard = decision.selectedLabel?.lowercase()?.contains("graveyard") == true
         val isChooseToKeep = prompt.contains("put") && prompt.contains("hand")
+
+        if (selectionCountsByValue && !isDiscard && (isScryBottom || isSurveilGraveyard) &&
+            decision.conditionalMinimums.isEmpty()
+        ) {
+            return CardsSelectedResponse(decision.id, cardsBelowKeepThreshold(state, decision, playerId))
+        }
 
         return when {
             isDiscard || isScryBottom -> {
@@ -308,11 +322,35 @@ class DecisionResponder(
                 val ranked = rankCardsContextual(state, options, playerId, wantToKeep = true)
                 CardsSelectedResponse(decision.id, ranked.take(max))
             }
+            selectionCountsByValue && decision.selectedLabel == null && max > 0 -> {
+                // An unlabelled "choose up to N" is a gain — the pipeline's library search is one
+                // (a Landscape's [Plains]). The branch above already takes N when the options
+                // outnumber it; taking `min` (zero) here declined every search with ≤ N candidates.
+                val ranked = rankCardsContextual(state, options, playerId, wantToKeep = true)
+                CardsSelectedResponse(decision.id, ranked.take(max.coerceAtMost(options.size)))
+            }
             else -> {
                 val ranked = rankCardsContextual(state, options, playerId, wantToKeep = true)
                 CardsSelectedResponse(decision.id, ranked.take(min.coerceAtLeast(0)))
             }
         }
+    }
+
+    /**
+     * Scry / surveil: send away exactly the looked-at cards not worth drawing — every card whose
+     * [CardSelectionValue] falls below [LOOK_KEEP_THRESHOLD], widened to the decision's minimum
+     * with the least valuable cards and capped at its maximum. Zero is a legal and common answer.
+     */
+    private fun cardsBelowKeepThreshold(
+        state: GameState,
+        decision: SelectCardsDecision,
+        playerId: EntityId,
+    ): List<EntityId> {
+        val value = CardSelectionValue.of(state, playerId, intents)
+        val scored = decision.options.map { it to value.score(it) }.sortedBy { it.second }
+        val count = scored.count { it.second < LOOK_KEEP_THRESHOLD }
+            .coerceIn(decision.minSelections.coerceAtMost(decision.maxSelections), decision.maxSelections)
+        return scored.take(count).map { it.first }
     }
 
     /**
@@ -1064,6 +1102,13 @@ class DecisionResponder(
 
         /** Library cards averaged to price one draw. */
         const val DRAW_VALUE_SAMPLES = 5
+
+        /**
+         * [CardSelectionValue] below which a scried / surveiled card is not worth drawing. A spell
+         * castable within a turn or two scores well above it; a land with six or more already
+         * coming (1.5 or less) and a spell several land draws away fall below it.
+         */
+        const val LOOK_KEEP_THRESHOLD = 2.0
 
         val CREATURE_TYPES_LOWER: Set<String> = Subtype.ALL_CREATURE_TYPES.mapTo(HashSet()) { it.lowercase() }
     }
