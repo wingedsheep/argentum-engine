@@ -803,8 +803,9 @@ class LobbyHandler(
                 ),
             aiAssistEnabled = message.aiAssistEnabled,
             gameMode = gameMode,
-            attackMode = runCatching { com.wingedsheep.sdk.core.AttackMode.valueOf(message.attackMode.uppercase()) }
-                .getOrDefault(com.wingedsheep.sdk.core.AttackMode.LEFT),
+            // Unset (or unreadable) leaves the default to the lobby's Rules axis.
+            chosenAttackMode = message.attackMode
+                ?.let { runCatching { com.wingedsheep.sdk.core.AttackMode.valueOf(it.uppercase()) }.getOrNull() },
             // Ranked only applies to a TOURNAMENT-mode bracket (its matches are 1v1).
             ranked = message.ranked && gameMode == LobbyGameMode.TOURNAMENT,
         )

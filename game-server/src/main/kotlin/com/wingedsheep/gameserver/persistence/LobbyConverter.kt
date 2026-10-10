@@ -79,7 +79,7 @@ fun TournamentLobby.toPersistent(): PersistentTournamentLobby {
         isPublic = isPublic,
         aiAssistEnabled = aiAssistEnabled,
         gameMode = gameMode.name,
-        attackMode = attackMode.name,
+        attackMode = chosenAttackMode?.name,
         randomTeams = randomTeams,
         teamAssignments = teamAssignments.mapKeys { it.key.value },
         ffaGameSessionId = ffaGameSessionId,
@@ -133,8 +133,8 @@ fun restoreTournamentLobby(
         aiAssistEnabled = persistent.aiAssistEnabled,
         gameMode = runCatching { LobbyGameMode.valueOf(persistent.gameMode) }
             .getOrDefault(LobbyGameMode.TOURNAMENT),
-        attackMode = runCatching { com.wingedsheep.sdk.core.AttackMode.valueOf(persistent.attackMode) }
-            .getOrDefault(com.wingedsheep.sdk.core.AttackMode.MULTIPLE),
+        chosenAttackMode = persistent.attackMode
+            ?.let { runCatching { com.wingedsheep.sdk.core.AttackMode.valueOf(it) }.getOrNull() },
         randomTeams = persistent.randomTeams
     )
     lobby.bannedCardNames = persistent.bannedCardNames
