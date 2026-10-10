@@ -273,7 +273,14 @@ data class SelectCardsDecision(
      * Label for submitting an empty selection when [minSelections] is 0 and selecting nothing
      * means declining ("Don't sacrifice"). null falls back to the client's generic wording.
      */
-    val declineLabel: String? = null
+    val declineLabel: String? = null,
+    /**
+     * True when the options were found by searching a library (CR 701.23) — the pick of a
+     * "search your library for …" pipeline. Selecting is finding, so a selected card is a gain and
+     * an empty selection is "fail to find" (CR 701.23b). Lets consumers (the AI) read the
+     * decision's meaning without parsing [prompt] or [selectedLabel].
+     */
+    val librarySearch: Boolean = false
 ) : PendingDecision
 
 @Serializable

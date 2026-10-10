@@ -435,7 +435,15 @@ class GatherCardsExecutor(
             state
         }
 
-        val collections = mapOf(effect.storeAs to cards)
+        // A search marks what it found, so the pick that follows can say it is one (a found card is
+        // a gain; an empty pick is "fail to find"). A later non-search gather into the same name
+        // clears a stale mark.
+        val searchedKey = com.wingedsheep.engine.handlers.PipelineState.searchedKey(effect.storeAs)
+        val collections = when {
+            effect.search -> mapOf(effect.storeAs to cards, searchedKey to cards)
+            searchedKey in context.pipeline.storedCollections -> mapOf(effect.storeAs to cards, searchedKey to emptyList())
+            else -> mapOf(effect.storeAs to cards)
+        }
         val sourceVariable = effect.source as? CardSource.FromVariable
         val updatedCollections = if (sourceVariable != null) {
             com.wingedsheep.engine.handlers.effects.EffectDiscardDestinations.propagateUnknown(

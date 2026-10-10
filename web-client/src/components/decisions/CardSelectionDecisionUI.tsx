@@ -521,7 +521,7 @@ export function CardSelectionDecision({
           className={styles.confirmButton}
         >
           {decision.minSelections === 0 && selectedCards.length === 0
-            ? 'Select None'
+            ? (decision.declineLabel ?? 'Select None')
             : 'Confirm Selection'}
         </button>
       </div>

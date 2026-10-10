@@ -79,7 +79,9 @@
                             "amount": 3
                         }
                     },
-                    "storeSelected": "found"
+                    "storeSelected": "found",
+                    "prompt": "Search your library for up to three creature cards to put into your graveyard",
+                    "selectedLabel": "Put into your graveyard"
                 },
                 {
                     "type": "MoveCollection",

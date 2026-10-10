@@ -4042,6 +4042,10 @@ one-off pipeline belongs inline in the card file via `Effects.Pipeline { }` (§5
 **Library search & reveal**
 
 - `searchLibrary(filter, destination?, tapped?, shuffle?)` — search library, pick matching, move, shuffle.
+  The pick's prompt and "Selected →" label are derived from the filter's `description` and the
+  destination ("Search your library for a basic land card to put onto the battlefield tapped"), as in
+  `searchMultipleZones` and `eachPlayerSearchesLibrary`. Any `gather(search = true)` also marks its
+  pick's `SelectCardsDecision` with `librarySearch = true` and `declineLabel = "Fail to find"`.
 - `searchMultipleZones(zones, filter, count?, destination?, tapped?, reveal?)` — search several zones (e.g. library and/or graveyard) in one effect; shuffles automatically if `LIBRARY` is among the zones. Pass `reveal = true` for "reveal it" tutors (Delivery Moogle).
 
 **Sideboard / wish (`Patterns.Sideboard.*`)**

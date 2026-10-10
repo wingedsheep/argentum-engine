@@ -421,9 +421,11 @@ export interface SelectCardsDecision extends PendingDecisionBase {
   readonly conditionalMinimums?: readonly ConditionalSelectionMinimum[]
   /**
    * Label for submitting an empty selection when selecting nothing means declining
-   * ("Don't sacrifice"). Absent: the generic "Select None".
+   * ("Don't sacrifice", "Fail to find"). Absent: the generic "Select None".
    */
   readonly declineLabel?: string | null
+  /** True when the options were found by searching a library (CR 701.23). */
+  readonly librarySearch?: boolean
 }
 
 export interface ConditionalSelectionMinimum {
