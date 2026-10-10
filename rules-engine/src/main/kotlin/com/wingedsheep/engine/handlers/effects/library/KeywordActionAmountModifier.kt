@@ -4,7 +4,6 @@ import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.ReplacementEffectSourceComponent
-import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.ModifyKeywordActionAmount
@@ -19,7 +18,7 @@ import com.wingedsheep.sdk.scripting.references.Player
  *
  * The keyword-action twin of `DrawReplacementDispatcher.applyDrawAmountModifier`: it scans every
  * battlefield permanent's replacement effects for the matching action's pattern, gates each by that
- * pattern's `player` filter relative to the acting player and the source's controller, checks
+ * pattern's `player` filter relative to the acting player and the source's projected controller, checks
  * `restrictions`, sums the modifier, and clamps the result to `≥ 0`. A base count of 0 is left
  * untouched — a mill, scry or surveil of 0 is no event.
  */
@@ -58,9 +57,8 @@ private fun applyAmountModifiers(
     val conditionEvaluator = predicateEvaluator.conditions
     var adjusted = originalCount
     for (entityId in state.getBattlefield()) {
-        val container = state.getEntity(entityId) ?: continue
-        val replacementSource = container.get<ReplacementEffectSourceComponent>() ?: continue
-        val sourceControllerId = container.get<ControllerComponent>()?.playerId
+        val replacementSource = state.getEntity(entityId)?.get<ReplacementEffectSourceComponent>() ?: continue
+        val sourceControllerId = state.projectedState.getController(entityId)
 
         for (effect in replacementSource.replacementEffects) {
             if (effect !is ModifyKeywordActionAmount) continue
@@ -70,7 +68,7 @@ private fun applyAmountModifiers(
                 Player.Each -> true
                 Player.You -> sourceControllerId != null && playerId == sourceControllerId
                 Player.EachOpponent ->
-                    sourceControllerId != null && playerId != sourceControllerId
+                    sourceControllerId != null && state.isOpponentOf(playerId, sourceControllerId)
                 else -> false
             }
             if (!matchesPlayer) continue

@@ -14,7 +14,7 @@ import com.wingedsheep.sdk.model.Rarity
  *
  * Modelling notes:
  * - Printed as "Target player puts the top eight cards of their library into their graveyard";
- *   the modern Oracle wording is the mill keyword action (CR 701.13), which is what
+ *   the modern Oracle wording is the mill keyword action (CR 701.17), which is what
  *   [Patterns.Library.mill] models. It is *not* a cost and not optional.
  * - Any player is a legal target, including its controller — self-mill is a real (if grim) use.
  * - A library with fewer than eight cards simply mills what it has; the player doesn't lose

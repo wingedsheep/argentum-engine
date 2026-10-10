@@ -394,7 +394,7 @@ object TopOfLibrary {
      * How many cards a pipeline gathers off the top of *your* library.
      *
      * Null for another player's library and for a mill, which is [CardSource.TopOfLibrary]'s own
-     * `isMill` flag: CR 701.13's "mill that many plus four instead" applies at the count site, so a
+     * `isMill` flag: CR 701.17's "mill that many plus four instead" applies at the count site, so a
      * mill and an exile-from-the-top are different values even where the pipeline shape agrees, and
      * the SDK sets the flag on exactly one recipe. Reading the flag off rather than ignoring it is
      * what keeps this family from printing a mill as "exile the top two cards".
@@ -881,7 +881,7 @@ object TopOfLibrary {
     // ---------------------------------------------------------------------------------------
 
     /**
-     * "Mill two cards." / "Target player mills two cards." — CR 701.13.
+     * "Mill two cards." / "Target player mills two cards." — CR 701.17.
      *
      * A mill is this file's pipeline with the middle taken out: `GatherCards(TopOfLibrary(n))` and
      * one `MoveCollection` to the graveyard, no selection step and no second pile, which is why it
@@ -889,7 +889,7 @@ object TopOfLibrary {
      * `Patterns.Library.mill` publishes exactly that recipe.
      *
      * **The `isMill` flag is why this cannot be spelled as a row of the exile family.** The gather
-     * carries it, CR 701.13 applies "mill that many plus four instead" at the count site, and the
+     * carries it, CR 701.17 applies "mill that many plus four instead" at the count site, and the
      * SDK therefore holds a mill and a same-shaped move apart even where the two pipelines otherwise
      * agree — see [exiledTopCount], which refuses a mill for that reason. A rule ignoring the flag
      * would print one as the other.

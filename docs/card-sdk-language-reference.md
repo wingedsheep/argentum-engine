@@ -15753,10 +15753,11 @@ not update an existing copy.
 - `ModifyKeywordActionAmount(appliesTo, modifier, restrictions)` — resize the count a **mill, scry or
   surveil** announces by a fixed amount (the keyword-action twin of `ModifyDrawAmount`): a player who
   would act on N cards instead acts on `N + modifier`, clamped to ≥ 0. One type across the three
-  actions, like `ModifyKeywordAction`: `appliesTo` names the action and whose — the replacement-only
+  actions, like `ModifyKeywordAction`: `appliesTo` names the action and whose — an
+  `EventPattern.KeywordActionCountEvent`, the replacement-only family
   `EventPattern.MillEvent(player)` (CR 701.17), `EventPattern.ScryEvent(player)` (CR 701.22) or
   `EventPattern.SurveilEvent(player)` (CR 701.25), `player` (`Player.You` / `Player.EachOpponent` /
-  `Player.Each`) relative to the source's controller; any other pattern is rejected at construction.
+  `Player.Each`) relative to the source's (projected) controller; any other pattern doesn't compile.
   "Whenever you scry / surveil" triggers stay on `ScriedEvent` / `SurveiledEvent`. `restrictions` (a
   `List<Condition>`, ALL must hold, evaluated against the acting player as controller) gates *when*
   it applies, and is the slot a `maxSpeed { }` gate folds into.

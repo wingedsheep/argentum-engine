@@ -313,6 +313,16 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
     }
 
     /**
+     * A player would perform a counted library keyword action — mill, scry or surveil. The
+     * replacement-only family [com.wingedsheep.sdk.scripting.ModifyKeywordActionAmount] resizes;
+     * [player] is whose action it is, relative to the replacement's controller.
+     */
+    @Serializable
+    sealed interface KeywordActionCountEvent : EventPattern {
+        val player: Player
+    }
+
+    /**
      * When a player would mill one or more cards (CR 701.17). Used by
      * [com.wingedsheep.sdk.scripting.ModifyKeywordActionAmount] to adjust the count at the mill
      * announcement (e.g. The Water Crystal: "If an opponent would mill one or more cards,
@@ -321,8 +331,8 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
     @SerialName("MillEvent")
     @Serializable
     data class MillEvent(
-        val player: Player = Player.You
-    ) : EventPattern {
+        override val player: Player = Player.You
+    ) : KeywordActionCountEvent {
         override val description: String = "${player.description} would mill one or more cards"
     }
 
@@ -336,8 +346,8 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
     @SerialName("ScryEvent")
     @Serializable
     data class ScryEvent(
-        val player: Player = Player.You
-    ) : EventPattern {
+        override val player: Player = Player.You
+    ) : KeywordActionCountEvent {
         override val description: String = "${player.description} would scry a number of cards"
     }
 
@@ -351,8 +361,8 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
     @SerialName("SurveilEvent")
     @Serializable
     data class SurveilEvent(
-        val player: Player = Player.You
-    ) : EventPattern {
+        override val player: Player = Player.You
+    ) : KeywordActionCountEvent {
         override val description: String = "${player.description} would surveil a number of cards"
     }
 

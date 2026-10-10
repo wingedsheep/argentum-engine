@@ -41,6 +41,16 @@ class SurveilAmountReplacementTest : FunSpec({
     }
     val surveilTwo = surveilSpell("Surveil Two", 2)
     val surveilZero = surveilSpell("Surveil Zero", 0)
+    val scryTwo = card("Scry Two") {
+        manaCost = "{0}"
+        typeLine = "Sorcery"
+        spell { effect = Effects.Scry(2) }
+    }
+    val scryLens = card("Your Scry Lens") {
+        manaCost = "{0}"
+        typeLine = "Artifact"
+        replacementEffect(ModifyKeywordActionAmount(EventPattern.ScryEvent(), modifier = 2))
+    }
     val surveilX = card("Surveil X") {
         manaCost = "{X}"
         typeLine = "Sorcery"
@@ -64,7 +74,7 @@ class SurveilAmountReplacementTest : FunSpec({
 
     fun setup(): GameTestDriver = GameTestDriver().apply {
         registerCards(
-            TestCards.all + listOf(surveilTwo, surveilZero, surveilX, recordingSurveil, yourLens, opponentsLens)
+            TestCards.all + listOf(surveilTwo, surveilZero, scryTwo, scryLens, surveilX, recordingSurveil, yourLens, opponentsLens)
         )
         initMirrorMatch(deck = Deck.of("Mountain" to 40))
         passPriorityUntil(Step.PRECOMBAT_MAIN)
@@ -122,6 +132,29 @@ class SurveilAmountReplacementTest : FunSpec({
         // Four library cards plus the spell itself.
         d.getGraveyard(you).size shouldBe graveyardBefore + 5
         d.library(you).size shouldBe libraryBefore - 4
+    }
+
+    test("the extra cards may also go back on top, in an order the surveilling player chooses") {
+        val d = setup()
+        val you = d.activePlayer!!
+        d.putPermanentOnBattlefield(you, "Your Surveil Lens")
+        val looked = d.library(you).take(4)
+        val libraryBefore = d.library(you).size
+
+        d.castSpell(you, d.putCardInHand(you, "Surveil Two"))
+        d.bothPass()
+        val select = d.pendingDecision as SelectCardsDecision
+        select.options.toSet() shouldBe looked.toSet()
+        // Bin one card; the other three — two of them the extra look — go back on top.
+        d.submitDecision(you, CardsSelectedResponse(select.id, listOf(looked[0])))
+        val reorder = d.pendingDecision as ReorderLibraryDecision
+        reorder.cards.toSet() shouldBe looked.drop(1).toSet()
+        val chosen = looked.drop(1).reversed()
+        d.submitDecision(you, OrderedResponse(reorder.id, chosen))
+
+        d.library(you).size shouldBe libraryBefore - 1
+        d.library(you).take(3) shouldBe chosen
+        d.getGraveyard(you).contains(looked[0]) shouldBe true
     }
 
     test("a dynamic surveil X is modified too") {
@@ -189,5 +222,25 @@ class SurveilAmountReplacementTest : FunSpec({
 
         // Your lens (+2) applies to you; the opponent's opponent-scoped lens (+1) applies to you too.
         d.cast(you, "Surveil Two") shouldBe listOf(5)
+    }
+
+    test("an opponent's you-scoped lens does not resize your surveil") {
+        val d = setup()
+        val you = d.activePlayer!!
+        d.putPermanentOnBattlefield(d.getOpponent(you), "Your Surveil Lens")
+
+        d.cast(you, "Surveil Two") shouldBe listOf(2)
+    }
+
+    test("each lens resizes only its own keyword action") {
+        val d = setup()
+        val you = d.activePlayer!!
+        d.putPermanentOnBattlefield(you, "Your Surveil Lens")
+        d.cast(you, "Scry Two") shouldBe listOf(2)
+
+        val e = setup()
+        val me = e.activePlayer!!
+        e.putPermanentOnBattlefield(me, "Your Scry Lens")
+        e.cast(me, "Surveil Two") shouldBe listOf(2)
     }
 })

@@ -1460,7 +1460,7 @@ Families:
 - `ModifyDamageAmount(modifier: Int, dynamicModifier: DynamicAmount?, restrictions: List<Condition>, appliesTo: EventPattern)` — Modify damage dealt by an additive amount — either a fixed modifier or, when dynamicModifier is supplied, an amount computed at damage time against the replacement's *source* permanent.
 - `ModifyDrawAmount(modifier: Int, multiplier: Int, restrictions: List<Condition>, appliesTo: EventPattern.DrawCardsEvent)` — Modify the number of cards a draw event draws — `(count * multiplier) + modifier`, clamped to ≥ 0 — optionally gated by additional restrictions.
 - `ModifyKeywordAction(prefixEffect: Effect, appliesTo: EventPattern)` — Insert an extra effect *in front of* a keyword action (CR 614).
-- `ModifyKeywordActionAmount(appliesTo: EventPattern, modifier: Int, restrictions: List<Condition>)` — Modify how many cards a player mills, scries or surveils — "mill that many cards plus four instead", "scry that many cards plus one instead", "look at an additional two cards each time you surveil".
+- `ModifyKeywordActionAmount(appliesTo: EventPattern.KeywordActionCountEvent, modifier: Int, restrictions: List<Condition>)` — Modify how many cards a player mills, scries or surveils — "mill that many cards plus four instead", "scry that many cards plus one instead", "look at an additional two cards each time you surveil".
 - `ModifyLifeGain(multiplier: Int, modifier: Int, appliesTo: EventPattern, restrictions: List<Condition>)` — Modify life gain amount.
 - `ModifyLifeLoss(multiplier: Int, modifier: Int, restrictions: List<Condition>, appliesTo: EventPattern)` — Modify life loss amount.
 - `ModifyTokenCount(modifier: Int, appliesTo: EventPattern)` — Modify the number of tokens created by a fixed amount.

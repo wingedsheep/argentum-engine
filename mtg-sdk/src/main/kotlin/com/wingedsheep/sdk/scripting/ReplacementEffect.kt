@@ -1324,17 +1324,10 @@ data class ModifyDrawAmount(
 @SerialName("ModifyKeywordActionAmount")
 @Serializable
 data class ModifyKeywordActionAmount(
-    override val appliesTo: EventPattern,
+    override val appliesTo: EventPattern.KeywordActionCountEvent,
     val modifier: Int,
     override val restrictions: List<Condition> = emptyList()
 ) : ReplacementEffect {
-    init {
-        require(
-            appliesTo is EventPattern.MillEvent ||
-                appliesTo is EventPattern.ScryEvent ||
-                appliesTo is EventPattern.SurveilEvent
-        ) { "ModifyKeywordActionAmount applies to a MillEvent, ScryEvent or SurveilEvent, not $appliesTo" }
-    }
 
     override val description: String = buildString {
         val restrictionDesc = restrictions.joinToString(" and ") { it.description.removePrefix("if ") }
@@ -1348,17 +1341,16 @@ data class ModifyKeywordActionAmount(
         val verb = when (appliesTo) {
             is EventPattern.MillEvent -> "mill"
             is EventPattern.ScryEvent -> "scry"
-            else -> "surveil"
+            is EventPattern.SurveilEvent -> "surveil"
         }
         append(", they $verb that many cards plus $modifier instead")
     }
 
     override fun applyTextReplacement(replacer: TextReplacer): ReplacementEffect {
-        val newAppliesTo = appliesTo.applyTextReplacement(replacer)
+        // A keyword-action pattern carries only a Player — no replaceable text.
         val newRestrictions = restrictions.map { it.applyTextReplacement(replacer) }
-        val anyChanged = newAppliesTo !== appliesTo ||
-            newRestrictions.zip(restrictions).any { (n, o) -> n !== o }
-        return if (anyChanged) copy(appliesTo = newAppliesTo, restrictions = newRestrictions) else this
+        val anyChanged = newRestrictions.zip(restrictions).any { (n, o) -> n !== o }
+        return if (anyChanged) copy(restrictions = newRestrictions) else this
     }
 }
 

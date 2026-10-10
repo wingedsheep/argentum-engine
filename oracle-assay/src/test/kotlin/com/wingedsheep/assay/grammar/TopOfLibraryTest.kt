@@ -389,7 +389,7 @@ class TopOfLibraryTest : StringSpec({
     // ---------------------------------------------------------------------------------------
 
     // A mill is the same printed shape and a different value: `TopOfLibrary.isMill` makes CR
-    // 701.13's "mill that many plus four instead" apply at the count site. Reading the flag off
+    // 701.17's "mill that many plus four instead" apply at the count site. Reading the flag off
     // rather than ignoring it is what stops a mill printing as "exile the top two cards".
     "a mill is not an exile from the top, even where the pipeline shape agrees" {
         val milled = CompositeEffect(
