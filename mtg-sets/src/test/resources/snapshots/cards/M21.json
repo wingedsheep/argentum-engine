@@ -472,7 +472,8 @@
                                     "Beast"
                                 ],
                                 "imageUri": "https://cards.scryfall.io/normal/front/8/8/882247ba-99d2-46db-8314-f800f3366b7f.jpg?1783930590"
-                            }
+                            },
+                            "description": "Create a 3/3 green Beast creature token"
                         },
                         {
                             "effect": {
@@ -481,7 +482,8 @@
                                     "type": "Fixed",
                                     "amount": 3
                                 }
-                            }
+                            },
+                            "description": "You gain 3 life"
                         },
                         {
                             "effect": {
@@ -490,7 +492,8 @@
                                     "type": "Fixed",
                                     "amount": 1
                                 }
-                            }
+                            },
+                            "description": "Draw a card"
                         }
                     ]
                 }
@@ -513,7 +516,8 @@
                                     "Beast"
                                 ],
                                 "imageUri": "https://cards.scryfall.io/normal/front/8/8/882247ba-99d2-46db-8314-f800f3366b7f.jpg?1783930590"
-                            }
+                            },
+                            "description": "Create a 3/3 green Beast creature token"
                         },
                         {
                             "effect": {
@@ -522,7 +526,8 @@
                                     "type": "Fixed",
                                     "amount": 3
                                 }
-                            }
+                            },
+                            "description": "You gain 3 life"
                         },
                         {
                             "effect": {
@@ -531,7 +536,8 @@
                                     "type": "Fixed",
                                     "amount": 1
                                 }
-                            }
+                            },
+                            "description": "Draw a card"
                         }
                     ]
                 }

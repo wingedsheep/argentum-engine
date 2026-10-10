@@ -12551,7 +12551,8 @@
                             },
                             "id": "t0"
                         }
-                    ]
+                    ],
+                    "description": "Counter target spell unless its controller pays {2}"
                 },
                 {
                     "effect": {
@@ -18454,7 +18455,8 @@
                             "type": "Fixed",
                             "amount": 5
                         }
-                    }
+                    },
+                    "description": "You gain 5 life"
                 },
                 {
                     "effect": {

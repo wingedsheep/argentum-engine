@@ -525,7 +525,8 @@
                             "type": "Fixed",
                             "amount": 5
                         }
-                    }
+                    },
+                    "description": "You gain 5 life"
                 },
                 {
                     "effect": "Counter",
@@ -538,7 +539,8 @@
                             },
                             "id": "t0"
                         }
-                    ]
+                    ],
+                    "description": "Counter target spell"
                 },
                 {
                     "effect": {

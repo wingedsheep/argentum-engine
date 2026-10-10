@@ -10941,13 +10941,15 @@
                                     "type": "Fixed",
                                     "amount": 1
                                 }
-                            }
+                            },
+                            "description": "Draw a card"
                         },
                         {
                             "effect": {
                                 "type": "CreatePredefinedToken",
                                 "tokenType": "Treasure"
-                            }
+                            },
+                            "description": "Create a Treasure token"
                         },
                         {
                             "effect": {
@@ -10960,7 +10962,8 @@
                                     "type": "PlayerRef",
                                     "player": "EachOpponent"
                                 }
-                            }
+                            },
+                            "description": "Each opponent loses 3 life"
                         }
                     ],
                     "excludeModesChosenThisTurn": true,

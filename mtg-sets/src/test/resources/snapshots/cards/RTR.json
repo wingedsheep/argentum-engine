@@ -328,7 +328,8 @@
                             "type": "Fixed",
                             "amount": 1
                         }
-                    }
+                    },
+                    "description": "Draw a card"
                 },
                 {
                     "effect": {
@@ -3140,7 +3141,8 @@
                         "keywords": [
                             "VIGILANCE"
                         ]
-                    }
+                    },
+                    "description": "Create a 2/2 white Knight creature token with vigilance"
                 }
             ]
         }

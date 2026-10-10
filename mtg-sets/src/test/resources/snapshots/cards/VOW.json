@@ -8594,7 +8594,8 @@
                                     "type": "Fixed",
                                     "amount": 3
                                 }
-                            }
+                            },
+                            "description": "You gain 3 life"
                         }
                     ]
                 }

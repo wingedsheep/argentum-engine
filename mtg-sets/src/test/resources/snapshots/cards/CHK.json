@@ -12760,7 +12760,8 @@
                                 "type": "BoundVariable",
                                 "name": "t0"
                             }
-                        }
+                        },
+                        "description": "Tap target permanent"
                     },
                     {
                         "effect": {
@@ -12770,7 +12771,8 @@
                                 "name": "t0"
                             },
                             "tap": false
-                        }
+                        },
+                        "description": "Untap target permanent"
                     }
                 ],
                 "countsAsModalSpell": false
@@ -16317,7 +16319,8 @@
                                         "type": "BoundVariable",
                                         "name": "t0"
                                     }
-                                }
+                                },
+                                "description": "Tap target creature"
                             },
                             {
                                 "effect": {
@@ -16327,7 +16330,8 @@
                                         "name": "t0"
                                     },
                                     "tap": false
-                                }
+                                },
+                                "description": "Untap target creature"
                             }
                         ],
                         "countsAsModalSpell": false

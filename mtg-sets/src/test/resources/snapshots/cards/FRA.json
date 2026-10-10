@@ -5062,7 +5062,8 @@
                                 "descriptionOverride": "Empower Jace 2"
                             }
                         ]
-                    }
+                    },
+                    "description": "Draw a card. Empower Jace 2"
                 },
                 {
                     "effect": {
@@ -9503,7 +9504,8 @@
                             "type": "Fixed",
                             "amount": 3
                         }
-                    }
+                    },
+                    "description": "Add {C}{C}{C}"
                 }
             ]
         }
@@ -19403,7 +19405,8 @@
                                 "descriptionOverride": "Empower Jace 6"
                             }
                         ]
-                    }
+                    },
+                    "description": "You lose 2 life. Empower Jace 6"
                 }
             ]
         }

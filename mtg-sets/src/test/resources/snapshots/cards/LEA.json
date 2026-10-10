@@ -12235,7 +12235,8 @@
                                 "type": "BoundVariable",
                                 "name": "t0"
                             }
-                        }
+                        },
+                        "description": "Tap target artifact, creature, or land"
                     },
                     {
                         "effect": {
@@ -12245,7 +12246,8 @@
                                 "name": "t0"
                             },
                             "tap": false
-                        }
+                        },
+                        "description": "Untap target artifact, creature, or land"
                     }
                 ],
                 "countsAsModalSpell": false

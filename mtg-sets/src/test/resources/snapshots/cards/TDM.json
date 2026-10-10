@@ -266,7 +266,7 @@
                 ],
                 "timing": "SorcerySpeed",
                 "activateFromZone": "Graveyard",
-                "descriptionOverride": "Renew — {B}, Exile this card from your graveyard: Put 1 +1/+1 counter on target Activate only as a sorcery."
+                "descriptionOverride": "Renew — {B}, Exile this card from your graveyard: Put 1 +1/+1 counter on target creature Activate only as a sorcery."
             }
         ]
     },
@@ -439,7 +439,7 @@
                 ],
                 "timing": "SorcerySpeed",
                 "activateFromZone": "Graveyard",
-                "descriptionOverride": "Renew — {3}{U}, Exile this card from your graveyard: Put 2 +1/+1 counters on target Activate only as a sorcery."
+                "descriptionOverride": "Renew — {3}{U}, Exile this card from your graveyard: Put 2 +1/+1 counters on target creature Activate only as a sorcery."
             }
         ]
     },
@@ -695,7 +695,7 @@
                 ],
                 "timing": "SorcerySpeed",
                 "activateFromZone": "Graveyard",
-                "descriptionOverride": "Renew — {1}{B}, Exile this card from your graveyard: Put 1 lifelink counter on target Activate only as a sorcery."
+                "descriptionOverride": "Renew — {1}{B}, Exile this card from your graveyard: Put 1 lifelink counter on target creature Activate only as a sorcery."
             }
         ]
     },
@@ -2434,7 +2434,7 @@
                 ],
                 "timing": "SorcerySpeed",
                 "activateFromZone": "Graveyard",
-                "descriptionOverride": "Renew — {1}{G}, Exile this card from your graveyard: Put 1 +1/+1 counter on target. Put 1 trample counter on target Activate only as a sorcery."
+                "descriptionOverride": "Renew — {1}{G}, Exile this card from your graveyard: Put 1 +1/+1 counter on target creature. Put 1 trample counter on target creature Activate only as a sorcery."
             }
         ]
     },
@@ -2629,7 +2629,7 @@
                 ],
                 "timing": "SorcerySpeed",
                 "activateFromZone": "Graveyard",
-                "descriptionOverride": "Renew — {2}{U}, Exile this card from your graveyard: Tap target. Put 1 stun counter on target Activate only as a sorcery."
+                "descriptionOverride": "Renew — {2}{U}, Exile this card from your graveyard: Tap target creature an opponent controls. Put 1 stun counter on target creature an opponent controls Activate only as a sorcery."
             }
         ]
     },
@@ -8243,7 +8243,7 @@
                 ],
                 "timing": "SorcerySpeed",
                 "activateFromZone": "Graveyard",
-                "descriptionOverride": "Renew — {2}{B}{G}{U}, Exile this card from your graveyard: Put 2 +1/+1 counters on target. Put 1 flying counter on target Activate only as a sorcery."
+                "descriptionOverride": "Renew — {2}{B}{G}{U}, Exile this card from your graveyard: Put 2 +1/+1 counters on target creature. Put 1 flying counter on target creature Activate only as a sorcery."
             }
         ]
     },
@@ -9008,7 +9008,7 @@
                 ],
                 "timing": "SorcerySpeed",
                 "activateFromZone": "Graveyard",
-                "descriptionOverride": "Renew — {1}{G}, Exile this card from your graveyard: Put the number of lands in your graveyard +1/+1 counters on target Activate only as a sorcery."
+                "descriptionOverride": "Renew — {1}{G}, Exile this card from your graveyard: Put the number of lands in your graveyard +1/+1 counters on target creature Activate only as a sorcery."
             }
         ]
     },
@@ -10514,7 +10514,7 @@
                 ],
                 "timing": "SorcerySpeed",
                 "activateFromZone": "Graveyard",
-                "descriptionOverride": "Renew — {2}{U}, Exile this card from your graveyard: Put 1 +1/+1 counter on target. Each other you control creature becomes a copy of target until end of turn Activate only as a sorcery."
+                "descriptionOverride": "Renew — {2}{U}, Exile this card from your graveyard: Put 1 +1/+1 counter on target nonlegendary creature you control. Each other you control creature becomes a copy of target nonlegendary creature you control until end of turn Activate only as a sorcery."
             }
         ],
         "replacementEffects": [
@@ -11533,7 +11533,7 @@
                 ],
                 "timing": "SorcerySpeed",
                 "activateFromZone": "Graveyard",
-                "descriptionOverride": "Renew — {2}{B}, Exile this card from your graveyard: Put 1 flying counter on target. Put 1 deathtouch counter on target. Put 1 lifelink counter on target Activate only as a sorcery."
+                "descriptionOverride": "Renew — {2}{B}, Exile this card from your graveyard: Put 1 flying counter on target creature. Put 1 deathtouch counter on target creature. Put 1 lifelink counter on target creature Activate only as a sorcery."
             }
         ]
     },
@@ -13342,7 +13342,7 @@
                 ],
                 "timing": "SorcerySpeed",
                 "activateFromZone": "Graveyard",
-                "descriptionOverride": "Renew — {3}{G}, Exile this card from your graveyard: Put 1 +1/+1 counter on target. Double the number of +1/+1 counters on target Activate only as a sorcery."
+                "descriptionOverride": "Renew — {3}{G}, Exile this card from your graveyard: Put 1 +1/+1 counter on target creature. Double the number of +1/+1 counters on target creature Activate only as a sorcery."
             }
         ]
     },
@@ -13471,7 +13471,7 @@
                 ],
                 "timing": "SorcerySpeed",
                 "activateFromZone": "Graveyard",
-                "descriptionOverride": "Renew — {4}{G}, Exile this card from your graveyard: Put 2 +1/+1 counters on target. Put 1 reach counter on target Activate only as a sorcery."
+                "descriptionOverride": "Renew — {4}{G}, Exile this card from your graveyard: Put 2 +1/+1 counters on target creature. Put 1 reach counter on target creature Activate only as a sorcery."
             }
         ]
     },
@@ -18927,7 +18927,7 @@
                     },
                     "id": "t1"
                 },
-                "descriptionOverride": "Flurry — Whenever you cast your second spell each turn, target creature an opponent controls tap target."
+                "descriptionOverride": "Flurry — Whenever you cast your second spell each turn, target creature an opponent controls tap target creature an opponent controls."
             }
         ]
     },

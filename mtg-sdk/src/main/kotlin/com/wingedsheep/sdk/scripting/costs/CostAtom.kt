@@ -371,8 +371,15 @@ sealed interface CostAtom : TextReplaceable<CostAtom> {
             val verb = if (untaps) "untap" else "tap"
             val state = if (untaps) "tapped" else "untapped"
             append("$verb ")
-            if (count == 1) append(if (excludeSelf) "another $state ${filter.description}" else "${if (untaps) "a" else "an"} $state ${filter.description}")
-            else append("$count $state ${filter.description}s")
+            // "you control" is this cost's own suffix; a filter that also carries it would render
+            // it twice, once as its leading prefix ("2 untapped you control Halfling creatures
+            // you control").
+            val noun = filter.copy(controllerPredicate = null).description
+            when {
+                count == 1 && excludeSelf -> append("another $state $noun")
+                count == 1 -> append("${if (untaps) "a" else "an"} $state $noun")
+                else -> append(quantify(count, "${if (excludeSelf) "other " else ""}$state $noun"))
+            }
             append(" you control")
             if (sharedCreatureType) append(" that share a creature type")
         }

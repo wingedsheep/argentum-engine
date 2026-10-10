@@ -839,7 +839,8 @@
                                     "Beast"
                                 ],
                                 "imageUri": "https://cards.scryfall.io/normal/front/e/2/e2c91781-acf9-4cff-be1a-85148ad2a683.jpg?1783929500"
-                            }
+                            },
+                            "description": "Create a 2/2 white Cat Beast creature token"
                         },
                         {
                             "effect": {

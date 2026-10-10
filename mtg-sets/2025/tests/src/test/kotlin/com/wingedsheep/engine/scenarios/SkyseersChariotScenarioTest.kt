@@ -110,7 +110,7 @@ class SkyseersChariotScenarioTest : ScenarioTestBase() {
                 game.chooseName(decision, "Prodigal Sorcerer")
 
                 withClue("the offered cost is rebuilt from the taxed cost") {
-                    game.abilityCostText(tim) shouldBe "{2}, {T}: Deal 1 damage to target"
+                    game.abilityCostText(tim) shouldBe "{2}, {T}: Deal 1 damage to any target"
                 }
                 withClue("both Plains paid for the Chariot — a {2}-taxed {T} ability is unaffordable") {
                     game.canActivate(tim) shouldBe false

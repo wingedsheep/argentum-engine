@@ -16537,7 +16537,8 @@
                                     "type": "Fixed",
                                     "amount": 1
                                 }
-                            }
+                            },
+                            "description": "Draw a card"
                         },
                         {
                             "effect": {
@@ -18862,7 +18863,8 @@
                             },
                             "id": "t0"
                         }
-                    ]
+                    ],
+                    "description": "Counter target spell"
                 },
                 {
                     "effect": {
@@ -20006,7 +20008,8 @@
                                 "zone": "Stack"
                             }
                         }
-                    ]
+                    ],
+                    "description": "Change the target of target spell or ability with a single target"
                 },
                 {
                     "effect": {

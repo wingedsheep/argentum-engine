@@ -924,7 +924,8 @@
                                     "type": "Fixed",
                                     "amount": 4
                                 }
-                            }
+                            },
+                            "description": "You gain 4 life"
                         }
                     ]
                 },

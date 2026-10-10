@@ -34,7 +34,8 @@
                                     "FLYING"
                                 ],
                                 "imageUri": "https://cards.scryfall.io/normal/front/5/f/5f3034f6-145f-4e60-9e55-c4054fd8e70f.jpg?1783921132"
-                            }
+                            },
+                            "description": "Create a 1/1 white Bird creature token with flying"
                         },
                         {
                             "effect": {
@@ -64,7 +65,8 @@
                                     "type": "Fixed",
                                     "amount": 1
                                 }
-                            }
+                            },
+                            "description": "Draw a card"
                         }
                     ]
                 }
@@ -4204,7 +4206,8 @@
                                     "type": "Fixed",
                                     "amount": 4
                                 }
-                            }
+                            },
+                            "description": "You gain 4 life"
                         }
                     ]
                 }

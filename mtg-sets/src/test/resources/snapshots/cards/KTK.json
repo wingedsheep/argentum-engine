@@ -11907,7 +11907,8 @@
                             },
                             "id": "t2"
                         }
-                    ]
+                    ],
+                    "description": "Counter target spell unless its controller pays {3}"
                 },
                 {
                     "effect": {

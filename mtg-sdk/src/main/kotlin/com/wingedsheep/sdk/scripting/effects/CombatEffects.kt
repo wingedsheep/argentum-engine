@@ -855,7 +855,9 @@ data class GrantKeywordToAttackersBlockedByEffect(
     val duration: Duration = Duration.EndOfTurn
 ) : Effect {
     override val description: String =
-        "Creatures that were blocked by ${target.description} gain ${keyword.lowercase().replace('_', ' ')} ${duration.description}"
+        com.wingedsheep.sdk.scripting.util.describeKeywordGrant(
+            "Creatures that were blocked by ${target.description}", keyword, plural = true
+        ) + " ${duration.description}"
 }
 
 @SerialName("RedirectCombatDamageToController")

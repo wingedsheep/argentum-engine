@@ -58,7 +58,7 @@ class SuppressionFieldScenarioTest : ScenarioTestBase() {
 
                 val taxedTim = taxed.findPermanent("Prodigal Sorcerer")!!
                 withClue("a tax applies even where a reduction could not: {T} gains a mana part") {
-                    taxed.actionFor(taxedTim).description shouldBe "{2}, {T}: Deal 1 damage to target"
+                    taxed.actionFor(taxedTim).description shouldBe "{2}, {T}: Deal 1 damage to any target"
                 }
                 withClue("with no mana available the taxed ability is unaffordable") {
                     taxed.canActivate(taxedTim) shouldBe false
@@ -92,7 +92,7 @@ class SuppressionFieldScenarioTest : ScenarioTestBase() {
                 val action = game.getLegalActions(2)
                     .first { (it.action as? ActivateAbility)?.sourceId == tim }
                 withClue("Suppression Field is symmetric — the opponent's ping is taxed identically") {
-                    action.description shouldBe "{2}, {T}: Deal 1 damage to target"
+                    action.description shouldBe "{2}, {T}: Deal 1 damage to any target"
                     action.isAffordable shouldBe false
                 }
             }
