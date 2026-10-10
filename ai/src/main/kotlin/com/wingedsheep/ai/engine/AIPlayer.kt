@@ -321,6 +321,7 @@ class AIPlayer(
                     holdFlashPermanentsForAmbush = profile.holdFlashPermanentsForAmbush,
                     holdExpiringGrantsForCombat = profile.holdExpiringGrantsForCombat,
                     refuseUnspendableGrants = profile.refuseUnspendableGrants,
+                    refuseDeadSearches = profile.refuseDeadSearches,
                     holdUnusablePumps = profile.holdUnusablePumps,
                     targetPolarityFromEffect = profile.targetPolarityFromEffect,
                     permanentCastIsNotCardLoss = profile.permanentCastIsNotCardLoss,

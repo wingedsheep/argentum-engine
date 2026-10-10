@@ -77,6 +77,12 @@ class HoldPolicy(
      */
     private val refuseUnspendableGrants: Boolean = false,
     /**
+     * [AiProfile.refuseDeadSearches][com.wingedsheep.ai.engine.AiProfile.refuseDeadSearches]
+     * — refuse an activation whose whole payoff is a library search our library cannot satisfy.
+     * See [DeadSearch], which is where the whole idea lives.
+     */
+    private val refuseDeadSearches: Boolean = false,
+    /**
      * [AiProfile.holdUnusablePumps][com.wingedsheep.ai.engine.AiProfile.holdUnusablePumps] — read
      * an untargeted team pump ([CardIntent.expiringGroupPump]) as a combat trick, refuse it once the
      * fight has left every creature of ours out, and defer any trick out of our own
@@ -187,11 +193,20 @@ class HoldPolicy(
         cardName: String,
         activation: ActivateAbility?,
     ): TimingVerdict {
-        if (!(holdExpiringGrantsForCombat || refuseUnspendableGrants) || activation == null) {
+        if (activation == null) return TimingVerdict.Neutral
+        if (!(holdExpiringGrantsForCombat || refuseUnspendableGrants || refuseDeadSearches)) {
             return TimingVerdict.Neutral
         }
         val ability = intents.activatedAbility(cardName, activation.abilityId)
             ?: return TimingVerdict.Neutral
+        // A search that can find nothing is a lost permanent and a shuffle, in every window.
+        if (refuseDeadSearches) {
+            val predicates = intents.predicates
+            if (predicates != null && DeadSearch.holds(state, playerId, ability, activation, predicates)) {
+                return TimingVerdict.NoWindow
+            }
+        }
+        if (!(holdExpiringGrantsForCombat || refuseUnspendableGrants)) return TimingVerdict.Neutral
         val holds = ExpiringGrantWindow.holds(
             state, playerId, ability, intents,
             activation = activation,

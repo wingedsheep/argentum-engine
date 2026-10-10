@@ -1,5 +1,6 @@
 package com.wingedsheep.ai.engine.knowledge
 
+import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.ComponentContainer
 import com.wingedsheep.engine.state.components.identity.CardComponent
@@ -33,6 +34,12 @@ class IntentCatalog private constructor(private val registry: CardRegistry?) {
 
     /** Whether this catalog can answer anything at all. False for [NONE]. */
     val isEnabled: Boolean get() = registry != null
+
+    /**
+     * A predicate evaluator over this catalog's registry, for the readers that must match a filter
+     * against real cards ([DeadSearch]). Null for [NONE], like every other answer here.
+     */
+    val predicates: PredicateEvaluator? by lazy { registry?.let(::PredicateEvaluator) }
 
     /**
      * The intent of the card called [name], or null when the catalog is off or the name is not a

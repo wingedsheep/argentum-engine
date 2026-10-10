@@ -135,6 +135,9 @@ class PuzzleComparisonBenchmark : ScenarioTestBase() {
                 // "Up to N targets" filled past one while each extra target helps.
                 AiProfile.PRODUCTION_UPTO,
                 AiProfile.PRODUCTION_CANDIDATE_UPTO,
+                // A library search that can find nothing refused outright.
+                AiProfile.PRODUCTION_DEADSEARCH,
+                AiProfile.PRODUCTION_CANDIDATE_DEADSEARCH,
                 // Attack decisions from the 2026-10-09 game-log review — crack-back priced as life,
                 // tapped fliers keeping their evasion — alone and on top of what is live.
                 AiProfile.PRODUCTION_ATTACKS,
