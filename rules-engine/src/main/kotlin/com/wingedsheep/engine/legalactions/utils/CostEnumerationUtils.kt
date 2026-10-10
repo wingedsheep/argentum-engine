@@ -129,6 +129,31 @@ class CostEnumerationUtils(
         }
     }
 
+    /**
+     * The permanents a [CostAtom.TapPermanents][com.wingedsheep.sdk.scripting.costs.CostAtom.TapPermanents]
+     * cost may turn: [findAbilityTapTargets] for a tap cost, and for the untap mirror
+     * (Halo Fountain) the *tapped* matches that are able to become untapped — the same pool
+     * `CostHandler.findTapCostCandidates` validates against.
+     */
+    fun findTapCostTargets(
+        state: GameState,
+        playerId: EntityId,
+        atom: com.wingedsheep.sdk.scripting.costs.CostAtom.TapPermanents,
+        excludeEntityId: EntityId? = null
+    ): List<EntityId> {
+        if (!atom.untaps) return findAbilityTapTargets(state, playerId, atom.filter, excludeEntityId)
+        val predicateContext = PredicateContext(controllerId = playerId)
+        val projected = state.projectedState
+        return projected.getBattlefieldControlledBy(playerId).filter { entityId ->
+            if (entityId == excludeEntityId) return@filter false
+            val container = state.getEntity(entityId) ?: return@filter false
+            container.get<CardComponent>() ?: return@filter false
+            if (!container.has<TappedComponent>()) return@filter false
+            if (projected.hasKeyword(entityId, com.wingedsheep.sdk.core.AbilityFlag.CANT_BECOME_UNTAPPED)) return@filter false
+            predicateEvaluator.matches(state, projected, entityId, atom.filter, predicateContext)
+        }
+    }
+
     // --- Bounce targets ---
 
     /**

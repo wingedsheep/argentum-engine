@@ -22,6 +22,7 @@ import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
 import com.wingedsheep.engine.state.components.identity.OwnerComponent
+import com.wingedsheep.sdk.core.AbilityFlag
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Zone
@@ -721,7 +722,7 @@ class CostHandler(private val zones: ZoneTransitionService) {
         is CostAtom.ExileTopOfLibrary ->
             state.getZone(ZoneKey(controllerId, Zone.LIBRARY)).size >= atom.count
         is CostAtom.TapPermanents -> {
-            val candidates = findUntappedMatchingPermanentsUnified(state, controllerId, atom.filter, sourceId)
+            val candidates = findTapCostCandidates(state, controllerId, atom, sourceId)
                 .let { targets -> if (atom.excludeSelf) targets.filter { it != sourceId } else targets }
                 .let { SharedCreatureTypeTapCost.eligible(state, atom, it) }
             candidates.size >= atom.count
@@ -1331,8 +1332,12 @@ class CostHandler(private val zones: ZoneTransitionService) {
         choices: CostPaymentChoices,
     ): CostPaymentResult {
         val toTap = choices.tapChoices
+        val verb = if (atom.untaps) "untap" else "tap"
         if (toTap.size < atom.count) {
-            return CostPaymentResult.failure("Not enough permanents chosen to tap (need ${atom.count}, got ${toTap.size})")
+            return CostPaymentResult.failure("Not enough permanents chosen to $verb (need ${atom.count}, got ${toTap.size})")
+        }
+        if (toTap.toSet().size != toTap.size) {
+            return CostPaymentResult.failure("Cannot $verb the same permanent twice for one cost")
         }
         if (atom.excludeSelf && sourceId in toTap) {
             return CostPaymentResult.failure("Cannot tap self for this cost")
@@ -1354,11 +1359,18 @@ class CostHandler(private val zones: ZoneTransitionService) {
             if (projected.getController(permanentId) != controllerId) {
                 return CostPaymentResult.failure("Can only tap permanents you control")
             }
-            if (entity.has<TappedComponent>()) {
+            if (atom.untaps) {
+                if (!entity.has<TappedComponent>()) {
+                    return CostPaymentResult.failure("Permanent to untap is not tapped")
+                }
+                if (!canBecomeUntappedForCost(state, permanentId)) {
+                    return CostPaymentResult.failure("Permanent to untap can't become untapped")
+                }
+            } else if (entity.has<TappedComponent>()) {
                 return CostPaymentResult.failure("Permanent to tap is already tapped")
             }
             if (!predicateEvaluator.matches(state, projected, permanentId, atom.filter, context)) {
-                return CostPaymentResult.failure("Permanent to tap does not match ${atom.filter.description}")
+                return CostPaymentResult.failure("Permanent to $verb does not match ${atom.filter.description}")
             }
         }
         if (!SharedCreatureTypeTapCost.satisfiedBy(state, atom, toTap)) {
@@ -1367,6 +1379,16 @@ class CostHandler(private val zones: ZoneTransitionService) {
 
         var newState = state
         val events = mutableListOf<GameEvent>()
+        if (atom.untaps) {
+            // The untap atom is the one chokepoint for untapping, so "whenever this becomes
+            // untapped" triggers see a cost-paid untap like any other.
+            for (permanentId in toTap) {
+                val (untappedState, untapEvents) = untapOrConsumeStun(newState, permanentId)
+                newState = untappedState
+                events.addAll(untapEvents)
+            }
+            return CostPaymentResult.success(newState, manaPool, events)
+        }
         for (permanentId in toTap) {
             // The tap atom emits the TappedEvent so "whenever this becomes tapped" triggers fire
             // when a creature is tapped to pay a cost (Station, Cryptic Gateway). Open-coding the
@@ -1721,6 +1743,35 @@ class CostHandler(private val zones: ZoneTransitionService) {
             predicateEvaluator.matches(state, projected, entityId, filter, context)
         }
     }
+
+    /**
+     * The permanents [controllerId] may turn to pay [atom]: untapped matches for a tap cost,
+     * tapped ones for the untap mirror ([CostAtom.TapPermanents.untaps], Halo Fountain). One
+     * definition shared by affordability and the activation enumerator so the two can't disagree.
+     */
+    internal fun findTapCostCandidates(
+        state: GameState,
+        controllerId: EntityId,
+        atom: CostAtom.TapPermanents,
+        sourceId: EntityId? = null
+    ): List<EntityId> {
+        if (!atom.untaps) return findUntappedMatchingPermanentsUnified(state, controllerId, atom.filter, sourceId)
+        val context = PredicateContext(controllerId = controllerId, sourceId = sourceId)
+        val projected = state.projectedState
+        return state.controlledBattlefield(controllerId).filter { entityId ->
+            state.getEntity(entityId)?.has<TappedComponent>() == true &&
+                canBecomeUntappedForCost(state, entityId) &&
+                predicateEvaluator.matches(state, projected, entityId, atom.filter, context)
+        }
+    }
+
+    /**
+     * A permanent under "can't become untapped" (Blossombind) can't be untapped to pay a cost —
+     * CR 118.3, a cost can't be paid without the means to pay it. A stun counter is different: it
+     * replaces the untap (CR 122.1d), so the permanent is a legal choice and the counter is spent.
+     */
+    private fun canBecomeUntappedForCost(state: GameState, entityId: EntityId): Boolean =
+        !state.projectedState.hasKeyword(entityId, AbilityFlag.CANT_BECOME_UNTAPPED)
 
     // `internal` (not private) so the TapXPermanents cost-choice pause in ActivateAbilityHandler
     // can offer the same untapped-permanent candidate set used to enumerate the tap cost. Keeps

@@ -486,8 +486,10 @@ class PayOrSufferExecutor(
             )
         )
 
-        // If the player doesn't have enough untapped permanents, automatically suffer.
-        if (validPermanents.size < cost.count) {
+        // If the player doesn't have enough untapped permanents, automatically suffer. The untap
+        // mirror isn't wired as an "unless you …" cost (no printed card asks for it), so it is
+        // unpayable here rather than paid as a tap.
+        if (cost.untaps || validPermanents.size < cost.count) {
             return executeSufferEffect(state, effect.suffer, context)
         }
 
