@@ -294,6 +294,7 @@ class AIPlayer(
                 fillUpToMaxTargets = profile.fillUpToMaxTargets,
                 selectionCountsByValue = profile.selectionCountsByValue,
                 holdUnusablePumps = profile.holdUnusablePumps,
+                combatAdvisor = combatAdvisor.takeIf { profile.pumpsNeedAPlannedAttack },
             )
 
             // Wire up the decision resolver so simulations can resolve non-trivial

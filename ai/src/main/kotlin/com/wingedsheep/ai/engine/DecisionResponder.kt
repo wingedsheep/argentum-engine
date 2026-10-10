@@ -21,6 +21,7 @@ import com.wingedsheep.engine.state.components.player.LandDropsComponent
 import com.wingedsheep.engine.state.components.player.SkipDrawStepComponent
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.CounterType
+import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.core.Zone
@@ -87,6 +88,13 @@ class DecisionResponder(
      * tie-to-yes.
      */
     private val holdUnusablePumps: Boolean = false,
+    /**
+     * [AiProfile.pumpsNeedAPlannedAttack]: under [holdUnusablePumps], a beginning-of-combat
+     * payment on our own turn asks this advisor which creatures it would attack with on the yes
+     * branch, and grants on the creatures left home count as unspendable. Null (the default)
+     * keeps "can attack" as the only test.
+     */
+    private val combatAdvisor: CombatAdvisor? = null,
 ) {
     private val priors: ChoicePriors? = if (informedChoices) ChoicePriors(simulator.cardRegistry) else null
 
@@ -481,6 +489,10 @@ class DecisionResponder(
      *
      * The same tie with nothing stripped — a mode that pumped nobody — goes to no when yes spent
      * energy: the leaf has no price for energy, so a tie there is a resource given away for nothing.
+     *
+     * With a [combatAdvisor] ([AiProfile.pumpsNeedAPlannedAttack]), a creature that can attack but
+     * that the yes branch's attack plan leaves home counts as unable to use its grant too
+     * ([plannedAttackers]) — game 3 turn 19, a ready Angel that paid and then never attacked.
      */
     private fun payoffIsUnspendable(
         state: GameState,
@@ -495,15 +507,26 @@ class DecisionResponder(
         if (yesState.gameOver) return false
         val before = state.floatingEffects.mapTo(HashSet()) { it.id }
         val projected = state.projectedState
-        val unspendable = yesState.floatingEffects.filter { effect ->
+        val grants = yesState.floatingEffects.filter { effect ->
             effect.id !in before &&
                 effect.duration == Duration.EndOfTurn &&
                 effect.effect.dynamicGroupFilter == null &&
                 effect.effect.affectedEntities.isNotEmpty() &&
                 effect.effect.affectedEntities.all { id ->
-                    projected.isCreature(id) && projected.getController(id) == playerId &&
-                        !ExpiringGrantWindow.creatureCanStillFight(state, playerId, id)
+                    projected.isCreature(id) && projected.getController(id) == playerId
                 }
+        }
+        val idle: (EntityId) -> Boolean = { id -> !ExpiringGrantWindow.creatureCanStillFight(state, playerId, id) }
+        var unspendable = grants.filter { effect -> effect.effect.affectedEntities.all(idle) }
+        if (unspendable.size < grants.size) {
+            // Some grant lands on a creature that *can* attack. Whether it will is the attack
+            // plan's call — asked only when that plan is the very next thing this turn decides.
+            val planned = plannedAttackers(state, yesState, playerId)
+            if (planned != null) {
+                unspendable = grants.filter { effect ->
+                    effect.effect.affectedEntities.all { id -> idle(id) || id !in planned }
+                }
+            }
         }
         if (unspendable.isEmpty()) {
             return yesScore == noScore && energyOf(yesState, playerId) < energyOf(noResult.state, playerId)
@@ -511,6 +534,38 @@ class DecisionResponder(
         val stripped = yesState.copy(floatingEffects = yesState.floatingEffects - unspendable.toSet())
         val strippedScore = evaluateChoice(SimulationResult.Terminal(stripped, yesResult.events), playerId)
         return strippedScore <= noScore
+    }
+
+    /**
+     * The creatures [combatAdvisor] would attack with on the yes branch — the
+     * [AiProfile.pumpsNeedAPlannedAttack] half of [payoffIsUnspendable]. Null whenever the plan
+     * cannot be read cheaply and exactly: the flag is off, the decision is not a
+     * beginning-of-combat one on our own turn, it is being answered inside another simulation
+     * (where a full attack search per yes/no would compound), or advancing the yes state does not
+     * land on our declare-attackers step. Null falls back to "can attack".
+     *
+     * The yes state is advanced by passing priority — exactly what the AI does at a quiet
+     * beginning of combat — and the plan is the one `Strategist` would submit there, local search
+     * included, so a creature the AI would keep home reads as kept home.
+     */
+    private fun plannedAttackers(state: GameState, yesState: GameState, playerId: EntityId): Set<EntityId>? {
+        val advisor = combatAdvisor ?: return null
+        if (simulator.resolvingNestedDecision) return null
+        if (!state.isActiveTurnFor(playerId) || state.step != Step.BEGIN_COMBAT) return null
+        var current = yesState
+        var passes = 0
+        while (current.step != Step.DECLARE_ATTACKERS) {
+            if (current.gameOver || current.pendingDecision != null || current.step != Step.BEGIN_COMBAT) return null
+            if (passes++ >= MAX_PASSES_TO_DECLARE_ATTACKERS) return null
+            val priority = current.priorityPlayerId ?: return null
+            current = (simulator.simulate(current, PassPriority(priority)) as? SimulationResult.Terminal)?.state
+                ?: return null
+        }
+        if (!current.isActiveTurnFor(playerId)) return null
+        val declare = simulator.getLegalActions(current, playerId)
+            .firstOrNull { it.actionType == "DeclareAttackers" } ?: return null
+        val plan = advisor.chooseAttackers(current, declare, playerId, budgetPolicy.budgetForDecision(current, playerId))
+        return (plan as? DeclareAttackers)?.attackers?.keys
     }
 
     private fun energyOf(state: GameState, playerId: EntityId): Int =
@@ -1232,6 +1287,12 @@ class DecisionResponder(
          * coming (1.5 or less) and a spell several land draws away fall below it.
          */
         const val LOOK_KEEP_THRESHOLD = 2.0
+
+        /**
+         * Priority passes allowed to walk a beginning-of-combat yes state to declare attackers —
+         * one per seat with room for a straggling trigger. Past it the plan is not read.
+         */
+        const val MAX_PASSES_TO_DECLARE_ATTACKERS = 8
 
         val CREATURE_TYPES_LOWER: Set<String> = Subtype.ALL_CREATURE_TYPES.mapTo(HashSet()) { it.lowercase() }
     }
