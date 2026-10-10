@@ -103,6 +103,65 @@ data class ConditionalStaticAbility(
 }
 
 /**
+ * A static ability that functions from a zone other than the battlefield — "As long as this card
+ * is in your graveyard, …" (CR 113.6b: an ability that states which zones it functions in
+ * functions only from those zones). Anger: "As long as Anger is in your graveyard and you control
+ * a Mountain, creatures you control have haste" is a [GrantKeyword] behind a
+ * [ConditionalStaticAbility] ("you control a Mountain"), scoped here to `{GRAVEYARD}`.
+ *
+ * The static-ability twin of [TriggeredAbility.activeZones] and [ReplacementEffect.activeZones],
+ * and read the same way: the *scanner* filters by it. Declaring `{GRAVEYARD}` switches the
+ * ability **on** in its owner's graveyard and **off** on the battlefield — a cast Anger grants
+ * nothing until it dies, which is what the card says.
+ *
+ * "You" for the wrapped ability is the card's **owner**: a card in a graveyard has no controller,
+ * and CR 108.4a / 109.5 read "you" on such an object as its owner. So "creatures you control"
+ * and "you control a Mountain" both resolve against whoever owns the graveyard the card sits in.
+ *
+ * Why a wrapper and not a field: [ReplacementEffect.activeZones] is a per-subtype field because
+ * there are a few dozen replacement types; there are hundreds of [StaticAbility] leaves, and the
+ * zone is orthogonal to every one of them — the same reason [ConditionalStaticAbility] wraps
+ * rather than adding a `condition` to each leaf. The two closest types are
+ * [ConditionalStaticAbility] (a condition can gate an ability that is *already* functioning, but
+ * cannot switch one on outside the battlefield — the projector never looks there) and
+ * [TriggeredAbility.activeZones] (the same axis, on triggers). Write it through
+ * `staticAbility { activeZones = setOf(Zone.GRAVEYARD) }`.
+ *
+ * **Scope.** Only [SUPPORTED_ZONES] are accepted — the zones the state projector scans for
+ * these abilities — and only abilities that project through the layer system (keyword grants,
+ * stat changes, …) function from them; the engine refuses a wrapped ability that lowers to no
+ * continuous effect rather than letting it sit inert. Widen both together when a card needs it.
+ *
+ * @property ability The static ability that functions while the card is in one of [activeZones].
+ * @property activeZones The zones it functions from; never the battlefield.
+ */
+@SerialName("ZoneScopedStaticAbility")
+@Serializable
+data class ZoneScopedStaticAbility(
+    val ability: StaticAbility,
+    val activeZones: Set<Zone>
+) : StaticAbility {
+    init {
+        require(activeZones.isNotEmpty() && SUPPORTED_ZONES.containsAll(activeZones)) {
+            "ZoneScopedStaticAbility.activeZones must be a non-empty subset of $SUPPORTED_ZONES, was $activeZones"
+        }
+    }
+
+    override val description: String
+        get() = "As long as this card is in ${activeZones.joinToString(" or ") { if (it == Zone.GRAVEYARD) "your graveyard" else it.displayName }}, ${ability.description}"
+
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
+        val newAbility = ability.applyTextReplacement(replacer)
+        return if (newAbility !== ability) copy(ability = newAbility) else this
+    }
+
+    companion object {
+        /** The non-battlefield zones the engine scans for zone-scoped static abilities. */
+        val SUPPORTED_ZONES: Set<Zone> = setOf(Zone.GRAVEYARD)
+    }
+}
+
+/**
  * A single static ability whose one continuous effect spans multiple Rule 613 layers, expressed
  * as a bundle of component static abilities that share one identity (CR 613.6).
  *

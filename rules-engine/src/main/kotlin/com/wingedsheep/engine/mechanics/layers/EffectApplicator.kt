@@ -69,7 +69,8 @@ internal class EffectApplicator(
             val ctx = ConditionEvaluationContext.Projection(
                 sourceId = effect.sourceId,
                 sourceValues = sourceValues,
-                projectedValues = projectedValues
+                projectedValues = projectedValues,
+                fallbackControllerId = effect.controllerId
             )
             if (!conditionEvaluator.evaluate(state, sourceCondition, ctx)) return
         }

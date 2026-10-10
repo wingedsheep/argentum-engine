@@ -41,6 +41,7 @@ import com.wingedsheep.sdk.scripting.MustBeBlocked
 import com.wingedsheep.sdk.scripting.MustBlock
 import com.wingedsheep.sdk.scripting.MustAttack
 import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
+import com.wingedsheep.sdk.scripting.ZoneScopedStaticAbility
 import com.wingedsheep.sdk.scripting.CompositeStaticAbility
 import com.wingedsheep.sdk.scripting.conditions.Compare
 import com.wingedsheep.sdk.scripting.ControlEnchantedPermanent
@@ -219,6 +220,31 @@ class StaticAbilityHandler(
          */
         fun lower(staticAbilities: List<StaticAbility>): List<ContinuousEffectData> =
             lowering.lowerToContinuousEffectData(staticAbilities)
+
+        /**
+         * Lower a card's [ZoneScopedStaticAbility]s — the statics that function from a zone other
+         * than the battlefield (CR 113.6b) — keyed by the zone they function from. Empty when the
+         * card has none (the common case). Each zone's abilities are grouped exactly as battlefield
+         * statics are (CR 613.6, [lowerToContinuousEffectData]).
+         *
+         * Fails loudly on a wrapped ability that lowers to no continuous effect: the projector is
+         * the only reader of these, so such an ability would otherwise sit silently inert.
+         */
+        fun lowerZoneScoped(staticAbilities: List<StaticAbility>): Map<com.wingedsheep.sdk.core.Zone, List<ContinuousEffectData>> {
+            val scoped = staticAbilities.filterIsInstance<ZoneScopedStaticAbility>()
+            if (scoped.isEmpty()) return emptyMap()
+            val zones = scoped.flatMapTo(LinkedHashSet()) { it.activeZones }
+            return zones.associateWith { zone ->
+                val inZone = scoped.filter { zone in it.activeZones }.map { it.ability }
+                inZone.forEach { ability ->
+                    check(lowering.lowerToContinuousEffectData(listOf(ability)).isNotEmpty()) {
+                        "ZoneScopedStaticAbility wraps '${ability.description}', which lowers to no " +
+                            "continuous effect; only layer-projected statics can function from $zone"
+                    }
+                }
+                lowering.lowerToContinuousEffectData(inZone)
+            }
+        }
     }
 
     /**
@@ -501,6 +527,10 @@ class StaticAbilityHandler(
             // silently dropped (Enduring's "becomes an enchantment" return).
             is ConditionalStaticAbility ->
                 convertStaticAbilities(ability.ability).map { it.copy(sourceCondition = ability.condition) }
+            // Functions only outside the battlefield (CR 113.6b) — never part of a permanent's
+            // battlefield statics. Lowered separately by [lowerZoneScoped] into a card-intrinsic
+            // ZoneStaticEffectsComponent that the projector reads from the graveyard.
+            is ZoneScopedStaticAbility -> emptyList()
             else -> listOfNotNull(convertStaticAbility(ability))
         }
     }
@@ -1003,6 +1033,8 @@ class StaticAbilityHandler(
                 )
             }
             is ConditionalStaticAbility -> convertConditionalStaticAbility(ability)
+            // Off on the battlefield; see convertStaticAbilities.
+            is ZoneScopedStaticAbility -> null
 
             // ------------------------------------------------------------------
             // Everything below is NOT projected through the layer system — each

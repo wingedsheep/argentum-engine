@@ -42,6 +42,63 @@
     ]
 }
 
+// Anger
+{
+    "name": "Anger",
+    "manaCost": "{3}{R}",
+    "typeLine": "Creature — Incarnation",
+    "oracleText": "Haste\nAs long as this card is in your graveyard and you control a Mountain, creatures you control have haste.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "HASTE"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ZoneScopedStaticAbility",
+                "ability": {
+                    "type": "ConditionalStaticAbility",
+                    "ability": {
+                        "type": "GrantKeyword",
+                        "keyword": "HASTE",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "condition": {
+                        "type": "Exists",
+                        "player": "You",
+                        "zone": "Battlefield",
+                        "filter": "land Mountain"
+                    }
+                },
+                "activeZones": [
+                    "Graveyard"
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "77",
+        "rarity": "UNCOMMON",
+        "artist": "John Avon",
+        "flavorText": "\"For its time as a mortal, Anger chose a shell of boiling rock.\"\n—*Scroll of Beginnings*",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/a/fa2920af-e6a1-4939-ab59-67af4430e5b8.jpg?1783945121",
+        "rulings": [
+            {
+                "date": "2004-10-04",
+                "text": "The timestamp for the \"in your graveyard\" ability is set at the time that this card goes to your graveyard, regardless of whether you control a Mountain at that time."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Aven Fogbringer
 {
     "name": "Aven Fogbringer",
@@ -1941,5 +1998,56 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Wonder
+{
+    "name": "Wonder",
+    "manaCost": "{3}{U}",
+    "typeLine": "Creature — Incarnation",
+    "oracleText": "Flying\nAs long as this card is in your graveyard and you control an Island, creatures you control have flying.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ZoneScopedStaticAbility",
+                "ability": {
+                    "type": "ConditionalStaticAbility",
+                    "ability": {
+                        "type": "GrantKeyword",
+                        "keyword": "FLYING",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "condition": {
+                        "type": "Exists",
+                        "player": "You",
+                        "zone": "Battlefield",
+                        "filter": "land Island"
+                    }
+                },
+                "activeZones": [
+                    "Graveyard"
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "54",
+        "rarity": "UNCOMMON",
+        "artist": "Rebecca Guay",
+        "flavorText": "\"The awestruck birds gazed at Wonder. Slowly, timidly, they rose into the air.\"\n—*Scroll of Beginnings*",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/4/44670666-9028-4b4a-a5af-a3bf35fc6a21.jpg?1783945126"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }

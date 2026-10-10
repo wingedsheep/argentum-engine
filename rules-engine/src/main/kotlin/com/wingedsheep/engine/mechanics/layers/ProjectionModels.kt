@@ -21,6 +21,22 @@ data class ContinuousEffectSourceComponent(
 ) : Component
 
 /**
+ * Card-intrinsic: the continuous effects a card's static abilities generate while it sits in a
+ * zone *other than the battlefield* — [com.wingedsheep.sdk.scripting.ZoneScopedStaticAbility]
+ * (CR 113.6b), e.g. Anger's "As long as Anger is in your graveyard and you control a Mountain,
+ * creatures you control have haste".
+ *
+ * Stamped once at entity creation by [com.wingedsheep.engine.core.CardEntityFactory] (like
+ * [com.wingedsheep.engine.state.components.identity.MadnessComponent]) so it rides the card through
+ * every zone, and the registry-free [StateProjector] can read it straight off a graveyard card
+ * without a definition lookup per projection. The battlefield never reads it.
+ */
+@Serializable
+data class ZoneStaticEffectsComponent(
+    val effectsByZone: Map<com.wingedsheep.sdk.core.Zone, List<ContinuousEffectData>>
+) : Component
+
+/**
  * Data for a single continuous effect.
  *
  * The [layer] and [sublayer] are derived from the [modification], which declares
@@ -210,8 +226,10 @@ data class ContinuousEffect(
      * left the battlefield (so its [ControllerComponent] is gone). Needed for floating effects
      * that outlive their source — e.g. Titania's Song's "this effect continues until end of
      * turn" linger, whose Layer-7b dynamic P/T must still resolve a controller for the
-     * [EffectContext] after the enchantment has left. Null for static-ability effects, which
-     * always resolve their controller from the source permanent on the battlefield.
+     * [EffectContext] after the enchantment has left. Also the "you" of a static that functions
+     * from a graveyard (CR 113.6b) — the card's owner, since a card in a graveyard has no controller
+     * (CR 108.4a). Read as the fallback controller for the effect's [sourceCondition] too. Null for
+     * battlefield static-ability effects, which resolve their controller from the source permanent.
      */
     val controllerId: EntityId? = null,
     /**

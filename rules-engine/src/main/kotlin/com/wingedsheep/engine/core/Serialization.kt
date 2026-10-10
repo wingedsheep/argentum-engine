@@ -7,6 +7,7 @@ import com.wingedsheep.engine.state.components.identity.*
 import com.wingedsheep.engine.state.components.player.*
 import com.wingedsheep.engine.state.components.stack.*
 import com.wingedsheep.engine.mechanics.layers.ContinuousEffectSourceComponent
+import com.wingedsheep.engine.mechanics.layers.ZoneStaticEffectsComponent
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
 import kotlinx.serialization.modules.subclass
@@ -792,5 +793,6 @@ val engineSerializersModule = SerializersModule {
 
         // Continuous effects
         subclass(ContinuousEffectSourceComponent::class)
+        subclass(ZoneStaticEffectsComponent::class)
     }
 }

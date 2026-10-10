@@ -1909,17 +1909,27 @@ class StaticAbilityBuilder {
      */
     var ability: StaticAbility? = null
 
+    /**
+     * The zones this static ability functions from (CR 113.6b). Default `{BATTLEFIELD}` — a
+     * permanent's ordinary static. "As long as this card is in your graveyard, …" (Anger, Wonder)
+     * is `setOf(Zone.GRAVEYARD)`, which wraps the ability in a [ZoneScopedStaticAbility]: on in
+     * the graveyard, off on the battlefield. The twin of [TriggeredAbility.activeZones].
+     */
+    var activeZones: Set<Zone> = setOf(Zone.BATTLEFIELD)
+
     fun build(): StaticAbility {
         val baseAbility = requireNotNull(ability) {
             "staticAbility { } requires `ability = <StaticAbility>`"
         }
 
         // Wrap in conditional if condition is set
-        return if (condition != null) {
+        val gated = if (condition != null) {
             ConditionalStaticAbility(baseAbility, condition!!)
         } else {
             baseAbility
         }
+        return if (activeZones == setOf(Zone.BATTLEFIELD)) gated
+        else ZoneScopedStaticAbility(gated, activeZones)
     }
 }
 

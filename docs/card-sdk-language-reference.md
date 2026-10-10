@@ -8814,6 +8814,18 @@ staticAbility {
   `ClientStateTransformer`. The fixed-name half of the "becomes a 1/1 X **named Y**" composite — pair with
   `TransformPermanent` + `SetBasePowerToughnessStatic` + `LoseAllAbilities` + `GrantActivatedAbility`. Honest Work:
   "Enchanted creature ... is a Citizen with base power and toughness 1/1 and '{T}: Add {C}' named Humble Merchant."
+- `ZoneScopedStaticAbility(ability, activeZones)` — a static that functions **only from a zone other than the
+  battlefield** (CR 113.6b): "As long as this card is in your graveyard, …". Written through the builder:
+  `staticAbility { ability = …; condition = …; activeZones = setOf(Zone.GRAVEYARD) }` wraps the (conditional) ability.
+  The static twin of `TriggeredAbility.activeZones` / `ReplacementEffect.activeZones`, read by the scanner the same
+  way: on in the owner's graveyard, **off on the battlefield**. "You" (for the condition and for "creatures you
+  control") is the card's **owner** (CR 108.4a, 109.5). Anger: `staticAbility { ability = GrantKeyword(HASTE,
+  GroupFilter(Creature.youControl())); condition = Conditions.YouControl(Filters.MountainCard); activeZones =
+  setOf(Zone.GRAVEYARD) }`; Wonder is the flying/Island twin. Scope today: `activeZones` must be a non-empty subset of
+  `ZoneScopedStaticAbility.SUPPORTED_ZONES` (`{GRAVEYARD}`), and only layer-projected abilities (keyword grants, stat
+  changes, type changes, …) are accepted — the engine refuses one that lowers to no continuous effect rather than let
+  it sit inert. Engine: lowered once per card at entity creation into a card-intrinsic `ZoneStaticEffectsComponent`,
+  which `StateProjector` collects from every graveyard on each projection.
 - `ConditionalStaticAbility` — static gated by a runtime `Condition`. A conditional wrapping a *multi-effect* ability
   (e.g. `TransformPermanent`) lowers through the plural converter and gates every resulting effect on the condition.
   The gate is honored for **non-projection** grants too, not just layer-projected effects: a conditional wrapping a

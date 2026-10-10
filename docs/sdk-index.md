@@ -1839,6 +1839,7 @@ Families:
 - `UntapLimitPerStep(filter: GameObjectFilter, max: Int)` — Caps how many permanents matching filter a player may untap during their own untap step (CR 502.3 — "effects can keep one or more of a player's permanents from untapping").
 - `UntapSelfDuringOtherUntapSteps` — Untap only the source permanent itself during each other player's untap step.
 - `WinCoinFlips(firstFlipEachTurn: Boolean)` — The controller wins the coin flips they make — their flips "come up heads and you win those flips" (CR 705.3, an effect that dictates the result of a flip).
+- `ZoneScopedStaticAbility(ability: StaticAbility, activeZones: Set<Zone>)` — A static ability that functions from a zone other than the battlefield — "As long as this card is in your graveyard, …" (CR 113.6b: an ability that states which zones it functions in functions only…
 
 ## SuccessCriterion
 

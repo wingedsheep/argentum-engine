@@ -630,7 +630,8 @@
                             "ShuffleLibrary",
                             "EmitLibrarySearchedEvent"
                         ]
-                    }
+                    },
+                    "description": "Search your library for a basic land card, reveal it, put it into your hand, then shuffle"
                 },
                 {
                     "effect": {
