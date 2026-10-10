@@ -1,5 +1,6 @@
 package com.wingedsheep.ai.engine
 
+import com.wingedsheep.ai.arena.harnessRegistry
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.legalactions.LegalActionEnumerator
 import com.wingedsheep.engine.registry.CardRegistry
@@ -34,10 +35,7 @@ class RandomActionBenchmark : FunSpec({
 
     test("benchmark: $numGames random-action games in parallel ($setCode)").config(enabled = benchmarkEnabled) {
         val set = MtgSetCatalog.requireByCode(setCode)
-        val registry = CardRegistry().apply {
-            register(set.cards)
-            register(set.basicLands)
-        }
+        val registry = harnessRegistry(set)
         val allCards = set.cards
         val cores = Runtime.getRuntime().availableProcessors()
         val pool = Executors.newFixedThreadPool(cores)

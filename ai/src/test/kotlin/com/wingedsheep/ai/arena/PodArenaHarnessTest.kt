@@ -1,7 +1,6 @@
 package com.wingedsheep.ai.arena
 
 import com.wingedsheep.ai.engine.buildSeededSealedDeck
-import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.mtg.sets.MtgSetCatalog
 import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.FunSpec
@@ -81,7 +80,7 @@ class PodArenaHarnessTest : FunSpec({
     // One test per table so each gets its own hang-guard budget and a failure names the table.
 
     val set = MtgSetCatalog.requireByCode("POR")
-    val podRegistry = CardRegistry().apply { register(set.cards); register(set.basicLands) }
+    val podRegistry = harnessRegistry(set)
 
     fun soloGame(table: TableSetup, maxTurns: Int): TableGameOutcome {
         val seed = mixSeed(ArenaConfig.DEFAULT_SEED, 1L)

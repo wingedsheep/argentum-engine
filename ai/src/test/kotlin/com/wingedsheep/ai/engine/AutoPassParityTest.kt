@@ -1,5 +1,6 @@
 package com.wingedsheep.ai.engine
 
+import com.wingedsheep.ai.arena.harnessRegistry
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.core.ActionProcessor
 import com.wingedsheep.engine.core.GameConfig
@@ -11,7 +12,6 @@ import com.wingedsheep.engine.legalactions.LegalAction
 import com.wingedsheep.engine.legalactions.LegalActionEnumerator
 import com.wingedsheep.engine.legalactions.MeaningfulActionFilter
 import com.wingedsheep.engine.mechanics.mana.ManaSolver
-import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.view.LegalActionEnricher
 import com.wingedsheep.engine.view.asPriorityAction
@@ -46,10 +46,7 @@ import kotlin.random.Random
 class AutoPassParityTest : FunSpec({
 
     val set = MtgSetCatalog.requireByCode("BLB")
-    val registry = CardRegistry().apply {
-        register(set.cards)
-        register(set.basicLands)
-    }
+    val registry = harnessRegistry(set)
     val enricher = LegalActionEnricher(ManaSolver(registry, predicateEvaluator = PredicateEvaluator(cardRegistry = null)), registry)
 
     /** One captured priority window: the state, whose priority it is, and what they may do. */

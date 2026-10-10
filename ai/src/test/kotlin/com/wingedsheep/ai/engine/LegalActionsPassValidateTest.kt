@@ -1,5 +1,6 @@
 package com.wingedsheep.ai.engine
 
+import com.wingedsheep.ai.arena.harnessRegistry
 import com.wingedsheep.engine.core.ActionProcessor
 import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.core.CastSpell
@@ -39,10 +40,7 @@ class LegalActionsPassValidateTest : FunSpec({
     for ((setCode, seed) in SETS) {
         test("every complete affordable offer passes validate ($setCode)") {
             val set = MtgSetCatalog.requireByCode(setCode)
-            val registry = CardRegistry().apply {
-                register(set.cards)
-                register(set.basicLands)
-            }
+            val registry = harnessRegistry(set)
             val rng = Random(seed)
             val refusals = sortedSetOf<String>()
             repeat(GAMES_PER_SET) {
