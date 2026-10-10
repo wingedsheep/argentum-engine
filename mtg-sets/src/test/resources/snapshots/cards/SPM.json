@@ -10167,6 +10167,7 @@
                                     "selection": "ChooseAnyNumber",
                                     "storeSelected": "toGraveyard",
                                     "storeRemainder": "toTop",
+                                    "prompt": "Surveil: choose cards to put into your graveyard",
                                     "selectedLabel": "Put in graveyard",
                                     "remainderLabel": "Put on top"
                                 },

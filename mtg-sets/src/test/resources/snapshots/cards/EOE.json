@@ -12897,8 +12897,7 @@
                             "ShuffleLibrary",
                             "EmitLibrarySearchedEvent"
                         ]
-                    },
-                    "description": "Search your library for an artifact card, reveal it, put it into your hand, then shuffle"
+                    }
                 },
                 {
                     "effect": {

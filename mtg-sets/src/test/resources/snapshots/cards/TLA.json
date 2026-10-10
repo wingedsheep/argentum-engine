@@ -4062,6 +4062,7 @@
                                         "chooser": "TargetPlayer",
                                         "storeSelected": "toBottom",
                                         "storeRemainder": "toTop",
+                                        "prompt": "Scry 3: choose cards to put on the bottom of your library",
                                         "selectedLabel": "Put on bottom",
                                         "remainderLabel": "Put on top"
                                     },

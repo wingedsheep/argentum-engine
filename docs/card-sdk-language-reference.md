@@ -4046,6 +4046,10 @@ one-off pipeline belongs inline in the card file via `Effects.Pipeline { }` (§5
   destination ("Search your library for a basic land card to put onto the battlefield tapped"), as in
   `searchMultipleZones` and `eachPlayerSearchesLibrary`. Any `gather(search = true)` also marks its
   pick's `SelectCardsDecision` with `librarySearch = true` and `declineLabel = "Fail to find"`.
+  The search's rules text uses the same wording: a `CompositeEffect` renders a search run (search
+  gather → pick → move → shuffle) as one sentence — "Search your library for a basic Island, Swamp, or
+  Mountain card, put it onto the battlefield tapped, then shuffle" — and a bare `gather(search = true)`
+  reads "Search your library for …", never "Look at …".
 - `searchMultipleZones(zones, filter, count?, destination?, tapped?, reveal?)` — search several zones (e.g. library and/or graveyard) in one effect; shuffles automatically if `LIBRARY` is among the zones. Pass `reveal = true` for "reveal it" tutors (Delivery Moogle).
 
 **Sideboard / wish (`Patterns.Sideboard.*`)**
@@ -4087,7 +4091,9 @@ one-off pipeline belongs inline in the card file via `Effects.Pipeline { }` (§5
 
 **Top-deck manipulation**
 
-- `scry(count)` — look at top N, bottom any, rest on top. Also `Effects.Scry(count)`.
+- `scry(count)` — look at top N, bottom any, rest on top. Also `Effects.Scry(count)`. The pick's prompt
+  names the action ("Scry 2: choose cards to put on the bottom of your library"); surveil's likewise
+  ("Surveil 1: choose cards to put into your graveyard").
 - `scry(count, target)` — **"Target player scries N"** (`Effects.Scry(count, target)`). Player-scoped
   twin of `scry(count)`: when `target` is the controller it is identical (returns the compact
   `ScryEffect` macro); otherwise it expands to a `scryPipeline` whose gather + library moves read the

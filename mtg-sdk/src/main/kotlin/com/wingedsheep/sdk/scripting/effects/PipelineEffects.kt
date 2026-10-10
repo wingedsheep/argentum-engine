@@ -139,7 +139,10 @@ sealed interface CardSource {
         val excludeSacrificedThisWay: Boolean = false
     ) : CardSource {
         override val description: String = buildString {
-            append("${cardsPhrase(filter)} in ${player.possessive} ${zone.noun}")
+            // The battlefield is not anyone's zone: its cards are permanents a player controls.
+            val scope = if (zone == Zone.BATTLEFIELD) controlScope(player) else null
+            if (scope != null) append(filter.permanentNounPhrase(plural = true, scope))
+            else append("${cardsPhrase(filter)} in ${player.possessive} ${zone.noun}")
             if (excludeSacrificedThisWay) append(" other than one sacrificed this way")
         }
     }
@@ -935,8 +938,21 @@ data class GatherCardsEffect(
     val search: Boolean = false,
 ) : Effect {
     override val description: String = buildString {
-        if (revealed) append("Reveal ") else append("Look at ")
-        append(source.description)
+        val zones = when (source) {
+            is CardSource.FromZone -> listOf(source.zone)
+            is CardSource.FromMultipleZones -> source.zones
+            else -> emptyList()
+        }
+        val filter = (source as? CardSource.FromZone)?.filter ?: (source as? CardSource.FromMultipleZones)?.filter
+        val player = (source as? CardSource.FromZone)?.player ?: (source as? CardSource.FromMultipleZones)?.player
+        when {
+            search && filter != null && player != null ->
+                append("Search ${SearchText.zones(player, zones)} for ${SearchText.noun(filter, plural = true)}")
+            revealed -> append("Reveal ${source.description}")
+            // Permanents on the battlefield are public: there is nothing to "look at".
+            zones == listOf(Zone.BATTLEFIELD) -> append("Find ${source.description}")
+            else -> append("Look at ${source.description}")
+        }
     }
 
     override fun applyTextReplacement(replacer: TextReplacer): Effect {
