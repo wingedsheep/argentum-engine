@@ -1,6 +1,11 @@
 package com.wingedsheep.engine.scenarios
 
+import com.wingedsheep.engine.core.SelectCardsDecision
 import com.wingedsheep.engine.state.ZoneKey
+import com.wingedsheep.engine.support.GameTestDriver
+import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.mtg.sets.definitions.mom.cards.EtaliPrimalConqueror
+import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.Phase
@@ -82,6 +87,29 @@ class EtaliPrimalConquerorScenarioTest : ScenarioTestBase() {
             game.selectCards(listOf(game.exiled("Grizzly Bears"))).error shouldBe null
             game.resolveStack()
             game.isOnBattlefield("Grizzly Bears") shouldBe true
+        }
+
+        test("in a four-player game every library is walked and every nonland is offered") {
+            val d = GameTestDriver()
+            d.registerCards(TestCards.all + EtaliPrimalConqueror)
+            val players = d.initMultiplayer(decks = List(4) { Deck.of("Mountain" to 40) }, startingPlayer = 0)
+            val me = players[0]
+            d.passPriorityUntil(Step.PRECOMBAT_MAIN, me)
+            repeat(7) { d.putLandOnBattlefield(me, "Mountain") }
+            val tops = players.associateWith { d.putCardOnTopOfLibrary(it, "Grizzly Bears") }
+            val etali = d.putCardInHand(me, "Etali, Primal Conqueror")
+            d.castSpell(me, etali).error shouldBe null
+
+            var guard = 0
+            while (d.pendingDecision == null && d.stackSize > 0 && guard++ < 40) {
+                d.passPriority(d.state.priorityPlayerId!!)
+            }
+            withClue("every player's nonland is exiled") {
+                players.forEach { p -> (tops.getValue(p) in d.getExile(p)) shouldBe true }
+            }
+            val decision = d.pendingDecision
+            withClue("the cast prompt is raised: $decision") { (decision is SelectCardsDecision) shouldBe true }
+            (decision as SelectCardsDecision).options.toSet() shouldBe tops.values.toSet()
         }
     }
 }
