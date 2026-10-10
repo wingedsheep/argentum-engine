@@ -99,10 +99,7 @@ object PodArena {
         onProgress: (completed: Int, total: Int, group: PodGroup) -> Unit = { _, _, _ -> },
     ): PodArenaRun {
         val set = MtgSetCatalog.requireByCode(config.setCode)
-        val registry = CardRegistry().apply {
-            register(set.cards)
-            register(set.basicLands)
-        }
+        val registry = harnessRegistry(set)
 
         val pool = Executors.newFixedThreadPool(config.threads)
         try {

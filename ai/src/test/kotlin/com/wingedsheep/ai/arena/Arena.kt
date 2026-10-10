@@ -62,10 +62,7 @@ object Arena {
 
     fun run(config: ArenaConfig, onProgress: (completed: Int, total: Int, pair: ArenaPair) -> Unit = { _, _, _ -> }): ArenaRun {
         val set = MtgSetCatalog.requireByCode(config.setCode)
-        val registry = CardRegistry().apply {
-            register(set.cards)
-            register(set.basicLands)
-        }
+        val registry = harnessRegistry(set)
         val featureCollector = config.featureOutput?.let {
             ArenaFeatureCollector(it, registry, config.setCode)
         }

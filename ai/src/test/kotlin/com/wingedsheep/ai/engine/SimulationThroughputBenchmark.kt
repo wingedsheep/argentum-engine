@@ -1,5 +1,6 @@
 package com.wingedsheep.ai.engine
 
+import com.wingedsheep.ai.arena.harnessRegistry
 import com.wingedsheep.engine.core.ActionProcessor
 import com.wingedsheep.engine.core.GameConfig
 import com.wingedsheep.engine.core.GameInitializer
@@ -71,10 +72,7 @@ class SimulationThroughputBenchmark : FunSpec({
 
     test("benchmark: simulation throughput over $numGames AI games ($setCode)").config(enabled = benchmarkEnabled) {
         val set = MtgSetCatalog.requireByCode(setCode)
-        val registry = CardRegistry().apply {
-            register(set.cards)
-            register(set.basicLands)
-        }
+        val registry = harnessRegistry(set)
         val pool = Executors.newFixedThreadPool(cores)
         val completionService = ExecutorCompletionService<ThroughputSample>(pool)
         val finished = AtomicInteger(0)

@@ -1,7 +1,6 @@
 package com.wingedsheep.ai.arena
 
 import com.wingedsheep.ai.engine.buildSeededSealedDeck
-import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.mtg.sets.MtgSetCatalog
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
@@ -125,7 +124,7 @@ class ArenaResultsFileTest : FunSpec({
 
     test("an expired per-game deadline ends the game as a timeout draw between actions") {
         val set = MtgSetCatalog.requireByCode("POR")
-        val registry = CardRegistry().apply { register(set.cards); register(set.basicLands) }
+        val registry = harnessRegistry(set)
         val seed = mixSeed(ArenaConfig.DEFAULT_SEED, 1L)
         val deck = buildSeededSealedDeck(set.cards, Random(seed))
         val v0 = ArenaAgents.resolve("v0")

@@ -48,9 +48,7 @@ class GameLogBenchmark : FunSpec({
                 set.cards.any { it.metadata.rarity == Rarity.RARE }
         }
         println("Eligible sets: ${eligible.size}")
-        val registry = CardRegistry().apply {
-            MtgSetCatalog.all.forEach { register(it.cards); register(it.basicLands) }
-        }
+        val registry = harnessRegistry(MtgSetCatalog.all)
 
         val pool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors().coerceAtMost(8))
         val futures = (1..games).map { g ->

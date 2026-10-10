@@ -1,5 +1,6 @@
 package com.wingedsheep.ai.training
 
+import com.wingedsheep.ai.arena.harnessRegistry
 import com.wingedsheep.ai.arena.ArenaAgent
 import com.wingedsheep.ai.arena.ArenaAgents
 import com.wingedsheep.ai.arena.ArenaTrainingObserver
@@ -35,7 +36,7 @@ class EclTrainingBenchmark : FunSpec({
         val output = if (requestedOutput.isAbsolute) requestedOutput else baseDir.resolve(requestedOutput).normalize()
         val runId = System.getProperty("eclCollectRunId") ?: "ecl-$seed"
         val set = MtgSetCatalog.requireByCode("ECL")
-        val registry = CardRegistry().apply { register(set.cards); register(set.basicLands) }
+        val registry = harnessRegistry(set)
         val profiles = listOf("production", "v0", "v0-rollout-determinized")
         val existing = if (Files.isRegularFile(output)) {
             TrainingCorpusFiles.read(output)
