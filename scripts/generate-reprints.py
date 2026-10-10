@@ -173,6 +173,12 @@ def set_cache_entry(set_code: str, name: str) -> dict | None:
             except json.JSONDecodeError:
                 _set_cache[set_code] = {}
         else:
+            # Without the set cache every row gets `artist = null`; say so instead of writing it silently.
+            print(
+                f"warning: no set cache {path} — rows for {set_code} will have no artist; "
+                f"run `scripts/card-status --set {set_code}` first",
+                file=sys.stderr,
+            )
             _set_cache[set_code] = {}
     cards = _set_cache[set_code]
     front = name.split(" // ", 1)[0]
