@@ -138,6 +138,9 @@ class PuzzleComparisonBenchmark : ScenarioTestBase() {
                 // A library search that can find nothing refused outright.
                 AiProfile.PRODUCTION_DEADSEARCH,
                 AiProfile.PRODUCTION_CANDIDATE_DEADSEARCH,
+                // A beginning-of-combat pump bought only for creatures the attack plan sends.
+                AiProfile.PRODUCTION_PLANNEDPUMPS,
+                AiProfile.PRODUCTION_CANDIDATE_PLANNEDPUMPS,
                 // Attack decisions from the 2026-10-09 game-log review — crack-back priced as life,
                 // tapped fliers keeping their evasion — alone and on top of what is live.
                 AiProfile.PRODUCTION_ATTACKS,

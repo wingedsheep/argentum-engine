@@ -70,6 +70,13 @@ class GameSimulator(
     private var isResolving = false
 
     /**
+     * True while the strategic resolver is answering a decision from inside one of this
+     * simulator's own simulations — a resolver can read it to skip work that only pays off for a
+     * decision the AI is about to make for real.
+     */
+    internal val resolvingNestedDecision: Boolean get() = isResolving
+
+    /**
      * The constant-time policy used while [isResolving] blocks the strategic resolver.
      *
      * Only reached from inside a resolver's own simulation, where the choice is between one cheap

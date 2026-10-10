@@ -580,11 +580,28 @@ data class AiProfile(
      *   attack or block this turn and declines unless what is left still beats no; a bare tie that
      *   spent energy also goes to no.
      *
-     * Not covered: a creature that *can* attack but then doesn't (game 3 turn 19, and turn 15 if
-     * the team mode was picked with Aerie Auxiliary ready) — knowing that needs the attack plan,
-     * which is not built until declare attackers. Needs [useCardIntent] for the trick half.
+     * Not covered here: a creature that *can* attack but then doesn't — [pumpsNeedAPlannedAttack]
+     * reads the attack plan for that. Needs [useCardIntent] for the trick half.
      */
     val holdUnusablePumps: Boolean = false,
+    /**
+     * Under [holdUnusablePumps], a grant bought at our own beginning of combat is only spendable on
+     * a creature the attack plan would actually send.
+     *
+     * [holdUnusablePumps] strips end-of-turn grants on creatures that *cannot* attack; one that can
+     * attack but will not still counted. 2026-10-10 engine-vs-engine logs
+     * (`production-candidate-expiring`), game 3 turn 19: Voltstorm Angel, no longer summoning
+     * sick, paid {E}{E} at the beginning of combat and the AI then declared no attackers — energy
+     * spent on a grant nobody used.
+     *
+     * With this on, a yes/no answered at our own beginning of combat walks the yes branch to
+     * declare attackers and asks `CombatAdvisor` — the same planner `Strategist` will consult a
+     * moment later — which creatures it would attack with. Grants on creatures left out of that
+     * plan are stripped the way [holdUnusablePumps] strips grants on creatures that cannot attack.
+     * The plan is read only when some new grant lands on a creature able to attack, and never
+     * from inside another simulation, so the attack search runs at most once per real decision.
+     */
+    val pumpsNeedAPlannedAttack: Boolean = false,
     /**
      * Count the land drop still to come as mana when [sequenceLandsByUsableMana] decides whether
      * tapped lands were idle — so playing an untapped land can never score below passing.
@@ -1544,6 +1561,7 @@ data class AiProfile(
             holdUnusablePumps = true,
             fillUpToMaxTargets = true,
             refuseDeadSearches = true,
+            pumpsNeedAPlannedAttack = true,
         )
 
         /**
@@ -1600,6 +1618,26 @@ data class AiProfile(
         val PRODUCTION_CANDIDATE_UNUSABLEPUMPS = PRODUCTION_CANDIDATE_EXPIRING.copy(
             id = "production-candidate-unusablepumps",
             holdUnusablePumps = true,
+        )
+
+        /**
+         * [pumpsNeedAPlannedAttack] on top of [PRODUCTION_UNUSABLEPUMPS] — it only acts under
+         * [holdUnusablePumps] — so `just arena production-unusablepumps production-plannedpumps
+         * 300` prices it alone.
+         */
+        val PRODUCTION_PLANNEDPUMPS = PRODUCTION_UNUSABLEPUMPS.copy(
+            id = "production-plannedpumps",
+            pumpsNeedAPlannedAttack = true,
+        )
+
+        /**
+         * [PRODUCTION_CANDIDATE_UNUSABLEPUMPS] plus [pumpsNeedAPlannedAttack], so `just arena
+         * production-candidate-unusablepumps production-candidate-plannedpumps 300` measures this
+         * flag and nothing else. [LIVE] ships it.
+         */
+        val PRODUCTION_CANDIDATE_PLANNEDPUMPS = PRODUCTION_CANDIDATE_UNUSABLEPUMPS.copy(
+            id = "production-candidate-plannedpumps",
+            pumpsNeedAPlannedAttack = true,
         )
 
         /**

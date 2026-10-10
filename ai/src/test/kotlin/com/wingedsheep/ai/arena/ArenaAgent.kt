@@ -170,6 +170,11 @@ object ArenaAgents {
         // production-candidate-expiring production-candidate-unusablepumps 300` is the promotion gate.
         ArenaAgent("production-unusablepumps", AiProfile.PRODUCTION_UNUSABLEPUMPS),
         ArenaAgent("production-candidate-unusablepumps", AiProfile.PRODUCTION_CANDIDATE_UNUSABLEPUMPS),
+        // ...and a grant bought at our beginning of combat counts only on a creature the attack
+        // plan would send. `just arena production-candidate-unusablepumps
+        // production-candidate-plannedpumps 300` is the promotion gate.
+        ArenaAgent("production-plannedpumps", AiProfile.PRODUCTION_PLANNEDPUMPS),
+        ArenaAgent("production-candidate-plannedpumps", AiProfile.PRODUCTION_CANDIDATE_PLANNEDPUMPS),
         // Choice decisions answered by what they are for: colour/land-type tie-breaks, shortlisted
         // card names, and a skipped draw priced as a card. `just arena production
         // production-choices 300` prices it alone; `just arena production-candidate-expiring
