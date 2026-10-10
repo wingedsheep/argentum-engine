@@ -156,4 +156,17 @@ class SelectionCountsByValueTest : FunSpec({
 
         choose(d, me, listOf(plains, swamp), 2, "Put on bottom", flag = true) shouldBe listOf(plains)
     }
+
+    test("scry 2 keeps the Swamp the library's {B}{B} spells want and bottoms the Island") {
+        // Nothing in hand asks for a colour; the library is half {2}{B}{B} spells and has no blue
+        // ones. One Swamp out leaves those spells a pip short, so the Swamp is the better land —
+        // without the library term the two tie and the Island, listed first, is kept.
+        val (d, me) = game(Deck.of("Swamp" to 10, "Island" to 10, "Bleed Dry" to 20))
+        d.putLandOnBattlefield(me, "Swamp")
+        repeat(3) { d.putLandOnBattlefield(me, "Island") }
+        val swamp = d.putCardOnTopOfLibrary(me, "Swamp")
+        val island = d.putCardOnTopOfLibrary(me, "Island")
+
+        choose(d, me, listOf(island, swamp), 2, "Put on bottom", flag = true) shouldBe listOf(island)
+    }
 })

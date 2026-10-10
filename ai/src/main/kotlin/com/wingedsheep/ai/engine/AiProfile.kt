@@ -471,7 +471,9 @@ data class AiProfile(
      *
      * It also makes [CardSelectionValue] price a land's colours per pip still short instead of
      * only when *no* source makes the colour: a {2}{B}{B} spell with one Swamp out now wants the
-     * second Swamp. That reaches every answer [castabilityAwareCardSelection] ranks.
+     * second Swamp. Spells left in the library add a smaller, share-of-library term, so with
+     * {B}{B} spells still to draw and no {U}{U} ones a second Swamp beats a second Island. That
+     * reaches every answer [castabilityAwareCardSelection] ranks.
      */
     val selectionCountsByValue: Boolean = false,
     /**

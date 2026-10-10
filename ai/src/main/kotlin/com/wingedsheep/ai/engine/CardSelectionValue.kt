@@ -56,6 +56,8 @@ internal class CardSelectionValue private constructor(
     private val librarySize: Int,
     private val libraryLands: Int,
     private val libraryLandsByColor: Map<Color, Int>,
+    /** Nonland cards in the library — its contents, which the player knows from the decklist. */
+    private val librarySpells: List<CardComponent>,
     /** Names of legendary permanents this player controls. */
     private val legendsInPlay: Set<String>,
     /** [AiProfile.selectionCountsByValue]: price a land's colours per pip still short. See [landScore]. */
@@ -159,7 +161,11 @@ internal class CardSelectionValue private constructor(
      * the spell needs more pips of it than [available] sources make. The legacy reading credited a
      * colour only when *no* source made it, so a {2}{B}{B} spell with one Swamp out gained nothing
      * from a second. A spell castable as soon as this land arrives counts in full, one further away
-     * at [LATER_SPELL_COLOR_WEIGHT]. Capped at [COLOR_CREDIT_CAP] like the legacy count.
+     * at [LATER_SPELL_COLOR_WEIGHT].
+     *
+     * The spells still in the library add a smaller term per colour: the *share* of them short of
+     * that colour, times [LIBRARY_COLOR_WEIGHT]. A share rather than a count, so a big library
+     * never outweighs one real spell in hand. Capped at [COLOR_CREDIT_CAP] like the legacy count.
      */
     private fun pipCredit(produces: Set<Color>, available: List<Set<Color>>, coming: Int): Double {
         var credit = 0.0
@@ -167,6 +173,13 @@ internal class CardSelectionValue private constructor(
             val weight = if (spell.manaValue <= coming + 1) 1.0 else LATER_SPELL_COLOR_WEIGHT
             for ((color, needed) in spell.manaCost.colorCount) {
                 if (color in produces && needed > available.count { color in it }) credit += weight
+            }
+        }
+        if (librarySpells.isNotEmpty()) {
+            for (color in produces) {
+                val have = available.count { color in it }
+                val short = librarySpells.count { (it.manaCost.colorCount[color] ?: 0) > have }
+                credit += LIBRARY_COLOR_WEIGHT * short / librarySpells.size
             }
         }
         return minOf(credit, COLOR_CREDIT_CAP)
@@ -192,6 +205,7 @@ internal class CardSelectionValue private constructor(
         private const val REMOVAL_BONUS = 2.0
         private const val LEGEND_DUPLICATE_PENALTY = 2.5
         private const val LATER_SPELL_COLOR_WEIGHT = 0.75
+        private const val LIBRARY_COLOR_WEIGHT = 0.75
         private const val COLOR_CREDIT_CAP = 3.0
         private val REMOVAL_TAGS = listOf(
             IntentTag.REMOVAL, IntentTag.EXILE_REMOVAL, IntentTag.SWEEPER, IntentTag.FIGHT, IntentTag.NEUTRALIZE,
@@ -273,6 +287,7 @@ internal class CardSelectionValue private constructor(
                 librarySize = library.size,
                 libraryLands = libraryLands.size,
                 libraryLandsByColor = byColor,
+                librarySpells = library.filter { !it.isLand },
                 legendsInPlay = legends,
                 pipAwareLandColors = pipAwareLandColors,
             )
