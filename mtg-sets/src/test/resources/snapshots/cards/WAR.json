@@ -1569,6 +1569,79 @@
     ]
 }
 
+// Dreadhorde Invasion
+{
+    "name": "Dreadhorde Invasion",
+    "manaCost": "{1}{B}",
+    "typeLine": "Enchantment",
+    "oracleText": "At the beginning of your upkeep, you lose 1 life and amass Zombies 1. (Put a +1/+1 counter on an Army you control. It's also a Zombie. If you don't control an Army, create a 0/0 black Zombie Army creature token first.)\nWhenever a Zombie token you control with power 6 or greater attacks, it gains lifelink until end of turn.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Dreadhorde Invasion:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": "Controller"
+                        },
+                        {
+                            "type": "Amass",
+                            "subtype": "Zombie"
+                        }
+                    ]
+                }
+            },
+            {
+                "id": "Dreadhorde Invasion:2",
+                "trigger": {
+                    "type": "AttackEvent",
+                    "filter": "creature Zombie token pow>=6 ctrl:you"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "LIFELINK",
+                    "target": "TriggeringEntity"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "86",
+        "rarity": "RARE",
+        "artist": "Stanton Feng",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/4/04c6e42d-991d-4e6b-a900-38480931f79e.jpg?1783933447",
+        "rulings": [
+            {
+                "date": "2019-05-03",
+                "text": "The power of the Zombie token is checked only immediately after it attacks. Any other abilities that trigger when creatures you control attack won't have resolved yet."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "If the token's power changes later in the turn after it has attacked, including while Dreadhorde Invasion's second ability is on the stack, it won't cause the token to gain or lose lifelink."
+            },
+            {
+                "date": "2023-06-16",
+                "text": "Some cards that cause you to amass Zombies also provide bonuses to \"Zombie tokens.\" These affect any token that happens to be a Zombie, not just a Zombie Army you've amassed."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Dreadmalkin
 {
     "name": "Dreadmalkin",
@@ -2721,6 +2794,62 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Lazotep Plating
+{
+    "name": "Lazotep Plating",
+    "manaCost": "{1}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Amass Zombies 1. (Put a +1/+1 counter on an Army you control. It's also a Zombie. If you don't control an Army, create a 0/0 black Zombie Army creature token first.)\nYou and permanents you control gain hexproof until end of turn. (You and they can't be the targets of spells or abilities your opponents control.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "Amass",
+                    "subtype": "Zombie"
+                },
+                {
+                    "type": "GrantEvasionKeyword",
+                    "keyword": "HEXPROOF"
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "permanent ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "GrantKeyword",
+                        "keyword": "HEXPROOF",
+                        "target": "IterationEntity"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "59",
+        "rarity": "UNCOMMON",
+        "artist": "Yeong-Hao Han",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/0/f03b5405-6016-405b-a504-a454731b9276.jpg?1783933460",
+        "rulings": [
+            {
+                "date": "2019-05-03",
+                "text": "You amass 1 and grant hexproof all while Lazotep Plating is resolving. Nothing can happen between the two, and no player may choose to take actions."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "If you create a Zombie Army token when Lazotep Plating instructs you to amass 1, that token will gain hexproof until end of turn."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
