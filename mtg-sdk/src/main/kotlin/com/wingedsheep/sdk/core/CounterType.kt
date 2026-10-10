@@ -146,6 +146,12 @@ value class CounterType(val name: String) {
          * for the keyword and `TriggerAbilityResolver` for the per-counter triggers.
          */
         val EXALTED = CounterType("EXALTED")
+
+        /**
+         * Shadow counter (LTC — Minas Morgul, Dark Fortress). Keyword counter (CR 122.1b / 613.1f): the
+         * permanent has shadow for as long as it has one. Wired through `StateProjector.KEYWORD_COUNTER_MAP`.
+         */
+        val SHADOW = CounterType("SHADOW")
         val STASH = CounterType("STASH")
 
         /**
@@ -743,6 +749,7 @@ value class CounterType(val name: String) {
             HASTE,
             MENACE,
             EXALTED,
+            SHADOW,
             STASH,
             CROAK,
             BLIGHT,

@@ -16084,12 +16084,13 @@ are their printed spellings (`CounterType.printed`). Text converts back only thr
   nothing while the Equipment is unattached, and is inert on a non-Equipment permanent. Not a keyword counter,
   so it stays out of `KEYWORD_COUNTER_MAP`. Used by Sting, Bilbo's Sword and Dwalin, Weaponmaster (HOB).
 - **Keyword counters** (Rule 122.1b) — `flying`, `first strike`, `double strike`, `vigilance`, `lifelink`,
-  `indestructible`, `deathtouch`, `trample`, `hexproof`, `reach`, `haste`, `menace`. `StateProjector` grants the matching `Keyword`
+  `indestructible`, `deathtouch`, `trample`, `hexproof`, `reach`, `haste`, `menace`, `shadow`. `StateProjector` grants the matching `Keyword`
   to any permanent carrying one (mapped in `KEYWORD_COUNTER_MAP`, re-applied after Layer 6 so "loses all abilities"
   can't wipe a counter-granted keyword). Add via `AddCounters(CounterType.DEATHTOUCH, ...)` etc.; no static ability needed.
   (`reach`: Sagu Pummeler's renew payoff puts a reach counter on a creature. `vigilance`: Aragorn, Company Leader.
   `double strike`: Mai, Jaded Edge's exhaust ability. `haste` / `menace`: Super-Adaptoid, which copies keywords
-  off another creature as counters.)
+  off another creature as counters. `shadow`: Minas Morgul, Dark Fortress, whose "it's a Wraith for as long as it
+  has a shadow counter" rider is `AddCreatureType("Wraith", t, Duration.WhileAffectedHasCounter(CounterType.SHADOW))`.)
 - **Exalted counters** (`CounterType.EXALTED`, CR 122.1b) — a keyword counter in `KEYWORD_COUNTER_MAP` like the
   above, but exalted is a *triggered* keyword, so **each counter is its own instance** (Emissary of Soulfire's
   ruling) and `TriggerAbilityResolver` derives one exalted trigger per counter on top of a printed one; the
