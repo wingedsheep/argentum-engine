@@ -2203,6 +2203,13 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   (Hardened Scales). No-op when source/destination missing, they're the same permanent, amount ≤ 0, or source has
   none of that kind. If the destination can't receive counters, none are removed from the source.
   The count-fixed counterpart to the interactive `MoveChosenCountersToTarget`.
+- `MoveAllCounters(source, destination)` — The Ozolith — move **every counter of every kind** from a live
+  `source` permanent onto `destination`. Deterministic, no per-kind prompt; "you may move all counters" is
+  `Effects.May(Effects.MoveAllCounters(...))`, so the move is all or nothing. Each kind is placed as its own
+  counter-placement (Hardened Scales applies). No-op when source/destination missing, the same permanent,
+  the source has no counters, or the destination can't receive counters (none leave the source). The
+  live-source sibling of `MoveAllLastKnownCounters`; pair it with `Conditions.SourceHasCounter(null)` for
+  "if this has counters on it".
 - **Passive named counters** — flavor counters with no inherent rule; the card that uses one accumulates
   it (`AddCounters(CounterType.X, …)`) and reads the count via `Conditions.SourceCounterCountAtLeast(CounterType.X, …)`
   or `DynamicAmounts.countersOnSelf(…)`, and may spend it as a cost (`Costs.RemoveCounterFromSelf(CounterType.X, …)`).

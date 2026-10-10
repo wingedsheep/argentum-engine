@@ -2410,6 +2410,14 @@ object Effects {
         com.wingedsheep.sdk.scripting.effects.MoveCountersEffect(counterType, amount, source, destination)
 
     /**
+     * Move every counter of every kind from [source] onto [destination]. Deterministic — wrap it in
+     * [May] for "you may move all counters". The Ozolith's "move all counters from The Ozolith onto
+     * target creature".
+     */
+    fun MoveAllCounters(source: EffectTarget, destination: EffectTarget): Effect =
+        com.wingedsheep.sdk.scripting.effects.MoveAllCountersEffect(source, destination)
+
+    /**
      * Move a player-chosen set (one or more) of counters from [source] onto [destination]
      * (one prompt per counter kind on the source). When [drawCardOnMove] is true, the
      * controller draws a card if any counter was moved. Used by Goldberry, River-Daughter's

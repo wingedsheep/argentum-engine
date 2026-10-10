@@ -518,6 +518,29 @@ data class MoveCountersEffect(
 }
 
 /**
+ * Move every counter, of every kind, from a [source] permanent onto a [destination] permanent.
+ *
+ * "You may move all counters from The Ozolith onto target creature." (The Ozolith.)
+ *
+ * The all-kinds, all-of-them sibling of [MoveCountersEffect] (one kind, a counted amount) and the
+ * live-source counterpart to [MoveAllLastKnownCountersEffect] (which reads a permanent that already
+ * left the battlefield). Deterministic — no per-kind prompt, so "you may" wraps the whole move in
+ * `Effects.May`, never a partial one. Each kind is added to the destination as its own placement,
+ * honoring counter-placement replacement effects (Hardened Scales). No-op when source/destination
+ * is missing, they're the same permanent, the source has no counters, or the destination can't
+ * receive counters (in which case none leave the source).
+ */
+@SerialName("MoveAllCounters")
+@Serializable
+data class MoveAllCountersEffect(
+    val source: EffectTarget,
+    val destination: EffectTarget
+) : Effect {
+    override val description: String =
+        "Move all counters from ${source.description} onto ${destination.description}"
+}
+
+/**
  * Distribute any number of counters from this creature onto other creatures.
  * "At the beginning of your upkeep, you may move any number of +1/+1 counters
  * from Forgotten Ancient onto other creatures."
