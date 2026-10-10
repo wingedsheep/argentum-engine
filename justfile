@@ -136,9 +136,10 @@ arena-report DIR:
 
 # Play AI-vs-AI games with sealed decks from random sets (a different set per seat) and write one
 # readable log per game — board, hand, every action, and what was on offer when the AI passed.
-# For reading where the AI misplays; logs land in ai/build/game-logs/.
+# For reading where the AI misplays; logs land in ai/build/game-logs/. AGENT defaults to `live`
+# (AiProfile.LIVE, what real players face), so the logs don't resurface misplays it already fixes.
 [group: 'ai']
-ai-game-logs GAMES="24" SEED="20261009" AGENT="production-candidate-expiring":
+ai-game-logs GAMES="24" SEED="20261009" AGENT="live":
     rm -rf ai/build/game-logs
     scripts/gradle-locked :ai:test --tests "*.GameLogBenchmark" -Dbenchmark=true -DgameLog=true \
         -DgameLogGames={{GAMES}} -DgameLogSeed={{SEED}} -DgameLogAgent={{AGENT}} \
