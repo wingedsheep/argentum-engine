@@ -825,6 +825,46 @@ class StateProjector {
             }
         }
 
+        // 1a. Static abilities that function from a graveyard (CR 113.6b — Anger's "As long as
+        // Anger is in your graveyard and you control a Mountain, creatures you control have
+        // haste"). Lowered once per card at entity creation ([ZoneStaticEffectsComponent]), so the
+        // per-projection cost is one component read per graveyard card.
+        //
+        // "You" is the card's owner (CR 108.4a / 109.5: an object with no controller is read
+        // through its owner) — passed as `youId` for the affected set and as the effect's
+        // [ContinuousEffect.controllerId] fallback, which the later re-resolves and the
+        // [EffectApplicator]'s condition check both read, since a graveyard card has no projected
+        // controller of its own.
+        //
+        // Timestamp: CR 613.7a gives the effect its object's timestamp, and CR 613.7d stamps an
+        // object as it enters a zone. The engine doesn't record graveyard entry, so the current
+        // state timestamp stands in — every printed graveyard static is a keyword or stat grant,
+        // whose order among same-layer effects doesn't change the result.
+        for (playerId in state.turnOrder) {
+            for (entityId in state.getZone(playerId, Zone.GRAVEYARD)) {
+                val container = state.getEntity(entityId) ?: continue
+                val zoneEffects = container.get<ZoneStaticEffectsComponent>()
+                    ?.effectsByZone?.get(Zone.GRAVEYARD) ?: continue
+                val ownerId = container.get<CardComponent>()?.ownerId ?: playerId
+                for (effect in zoneEffects) {
+                    effects.add(
+                        ContinuousEffect(
+                            sourceId = entityId,
+                            timestamp = state.timestamp,
+                            modification = effect.modification,
+                            affectedEntities = filterResolver.resolveAffectedEntities(
+                                state, entityId, effect.affectsFilter, projectedValues, youId = ownerId
+                            ),
+                            sourceCondition = effect.sourceCondition,
+                            affectsFilter = effect.affectsFilter,
+                            controllerId = ownerId,
+                            groupId = effect.groupId
+                        )
+                    )
+                }
+            }
+        }
+
         // 1b. Hone counters (CR 122.1j): "A hone counter on an Equipment gives +1/+0 to any
         // creature that Equipment is attached to." Synthesized here rather than lowered from a
         // static ability because the bonus belongs to the *counter*, not to the permanent holding

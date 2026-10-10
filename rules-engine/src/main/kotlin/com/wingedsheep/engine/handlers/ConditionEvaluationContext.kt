@@ -51,9 +51,15 @@ internal sealed interface ConditionEvaluationContext {
     class Projection(
         override val sourceId: EntityId,
         internal val sourceValues: MutableProjectedValues?,
-        internal val projectedValues: Map<EntityId, MutableProjectedValues>
+        internal val projectedValues: Map<EntityId, MutableProjectedValues>,
+        /**
+         * "You" when the source has no projected controller of its own — a card functioning from
+         * its owner's graveyard (CR 113.6b, read through its owner per CR 108.4a), or a floating
+         * effect whose source has left. The effect's [com.wingedsheep.engine.mechanics.layers.ContinuousEffect.controllerId].
+         */
+        private val fallbackControllerId: EntityId? = null
     ) : ConditionEvaluationContext {
-        override val controllerId: EntityId? get() = sourceValues?.controllerId
+        override val controllerId: EntityId? get() = sourceValues?.controllerId ?: fallbackControllerId
 
         private var cachedProjected: ProjectedState? = null
         override fun projectedStateFor(state: GameState): ProjectedState =
