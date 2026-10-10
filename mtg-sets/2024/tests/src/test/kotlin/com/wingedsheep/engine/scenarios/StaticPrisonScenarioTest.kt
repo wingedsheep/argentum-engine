@@ -67,6 +67,10 @@ class StaticPrisonScenarioTest : FunSpec({
         d.toNextOwnFirstMain()
         val question = d.pendingDecision.shouldBeInstanceOf<YesNoDecision>()
         question.playerId shouldBe d.player1
+        // Energy reads as its symbol, and the question says what declining costs.
+        question.prompt shouldBe "Pay {E}, or sacrifice Static Prison?"
+        question.yesText shouldBe "Pay {E}"
+        question.noText shouldBe "Sacrifice Static Prison"
         d.submitDecision(d.player1, YesNoResponse(question.id, true)).error shouldBe null
         d.energy() shouldBe 1
         d.getPermanents(d.player1) shouldContain prison

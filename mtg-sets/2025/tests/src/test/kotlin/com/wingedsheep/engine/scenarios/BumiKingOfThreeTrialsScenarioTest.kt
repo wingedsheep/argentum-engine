@@ -119,9 +119,10 @@ class BumiKingOfThreeTrialsScenarioTest : ScenarioTestBase() {
                 .withLandsOnBattlefield(1, "Forest", 7)
                 .withCardInGraveyard(1, "Firebending Lesson")
                 .withCardInGraveyard(1, "Earthbending Lesson")
-                // Non-empty library so "scry 3" actually pauses for a reorder decision.
+                // Non-empty library of two different cards so "scry 3" actually pauses for a
+                // reorder decision (copies of one card have no order to choose).
                 .withCardInLibrary(1, "Forest")
-                .withCardInLibrary(1, "Forest")
+                .withCardInLibrary(1, "Mountain")
                 .withActivePlayer(1)
                 .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
                 .build()

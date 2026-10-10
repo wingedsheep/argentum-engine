@@ -25,6 +25,8 @@ import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.effects.PayOrSufferEffect
 import com.wingedsheep.sdk.scripting.effects.SacrificeEffect
 import com.wingedsheep.sdk.scripting.effects.SacrificeSelfEffect
+import com.wingedsheep.sdk.scripting.effects.SacrificeTargetEffect
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import kotlin.reflect.KClass
 
 /**
@@ -971,7 +973,8 @@ class PayOrSufferExecutor(
                 onDeclined = effect.suffer,
                 targets = context.targets,
                 namedTargets = context.pipeline.namedTargets,
-                storedCollections = context.pipeline.storedCollections
+                storedCollections = context.pipeline.storedCollections,
+                consequence = describeConsequence(effect, sourceName)
             )
         )
         return when (payment) {
@@ -1320,6 +1323,8 @@ class PayOrSufferExecutor(
         return when (val sufferEffect = effect.suffer) {
             is SacrificeSelfEffect,
             is SacrificeEffect -> "sacrifice $sourceName"
+            is SacrificeTargetEffect ->
+                if (sufferEffect.target == EffectTarget.Self) "sacrifice $sourceName" else sufferEffect.description
             else -> sufferEffect.description
         }
     }

@@ -25,9 +25,10 @@ object GraveyardOrdering {
 
     /**
      * Copies of one card are interchangeable in a graveyard, so every order of them is the same
-     * graveyard: don't ask the owner to sort two Pond Prophets that died together.
+     * graveyard: don't ask the owner to sort two Pond Prophets that died together. A library move
+     * reuses it for the same reason (two Plains kept on top after a scry).
      */
-    private fun allSameCard(state: GameState, cards: List<EntityId>): Boolean =
+    internal fun allSameCard(state: GameState, cards: List<EntityId>): Boolean =
         cards.map { state.getEntity(it)?.get<CardComponent>()?.cardDefinitionId ?: return false }.distinct().size == 1
 
     fun finish(result: ExecutionResult): ExecutionResult =

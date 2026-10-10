@@ -458,15 +458,21 @@ class MoveCollectionExecutor(
         if ((order == CardOrder.ControllerChooses || order == CardOrder.OwnerChooses) && destZone == Zone.LIBRARY) {
             val isBottom = destination.placement == ZonePlacement.Bottom
             val chooserId = if (order == CardOrder.OwnerChooses) destPlayerId else context.controllerId
-            // One card has no order to choose. On top it still pauses, because for "look at the
-            // top card of your library" (lookAtTopAndReorder with a count of one) that prompt is
-            // the only look the player gets — unless a selection in this same pipeline just
-            // displayed the card to the chooser (scry 1 / surveil 1 keeping it on top).
-            val alreadySeen = cards.size == 1 && fromCollection != null &&
-                cards.single() in context.pipeline.storedCollections[
-                    com.wingedsheep.engine.handlers.PipelineState.shownKey(fromCollection, chooserId)
-                ].orEmpty()
-            if ((!isBottom || cards.size > 1) && !alreadySeen) {
+            // One card — or several copies of one card — has no order to choose. The prompt still
+            // runs where it is the player's only *look* at the cards ("look at the top card of
+            // your library", lookAtTopAndReorder), and is skipped only when a selection in this
+            // same pipeline just displayed every one of them to the chooser (scry / surveil
+            // keeping them on top). Skipping therefore never hides anything the chooser
+            // wouldn't otherwise see.
+            val shown = fromCollection?.let {
+                context.pipeline.storedCollections[
+                    com.wingedsheep.engine.handlers.PipelineState.shownKey(it, chooserId)
+                ]
+            }.orEmpty()
+            val noOrderToChoose = cards.size == 1 ||
+                com.wingedsheep.engine.mechanics.GraveyardOrdering.allSameCard(state, cards)
+            val alreadySeen = cards.isNotEmpty() && cards.all { it in shown }
+            if ((!isBottom || cards.size > 1) && !(alreadySeen && noOrderToChoose)) {
                 return pauseForOrderDecision(state, context, cards, destZone, destPlayerId, destination.placement, chooserId)
             }
         }

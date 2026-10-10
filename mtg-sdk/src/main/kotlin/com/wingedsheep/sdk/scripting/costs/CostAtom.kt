@@ -442,8 +442,17 @@ sealed interface CostAtom : TextReplaceable<CostAtom> {
                     ContextPropertyKey.TARGETS_TOTAL_MANA_VALUE
                 )) { "Player-counter costs require a nonnegative fixed amount, X, its source's mana value, or target mana value" }
         }
-        override val description: String get() = when (amount) {
-            is DynamicAmount.Fixed -> "pay ${amount.amount} ${counterType.printed} counters"
+        override val description: String get() = if (counterType == CounterType.ENERGY) {
+            // Energy is printed as its symbol: "pay {E}{E}", "pay an amount of {E} equal to …".
+            when (amount) {
+                is DynamicAmount.Fixed -> if (amount.amount == 0) "pay 0 {E}" else "pay ${"{E}".repeat(amount.amount)}"
+                is DynamicAmount.XValue -> "pay X {E}"
+                SOURCE_MANA_VALUE -> "pay an amount of {E} equal to its mana value"
+                else -> "pay the targets' total mana value in {E}"
+            }
+        } else when (amount) {
+            is DynamicAmount.Fixed -> "pay ${amount.amount} ${counterType.printed} " +
+                if (amount.amount == 1) "counter" else "counters"
             is DynamicAmount.XValue -> "pay X ${counterType.printed} counters"
             SOURCE_MANA_VALUE -> "pay an amount of ${counterType.printed} counters equal to its mana value"
             else -> "pay the targets' total mana value in ${counterType.printed} counters"
