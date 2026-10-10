@@ -290,6 +290,7 @@ class AIPlayer(
                 intents = intents,
                 castabilityAwareCardSelection = profile.castabilityAwareCardSelection,
                 informedChoices = profile.informedChoiceDecisions,
+                fillUpToMaxTargets = profile.fillUpToMaxTargets,
                 selectionCountsByValue = profile.selectionCountsByValue,
             )
 
