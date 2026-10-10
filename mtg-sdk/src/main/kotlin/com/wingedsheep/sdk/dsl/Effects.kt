@@ -5166,7 +5166,8 @@ object Effects {
     /**
      * Change the target of target spell or ability with a single target. Pass [to] for "… to this
      * creature" (Hydroelectric Specimen): the target becomes that object if it's a legal target,
-     * with no choice offered.
+     * with no choice of new target. With [to], a spell or ability with several targets has one of
+     * them changed — the controller picks which (Spellskite's "change a target").
      */
     fun ChangeTarget(
         newTargetMustBePlayer: Boolean = false,

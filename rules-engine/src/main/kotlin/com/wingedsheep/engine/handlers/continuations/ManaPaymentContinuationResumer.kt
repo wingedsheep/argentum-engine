@@ -5,6 +5,8 @@ import com.wingedsheep.engine.handlers.effects.mana.ManaProvenanceTracker
 
 import com.wingedsheep.engine.mechanics.mana.withSpendingColors
 import com.wingedsheep.engine.core.*
+import com.wingedsheep.engine.handlers.effects.stack.ChangeTargetExecutor
+import com.wingedsheep.engine.handlers.effects.stack.ContestedRetargetLogic
 import com.wingedsheep.engine.handlers.costs.CollectEvidenceResolver
 import com.wingedsheep.engine.handlers.effects.BattlefieldFilterUtils
 import com.wingedsheep.engine.handlers.effects.ZoneTransitionService
@@ -959,6 +961,18 @@ class ManaPaymentContinuationResumer(
 
         val targetsComponent = spellEntity.get<TargetsComponent>()
             ?: return checkForMore(state, emptyList())
+
+        // Spellskite: the answer names the current target to replace with the fixed new one.
+        continuation.fixedNewTarget?.let { fixed ->
+            val slot = continuation.candidateSlots.firstOrNull { slot ->
+                targetsComponent.targets.getOrNull(slot)
+                    ?.let { ContestedRetargetLogic.entityIdOf(it) } == selectedEntityId
+            } ?: return checkForMore(state, emptyList())
+            return checkForMore(
+                ChangeTargetExecutor.replaceTargetSlot(state, continuation.spellEntityId, slot, fixed),
+                emptyList()
+            )
+        }
 
         // Determine the appropriate ChosenTarget type based on the selected entity
         val newTarget = if (state.turnOrder.contains(selectedEntityId)) {

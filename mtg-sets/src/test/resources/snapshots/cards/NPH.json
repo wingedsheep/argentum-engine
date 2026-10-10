@@ -677,6 +677,91 @@
     ]
 }
 
+// Spellskite
+{
+    "name": "Spellskite",
+    "manaCost": "{2}",
+    "typeLine": "Artifact Creature — Phyrexian Horror",
+    "oracleText": "{U/P}: Change a target of target spell or ability to this creature. ({U/P} can be paid with either {U} or 2 life.)",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 4
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Spellskite:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{U/P}"
+                    }
+                },
+                "effect": {
+                    "type": "ChangeTarget",
+                    "newTarget": "Self"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {
+                                "anyOf": [
+                                    {},
+                                    {
+                                        "cardPredicates": [
+                                            "IsActivatedOrTriggeredAbility"
+                                        ]
+                                    }
+                                ]
+                            },
+                            "zone": "Stack"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "159",
+        "rarity": "RARE",
+        "artist": "Chippy",
+        "flavorText": "\"Let's show Vorinclex that progress doesn't always need teeth or claws.\"\n—Malcator, Executor of Synthesis",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/a/1a84bada-ed6a-4e97-8a0c-05b7cb32d66f.jpg?1783941290",
+        "rulings": [
+            {
+                "date": "2020-08-07",
+                "text": "You can activate Spellskite's ability even if Spellskite isn't a legal target for the target spell or ability—or even if that spell or ability has no targets. In this case, no targets are changed."
+            },
+            {
+                "date": "2020-08-07",
+                "text": "If Spellskite leaves the battlefield before its ability resolves or otherwise becomes an illegal target for the target spell or ability before its ability resolves, no targets are changed."
+            },
+            {
+                "date": "2020-08-07",
+                "text": "If changing one target of a spell or ability to Spellskite would make other targets of that spell or ability illegal, that target can't be changed to Spellskite."
+            },
+            {
+                "date": "2020-08-07",
+                "text": "If the spell or ability has multiple instances of the word \"target,\" you choose which one target you're changing to Spellskite as Spellskite's ability resolves."
+            },
+            {
+                "date": "2020-08-07",
+                "text": "If a spell or ability has multiple targets but doesn't use the word \"target\" multiple times, such as the ability of Deepglow Skate, you can only change one of the targets to Spellskite."
+            },
+            {
+                "date": "2020-08-07",
+                "text": "If a spell or ability has a variable number of targets, you can't change the number of targets."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Torpor Orb
 {
     "name": "Torpor Orb",

@@ -27,7 +27,8 @@ import kotlin.reflect.KClass
  *
  * Logic:
  * 1. Get the target spell/ability from context
- * 2. Check it has exactly one target — if not, the effect does nothing
+ * 2. A fixed new target ("…to this creature") replaces one legal slot — see redirectToFixedTarget;
+ *    otherwise the spell must have exactly one target, or the effect does nothing
  * 3. Find all legal new targets based on the spell/ability's target requirement
  * 4. Present a selection decision to the controller
  * 5. Push ChangeSpellTargetContinuation (reused)
@@ -57,22 +58,7 @@ class ChangeTargetExecutor(
         // 2. Get the spell/ability's targets
         val targetsComponent = stackEntity.get<TargetsComponent>()
         val spellTargets = targetsComponent?.targets ?: emptyList()
-
-        // Must have exactly one target
-        if (spellTargets.size != 1) {
-            return EffectResult.success(state)
-        }
-
-        val currentTarget = spellTargets.first()
         val targetRequirements = targetsComponent?.targetRequirements ?: emptyList()
-
-        // "…if that target is you" (Reflecting Mirror). Checked at resolution, so a spell whose
-        // target changed hands in response is no longer redirectable.
-        if (effect.onlyIfCurrentTargetIsController &&
-            getTargetEntityId(currentTarget) != context.controllerId
-        ) {
-            return EffectResult.success(state)
-        }
 
         // The object's own controller judges the new target ("target creature you control"). An
         // activated/triggered ability carries no ControllerComponent, so read the stack component.
@@ -80,14 +66,28 @@ class ChangeTargetExecutor(
             ?: stackEntity.get<ControllerComponent>()?.playerId
             ?: context.controllerId
 
-        // "…to this creature" (Hydroelectric Specimen): no choice. CR 115.7a — the target changes
-        // only to another legal target, judged by the spell's own requirement from its controller's
-        // side; otherwise it stays as it was.
+        // "…to this creature" (Hydroelectric Specimen, Spellskite): no choice of new target, and any
+        // one of several targets may be the one changed — see [redirectToFixedTarget].
         effect.newTarget?.let { fixed ->
             return redirectToFixedTarget(
-                state, context, fixed, currentTarget, targetRequirements, spellController,
-                targetSpell.spellEntityId, effect.newTargetMustBePlayer
+                state, context, effect, fixed, spellTargets, targetRequirements, spellController,
+                targetSpell.spellEntityId
             )
+        }
+
+        // A chosen new target needs exactly one current target — if not, the effect does nothing
+        if (spellTargets.size != 1) {
+            return EffectResult.success(state)
+        }
+
+        val currentTarget = spellTargets.first()
+
+        // "…if that target is you" (Reflecting Mirror). Checked at resolution, so a spell whose
+        // target changed hands in response is no longer redirectable.
+        if (effect.onlyIfCurrentTargetIsController &&
+            getTargetEntityId(currentTarget) != context.controllerId
+        ) {
+            return EffectResult.success(state)
         }
 
         // 3. Find all legal new targets based on target requirements
@@ -133,32 +133,76 @@ class ChangeTargetExecutor(
         )
     }
 
+    /**
+     * Change one of the spell's targets to the fixed object [fixed] names. CR 115.7a — a target
+     * changes only to another legal target, judged by that target's own requirement from the
+     * spell's controller's side; otherwise it stays as it was. A slot qualifies when [fixed] isn't
+     * already its target, is legal for its requirement, and isn't already chosen for another slot
+     * of the same instance of the word "target" (CR 115.3) — the change can't make the spell's
+     * other targets illegal. With several qualifying targets, the controller chooses which one
+     * changes (Spellskite's ruling); "with a single target" wordings restrict at targeting instead.
+     */
     private fun redirectToFixedTarget(
         state: GameState,
         context: EffectContext,
+        effect: ChangeTargetEffect,
         fixed: EffectTarget,
-        currentTarget: ChosenTarget,
+        targets: List<ChosenTarget>,
         targetRequirements: List<TargetRequirement>,
         spellController: EntityId,
-        spellEntityId: EntityId,
-        mustBePlayer: Boolean
+        spellEntityId: EntityId
     ): EffectResult {
         val newTargetId = context.resolveTarget(fixed, state) ?: return EffectResult.success(state)
-        if (newTargetId == getTargetEntityId(currentTarget)) return EffectResult.success(state)
-        if (mustBePlayer && newTargetId !in state.turnOrder) return EffectResult.success(state)
-        val requirement = targetRequirements.firstOrNull() ?: return EffectResult.success(state)
-        val legal = targetFinder.findLegalTargets(state, requirement, spellController, spellEntityId)
-        if (newTargetId !in legal) return EffectResult.success(state)
+        if (effect.newTargetMustBePlayer && newTargetId !in state.turnOrder) return EffectResult.success(state)
+        if (targets.isEmpty() || targetRequirements.isEmpty()) return EffectResult.success(state)
 
-        val newTarget = if (newTargetId in state.turnOrder) {
-            ChosenTarget.Player(newTargetId)
-        } else {
-            ChosenTarget.Permanent(newTargetId)
+        val aligned = SpellCopyTargets.alignedRequirements(targetRequirements, targets.size)
+        val groupOfSlot = aligned.flatMapIndexed { group, requirement -> List(requirement.count) { group } }
+        val legalByGroup = HashMap<Int, Boolean>()
+        val candidateSlots = targets.indices.filter { slot ->
+            val group = groupOfSlot.getOrNull(slot) ?: return@filter false
+            val currentId = getTargetEntityId(targets[slot])
+            currentId != newTargetId &&
+                (!effect.onlyIfCurrentTargetIsController || currentId == context.controllerId) &&
+                targets.indices.none { other ->
+                    other != slot && groupOfSlot.getOrNull(other) == group &&
+                        getTargetEntityId(targets[other]) == newTargetId
+                } &&
+                legalByGroup.getOrPut(group) {
+                    newTargetId in targetFinder.findLegalTargets(
+                        state, targetRequirements[group], spellController, spellEntityId
+                    )
+                }
         }
-        val updated = state.updateEntity(spellEntityId) { container ->
-            container.with(TargetsComponent.capture(state, listOf(newTarget), targetRequirements))
+        if (candidateSlots.isEmpty()) return EffectResult.success(state)
+
+        val candidateIds = candidateSlots.mapNotNull { getTargetEntityId(targets[it]) }.distinct()
+        if (candidateIds.size <= 1) {
+            return EffectResult.success(
+                replaceTargetSlot(state, spellEntityId, candidateSlots.first(), newTargetId)
+            )
         }
-        return EffectResult.success(updated)
+
+        val sourceName = context.sourceId?.let { state.getEntity(it)?.get<CardComponent>()?.name }
+        val decisionResult = decisionHandler.createCardSelectionDecision(
+            state = state,
+            playerId = context.controllerId,
+            sourceId = context.sourceId,
+            sourceName = sourceName,
+            prompt = "Choose the target to change",
+            options = candidateIds,
+            minSelections = 1,
+            maxSelections = 1,
+            useTargetingUI = true,
+            answer = ChangeSpellTargetContinuation(
+                spellEntityId = spellEntityId,
+                sourceId = context.sourceId,
+                objectReferences = context.objectReferences,
+                fixedNewTarget = newTargetId,
+                candidateSlots = candidateSlots
+            )
+        )
+        return EffectResult.propagatePause(decisionResult.state, decisionResult.events)
     }
 
     /**
@@ -264,6 +308,19 @@ class ChangeTargetExecutor(
             is ChosenTarget.Player -> target.playerId
             is ChosenTarget.Card -> target.cardId
             is ChosenTarget.Spell -> target.spellEntityId
+        }
+    }
+
+    companion object {
+        /** Rewrite one target slot of [spellEntityId] to [newTargetId], keeping the slot's target shape. */
+        fun replaceTargetSlot(state: GameState, spellEntityId: EntityId, slot: Int, newTargetId: EntityId): GameState {
+            val component = state.getEntity(spellEntityId)?.get<TargetsComponent>() ?: return state
+            val targets = component.targets.toMutableList()
+            if (slot !in targets.indices) return state
+            targets[slot] = ContestedRetargetLogic.rebuildTarget(state, newTargetId, targets[slot])
+            return state.updateEntity(spellEntityId) { container ->
+                container.with(TargetsComponent.capture(state, targets, component.targetRequirements))
+            }
         }
     }
 }
