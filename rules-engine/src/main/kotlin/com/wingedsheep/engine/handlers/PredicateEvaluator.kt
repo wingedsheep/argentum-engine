@@ -8,7 +8,10 @@ import com.wingedsheep.engine.state.components.battlefield.BattlefieldEntryTimes
 import com.wingedsheep.engine.state.components.battlefield.chosenColor
 import com.wingedsheep.engine.state.components.battlefield.CastChoicesComponent
 import com.wingedsheep.engine.state.components.battlefield.ChoiceValue
+import com.wingedsheep.engine.handlers.effects.LkiPolicy
 import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils
+import com.wingedsheep.engine.handlers.effects.lkiPolicyFor
+import com.wingedsheep.engine.handlers.effects.lkiSnapshotFor
 import com.wingedsheep.engine.handlers.predicates.becameTappedOnlyOnceThisTurn
 import com.wingedsheep.engine.handlers.predicates.hasDealtDamage
 import com.wingedsheep.engine.handlers.predicates.receivedCounterThisTurn
@@ -522,6 +525,28 @@ class PredicateEvaluator(
         card.typeLine.hasSubtype(subtype) ||
             (Keyword.CHANGELING in card.baseKeywords && subtype.value in Subtype.ALL_CREATURE_TYPES) ||
             projected.crossZoneGrantedSubtypes(state, entityId).any { it.equals(subtype.value, ignoreCase = true) }
+
+    /**
+     * The last-known information (CR 608.2h) a "shares a type with <reference>" read takes once its
+     * reference has left the battlefield — "a permanent that shares a card type with it", where *it*
+     * is the permanent sacrificed a moment earlier (Braids, Arisen Nightmare). The departed object
+     * is read as it last existed, so an animated land still counts as a creature and a sacrificed
+     * token, which has ceased to exist (CR 704.5d), still has types to share.
+     *
+     * Only references whose policy is [LkiPolicy.LIVE_THEN_LKI] have a snapshot; a reference still
+     * on the battlefield (it has a projection entry) or with none captured returns null and the
+     * caller reads it where it is now.
+     */
+    private fun referenceLastKnown(
+        projected: ProjectedState,
+        reference: EffectTarget.SingleEntity,
+        referenceId: EntityId,
+        context: PredicateContext?
+    ): EntitySnapshot? {
+        if (context == null || projected.getProjectedValues(referenceId) != null) return null
+        if (lkiPolicyFor(reference) != LkiPolicy.LIVE_THEN_LKI) return null
+        return context.toEffectContext().lkiSnapshotFor(reference, referenceId)
+    }
 
     /**
      * The subtypes a "shares a creature type with it" reference has: the triggering creature's
@@ -1131,15 +1156,18 @@ class PredicateEvaluator(
 
             is CardPredicate.SharesCreatureTypeWith -> {
                 val referenceId = resolveEntity(state, predicate.entity, context, projected) ?: return false
+                val lastKnown = referenceLastKnown(projected, predicate.entity, referenceId, context)
                 sharesCreatureType(
                     state, projected, entityId, card, projectedValues,
-                    referenceSubtypes(state, projected, referenceId, context)
+                    lastKnown?.subtypes ?: referenceSubtypes(state, projected, referenceId, context)
                 )
             }
 
             is CardPredicate.SharesCardTypeWith -> {
                 val referenceId = resolveEntity(state, predicate.entity, context, projected) ?: return false
-                val referenceTypes = cardTypesOf(state, projected, referenceId, null)
+                val lastKnown = referenceLastKnown(projected, predicate.entity, referenceId, context)
+                val referenceTypes = lastKnown?.typeLine?.cardTypes?.mapTo(mutableSetOf()) { it.name }
+                    ?: cardTypesOf(state, projected, referenceId, null)
                 if (referenceTypes.isEmpty()) return false
                 val entityTypes = cardTypesOf(state, projected, entityId, projectedValues?.types)
                     .ifEmpty { card.typeLine.cardTypes.mapTo(mutableSetOf()) { it.name } }

@@ -304,6 +304,11 @@ fun captureEntitySnapshots(
         supertypes = projected.getSupertypes(id),
         controllerId = projected.getController(id),
         wasSuspected = projected.isSuspected(id),
+        // The projected type line rides along so a "shares a card type with the sacrificed
+        // permanent" read sees the types it had on the battlefield — an animated land's Creature,
+        // a token that no longer exists at all (CR 608.2h).
+        typeLine = state?.getEntity(id)?.get<CardComponent>()?.typeLine
+            ?.let { projectedTypeLine(projected, id, it) },
     )
 }
 
@@ -399,8 +404,12 @@ fun projectedTypeLine(state: GameState, entityId: EntityId): TypeLine? {
 }
 
 /** [projectedTypeLine] for a caller that already holds the printed [baseTypeLine]. */
-fun projectedTypeLine(state: GameState, entityId: EntityId, baseTypeLine: TypeLine): TypeLine {
-    val projected = state.projectedState.getProjectedValues(entityId) ?: return baseTypeLine
+fun projectedTypeLine(state: GameState, entityId: EntityId, baseTypeLine: TypeLine): TypeLine =
+    projectedTypeLine(state.projectedState, entityId, baseTypeLine)
+
+/** [projectedTypeLine] read through an explicit [projection] (a caller mid-cost holding its own). */
+fun projectedTypeLine(projection: ProjectedState, entityId: EntityId, baseTypeLine: TypeLine): TypeLine {
+    val projected = projection.getProjectedValues(entityId) ?: return baseTypeLine
     val cardTypes = projected.types
         .mapNotNull { runCatching { CardType.valueOf(it) }.getOrNull() }
         .toSet()
