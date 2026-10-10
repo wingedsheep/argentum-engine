@@ -28,10 +28,14 @@ import kotlin.random.Random
  * Plays AI-vs-AI games with sealed decks from *random sets* (a different set per seat) and writes a
  * human-readable log per game, for reading where the AI misplays. Off unless `-DgameLog=true`.
  *
+ * The agent defaults to `live` ([com.wingedsheep.ai.engine.AiProfile.LIVE]) — the profile real
+ * players face, carrying every shipped misplay fix — so the logs don't resurface problems an older
+ * candidate profile still has but the live AI no longer does.
+ *
  * ```
  * just ai-game-logs 24            # or, by hand:
  * scripts/gradle-locked :ai:test --tests "*.GameLogBenchmark" -DgameLog=true \
- *     -DgameLogGames=20 -DgameLogAgent=production-candidate-expiring -DgameLogDir=/tmp/logs
+ *     -DgameLogGames=20 -DgameLogAgent=live -DgameLogDir=/tmp/logs
  * ```
  */
 class GameLogBenchmark : FunSpec({
@@ -40,7 +44,7 @@ class GameLogBenchmark : FunSpec({
     test("game logs across random sets").config(enabled = enabled) {
         val games = System.getProperty("gameLogGames")?.toIntOrNull() ?: 20
         val seed = System.getProperty("gameLogSeed")?.toLongOrNull() ?: 20261009L
-        val agent = ArenaAgents.resolve(System.getProperty("gameLogAgent") ?: "production-candidate-expiring")
+        val agent = ArenaAgents.resolve(System.getProperty("gameLogAgent") ?: "live")
         val outDir = File(System.getProperty("gameLogDir") ?: "build/game-logs").apply { mkdirs() }
 
         val eligible = MtgSetCatalog.all.filter { set ->

@@ -39,7 +39,9 @@ The arena says *whether* an agent got better; it never says *where* it misplays.
 seat and writes one readable log per game to `ai/build/game-logs/`: the board and hands at each turn,
 every action and decision with card names, and — whenever the active player passes its own main phase
 on an empty stack — the non-mana actions it could have afforded. Mixing sets on purpose exposes the AI
-to cards no advisor module was written for. Read the logs for patterns, then reproduce one as a puzzle
+to cards no advisor module was written for. `AGENT` defaults to `live` (`AiProfile.LIVE`), the
+profile real players face: it carries the misplay fixes layered on top of the arena candidates, so
+logs read under an older profile resurface problems the live AI no longer has. Read the logs for patterns, then reproduce one as a puzzle
 or focused test before changing anything.
 
 ---
