@@ -138,6 +138,9 @@ class PuzzleComparisonBenchmark : ScenarioTestBase() {
                 // A library search that can find nothing refused outright.
                 AiProfile.PRODUCTION_DEADSEARCH,
                 AiProfile.PRODUCTION_CANDIDATE_DEADSEARCH,
+                // A minus-only planeswalker (the empower-Jace token) spends its loyalty.
+                AiProfile.PRODUCTION_FUELLOYALTY,
+                AiProfile.PRODUCTION_CANDIDATE_FUELLOYALTY,
                 // A beginning-of-combat pump bought only for creatures the attack plan sends.
                 AiProfile.PRODUCTION_PLANNEDPUMPS,
                 AiProfile.PRODUCTION_CANDIDATE_PLANNEDPUMPS,
