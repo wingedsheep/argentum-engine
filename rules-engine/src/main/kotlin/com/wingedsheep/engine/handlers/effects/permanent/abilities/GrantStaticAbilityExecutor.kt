@@ -8,7 +8,12 @@ import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.core.Zone
+import com.wingedsheep.sdk.scripting.CantBeBlockedBy
+import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.StaticAbility
 import com.wingedsheep.sdk.scripting.effects.GrantStaticAbilityEffect
+import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import kotlin.reflect.KClass
 
 /**
@@ -36,6 +41,8 @@ class GrantStaticAbilityExecutor : EffectExecutor<GrantStaticAbilityEffect> {
         state.getEntity(targetId)
             ?: return EffectResult.error(state, "Target no longer exists")
 
+        val ability = bakeResolutionPlayers(effect.ability, context, state)
+
         // A *player* may hold a grant. Some static abilities describe a rule about the game rather
         // than about an object — High Tide's "until end of turn, whenever a player taps an Island
         // for mana, that player adds an additional {U}" — and a spell has no permanent to anchor
@@ -46,7 +53,7 @@ class GrantStaticAbilityExecutor : EffectExecutor<GrantStaticAbilityEffect> {
                 state.copy(
                     grantedStaticAbilities = state.grantedStaticAbilities + GrantedStaticAbility(
                         entityId = targetId,
-                        ability = effect.ability,
+                        ability = ability,
                         duration = effect.duration,
                         sourceId = context.sourceId,
                         controllerId = context.controllerId
@@ -73,7 +80,7 @@ class GrantStaticAbilityExecutor : EffectExecutor<GrantStaticAbilityEffect> {
 
         val grant = GrantedStaticAbility(
             entityId = targetId,
-            ability = effect.ability,
+            ability = ability,
             duration = effect.duration,
             sourceId = context.sourceId,
             controllerId = context.controllerId,
@@ -88,5 +95,61 @@ class GrantStaticAbilityExecutor : EffectExecutor<GrantStaticAbilityEffect> {
         )
 
         return EffectResult.success(newState, listOf(StaticAbilityGrantedEvent(targetId)))
+    }
+
+    /**
+     * Freeze player references that only the resolving context can answer into concrete ids.
+     *
+     * A grant outlives the resolution that created it: its filters are read later, at the point
+     * of use (block declaration), where the pipeline's stored choices and the ability's targets
+     * are gone. The Black Gate's "choose a player with the most life … target creature can't be
+     * blocked by creatures that player controls this turn" names a player chosen mid-resolution;
+     * left symbolic, `ControlledByReferencedPlayer(PipelineTarget)` would resolve to nobody and
+     * the creature could be blocked by everyone. Per the card's ruling, the player is fixed when
+     * the ability resolves while the set of their creatures stays live — so only the player is
+     * baked, never the blockers.
+     *
+     * Only context-bound references ([EffectTarget.PipelineTarget], [EffectTarget.ContextTarget],
+     * [EffectTarget.BoundVariable]) are rewritten; state-relative ones (defending player, you)
+     * keep resolving at the point of use as before. Extend the `when` below when another granted
+     * static carries a player-scoped filter.
+     */
+    private fun bakeResolutionPlayers(
+        ability: StaticAbility,
+        context: EffectContext,
+        state: GameState
+    ): StaticAbility = when (ability) {
+        is CantBeBlockedBy -> {
+            val baked = bakeFilter(ability.blockerFilter, context, state)
+            if (baked == ability.blockerFilter) ability else ability.copy(blockerFilter = baked)
+        }
+        else -> ability
+    }
+
+    private fun bakeFilter(filter: GameObjectFilter, context: EffectContext, state: GameState): GameObjectFilter =
+        filter.copy(
+            controllerPredicate = filter.controllerPredicate?.let { bakePredicate(it, context, state) },
+            anyOf = filter.anyOf.map { bakeFilter(it, context, state) }
+        )
+
+    private fun bakePredicate(
+        predicate: ControllerPredicate,
+        context: EffectContext,
+        state: GameState
+    ): ControllerPredicate = when (predicate) {
+        is ControllerPredicate.ControlledByReferencedPlayer -> when (predicate.target) {
+            is EffectTarget.PipelineTarget, is EffectTarget.ContextTarget, is EffectTarget.BoundVariable -> {
+                val playerId = context.resolvePlayerTarget(predicate.target, state)
+                    ?.takeIf { it in state.turnOrder }
+                if (playerId != null) {
+                    ControllerPredicate.ControlledByReferencedPlayer(EffectTarget.SpecificEntity(playerId))
+                } else predicate
+            }
+            else -> predicate
+        }
+        is ControllerPredicate.And -> ControllerPredicate.And(predicate.predicates.map { bakePredicate(it, context, state) })
+        is ControllerPredicate.Or -> ControllerPredicate.Or(predicate.predicates.map { bakePredicate(it, context, state) })
+        is ControllerPredicate.Not -> ControllerPredicate.Not(bakePredicate(predicate.predicate, context, state))
+        else -> predicate
     }
 }
