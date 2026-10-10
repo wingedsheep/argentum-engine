@@ -95,13 +95,14 @@ object LandDropUtils {
      */
     fun anyFilteredLandLockPresent(state: GameState, cardRegistry: CardRegistry): Boolean =
         state.getBattlefield().any { id ->
-            val cardDef = state.getEntity(id)?.get<CardComponent>()
-                ?.let { cardRegistry.getCard(it.cardDefinitionId) }
-            cardDef?.script?.staticAbilities?.any { ability ->
+            val container = state.getEntity(id) ?: return@any false
+            val cardDef = container.get<CardComponent>()
+                ?.let { cardRegistry.getCard(it.cardDefinitionId) } ?: return@any false
+            RoomFaceStatics.activeStaticAbilities(container, cardDef).any { ability ->
                 val lock = ability as? PlayersCantPlayLands
                     ?: (ability as? ConditionalStaticAbility)?.ability as? PlayersCantPlayLands
                 lock != null && lock.landFilter != GameObjectFilter.Any
-            } == true
+            }
         }
 
     /**
