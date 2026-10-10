@@ -163,8 +163,8 @@ data class GrantHexproofFromToGroup(
  * Realized as the same projected `PROTECTION_FROM_*` keyword a printed [KeywordAbility.Protection]
  * with that scope projects, so every leg that enforces printed protection (targeting, damage,
  * enchanting/equipping, blocking) honors the granted one unchanged. Only the scopes with such a
- * keyword are accepted ([isSupported]); a single color or card type keeps its older spellings,
- * [GrantProtection] and [GrantProtectionFromCardType].
+ * keyword are accepted ([isSupported]); a single color or card type is rejected, since it keeps its
+ * older spellings, [GrantProtection] and [GrantProtectionFromCardType].
  *
  * @property scope The quality the protection is from
  * @property filter The group of permanents that gain the protection (default: the equipped or
@@ -187,13 +187,18 @@ data class GrantProtectionFromToGroup(
     }
 
     companion object {
-        /** Whether the engine projects a `PROTECTION_FROM_*` keyword for [scope]. */
+        /**
+         * Whether the engine projects a `PROTECTION_FROM_*` keyword for [scope] and no older spelling
+         * already says it — a single color is [GrantProtection], a card type is
+         * [GrantProtectionFromCardType].
+         */
         fun isSupported(scope: ProtectionScope): Boolean = when (scope) {
-            is ProtectionScope.Color, is ProtectionScope.Colors, ProtectionScope.Multicolored,
-            is ProtectionScope.CardType, is ProtectionScope.Subtype, is ProtectionScope.Supertype,
+            is ProtectionScope.Colors, ProtectionScope.Multicolored,
+            is ProtectionScope.Subtype, is ProtectionScope.Supertype,
             ProtectionScope.EachOpponent,
             ProtectionScope.Spells, ProtectionScope.PermanentsCastThisTurn, ProtectionScope.RingBearers,
             ProtectionScope.ActivatedAbilities, ProtectionScope.TriggeredAbilities -> true
+            is ProtectionScope.Color, is ProtectionScope.CardType,
             is ProtectionScope.NonColor, ProtectionScope.Monocolored, ProtectionScope.Everything -> false
         }
     }

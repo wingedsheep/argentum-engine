@@ -8744,12 +8744,13 @@ staticAbility {
   (CR 702.16): the protection twin of `GrantHexproofFromToGroup`. Adds the same projected `PROTECTION_FROM_*`
   keyword a printed `KeywordAbility.Protection(scope)` uses (`ProtectionKeywords.keywordsFor`), so every
   protection leg — targeting, damage, enchanting/equipping, blocking — honours it with no extra wiring.
-  Accepts `Color`, `Colors`, `Multicolored`, `CardType`, `Subtype`, `Supertype`, `EachOpponent`, and the
-  source kinds (`Spells`, `PermanentsCastThisTurn`, `RingBearers`, `ActivatedAbilities`,
-  `TriggeredAbilities`); `NonColor`, `Monocolored` and `Everything` are rejected at construction. Lord of
+  Accepts `Colors`, `Multicolored`, `Subtype`, `Supertype`, `EachOpponent`, and the source kinds
+  (`Spells`, `PermanentsCastThisTurn`, `RingBearers`, `ActivatedAbilities`, `TriggeredAbilities`);
+  `NonColor`, `Monocolored` and `Everything` (no keyword) and `Color` / `CardType` (one spelling per
+  concept) are rejected at construction. Lord of
   the Nazgûl: `GrantProtectionFromToGroup(ProtectionScope.RingBearers,
   GroupFilter(GameObjectFilter.Permanent.withSubtype("Wraith").youControl()))`. A single color or card type
-  keeps its older spellings, `GrantProtection` / `GrantProtectionFromCardType`.
+  is spelled `GrantProtection` / `GrantProtectionFromCardType`.
 - `CantBeTargetedBySourceTypeAbilities(sourceType, filter = attachedCreature())` — "[filter] can't be the
   target of abilities from [sourceType] sources" — hexproof keyed to a source *card type* (e.g.
   `CardType.ARTIFACT`) rather than a controller or color. Projects the keyword

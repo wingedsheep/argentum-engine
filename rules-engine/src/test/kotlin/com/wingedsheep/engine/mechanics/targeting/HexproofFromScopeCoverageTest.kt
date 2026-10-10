@@ -12,8 +12,8 @@ import io.kotest.matchers.shouldBe
  * The SDK's [GrantHexproofFromToGroup.isSupported] and the engine's [HexproofFromRules.keywordsFor]
  * say the same thing twice — which scopes have a projected `HEXPROOF_FROM_*` keyword. If they drift,
  * a grant the SDK accepts projects nothing and the hexproof silently does nothing. Pin them together
- * for every [ProtectionScope] kind. The protection twin, [GrantProtectionFromToGroup.isSupported] and
- * [ProtectionKeywords.keywordsFor], is pinned the same way.
+ * for every [ProtectionScope] kind. For the protection twin, every scope
+ * [GrantProtectionFromToGroup.isSupported] accepts must have a [ProtectionKeywords.keywordsFor] keyword.
  */
 class HexproofFromScopeCoverageTest : FunSpec({
 
@@ -47,11 +47,14 @@ class HexproofFromScopeCoverageTest : FunSpec({
         }
     }
 
-    test("a scope the SDK accepts for a protection grant is exactly one the engine projects") {
-        samples.forEach { scope ->
-            withClue(scope) {
-                GrantProtectionFromToGroup.isSupported(scope) shouldBe ProtectionKeywords.keywordsFor(scope).isNotEmpty()
-            }
+    test("a scope the SDK accepts for a protection grant is one the engine projects") {
+        samples.filter { GrantProtectionFromToGroup.isSupported(it) }.forEach { scope ->
+            withClue(scope) { ProtectionKeywords.keywordsFor(scope).isNotEmpty() shouldBe true }
         }
+    }
+
+    test("a single color or card type keeps its own protection-grant spelling") {
+        GrantProtectionFromToGroup.isSupported(ProtectionScope.Color(Color.WHITE)) shouldBe false
+        GrantProtectionFromToGroup.isSupported(ProtectionScope.CardType("INSTANT")) shouldBe false
     }
 })
