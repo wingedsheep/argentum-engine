@@ -782,6 +782,11 @@ class DynamicAmountEvaluator(
                             ?.get<com.wingedsheep.engine.state.components.player.PermanentsEnteredUnderControlThisTurnComponent>()
                             ?.countOfType(com.wingedsheep.sdk.core.CardType.CREATURE) ?: 0
                     }
+                    TurnTracker.TOKENS_CREATED -> playerIds.sumOf { playerId ->
+                        state.getEntity(playerId)
+                            ?.get<com.wingedsheep.engine.state.components.player.PermanentsEnteredUnderControlThisTurnComponent>()
+                            ?.countTokens() ?: 0
+                    }
                     TurnTracker.FOOD_SACRIFICED -> playerIds.count { playerId ->
                         state.getEntity(playerId)
                             ?.has<com.wingedsheep.engine.state.components.player.SacrificedFoodThisTurnComponent>() == true

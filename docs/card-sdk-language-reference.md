@@ -13246,6 +13246,11 @@ default to "you" so card authors don't need to pass it explicitly.
   entered, read from projected state), so it is the same pure past-event check — the creatures need
   not still be on the battlefield, and each entry is counted per entry event (a creature that
   leaves and re-enters counts twice, CR 400.7).
+- `CreatedTokenThisTurn(atLeast = 1, player = Player.You)` — "if you created a token this turn"
+  (Idol of Oblivion's activation restriction). Composes through
+  `Compare(TurnTracking(player, TurnTracker.TOKENS_CREATED), GTE, Fixed(atLeast))` over the same
+  per-player entry log; a token's entry is its creation (CR 111.2), so the tokens need not still
+  exist or still be yours.
 - `YouDescendedThisTurn(atLeast = 1)` — CR 700.11 gate: at least `atLeast` nontoken
   permanent cards were put into your graveyard from *any* zone this turn (battlefield,
   hand, library, stack, exile). Tokens do not count, even though they briefly enter the
@@ -14597,6 +14602,10 @@ this turn").
   and post-departure persistence as `NONLAND_PERMANENTS_ENTERED`. At a threshold of two it backs
   `Conditions.CreaturesEnteredThisTurn` — Spider-UK's "two or more creatures entered the
   battlefield under your control this turn."
+- `TOKENS_CREATED` — the tokens the player created this turn: the token slice of the same entry log
+  (the player who creates a token is its owner and it enters under their control, CR 111.2). A token
+  gained by a control change isn't counted; one given away after creation stays counted. Backs
+  `Conditions.CreatedTokenThisTurn`.
 - `FOOD_SACRIFICED` — Food tokens sacrificed.
 - `SCRIED_OR_SURVEILED` — indicator (0 or 1) that the player scried or surveilled this turn. Marked by
   the executors that emit `ScriedEvent` / `SurveiledEvent`, so it is set exactly when a "whenever you

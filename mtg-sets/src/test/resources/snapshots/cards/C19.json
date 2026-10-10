@@ -1,3 +1,78 @@
+// Idol of Oblivion
+{
+    "name": "Idol of Oblivion",
+    "manaCost": "{2}",
+    "typeLine": "Artifact",
+    "oracleText": "{T}: Draw a card. Activate only if you created a token this turn.\n{8}, {T}, Sacrifice this artifact: Create a 10/10 colorless Eldrazi creature token.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Idol of Oblivion:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "restrictions": [
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "TurnTracking",
+                                "player": "You",
+                                "tracker": "TOKENS_CREATED"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    }
+                ]
+            },
+            {
+                "id": "Idol of Oblivion:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{8}"
+                            }
+                        },
+                        "CostTap",
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 10,
+                    "toughness": 10,
+                    "colors": [],
+                    "creatureTypes": [
+                        "Eldrazi"
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "55",
+        "rarity": "RARE",
+        "artist": "Piotr Dura",
+        "flavorText": "\"Arise, great one, and cleanse the world of our enemies!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/a/daed8456-011e-44e2-b180-6a8a75089257.jpg?1783932793"
+    },
+    "colorIdentityOverride": []
+}
+
 // Ignite the Future
 {
     "name": "Ignite the Future",

@@ -1753,7 +1753,9 @@ data object FlippedCoinsThisTurnComponent : Component
 data class EnteredPermanentRecord(
     val entityId: EntityId,
     val cardTypes: Set<com.wingedsheep.sdk.core.CardType> = emptySet(),
-    val subtypes: Set<String> = emptySet()
+    val subtypes: Set<String> = emptySet(),
+    /** Whether the entering permanent was a token — i.e. this entry is its creation (CR 111.2). */
+    val isToken: Boolean = false
 ) {
     val isLand: Boolean get() = com.wingedsheep.sdk.core.CardType.LAND in cardTypes
 }
@@ -1777,6 +1779,8 @@ data class EnteredPermanentRecord(
  *    artifact entered the battlefield under your control this turn").
  *  - [countOfType] → `DynamicAmount.CardTypeEnteredUnderControlThisTurn` ("if three or more
  *    artifacts entered the battlefield under your control this turn", Malcator, Purity Overseer).
+ *  - [countTokens] → `TurnTracker.TOKENS_CREATED` ("activate only if you created a token this
+ *    turn", Idol of Oblivion) — a token's entry is its creation (CR 111.2).
  *  - [entries] directly → `DynamicAmount.SubtypeEnteredUnderControlThisTurn` ("each other Zombie
  *    that entered the battlefield under your control this turn", Geralf, the Fleshwright).
  */
@@ -1790,6 +1794,9 @@ data class PermanentsEnteredUnderControlThisTurnComponent(
     /** Number of logged entries that had [cardType] at the moment they entered. */
     fun countOfType(cardType: com.wingedsheep.sdk.core.CardType): Int =
         entries.count { cardType in it.cardTypes }
+
+    /** Number of logged entries that were tokens — the tokens this player created this turn. */
+    fun countTokens(): Int = entries.count { it.isToken }
 }
 
 /**
