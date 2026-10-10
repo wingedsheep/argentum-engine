@@ -321,8 +321,8 @@ class ActivatedAbilityEnumerator(
                             tapCost = atom
                             tapTargets = SharedCreatureTypeTapCost.eligible(
                                 state, atom,
-                                context.costUtils.findAbilityTapTargets(
-                                    state, playerId, atom.filter,
+                                context.costUtils.findTapCostTargets(
+                                    state, playerId, atom,
                                     if (atom.excludeSelf) entityId else null
                                 )
                             )
@@ -547,8 +547,8 @@ class ActivatedAbilityEnumerator(
                                         tapCost = atom
                                         tapTargets = SharedCreatureTypeTapCost.eligible(
                                             state, atom,
-                                            context.costUtils.findAbilityTapTargets(
-                                                state, playerId, atom.filter,
+                                            context.costUtils.findTapCostTargets(
+                                                state, playerId, atom,
                                                 if (atom.excludeSelf) entityId else null
                                             )
                                         )
@@ -900,6 +900,7 @@ class ActivatedAbilityEnumerator(
                 val tapBatchMaxActivations: Int = run {
                     val atom = tapCost
                     if (atom != null
+                        && !atom.untaps
                         && atom.count == 1
                         && tapTargets != null
                         && tapTargets.size > 1

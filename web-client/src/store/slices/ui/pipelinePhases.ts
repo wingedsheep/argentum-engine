@@ -877,6 +877,7 @@ export function enterPhase(
           count = scaled(costInfo.tapCount)
           flags.isSacrificeSelection = true
           flags.isTapPermanentSelection = true
+          flags.targetDescription = costInfo.description
           break
         case 'SacrificePermanent':
           validTargets = [...costInfo.validSacrificeTargets!]
@@ -979,6 +980,9 @@ export function enterPhase(
           }
           flags.isSacrificeSelection = true
           flags.isTapPermanentSelection = true
+          // Shown verbatim as the prompt: it is what tells "Untap two tapped creatures you
+          // control" (Halo Fountain) apart from an ordinary tap cost.
+          flags.targetDescription = costInfo.description
           break
         }
         case 'Conspire':

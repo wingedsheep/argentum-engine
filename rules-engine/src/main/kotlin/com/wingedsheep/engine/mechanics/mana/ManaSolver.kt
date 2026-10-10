@@ -1566,7 +1566,8 @@ class ManaSolver private constructor(
                                     // source and the resumer prompts for the creature.
                                     // The sub-cost can't carry the shared-creature-type group rule,
                                     // so such a cost stays an explicit ActivateAbility entry.
-                                    is CostAtom.TapPermanents -> if (atom.sharedCreatureType) {
+                                    // Nor the untap mirror: the sub-cost only ever taps.
+                                    is CostAtom.TapPermanents -> if (atom.sharedCreatureType || atom.untaps) {
                                         hasUnsupportedSubCost = true
                                     } else {
                                         abilityTapPermanentsSubCost = TapPermanentsSubCost(
@@ -2946,6 +2947,8 @@ class ManaSolver private constructor(
             for (ability in cardDef.script.activatedAbilities) {
                 if (!ability.isManaAbility) continue
                 val tapCost = (ability.cost as? AbilityCost.Atom)?.atom as? CostAtom.TapPermanents ?: continue
+                // An untap cost produces no tapped-permanent mana; it stays an explicit activation.
+                if (tapCost.untaps) continue
 
                 // Find untapped permanents matching the filter that are NOT regular mana sources
                 // and haven't been consumed by another TapPermanents activation.
@@ -3337,7 +3340,7 @@ class ManaSolver private constructor(
                 val hasTap = composite.costs.any { it is AbilityCost.Tap }
                 val tapPermanentsCost = composite.costs
                     .firstNotNullOfOrNull { (it as? AbilityCost.Atom)?.atom as? CostAtom.TapPermanents }
-                if (!hasTap || tapPermanentsCost == null) continue
+                if (!hasTap || tapPermanentsCost == null || tapPermanentsCost.untaps) continue
                 // Skip composites that also bundle SacrificeSelf or a mana sub-cost — those are
                 // handled by other helpers (sacrificeSelfManaBySource) and would
                 // double-count or complicate color resolution here.

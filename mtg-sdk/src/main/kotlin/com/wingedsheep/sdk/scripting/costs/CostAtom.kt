@@ -346,6 +346,12 @@ sealed interface CostAtom : TextReplaceable<CostAtom> {
      *   type" (Weight of Conscience). The [Sacrifice.distinctNames] twin: the cost is only payable
      *   when some creature type is held by at least [count] candidates, and a payment whose chosen
      *   permanents have no common creature type is rejected.
+     * @property direction which way the chosen permanents turn. [TapCostDirection.TAP] (the default)
+     *   taps [count] *untapped* permanents; [TapCostDirection.UNTAP] is the mirror cost, "untap
+     *   [count] *tapped* creatures you control" (Halo Fountain). Either way the cost is not the
+     *   `{T}`/`{Q}` symbol, so summoning sickness (CR 302.6) does not restrict which creatures are
+     *   chosen. The untap direction is wired for activated-ability costs only; the spell
+     *   additional-cost, "unless you pay" and mana-ability paths report it unpayable.
      */
     @SerialName("AtomTapPermanents")
     @Serializable
@@ -353,13 +359,20 @@ sealed interface CostAtom : TextReplaceable<CostAtom> {
         val count: Int = 1,
         val filter: GameObjectFilter = GameObjectFilter.Any,
         val excludeSelf: Boolean = false,
-        val sharedCreatureType: Boolean = false
+        val sharedCreatureType: Boolean = false,
+        val direction: TapCostDirection = TapCostDirection.TAP
     ) : CostAtom {
         override val selectionCount: Int get() = count
+
+        /** True for the untap mirror ("untap N tapped … you control"). */
+        val untaps: Boolean get() = direction == TapCostDirection.UNTAP
+
         override val description: String get() = buildString {
-            append("tap ")
-            if (count == 1) append(if (excludeSelf) "another untapped ${filter.description}" else "an untapped ${filter.description}")
-            else append("$count untapped ${filter.description}s")
+            val verb = if (untaps) "untap" else "tap"
+            val state = if (untaps) "tapped" else "untapped"
+            append("$verb ")
+            if (count == 1) append(if (excludeSelf) "another $state ${filter.description}" else "${if (untaps) "a" else "an"} $state ${filter.description}")
+            else append("$count $state ${filter.description}s")
             append(" you control")
             if (sharedCreatureType) append(" that share a creature type")
         }
@@ -818,6 +831,16 @@ sealed interface CostAtom : TextReplaceable<CostAtom> {
     }
 }
 
+
+/** Which way a [CostAtom.TapPermanents] cost turns the permanents it picks. */
+@Serializable
+enum class TapCostDirection {
+    /** "Tap N untapped … you control" — the common case. */
+    TAP,
+
+    /** "Untap N tapped … you control" (Halo Fountain). */
+    UNTAP
+}
 
 /**
  * What a [CostAtom.VariablePermanents] cost does with the permanents the payer chose.

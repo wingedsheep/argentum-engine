@@ -186,8 +186,8 @@ class ManaAbilityEnumerator(
                             tapCost = atom
                             tapTargets = SharedCreatureTypeTapCost.eligible(
                                 state, atom,
-                                context.costUtils.findAbilityTapTargets(
-                                    state, playerId, atom.filter,
+                                context.costUtils.findTapCostTargets(
+                                    state, playerId, atom,
                                     if (atom.excludeSelf) entityId else null
                                 )
                             )
@@ -279,8 +279,8 @@ class ManaAbilityEnumerator(
                                         tapCost = atom
                                         tapTargets = SharedCreatureTypeTapCost.eligible(
                                             state, atom,
-                                            context.costUtils.findAbilityTapTargets(
-                                                state, playerId, atom.filter,
+                                            context.costUtils.findTapCostTargets(
+                                                state, playerId, atom,
                                                 if (atom.excludeSelf) entityId else null
                                             )
                                         )

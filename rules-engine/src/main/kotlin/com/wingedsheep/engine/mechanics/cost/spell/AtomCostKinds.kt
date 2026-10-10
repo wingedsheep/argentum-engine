@@ -510,14 +510,17 @@ internal object ExileFromGraveyardForTotalCostKind : SpellCostKind<CostAtom.Exil
 
 /** "Tap an untapped artifact you control" (Zahid, Guardian of the Great Door). */
 internal object TapPermanentsCostKind : SpellCostKind<CostAtom.TapPermanents> {
+    // The untap mirror (Halo Fountain) is wired for activated abilities only; no printed spell
+    // asks for it, so it is unpayable here rather than paid as a tap.
     override fun canPay(state: GameState, payerId: EntityId, cost: CostAtom.TapPermanents, costHandler: CostHandler) =
-        SharedCreatureTypeTapCost.eligible(
+        !cost.untaps && SharedCreatureTypeTapCost.eligible(
             state, cost, costHandler.findUntappedMatchingPermanentsUnified(state, payerId, cost.filter)
         ).size >= cost.count
 
     // Mirrors ReturnToHand's selection model — permanents you control, chosen by the caster — but
     // the payment taps instead of bouncing.
     override fun enumerate(env: SpellCostEnumeration, cost: CostAtom.TapPermanents, offer: SpellCostOffer): Boolean {
+        if (cost.untaps) return false
         val validTapTargets = candidates(env, cost)
         offer.tapTargets = validTapTargets
         offer.tapCount = cost.count
@@ -548,6 +551,7 @@ internal object TapPermanentsCostKind : SpellCostKind<CostAtom.TapPermanents> {
     override fun validate(check: SpellCostCheck, cost: CostAtom.TapPermanents): String? {
         val state = check.state
         val projected = state.projectedState
+        if (cost.untaps) return "Untap costs are not supported on spells"
         val tapped = check.payment?.tappedPermanents ?: emptyList()
         if (tapped.size < cost.count) {
             return "You must tap ${cost.count} ${cost.filter.description}(s) to cast this spell"

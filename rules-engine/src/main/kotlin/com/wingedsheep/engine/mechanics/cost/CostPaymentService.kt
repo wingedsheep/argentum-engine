@@ -920,7 +920,9 @@ class CostPaymentService(private val services: EngineServices) {
                 is CostAtom.ReturnToHand ->
                     if (atom.youControl) controlledMatching(state, payerId, atom.filter, sourceId, predicateEvaluator = predicateEvaluator)
                     else anyMatching(state, payerId, atom.filter, sourceId, predicateEvaluator = predicateEvaluator)
-                is CostAtom.TapPermanents -> SharedCreatureTypeTapCost.eligible(
+                // The untap mirror is an activated-ability cost only (CostHandler pays it); as a
+                // PayCost it has no candidates, so it is reported unaffordable, never paid as a tap.
+                is CostAtom.TapPermanents -> if (atom.untaps) emptyList() else SharedCreatureTypeTapCost.eligible(
                     state, atom,
                     controlledUntapped(state, payerId, atom.filter, if (atom.excludeSelf) sourceId else null, predicateEvaluator = predicateEvaluator)
                 )

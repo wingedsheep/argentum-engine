@@ -18,6 +18,7 @@ import com.wingedsheep.sdk.scripting.costs.CardMeasure
 import com.wingedsheep.sdk.scripting.costs.CostAtom
 import com.wingedsheep.sdk.scripting.costs.PayCost
 import com.wingedsheep.sdk.scripting.costs.PermanentCostAction
+import com.wingedsheep.sdk.scripting.costs.TapCostDirection
 import com.wingedsheep.sdk.scripting.costs.VariableCostMeasure
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 
@@ -506,6 +507,19 @@ object Costs {
         excludeSelf: Boolean = false,
         sharedCreatureType: Boolean = false
     ): AbilityCost = AbilityCost.Atom(CostAtom.TapPermanents(count, filter, excludeSelf, sharedCreatureType))
+
+    /**
+     * Untap tapped permanents you control — the mirror of [TapPermanents] ("Untap two tapped
+     * creatures you control", Halo Fountain). Not the `{Q}` symbol: it untaps *other* permanents,
+     * summoning-sick ones included, and is unpayable with fewer than [count] tapped matches.
+     */
+    fun UntapPermanents(
+        count: Int,
+        filter: GameObjectFilter = GameObjectFilter.Creature,
+        excludeSelf: Boolean = false
+    ): AbilityCost = AbilityCost.Atom(
+        CostAtom.TapPermanents(count, filter, excludeSelf, direction = TapCostDirection.UNTAP)
+    )
 
     /**
      * Tap another untapped permanent you control (e.g., "Tap another untapped permanent you control").

@@ -478,7 +478,7 @@ Families:
 - `CostAtom.RevealNotedCreatureType` — "Reveal the creature type you chose" — turn the source permanent's *secret* noted creature type (see com.wingedsheep.sdk.scripting.effects.NoteCreatureTypeEffect with `secret = true`) into public i…
 - `CostAtom.Sacrifice(filter: GameObjectFilter, count: Int, excludeSelf: Boolean, distinctNames: Boolean)` — Sacrifice count permanents matching filter.
 - `CostAtom.SacrificeAll(filter: GameObjectFilter)` — Sacrifice **every** permanent you control matching filter — "as an additional cost to cast this spell, sacrifice all creatures you control" (Soulblast).
-- `CostAtom.TapPermanents(count: Int, filter: GameObjectFilter, excludeSelf: Boolean, sharedCreatureType: Boolean)` — Tap count untapped permanents matching filter you control.
+- `CostAtom.TapPermanents(count: Int, filter: GameObjectFilter, excludeSelf: Boolean, sharedCreatureType: Boolean, direction: TapCostDirection)` — Tap count untapped permanents matching filter you control.
 - `CostAtom.Unattach` — Unattach the ability's source from the permanent it is attached to (CR 701.3d) — "Unattach this Equipment" (Sunforger).
 - `CostAtom.VariablePermanents(filter: GameObjectFilter, minCount: Int, excludeSelf: Boolean, action: PermanentCostAction, xMeasure: VariableCostMeasure, minMeasure: Int)` — Put one or more permanents matching filter you control into another zone — a *variable-count* cost: the payer chooses how many (at least minCount).
 

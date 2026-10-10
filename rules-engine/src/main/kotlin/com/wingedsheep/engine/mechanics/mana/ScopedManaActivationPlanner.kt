@@ -365,7 +365,8 @@ class ScopedManaActivationPlanner(private val services: EngineServices, private 
                     atom.count is DynamicAmount.XValue)
             is CostAtom.Sacrifice -> atom.count > 0
             is CostAtom.ExileFrom -> atom.zone == Zone.GRAVEYARD && atom.count > 0
-            is CostAtom.TapPermanents -> atom.count > 0
+            // Untapping is no consumed resource — repeated activations could loop on it.
+            is CostAtom.TapPermanents -> atom.count > 0 && !atom.untaps
             is CostAtom.VariablePermanents -> atom.minCount > 0 || atom.minMeasure > 0
             else -> false
         }
