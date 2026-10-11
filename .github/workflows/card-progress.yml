@@ -1,0 +1,52 @@
+name: Refresh card progress
+
+# Keeps the card implementation progress chart current without anyone remembering to run
+# `scripts/card-progress-graph`. It regenerates the README SVG, the root
+# `card-implementation-progress.html`, and the server's baked `implementation-history.json`
+# (behind GET /api/sets/progress), and commits them to main only when they changed.
+#
+# A push made with GITHUB_TOKEN doesn't trigger other workflows, so this never re-runs CI.
+
+on:
+  schedule:
+    - cron: "17 3 * * *"   # daily, 03:17 UTC
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      # The script walks the whole history for each card's first-introduction date.
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Regenerate progress chart
+        run: python3 scripts/card-progress-graph
+
+      - name: Commit if changed
+        run: |
+          git add assets/card-implementation-progress.svg card-implementation-progress.html \
+            game-server/src/main/resources/coverage/implementation-history.json
+          if git diff --cached --quiet; then
+            echo "Progress chart already current."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "docs: refresh card implementation progress"
+          # main may have moved during the run. Rebasing onto it can leave the chart a few
+          # commits behind, which tomorrow's run catches up on.
+          for attempt in 1 2 3; do
+            git pull --rebase origin main && git push origin HEAD:main && exit 0
+            sleep 5
+          done
+          exit 1

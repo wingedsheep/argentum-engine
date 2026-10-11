@@ -24,6 +24,9 @@ How it works:
     `assets/card-implementation-progress.svg` so the README can embed it on
     GitHub (where the interactive HTML page can't run).
 
+The `Refresh card progress` GitHub workflow runs this daily and commits the
+result, so there's no need to run it by hand before merging.
+
 Usage:
   scripts/card-progress-graph            # refresh the HTML + SVG in place
   scripts/card-progress-graph --print    # print summary, don't write files
