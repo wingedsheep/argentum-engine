@@ -2,7 +2,7 @@
 
 **Set Size:** 312 cards
 **Release Date:** August 2, 2024
-**Implemented:** 150 / 312
+**Implemented:** 165 / 312
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 37    | 0    |
@@ -40,14 +40,14 @@
 - [ ] Beledros Witherbloom
 - [x] Bello, Bard of the Brambles
 - [x] Berserkers' Onslaught
-- [ ] Bident of Thassa
+- [x] Bident of Thassa
 - [x] Big Score
 - [ ] Binding the Old Gods
 - [ ] Birds of Paradise
 - [ ] Blade Splicer
 - [x] Blasphemous Act
 - [x] Bloodroot Apothecary
-- [ ] Body of Knowledge
+- [x] Body of Knowledge
 - [x] Bojuka Bog
 - [x] Bootleggers' Stash
 - [ ] Boros Signet
@@ -63,7 +63,7 @@
 - [ ] Casualties of War
 - [x] Chaos Warp
 - [ ] Chart a Course
-- [ ] Chasm Skulker
+- [x] Chasm Skulker
 - [ ] Chatterfang, Squirrel General
 - [ ] Chatterstorm
 - [ ] Chittering Witch
@@ -72,14 +72,14 @@
 - [x] Circuit Mender
 - [x] Clifftop Retreat
 - [ ] Cloudblazer
-- [ ] Coiling Oracle
+- [x] Coiling Oracle
 - [ ] Combat Celebrant
 - [x] Command Tower
 - [ ] Communal Brewing
 - [x] Copperline Gorge
 - [ ] Coveted Jewel
 - [x] Cultivate
-- [ ] Curiosity Crafter
+- [x] Curiosity Crafter
 - [ ] Cut a Deal
 - [ ] Deadly Dispute
 - [x] Decimate
@@ -140,13 +140,13 @@
 - [x] Hinterland Harbor
 - [ ] Hoofprints of the Stag
 - [ ] Idol of Oblivion
-- [ ] Illusionist's Gambit
-- [ ] Illusory Ambusher
+- [x] Illusionist's Gambit
+- [x] Illusory Ambusher
 - [ ] Inferno Titan
 - [ ] Ink-Eyes, Servant of Oni
 - [ ] Insatiable Frugivore
 - [x] Inspiring Overseer
-- [ ] Intellectual Offering
+- [x] Intellectual Offering
 - [ ] Ishai, Ojutai Dragonspeaker
 - [ ] Izzet Signet
 - [x] Jace, the Mind Sculptor
@@ -154,7 +154,7 @@
 - [ ] Jazal Goldmane
 - [ ] Jolrael, Mwonvuli Recluse
 - [x] Jungle Hollow
-- [ ] Junk Winder
+- [x] Junk Winder
 - [ ] Kalonian Hydra
 - [ ] Karn, the Great Creator
 - [x] Karplusan Forest
@@ -200,7 +200,7 @@
 - [x] Path of Discovery
 - [x] Path to Exile
 - [ ] Perch Protection
-- [ ] Perplexing Test
+- [x] Perplexing Test
 - [x] Plaguecrafter
 - [ ] Plumb the Forbidden
 - [ ] Poison-Tip Archer
@@ -211,7 +211,7 @@
 - [x] Prosperous Bandit
 - [ ] Prosperous Innkeeper
 - [x] Psychosis Crawler
-- [ ] Pull from Tomorrow
+- [x] Pull from Tomorrow
 - [ ] Putrefy
 - [x] Pyreswipe Hawk
 - [x] Raging Ravine
@@ -219,7 +219,7 @@
 - [x] Rampaging Baloths
 - [x] Rampant Growth
 - [x] Rapid Augmenter
-- [ ] Rapid Hybridization
+- [x] Rapid Hybridization
 - [ ] Ravenous Squirrel
 - [x] Razorverge Thicket
 - [ ] Realm-Cloaked Giant // Cast Off
@@ -245,7 +245,7 @@
 - [x] Selvala, Explorer Returned
 - [ ] Shamanic Revelation
 - [x] Sheltered Thicket
-- [ ] Shield Broker
+- [x] Shield Broker
 - [x] Shivan Reef
 - [x] Siege-Gang Commander
 - [x] Simic Ascendancy
@@ -312,7 +312,7 @@
 - [ ] Toski, Bearer of Secrets
 - [x] Trailtracker Scout
 - [x] Tranquil Thicket
-- [ ] Triskaidekaphile
+- [x] Triskaidekaphile
 - [x] Twenty-Toed Toad
 - [ ] Twilight Mire
 - [x] Unnatural Growth
@@ -320,7 +320,7 @@
 - [x] Warstorm Surge
 - [x] Wildsear, Scouring Maw
 - [ ] Windgrace's Judgment
-- [ ] Wizard Class
+- [x] Wizard Class
 - [ ] Woe Strider
 - [x] Wolfwillow Haven
 - [x] Wooded Ridgeline

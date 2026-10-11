@@ -3623,6 +3623,70 @@
     ]
 }
 
+// Pull from Tomorrow
+{
+    "name": "Pull from Tomorrow",
+    "manaCost": "{X}{U}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Draw X cards, then discard a card.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DrawCards",
+                    "count": "XValue"
+                },
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand"
+                            },
+                            "storeAs": "hand"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "hand",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "discarded",
+                            "prompt": "Choose 1 card to discard"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "discarded",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Discard"
+                        }
+                    ]
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "65",
+        "rarity": "RARE",
+        "artist": "Sara Winters",
+        "flavorText": "\"I do things in my own time.\"\n—Etha, initiate of Rhet crop",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/1/f1eccf27-c934-45fb-87ae-67006cd4e0ed.jpg?1783936518"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Pursue Glory
 {
     "name": "Pursue Glory",

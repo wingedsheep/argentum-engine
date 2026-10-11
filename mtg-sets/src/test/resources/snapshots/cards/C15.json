@@ -136,6 +136,57 @@
     ]
 }
 
+// Illusory Ambusher
+{
+    "name": "Illusory Ambusher",
+    "manaCost": "{4}{U}",
+    "typeLine": "Creature — Cat Illusion",
+    "oracleText": "Flash (You may cast this spell any time you could cast an instant.)\nWhenever this creature is dealt damage, draw that many cards.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Illusory Ambusher:1",
+                "trigger": "DamageReceivedEvent",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "ContextProperty",
+                        "key": "TRIGGER_DAMAGE_AMOUNT"
+                    }
+                },
+                "descriptionOverride": "Whenever this creature is dealt damage, draw that many cards."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "12",
+        "rarity": "UNCOMMON",
+        "artist": "Steve Argyle",
+        "flavorText": "\"Violence is the food it craves. Feed it if you dare.\"\n—Doriel, mentor of Mistral Isle",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/1/5178477b-73e6-4497-a9d4-5dedf966e412.jpg?1783938118",
+        "rulings": [
+            {
+                "date": "2017-11-17",
+                "text": "Creatures may be dealt damage greater than their toughness. For example, if a source deals 5 damage to Illusory Ambusher, you'll draw five cards."
+            },
+            {
+                "date": "2017-11-17",
+                "text": "If Illusory Ambusher blocks a creature with trample, that creature's controller can assign any amount of damage from 1 to that creature's power to Illusory Ambusher. Excess damage doesn't have to be assigned to the defending player."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Oreskos Explorer
 {
     "name": "Oreskos Explorer",

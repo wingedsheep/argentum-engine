@@ -208,6 +208,73 @@
     ]
 }
 
+// Body of Knowledge
+{
+    "name": "Body of Knowledge",
+    "manaCost": "{3}{U}{U}",
+    "typeLine": "Creature — Avatar",
+    "oracleText": "Body of Knowledge's power and toughness are each equal to the number of cards in your hand.\nYou have no maximum hand size.\nWhenever this creature is dealt damage, draw that many cards.",
+    "creatureStats": {
+        "power": {
+            "type": "Dynamic",
+            "source": {
+                "type": "Count",
+                "player": "You",
+                "zone": "Hand"
+            }
+        },
+        "toughness": {
+            "type": "Dynamic",
+            "source": {
+                "type": "Count",
+                "player": "You",
+                "zone": "Hand"
+            }
+        }
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Body of Knowledge:1",
+                "trigger": "DamageReceivedEvent",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "ContextProperty",
+                        "key": "TRIGGER_DAMAGE_AMOUNT"
+                    }
+                }
+            }
+        ],
+        "staticAbilities": [
+            "NoMaximumHandSize"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "59",
+        "rarity": "RARE",
+        "artist": "Clint Cearley",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/8/786ae686-0790-4ba1-927f-523984331549.jpg?1783928867",
+        "rulings": [
+            {
+                "date": "2020-11-10",
+                "text": "The ability that defines Body of Knowledge's power and toughness applies in all zones, not just the battlefield."
+            },
+            {
+                "date": "2020-11-10",
+                "text": "As long as Body of Knowledge is in your hand, its ability will count itself."
+            },
+            {
+                "date": "2020-11-10",
+                "text": "Creatures may be dealt damage greater than their toughness. For example, if Body of Knowledge is a 3/3 creature and a source deals 5 damage to it, you'll draw five cards. Note that if Body of Knowledge is dealt lethal damage, it dies before the cards are drawn, meaning they won't raise Body of Knowledge's toughness in time to save it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Elvish Doomsayer
 {
     "name": "Elvish Doomsayer",

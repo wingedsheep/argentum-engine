@@ -60,6 +60,82 @@
     ]
 }
 
+// Illusionist's Gambit
+{
+    "name": "Illusionist's Gambit",
+    "manaCost": "{2}{U}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Cast this spell only during the declare blockers step on an opponent's turn.\nRemove all attacking creatures from combat and untap them. After this phase, there is an additional combat phase. Each of those creatures attacks that combat if able. They can't attack you or planeswalkers you control that combat.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature attacking"
+                        }
+                    },
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "RemoveFromCombat",
+                                "target": "IterationEntity"
+                            },
+                            {
+                                "type": "TapUntap",
+                                "target": "IterationEntity",
+                                "tap": false
+                            },
+                            {
+                                "type": "MarkMustAttackThisTurn",
+                                "target": "IterationEntity"
+                            },
+                            {
+                                "type": "GrantStaticAbility",
+                                "ability": {
+                                    "type": "CantAttackYou",
+                                    "coversPlaneswalkers": true
+                                },
+                                "target": "IterationEntity"
+                            }
+                        ]
+                    }
+                },
+                "AddCombatPhase"
+            ]
+        },
+        "castRestrictions": [
+            {
+                "type": "OnlyDuringStep",
+                "step": "DECLARE_BLOCKERS"
+            },
+            {
+                "type": "CastOnlyIfCondition",
+                "condition": "IsOpponentsTurn"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "47",
+        "rarity": "RARE",
+        "artist": "Zoltan Boros",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/0/a00cc6ab-e97c-4eba-bc7e-49d77690433b.jpg?1783939682",
+        "rulings": [
+            {
+                "date": "2013-10-17",
+                "text": "Creatures that didn't attack during the combat phase when Illusionist's Gambit resolved aren't required to attack in the additional combat phase, although they may. Those creatures can attack you or a planeswalker you control."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Ophiomancer
 {
     "name": "Ophiomancer",

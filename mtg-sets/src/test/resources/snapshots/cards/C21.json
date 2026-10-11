@@ -70,6 +70,57 @@
     ]
 }
 
+// Curiosity Crafter
+{
+    "name": "Curiosity Crafter",
+    "manaCost": "{3}{U}",
+    "typeLine": "Creature — Bird Wizard",
+    "oracleText": "Flying\nYou have no maximum hand size.\nWhenever a creature token you control deals combat damage to a player, draw a card.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Curiosity Crafter:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    },
+                    "sourceFilter": "creature token ctrl:you"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ],
+        "staticAbilities": [
+            "NoMaximumHandSize"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "24",
+        "rarity": "RARE",
+        "artist": "Rudy Siswanto",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/4/0452c73b-4522-4808-8f97-0e84e2944ee9.jpg?1783927604"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Cursed Mirror
 {
     "name": "Cursed Mirror",
@@ -199,6 +250,85 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Perplexing Test
+{
+    "name": "Perplexing Test",
+    "manaCost": "{3}{U}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Choose one —\n• Return all creature tokens to their owners' hands.\n• Return all nontoken creatures to their owners' hands.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "BattlefieldMatching",
+                                    "filter": "creature token"
+                                },
+                                "storeAs": "returnAllToHand_gathered"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "returnAllToHand_gathered",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Hand"
+                                }
+                            }
+                        ]
+                    },
+                    "description": "Return all creature tokens to their owners' hands."
+                },
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "BattlefieldMatching",
+                                    "filter": "creature nontoken"
+                                },
+                                "storeAs": "returnAllToHand_gathered"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "returnAllToHand_gathered",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Hand"
+                                }
+                            }
+                        ]
+                    },
+                    "description": "Return all nontoken creatures to their owners' hands."
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "30",
+        "rarity": "RARE",
+        "artist": "Fariba Khamseh",
+        "flavorText": "\"Your proofs were a bit nontraditional, but effective nonetheless. Full marks.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/1/31f2cbcc-d5b8-4659-ae51-e567c555a743.jpg?1783927602",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "A token that is returned to its owner's hand ceases to exist as a state-based action the next time a player would receive priority."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 

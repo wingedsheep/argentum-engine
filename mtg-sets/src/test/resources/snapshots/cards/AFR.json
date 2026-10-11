@@ -493,3 +493,90 @@
         "BLACK"
     ]
 }
+
+// Wizard Class
+{
+    "name": "Wizard Class",
+    "manaCost": "{U}",
+    "typeLine": "Enchantment — Class",
+    "oracleText": "(Gain the next level as a sorcery to add its ability.)\nYou have no maximum hand size.\n{2}{U}: Level 2 — When this Class becomes level 2, draw two cards.\n{4}{U}: Level 3 — Whenever you draw a card, put a +1/+1 counter on target creature you control.",
+    "script": {
+        "staticAbilities": [
+            "NoMaximumHandSize"
+        ],
+        "classLevels": [
+            {
+                "level": 2,
+                "cost": "{2}{U}",
+                "triggeredAbilities": [
+                    {
+                        "id": "Wizard Class:1",
+                        "trigger": {
+                            "type": "ZoneChangeEvent",
+                            "to": "Battlefield"
+                        },
+                        "effect": {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        },
+                        "descriptionOverride": "When this Class becomes level 2, draw two cards."
+                    }
+                ]
+            },
+            {
+                "level": 3,
+                "cost": "{4}{U}",
+                "triggeredAbilities": [
+                    {
+                        "id": "Wizard Class:2",
+                        "trigger": "DrawEvent",
+                        "binding": "ANY",
+                        "effect": {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 1,
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        "targetRequirement": {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature ctrl:you"
+                            },
+                            "id": "t0"
+                        },
+                        "descriptionOverride": "Whenever you draw a card, put a +1/+1 counter on target creature you control."
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "81",
+        "rarity": "UNCOMMON",
+        "artist": "Marta Nael",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/1/d1f629fb-b097-4240-8560-ef47f5678f48.jpg?1783926504",
+        "rulings": [
+            {
+                "date": "2021-07-23",
+                "text": "Gaining a level is a normal activated ability. It uses the stack and can be responded to."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "Gaining a level won't remove abilities that a Class had at a previous level."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "You can't activate the first level ability of a Class unless that Class is level 1. Similarly, you can't activate the second level ability of a Class unless that Class is level 2."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}

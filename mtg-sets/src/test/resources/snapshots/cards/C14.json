@@ -203,6 +203,101 @@
     ]
 }
 
+// Intellectual Offering
+{
+    "name": "Intellectual Offering",
+    "manaCost": "{4}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Choose an opponent. You and that player each draw three cards.\nChoose an opponent. Untap all nonland permanents you control and all nonland permanents that player controls.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ChooseOpponentForSource",
+                    "prompt": "Choose an opponent: you and that player each draw three cards"
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "ChosenOpponent"
+                    }
+                },
+                {
+                    "type": "ChooseOpponentForSource",
+                    "prompt": "Choose an opponent: untap all nonland permanents you and that player control"
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "nonland permanent ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "TapUntap",
+                        "target": "IterationEntity",
+                        "tap": false
+                    }
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "ChosenOpponent"
+                    },
+                    "body": {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Group",
+                            "filter": {
+                                "baseFilter": "nonland permanent ctrl:you"
+                            }
+                        },
+                        "body": {
+                            "type": "TapUntap",
+                            "target": "IterationEntity",
+                            "tap": false
+                        }
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "15",
+        "rarity": "RARE",
+        "artist": "Mark Winters",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/3/63de9e39-3c16-452f-9f06-4c1298752f57.jpg?1783938871",
+        "rulings": [
+            {
+                "date": "2014-11-07",
+                "text": "You may choose the same opponent for each of the effects, or you may choose different opponents. None of the affected players are targets of the spell."
+            },
+            {
+                "date": "2014-11-07",
+                "text": "You choose the opponents for each effect as the spell resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Jazal Goldmane
 {
     "name": "Jazal Goldmane",
