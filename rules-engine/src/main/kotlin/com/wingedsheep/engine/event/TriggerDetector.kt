@@ -1650,6 +1650,26 @@ class TriggerDetector(
                             )
                         }
                     }
+                    // "Whenever one or more creatures an opponent controls attack you and aren't
+                    // blocked, that player …" (Coveted Jewel). The block event names no attacking
+                    // player, so bind the unblocked attackers' controller as the triggering player.
+                    else if (ability.trigger is EventPattern.CreaturesAttackYouEvent &&
+                        (ability.trigger as EventPattern.CreaturesAttackYouEvent).unblocked) {
+                        val attackers = matcher.unblockedAttackersAgainstYou(
+                            ability.trigger as EventPattern.CreaturesAttackYouEvent, event, controllerId, state
+                        )
+                        triggers.add(
+                            PendingTrigger(
+                                ability = ability,
+                                sourceId = entityId,
+                                sourceName = cardComponent.name,
+                                controllerId = controllerId,
+                                triggerContext = TriggerContext(
+                                    triggeringPlayerId = attackers.firstNotNullOfOrNull { projected.getController(it) }
+                                )
+                            )
+                        )
+                    }
                     // For "whenever [a player] draws a card" (DrawEvent), drawing N cards via a
                     // single effect creates N separate trigger firings — one per card drawn
                     // (CR 121.2 + 603.2). The engine emits a single aggregate CardsDrawnEvent, so

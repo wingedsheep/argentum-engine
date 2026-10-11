@@ -1129,7 +1129,12 @@ data class AttackersDeclaredEvent(
 data class BlockersDeclaredEvent(
     override val blockers: Map<EntityId, List<EntityId>>,  // blocker -> blocked attackers
     override val blockerNames: Map<EntityId, String> = emptyMap(),
-    override val attackerNames: Map<EntityId, String> = emptyMap()
+    override val attackerNames: Map<EntityId, String> = emptyMap(),
+    /**
+     * The defending player whose declaration this is. Each defending player declares in turn in
+     * multiplayer, so one combat can emit several of these; null only on hand-built events.
+     */
+    val blockingPlayerId: EntityId? = null
 ) : GameEvent, BlockingRelationshipsEvent {
     override val newBlockers: Set<EntityId> get() = blockers.keys
     @kotlinx.serialization.Transient

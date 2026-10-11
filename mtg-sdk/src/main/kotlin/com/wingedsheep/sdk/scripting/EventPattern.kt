@@ -1002,16 +1002,24 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
      * planeswalkers you control**". It widens only which attackers *count*; the trigger is still
      * the defending player's. Battles are never included: "planeswalkers you control" is literal,
      * and a battle you protect is controlled by its caster, not by you.
+     *
+     * [unblocked] is the "… attack you **and aren't blocked**" form (Coveted Jewel). It moves the
+     * trigger from declare attackers to the end of the trigger controller's block declaration and
+     * counts only the attackers with unblocked status then (CR 509.1h). In multiplayer each
+     * defending player declares in turn, so it fires once, on the declaration that completes the
+     * controller's team. The controller of those attackers is the triggering player ("that player").
      */
     @SerialName("CreaturesAttackYouEvent")
     @Serializable
     data class CreaturesAttackYouEvent(
         val minAttackers: Int = 1,
-        val includePlaneswalkersYouControl: Boolean = false
+        val includePlaneswalkersYouControl: Boolean = false,
+        val unblocked: Boolean = false
     ) : EventPattern {
         override val description: String = buildString {
             append(if (minAttackers <= 1) "one or more creatures attack" else "$minAttackers or more creatures attack")
             append(if (includePlaneswalkersYouControl) " you and/or planeswalkers you control" else " you")
+            if (unblocked) append(" and aren't blocked")
         }
     }
 

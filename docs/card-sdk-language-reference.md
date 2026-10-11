@@ -7129,6 +7129,15 @@ The shapes in this family, with their engine notes.
   you control**" reading that CR 509.1b denies by default. Tomik, Wielder of Law uses both. Note the
   widened flag changes only which attackers *count*; the trigger still belongs to the defending player,
   and battles are never included.
+- `Triggers.you.isAttacked(unblocked = true)` — "whenever one or more creatures [an opponent controls]
+  attack you **and aren't blocked**" (Coveted Jewel). `CreaturesAttackYouEvent.unblocked` moves the
+  trigger to the `BlockersDeclaredEvent` and counts the attackers aimed at you that have unblocked
+  status then (CR 509.1h; `minAttackers` / `includePlaneswalkersYouControl` still apply). Each
+  defending player declares in turn in multiplayer, so it fires once — on the declaration
+  (`BlockersDeclaredEvent.blockingPlayerId`) that completes your team's — and the unblocked
+  attackers' controller is the triggering player: "that player draws three cards" is
+  `Effects.DrawCards(3, EffectTarget.PlayerRef(Player.TriggeringPlayer))`. Creatures attacking you
+  are always an opponent's, so the trigger carries no controller filter.
 - `Triggers.anOpponent.isAttacked()` — the "your opponents are attacked" counterpart of
   `Triggers.you.isAttacked()`; fires once per `AttackersDeclaredEvent` when one or more declared
   attackers have one of the controller's opponents (a player, via `state.getOpponents`) as

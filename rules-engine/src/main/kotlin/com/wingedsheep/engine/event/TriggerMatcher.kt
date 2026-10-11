@@ -158,26 +158,11 @@ class TriggerMatcher(
                 trigger.fromZoneOtherThan == null || event.fromZone != trigger.fromZoneOtherThan
             }
             is EventPattern.CreaturesAttackYouEvent -> {
-                if (event !is AttackersDeclaredEvent) return false
-                // Only count attackers declared against the player themself, not against
-                // a planeswalker they control (per CR 509.1b / Orim's Prayer ruling) — unless the
-                // card spells out "you and/or planeswalkers you control" (Tomik, Wielder of Law),
-                // which is what `includePlaneswalkersYouControl` opts into.
-                val attackingThisPlayer = event.attackers.count { attackerId ->
-                    val defenderId = state.getEntity(attackerId)
-                        ?.get<com.wingedsheep.engine.state.components.combat.AttackingComponent>()
-                        ?.defenderId
-                    when {
-                        defenderId == null -> false
-                        defenderId == controllerId -> true
-                        !trigger.includePlaneswalkersYouControl -> false
-                        else -> state.getEntity(defenderId)
-                            ?.get<com.wingedsheep.engine.state.components.identity.ControllerComponent>()
-                            ?.playerId == controllerId &&
-                            state.projectedState.isPlaneswalker(defenderId)
-                    }
+                if (trigger.unblocked) {
+                    return unblockedAttackersAgainstYou(trigger, event, controllerId, state).size >= trigger.minAttackers
                 }
-                attackingThisPlayer >= trigger.minAttackers
+                if (event !is AttackersDeclaredEvent) return false
+                event.attackers.count { attacksYou(trigger, it, controllerId, state) } >= trigger.minAttackers
             }
             is EventPattern.CreaturesAttackYourOpponentEvent -> {
                 if (event !is AttackersDeclaredEvent) return false
@@ -965,6 +950,62 @@ class TriggerMatcher(
                 true
             }
         }
+    }
+
+    /**
+     * Only attackers declared against the player themself count, not ones attacking a planeswalker
+     * they control (CR 509.1b / Orim's Prayer ruling) — unless the card spells out "you and/or
+     * planeswalkers you control" (Tomik, Wielder of Law), which `includePlaneswalkersYouControl`
+     * opts into.
+     */
+    private fun attacksYou(
+        trigger: EventPattern.CreaturesAttackYouEvent,
+        attackerId: EntityId,
+        controllerId: EntityId,
+        state: GameState
+    ): Boolean {
+        val defenderId = state.getEntity(attackerId)
+            ?.get<com.wingedsheep.engine.state.components.combat.AttackingComponent>()
+            ?.defenderId
+        return when {
+            defenderId == null -> false
+            defenderId == controllerId -> true
+            !trigger.includePlaneswalkersYouControl -> false
+            else -> state.getEntity(defenderId)
+                ?.get<ControllerComponent>()
+                ?.playerId == controllerId &&
+                state.projectedState.isPlaneswalker(defenderId)
+        }
+    }
+
+    /**
+     * The attackers behind "one or more creatures attack you and aren't blocked" (Coveted Jewel):
+     * those attacking the trigger's controller with unblocked status (CR 509.1h). Empty unless
+     * [event] is the block declaration that completes the controller's team — each defending
+     * player declares in turn in multiplayer, so attackers aimed at you have no status yet while
+     * another player is still declaring, and a later player's declaration must not re-fire it.
+     */
+    fun unblockedAttackersAgainstYou(
+        trigger: EventPattern.CreaturesAttackYouEvent,
+        event: EngineGameEvent,
+        controllerId: EntityId,
+        state: GameState
+    ): List<EntityId> {
+        if (event !is BlockersDeclaredEvent) return emptyList()
+        val team = state.sharedTurnTeam(controllerId)
+        val blockingPlayer = event.blockingPlayerId
+        if (blockingPlayer != null && blockingPlayer !in team) return emptyList()
+        if (team.any { state.getEntity(it)?.has<com.wingedsheep.engine.state.components.combat.BlockersDeclaredThisCombatComponent>() != true }) {
+            return emptyList()
+        }
+        return state.findEntitiesWith<com.wingedsheep.engine.state.components.combat.AttackingComponent>()
+            .map { it.first }
+            .filter { attackerId ->
+                attacksYou(trigger, attackerId, controllerId, state) &&
+                    state.getEntity(attackerId)?.let {
+                        !com.wingedsheep.engine.mechanics.combat.CombatStatusQueries.isBlockedAttacker(state, attackerId, it)
+                    } == true
+            }
     }
 
     /**

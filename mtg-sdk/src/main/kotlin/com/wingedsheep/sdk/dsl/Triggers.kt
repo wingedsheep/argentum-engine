@@ -870,12 +870,21 @@ class PlayerTriggerSubject internal constructor(private val player: Player) {
     /**
      * "is attacked" — "whenever one or more creatures attack you" ([Triggers.you]; with
      * [includePlaneswalkers], "you and/or planeswalkers you control") or "whenever one or more of
-     * your opponents are attacked" ([Triggers.anOpponent]). Once per combat.
+     * your opponents are attacked" ([Triggers.anOpponent]). Once per combat. [unblocked] is
+     * "whenever one or more creatures attack you and aren't blocked" ([Triggers.you]; Coveted
+     * Jewel) — it fires after blockers instead, and binds the attacking player as "that player".
      */
-    fun isAttacked(minAttackers: Int = 1, includePlaneswalkers: Boolean = false): TriggerSpec = when (player) {
-        Player.You -> spec(CreaturesAttackYouEvent(minAttackers = minAttackers, includePlaneswalkersYouControl = includePlaneswalkers))
+    fun isAttacked(minAttackers: Int = 1, includePlaneswalkers: Boolean = false, unblocked: Boolean = false): TriggerSpec = when (player) {
+        Player.You -> spec(
+            CreaturesAttackYouEvent(
+                minAttackers = minAttackers,
+                includePlaneswalkersYouControl = includePlaneswalkers,
+                unblocked = unblocked
+            )
+        )
         Player.EachOpponent -> {
             require(!includePlaneswalkers) { "includePlaneswalkers is only supported for Triggers.you" }
+            require(!unblocked) { "unblocked is only supported for Triggers.you" }
             spec(CreaturesAttackYourOpponentEvent(minAttackers = minAttackers))
         }
         else -> throw IllegalArgumentException("Triggers.<player>.isAttacked() supports you and anOpponent, not $player")
