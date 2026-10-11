@@ -13,7 +13,6 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.conditions.ComparisonOperator
 import com.wingedsheep.sdk.scripting.references.Player
-import com.wingedsheep.sdk.scripting.values.DynamicAmount
 
 /**
  * Mr. Foxglove
@@ -25,7 +24,7 @@ import com.wingedsheep.sdk.scripting.values.DynamicAmount
  * hand minus the number of cards in your hand. If you didn't draw cards this way, you may put a
  * creature card from your hand onto the battlefield.
  *
- * A non-positive difference draws nothing (the card's ruling), hence `IfPositive`. "If you didn't
+ * A non-positive difference draws nothing (the card's ruling), hence `nonNegative`. "If you didn't
  * draw cards this way" is read from what actually happened, not from the difference: the growth of
  * your cards-drawn-this-turn tally across the draw (the Rise of the Deathbringer spelling), so an
  * empty library — which draws nothing — also opens the put. `putFromHand`'s `ChooseUpTo(1)` is the
@@ -50,11 +49,9 @@ val MrFoxglove = card("Mr. Foxglove") {
             val drawnThisTurn = DynamicAmounts.cardsDrawnThisTurn(Player.You)
             val drawnBefore = storeNumber(drawnThisTurn)
             run(Effects.DrawCards(
-                DynamicAmount.IfPositive(
-                    DynamicAmount.Subtract(
-                        DynamicAmount.Count(Player.DefendingPlayer, Zone.HAND),
-                        DynamicAmount.Count(Player.You, Zone.HAND)
-                    )
+                DynamicAmounts.nonNegative(
+                    DynamicAmounts.count(Player.DefendingPlayer, Zone.HAND) -
+                        DynamicAmounts.count(Player.You, Zone.HAND)
                 )
             ))
             run(Effects.If(
