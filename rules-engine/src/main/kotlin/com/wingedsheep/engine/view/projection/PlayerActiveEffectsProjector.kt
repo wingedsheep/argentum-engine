@@ -544,6 +544,21 @@ internal class PlayerActiveEffectsProjector(
             )
         }
 
+        // The monarch (CR 724). Surface the Scryfall "The Monarch" marker card (tcn2 #1) as the badge
+        // image, like the City's Blessing above.
+        if (state.monarch == playerId) {
+            effects.add(
+                ClientPlayerEffect(
+                    effectId = "monarch",
+                    name = "The Monarch",
+                    description = "Draw a card at the beginning of your end step. A creature that " +
+                        "deals combat damage to you makes its controller the monarch.",
+                    icon = "monarch",
+                    imageUri = "https://cards.scryfall.io/normal/front/4/0/40b79918-22a7-4fff-82a6-8ebfe6e87185.jpg?1783937275"
+                )
+            )
+        }
+
         // Storied / enduring story (CR 702.195). Read through EnduringStoryService rather than the
         // component for the same reason as the city's blessing above: storied on a permanent is
         // continuous, so a player who has just crossed three qualifying permanents already has the

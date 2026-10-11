@@ -59,6 +59,7 @@ class PlayerExecutors(
         EndTheTurnExecutor(),
         RestartGameExecutor(),
         GainCitysBlessingExecutor(),
+        BecomeMonarchExecutor(),
         ChangeSpeedExecutor(amountEvaluator = zones.predicateEvaluator.amounts),
         RemoveMaximumHandSizeExecutor(),
         ReduceMaximumHandSizeExecutor(amountEvaluator = zones.predicateEvaluator.amounts),

@@ -194,6 +194,14 @@ data class GameState(
     val dayNight: com.wingedsheep.sdk.core.DayNight? = null,
 
     /**
+     * The player who is **the monarch** (CR 724), or `null` while the game has none — there is no
+     * monarch until an effect makes one (CR 724.1), and CR 724.4 can leave the game without one.
+     * A single field rather than a per-player marker because only one player can be the monarch at a
+     * time (CR 724.3). All writes go through [com.wingedsheep.engine.mechanics.monarch.MonarchService].
+     */
+    val monarch: EntityId? = null,
+
+    /**
      * Entity id of the **previous turn's active player**, snapshotted by
      * [com.wingedsheep.engine.core.TurnManager.startTurn] the instant a new turn begins — before the
      * per-turn spell counters are zeroed. `null` on the game's first turn (there is no previous turn).

@@ -14,6 +14,7 @@ export type ClientEvent =
   | LifeChangedEvent
   | SpeedChangedEvent
   | DayNightChangedEvent
+  | MonarchChangedEvent
   | DamageDealtEvent
   | StatsModifiedEvent
   | CardDrawnEvent
@@ -89,6 +90,19 @@ export interface DayNightChangedEvent {
   readonly oldDesignation: DayNight | null
   readonly newDesignation: DayNight
   readonly sourceName: string
+  readonly description: string
+}
+
+/**
+ * The monarch changed hands (CR 724). `newMonarchId` is null only when the monarch left the game and
+ * nobody still in it could take the title (CR 724.4). The crown itself is the player's active-effect badge.
+ */
+export interface MonarchChangedEvent {
+  readonly type: 'monarchChanged'
+  readonly previousMonarchId: EntityId | null
+  readonly newMonarchId: EntityId | null
+  readonly sourceName: string
+  readonly isYours?: boolean
   readonly description: string
 }
 

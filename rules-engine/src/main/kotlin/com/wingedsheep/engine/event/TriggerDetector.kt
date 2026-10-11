@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.event
 
+import com.wingedsheep.engine.mechanics.monarch.MonarchService
 import com.wingedsheep.engine.state.components.player.CardsPutIntoGraveyardThisTurnComponent
 import com.wingedsheep.engine.core.ClassLevelChangedEvent
 import com.wingedsheep.engine.core.CountersAddedEvent
@@ -735,6 +736,22 @@ class TriggerDetector(
                         sourceId = global.sourceId,
                         sourceName = global.sourceName,
                         controllerId = global.controllerId,
+                        triggerContext = TriggerContext(step = step, triggeringEntityId = activePlayerId)
+                    )
+                )
+            }
+        }
+
+        // The monarch's inherent end-step draw (CR 724.2) — sourceless, controlled by the monarch.
+        state.monarch?.let { monarch ->
+            val ability = MonarchAbilities.endStepDraw
+            if (matcher.matchesStepTrigger(ability.trigger, step, monarch, state, monarch)) {
+                triggers.add(
+                    PendingTrigger(
+                        ability = ability,
+                        sourceId = monarch,
+                        sourceName = MonarchService.SOURCE_NAME,
+                        controllerId = monarch,
                         triggerContext = TriggerContext(step = step, triggeringEntityId = activePlayerId)
                     )
                 )
@@ -1880,6 +1897,11 @@ class TriggerDetector(
         // Handle general damage observer triggers (e.g., Kazarov: "whenever a creature an opponent controls is dealt damage")
         if (event is DamageDealtEvent) {
             damageDetector.detectDamageObserverTriggers(state, event, triggers, index)
+        }
+
+        // The monarch's inherent combat-damage steal (CR 724.2) — a sourceless damage observer
+        if (event is DamageDealtEvent && state.monarch != null) {
+            damageDetector.detectMonarchStealTrigger(state, event, triggers)
         }
 
         // Handle "whenever a [subtype] deals combat damage to a player" triggers (e.g., Cabal Slaver)

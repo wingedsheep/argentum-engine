@@ -194,6 +194,14 @@ object TargetResolutionUtils {
 
     private fun controllerOfTriggeringEntity(context: EffectContext, state: GameState): EntityId? {
         if (!context.objectReferences.isCurrent(context.objectReferences.triggering, state)) {
+            // The triggering permanent has left the battlefield since it triggered: "its
+            // controller" is its last-known controller (CR 608.2h) — the creature that dealt the
+            // monarch combat damage and was then destroyed in response still crowns its controller.
+            // The triggering *player* is a different person for damage triggers (the player who was
+            // dealt the damage), so it is only the fallback for objects that never were permanents.
+            context.triggeringEntityId
+                ?.let { state.getEntity(it)?.get<LastKnownPermanentComponent>()?.snapshot?.controllerId }
+                ?.let { return it }
             return context.triggeringPlayerId
         }
         val triggerId = context.triggeringEntityId ?: return null

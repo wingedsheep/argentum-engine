@@ -87,6 +87,94 @@
     ]
 }
 
+// Queen Marchesa
+{
+    "name": "Queen Marchesa",
+    "manaCost": "{1}{R}{W}{B}",
+    "typeLine": "Legendary Creature — Human Assassin",
+    "oracleText": "Deathtouch, haste\nWhen Queen Marchesa enters, you become the monarch.\nAt the beginning of your upkeep, if an opponent is the monarch, create a 1/1 black Assassin creature token with deathtouch and haste.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "DEATHTOUCH",
+        "HASTE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Queen Marchesa:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": "BecomeMonarch"
+            },
+            {
+                "id": "Queen Marchesa:2",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "BLACK"
+                    ],
+                    "creatureTypes": [
+                        "Assassin"
+                    ],
+                    "keywords": [
+                        "DEATHTOUCH",
+                        "HASTE"
+                    ]
+                },
+                "interveningIf": {
+                    "type": "PlayerIsMonarch",
+                    "player": "AnOpponent"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "78",
+        "rarity": "RARE",
+        "artist": "Kieran Yanner",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/3/03f4341c-088b-4f35-b82b-3d98d8a93de4.jpg?1783937339",
+        "rulings": [
+            {
+                "date": "2016-08-23",
+                "text": "The last ability of Queen Marchesa checks to see if an opponent is the monarch as your upkeep begins. If no opponent is the monarch, Queen Marchesa's ability won't trigger at all. Queen Marchesa's ability will also check to see if an opponent is the monarch as it tries to resolve. If no opponent is the monarch at that time, Queen Marchesa's ability will have no effect."
+            },
+            {
+                "date": "2016-08-23",
+                "text": "The game starts with no monarch. Once an effect makes one player the monarch, the game will have exactly one monarch from that point forward."
+            },
+            {
+                "date": "2016-08-23",
+                "text": "Being the monarch carries two inherent triggered abilities. \"At the beginning of the monarch's end step, that player draws a card\" and \"Whenever a creature deals combat damage to the monarch, its controller becomes the monarch.\""
+            },
+            {
+                "date": "2016-08-23",
+                "text": "Abilities that trigger whenever you \"become the monarch\" trigger only if you aren't already the monarch. For example, if you are already the monarch as Custodi Lich enters the battlefield, its last ability won't trigger."
+            },
+            {
+                "date": "2016-08-23",
+                "text": "If the triggered ability that causes the monarch to draw a card goes on the stack, and a different player becomes the monarch before that ability resolves, the first player will still draw the card."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED",
+        "WHITE"
+    ]
+}
+
 // Recruiter of the Guard
 {
     "name": "Recruiter of the Guard",

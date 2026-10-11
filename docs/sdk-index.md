@@ -385,6 +385,7 @@ Families:
 - `PlayerHasCitysBlessing(player: Player)` — Intervening-if / static condition: "if player has the city's blessing".
 - `PlayerHasEnduringStory(player: Player)` — Intervening-if / static condition: "if player has an enduring story".
 - `PlayerHasMostLife(player: Player)` — True when player has the most life, or is tied for the most life, among all players (their life total ≥ every player's).
+- `PlayerIsMonarch(player: Player)` — Intervening-if / static condition: "if player is the monarch".
 - `PlayerPlayedLandThisTurn(player: Player, fromZone: Zone?, fromZoneOtherThan: Zone?)` — Condition: "if player has played a land this turn" (CR 305.1 special land-play action), reading the per-player `LandsPlayedThisTurnComponent` provenance recorded by `PlayLandHandler`.
 - `PlayerTurnedPermanentFaceUpThisTurn(player: Player)` — Resolution condition: "if player turned a permanent face up this turn".
 - `PutCounterKindOnCreatureThisTurn(counterType: CounterType?, player: Player)` — Condition: "as long as player has put one or more counterType counters on a creature this turn" — Sigardian Paladin's trample-and-lifelink gate.
@@ -698,6 +699,7 @@ Families:
 - `BecomeCopyOfLinkedExileEffect(affected: EffectTarget)` — The affected permanent becomes a copy of a creature card exiled with the effect's source (read from the source's linked exile — see `CardSource.FromLinkedExile`), for as long as the source remains…
 - `BecomeCreatureEffect(target: EffectTarget, power: DynamicAmount, toughness: DynamicAmount, keywords: Set<Keyword>, creatureTypes: Set<String>, removeTypes: Set<String>, addTypes: Set<String>, colors: Set<String>?, imageUri: String?, duration: Duration, dynamicPower: DynamicAmount?, dynamicToughness: DynamicAmount?)` — Target permanent becomes a creature with specified characteristics until end of turn.
 - `BecomeCreatureTypeEffect(target: EffectTarget, duration: Duration, excludedTypes: List<String>)` — Target creature becomes the creature type of your choice until end of turn.
+- `BecomeMonarchEffect(target: EffectTarget)` — "target becomes the monarch" (Conspiracy: Take the Crown, CR 724).
 - `BecomeMonstrousEffect(target: EffectTarget)` — Target permanent becomes monstrous (CR 701.37b) — the designation half of the monstrosity keyword action.
 - `BecomePreparedEffect(target: EffectTarget)` — Make target become prepared (Secrets of Strixhaven).
 - `BecomeRenownedEffect(target: EffectTarget)` — Target permanent becomes renowned (CR 702.112b) — the designation half of the renown trigger the engine derives from com.wingedsheep.sdk.core.Keyword.RENOWN.

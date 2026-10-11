@@ -155,6 +155,7 @@ val engineSerializersModule = SerializersModule {
         subclass(HandRevealedEvent::class)
         subclass(KeywordGrantedEvent::class)
         subclass(CitysBlessingGainedEvent::class)
+        subclass(MonarchChangedEvent::class)
         subclass(EnduringStoryGainedEvent::class)
         subclass(SpeedChangedEvent::class)
         subclass(MaximumHandSizeRemovedEvent::class)

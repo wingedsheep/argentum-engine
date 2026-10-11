@@ -5,6 +5,7 @@ import com.wingedsheep.engine.core.GameEndReason
 import com.wingedsheep.engine.core.PlayerLeftGameEvent
 import com.wingedsheep.engine.handlers.effects.ZoneTransitionService
 import com.wingedsheep.engine.mechanics.layers.SerializableModification
+import com.wingedsheep.engine.mechanics.monarch.MonarchService
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.isResolving
 import com.wingedsheep.engine.mechanics.combat.CombatRemovalHelper
@@ -38,6 +39,8 @@ import com.wingedsheep.sdk.scripting.Duration
  * [PlayerLeftGameComponent]) so it remains in [GameState.turnOrder] for history and the
  * game-end SBA. The turn-order iteration helpers already skip players who have left.
  *
+ * - **CR 724.4 (the monarch)** — a monarch who leaves hands the title to the active player (or
+ *   the next player in turn order) at the same time; see [MonarchService.onPlayerLeft].
  * - **CR 800.4f–h (a choice the leaver was mid-way through making)** — a pending decision
  *   addressed to the leaver is abandoned: the decision is cleared, the continuation frames
  *   waiting on it are dropped, and priority goes to the active player (CR 117.3b, redirected
@@ -142,6 +145,10 @@ object PlayerLeavesGameProcessor {
         // 8. Mark the leave processing done so the SBA loop never re-applies it.
         s = s.updateEntity(leaver) { it.with(PlayerLeftGameComponent) }
 
+        // 9. CR 724.4 — a monarch who leaves hands the title on at the same time.
+        val (afterMonarch, monarchEvents) = MonarchService.onPlayerLeft(s, leaver)
+        s = afterMonarch
+
         // Player control ends when its controller leaves, or when an abandoned resolution loses
         // its bottom frame. Retain only grants for living seats and still-existing stack visits.
         val expiredControl = s.resolutionControls.filter {
@@ -158,7 +165,7 @@ object PlayerLeavesGameProcessor {
         val returns = com.wingedsheep.engine.handlers.effects.ZoneReturnService.returnDepartedSources(zones, s)
         return ExecutionResult.success(
             returns.state,
-            listOf(PlayerLeftGameEvent(leaver, reason, toRemove.size)) + controlEvents + returns.events
+            listOf(PlayerLeftGameEvent(leaver, reason, toRemove.size)) + monarchEvents + controlEvents + returns.events
         )
     }
 

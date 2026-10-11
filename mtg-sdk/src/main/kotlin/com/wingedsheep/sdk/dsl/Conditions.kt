@@ -47,6 +47,7 @@ import com.wingedsheep.sdk.scripting.conditions.PlayerAttackedWithCreaturesThisT
 import com.wingedsheep.sdk.scripting.conditions.PlayerCastSpellsThisTurn
 import com.wingedsheep.sdk.scripting.conditions.PlayerCommittedCrimeThisTurn
 import com.wingedsheep.sdk.scripting.conditions.PlayerHasCitysBlessing
+import com.wingedsheep.sdk.scripting.conditions.PlayerIsMonarch
 import com.wingedsheep.sdk.scripting.conditions.PlayerHasEnduringStory
 import com.wingedsheep.sdk.scripting.conditions.RingHasTemptedPlayerAtLeast
 import com.wingedsheep.sdk.scripting.references.Player
@@ -2385,6 +2386,17 @@ object Conditions {
      */
     val YouHaveCitysBlessing: ConditionInterface =
         PlayerHasCitysBlessing(Player.You)
+
+    /** If you're the monarch (CR 724). False while the game has no monarch. */
+    val YouAreTheMonarch: ConditionInterface =
+        PlayerIsMonarch(Player.You)
+
+    /**
+     * If an opponent is the monarch (CR 724) — any opponent, not just the first (Queen Marchesa's
+     * upkeep Assassin). False while the game has no monarch.
+     */
+    val AnOpponentIsTheMonarch: ConditionInterface =
+        PlayerIsMonarch(Player.AnOpponent)
 
     /**
      * If you have an enduring story (The Hobbit, CR 702.195).

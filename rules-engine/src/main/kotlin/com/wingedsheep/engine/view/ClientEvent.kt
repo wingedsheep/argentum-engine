@@ -94,6 +94,26 @@ sealed interface ClientEvent {
         }
     ) : ClientEvent
 
+    /**
+     * The monarch changed hands (CR 724). [newMonarchId] is `null` only when the monarch left the game
+     * and nobody still in it could take the title (CR 724.4). The crown itself is rendered from the
+     * player's active-effect badge; this event is the log line and the cue to animate the hand-off.
+     */
+    @Serializable
+    @SerialName("monarchChanged")
+    data class MonarchChanged(
+        val previousMonarchId: EntityId?,
+        val newMonarchId: EntityId?,
+        val sourceName: String,
+        val isYours: Boolean? = null,
+        override val description: String = when {
+            newMonarchId == null -> "There is no longer a monarch"
+            isYours == true -> "You become the monarch"
+            isYours == false -> "Opponent becomes the monarch"
+            else -> "A player becomes the monarch"
+        }
+    ) : ClientEvent
+
     @Serializable
     @SerialName("damageDealt")
     data class DamageDealt(
@@ -958,6 +978,13 @@ object ClientEventTransformer {
                 oldSpeed = event.oldSpeed,
                 newSpeed = event.newSpeed,
                 isYours = event.playerId == viewingPlayerId
+            )
+
+            is MonarchChangedEvent -> ClientEvent.MonarchChanged(
+                previousMonarchId = event.previousMonarchId,
+                newMonarchId = event.newMonarchId,
+                sourceName = event.sourceName,
+                isYours = event.newMonarchId?.let { it == viewingPlayerId }
             )
 
             is DayNightChangedEvent -> ClientEvent.DayNightChanged(

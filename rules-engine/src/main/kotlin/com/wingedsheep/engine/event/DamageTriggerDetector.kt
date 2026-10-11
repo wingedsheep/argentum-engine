@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.event
 
+import com.wingedsheep.engine.mechanics.monarch.MonarchService
 import com.wingedsheep.engine.core.DamageDealtEvent
 import com.wingedsheep.engine.core.GameEvent as EngineGameEvent
 import com.wingedsheep.engine.handlers.PredicateContext
@@ -278,6 +279,31 @@ class DamageTriggerDetector(
                 controllerId = global.controllerId
             )
         }
+    }
+
+    /**
+     * The monarch's inherent combat-damage steal (CR 724.2): "Whenever a creature deals combat damage
+     * to the monarch, its controller becomes the monarch."
+     *
+     * The rule gives it no source and has the monarch control it, so — like the inherent speed
+     * ability — it is synthesized for the current monarch only, with the monarch's player entity as
+     * source and controller, and matched exactly like any other damage observer. See [MonarchAbilities].
+     */
+    fun detectMonarchStealTrigger(
+        state: GameState,
+        event: DamageDealtEvent,
+        triggers: MutableList<PendingTrigger>
+    ) {
+        val monarch = state.monarch ?: return
+        matchDamageObserver(
+            state = state,
+            event = event,
+            triggers = triggers,
+            ability = MonarchAbilities.combatDamageSteal,
+            sourceId = monarch,
+            sourceName = MonarchService.SOURCE_NAME,
+            controllerId = monarch
+        )
     }
 
     /**

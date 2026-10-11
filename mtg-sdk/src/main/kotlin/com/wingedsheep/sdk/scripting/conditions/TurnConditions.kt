@@ -764,6 +764,33 @@ data class PlayerHasCitysBlessing(val player: Player = Player.You) : Condition {
 }
 
 // =============================================================================
+// The monarch (Conspiracy: Take the Crown, CR 724)
+// =============================================================================
+
+/**
+ * Intervening-if / static condition: "if [player] is the monarch".
+ *
+ * [Player.You] reads "if you're the monarch" (Palace Jailer's "Monarch" payoffs); [Player.AnOpponent]
+ * and [Player.EachOpponent] read "if an opponent is the monarch" (Queen Marchesa) and are
+ * *existential* — true when the monarch is any opponent of the controller, which is what matters in
+ * multiplayer, where the first opponent is not necessarily the one wearing the crown. Any other
+ * [Player] resolves to one player and asks whether that player is the monarch.
+ *
+ * False while the game has no monarch (CR 724.1 — there is none until an effect makes one, and
+ * CR 724.4 can leave the game without one), so "if you're not the monarch" is
+ * `Conditions.Not(Conditions.YouAreTheMonarch)` and is true then.
+ */
+@SerialName("PlayerIsMonarch")
+@Serializable
+data class PlayerIsMonarch(val player: Player = Player.You) : Condition {
+    override val description: String = when (player) {
+        Player.You -> "if you're the monarch"
+        Player.AnOpponent, Player.EachOpponent -> "if an opponent is the monarch"
+        else -> "if ${player.description} is the monarch"
+    }
+}
+
+// =============================================================================
 // Enduring story (The Hobbit, CR 702.195)
 // =============================================================================
 

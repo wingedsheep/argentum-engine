@@ -891,6 +891,8 @@ export function getEffectIcon(icon: string): string {
       return '♻️'
     case 'emblem':
       return '👑'
+    case 'monarch':
+      return '👑'
     case 'copy-spell':
       return '📋'
     case 'free-cast':

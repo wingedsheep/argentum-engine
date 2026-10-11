@@ -1046,6 +1046,28 @@ data class GainCitysBlessingEffect(
 }
 
 /**
+ * "[target] becomes the monarch" (Conspiracy: Take the Crown, CR 724).
+ *
+ * The monarch is a single-holder player designation: as a player becomes the monarch, the current
+ * monarch ceases to be (CR 724.3), so this effect *moves* the title rather than granting a copy.
+ * Making the current monarch the monarch again is a no-op. The two inherent monarch triggers — the
+ * end-step draw and the combat-damage steal (CR 724.2) — belong to the engine, not to the card that
+ * crowned anyone, so they keep working after that card is gone.
+ *
+ * @param target The player who becomes the monarch. Defaults to the ability's controller, matching
+ *   the printed "you become the monarch".
+ */
+@SerialName("BecomeMonarch")
+@Serializable
+data class BecomeMonarchEffect(
+    val target: EffectTarget = EffectTarget.Controller
+) : Effect {
+    override val description: String =
+        if (target == EffectTarget.Controller) "You become the monarch"
+        else "${target.description.replaceFirstChar { it.uppercase() }} becomes the monarch"
+}
+
+/**
  * Changes the target player's **speed** by a signed [amount] (Aetherdrift, CR 702.179).
  *
  * One effect covers both directions because the set needs both: the inherent speed trigger raises

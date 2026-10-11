@@ -12836,6 +12836,8 @@ answer it and would silently return `false`.
   long as enchanted permanent is red or green…", `GameObjectFilter.Permanent.withAnyColor(Color.RED,
   Color.GREEN)`).
 - `YouHaveCitysBlessing` — you have City's Blessing (10+ permanents).
+- `YouAreTheMonarch` / `AnOpponentIsTheMonarch` — the monarch designation (CR 724). Backed by
+  `PlayerIsMonarch(player)`; the opponent form is existential over every opponent. False while there is no monarch.
 - `YouHaveEnduringStory` — you have an enduring story (storied: 3+ artifacts/Sagas/legendaries).
 - `SourceIsRingBearer` — the source permanent is your Ring-bearer (CR 701.54e).
 - `YouChoseOtherCreatureAsRingBearer` — intervening-if for `Triggers.you.isTemptedByTheRing()` payoffs that fire
@@ -13299,6 +13301,8 @@ default to "you" so card authors don't need to pass it explicitly.
   (stamped in the turn-face-up handler), both cleared at the turn boundary. Compose with `Conditions.Not` /
   `Conditions.Any` for the "unless A or B" rider.
 - `YouHaveCitysBlessing` — Ascend gate. Backed by `PlayerHasCitysBlessing(Player.You)`.
+- `YouAreTheMonarch` / `AnOpponentIsTheMonarch` — monarch gates (CR 724), backed by `PlayerIsMonarch(Player.You)` /
+  `PlayerIsMonarch(Player.AnOpponent)`. "If you're not the monarch" is `Conditions.Not(Conditions.YouAreTheMonarch)`.
 - `YouHaveEnduringStory` — storied gate (CR 702.195). Backed by `PlayerHasEnduringStory(Player.You)`.
 - `YouHaveMaxSpeed` / `HasMaxSpeed(player)` — "your speed is 4" (CR 702.179e), the gate the
   `maxSpeed { }` block applies. `SpeedBelowMax(player)` is the complement used by the inherent speed
@@ -16471,6 +16475,14 @@ Card authors rarely reference these directly; they are created/updated by the ma
   condition *live* — that is what makes "create a token, then if you have the city's blessing…" come out
   right when the token itself is your tenth permanent (Ocelot Pride), since state-based actions aren't
   polled mid-resolution.
+- **The monarch** (CR 724) — `Effects.BecomeMonarch(target = EffectTarget.Controller)` is "you become the
+  monarch"; read it with `Conditions.YouAreTheMonarch` / `Conditions.AnOpponentIsTheMonarch`. That is the whole
+  card-side surface: the two inherent abilities (CR 724.2 — the monarch draws at the beginning of their end
+  step; a creature dealing combat damage to the monarch crowns its controller) are the engine's
+  (`MonarchAbilities`, sourceless, controlled by the monarch), so a card never re-states them. The title lives
+  in `GameState.monarch` (one holder, CR 724.3) and is written only by `MonarchService`, which also hands it on
+  when the monarch leaves the game (CR 724.4). Becoming the monarch while already it changes nothing. First
+  user: Queen Marchesa.
 - **Storied / Enduring Story** (The Hobbit, CR 702.195) — the same shape as ascend-on-a-permanent, with a
   different threshold, and authored the same way: `storied()` adds `Keyword.STORIED` and nothing else,
   because 702.195a is a *static* ability ("**any time** you control three or more permanents that are
