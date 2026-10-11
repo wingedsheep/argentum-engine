@@ -1550,7 +1550,16 @@ data class SelectTargetEffect(
      * declared at cast, so the prompt has to say what the Giant is for rather than read like a
      * second target. `null` keeps the derived prompt.
      */
-    val prompt: String? = null
+    val prompt: String? = null,
+    /**
+     * Pipeline collections whose members are not offered — "choose a second player", "then
+     * choose a third player" where every pick must differ from the earlier ones (Gluntch, the
+     * Bestower). Each key names a collection an earlier step of the same resolution stored
+     * (typically another [SelectTargetEffect]); anything in them is removed from the legal set
+     * before the choice is offered or auto-picked. A missing collection excludes nothing. Empty
+     * leaves the choice unrestricted, as before.
+     */
+    val excluding: List<String> = emptyList()
 ) : Effect {
     override val description: String = prompt ?: "Choose ${requirement.description}"
 

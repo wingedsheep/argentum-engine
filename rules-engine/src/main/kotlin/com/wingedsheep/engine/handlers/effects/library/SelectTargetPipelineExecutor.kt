@@ -13,7 +13,8 @@ import kotlin.reflect.KClass
 /**
  * Executor for SelectTargetEffect — mid-resolution pipeline targeting.
  *
- * Finds legal targets using [TargetFinder], then:
+ * Finds legal targets using [TargetFinder], minus anything already in the
+ * [SelectTargetEffect.excluding] collections, then:
  * - **No legal targets** → stores empty collection, pipeline continues
  * - **Single legal target (non-optional)** → auto-selects, stores in [updatedCollections]
  * - **Multiple legal targets, or a single one the player may decline** → creates
@@ -37,6 +38,11 @@ class SelectTargetPipelineExecutor(
         val controllerId = context.controllerId
         val sourceId = context.sourceId
 
+        // Earlier picks of the same resolution that this one must differ from ("choose a second
+        // player", Gluntch) — read from the pipeline, so they survive any pause in between.
+        val excluded = effect.excluding
+            .flatMapTo(HashSet()) { context.pipeline.storedCollections[it].orEmpty() }
+
         val legalTargets = targetFinder.findLegalTargets(
             state = state,
             requirement = effect.requirement,
@@ -52,7 +58,7 @@ class SelectTargetPipelineExecutor(
                 controllerId = controllerId,
                 granterId = context.granterId
             )
-        )
+        ).let { found -> if (excluded.isEmpty()) found else found.filterNot { it in excluded } }
 
         if (legalTargets.isEmpty()) {
             // No legal targets — store empty collection, pipeline continues gracefully

@@ -861,19 +861,23 @@ class PipelineBuilder private constructor(private val shared: Shared) {
      * Only for non-targeting choices or choices that depend on earlier pipeline results —
      * printed "target" wording must use cast-time targeting instead. [prompt] replaces the
      * derived "Choose <requirement>" the player sees when the choice needs context to make sense.
+     * [excluding] drops whatever earlier slots already hold, so "choose a second player … then a
+     * third player" picks someone different each time (Gluntch, the Bestower).
      */
     fun selectTarget(
         requirement: TargetRequirement,
         nonTargeting: Boolean = false,
         name: String? = null,
-        prompt: String? = null
+        prompt: String? = null,
+        excluding: List<CollectionSlot> = emptyList()
     ): CollectionSlot {
         val slot = CollectionSlot(slotKey("target", nextIndex(), name))
         steps += SelectTargetEffect(
             requirement = requirement,
             storeAs = slot.key,
             nonTargeting = nonTargeting,
-            prompt = prompt
+            prompt = prompt,
+            excluding = excluding.map { it.key }
         )
         return slot
     }

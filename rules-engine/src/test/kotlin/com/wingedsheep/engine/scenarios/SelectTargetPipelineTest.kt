@@ -75,9 +75,33 @@ class SelectTargetPipelineTest : FunSpec({
         )
     )
 
+    // "Choose a creature, then a different creature" — the second pick excludes the first.
+    val TwinPipelineBolt = CardDefinition.sorcery(
+        name = "Twin Pipeline Bolt",
+        manaCost = ManaCost.parse("{R}"),
+        oracleText = "Choose a creature, then choose a second creature. Deal 3 damage to each.",
+        script = CardScript.spell(
+            effect = CompositeEffect(
+                listOf(
+                    SelectTargetEffect(
+                        requirement = TargetObject(filter = TargetFilter.Creature),
+                        storeAs = "first"
+                    ),
+                    SelectTargetEffect(
+                        requirement = TargetObject(filter = TargetFilter.Creature),
+                        storeAs = "second",
+                        excluding = listOf("first")
+                    ),
+                    DealDamageEffect(amount = 3, target = EffectTarget.PipelineTarget("first")),
+                    DealDamageEffect(amount = 3, target = EffectTarget.PipelineTarget("second"))
+                )
+            )
+        )
+    )
+
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(PipelineBolt, OptionalPipelineBolt))
+        driver.registerCards(TestCards.all + listOf(PipelineBolt, OptionalPipelineBolt, TwinPipelineBolt))
         return driver
     }
 
@@ -222,5 +246,43 @@ class SelectTargetPipelineTest : FunSpec({
 
         // Auto-selects caster's own bear (only legal target)
         driver.assertInGraveyard(caster, "Grizzly Bears")
+    }
+
+    test("excluding drops an earlier pick, across the pause, from a later choice") {
+        val driver = createDriver()
+        driver.initMirrorMatch(deck = Deck.of("Mountain" to 40), startingLife = 20)
+        val (caster, opponent) = setupForCast(driver)
+        val bear = driver.putCreatureOnBattlefield(opponent, "Grizzly Bears")
+        val elves = driver.putCreatureOnBattlefield(opponent, "Llanowar Elves")
+        val goblin = driver.putCreatureOnBattlefield(opponent, "Goblin Guide")
+
+        driver.castSpell(caster, driver.putCardInHand(caster, "Twin Pipeline Bolt"))
+        driver.bothPass()
+
+        val first = driver.pendingDecision.shouldBeInstanceOf<ChooseTargetsDecision>()
+        first.legalTargets[0]!!.toSet() shouldBe setOf(bear, elves, goblin)
+        driver.submitTargetSelection(caster, listOf(bear))
+
+        val second = driver.pendingDecision.shouldBeInstanceOf<ChooseTargetsDecision>()
+        second.legalTargets[0]!!.toSet() shouldBe setOf(elves, goblin)
+        driver.submitTargetSelection(caster, listOf(elves))
+
+        driver.assertInGraveyard(opponent, "Grizzly Bears")
+        driver.assertInGraveyard(opponent, "Llanowar Elves")
+        driver.getCreatures(opponent) shouldBe listOf(goblin)
+    }
+
+    test("excluding the only candidate leaves the later choice empty instead of re-picking it") {
+        val driver = createDriver()
+        driver.initMirrorMatch(deck = Deck.of("Mountain" to 40), startingLife = 20)
+        val (caster, opponent) = setupForCast(driver)
+        val force = driver.putCreatureOnBattlefield(opponent, "Force of Nature") // 5/5
+
+        driver.castSpell(caster, driver.putCardInHand(caster, "Twin Pipeline Bolt"))
+        driver.bothPass()
+
+        // One creature: the first pick is forced, the second finds nobody — 3 damage, not a lethal 6.
+        driver.pendingDecision shouldBe null
+        driver.getCreatures(opponent) shouldBe listOf(force)
     }
 })

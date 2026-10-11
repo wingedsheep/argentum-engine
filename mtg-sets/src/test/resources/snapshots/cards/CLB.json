@@ -601,6 +601,168 @@
     ]
 }
 
+// Gluntch, the Bestower
+{
+    "name": "Gluntch, the Bestower",
+    "manaCost": "{1}{G}{W}",
+    "typeLine": "Legendary Creature — Jellyfish",
+    "oracleText": "Flying\nAt the beginning of your end step, choose a player. They put two +1/+1 counters on a creature they control. Choose a second player to draw a card. Then choose a third player to create two Treasure tokens.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 5
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Gluntch, the Bestower:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "SelectTarget",
+                            "requirement": {
+                                "type": "TargetPlayer",
+                                "descriptionOverride": "a player"
+                            },
+                            "storeAs": "target0",
+                            "nonTargeting": true,
+                            "prompt": "Choose a player to put two +1/+1 counters on a creature they control"
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Players",
+                                "players": {
+                                    "type": "InCollection",
+                                    "collection": "target0"
+                                }
+                            },
+                            "body": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "ControlledPermanents",
+                                            "filter": "creature"
+                                        },
+                                        "storeAs": "gathered1"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "gathered1",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "selected2",
+                                        "prompt": "Choose a creature you control to put two +1/+1 counters on",
+                                        "useTargetingUI": true
+                                    },
+                                    {
+                                        "type": "AddCountersToCollection",
+                                        "collectionName": "selected2",
+                                        "counterType": "PLUS_ONE_PLUS_ONE",
+                                        "count": 2
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "type": "SelectTarget",
+                            "requirement": {
+                                "type": "TargetPlayer",
+                                "descriptionOverride": "a second player"
+                            },
+                            "storeAs": "target5",
+                            "nonTargeting": true,
+                            "prompt": "Choose a second player to draw a card",
+                            "excluding": [
+                                "target0"
+                            ]
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "PipelineTarget",
+                                "collectionName": "target5"
+                            }
+                        },
+                        {
+                            "type": "SelectTarget",
+                            "requirement": {
+                                "type": "TargetPlayer",
+                                "descriptionOverride": "a third player"
+                            },
+                            "storeAs": "target7",
+                            "nonTargeting": true,
+                            "prompt": "Choose a third player to create two Treasure tokens",
+                            "excluding": [
+                                "target0",
+                                "target5"
+                            ]
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Players",
+                                "players": {
+                                    "type": "InCollection",
+                                    "collection": "target7"
+                                }
+                            },
+                            "body": {
+                                "type": "CreatePredefinedToken",
+                                "tokenType": "Treasure",
+                                "count": 2
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "275",
+        "rarity": "RARE",
+        "artist": "Olivier Bernard",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/b/3b3e889a-5865-4464-9923-bffa25c50cd2.jpg?1783922694",
+        "rulings": [
+            {
+                "date": "2022-06-10",
+                "text": "The first chosen player gets to choose which creature they will place the counters on."
+            },
+            {
+                "date": "2022-06-10",
+                "text": "You may choose a player who doesn't control any creatures as the first chosen player."
+            },
+            {
+                "date": "2022-06-10",
+                "text": "All three players must be different players, although any one of them can be you. If there are only two players in the game, you won't choose a third player, and no one will create Treasure tokens."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE"
+    ]
+}
+
 // Pseudodragon Familiar
 {
     "name": "Pseudodragon Familiar",

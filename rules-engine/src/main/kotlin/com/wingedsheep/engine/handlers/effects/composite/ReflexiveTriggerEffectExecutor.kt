@@ -169,7 +169,10 @@ class ReflexiveTriggerEffectExecutor(
                 controllerId = context.controllerId,
                 granterId = context.granterId
             )
-        ).isNotEmpty()
+        ).any { candidate ->
+            // Mirror the executor's earlier-pick exclusion, so feasibility and execution agree.
+            action.excluding.none { candidate in context.pipeline.storedCollections[it].orEmpty() }
+        }
         is SacrificeEffect -> {
             // You can only sacrifice permanents you control that match the filter (mirrors
             // SacrificeExecutor.findValidPermanents). Fewer than `count` → can't pay → infeasible.
