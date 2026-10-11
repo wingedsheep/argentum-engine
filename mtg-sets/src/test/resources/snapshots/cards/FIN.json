@@ -26807,7 +26807,7 @@
                         "message": "Shinryu, Transcendent Rival — the chosen player lost the game"
                     },
                     "triggerRestriction": {
-                        "type": "TriggeringPlayerIs",
+                        "type": "PlayerIs",
                         "player": "ChosenOpponent"
                     },
                     "descriptionOverride": "Burning Chains — When the chosen player loses the game, you win the game."

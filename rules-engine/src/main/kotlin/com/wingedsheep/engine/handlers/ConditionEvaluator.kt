@@ -160,7 +160,7 @@ import com.wingedsheep.sdk.scripting.conditions.PlayerIsMonarch
 import com.wingedsheep.sdk.scripting.conditions.PlayerHasEnduringStory
 import com.wingedsheep.sdk.scripting.conditions.PlayerControlsMostPermanents
 import com.wingedsheep.sdk.scripting.conditions.PlayerHasMostLife
-import com.wingedsheep.sdk.scripting.conditions.TriggeringPlayerIs
+import com.wingedsheep.sdk.scripting.conditions.PlayerIs
 import com.wingedsheep.sdk.scripting.conditions.RingHasTemptedPlayerAtLeast
 import com.wingedsheep.sdk.scripting.conditions.CreatureDiedThisTurnCondition
 import com.wingedsheep.sdk.scripting.conditions.ControlledCreatureDiedThisTurnCondition
@@ -375,7 +375,7 @@ class ConditionEvaluator(
             TriggeringEntityWasCast,
             TriggeringEntityWasHistoric,
             TriggeringEntityWasNotPutByThisSource,
-            is TriggeringPlayerIs,
+            is PlayerIs,
             TriggeringSpellCastWithoutPayingMana,
             TriggeringSpellHasSingleTarget,
             is TriggeringSpellManaSpentAtLeast,
@@ -716,10 +716,10 @@ class ConditionEvaluator(
             }
             is PlayerHasEnduringStory -> evaluateHasEnduringStoryCtx(state, condition, ctx)
 
-            is TriggeringPlayerIs -> {
-                val triggeringPlayer = resolvePlayer(state, Player.TriggeringPlayer, ctx)
+            is PlayerIs -> {
+                val subject = resolvePlayer(state, condition.subject, ctx)
                 val expected = resolvePlayer(state, condition.player, ctx)
-                triggeringPlayer != null && expected != null && triggeringPlayer == expected
+                subject != null && expected != null && subject == expected
             }
 
             is PlayerHasMostLife -> {

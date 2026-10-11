@@ -148,6 +148,9 @@ class TriggerAbilityResolver(
         // one per exalted counter (CR 122.1b).
         val exaltedAbilities = getExaltedTriggeredAbilities(entityId, cardDefinitionId, state)
 
+        // Myriad (CR 702.116) — one "copy attacking each other opponent" trigger per instance.
+        val myriadAbilities = getMyriadTriggeredAbilities(entityId, cardDefinitionId, state)
+
         val allGranted = buildList {
             addAll(grantedAbilities)
             addAll(staticGrantedAbilities)
@@ -164,6 +167,7 @@ class TriggerAbilityResolver(
             addAll(renownAbilities)
             addAll(bushidoAbilities)
             addAll(exaltedAbilities)
+            addAll(myriadAbilities)
         }
         val copyAbilities = if (state.projectedState.hasLostAllAbilities(entityId)) emptyList()
             else state.getEntity(entityId)?.get<CardComponent>()?.copyTriggeredAbilities.orEmpty()
@@ -317,6 +321,9 @@ class TriggerAbilityResolver(
         // one per exalted counter (CR 122.1b).
         val exaltedAbilities = getExaltedTriggeredAbilities(entityId, cardDefinitionId, state)
 
+        // Myriad (CR 702.116) — one "copy attacking each other opponent" trigger per instance.
+        val myriadAbilities = getMyriadTriggeredAbilities(entityId, cardDefinitionId, state)
+
         val allGranted = buildList {
             addAll(grantedAbilities)
             addAll(staticGrantedAbilities)
@@ -333,6 +340,7 @@ class TriggerAbilityResolver(
             addAll(renownAbilities)
             addAll(bushidoAbilities)
             addAll(exaltedAbilities)
+            addAll(myriadAbilities)
         }
         val copyAbilities = if (state.projectedState.hasLostAllAbilities(entityId)) emptyList()
             else state.getEntity(entityId)?.get<CardComponent>()?.copyTriggeredAbilities.orEmpty()
@@ -836,6 +844,24 @@ class TriggerAbilityResolver(
         ) 1 else 0
         val instances = maxOf(printed + counters, 1)
         return List(instances) { com.wingedsheep.sdk.scripting.Exalted.trigger(it) }
+    }
+
+    /**
+     * Myriad (CR 702.116) as the keyword-derived triggered ability it is — see
+     * [com.wingedsheep.sdk.scripting.Myriad]. Gated on the projected keyword; one trigger per
+     * printed instance (CR 702.116b) unless all abilities are lost, and exactly one when the
+     * keyword is present only through a static grant.
+     */
+    private fun getMyriadTriggeredAbilities(
+        entityId: EntityId,
+        cardDefinitionId: String,
+        state: GameState,
+    ): List<TriggeredAbility> {
+        val projected = state.projectedState
+        if (!projected.hasKeyword(entityId, com.wingedsheep.sdk.core.Keyword.MYRIAD)) return emptyList()
+        val printed = if (projected.hasLostAllAbilities(entityId)) 0 else
+            cardRegistry.getCard(cardDefinitionId)?.let { com.wingedsheep.sdk.scripting.Myriad.printedCount(it) } ?: 0
+        return List(maxOf(printed, 1)) { com.wingedsheep.sdk.scripting.Myriad.trigger(it) }
     }
 
     private fun createWardTriggeredAbility(cost: WardCost, source: String): TriggeredAbility {

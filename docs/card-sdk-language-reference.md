@@ -2544,7 +2544,7 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
 - `CreateTokenCopyOfSelf(count?, overridePower?, overrideToughness?, removeLegendary?)` — token copies
   of the source. `removeLegendary = true` applies the "except it's not legendary" copy clause (Ran and
   Shaw), mirroring `CreateTokenCopyOfEquippedCreature`.
-- `CreateTokenCopyOfTarget(target, count?, overridePower?, overrideToughness?, tapped?, attacking?, triggeredAbilities?, addedKeywords?, addedSupertypes?, removedSupertypes?, overrideColors?, addedColors?, overrideSubtypes?, addedSubtypes?, overrideCardTypes?, activatedAbilities?, addedStaticAbilities?, sacrificeAtStep?, sacrificeOnlyOnControllersTurn?, addCardTypes?, exileAtStep?, exileUnlessSourceIsRingBearer?, controller?, noManaCost?, attachedTo?)` —
+- `CreateTokenCopyOfTarget(target, count?, overridePower?, overrideToughness?, tapped?, attacking?, triggeredAbilities?, addedKeywords?, addedSupertypes?, removedSupertypes?, overrideColors?, addedColors?, overrideSubtypes?, addedSubtypes?, overrideCardTypes?, activatedAbilities?, addedStaticAbilities?, sacrificeAtStep?, sacrificeOnlyOnControllersTurn?, addCardTypes?, exileAtStep?, exileUnlessSourceIsRingBearer?, controller?, noManaCost?, attachedTo?, attackedPlayer?)` —
   token copy of another permanent (or a card in any zone — the executor copies the target's `CardComponent`,
   so a graveyard/exile card works; pass `EffectTarget.PipelineTarget("name")` to copy a card a prior pipeline
   step exiled/stored, as Nexus of Becoming and Mardu Siegebreaker do).
@@ -2572,7 +2572,11 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   activate"). Any static reader that a granted ability must reach has to union `grantedStaticAbilities` with
   printed statics (as the equip-cost reducer and combat managers already do).
   `attacking` only applies to copies whose printed type line is a creature (a copy of a non-creature card
-  still enters tapped but never attacking). `sacrificeAtStep` schedules one delayed `SacrificeTargetEffect`
+  still enters tapped but never attacking). `attackedPlayer` (an `EffectTarget` player ref, requires `attacking`) names the
+  player an attacking copy attacks — "tapped and attacking **that player**" (myriad); null keeps the
+  CR 508.4 default (the source's defending player, else an opponent already defending). A named player
+  who has left the game or isn't one of the creator's opponents gets no attacker: the copy enters but
+  never attacking (CR 508.4a). `sacrificeAtStep` schedules one delayed `SacrificeTargetEffect`
   per created copy at that step (the sacrifice sibling of `CreateTokenEffect.sacrificeAtStep`);
   `sacrificeOnlyOnControllersTurn = true` restricts it to "at the beginning of *your* next end step"
   (Mardu Siegebreaker: a tapped+attacking copy of the linked-exiled card, sacrificed at your next end step).
@@ -11654,6 +11658,17 @@ composite abilities).
   `ModifyStats(1, 1, TriggeringEntity)` — gated on the projected keyword (lost with all abilities). One trigger
   per instance: the printed keyword plus one per exalted counter (see Counters); a static grant of the bare
   keyword counts as one instance, because projection can't count repeated grants.
+- `Keyword.MYRIAD` — **engine-live.** Declare it and nothing else: `keywords(Keyword.MYRIAD)`, or
+  `keywordAbilities(KeywordAbility.Simple(Keyword.MYRIAD), KeywordAbility.Simple(Keyword.MYRIAD))` for
+  "Myriad, myriad" (Scurry of Squirrels). The engine supplies the CR 702.116a trigger from
+  [`Myriad`](../mtg-sdk/src/main/kotlin/com/wingedsheep/sdk/scripting/Myriad.kt) — pure composition:
+  `Triggers.self.attacks()` → `ForEachPlayer(EachOpponent, If(Not(PlayerIs(You, DefendingPlayer)),
+  May(CreateTokenCopyOfTarget(Self, tapped, attacking, attackedPlayer = You, controller = ControllerOfSource,
+  exileAtStep = END_COMBAT), decisionMaker = ControllerOfSource)))`. Gated on the projected keyword (lost
+  with all abilities); one trigger per printed instance (CR 702.116b), exactly one for a static grant.
+  The copies enter attacking, so they never "attacked" and don't re-trigger it. The engine picks the
+  opponent rather than offering one of their planeswalkers — the CR 508.4 simplification every "enters
+  attacking" effect here makes. In a two-player game it does nothing.
 - `Rampage(n)` — +N/+N for each blocker past the first. Display-only; wire the behavior with the
   `card { rampage(n) }` builder helper, which adds this keyword ability plus a "becomes blocked"
   triggered ability granting `+n/+n × (blockers − 1)` until end of turn (mirrors `prowess()`).
@@ -12817,11 +12832,15 @@ answer it and would silently return `false`.
   the dedicated check for "any target" effects with a player-only follow-up. Used by Sonic Shrieker
   ("If a player is dealt damage this way, they discard a card"); pair with
   `EffectTarget.ContextTarget(index)` to make that same player the subject of the follow-up.
-- `TriggeringPlayerIs(player)` — the player who triggered this ability equals another resolved
-  `Player` reference. Narrows a broad "whenever a player …" trigger to one player without a bespoke
-  event filter; both sides resolve through the shared player resolver. Shinryu, Transcendent Rival
-  gates "When the chosen player loses the game, you win the game" with
+- `PlayerIs(subject = Player.TriggeringPlayer, player)` (facades `Conditions.TriggeringPlayerIs(player)`
+  and `Conditions.PlayerIs(subject, player)`) — two resolved `Player` references name the same player;
+  false when either side doesn't resolve. With the default subject it narrows a broad "whenever a
+  player …" trigger to one player without a bespoke event filter — Shinryu, Transcendent Rival gates
+  "When the chosen player loses the game, you win the game" with
   `triggerRestriction = TriggeringPlayerIs(Player.ChosenOpponent)` on `Triggers.anyPlayer.losesGame()`.
+  Inside `ForEachPlayer`, `Player.You` is the visited player, so `If(Not(PlayerIs(You, DefendingPlayer)), …)`
+  is "for each opponent other than defending player" (myriad) and `Not(TriggeringPlayerIs(You))` is
+  "each other player" (Zenith Chronicler).
 - `TargetIsCreatureCard(targetIndex = 0)` — the context target is a creature *card*, tested by the
   underlying card's printed types rather than projected state. Unlike `TargetMatchesFilter(Creature)`
   (which reads projection, where a face-down permanent always projects as a typeless 2/2 Creature),

@@ -19761,7 +19761,7 @@
                             "condition": {
                                 "type": "Not",
                                 "condition": {
-                                    "type": "TriggeringPlayerIs",
+                                    "type": "PlayerIs",
                                     "player": "You"
                                 }
                             }

@@ -46,6 +46,13 @@ enum class Keyword(val displayName: String) {
     EXALTED("Exalted"),
 
     /**
+     * Myriad (CR 702.116) — engine-live: the "copy attacking each other opponent" trigger is
+     * derived from the projected keyword, one trigger per instance. See
+     * [com.wingedsheep.sdk.scripting.Myriad].
+     */
+    MYRIAD("Myriad"),
+
+    /**
      * Banding (CR 702.22). As they declare attackers, a player may group one or more
      * attacking creatures with banding plus up to one without banding into a "band"
      * (CR 702.22c). A band attacks the same defender and is blocked as a group.

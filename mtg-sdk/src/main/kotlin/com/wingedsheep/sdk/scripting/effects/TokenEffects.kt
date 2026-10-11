@@ -603,7 +603,20 @@ data class CreateTokenCopyOfTargetEffect(
      *  - a copy that is neither enters unattached (CR 303.4h).
      */
     val attachedTo: EffectTarget? = null,
+    /**
+     * The player an [attacking] copy attacks, when the effect specifies one — "tapped and
+     * attacking **that player**" (myriad, CR 702.116a). Null (the default) leaves the choice to
+     * the engine's CR 508.4 default: the source's defending player when that is one of the
+     * creator's opponents, else an opponent already defending. A specified player who is no longer
+     * in the game, or who isn't one of the creator's opponents, gets no attacker — the copy still
+     * enters, but never attacking (CR 508.4a). Requires [attacking].
+     */
+    val attackedPlayer: EffectTarget? = null,
 ) : Effect {
+    init {
+        require(attackedPlayer == null || attacking) { "attackedPlayer needs attacking = true" }
+    }
+
     /**
      * This effect's copy exceptions (CR 707.9) in the shared [CopyExceptions] vocabulary — the same
      * value the permanent-copy path

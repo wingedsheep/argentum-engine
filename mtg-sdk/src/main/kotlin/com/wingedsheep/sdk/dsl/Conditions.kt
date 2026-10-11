@@ -614,7 +614,15 @@ object Conditions {
      * player loses the game, you win the game" with `TriggeringPlayerIs(Player.ChosenOpponent)`.
      */
     fun TriggeringPlayerIs(player: Player): ConditionInterface =
-        com.wingedsheep.sdk.scripting.conditions.TriggeringPlayerIs(player)
+        com.wingedsheep.sdk.scripting.conditions.PlayerIs(Player.TriggeringPlayer, player)
+
+    /**
+     * [subject] is [player]: both references resolve to the same player. Inside a per-player loop
+     * `Player.You` is the visited player, so `Not(PlayerIs(Player.You, Player.DefendingPlayer))`
+     * reads "for each opponent other than defending player" (myriad).
+     */
+    fun PlayerIs(subject: Player, player: Player): ConditionInterface =
+        com.wingedsheep.sdk.scripting.conditions.PlayerIs(subject, player)
 
     /**
      * [player] has the most life, or is tied for the most life, among all players. The "most life"

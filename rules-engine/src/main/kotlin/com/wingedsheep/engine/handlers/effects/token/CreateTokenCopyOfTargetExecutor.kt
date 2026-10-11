@@ -245,9 +245,18 @@ class CreateTokenCopyOfTargetExecutor(
             // creature (e.g. an animated permanent exiled and reverted to its printed type) still
             // enters tapped but never attacking — see Mardu Siegebreaker's rulings.
             if (effect.attacking && tokenCard.typeLine.isCreature) {
-                // The token joins the source's attack (CR 802.2a) — see CreateTokenExecutor.
-                val defenderId = com.wingedsheep.engine.handlers.effects.TargetResolutionUtils
-                    .defenderForEnteringAttacker(context, newState, controllerId)
+                // A specified defender ("attacking that player" — myriad) is honoured only while
+                // it is still in the game and one of the creator's opponents; otherwise the copy
+                // enters but never attacking (CR 508.4a). Unspecified, the token joins the
+                // source's attack (CR 802.2a) — see CreateTokenExecutor.
+                val defenderId = if (effect.attackedPlayer != null) {
+                    com.wingedsheep.engine.handlers.effects.TargetResolutionUtils
+                        .resolvePlayerTarget(effect.attackedPlayer!!, context, newState)
+                        ?.takeIf { it in newState.getOpponents(controllerId) }
+                } else {
+                    com.wingedsheep.engine.handlers.effects.TargetResolutionUtils
+                        .defenderForEnteringAttacker(context, newState, controllerId)
+                }
                 if (defenderId != null) {
                     components.add(AttackingComponent(defenderId, defendingPlayerId = com.wingedsheep.engine.mechanics.combat.CombatDefenders.defendingPlayerOf(newState, defenderId)))
                 }

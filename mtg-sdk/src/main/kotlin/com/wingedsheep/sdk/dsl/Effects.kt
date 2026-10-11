@@ -3259,6 +3259,7 @@ object Effects {
             com.wingedsheep.sdk.scripting.effects.CopyExceptions.None,
         stampCreator: Boolean = false,
         attachedTo: EffectTarget? = null,
+        attackedPlayer: EffectTarget? = null,
     ): Effect = CreateTokenCopyOfTarget(
         target = target,
         count = DynamicAmount.Fixed(count),
@@ -3286,6 +3287,7 @@ object Effects {
         exceptions = exceptions,
         stampCreator = stampCreator,
         attachedTo = attachedTo,
+        attackedPlayer = attackedPlayer,
     )
 
     /**
@@ -3320,6 +3322,7 @@ object Effects {
             com.wingedsheep.sdk.scripting.effects.CopyExceptions.None,
         stampCreator: Boolean = false,
         attachedTo: EffectTarget? = null,
+        attackedPlayer: EffectTarget? = null,
     ): Effect = CreateTokenCopyOfTargetEffect(
         target = target,
         count = count,
@@ -3347,6 +3350,7 @@ object Effects {
         exceptions = exceptions,
         stampCreator = stampCreator,
         attachedTo = attachedTo,
+        attackedPlayer = attackedPlayer,
     )
 
     /**
