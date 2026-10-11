@@ -19,16 +19,18 @@ import io.kotest.matchers.shouldNotBe
  * "Enchant creature. Enchanted creature gets +1/+1 and is goaded. Whenever enchanted creature
  * attacks, each other creature that's attacking one of your opponents gets +1/+1 until end of turn."
  *
- * Three-player game: Player 1 enchants Player 2's Grizzly Bears, then Player 2's turn comes up.
+ * Three-player game (two-player where noted): Player 1 enchants Player 2's Grizzly Bears, then Player 2's turn comes up.
  */
 class MartialImpetusScenarioTest : FunSpec({
 
-    data class Table(val d: GameTestDriver, val p1: EntityId, val p2: EntityId, val p3: EntityId, val bears: EntityId, val giant: EntityId)
+    data class Table(val d: GameTestDriver, val p1: EntityId, val p2: EntityId, val p3: EntityId?, val bears: EntityId, val giant: EntityId, val aura: EntityId)
 
-    fun setup(): Table {
+    fun setup(players: Int = 3): Table {
         val d = GameTestDriver()
         d.registerCards(TestCards.all + MartialImpetus)
-        val (p1, p2, p3) = d.initMultiplayer(List(3) { Deck.of("Plains" to 40) })
+        val seats = d.initMultiplayer(List(players) { Deck.of("Plains" to 40) })
+        val (p1, p2) = seats
+        val p3 = seats.getOrNull(2)
         val bears = d.putCreatureOnBattlefield(p2, "Grizzly Bears")
         val giant = d.putCreatureOnBattlefield(p2, "Hill Giant")
         d.removeSummoningSickness(bears)
@@ -43,7 +45,7 @@ class MartialImpetusScenarioTest : FunSpec({
         while (d.state.stack.isNotEmpty() && guard++ < 10) d.passPriority(d.state.priorityPlayerId!!)
 
         d.passPriorityUntil(Step.DECLARE_ATTACKERS, p2)
-        return Table(d, p1, p2, p3, bears, giant)
+        return Table(d, p1, p2, p3, bears, giant, aura)
     }
 
     test("the enchanted creature gets +1/+1 and must attack") {
@@ -58,12 +60,12 @@ class MartialImpetusScenarioTest : FunSpec({
         withClue("attacking the goader is refused while Player 3 can be attacked") {
             t.d.declareAttackers(t.p2, mapOf(t.bears to t.p1)).outcome shouldNotBe Outcome.Done
         }
-        t.d.declareAttackers(t.p2, mapOf(t.bears to t.p3)).outcome shouldBe Outcome.Done
+        t.d.declareAttackers(t.p2, mapOf(t.bears to t.p3!!)).outcome shouldBe Outcome.Done
     }
 
     test("its attack pumps each other creature attacking one of the Aura controller's opponents") {
         val t = setup()
-        t.d.declareAttackers(t.p2, mapOf(t.bears to t.p3, t.giant to t.p3)).outcome shouldBe Outcome.Done
+        t.d.declareAttackers(t.p2, mapOf(t.bears to t.p3!!, t.giant to t.p3!!)).outcome shouldBe Outcome.Done
         var guard = 0
         while (t.d.state.stack.isNotEmpty() && guard++ < 10) t.d.passPriority(t.d.state.priorityPlayerId!!)
 
@@ -78,10 +80,22 @@ class MartialImpetusScenarioTest : FunSpec({
 
     test("a creature attacking the Aura's controller gets no bonus") {
         val t = setup()
-        t.d.declareAttackers(t.p2, mapOf(t.bears to t.p3, t.giant to t.p1)).outcome shouldBe Outcome.Done
+        t.d.declareAttackers(t.p2, mapOf(t.bears to t.p3!!, t.giant to t.p1)).outcome shouldBe Outcome.Done
         var guard = 0
         while (t.d.state.stack.isNotEmpty() && guard++ < 10) t.d.passPriority(t.d.state.priorityPlayerId!!)
 
         t.d.state.projectedState.getPower(t.giant) shouldBe 3
+    }
+
+    test("the goad ends when the Aura leaves — there is no until-your-next-turn designation left behind") {
+        val t = setup()
+        t.d.moveToGraveyard(t.aura)
+        t.d.declareAttackers(t.p2, emptyMap()).outcome shouldBe Outcome.Done
+    }
+
+    test("with the goader as the only opponent, attacking the goader satisfies the goad") {
+        val t = setup(players = 2)
+        t.d.declareAttackers(t.p2, emptyMap()).outcome shouldNotBe Outcome.Done
+        t.d.declareAttackers(t.p2, mapOf(t.bears to t.p1)).outcome shouldBe Outcome.Done
     }
 })

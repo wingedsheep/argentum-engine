@@ -501,6 +501,14 @@ internal class CardActiveEffectsProjector(
         return effects
     }
 
+    /** One [GoadRules] per state: it scans the whole battlefield, and [project] runs once per card. */
+    @Volatile private var goadRulesCache: Pair<GameState, GoadRules>? = null
+
+    private fun goadRulesFor(state: GameState): GoadRules {
+        goadRulesCache?.let { (cached, rules) -> if (cached === state) return rules }
+        return GoadRules(state, cardRegistry, predicateEvaluator).also { goadRulesCache = state to it }
+    }
+
     /** Standing attack requirements that live on the creature as components: must attack, goad. */
     private fun combatRequirementBadges(state: GameState, entityId: EntityId): List<ClientCardEffect> {
         val effects = mutableListOf<ClientCardEffect>()
@@ -521,9 +529,7 @@ internal class CardActiveEffectsProjector(
         // Goaded (CR 701.15), by a resolved goad or a Goaded static. Surfaces the standing
         // combat requirement on the creature so opposing combat decisions are obvious
         // without the player having to recall who goaded it.
-        val goaderIds = if (entityId in state.getBattlefield()) {
-            GoadRules(state, cardRegistry, predicateEvaluator).goadersOf(entityId)
-        } else emptySet()
+        val goaderIds = if (entityId in state.getBattlefield()) goadRulesFor(state).goadersOf(entityId) else emptySet()
         if (goaderIds.isNotEmpty()) {
             val goaderNames = goaderIds
                 .mapNotNull { state.getEntity(it)?.get<PlayerComponent>()?.name }
