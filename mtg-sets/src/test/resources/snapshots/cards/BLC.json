@@ -1172,6 +1172,81 @@
     ]
 }
 
+// Echoing Assault
+{
+    "name": "Echoing Assault",
+    "manaCost": "{4}{R}",
+    "typeLine": "Enchantment",
+    "oracleText": "Creature tokens you control have menace.\nWhenever you attack a player, choose target nontoken creature that's attacking that player. Create a token that's a copy of that creature, except it's 1/1. The token enters tapped and attacking that player. Sacrifice it at the beginning of the next end step.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Echoing Assault:1",
+                "trigger": {
+                    "type": "YouAttackEvent",
+                    "perAttackedPlayer": true
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateTokenCopyOfTarget",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "overridePower": 1,
+                    "overrideToughness": 1,
+                    "tapped": true,
+                    "attacking": true,
+                    "sacrificeAtStep": "END",
+                    "attackedPlayer": {
+                        "type": "PlayerRef",
+                        "player": "TriggeringPlayer"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                "IsNontoken"
+                            ],
+                            "statePredicates": [
+                                {
+                                    "type": "IsAttackingPlayer",
+                                    "player": {
+                                        "type": "PlayerRef",
+                                        "player": "TriggeringPlayer"
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "id": "t0"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "MENACE",
+                "filter": {
+                    "baseFilter": "creature token ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "24",
+        "rarity": "RARE",
+        "artist": "Bram Sels",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/2/3213bfee-c0a0-49a2-9080-cdaa09b414c5.jpg?1783910732"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Etali, Primal Storm
 {
     "name": "Etali, Primal Storm",

@@ -194,6 +194,25 @@ sealed interface StatePredicate {
         override val description: String = "attacking the defender of ${reference.description}"
     }
 
+    /**
+     * Attacking [player] themself — "target nontoken creature that's attacking **that player**"
+     * (Echoing Assault, with `PlayerRef(Player.TriggeringPlayer)` bound by a per-attacked-player
+     * `YouAttackEvent`). The player-only sibling of [IsAttackingDefenderOf], which also matches
+     * attackers aimed at the reference's planeswalkers, battles and teammates; and the
+     * reference-parameterised form of [IsAttackingEnchantedPlayer], which resolves its player from
+     * the source's attachment during projection (where no trigger context exists).
+     *
+     * No last-known fallback, for [IsAttackingAnOpponent]'s reason. Fails closed when [player]
+     * resolves to nothing.
+     */
+    @SerialName("IsAttackingPlayer")
+    @Serializable
+    data class IsAttackingPlayer(
+        val player: com.wingedsheep.sdk.scripting.targets.EffectTarget
+    ) : Entity {
+        override val description: String = "attacking ${player.description}"
+    }
+
     @SerialName("IsAttackingYouOrYourPlaneswalkers")
     @Serializable
     data object IsAttackingYouOrYourPlaneswalkers : Entity {

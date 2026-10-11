@@ -27,7 +27,7 @@ val LandrovalHorizonWitness = card("Landroval, Horizon Witness") {
     keywords(Keyword.FLYING)
 
     triggeredAbility {
-        trigger = Triggers.you.attacks(minAttackers = 2)
+        trigger = Triggers.you.attacksAPlayer(minAttackers = 2)
         val creature = target(TargetFilter.AttackingCreature.withoutKeyword(Keyword.FLYING))
         effect = Effects.GrantKeyword(Keyword.FLYING, creature)
     }

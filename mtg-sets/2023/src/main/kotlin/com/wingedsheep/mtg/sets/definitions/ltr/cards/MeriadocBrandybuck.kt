@@ -24,7 +24,7 @@ val MeriadocBrandybuck = card("Meriadoc Brandybuck") {
         "(It's an artifact with \"{2}, {T}, Sacrifice this token: You gain 3 life.\")"
 
     triggeredAbility {
-        trigger = Triggers.you.attacks(GameObjectFilter.Creature.youControl().withSubtype("Halfling"))
+        trigger = Triggers.you.attacksAPlayer(GameObjectFilter.Creature.youControl().withSubtype("Halfling"))
         effect = Effects.CreateFood(1)
     }
 

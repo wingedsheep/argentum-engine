@@ -131,6 +131,9 @@ class TriggerMatcher(
                 // the way step triggers do: Each is any declaration ("two or more creatures
                 // attack"), EachOpponent is an opposing team's.
                 if (!matchesPlayerForStep(trigger.player, controllerId, state)) return false
+                if (trigger.perAttackedPlayer) {
+                    return attackedPlayersFor(trigger, event, sourceId, controllerId, state).isNotEmpty()
+                }
                 val filter = trigger.attackerFilter
                 if (filter != null) {
                     // Count attackers matching the filter
@@ -976,6 +979,33 @@ class TriggerMatcher(
                 ?.playerId == controllerId &&
                 state.projectedState.isPlaneswalker(defenderId)
         }
+    }
+
+    /**
+     * The players behind a per-attacked-player [EventPattern.YouAttackEvent] — "whenever you attack
+     * a player" (CR 508.3e): each player (never a planeswalker or battle) that at least
+     * [EventPattern.YouAttackEvent.minAttackers] declared attackers matching the attacker filter are
+     * attacking, in turn order. One firing per player; the detector binds each as the triggering
+     * player. Only declared attackers count — [event] lists exactly those, so a creature put onto
+     * the battlefield attacking never contributes (CR 508.4).
+     */
+    fun attackedPlayersFor(
+        trigger: EventPattern.YouAttackEvent,
+        event: AttackersDeclaredEvent,
+        sourceId: EntityId,
+        controllerId: EntityId,
+        state: GameState
+    ): List<EntityId> {
+        val filter = trigger.attackerFilter
+        val projected = state.projectedState
+        val predicateContext = PredicateContext(controllerId = controllerId, sourceId = sourceId)
+        val countsByPlayer = event.attackers
+            .filter { filter == null || predicateEvaluator.matches(state, projected, it, filter, predicateContext) }
+            .mapNotNull { state.getEntity(it)?.get<com.wingedsheep.engine.state.components.combat.AttackingComponent>()?.defenderId }
+            .filter { it in state.turnOrder }
+            .groupingBy { it }
+            .eachCount()
+        return state.turnOrder.filter { (countsByPlayer[it] ?: 0) >= trigger.minAttackers }
     }
 
     /**
@@ -2473,6 +2503,7 @@ class TriggerMatcher(
         // ability-controller context with which to evaluate an arbitrary candidate filter.
         is com.wingedsheep.sdk.scripting.predicates.StatePredicate.HasLeastManaValueAmong -> false
         is com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsAttackingDefenderOf -> false
+        is com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsAttackingPlayer -> false
         // Trigger-matching predicates beyond IsFaceDown are not currently used as
         // *trigger-gating* filters (those evaluate the triggering entity, not the source
         // state). Returning true preserves the prior "don't gate" behavior, but listing

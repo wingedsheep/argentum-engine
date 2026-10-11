@@ -6389,6 +6389,15 @@ work for abilities-on-stack (which carry no `CardComponent`).
   so it matches regardless of who controls the attacker; fails closed without controller context and
   has no last-known fallback, exactly like its mirror. Tomik, Wielder of Law counts the attacking batch
   with it: `Compare(DynamicAmounts.battlefield(Player.Each, GameObjectFilter.Creature.attackingYouOrYourPlaneswalkers()).count(), GTE, Fixed(2))`.
+- `IsAttackingPlayer(player)` (filter builder `attackingPlayer(player)`) — attacking that **player
+  themself**, where `player` is an `EffectTarget` player reference resolved against the asking
+  context (trigger-bound `PlayerRef(Player.TriggeringPlayer)`, a targeted player, …). A planeswalker or
+  battle the player controls is a different defender and never matches — narrower than
+  `attackingDefenderOf(reference)`, which takes the whole defending side. Pairs with
+  `Triggers.you.attacksAPlayer()`: Echoing Assault's "target nontoken creature that's attacking that
+  player" is `TargetFilter(GameObjectFilter.Creature.nontoken().attackingPlayer(EffectTarget.PlayerRef(Player.TriggeringPlayer)))`.
+  Fails closed when the reference resolves to nothing, and during projection (no trigger context);
+  no last-known fallback.
 - `IsAttackingEnchantedPlayer` (filter builder `attackingEnchantedPlayer()`) — attacking the player the
   filtering ability's **source Aura is attached to** (CR 303 enchant player). The attachment-scoped third
   of the trio above: `IsAttackingAnOpponent` and `IsAttackingYouOrYourPlaneswalkers` both scope the
@@ -7126,6 +7135,14 @@ The shapes in this family, with their engine notes.
 
 - `Triggers.you.attacks()` — when you declare attackers (player-level, ANY binding).
 - `Triggers.you.attacks(with)` — when you attack with ≥1 matching attacker.
+- `Triggers.you.attacksAPlayer(with?, minAttackers?)` — "whenever you attack **a player**" /
+  "whenever one or more [with] you control attack a player" / "two or more creatures you control
+  attack a player" (CR 508.3e). `YouAttackEvent(perAttackedPlayer = true)`: fires **once per player
+  attacked** (Echoing Assault, Meriadoc Brandybuck, Bitter Work, Dollmaker's Shop rulings), binding that
+  player as `Player.TriggeringPlayer` ("that player"). Attackers aimed at a planeswalker or battle count
+  toward no player, and `with` / `minAttackers` are counted per attacked player — two creatures split
+  across two players don't satisfy "two or more … attack a player". Expanded only on the battlefield
+  trigger path; a delayed or emblem trigger with the flag would fire once, unbound.
 - `Triggers.anyPlayer.attacks(minAttackers = 2)` — "whenever two or more creatures attack": any
   player's declaration, once per declaration (Argent Dais). `Triggers.anOpponent.attacks(...)` is
   "whenever an opponent attacks with …". All three read `YouAttackEvent.player` against the active

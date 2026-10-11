@@ -4137,7 +4137,8 @@
                                     }
                                 ],
                                 "controllerPredicate": "ControlledByYou"
-                            }
+                            },
+                            "perAttackedPlayer": true
                         },
                         "binding": "ANY",
                         "effect": {

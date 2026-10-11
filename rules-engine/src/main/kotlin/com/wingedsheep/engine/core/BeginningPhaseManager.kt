@@ -592,6 +592,7 @@ class BeginningPhaseManager(
         // Least-mana-value comparison remains unsupported by this narrow untap evaluator.
         is StatePredicate.HasLeastManaValueAmong -> false
         is StatePredicate.IsAttackingDefenderOf -> false
+        is StatePredicate.IsAttackingPlayer -> false
         // Protector scoping needs a "you" this helper has no context for; fail closed.
         is StatePredicate.IsProtectedBy -> false
         // Untap-during-other-untap-step filters only meaningfully restrict by counter type

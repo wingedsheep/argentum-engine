@@ -1205,7 +1205,7 @@ Families:
 - `EventPattern.TurnBeginEvent(player: Player)` — Replacement-only interception before a turn begins; separate from beginning a step.
 - `EventPattern.TurnFaceUpEvent` — When a permanent is turned face up.
 - `EventPattern.UntapEvent(filter: GameObjectFilter?, batch: Boolean)` — When a permanent becomes untapped.
-- `EventPattern.YouAttackEvent(minAttackers: Int, attackerFilter: GameObjectFilter?, player: Player)` — When you attack with at least minAttackers creatures.
+- `EventPattern.YouAttackEvent(minAttackers: Int, attackerFilter: GameObjectFilter?, player: Player, perAttackedPlayer: Boolean)` — When you attack with at least minAttackers creatures.
 - `EventPattern.ZoneChangeEvent(filter: GameObjectFilter, from: Zone?, to: Zone?, excludeTo: Zone?, excludeSacrifice: Boolean, requireCraftMaterial: Boolean)` — When an object changes zones.
 
 ## FeasibilityCheck
@@ -1612,6 +1612,7 @@ Families:
 - `StatePredicate.IsAttackingAnOpponent` — Attacking one of *your* opponents — the player, not their planeswalkers or battles (Oviya, Automech Artisan: "Each creature that's attacking one of your opponents has trample").
 - `StatePredicate.IsAttackingDefenderOf(reference: EffectTarget.SingleEntity)` — Attacking the player, planeswalker, or battle defended by the reference's controller/team.
 - `StatePredicate.IsAttackingEnchantedPlayer` — Attacking the player the asking ability's *source* is attached to — "creatures attacking enchanted player" (Curse of Hospitality).
+- `StatePredicate.IsAttackingPlayer(player: EffectTarget)` — Attacking player themself — "target nontoken creature that's attacking **that player**" (Echoing Assault, with `PlayerRef(Player.TriggeringPlayer)` bound by a per-attacked-player `YouAttackEvent`).
 - `StatePredicate.IsAttackingYouOrYourPlaneswalkers`
 - `StatePredicate.IsBlocked` — Attacker with blocked status, even after all its blockers leave combat
 - `StatePredicate.IsBlocking`

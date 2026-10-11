@@ -46,7 +46,7 @@ val DollmakersShopPorcelainGallery = card("Dollmaker's Shop // Porcelain Gallery
             "1/1 white Toy artifact creature token."
 
         triggeredAbility {
-            trigger = Triggers.you.attacks(GameObjectFilter.Creature.youControl().notSubtype(Subtype("Toy")))
+            trigger = Triggers.you.attacksAPlayer(GameObjectFilter.Creature.youControl().notSubtype(Subtype("Toy")))
             effect = Effects.CreateToken(
                 power = 1,
                 toughness = 1,

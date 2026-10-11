@@ -89,7 +89,7 @@
 - [x] Devilish Valet
 - [x] Domri, Anarch of Bolas
 - [x] Dusk // Dawn
-- [ ] Echoing Assault
+- [x] Echoing Assault
 - [ ] Elspeth, Sun's Champion
 - [ ] End-Raze Forerunners
 - [x] Esika's Chariot

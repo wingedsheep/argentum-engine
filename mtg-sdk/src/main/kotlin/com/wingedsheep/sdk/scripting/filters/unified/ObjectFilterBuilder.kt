@@ -553,15 +553,19 @@ interface ObjectFilterBuilder<out Self> {
     fun attackingYouOrYourPlaneswalkers() =
         withStatePredicate(StatePredicate.IsAttackingYouOrYourPlaneswalkers)
 
+    /** Scope an attacker to the defending side of a referenced player or permanent. */
+    fun attackingDefenderOf(reference: com.wingedsheep.sdk.scripting.targets.EffectTarget.SingleEntity) =
+        withStatePredicate(StatePredicate.IsAttackingDefenderOf(reference))
+
+    /** "attacking [player]" — that player themself, not their planeswalkers or battles. */
+    fun attackingPlayer(player: com.wingedsheep.sdk.scripting.targets.EffectTarget) =
+        withStatePredicate(StatePredicate.IsAttackingPlayer(player))
+
     /**
      * Must be attacking the player the filtering ability's source is attached to — "creatures
      * attacking enchanted player" (Curse of Hospitality). The attachment-scoped sibling of
      * [attackingAnOpponent]; only meaningful on an Aura that enchants a player.
      */
-    /** Scope an attacker to the defending side of a referenced player or permanent. */
-    fun attackingDefenderOf(reference: com.wingedsheep.sdk.scripting.targets.EffectTarget.SingleEntity) =
-        withStatePredicate(StatePredicate.IsAttackingDefenderOf(reference))
-
     fun attackingEnchantedPlayer() = withStatePredicate(StatePredicate.IsAttackingEnchantedPlayer)
 
     /** Current controller has controlled this battlefield object continuously since this turn began. */

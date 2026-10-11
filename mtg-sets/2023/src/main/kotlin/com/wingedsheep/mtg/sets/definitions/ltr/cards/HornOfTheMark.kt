@@ -23,7 +23,7 @@ val HornOfTheMark = card("Horn of the Mark") {
     oracleText = "Whenever two or more creatures you control attack a player, look at the top five cards of your library. You may reveal a creature card from among them and put it into your hand. Put the rest on the bottom of your library in a random order."
 
     triggeredAbility {
-        trigger = Triggers.you.attacks(minAttackers = 2)
+        trigger = Triggers.you.attacksAPlayer(minAttackers = 2)
         effect = Effects.Pipeline {
             val looked = gather(CardSource.TopOfLibrary(5))
             val (kept, rest) = chooseUpToSplit(

@@ -968,20 +968,30 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
      * [Player.Each] is any declaration, which is how "whenever two or more creatures attack"
      * (Argent Dais) is spelled, since only the active player (team) declares attackers;
      * [Player.EachOpponent] is "whenever an opponent attacks with …". Once per declaration.
+     *
+     * [perAttackedPlayer] is the "… attack **a player**" form (CR 508.3e): "whenever you attack a
+     * player" (Echoing Assault), "whenever one or more Halflings you control attack a player"
+     * (Meriadoc Brandybuck). Only attackers declared against a *player* count — not a planeswalker
+     * or battle — and [minAttackers] / [attackerFilter] are counted per attacked player. It fires
+     * once for each player attacked that way, binding that player as the triggering player
+     * ("that player", `Player.TriggeringPlayer`), per the cards' rulings.
      */
     @SerialName("YouAttackEvent")
     @Serializable
     data class YouAttackEvent(
         val minAttackers: Int = 1,
         val attackerFilter: GameObjectFilter? = null,
-        val player: Player = Player.You
+        val player: Player = Player.You,
+        val perAttackedPlayer: Boolean = false
     ) : EventPattern {
         override val description: String = buildString {
             val count = if (minAttackers <= 1) "one or more " else "$minAttackers or more "
             val attackers = attackerFilter?.description ?: "creatures"
-            when (player) {
-                Player.Each -> append(count).append(attackers).append(" attack")
-                Player.EachOpponent -> append("an opponent attacks with ").append(count).append(attackers)
+            when {
+                perAttackedPlayer && attackerFilter == null && minAttackers <= 1 -> append("you attack a player")
+                perAttackedPlayer -> append(count).append(attackers).append(" you control attack a player")
+                player == Player.Each -> append(count).append(attackers).append(" attack")
+                player == Player.EachOpponent -> append("an opponent attacks with ").append(count).append(attackers)
                 else -> append("you attack with ").append(count).append(attackers)
             }
         }

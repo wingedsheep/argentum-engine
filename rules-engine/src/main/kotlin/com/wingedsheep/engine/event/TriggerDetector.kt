@@ -1671,6 +1671,27 @@ class TriggerDetector(
                             )
                         }
                     }
+                    // "Whenever you attack a player" (CR 508.3e) fires once for each player
+                    // attacked, binding that player as "that player" (Echoing Assault, Meriadoc
+                    // Brandybuck — the cards' rulings).
+                    else if (ability.trigger is EventPattern.YouAttackEvent &&
+                        (ability.trigger as EventPattern.YouAttackEvent).perAttackedPlayer &&
+                        event is AttackersDeclaredEvent) {
+                        val attacked = matcher.attackedPlayersFor(
+                            ability.trigger as EventPattern.YouAttackEvent, event, entityId, controllerId, state
+                        )
+                        for (attackedPlayer in attacked) {
+                            triggers.add(
+                                PendingTrigger(
+                                    ability = ability,
+                                    sourceId = entityId,
+                                    sourceName = cardComponent.name,
+                                    controllerId = controllerId,
+                                    triggerContext = TriggerContext.fromEvent(event).copy(triggeringPlayerId = attackedPlayer)
+                                )
+                            )
+                        }
+                    }
                     // For "whenever [a player] draws a card" (DrawEvent), drawing N cards via a
                     // single effect creates N separate trigger firings — one per card drawn
                     // (CR 121.2 + 603.2). The engine emits a single aggregate CardsDrawnEvent, so

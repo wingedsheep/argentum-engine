@@ -868,6 +868,20 @@ class PlayerTriggerSubject internal constructor(private val player: Player) {
     }
 
     /**
+     * "attack **a player** [with one or more [with]]" — [Triggers.you] only (CR 508.3e). Fires once
+     * per player attacked by at least [minAttackers] matching creatures, binding that player as
+     * `Player.TriggeringPlayer` ("that player"); attackers aimed at a planeswalker or battle don't
+     * count. "Whenever you attack a player" (Echoing Assault), "whenever one or more Halflings you
+     * control attack a player" (Meriadoc Brandybuck).
+     */
+    fun attacksAPlayer(with: GameObjectFilter? = null, minAttackers: Int = 1): TriggerSpec {
+        only("attacksAPlayer", Player.You)
+        return spec(
+            YouAttackEvent(minAttackers = minAttackers, attackerFilter = with, player = player, perAttackedPlayer = true)
+        )
+    }
+
+    /**
      * "is attacked" — "whenever one or more creatures attack you" ([Triggers.you]; with
      * [includePlaneswalkers], "you and/or planeswalkers you control") or "whenever one or more of
      * your opponents are attacked" ([Triggers.anOpponent]). Once per combat. [unblocked] is

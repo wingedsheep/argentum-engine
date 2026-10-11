@@ -8867,7 +8867,8 @@
                 "id": "Horn of the Mark:1",
                 "trigger": {
                     "type": "YouAttackEvent",
-                    "minAttackers": 2
+                    "minAttackers": 2,
+                    "perAttackedPlayer": true
                 },
                 "binding": "ANY",
                 "effect": {
@@ -9473,7 +9474,8 @@
                 "id": "Landroval, Horizon Witness:1",
                 "trigger": {
                     "type": "YouAttackEvent",
-                    "minAttackers": 2
+                    "minAttackers": 2,
+                    "perAttackedPlayer": true
                 },
                 "binding": "ANY",
                 "effect": {
@@ -10710,7 +10712,8 @@
                             }
                         ],
                         "controllerPredicate": "ControlledByYou"
-                    }
+                    },
+                    "perAttackedPlayer": true
                 },
                 "binding": "ANY",
                 "effect": {

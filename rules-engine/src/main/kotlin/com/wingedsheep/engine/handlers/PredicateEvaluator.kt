@@ -1742,6 +1742,18 @@ class PredicateEvaluator(
                 com.wingedsheep.engine.handlers.predicates.isAttackingDefenderOf(
                     state, projected, entityId, predicate.reference, context
                 )
+            // "Attacking that player": the declared defender is the referenced player themself
+            // (Echoing Assault's per-attacked-player trigger binds it as TriggeringPlayer). A
+            // planeswalker or battle that player controls is a different defender and never
+            // matches. Same no-last-known policy as IsAttackingAnOpponent.
+            is StatePredicate.IsAttackingPlayer -> {
+                val player = context?.let {
+                    it.resolvePlayerTarget(predicate.player)
+                        ?: resolveReferencedPlayerFromState(state, projected, predicate.player, it)
+                }
+                val defenderId = container.get<AttackingComponent>()?.defenderId
+                player != null && defenderId == player
+            }
             StatePredicate.IsAttackingYouOrYourPlaneswalkers -> {
                 val you = context?.controllerId
                 val defenderId = container.get<AttackingComponent>()?.defenderId

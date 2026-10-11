@@ -507,6 +507,9 @@ internal class AffectsFilterResolver(
             }
             player != null && defendingPlayer != null && player in state.sharedTurnTeam(defendingPlayer)
         }
+        // A referenced player ("that player") needs a trigger or effect context that projection
+        // doesn't carry; no static uses it today, so fail closed rather than guess.
+        is StatePredicate.IsAttackingPlayer -> false
         StatePredicate.IsAttackingYouOrYourPlaneswalkers -> {
             val defenderId = container.get<AttackingComponent>()?.defenderId
             sourceController != null && defenderId != null && (

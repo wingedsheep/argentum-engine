@@ -3497,7 +3497,8 @@
                                 "min": 4
                             }
                         ]
-                    }
+                    },
+                    "perAttackedPlayer": true
                 },
                 "binding": "ANY",
                 "effect": {
