@@ -667,6 +667,18 @@ value class CounterType(val name: String) {
         val THEFT = CounterType("THEFT")
 
         /**
+         * Acorn counter (MH2 — Chitterspitter). A tally with no inherent rule: an upkeep trigger
+         * adds one when you sacrifice a token, and a Squirrel anthem reads the count.
+         */
+        val ACORN = CounterType("ACORN")
+
+        /**
+         * Ingredient counter (BLC — Communal Brewing). A tally with no inherent rule: the enters
+         * trigger adds them, and a creature-cast trigger reads the count as +1/+1 counters.
+         */
+        val INGREDIENT = CounterType("INGREDIENT")
+
+        /**
          * Training counter (CHK — Sensei Golden-Tail). A marker with no inherent rule: it records
          * which creatures the Sensei trained; removing it undoes nothing.
          */
@@ -829,6 +841,8 @@ value class CounterType(val name: String) {
             IMPOSTOR,
             DEVOTION,
             THEFT,
+            ACORN,
+            INGREDIENT,
             TRAINING,
             MIRE,
             COLLECTION,

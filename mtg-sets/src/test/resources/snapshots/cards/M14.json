@@ -991,6 +991,65 @@
     ]
 }
 
+// Kalonian Hydra
+{
+    "name": "Kalonian Hydra",
+    "manaCost": "{3}{G}{G}",
+    "typeLine": "Creature — Hydra",
+    "oracleText": "Trample\nThis creature enters with four +1/+1 counters on it.\nWhenever this creature attacks, double the number of +1/+1 counters on each creature you control.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 0
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Kalonian Hydra:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "DoubleCounters",
+                        "target": "IterationEntity"
+                    }
+                },
+                "descriptionOverride": "Whenever this creature attacks, double the number of +1/+1 counters on each creature you control."
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "count": 4,
+                "selfOnly": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "181",
+        "rarity": "MYTHIC",
+        "artist": "Chris Rahn",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/3/438bd3c1-98f2-4fcc-8521-995c6c5c1a79.jpg?1783939903",
+        "rulings": [
+            {
+                "date": "2013-07-01",
+                "text": "To double the number of +1/+1 counters on a creature, determine how many +1/+1 counters are on the creature and put that many more on it. Effects that interact with counters (such as the one created by Corpsejack Menace's ability) may change the number of counters ultimately put on the creature."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Kalonian Tusker
 {
     "name": "Kalonian Tusker",

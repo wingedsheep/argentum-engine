@@ -2252,6 +2252,8 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   dies trigger reads the last-known count to come back with one fewer),
   `CounterType.DEVOTION` (Bloodthirsty Ogre — one tap ability adds it, the other shrinks a creature by the count),
   `CounterType.THEFT` (Night Dealings — damage your sources deal to other players adds them, `Costs.RemoveXCounters(THEFT, self = true)` spends them),
+  `CounterType.ACORN` (Chitterspitter — its upkeep "sacrifice a token" trigger adds one, and a Squirrel anthem reads `DynamicAmounts.countersOnSelf(ACORN)`),
+  `CounterType.INGREDIENT` (Communal Brewing — its enters trigger adds one plus one per card the targeted opponents drew, and a creature-cast trigger puts that many +1/+1 counters on the spell),
   `CounterType.TRAINING` (Sensei Golden-Tail — a marker only; removing it undoes nothing),
   `CounterType.OIL` (Phyrexia: All Will Be One — "enters with N oil counters" via `EntersWithCounters(OIL, n, selfOnly = true)`, spent by
   `Costs.RemoveCounterFromSelf(OIL, …)`, counted over `GameObjectFilter.Permanent.withCounter(OIL)`),

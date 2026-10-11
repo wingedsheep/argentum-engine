@@ -985,6 +985,89 @@
     "colorIdentityOverride": []
 }
 
+// Rishkar, Peema Renegade
+{
+    "name": "Rishkar, Peema Renegade",
+    "manaCost": "{2}{G}",
+    "typeLine": "Legendary Creature — Elf Druid",
+    "oracleText": "When Rishkar enters, put a +1/+1 counter on each of up to two target creatures.\nEach creature you control with a counter on it has \"{T}: Add {G}.\"",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Rishkar, Peema Renegade:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": "IterationSpace.Targets",
+                    "body": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        }
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "count": 2,
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "When Rishkar enters, put a +1/+1 counter on each of up to two target creatures."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantActivatedAbility",
+                "ability": {
+                    "id": "Rishkar, Peema Renegade:2",
+                    "cost": "CostTap",
+                    "effect": {
+                        "type": "AddMana",
+                        "color": "GREEN"
+                    },
+                    "timing": "ManaAbility",
+                    "isManaAbility": true,
+                    "descriptionOverride": "{T}: Add {G}."
+                },
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "statePredicates": [
+                            "HasAnyCounter"
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "122",
+        "rarity": "RARE",
+        "artist": "Todd Lockwood",
+        "flavorText": "\"Aether is the soul of Kaladesh, and all souls should be free.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/c/7cff0dc6-5455-4dea-940b-dff7fe88dc5d.jpg?1783936739"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Scrounging Bandar
 {
     "name": "Scrounging Bandar",

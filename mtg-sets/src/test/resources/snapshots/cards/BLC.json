@@ -925,6 +925,130 @@
     ]
 }
 
+// Communal Brewing
+{
+    "name": "Communal Brewing",
+    "manaCost": "{2}{G}",
+    "typeLine": "Enchantment",
+    "oracleText": "When this enchantment enters, any number of target opponents each draw a card. Put an ingredient counter on this enchantment, then put an ingredient counter on it for each card drawn this way.\nWhenever you cast a creature spell, that creature enters with X additional +1/+1 counters on it, where X is the number of ingredient counters on this enchantment.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Communal Brewing:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "StoreNumber",
+                            "name": "number0",
+                            "amount": {
+                                "type": "TurnTracking",
+                                "player": "EachOpponent",
+                                "tracker": "CARDS_DRAWN"
+                            }
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": "IterationSpace.Targets",
+                            "body": {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "target": {
+                                    "type": "ContextTarget",
+                                    "index": 0
+                                }
+                            }
+                        },
+                        {
+                            "type": "AddCounters",
+                            "counterType": "INGREDIENT",
+                            "count": 1,
+                            "target": "Self"
+                        },
+                        {
+                            "type": "AddDynamicCounters",
+                            "counterType": "INGREDIENT",
+                            "amount": {
+                                "type": "Subtract",
+                                "left": {
+                                    "type": "TurnTracking",
+                                    "player": "EachOpponent",
+                                    "tracker": "CARDS_DRAWN"
+                                },
+                                "right": {
+                                    "type": "VariableReference",
+                                    "variableName": "number0"
+                                }
+                            },
+                            "target": "Self"
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponent",
+                    "unlimited": true,
+                    "id": "t0"
+                }
+            },
+            {
+                "id": "Communal Brewing:2",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddDynamicCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": {
+                            "type": "CounterCount",
+                            "counterType": "INGREDIENT"
+                        }
+                    },
+                    "target": "TriggeringEntity"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "29",
+        "rarity": "RARE",
+        "artist": "Andreia Ugrai",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/c/acf6399f-f389-4b13-8563-a078a5d198f4.jpg?1783910728",
+        "rulings": [
+            {
+                "date": "2024-07-26",
+                "text": "You don't have to choose any target opponents for Communal Brewing's first ability. However, if you do, and all of those targets are illegal as the ability tries to resolve, it won't resolve and none of its effects will happen. No players will draw cards, and you won't put any ingredient counters on Communal Brewing."
+            },
+            {
+                "date": "2024-07-26",
+                "text": "The value of X is calculated as Communal Brewing's last ability resolves."
+            },
+            {
+                "date": "2024-07-26",
+                "text": "If Communal Brewing leaves the battlefield before its last ability resolves, use the number of ingredient counters that were on it as it last existed on the battlefield to determine the value of X."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Etali, Primal Storm
 {
     "name": "Etali, Primal Storm",
@@ -1509,6 +1633,152 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Gourmand's Talent
+{
+    "name": "Gourmand's Talent",
+    "manaCost": "{G}",
+    "typeLine": "Enchantment — Class",
+    "oracleText": "(Gain the next level as a sorcery to add its ability.)\nDuring your turn, artifacts you control are Foods in addition to their other types and have \"{2}, {T}, Sacrifice this artifact: You gain 3 life.\"\n{2}{G}: Level 2\nWhenever you gain life for the first time each turn, create a 3/3 green Raccoon creature token.\n{3}{G}: Level 3\nWhenever you gain life for the first time each turn, put a +1/+1 counter on each creature you control.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantAdditionalTypesToGroup",
+                    "filter": {
+                        "baseFilter": "artifact ctrl:you"
+                    },
+                    "addSubtypes": [
+                        "Food"
+                    ]
+                },
+                "condition": "IsYourTurn"
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantActivatedAbility",
+                    "ability": {
+                        "id": "Gourmand's Talent:1",
+                        "cost": {
+                            "type": "CostComposite",
+                            "costs": [
+                                {
+                                    "type": "CostAtomWrapper",
+                                    "atom": {
+                                        "type": "AtomMana",
+                                        "cost": "{2}"
+                                    }
+                                },
+                                "CostTap",
+                                "CostSacrificeSelf"
+                            ]
+                        },
+                        "effect": {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 3
+                            }
+                        }
+                    },
+                    "filter": {
+                        "baseFilter": "artifact ctrl:you"
+                    }
+                },
+                "condition": "IsYourTurn"
+            }
+        ],
+        "classLevels": [
+            {
+                "level": 2,
+                "cost": "{2}{G}",
+                "triggeredAbilities": [
+                    {
+                        "id": "Gourmand's Talent:2",
+                        "trigger": {
+                            "type": "LifeGainEvent",
+                            "firstTimeEachTurn": true
+                        },
+                        "binding": "ANY",
+                        "effect": {
+                            "type": "CreateToken",
+                            "power": 3,
+                            "toughness": 3,
+                            "colors": [
+                                "GREEN"
+                            ],
+                            "creatureTypes": [
+                                "Raccoon"
+                            ]
+                        }
+                    }
+                ]
+            },
+            {
+                "level": 3,
+                "cost": "{3}{G}",
+                "triggeredAbilities": [
+                    {
+                        "id": "Gourmand's Talent:3",
+                        "trigger": {
+                            "type": "LifeGainEvent",
+                            "firstTimeEachTurn": true
+                        },
+                        "binding": "ANY",
+                        "effect": {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Group",
+                                "filter": {
+                                    "baseFilter": "creature ctrl:you"
+                                }
+                            },
+                            "body": {
+                                "type": "AddCounters",
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "count": 1,
+                                "target": "IterationEntity"
+                            }
+                        }
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "31",
+        "rarity": "RARE",
+        "artist": "Fiona Hsieh",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/9/89670a1b-a6f1-491d-bbb4-92e3382da653.jpg?1783910728",
+        "rulings": [
+            {
+                "date": "2024-07-26",
+                "text": "Gaining a level is a normal activated ability. It uses the stack and can be responded to."
+            },
+            {
+                "date": "2024-07-26",
+                "text": "Gaining a level won't remove abilities that a Class had at a previous level."
+            },
+            {
+                "date": "2024-07-26",
+                "text": "The artifacts retain any types, subtypes, supertypes, and abilities they have."
+            },
+            {
+                "date": "2024-07-26",
+                "text": "If Gourmand's Talent somehow becomes an artifact, it will also be a Food during your turn."
+            },
+            {
+                "date": "2024-07-26",
+                "text": "The level 2 and level 3 class abilities of Gourmand's Talent won't trigger if you already gained life earlier in the turn on which it gained those levels, even if you gain life again later in the turn."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -2490,6 +2760,128 @@
         ]
     },
     "colorIdentityOverride": []
+}
+
+// Rootcast Apprenticeship
+{
+    "name": "Rootcast Apprenticeship",
+    "manaCost": "{3}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Choose three. You may choose the same mode more than once.\n• Put two +1/+1 counters on target creature.\n• Create a token that's a copy of target token you control.\n• Target player creates a 1/1 green Squirrel creature token.\n• Target opponent sacrifices a nontoken artifact of their choice.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 2,
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "description": "Put two +1/+1 counters on target creature"
+                },
+                {
+                    "effect": {
+                        "type": "CreateTokenCopyOfTarget",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t1"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "token ctrl:you"
+                            },
+                            "id": "t1"
+                        }
+                    ],
+                    "description": "Create a token that's a copy of target token you control"
+                },
+                {
+                    "effect": {
+                        "type": "CreateToken",
+                        "power": 1,
+                        "toughness": 1,
+                        "colors": [
+                            "GREEN"
+                        ],
+                        "creatureTypes": [
+                            "Squirrel"
+                        ],
+                        "imageUri": "https://cards.scryfall.io/normal/front/5/a/5a6ec62e-0e9b-4312-bfe8-cc85d76fd9e0.jpg?1783909765",
+                        "controller": {
+                            "type": "BoundVariable",
+                            "name": "t2"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetPlayer",
+                            "id": "t2"
+                        }
+                    ],
+                    "description": "Target player creates a 1/1 green Squirrel creature token"
+                },
+                {
+                    "effect": {
+                        "type": "ForceSacrifice",
+                        "filter": "artifact nontoken",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t3"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetOpponent",
+                            "id": "t3"
+                        }
+                    ],
+                    "description": "Target opponent sacrifices a nontoken artifact of their choice"
+                }
+            ],
+            "chooseCount": 3,
+            "allowRepeat": true
+        }
+    },
+    "metadata": {
+        "collectorNumber": "32",
+        "rarity": "RARE",
+        "artist": "Andreia Ugrai",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/0/00756441-a734-4960-9c69-f03a508a1522.jpg?1783910728",
+        "rulings": [
+            {
+                "date": "2024-07-26",
+                "text": "You can select a mode only if there's a legal target available for that mode. Ignore the targeting requirements for modes you don't choose. Each time you select that mode, you can choose a different target, or you can choose the same target."
+            },
+            {
+                "date": "2024-07-26",
+                "text": "No matter which combination of modes you choose, you always follow the instructions in the order they are written."
+            },
+            {
+                "date": "2024-07-26",
+                "text": "If all targets for the chosen modes become illegal before Rootcast Apprenticeship resolves, the spell will be countered and none of its effects will happen. If at least one target is still legal, the spell will resolve but will have no effect on any illegal targets."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
 }
 
 // Scurry of Squirrels

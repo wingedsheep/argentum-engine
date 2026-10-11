@@ -5593,6 +5593,97 @@
     ]
 }
 
+// Squirrel Mob
+{
+    "name": "Squirrel Mob",
+    "manaCost": "{1}{G}{G}",
+    "typeLine": "Creature — Squirrel",
+    "oracleText": "This creature gets +1/+1 for each other Squirrel on the battlefield.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantDynamicStats",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "Self"
+                },
+                "powerBonus": {
+                    "type": "AggregateBattlefield",
+                    "player": "Each",
+                    "filter": "permanent Squirrel",
+                    "excludeSelf": true
+                },
+                "toughnessBonus": {
+                    "type": "AggregateBattlefield",
+                    "player": "Each",
+                    "filter": "permanent Squirrel",
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "273",
+        "rarity": "RARE",
+        "artist": "Carl Critchlow",
+        "flavorText": "An army of squirrels is still an army.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/8/181254ce-259a-4b31-8937-728564f2baf3.jpg?1783945210"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Squirrel Nest
+{
+    "name": "Squirrel Nest",
+    "manaCost": "{1}{G}{G}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant land\nEnchanted land has \"{T}: Create a 1/1 green Squirrel creature token.\"",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantActivatedAbility",
+                "ability": {
+                    "id": "Squirrel Nest:1",
+                    "cost": "CostTap",
+                    "effect": {
+                        "type": "CreateToken",
+                        "power": 1,
+                        "toughness": 1,
+                        "colors": [
+                            "GREEN"
+                        ],
+                        "creatureTypes": [
+                            "Squirrel"
+                        ]
+                    }
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "land"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "274",
+        "rarity": "UNCOMMON",
+        "artist": "Anthony S. Waters",
+        "flavorText": "In the Krosan Forest, you've got to keep an eye out for the squirrels.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/2/22eccb27-1723-4c5a-96b8-85e6e5739c30.jpg?1783945210"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Stalking Bloodsucker
 {
     "name": "Stalking Bloodsucker",

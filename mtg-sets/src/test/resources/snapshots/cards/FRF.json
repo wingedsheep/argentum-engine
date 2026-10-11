@@ -1043,6 +1043,51 @@
     ]
 }
 
+// Shamanic Revelation
+{
+    "name": "Shamanic Revelation",
+    "manaCost": "{3}{G}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Draw a card for each creature you control.\nFerocious — You gain 4 life for each creature you control with power 4 or greater.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "creature"
+                    }
+                },
+                {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Multiply",
+                        "amount": {
+                            "type": "AggregateBattlefield",
+                            "player": "You",
+                            "filter": "creature pow>=4"
+                        },
+                        "multiplier": 4
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "138",
+        "rarity": "RARE",
+        "artist": "Cynthia Sheppard",
+        "flavorText": "First, whispers of ancient days. Then, visions of things to come.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/c/5c7f2c73-26d8-42a6-acde-2c5a2f4e21a1.jpg?1783938679"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Smoldering Efreet
 {
     "name": "Smoldering Efreet",

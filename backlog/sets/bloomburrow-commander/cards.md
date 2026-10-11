@@ -2,7 +2,7 @@
 
 **Set Size:** 312 cards
 **Release Date:** August 2, 2024
-**Implemented:** 165 / 312
+**Implemented:** 180 / 312
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 37    | 0    |
@@ -67,7 +67,7 @@
 - [ ] Chatterfang, Squirrel General
 - [ ] Chatterstorm
 - [ ] Chittering Witch
-- [ ] Chitterspitter
+- [x] Chitterspitter
 - [x] Cinder Glade
 - [x] Circuit Mender
 - [x] Clifftop Retreat
@@ -75,7 +75,7 @@
 - [x] Coiling Oracle
 - [ ] Combat Celebrant
 - [x] Command Tower
-- [ ] Communal Brewing
+- [x] Communal Brewing
 - [x] Copperline Gorge
 - [ ] Coveted Jewel
 - [x] Cultivate
@@ -115,13 +115,13 @@
 - [x] Generous Gift
 - [x] Ghalta, Primal Hunger
 - [x] Ghirapur Orrery
-- [ ] Gilded Goose
+- [x] Gilded Goose
 - [x] Gilded Lotus
 - [ ] Glacial Fortress
 - [x] Golgari Rot Farm
 - [ ] Golgari Signet
 - [x] Goreclaw, Terror of Qal Sisma
-- [ ] Gourmand's Talent
+- [x] Gourmand's Talent
 - [x] Gratuitous Violence
 - [x] Greater Good
 - [ ] Grim Backwoods
@@ -152,10 +152,10 @@
 - [x] Jace, the Mind Sculptor
 - [x] Jacked Rabbit
 - [ ] Jazal Goldmane
-- [ ] Jolrael, Mwonvuli Recluse
+- [x] Jolrael, Mwonvuli Recluse
 - [x] Jungle Hollow
 - [x] Junk Winder
-- [ ] Kalonian Hydra
+- [x] Kalonian Hydra
 - [ ] Karn, the Great Creator
 - [x] Karplusan Forest
 - [x] Kodama of the East Tree
@@ -189,7 +189,7 @@
 - [ ] Narset, Parter of Veils
 - [ ] Necroblossom Snarl
 - [ ] Nested Shambler
-- [ ] Nissa, Who Shakes the World
+- [x] Nissa, Who Shakes the World
 - [ ] Octomancer
 - [ ] Ogre Slumlord
 - [ ] Oran-Rief, the Vastwood
@@ -226,11 +226,11 @@
 - [x] Reliquary Tower
 - [ ] Restoration Angel
 - [ ] Riot Control
-- [ ] Rishkar, Peema Renegade
+- [x] Rishkar, Peema Renegade
 - [x] Rites of Flourishing
 - [x] Rolling Hamsphere
 - [x] Rootbound Crag
-- [ ] Rootcast Apprenticeship
+- [x] Rootcast Apprenticeship
 - [ ] Rose Room Treasurer
 - [x] Rowdy Research
 - [ ] Rugged Prairie
@@ -239,11 +239,11 @@
 - [ ] Scurry of Squirrels
 - [x] Seachrome Coast
 - [ ] Seaside Citadel
-- [ ] Second Harvest
+- [x] Second Harvest
 - [ ] Secret Rendezvous
 - [x] Selfless Spirit
 - [x] Selvala, Explorer Returned
-- [ ] Shamanic Revelation
+- [x] Shamanic Revelation
 - [x] Sheltered Thicket
 - [x] Shield Broker
 - [x] Shivan Reef
@@ -259,8 +259,8 @@
 - [x] Spine of Ish Sah
 - [x] Spirited Companion
 - [ ] Spore Frog
-- [ ] Squirrel Mob
-- [ ] Squirrel Nest
+- [x] Squirrel Mob
+- [x] Squirrel Nest
 - [ ] Squirrel Sovereign
 - [x] Starstorm
 - [ ] Steelburr Champion
@@ -282,7 +282,7 @@
 - [x] Talisman of Impulse
 - [ ] Talisman of Resilience
 - [x] Tamiyo, Field Researcher
-- [ ] Tear Asunder
+- [x] Tear Asunder
 - [ ] Teferi, Time Raveler
 - [x] Temple of Abandon
 - [x] Temple of Enlightenment
@@ -309,7 +309,7 @@
 - [x] Thriving Isle
 - [ ] Time Wipe
 - [x] Tireless Provisioner
-- [ ] Toski, Bearer of Secrets
+- [x] Toski, Bearer of Secrets
 - [x] Trailtracker Scout
 - [x] Tranquil Thicket
 - [x] Triskaidekaphile

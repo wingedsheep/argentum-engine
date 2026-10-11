@@ -949,6 +949,103 @@
     ]
 }
 
+// Jolrael, Mwonvuli Recluse
+{
+    "name": "Jolrael, Mwonvuli Recluse",
+    "manaCost": "{1}{G}",
+    "typeLine": "Legendary Creature — Human Druid",
+    "oracleText": "Whenever you draw your second card each turn, create a 2/2 green Cat creature token.\n{4}{G}{G}: Until end of turn, creatures you control have base power and toughness X/X, where X is the number of cards in your hand.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Jolrael, Mwonvuli Recluse:1",
+                "trigger": {
+                    "type": "NthCardDrawnEvent",
+                    "nthCard": 2
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 2,
+                    "toughness": 2,
+                    "colors": [
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Cat"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/f/6/f6541414-c506-449d-b3a8-79f47be531a9.jpg?1783930590"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Jolrael, Mwonvuli Recluse:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{4}{G}{G}"
+                    }
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "SetBaseStats",
+                        "target": "IterationEntity",
+                        "power": {
+                            "type": "Count",
+                            "player": "You",
+                            "zone": "Hand"
+                        },
+                        "toughness": {
+                            "type": "Count",
+                            "player": "You",
+                            "zone": "Hand"
+                        },
+                        "duration": "EndOfTurn"
+                    }
+                },
+                "descriptionOverride": "Until end of turn, creatures you control have base power and toughness X/X, where X is the number of cards in your hand."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "191",
+        "rarity": "RARE",
+        "artist": "Izzy",
+        "flavorText": "\"Humans bring nothing but suffering and deceit. They are not welcome in my forest.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/d/7dcdcfce-3f32-48f9-83f8-87b9ccbf92e3.jpg?1783930672",
+        "rulings": [
+            {
+                "date": "2022-12-08",
+                "text": "The triggered ability can trigger only once each turn. It doesn't matter if Jolrael was on the battlefield when the first card was drawn: if it's not on the battlefield when the second card is drawn, the ability can't trigger at all that turn."
+            },
+            {
+                "date": "2022-12-08",
+                "text": "Jolrael's last ability overwrites all previous effects that set the affected creatures' power and/or toughness to specific values. If other effects that set these characteristics to specific values start to apply after Jolrael's ability resolves, they will overwrite that part of the effect."
+            },
+            {
+                "date": "2022-12-08",
+                "text": "The value of X is determined only as Jolrael's last ability resolves. Once that happens, the value of X won't change later in the turn even if the number of cards in your hand changes."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Library Larcenist
 {
     "name": "Library Larcenist",
