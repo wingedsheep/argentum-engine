@@ -129,6 +129,7 @@ class CounterTypeTest : DescribeSpec({
             CounterType.INDESTRUCTIBLE to "indestructible", CounterType.DEATHTOUCH to "deathtouch",
             CounterType.TRAMPLE to "trample", CounterType.HEXPROOF to "hexproof", CounterType.REACH to "reach",
             CounterType.HASTE to "haste", CounterType.MENACE to "menace", CounterType.EXALTED to "exalted",
+            CounterType.SHADOW to "shadow",
             CounterType.STASH to "stash",
             CounterType.CROAK to "croak", CounterType.BLIGHT to "blight", CounterType.COIN to "coin",
             CounterType.FLOOD to "flood", CounterType.CHORUS to "chorus", CounterType.DREAM to "dream",
