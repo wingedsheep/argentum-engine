@@ -1124,14 +1124,31 @@ sealed interface UnlockCostTarget {
  * sibling of [ReduceEquipCost.onlyIfTargetIsSource], which covers *equip* abilities whatever their
  * source.
  *
+ * [reach] widens *which activations* the reduction sees. The default,
+ * [ActivatedAbilityReach.MATCHING_PERMANENTS], is every card above: abilities of permanents on the
+ * battlefield that [filter] matches, whoever activates them. [ActivatedAbilityReach.ACTIVATED_BY_YOU]
+ * is Zirda, the Dawnwaker's "Abilities you activate that aren't mana abilities cost {2} less to
+ * activate. This effect can't reduce the mana in that cost to less than one mana." — every ability
+ * the static's controller activates, from **any zone** (its ruling names cycling; channel, unearth
+ * and the rest of the hand/graveyard keyword abilities follow), whose source [filter]'s
+ * `baseFilter` matches →
+ * `ReduceActivatedAbilityCost(GroupFilter(GameObjectFilter.Any), DynamicAmounts.fixed(2), manaFloor = 1, excludeManaAbilities = true, reach = ActivatedAbilityReach.ACTIVATED_BY_YOU)`.
+ *
+ * [excludeManaAbilities] leaves mana abilities (CR 605) at full price — the same flag, with the
+ * same meaning, as [IncreaseActivatedAbilityCost.excludeManaAbilities].
+ *
  * @property filter Which permanents' activated abilities are cheaper (matched via projected state;
  *   use [GroupFilter.attachedCreature] for an Aura's enchanted permanent, [GroupFilter.source] for
- *   "this permanent's abilities", or a battlefield filter for a group).
+ *   "this permanent's abilities", or a battlefield filter for a group). Under
+ *   [ActivatedAbilityReach.ACTIVATED_BY_YOU], its `baseFilter` is matched against the ability's
+ *   source in whatever zone it is activated from.
  * @property amount Dynamic generic-mana reduction applied to each matching ability's cost.
  * @property manaFloor Minimum total mana the cost may be reduced to (default 0).
  * @property exhaustOnly When true, only exhaust abilities (`ActivatedAbility.isExhaust`) are reduced.
  * @property powerUpOnly When true, only power-up abilities (`ActivatedAbility.isPowerUp`) are reduced.
  * @property onlyIfTargetIsSource When true, only activations that target this static's source are reduced.
+ * @property excludeManaAbilities When true, mana abilities (CR 605) are not reduced.
+ * @property reach Which activations the reduction sees — see [ActivatedAbilityReach].
  */
 @SerialName("ReduceActivatedAbilityCost")
 @Serializable
@@ -1141,7 +1158,9 @@ data class ReduceActivatedAbilityCost(
     val manaFloor: Int = 0,
     val exhaustOnly: Boolean = false,
     val powerUpOnly: Boolean = false,
-    val onlyIfTargetIsSource: Boolean = false
+    val onlyIfTargetIsSource: Boolean = false,
+    val excludeManaAbilities: Boolean = false,
+    val reach: ActivatedAbilityReach = ActivatedAbilityReach.MATCHING_PERMANENTS
 ) : StaticAbility {
     override val description: String = buildString {
         val abilities = when {
@@ -1149,12 +1168,16 @@ data class ReduceActivatedAbilityCost(
             powerUpOnly -> "power-up abilities"
             else -> "activated abilities"
         }
-        if (onlyIfTargetIsSource) {
+        if (reach == ActivatedAbilityReach.ACTIVATED_BY_YOU) {
+            append("Abilities you activate")
+            if (excludeManaAbilities) append(" that aren't mana abilities")
+        } else if (onlyIfTargetIsSource) {
             append(abilities.replaceFirstChar { it.uppercase() })
             append(" of ${filter.description} that target this permanent")
         } else {
             append(filter.description.replaceFirstChar { it.uppercase() })
             append("'s $abilities")
+            if (excludeManaAbilities) append(" that aren't mana abilities")
         }
         when (amount) {
             is DynamicAmount.Fixed -> append(" cost {${amount.amount}} less to activate")
@@ -1171,6 +1194,27 @@ data class ReduceActivatedAbilityCost(
         val newAmount = amount.applyTextReplacement(replacer)
         return if (newFilter !== filter || newAmount !== amount) copy(filter = newFilter, amount = newAmount) else this
     }
+}
+
+/**
+ * Which activations a [ReduceActivatedAbilityCost] sees.
+ */
+@Serializable
+enum class ActivatedAbilityReach {
+    /**
+     * Abilities of permanents on the battlefield that the static's `filter` matches, whoever
+     * activates them — "activated abilities of creatures you control" (Training Grounds). An ability
+     * activated from a hand or graveyard card is not reduced (Training Grounds' ruling: cycling and
+     * unearth are untouched).
+     */
+    MATCHING_PERMANENTS,
+
+    /**
+     * Every ability the static's controller activates, from any zone — the battlefield, a hand
+     * card's cycling or channel, a graveyard card's unearth — whose source matches the static's
+     * `filter.baseFilter`. "Abilities you activate" (Zirda, the Dawnwaker).
+     */
+    ACTIVATED_BY_YOU
 }
 
 /**

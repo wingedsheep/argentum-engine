@@ -100,11 +100,17 @@ class ZoneActivatedAbilityEnumerator(private val zone: Zone, private val predica
                 // ("costs {1} less to activate for each legendary creature you control", activated
                 // by discarding it from hand) is hidden from the menu whenever the player can
                 // afford only the reduced price.
-                val effectiveCost = AbilityCostReduction.apply(
-                    context.castPermissionUtils
-                        .applyDefinedXValue(ability.cost, ability, state, entityId, playerId),
-                    ability, state, entityId, playerId, context.targetUtils,
-                    predicateEvaluator = predicateEvaluator
+                // Then the board's statics, as the activation handler's totaller applies them —
+                // an "abilities you activate" reduction (Zirda) reaches a hand or graveyard card.
+                val effectiveCost = context.castPermissionUtils.applyActivatedAbilityCostReduction(
+                    AbilityCostReduction.apply(
+                        context.castPermissionUtils
+                            .applyDefinedXValue(ability.cost, ability, state, entityId, playerId),
+                        ability, state, entityId, playerId, context.targetUtils,
+                        predicateEvaluator = predicateEvaluator
+                    ),
+                    state, entityId, playerId, ability.isExhaust, ability.isPowerUp, ability.isManaAbility,
+                    chosenTargetIds = if (ability.targetRequirements.isEmpty()) emptyList() else null
                 )
                 val displayDescription = AbilityCostReduction.describe(ability, effectiveCost)
 

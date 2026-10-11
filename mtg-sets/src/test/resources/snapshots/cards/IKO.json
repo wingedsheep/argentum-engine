@@ -3919,3 +3919,91 @@
         "BLUE"
     ]
 }
+
+// Zirda, the Dawnwaker
+{
+    "name": "Zirda, the Dawnwaker",
+    "manaCost": "{1}{R/W}{R/W}",
+    "typeLine": "Legendary Creature — Elemental Fox",
+    "oracleText": "Companion — Each permanent card in your starting deck has an activated ability. (If this card is your chosen companion, you may put it into your hand from outside the game for {3} as a sorcery.)\nAbilities you activate that aren't mana abilities cost {2} less to activate. This effect can't reduce the mana in that cost to less than one mana.\n{1}, {T}: Target creature can't block this turn. Activate only as a sorcery.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Zirda, the Dawnwaker:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "CantBlockTargetCreatures",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ReduceActivatedAbilityCost",
+                "filter": {
+                    "baseFilter": {}
+                },
+                "amount": {
+                    "type": "Fixed",
+                    "amount": 2
+                },
+                "manaFloor": 1,
+                "excludeManaAbilities": true,
+                "reach": "ACTIVATED_BY_YOU"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "233",
+        "rarity": "RARE",
+        "artist": "Jesper Ejsing",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/b/1bd8e61c-2ee8-4243-a848-7008810db8a0.jpg?1783931007",
+        "rulings": [
+            {
+                "date": "2020-04-17",
+                "text": "An activated mana ability is one that produces mana as it resolves, not one that costs mana to activate."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "Effects that reduce the generic mana cost of an activation cost can't reduce that cost's colored mana requirements. The activation cost is reduced by only {1} if doing so reduces that cost to one mana. For example, a cycling cost of {2} would become {1}, and one of {1}{R} would become {R}. The activation cost is unaffected if it already costs one or zero mana (such as the activation cost of Zirda's last ability)."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "Activating Zirda's last ability after a creature has blocked won't remove the blocking creature from combat or cause the creature it blocked to become unblocked."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "The companion ability has no effect if the card is in your starting deck and creates no restriction on putting a card with a companion ability into your starting deck. For example, Zirda may be in your starting deck even if your other permanent cards don't all have activated abilities."
+            }
+        ]
+    }
+}

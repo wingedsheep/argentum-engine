@@ -26,6 +26,7 @@ import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.player.CardsCycledThisGameComponent
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.sdk.core.Color
+import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.GameObjectFilter
@@ -92,7 +93,7 @@ class TypecycleCardHandler(
                     return "Mana source is already tapped: $sourceId"
                 }
             }
-        } else if (!manaSolver.canPay(state, action.playerId, variant.cost)) {
+        } else if (!manaSolver.canPay(state, action.playerId, reduced(state, action, variant.cost))) {
             return "Not enough mana to typecycle this card"
         }
 
@@ -131,7 +132,7 @@ class TypecycleCardHandler(
             snowColorless = poolComponent.snowColorless
         ).withSpendingColors(currentState, action.playerId)
 
-        val partialResult = pool.payPartial(variant.cost)
+        val partialResult = pool.payPartial(reduced(state, action, variant.cost))
         val poolAfterPayment = partialResult.newPool
         val remainingCost = partialResult.remainingCost
         val manaSpentFromPool = partialResult.manaSpent
@@ -281,6 +282,14 @@ class TypecycleCardHandler(
         }
         return false
     }
+
+    /**
+     * [cost] after the board's activated-ability cost reductions — typecycling is an activated
+     * ability of the card in hand (CR 702.29a), so Zirda's "abilities you activate" reaches it.
+     */
+    private fun reduced(state: GameState, action: TypecycleCard, cost: ManaCost): ManaCost =
+        castPermissionUtils?.applyActivatedAbilityCostReduction(cost, state, action.cardId, action.playerId)
+            ?: cost
 
     companion object {
         fun create(services: EngineServices): TypecycleCardHandler {

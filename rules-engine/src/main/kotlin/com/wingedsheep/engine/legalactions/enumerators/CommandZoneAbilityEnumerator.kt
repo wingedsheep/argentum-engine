@@ -64,7 +64,13 @@ class CommandZoneAbilityEnumerator : ActionEnumerator {
 
                 // Cost payability — Mana and Discard, atom or composite (the avatar's "{X}{X}{X},
                 // Discard a card"). Other atoms are validated by the handler at payment time.
-                val effectiveCost = ability.cost
+                // Priced through the board's statics as the activation handler's totaller does —
+                // an "abilities you activate" reduction (Zirda) reaches the command zone too.
+                val effectiveCost = context.castPermissionUtils.applyActivatedAbilityCostReduction(
+                    ability.cost, state, entityId, playerId, ability.isExhaust, ability.isPowerUp,
+                    ability.isManaAbility,
+                    chosenTargetIds = if (ability.targetRequirements.isEmpty()) emptyList() else null
+                )
                 val handCards = state.getZone(playerId, Zone.HAND)
                 val abilityContext = com.wingedsheep.engine.mechanics.mana.buildAbilityPaymentContext(
                     cardComponent, context.projected, entityId, ability

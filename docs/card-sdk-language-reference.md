@@ -10223,8 +10223,9 @@ riders, matching how the engine already treats e.g. City of Brass's damage durin
   cost `{amount}` less to activate" (Bladehold War-Whip): the reduction skips the bearer's own equip
   abilities and applies to every other equip ability its controller activates. Mutually exclusive with
   `onlyOwnEquip`.
-- `ReduceActivatedAbilityCost(filter, amount, manaFloor = 0, exhaustOnly = false)` — the activated
-  abilities of permanents
+- `ReduceActivatedAbilityCost(filter, amount, manaFloor = 0, exhaustOnly = false, powerUpOnly = false,
+  onlyIfTargetIsSource = false, excludeManaAbilities = false, reach = ActivatedAbilityReach.MATCHING_PERMANENTS)`
+  — the activated abilities of permanents
   matching `filter` cost the dynamic `amount` of generic mana less to activate, with the mana in each
   cost floored
   at `manaFloor` *total* mana (generic + colored). The activated-ability sibling of `ReduceEquipCost`,
@@ -10263,6 +10264,18 @@ riders, matching how the engine already treats e.g. City of Brass's damage durin
   offers it optimistically for any *targeted* ability while the source is a creature (an untargeted
   ability is never reduced). It covers every activated ability of a matching source, equip
   included — `ReduceEquipCost.onlyIfTargetIsSource` is the equip-only sibling keyed on the player.
+  `reach` says which activations it sees. The default `MATCHING_PERMANENTS` covers abilities of
+  permanents **on the battlefield** only (Training Grounds' ruling: cycling and unearth aren't
+  reduced). `ActivatedAbilityReach.ACTIVATED_BY_YOU` covers every ability the static's controller
+  activates, **from any zone** — battlefield, a hand card's cycling/typecycling/channel, a graveyard
+  card's return or scavenge, the command zone — whose source matches `filter.baseFilter`; an
+  opponent's activations are untouched. `excludeManaAbilities = true` leaves mana abilities (CR 605)
+  at full price, the same flag as on `IncreaseActivatedAbilityCost`. Zirda, the Dawnwaker: "Abilities
+  you activate that aren't mana abilities cost {2} less to activate. This effect can't reduce the mana
+  in that cost to less than one mana." →
+  `ReduceActivatedAbilityCost(GroupFilter(GameObjectFilter.Any), DynamicAmounts.fixed(2), manaFloor = 1, excludeManaAbilities = true, reach = ActivatedAbilityReach.ACTIVATED_BY_YOU)`.
+  Cycling and typecycling price through the `ManaCost` overload of
+  `CastPermissionUtils.applyActivatedAbilityCostReduction`, after `{X}` is announced.
 - `IncreaseActivatedAbilityCost(filter, amount)` — the taxing mirror of
   `ReduceActivatedAbilityCost`: activated abilities of sources matching `filter` cost `amount`
   generic mana **more** to activate. The two are summed into a single net delta before either is

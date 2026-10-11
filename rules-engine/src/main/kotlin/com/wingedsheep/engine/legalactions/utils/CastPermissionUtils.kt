@@ -39,6 +39,7 @@ import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.costs.CostAtom
 import com.wingedsheep.sdk.scripting.costs.manaCostOrNull
 import com.wingedsheep.sdk.scripting.ActivatedAbility
+import com.wingedsheep.sdk.scripting.ActivatedAbilityReach
 import com.wingedsheep.sdk.scripting.ActivationRestriction
 import com.wingedsheep.sdk.scripting.CantCastSpellsSharingColorWithLastCast
 import com.wingedsheep.sdk.scripting.CastSpellTypesFromTopOfLibrary
@@ -864,11 +865,17 @@ class CastPermissionUtils(
      * ability targets, but the targets aren't chosen yet" — enumeration — and offers the reduction
      * optimistically while the static's source is a creature, as [equipReductionApplies] does. The
      * default (no targets) never meets the restriction.
+     *
+     * [activatorId] is the player activating the ability. A
+     * [ReduceActivatedAbilityCost.reach] of `ACTIVATED_BY_YOU` (Zirda, the Dawnwaker — "Abilities
+     * you activate …") reduces only that player's activations, from any zone; the default reach
+     * reduces only abilities of permanents on the battlefield.
      */
     fun applyActivatedAbilityCostReduction(
         cost: AbilityCost,
         state: GameState,
         sourceId: EntityId?,
+        activatorId: EntityId,
         isExhaustAbility: Boolean = false,
         isPowerUpAbility: Boolean = false,
         isManaAbility: Boolean = false,
@@ -879,7 +886,7 @@ class CastPermissionUtils(
             if (isPowerUpAbility) applyPowerUpSelfReduction(cost, state, sourceId) else cost
         val (net, manaFloor) =
             sumActivatedAbilityCostModifications(
-                state, sourceId, isExhaustAbility, isPowerUpAbility, isManaAbility, chosenTargetIds
+                state, sourceId, activatorId, isExhaustAbility, isPowerUpAbility, isManaAbility, chosenTargetIds
             )
         if (net == 0) return reduced
         // net > 0 reduces (floored), net < 0 taxes. A reduction can only shrink mana that is
@@ -899,6 +906,25 @@ class CastPermissionUtils(
             is AbilityCost.Composite -> AbilityCost.Composite(listOf(taxAtom) + reduced.costs)
             else -> AbilityCost.Composite(listOf(taxAtom, reduced))
         }
+    }
+
+    /**
+     * [applyActivatedAbilityCostReduction] for a keyword ability whose cost is a bare [ManaCost]
+     * rather than an [AbilityCost] — cycling and typecycling, activated abilities of the card in
+     * hand (CR 702.29a). Only an `ACTIVATED_BY_YOU` reduction (Zirda) reaches them; the default
+     * reach is battlefield-only. Called with the X already announced, since the total cost is
+     * locked in after X is chosen (CR 601.2f, via CR 602.2b).
+     */
+    fun applyActivatedAbilityCostReduction(
+        cost: ManaCost,
+        state: GameState,
+        sourceId: EntityId,
+        activatorId: EntityId
+    ): ManaCost {
+        val reduced = applyActivatedAbilityCostReduction(
+            AbilityCost.Atom(CostAtom.Mana(cost)), state, sourceId, activatorId
+        )
+        return reduced.manaCostOrNull ?: cost
     }
 
     /**
@@ -980,6 +1006,7 @@ class CastPermissionUtils(
     private fun sumActivatedAbilityCostModifications(
         state: GameState,
         sourceId: EntityId,
+        activatorId: EntityId,
         isExhaustAbility: Boolean,
         isPowerUpAbility: Boolean,
         isManaAbility: Boolean,
@@ -988,6 +1015,7 @@ class CastPermissionUtils(
         var net = 0
         var floor = 0
         val evaluator = predicateEvaluator.amounts
+        val sourceOnBattlefield = sourceId in state.getBattlefield()
         for (entityId in state.getBattlefield()) {
             val card = state.getEntity(entityId)?.get<CardComponent>() ?: continue
             val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
@@ -997,13 +1025,26 @@ class CastPermissionUtils(
                     is com.wingedsheep.sdk.scripting.ReduceActivatedAbilityCost -> {
                         if (ability.exhaustOnly && !isExhaustAbility) continue
                         if (ability.powerUpOnly && !isPowerUpAbility) continue
+                        if (ability.excludeManaAbilities && isManaAbility) continue
                         if (ability.onlyIfTargetIsSource) {
                             val targetsSource = chosenTargetIds?.contains(entityId)
                                 ?: state.projectedState.isCreature(entityId)
                             if (!targetsSource) continue
                         }
-                        if (!activatedAbilityReductionApplies(state, entityId, ability.filter, sourceId)) continue
                         val owner = controllerId ?: continue
+                        val reaches = when (ability.reach) {
+                            ActivatedAbilityReach.MATCHING_PERMANENTS -> sourceOnBattlefield &&
+                                activatedAbilityReductionApplies(state, entityId, ability.filter, sourceId)
+                            // "Abilities you activate": the activator, not the source's zone or
+                            // controller, decides — a hand card's cycling counts.
+                            ActivatedAbilityReach.ACTIVATED_BY_YOU -> activatorId == owner &&
+                                !(ability.filter.excludeSelf && entityId == sourceId) &&
+                                predicateEvaluator.matches(
+                                    state, state.projectedState, sourceId, ability.filter.baseFilter,
+                                    PredicateContext(sourceId = entityId, controllerId = owner)
+                                )
+                        }
+                        if (!reaches) continue
                         net += evaluator.evaluate(
                             state,
                             ability.amount,
