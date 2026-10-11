@@ -4236,6 +4236,80 @@
     ]
 }
 
+// Necroblossom Snarl
+{
+    "name": "Necroblossom Snarl",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "As this land enters, you may reveal a Swamp or Forest card from your hand. If you don't, this land enters tapped.\n{T}: Add {B} or {G}.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Necroblossom Snarl:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "BLACK"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Necroblossom Snarl:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "GREEN"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "OnEnterRunEffect",
+                "effect": {
+                    "type": "MayRevealCardFromHand",
+                    "filter": "land Swamp|Forest",
+                    "otherwise": {
+                        "type": "TapUntap",
+                        "target": "Self"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "269",
+        "rarity": "RARE",
+        "artist": "Sam Burley",
+        "flavorText": "A hungry lair of flourishing rot.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/0/b0aed316-c28a-4c1a-a0a3-ab75ceba3ee7.jpg?1783927272",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "The \"Snarl\" itself doesn't have any land subtypes. You can't reveal one to satisfy the ability of another."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "If a land card with an appropriate subtype is entering the battlefield from your hand at the same time as one of these lands, you may reveal the other land to have the \"Snarl\" enter untapped."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "If an effect instructs you to put one of these lands onto the battlefield tapped, it will still enter the battlefield tapped even if you reveal a land card from your hand."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "You may reveal any land card with either or both of the appropriate subtypes. It doesn't have to be a basic land card."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
+    ]
+}
+
 // Needlethorn Drake
 {
     "name": "Needlethorn Drake",

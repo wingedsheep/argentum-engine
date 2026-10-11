@@ -1302,6 +1302,92 @@
     ]
 }
 
+// Inferno Titan
+{
+    "name": "Inferno Titan",
+    "manaCost": "{4}{R}{R}",
+    "typeLine": "Creature — Giant",
+    "oracleText": "{R}: This creature gets +1/+0 until end of turn.\nWhenever this creature enters or attacks, it deals 3 damage divided as you choose among one, two, or three targets.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Inferno Titan:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "DividedDamage",
+                    "totalDamage": 3
+                },
+                "targetRequirement": {
+                    "type": "AnyTarget",
+                    "count": 3,
+                    "minCount": 1
+                },
+                "descriptionOverride": "Whenever this creature enters or attacks, it deals 3 damage divided as you choose among one, two, or three targets."
+            },
+            {
+                "id": "Inferno Titan:3",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "DividedDamage",
+                    "totalDamage": 3
+                },
+                "targetRequirement": {
+                    "type": "AnyTarget",
+                    "count": 3,
+                    "minCount": 1
+                },
+                "descriptionOverride": "Whenever this creature enters or attacks, it deals 3 damage divided as you choose among one, two, or three targets."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Inferno Titan:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{R}"
+                    }
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "146",
+        "rarity": "MYTHIC",
+        "artist": "Kev Walker",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/1/f1e4a028-6462-4373-9864-a8adfc78d52b.jpg?1783941804",
+        "rulings": [
+            {
+                "date": "2010-08-15",
+                "text": "You divide the damage as you put Inferno Titan's triggered ability on the stack, not as it resolves. Each target must be assigned at least 1 damage."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Inspired Charge
 {
     "name": "Inspired Charge",

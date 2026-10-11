@@ -1262,6 +1262,65 @@
     ]
 }
 
+// Devilish Valet
+{
+    "name": "Devilish Valet",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Devil Warrior",
+    "oracleText": "Trample, haste\nAlliance — Whenever another creature you control enters, double this creature's power until end of turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "keywords": [
+        "TRAMPLE",
+        "HASTE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Devilish Valet:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": "Power"
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": "Self"
+                },
+                "descriptionOverride": "Alliance — Whenever another creature you control enters, double this creature's power until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "105",
+        "rarity": "RARE",
+        "artist": "Bud Cook",
+        "flavorText": "Nobody thought twice about checking their weapons at the door, until they were informed there was no weapon check at the door.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/5/45d3fc69-6c5e-4ede-9f8d-c1cee096a78a.jpg?1783923120",
+        "rulings": [
+            {
+                "date": "2022-04-29",
+                "text": "To double a creature's power means that creature gets +X/+0, where X is its power as the ability resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Disciplined Duelist
 {
     "name": "Disciplined Duelist",

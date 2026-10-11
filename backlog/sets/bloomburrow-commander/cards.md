@@ -2,7 +2,7 @@
 
 **Set Size:** 312 cards
 **Release Date:** August 2, 2024
-**Implemented:** 180 / 312
+**Implemented:** 192 / 312
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 37    | 0    |
@@ -66,7 +66,7 @@
 - [x] Chasm Skulker
 - [ ] Chatterfang, Squirrel General
 - [ ] Chatterstorm
-- [ ] Chittering Witch
+- [x] Chittering Witch
 - [x] Chitterspitter
 - [x] Cinder Glade
 - [x] Circuit Mender
@@ -86,7 +86,7 @@
 - [x] Decree of Pain
 - [ ] Deep Forest Hermit
 - [ ] Derevi, Empyrial Tactician
-- [ ] Devilish Valet
+- [x] Devilish Valet
 - [x] Domri, Anarch of Bolas
 - [x] Dusk // Dawn
 - [ ] Echoing Assault
@@ -132,7 +132,7 @@
 - [ ] Hanged Executioner
 - [x] Harmonize
 - [ ] Haunted Mire
-- [ ] Haywire Mite
+- [x] Haywire Mite
 - [ ] Hazel of the Rootbloom
 - [ ] Hazel's Brewmaster
 - [x] Hedron Archive
@@ -142,7 +142,7 @@
 - [ ] Idol of Oblivion
 - [x] Illusionist's Gambit
 - [x] Illusory Ambusher
-- [ ] Inferno Titan
+- [x] Inferno Titan
 - [ ] Ink-Eyes, Servant of Oni
 - [ ] Insatiable Frugivore
 - [x] Inspiring Overseer
@@ -168,10 +168,10 @@
 - [x] Lotus Cobra
 - [ ] Loyal Warhound
 - [ ] Luminous Broodmoth
-- [ ] Maelstrom Pulse
+- [x] Maelstrom Pulse
 - [ ] Managorger Hydra
 - [ ] Mangara, the Diplomat
-- [ ] Marrow-Gnawer
+- [x] Marrow-Gnawer
 - [ ] Martial Coup
 - [ ] Martial Impetus
 - [ ] Maskwood Nexus
@@ -187,12 +187,12 @@
 - [x] Mystic Monastery
 - [ ] Nadier's Nightblade
 - [ ] Narset, Parter of Veils
-- [ ] Necroblossom Snarl
-- [ ] Nested Shambler
+- [x] Necroblossom Snarl
+- [x] Nested Shambler
 - [x] Nissa, Who Shakes the World
 - [ ] Octomancer
 - [ ] Ogre Slumlord
-- [ ] Oran-Rief, the Vastwood
+- [x] Oran-Rief, the Vastwood
 - [ ] Ornithopter of Paradise
 - [x] Outpost Siege
 - [ ] Overflowing Basin
@@ -273,12 +273,12 @@
 - [ ] Sunpetal Grove
 - [ ] Sunscorch Regent
 - [ ] Sunscorched Divide
-- [ ] Swarmyard
+- [x] Swarmyard
 - [x] Swarmyard Massacre
 - [ ] Swiftfoot Boots
 - [x] Sword of the Squeak
 - [x] Swords to Plowshares
-- [ ] Tainted Wood
+- [x] Tainted Wood
 - [x] Talisman of Impulse
 - [ ] Talisman of Resilience
 - [x] Tamiyo, Field Researcher
@@ -321,7 +321,7 @@
 - [x] Wildsear, Scouring Maw
 - [ ] Windgrace's Judgment
 - [x] Wizard Class
-- [ ] Woe Strider
+- [x] Woe Strider
 - [x] Wolfwillow Haven
 - [x] Wooded Ridgeline
 - [x] Woodland Cemetery

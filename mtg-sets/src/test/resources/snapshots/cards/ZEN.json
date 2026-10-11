@@ -3177,6 +3177,80 @@
     ]
 }
 
+// Oran-Rief, the Vastwood
+{
+    "name": "Oran-Rief, the Vastwood",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "This land enters tapped.\n{T}: Add {G}.\n{T}: Put a +1/+1 counter on each green creature that entered this turn.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Oran-Rief, the Vastwood:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "GREEN"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Oran-Rief, the Vastwood:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature",
+                                    {
+                                        "type": "HasColor",
+                                        "color": "GREEN"
+                                    }
+                                ],
+                                "statePredicates": [
+                                    "EnteredThisTurn"
+                                ]
+                            }
+                        }
+                    },
+                    "body": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": "IterationEntity"
+                    }
+                }
+            }
+        ],
+        "replacementEffects": [
+            "EntersTapped"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "221",
+        "rarity": "RARE",
+        "artist": "Mike Bierek",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/b/9bcc3bab-46f8-4ed2-abdb-7a117ad07d03.jpg?1783942122",
+        "rulings": [
+            {
+                "date": "2009-10-01",
+                "text": "Oran-Rief's last ability affects all permanents that are green creatures that entered this turn, not just the ones you control."
+            },
+            {
+                "date": "2009-10-01",
+                "text": "Oran-Rief's last ability cares about permanents' characteristics at the time the ability resolves, not their characteristics at the time they entered. For example, if a blue creature enters, then is turned green by a spell or ability, then Oran-Rief's second ability resolves, you'll put a +1/+1 counter on that creature."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Pillarfield Ox
 {
     "name": "Pillarfield Ox",

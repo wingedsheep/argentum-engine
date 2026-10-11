@@ -3891,6 +3891,60 @@
     ]
 }
 
+// Swarmyard
+{
+    "name": "Swarmyard",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "{T}: Add {C}.\n{T}: Regenerate target Insect, Rat, Spider, or Squirrel. (The next time it would be destroyed this turn, instead tap it, remove it from combat, and heal all damage on it.)",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Swarmyard:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Swarmyard:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "Regenerate",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "permanent Insect|Rat|Spider|Squirrel"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{T}: Regenerate target Insect, Rat, Spider, or Squirrel."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "278",
+        "rarity": "RARE",
+        "artist": "Thomas M. Baxa",
+        "flavorText": "Where scavengers nest in hollowed-out rib cages and chittering crawlers peer from empty eye sockets, few dare to trespass.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/5/25bfe849-a508-4fa8-8999-909fe8ec34fa.jpg?1783943193"
+    },
+    "colorIdentityOverride": []
+}
+
 // Telekinetic Sliver
 {
     "name": "Telekinetic Sliver",
