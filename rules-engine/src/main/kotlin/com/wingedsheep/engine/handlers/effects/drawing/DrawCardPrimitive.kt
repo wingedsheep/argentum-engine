@@ -155,6 +155,17 @@ class DrawCardPrimitive(
     }
 
     /**
+     * True when a [com.wingedsheep.sdk.scripting.RestrictCardsDrawnPerTurn] cap forbids
+     * [playerId]'s next draw this turn (CR 121.2b) — see [DrawRestrictions].
+     */
+    fun drawProhibited(state: GameState, playerId: EntityId): Boolean =
+        DrawRestrictions.cantDraw(state, playerId, cardRegistry, predicateEvaluator)
+
+    /** How many more cards [playerId] may draw this turn, or `null` when nothing caps them. */
+    fun drawsLeftThisTurn(state: GameState, playerId: EntityId): Int? =
+        DrawRestrictions.drawsLeftThisTurn(state, playerId, cardRegistry, predicateEvaluator)
+
+    /**
      * If [playerId] controls a permanent with [RevealFirstDrawEachTurn], emit a
      * [CardRevealedFromDrawEvent] for [drawnCardId]. Only called on the first
      * draw of the turn.

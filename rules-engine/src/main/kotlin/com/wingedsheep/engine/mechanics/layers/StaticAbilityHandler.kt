@@ -1158,6 +1158,8 @@ class StaticAbilityHandler(
             is com.wingedsheep.sdk.scripting.PlayersCantPlayLands,
             is com.wingedsheep.sdk.scripting.CantEnterTheBattlefield,
             is RestrictSpellsCastPerTurn,
+            // Per-turn draw cap (DrawRestrictions, read by DrawLoop / DrawUpToExecutor):
+            is com.wingedsheep.sdk.scripting.RestrictCardsDrawnPerTurn,
 
             // Spell costs (CostCalculator):
             is GrantAlternativeCastingCost,

@@ -9431,6 +9431,18 @@ in the declare-blockers step, even before the turn-based block action has comple
   **when** (`condition`). A *filtered* lock never suppresses the land drop wholesale: the blanket
   `canPlayLand` probe deliberately ignores it and `EnumerationContext.cantPlayLand(cardId)` removes
   only the named cards, so the unaffected lands in a hand stay playable.
+- `RestrictCardsDrawnPerTurn(affected = Player.EachOpponent, maxPerTurn = 1)` — a per-turn cap on
+  cards drawn (CR 121.2b): Narset, Parter of Veils / Leovold ("Each opponent can't draw more than one
+  card each turn"), `affected = Player.Each` for Spirit of the Labyrinth, and `maxPerTurn = 0` for
+  "Players can't draw cards" (Maralen of the Mornsong). `affected` is relative to the source's
+  controller; the smallest applicable cap wins; cards drawn earlier in the turn count, even before the
+  source entered. It caps *individual* draws, so "draw three" is carried out as far as it can be.
+  Enforced in `DrawLoop` (shared by the draw step and every spell/ability draw) *before* draw
+  replacements — a disallowed draw can't be replaced and doesn't attempt an empty-library draw, while
+  a replaced draw never happened and doesn't use up the allowance — and `DrawUpTo` offers at most the
+  remaining allowance. Read through `standingStatics` (face-down, ability-loss, conditional and
+  granted statics handled like `SkipStepOrPhase`). Not modelled: refusing "you may draw two" outright
+  (CR 121.2b's optional multi-draw) — choosing yes draws up to the cap.
 - `CantEnterTheBattlefield(filter = GameObjectFilter.Any, fromZones = null)` — an entry prohibition:
   cards matching `filter` can't enter the battlefield from `fromZones` (`null` = any zone). The other
   half of Worms of the Earth's lock — `CantEnterTheBattlefield(GameObjectFilter.Land)` — and

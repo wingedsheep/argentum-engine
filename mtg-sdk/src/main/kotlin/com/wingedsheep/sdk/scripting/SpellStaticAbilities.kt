@@ -1104,6 +1104,54 @@ data class PlayersCantPlayLands(
     }
 }
 
+/**
+ * A per-turn cap on how many cards a player can draw (CR 121.2b): "Each opponent can't draw more
+ * than one card each turn." (Narset, Parter of Veils; Leovold, Emissary of Trest), "Each player
+ * can't draw more than one card each turn." (Spirit of the Labyrinth). `maxPerTurn = 0` is the
+ * outright lock "Players can't draw cards." (Maralen of the Mornsong, Omen Machine).
+ *
+ *  - **who** — [affected], relative to this permanent's controller, as on [PlayersCantPlayLands].
+ *  - **how many** — [maxPerTurn], compared against the player's cards-drawn-this-turn tally, so
+ *    cards drawn earlier in the turn count even if drawn before this permanent entered. When
+ *    several caps apply, the smallest wins.
+ *
+ * It applies to individual draws: an instruction to draw several is partially carried out and the
+ * rest are simply not drawn. A disallowed draw is not an event, so it can't be replaced (no dredge,
+ * no Underrealm Lich) and an empty library doesn't make it a failed draw; a draw that *was* replaced
+ * never happened, so it doesn't use up the allowance. "Draw up to N" offers at most the remaining
+ * allowance. Enforced at the single draw loop shared by the draw step and every spell or ability.
+ *
+ * Separate from [RestrictSpellsCastPerTurn] because it caps a different event — a draw, not a
+ * cast — read at the draw loop rather than at cast legality; and from [PlayersCantCastSpells] /
+ * [PlayersCantPlayLands], which forbid an action outright rather than count it per turn.
+ *
+ * @property affected Which players are capped, relative to the source's controller.
+ * @property maxPerTurn The most cards an affected player may draw each turn.
+ */
+@SerialName("RestrictCardsDrawnPerTurn")
+@Serializable
+data class RestrictCardsDrawnPerTurn(
+    val affected: Player = Player.EachOpponent,
+    val maxPerTurn: Int = 1
+) : StaticAbility {
+    override val description: String = buildString {
+        val who = when (affected) {
+            is Player.You -> "You"
+            is Player.EachOpponent -> "Each opponent"
+            is Player.Each -> "Each player"
+            else -> affected.description.replaceFirstChar { it.uppercase() }
+        }
+        if (maxPerTurn == 0) {
+            append(if (affected is Player.Each) "Players can't draw cards" else "$who can't draw cards")
+        } else {
+            val cards = if (maxPerTurn == 1) "one card" else "$maxPerTurn cards"
+            append("$who can't draw more than $cards each turn")
+        }
+    }
+
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
+}
+
 @SerialName("PlayersCantCastSpells")
 @Serializable
 data class PlayersCantCastSpells(

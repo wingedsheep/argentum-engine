@@ -73,6 +73,7 @@ class ExchangeLifeTotalsExecutor(
         if (effect.drawEqualToLifeLost) {
             var remaining = myLife - newState.lifeTotal(controllerId)
             while (remaining > 0) {
+                if (drawPrimitive.drawProhibited(newState, controllerId)) break
                 val result = drawPrimitive.drawOne(newState, controllerId)
                 newState = result.state
                 events.addAll(result.events)

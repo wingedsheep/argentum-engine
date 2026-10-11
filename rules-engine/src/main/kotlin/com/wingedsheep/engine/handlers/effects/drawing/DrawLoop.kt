@@ -65,6 +65,14 @@ object DrawLoop {
         while (remaining > 0) {
             newState = newState.copy(activeReplacementChain = inheritedChain)
 
+            // 0. A per-turn draw cap (CR 121.2b, Narset) applies to each individual draw: the
+            //    instruction is carried out as far as it can be and the rest are not drawn. A
+            //    draw the player can't make isn't an event, so it is checked before replacements
+            //    (Narset's ruling: they can't replace a disallowed draw) and before the empty-
+            //    library check (nothing was attempted). Nothing below can lift the cap mid-loop,
+            //    so the remaining draws all stop here.
+            if (primitive.drawProhibited(newState, playerId)) break
+
             // 1. Check replacements. This runs *before* the primitive draw and before any
             //    empty-library check, and CR 614.11 requires exactly that ordering: effects
             //    that replace a card draw "are applied even if no cards could be drawn because
