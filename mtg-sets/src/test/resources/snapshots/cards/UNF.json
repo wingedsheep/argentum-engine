@@ -1,0 +1,131 @@
+// Saw in Half
+{
+    "name": "Saw in Half",
+    "manaCost": "{2}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Destroy target creature. If that creature dies this way, its controller creates two tokens that are copies of that creature, except their power is half that creature's power and their toughness is half that creature's toughness. Round up each time.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "StoreNumber",
+                    "name": "number0",
+                    "amount": {
+                        "type": "Divide",
+                        "numerator": {
+                            "type": "EntityProperty",
+                            "entity": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "numericProperty": "Power"
+                        },
+                        "denominator": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    }
+                },
+                {
+                    "type": "StoreNumber",
+                    "name": "number1",
+                    "amount": {
+                        "type": "Divide",
+                        "numerator": {
+                            "type": "EntityProperty",
+                            "entity": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "numericProperty": "Toughness"
+                        },
+                        "denominator": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    }
+                },
+                {
+                    "type": "GatherCards",
+                    "source": "ChosenTargets",
+                    "storeAs": "gathered2"
+                },
+                {
+                    "type": "CaptureControllers",
+                    "from": "gathered2",
+                    "storeAs": "controllers3"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "gathered2",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard"
+                    },
+                    "moveType": "Destroy",
+                    "storeMovedAs": "moved4"
+                },
+                {
+                    "type": "FilterCollection",
+                    "from": "moved4",
+                    "filter": {
+                        "statePredicates": [
+                            {
+                                "type": "InZone",
+                                "zone": "Graveyard"
+                            }
+                        ]
+                    },
+                    "storeMatching": "matching5"
+                },
+                {
+                    "type": "ForEachCapturedController",
+                    "collection": "matching5",
+                    "originalCollection": "gathered2",
+                    "controllerSnapshot": "controllers3",
+                    "countVariable": "count6",
+                    "effects": [
+                        {
+                            "type": "CreateTokenCopyOfTarget",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "basePower": {
+                                "type": "VariableReference",
+                                "variableName": "number0"
+                            },
+                            "baseToughness": {
+                                "type": "VariableReference",
+                                "variableName": "number1"
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "88",
+        "rarity": "RARE",
+        "artist": "Sebastian Giacobino",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/5/05e6a7bc-a35a-4e68-99a0-be264553b5de.jpg?1783920577"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}

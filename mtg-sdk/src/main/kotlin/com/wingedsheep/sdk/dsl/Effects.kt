@@ -3260,6 +3260,8 @@ object Effects {
         stampCreator: Boolean = false,
         attachedTo: EffectTarget? = null,
         attackedPlayer: EffectTarget? = null,
+        basePower: DynamicAmount? = null,
+        baseToughness: DynamicAmount? = null,
     ): Effect = CreateTokenCopyOfTarget(
         target = target,
         count = DynamicAmount.Fixed(count),
@@ -3288,6 +3290,8 @@ object Effects {
         stampCreator = stampCreator,
         attachedTo = attachedTo,
         attackedPlayer = attackedPlayer,
+        basePower = basePower,
+        baseToughness = baseToughness,
     )
 
     /**
@@ -3323,6 +3327,8 @@ object Effects {
         stampCreator: Boolean = false,
         attachedTo: EffectTarget? = null,
         attackedPlayer: EffectTarget? = null,
+        basePower: DynamicAmount? = null,
+        baseToughness: DynamicAmount? = null,
     ): Effect = CreateTokenCopyOfTargetEffect(
         target = target,
         count = count,
@@ -3351,6 +3357,8 @@ object Effects {
         stampCreator = stampCreator,
         attachedTo = attachedTo,
         attackedPlayer = attackedPlayer,
+        basePower = basePower,
+        baseToughness = baseToughness,
     )
 
     /**

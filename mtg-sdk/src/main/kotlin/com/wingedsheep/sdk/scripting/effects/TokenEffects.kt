@@ -612,9 +612,30 @@ data class CreateTokenCopyOfTargetEffect(
      * enters, but never attacking (CR 508.4a). Requires [attacking].
      */
     val attackedPlayer: EffectTarget? = null,
+    /**
+     * The copies' base power, **computed at resolution** — the dynamic form of [overridePower] for
+     * an "except its power is …" clause whose number depends on the game (CR 707.9b: a copy
+     * exception that sets power is a copiable value). Saw in Half: "except their power is half
+     * that creature's power … Round up each time" snapshots `powerOf(creature) divRoundedUp 2` into a
+     * pipeline number *before* destroying the creature, and passes that number here. Set together
+     * with [baseToughness]; never alongside [overridePower]/[overrideToughness] or a P/T in
+     * [exceptions]. Evaluated once per batch, so every copy gets the same value. A negative result
+     * is a legal base P/T and is kept.
+     */
+    val basePower: DynamicAmount? = null,
+    /** The copies' base toughness, computed at resolution — the partner of [basePower]. */
+    val baseToughness: DynamicAmount? = null,
 ) : Effect {
     init {
         require(attackedPlayer == null || attacking) { "attackedPlayer needs attacking = true" }
+        require((basePower == null) == (baseToughness == null)) {
+            "basePower and baseToughness are set together"
+        }
+        require(basePower == null || (overridePower == null && overrideToughness == null &&
+            exceptions.powerOverride == null && exceptions.toughnessOverride == null &&
+            !exceptions.retainPowerToughness)) {
+            "basePower/baseToughness can't combine with another power/toughness exception"
+        }
     }
 
     /**
@@ -664,6 +685,10 @@ data class CreateTokenCopyOfTargetEffect(
                 if (descriptor.first().lowercaseChar() in "aeiou") "an " else "a "
             } else ""
             append(", except $pronoun $article$descriptor")
+        }
+        if (basePower != null && baseToughness != null) {
+            val pronoun = if (count == DynamicAmount.Fixed(1)) "its" else "their"
+            append(", except $pronoun base power is ${basePower.description} and $pronoun base toughness is ${baseToughness.description}")
         }
         if (tapped) append(" tapped")
         if (attacking) append(" and attacking")

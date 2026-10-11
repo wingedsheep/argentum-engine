@@ -2544,10 +2544,20 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
 - `CreateTokenCopyOfSelf(count?, overridePower?, overrideToughness?, removeLegendary?)` — token copies
   of the source. `removeLegendary = true` applies the "except it's not legendary" copy clause (Ran and
   Shaw), mirroring `CreateTokenCopyOfEquippedCreature`.
-- `CreateTokenCopyOfTarget(target, count?, overridePower?, overrideToughness?, tapped?, attacking?, triggeredAbilities?, addedKeywords?, addedSupertypes?, removedSupertypes?, overrideColors?, addedColors?, overrideSubtypes?, addedSubtypes?, overrideCardTypes?, activatedAbilities?, addedStaticAbilities?, sacrificeAtStep?, sacrificeOnlyOnControllersTurn?, addCardTypes?, exileAtStep?, exileUnlessSourceIsRingBearer?, controller?, noManaCost?, attachedTo?, attackedPlayer?)` —
+- `CreateTokenCopyOfTarget(target, count?, overridePower?, overrideToughness?, tapped?, attacking?, triggeredAbilities?, addedKeywords?, addedSupertypes?, removedSupertypes?, overrideColors?, addedColors?, overrideSubtypes?, addedSubtypes?, overrideCardTypes?, activatedAbilities?, addedStaticAbilities?, sacrificeAtStep?, sacrificeOnlyOnControllersTurn?, addCardTypes?, exileAtStep?, exileUnlessSourceIsRingBearer?, controller?, noManaCost?, attachedTo?, attackedPlayer?, basePower?, baseToughness?)` —
   token copy of another permanent (or a card in any zone — the executor copies the target's `CardComponent`,
   so a graveyard/exile card works; pass `EffectTarget.PipelineTarget("name")` to copy a card a prior pipeline
   step exiled/stored, as Nexus of Becoming and Mardu Siegebreaker do).
+  `basePower`/`baseToughness` (`DynamicAmount`s, set together) are the **game-dependent** form of
+  `overridePower`/`overrideToughness` — an "except its power is …" copy clause whose number is computed at
+  resolution, still a copiable value (CR 707.9b). Snapshot the number into a pipeline slot *before* anything
+  moves the creature, since target reads are live. **Saw in Half**: `storeNumber(targetPower() divRoundedUp 2)`
+  (and toughness) → `gather(ChosenTargets)` → `captureControllers` → `moveTracked(…, Destroy)` →
+  `filter(currentlyIn(GRAVEYARD))` ("dies this way") → `forEachCaptured { CreateTokenCopyOfTarget(creature,
+  count = 2, basePower = half.amount, baseToughness = …) }`. Can't be combined with another P/T exception.
+  **A departed permanent target (CR 608.2h).** When the target was chosen as a *permanent* and has left the
+  battlefield by the time the copy is made, the copy uses its last-known copiable values — a dead Clone yields
+  copies of what it was copying. A creature *card* targeted in a graveyard is still copied as the card.
   `overrideColors`/`overrideSubtypes` replace the copy's colors/subtypes
   outright for "a token that's a copy … except it's a 5/5 black Demon" wording (Ardyn, the Usurper).
   `addedColors` *unions* extra colors onto the copy (vs `overrideColors` which replaces; ignored when
