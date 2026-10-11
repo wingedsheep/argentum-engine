@@ -181,6 +181,7 @@ class CastPermissionUtils(
         if (blockedByResolvedCastRestriction(state, action)) {
             return "You can't cast spells right now"
         }
+        castFaceZoneFailure(state, action)?.let { return it }
         if (hasReachedSpellCastLimit(state, playerId)) {
             return "You can't cast another spell this turn"
         }
@@ -197,6 +198,20 @@ class CastPermissionUtils(
             return "You can cast a legendary instant or sorcery only if you control a legendary creature or planeswalker"
         }
         return null
+    }
+
+    /**
+     * Why the half [action] names can't be cast from the zone its card is in, or null. Today that is
+     * aftermath (CR 702.127a): "this half of this split card can't be cast from any zone other than
+     * a graveyard". Like [blockedByResolvedCastRestriction] it depends on the chosen face, so the
+     * legal-action enumerator applies it to its final offers and the cast validator reaches it here.
+     */
+    fun castFaceZoneFailure(state: GameState, action: CastSpell): String? {
+        if (action.faceIndex == null) return null
+        val card = state.getEntity(action.cardId)?.get<CardComponent>() ?: return null
+        return com.wingedsheep.engine.mechanics.AftermathCasts.zoneFailure(
+            state, cardRegistry.getCard(card.cardDefinitionId), action
+        )
     }
 
     /**

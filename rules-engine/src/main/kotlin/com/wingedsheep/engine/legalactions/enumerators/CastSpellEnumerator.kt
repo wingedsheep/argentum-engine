@@ -5,6 +5,7 @@ import com.wingedsheep.engine.mechanics.cost.PlayerCounterPayment
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.core.AlternativeCostType
 import com.wingedsheep.engine.core.CastSpell
+import com.wingedsheep.engine.mechanics.AftermathCasts
 import com.wingedsheep.engine.legalactions.ActionEnumerator
 import com.wingedsheep.engine.legalactions.AdditionalCostData
 import com.wingedsheep.engine.legalactions.EnumerationContext
@@ -39,7 +40,6 @@ import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.CardDefinition
-import com.wingedsheep.sdk.model.CardFace
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AdditionalCost
 import com.wingedsheep.sdk.scripting.costs.CostAtom
@@ -222,7 +222,11 @@ class CastSpellEnumerator(
 
             if (cardDef.layout == com.wingedsheep.sdk.model.CardLayout.SPLIT && cardDef.cardFaces.isNotEmpty()) {
                 cardDef.cardFaces.forEachIndexed { faceIndex, face ->
-                    enumerateSplitFace(context, cardId, cardDef, faceIndex, face, result)
+                    // An aftermath half can't be cast from hand (CR 702.127a) — it is offered from
+                    // the graveyard by CastFromZoneEnumerator instead.
+                    if (!AftermathCasts.isAftermath(face)) {
+                        SplitFaceCastOffers.offer(context, cardId, cardDef, faceIndex, face, result)
+                    }
                 }
                 continue
             }
@@ -2896,99 +2900,6 @@ class CastSpellEnumerator(
     // =========================================================================
     // Split face (CR 709)
     // =========================================================================
-
-    /**
-     * Emit a [LegalAction] for casting one face of a split-layout card from hand (CR 709.4 —
-     * only the chosen half goes on the stack and is evaluated for legality).
-     *
-     * Each face has its own mana cost, type line (so timing is per-face), and — crucially —
-     * its own `targetRequirements`. Reading the face's targets here is what makes targeted
-     * split halves (Pain // Suffering, Stand // Deliver, Wax // Wane) actually offer their
-     * targets to the client; without it the cast surfaces with no valid targets even though
-     * the validation layer ([CastSpellHandler]) reads from the face script and expects them.
-     *
-     * Modal effects, alternative costs, blight, behold, kicker, and convoke on a split half
-     * are not yet wired up — cards that need them can extend this method later.
-     */
-    private fun enumerateSplitFace(
-        context: EnumerationContext,
-        cardId: EntityId,
-        cardDef: CardDefinition,
-        faceIndex: Int,
-        face: CardFace,
-        result: MutableList<LegalAction>,
-    ) {
-        val state = context.state
-        val playerId = context.playerId
-
-        // Per-face timing: the chosen half's own type line governs sorcery-speed restriction.
-        if (!face.typeLine.isInstant && !context.canPlaySorcerySpeed) return
-
-        val cachedSources = context.availableManaSources
-        val effectiveCost = context.costCalculator
-            .calculateFaceCastCost(state, cardDef, face, playerId)
-        if (!context.manaSolver.canPay(state, playerId, effectiveCost, precomputedSources = cachedSources)) return
-
-        val autoTapPreview = if (context.skipAutoTapPreview) null else {
-            context.manaSolver
-                .solve(state, playerId, effectiveCost, precomputedSources = cachedSources)
-                ?.sources?.map { it.entityId }
-        }
-        val manaCostString = effectiveCost.toString()
-
-        val targetReqs = face.script.targetRequirements
-        if (targetReqs.isEmpty()) {
-            result.add(
-                LegalAction(
-                    actionType = "CastSpell",
-                    description = "Cast ${face.name}",
-                    action = CastSpell(playerId, cardId, faceIndex = faceIndex),
-                    manaCostString = manaCostString,
-                    autoTapPreview = autoTapPreview,
-                )
-            )
-            return
-        }
-
-        val targetInfos = context.targetUtils.buildSpellTargetInfos(state, playerId, targetReqs, cardId)
-        if (!context.targetUtils.allRequirementsSatisfied(targetInfos)) return
-        val firstReq = targetReqs.first()
-        val firstInfo = targetInfos.first()
-
-        // Auto-select a sole legal player target (e.g. "target player" in a 2-player game where
-        // only one player is legal), matching the normal cast path's UX.
-        val canAutoSelect = targetReqs.size == 1 &&
-            TargetEnumerationUtils.shouldAutoSelectPlayerTarget(firstReq, firstInfo.validTargets)
-        if (canAutoSelect) {
-            val autoTarget = ChosenTarget.Player(firstInfo.validTargets.first())
-            result.add(
-                LegalAction(
-                    actionType = "CastSpell",
-                    description = "Cast ${face.name}",
-                    action = CastSpell(playerId, cardId, faceIndex = faceIndex, targets = listOf(autoTarget)),
-                    manaCostString = manaCostString,
-                    autoTapPreview = autoTapPreview,
-                )
-            )
-            return
-        }
-
-        result.add(
-            LegalAction(
-                actionType = "CastSpell",
-                description = "Cast ${face.name}",
-                action = CastSpell(playerId, cardId, faceIndex = faceIndex),
-                validTargets = firstInfo.validTargets,
-                requiresTargets = true,
-                targetCount = firstInfo.maxTargets,
-                minTargets = firstReq.effectiveMinCount,
-                targetDescription = firstReq.description,
-                targetRequirements = targetInfos.surfacedRequirements(),
-                manaCostString = manaCostString,
-                autoTapPreview = autoTapPreview,
-            )
-        )
-    }
 
     // =========================================================================
     // Secondary spell face (Adventure CR 715 / modal DFC CR 712)

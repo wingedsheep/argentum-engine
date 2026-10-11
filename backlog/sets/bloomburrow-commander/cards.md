@@ -2,7 +2,7 @@
 
 **Set Size:** 312 cards
 **Release Date:** August 2, 2024
-**Implemented:** 149 / 312
+**Implemented:** 150 / 312
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 37    | 0    |
@@ -88,7 +88,7 @@
 - [ ] Derevi, Empyrial Tactician
 - [ ] Devilish Valet
 - [x] Domri, Anarch of Bolas
-- [ ] Dusk // Dawn
+- [x] Dusk // Dawn
 - [ ] Echoing Assault
 - [ ] Elspeth, Sun's Champion
 - [ ] End-Raze Forerunners

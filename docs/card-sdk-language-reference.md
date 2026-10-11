@@ -307,6 +307,17 @@ carries the other side for the hover preview's flip toggle.
   cast independently via `CastSpell.faceIndex`; only the chosen half goes on the stack (CR 709.4). A non-permanent half
   carries its effect in a `face("Name") { spell { … } }` block (with its own `target(...)` requirements); a permanent
   half (Room) carries triggered/activated/static abilities instead.
+  - **Aftermath (CR 702.127)** is `keywords(Keyword.AFTERMATH)` on the aftermath **face** — no new type, no
+    alternative cost. That half is offered only from its owner's graveyard (`CastFromZoneEnumerator`, "Cast Dawn
+    (Aftermath)", `sourceZone = GRAVEYARD`) for its own printed cost at its normal timing; the hand enumerator skips
+    it, and `CastPermissionUtils.castFaceZoneFailure` — consulted by both the cast validator (via
+    `reasonCannotCast`) and the final legal-action filter — rejects a cast of it from any zone other than a
+    graveyard (hand, exile, library, command zone), whatever permission offered it. The other half stays an
+    ordinary split half and gains no graveyard permission. A graveyard-cast aftermath half is stamped, as it goes on
+    the stack, with the on-any-exit `AfterResolveDestinationComponent(onlyIfResolved = false)`, so it is exiled
+    when it resolves, fizzles, or is countered (any counter destination). The single source of truth is the engine's
+    `AftermathCasts`. Dusk // Dawn:
+    `face("Dawn") { manaCost = "{3}{W}{W}"; typeLine = "Sorcery"; keywords(Keyword.AFTERMATH); spell { … } }`.
   - **Room face abilities are door-gated (CR 709.5).** A Room face's abilities function only while that door is
     unlocked. Triggered abilities are scoped to the unlocked face in `TriggerDetector`; **static** abilities —
     continuous effects, `GrantActivatedAbility` (incl. granted mana abilities), and `NoMaximumHandSize` — are folded

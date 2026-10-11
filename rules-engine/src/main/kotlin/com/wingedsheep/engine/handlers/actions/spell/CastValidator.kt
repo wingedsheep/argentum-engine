@@ -149,6 +149,7 @@ internal enum class CastSourceRoute {
     HARMONIZE,
     MAYHEM,
     ESCAPE,
+    AFTERMATH,
     GRAVEYARD_PERMISSION,
     FORAGE_FROM_GRAVEYARD,
     WARP_FROM_GRAVEYARD,
@@ -280,6 +281,14 @@ internal class CastValidator(
             CastSourceRoute.ESCAPE to {
                 action.useAlternativeCost && action.altAllows(AlternativeCostType.ESCAPE) &&
                     zoneResolver.hasEscapePermission(state, playerId, cardId)
+            },
+            // Aftermath (CR 702.127a) — the aftermath half of a split card, cast from its owner's
+            // graveyard for its printed mana cost. Only the half the action names: the other half
+            // gains no graveyard permission from it.
+            CastSourceRoute.AFTERMATH to {
+                com.wingedsheep.engine.mechanics.AftermathCasts.graveyardCastFace(
+                    state, playerId, cardRegistry.getCard(cardComponent.cardDefinitionId), action
+                ) != null
             },
             CastSourceRoute.GRAVEYARD_PERMISSION to {
                 zoneResolver.hasMayCastFromGraveyardPermission(state, playerId, cardId, cardComponent)

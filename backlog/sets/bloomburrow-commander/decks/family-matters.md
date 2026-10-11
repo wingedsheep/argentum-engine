@@ -63,7 +63,7 @@
 - [ ] 1 Calamity of Cinders
 - [ ] 1 Chart a Course
 - [ ] 1 Cut a Deal
-- [ ] 1 Dusk // Dawn
+- [x] 1 Dusk // Dawn
 - [ ] 1 Martial Coup
 - [ ] 1 Stolen by the Fae
 - [ ] 1 Storm of Souls

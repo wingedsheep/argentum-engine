@@ -50,6 +50,7 @@ import com.wingedsheep.sdk.scripting.MayCastSelfFromZones
 import com.wingedsheep.sdk.scripting.effects.DividedDamageEffect
 import com.wingedsheep.engine.mechanics.DisturbCasts
 import com.wingedsheep.engine.mechanics.FlashbackGrants
+import com.wingedsheep.engine.mechanics.AftermathCasts
 import com.wingedsheep.engine.mechanics.HarmonizeGrants
 import com.wingedsheep.engine.mechanics.cost.spell.SpellCostEnumeration
 import com.wingedsheep.engine.mechanics.cost.spell.SpellCosts
@@ -92,6 +93,7 @@ class CastFromZoneEnumerator(
         enumerateGraveyardPermanents(context, result)
         enumerateGraveyardCreaturesWithForage(context, result)
         enumerateFlashback(context, result)
+        enumerateAftermath(context, result)
         enumerateHarmonize(context, result)
         enumerateMayhem(context, result)
         enumerateEscape(context, result)
@@ -1258,6 +1260,38 @@ class CastFromZoneEnumerator(
     // =========================================================================
     // Graveyard creatures with forage (Osteomancer Adept-style)
     // =========================================================================
+
+    // =========================================================================
+    // Aftermath (the aftermath half of a split card in your graveyard)
+    // =========================================================================
+
+    /**
+     * Aftermath (CR 702.127a): "You may cast this half of this split card from your graveyard."
+     * Offers only the aftermath half, for its own printed mana cost at the normal timing for its
+     * type; the card's other half gains nothing here. The half's own target requirements and cast
+     * restrictions apply, exactly as for a split half cast from hand.
+     */
+    private fun enumerateAftermath(
+        context: EnumerationContext,
+        result: MutableList<LegalAction>
+    ) {
+        val state = context.state
+        val playerId = context.playerId
+        for (cardId in state.getZone(ZoneKey(playerId, Zone.GRAVEYARD))) {
+            val cardComponent = state.getEntity(cardId)?.get<CardComponent>() ?: continue
+            val cardDef = context.cardRegistry.getCard(cardComponent.cardDefinitionId) ?: continue
+            if (cardDef.layout != com.wingedsheep.sdk.model.CardLayout.SPLIT) continue
+            cardDef.cardFaces.forEachIndexed { faceIndex, face ->
+                if (!AftermathCasts.isAftermath(face)) return@forEachIndexed
+                if (context.cantCastSpell(cardId)) return@forEachIndexed
+                if (!context.legality.castRestrictionsMet(state, playerId, face.script.castRestrictions)) return@forEachIndexed
+                SplitFaceCastOffers.offer(
+                    context, cardId, cardDef, faceIndex, face, result,
+                    sourceZone = "GRAVEYARD", descriptionSuffix = " (Aftermath)",
+                )
+            }
+        }
+    }
 
     // =========================================================================
     // Flashback (cards in graveyard with Flashback keyword)

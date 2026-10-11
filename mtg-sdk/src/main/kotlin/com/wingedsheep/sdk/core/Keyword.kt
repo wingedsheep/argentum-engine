@@ -271,6 +271,21 @@ enum class Keyword(val displayName: String) {
      * triggered half is the synthesized [com.wingedsheep.sdk.scripting.Madness.castAbility].
      */
     MADNESS("Madness"),
+
+    /**
+     * Aftermath (CR 702.127, Amonkhet). Printed on one half of a [com.wingedsheep.sdk.model.CardLayout.SPLIT] card and
+     * declared on that **face** (`face("Dawn") { keywords(Keyword.AFTERMATH) }`), never on the
+     * card. It is three static abilities (CR 702.127a): "You may cast this half of this split card
+     * from your graveyard", "This half of this split card can't be cast from any zone other than a
+     * graveyard", and "If this spell was cast from a graveyard, exile it instead of putting it
+     * anywhere else any time it would leave the stack." The other half is an ordinary split half,
+     * cast from hand as usual and *not* from the graveyard. No cost of its own: the aftermath half
+     * is cast for its printed mana cost, at the normal timing for its type.
+     *
+     * Unlike [FLASHBACK] there is no alternative cost, so the engine keys it off the cast face
+     * (`CastSpell.faceIndex`), not an `AlternativeCostType`.
+     */
+    AFTERMATH("Aftermath"),
     DREDGE("Dredge"),
 
     /**

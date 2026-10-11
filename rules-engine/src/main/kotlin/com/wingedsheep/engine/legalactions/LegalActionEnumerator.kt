@@ -99,6 +99,11 @@ class LegalActionEnumerator(
             if (cast != null && context.castPermissionUtils.blockedByResolvedCastRestriction(state, cast)) {
                 return@filter false
             }
+            // A half that can only be cast from a particular zone (aftermath, CR 702.127a) — the
+            // same verdict the cast validator reaches through `reasonCannotCast`.
+            if (cast != null && context.castPermissionUtils.castFaceZoneFailure(state, cast) != null) {
+                return@filter false
+            }
             forced == null || when (val action = offer.action) {
                 is com.wingedsheep.engine.core.CastSpell -> action.cardId == forced.card.entityId
                 is com.wingedsheep.engine.core.PlayLand -> action.cardId == forced.card.entityId

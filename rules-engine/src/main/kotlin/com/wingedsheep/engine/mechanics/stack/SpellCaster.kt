@@ -268,6 +268,19 @@ internal class SpellCaster(
             )
         }
 
+        // Aftermath (CR 702.127a): "If this spell was cast from a graveyard, exile it instead of
+        // putting it anywhere else any time it would leave the stack." Armed here, where every cast
+        // (a free cast during resolution included) puts its spell on the stack, as the on-any-exit
+        // rider the resolver, the fizzle path and every counter destination already honour.
+        if (com.wingedsheep.engine.mechanics.AftermathCasts.exilesOnLeavingStack(
+                cardRegistry.getCard(cardComponent.cardDefinitionId), faceIndex, castFromZone == Zone.GRAVEYARD
+            )
+        ) {
+            newState = newState.updateEntity(cardId) { c ->
+                c.with(com.wingedsheep.engine.state.components.identity.AfterResolveDestinationComponent(onlyIfResolved = false))
+            }
+        }
+
         // Commander tax bookkeeping (CR 903.8): increment castsFromCommandZone on cast-commit so
         // that countered commanders still pay an escalating tax next time. Done after payment is
         // complete (the handler has already settled the mana cost) but before the spell is pushed
