@@ -46,16 +46,17 @@ import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.references.Player
 
 /**
- * Checks for token creation replacement effects (e.g., Mirrormind Crown)
- * before tokens are created. If a replacement applies, returns a paused
- * EffectResult with a yes/no decision; otherwise returns null.
- */
-/**
  * A [ReplaceTokenCreationWithToken] that applies to a token-creation event: the replacement in
  * force ([applied], kept so a chained re-check can skip it — CR 614.5) and the [token] it creates
  * instead.
  */
 data class TokenSubstitution(val applied: ActiveReplacement, val token: CreateTokenEffect)
+
+/**
+ * Checks for token creation replacement effects (e.g., Mirrormind Crown)
+ * before tokens are created. If a replacement applies, returns a paused
+ * EffectResult with a yes/no decision; otherwise returns null.
+ */
 
 object TokenCreationReplacementHelper {
 
