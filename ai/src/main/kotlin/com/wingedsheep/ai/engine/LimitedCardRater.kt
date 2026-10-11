@@ -327,6 +327,7 @@ object LimitedCardRater {
 
             // Counter manipulation
             is AddCountersEffect -> 0.4
+            is AdaptEffect -> 0.4
 
             // Keyword grants
             is GrantKeywordEffect -> 0.2
