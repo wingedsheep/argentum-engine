@@ -1,6 +1,8 @@
 package com.wingedsheep.engine.scenarios
 
+import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.core.Outcome
+import com.wingedsheep.engine.core.PlayLand
 import com.wingedsheep.engine.state.components.battlefield.ClassLevelComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
@@ -67,6 +69,19 @@ class FortuneTellersTalentScenarioTest : FunSpec({
         val forest = driver.putCardOnTopOfLibrary(you, "Forest")
         driver.playLand(you, forest).outcome shouldBe Outcome.Done
         driver.findPermanent(you, "Forest") shouldNotBe null
+    }
+
+    test("level 2 offers the top card's land play and cast as legal actions") {
+        val (driver, you) = setup(level = 2)
+        driver.castASpellFromHand(you)
+
+        val forest = driver.putCardOnTopOfLibrary(you, "Forest")
+        driver.legalActions(you).any { (it.action as? PlayLand)?.cardId == forest } shouldBe true
+
+        driver.playLand(you, forest).outcome shouldBe Outcome.Done
+        val bearsOnTop = driver.putCardOnTopOfLibrary(you, "Grizzly Bears")
+        driver.giveMana(you, Color.GREEN, 2)
+        driver.legalActions(you).any { (it.action as? CastSpell)?.cardId == bearsOnTop } shouldBe true
     }
 
     test("level 2 lets you cast a spell from the top at full cost") {

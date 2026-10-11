@@ -272,7 +272,7 @@ class CastZoneResolver(
         for (permId in state.getBattlefield(playerId)) {
             val permCard = state.getEntity(permId)?.get<CardComponent>() ?: continue
             val permDef = cardRegistry.getCard(permCard.cardDefinitionId) ?: continue
-            for (sa in permDef.script.staticAbilities) {
+            for (sa in permDef.liveStaticAbilities(state, permId)) {
                 if (sa is MayCastFromGraveyard && mayCastFromGraveyardGrantApplies(state, playerId, cardId, sa, permId)) {
                     matches.add(permId to sa)
                 }
