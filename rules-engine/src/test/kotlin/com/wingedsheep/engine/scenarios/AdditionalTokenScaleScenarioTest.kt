@@ -23,7 +23,8 @@ import io.kotest.matchers.shouldBe
  *   (the card's ruling). The entries one permanent carries are one ability and judge the batch as
  *   it stood before that permanent applied, so a Manufactor's added Clue doesn't add more.
  * - The affected player orders the replacements (CR 616.1); the engine applies the order that
- *   makes the most tokens — fixed-count riders before "that many", filtered before unfiltered.
+ *   makes the most tokens — fixed-count riders before "that many"; an unfiltered fixed-count rider
+ *   before a filtered one, a filtered "that many" rider before an unfiltered one.
  */
 class AdditionalTokenScaleScenarioTest : ScenarioTestBase() {
 
@@ -47,6 +48,17 @@ class AdditionalTokenScaleScenarioTest : ScenarioTestBase() {
         power = 2
         toughness = 3
         replacementEffect(CreateAdditionalToken(additionalTokenType = "Food"))
+    }
+
+    private val clueForArtifacts = card("Test Clue Rider") {
+        manaCost = "{2}"
+        typeLine = "Artifact"
+        replacementEffect(
+            CreateAdditionalToken(
+                additionalTokenType = "Clue",
+                appliesTo = EventPattern.TokenCreationEvent(tokenFilter = GameObjectFilter.Artifact)
+            )
+        )
     }
 
     private val manufactor = card("Test Manufactor") {
@@ -95,7 +107,7 @@ class AdditionalTokenScaleScenarioTest : ScenarioTestBase() {
     }
 
     init {
-        listOf(squirrelMaker, foodMaker, manufactor, twoSoldiers, oneTappedSoldier, twoTreasures, oneTreasure)
+        listOf(squirrelMaker, foodMaker, clueForArtifacts, manufactor, twoSoldiers, oneTappedSoldier, twoTreasures, oneTreasure)
             .forEach { cardRegistry.register(it) }
 
         fun game(vararg battlefield: Pair<Int, String>, spell: String) = scenario()
@@ -164,6 +176,13 @@ class AdditionalTokenScaleScenarioTest : ScenarioTestBase() {
                 g.findPermanents("Soldier Token").size shouldBe 1
                 g.findPermanents("Food").size shouldBe 1
                 withClue("one Squirrel for the Soldier, one for the Food") { g.findPermanents("Squirrel").size shouldBe 2 }
+            }
+
+            test("an unfiltered fixed-count rider applies before a filtered one, so its Food earns the Clue") {
+                val g = game(1 to "Test Clue Rider", 1 to "Test Food Rider", spell = "Test Two Soldiers")
+                g.findPermanents("Soldier Token").size shouldBe 2
+                g.findPermanents("Food").size shouldBe 1
+                withClue("the artifact rider sees the added Food") { g.findPermanents("Clue").size shouldBe 1 }
             }
 
             test("a filtered rider applies before an unfiltered one: Manufactor then Squirrels for all three") {

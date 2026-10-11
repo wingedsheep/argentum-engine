@@ -12,6 +12,7 @@ import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EntersWithReplacements
 import com.wingedsheep.engine.mechanics.layers.StaticAbilityHandler
 import com.wingedsheep.engine.registry.CardRegistry
+import com.wingedsheep.engine.replacement.ActiveReplacement
 import com.wingedsheep.engine.replacement.ActiveReplacements
 import com.wingedsheep.engine.state.Component
 import com.wingedsheep.engine.state.ComponentContainer
@@ -153,8 +154,10 @@ object TokenCreationReplacementHelper {
      * source re-judges its own additions, so nothing loops.
      *
      * CR 616.1 lets the affected player order the replacements; we apply them in the order that
-     * yields the most tokens — fixed-count riders before "that many" riders, and filtered before
-     * unfiltered within each — so Chatterfang counts Quina's Frog and Manufactor's whole set.
+     * yields the most tokens — fixed-count riders before "that many" riders; unfiltered fixed-count
+     * riders before filtered ones (Peregrin Took's Food can earn Worldwalker Helm's Map), and filtered
+     * "that many" riders before unfiltered ones — so Chatterfang counts Quina's Frog and Manufactor's
+     * whole set.
      *
      * @return the updated state plus the created additional-token events (empty if none applied).
      */
@@ -174,8 +177,10 @@ object TokenCreationReplacementHelper {
         if (riders.isEmpty()) return state to emptyList()
         val bySource = riders.groupBy { it.sourceId }.values.sortedWith(
             compareBy(
-                { group -> group.any { (it.effect as CreateAdditionalToken).scale == AdditionalTokenScale.PER_MATCHING_TOKEN } },
-                { group -> group.all { ((it.effect as CreateAdditionalToken).appliesTo as? SdkGameEvent.TokenCreationEvent)?.tokenFilter == null } }
+                { group -> group.perMatching() },
+                // An unfiltered fixed-count rider always fires, so it goes first and can only enable
+                // filtered ones; an unfiltered "that many" rider counts everything, so it goes last.
+                { group -> group.unfiltered() == group.perMatching() }
             )
         )
 
@@ -542,4 +547,10 @@ object TokenCreationReplacementHelper {
 
         return EffectResult.success(newState, events)
     }
+
+    private fun List<ActiveReplacement>.perMatching() =
+        any { (it.effect as CreateAdditionalToken).scale == AdditionalTokenScale.PER_MATCHING_TOKEN }
+
+    private fun List<ActiveReplacement>.unfiltered() =
+        all { ((it.effect as CreateAdditionalToken).appliesTo as? SdkGameEvent.TokenCreationEvent)?.tokenFilter == null }
 }

@@ -15710,7 +15710,7 @@ The priority groups are (CR 616.1a–f):
   (created kind, missing kind), `tokenFilter = Artifact.withSubtype("Clue")` adds `Food` and `Treasure`,
   and so on — that never feed each other, while two Manufactors make three of each (its ruling). The
   affected player would order the riders (CR 616.1); the engine applies the order that makes the most
-  tokens — `PER_EVENT` sources before `PER_MATCHING_TOKEN`, filtered before unfiltered — so Chatterfang
+  tokens — `PER_EVENT` sources before `PER_MATCHING_TOKEN`; among `PER_EVENT`, unfiltered before filtered (Peregrin's Food earns Helm's Map); among `PER_MATCHING_TOKEN`, filtered before unfiltered — so Chatterfang
   also counts Quina's Frog and every token a Manufactor added. No source re-judges its own additions, so
   a Map added for an artifact-token event does not recursively trigger itself. Read only by
   `CreateTokenExecutor` and `CreatePredefinedTokenExecutor`; token *copies* (`CreateTokenCopyOfTarget`)
