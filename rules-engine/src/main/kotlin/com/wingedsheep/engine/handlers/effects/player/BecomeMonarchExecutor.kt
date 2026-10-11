@@ -11,8 +11,8 @@ import kotlin.reflect.KClass
 
 /**
  * Resolves [BecomeMonarchEffect] — "you become the monarch", and the inherent combat-damage steal
- * "its controller becomes the monarch" (CR 724.2), which is the same effect aimed at the damaging
- * creature's controller. The title moves through [MonarchService.become] (CR 724.3).
+ * "its controller becomes the monarch" (CR 725.2), which is the same effect aimed at the damaging
+ * creature's controller. The title moves through [MonarchService.become] (CR 725.3).
  *
  * A player who has left the game can't become the monarch; that resolves to nothing rather than
  * crowning a seat that is gone.

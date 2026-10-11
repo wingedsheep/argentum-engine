@@ -282,7 +282,7 @@ class DamageTriggerDetector(
     }
 
     /**
-     * The monarch's inherent combat-damage steal (CR 724.2): "Whenever a creature deals combat damage
+     * The monarch's inherent combat-damage steal (CR 725.2): "Whenever a creature deals combat damage
      * to the monarch, its controller becomes the monarch."
      *
      * The rule gives it no source and has the monarch control it, so — like the inherent speed

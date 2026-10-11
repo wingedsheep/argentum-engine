@@ -194,10 +194,10 @@ data class GameState(
     val dayNight: com.wingedsheep.sdk.core.DayNight? = null,
 
     /**
-     * The player who is **the monarch** (CR 724), or `null` while the game has none — there is no
-     * monarch until an effect makes one (CR 724.1), and CR 724.4 can leave the game without one.
+     * The player who is **the monarch** (CR 725), or `null` while the game has none — there is no
+     * monarch until an effect makes one (CR 725.1), and CR 725.4 can leave the game without one.
      * A single field rather than a per-player marker because only one player can be the monarch at a
-     * time (CR 724.3). All writes go through [com.wingedsheep.engine.mechanics.monarch.MonarchService].
+     * time (CR 725.3). All writes go through [com.wingedsheep.engine.mechanics.monarch.MonarchService].
      */
     val monarch: EntityId? = null,
 

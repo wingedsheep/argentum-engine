@@ -95,8 +95,8 @@ sealed interface ClientEvent {
     ) : ClientEvent
 
     /**
-     * The monarch changed hands (CR 724). [newMonarchId] is `null` only when the monarch left the game
-     * and nobody still in it could take the title (CR 724.4). The crown itself is rendered from the
+     * The monarch changed hands (CR 725). [newMonarchId] is `null` only when the monarch left the game
+     * and nobody still in it could take the title (CR 725.4). The crown itself is rendered from the
      * player's active-effect badge; this event is the log line and the cue to animate the hand-off.
      */
     @Serializable

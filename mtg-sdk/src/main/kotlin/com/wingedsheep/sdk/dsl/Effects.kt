@@ -1348,8 +1348,8 @@ object Effects {
         com.wingedsheep.sdk.scripting.effects.GainCitysBlessingEffect(target)
 
     /**
-     * "[target] becomes the monarch" (CR 724). The title moves — the previous monarch stops being it
-     * (CR 724.3). Queen Marchesa, Palace Jailer and the rest of the monarch cycle.
+     * "[target] becomes the monarch" (CR 725). The title moves — the previous monarch stops being it
+     * (CR 725.3). Queen Marchesa, Palace Jailer and the rest of the monarch cycle.
      */
     fun BecomeMonarch(target: EffectTarget = EffectTarget.Controller): Effect =
         com.wingedsheep.sdk.scripting.effects.BecomeMonarchEffect(target)

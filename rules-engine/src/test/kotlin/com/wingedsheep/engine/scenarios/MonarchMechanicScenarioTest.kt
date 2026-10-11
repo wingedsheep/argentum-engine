@@ -15,19 +15,19 @@ import io.kotest.assertions.withClue
 import io.kotest.matchers.shouldBe
 
 /**
- * Scenario tests for **the monarch** (CR 724, Conspiracy: Take the Crown).
+ * Scenario tests for **the monarch** (CR 725, Conspiracy: Take the Crown).
  *
  * | Rule | What it says | Covered by |
  * |---|---|---|
- * | 724.1 | no monarch until an effect makes one | "the game starts with no monarch" |
- * | 724.2 (draw) | at the beginning of the monarch's end step, that player draws | "the monarch draws …", "not on an opponent's end step" |
- * | 724.2 (steal) | a creature dealing combat damage to the monarch crowns its controller | "combat damage steals", "noncombat damage doesn't" |
+ * | 725.1 | no monarch until an effect makes one | "the game starts with no monarch" |
+ * | 725.2 (draw) | at the beginning of the monarch's end step, that player draws | "the monarch draws …", "not on an opponent's end step" |
+ * | 725.2 (steal) | a creature dealing combat damage to the monarch crowns its controller | "combat damage steals", "noncombat damage doesn't" |
  * | 608.2h | "its controller" of a creature gone by resolution is its last-known controller | "destroyed in response" |
- * | 724.2 (control) | the inherent abilities are controlled by who was monarch when they triggered | "still draws after losing the crown" (ruling) |
- * | 724.3 | only one monarch; becoming it un-crowns the old one | "only one player can be the monarch" |
+ * | 725.2 (control) | the inherent abilities are controlled by who was monarch when they triggered | "still draws after losing the crown" (ruling) |
+ * | 725.3 | only one monarch; becoming it un-crowns the old one | "only one player can be the monarch" |
  * | ruling | becoming the monarch while already it changes nothing | "becoming the monarch again" |
  *
- * CR 724.4 (the monarch leaving the game) needs a pod that continues — see `MonarchMultiplayerTest`.
+ * CR 725.4 (the monarch leaving the game) needs a pod that continues — see `MonarchMultiplayerTest`.
  */
 class MonarchMechanicScenarioTest : ScenarioTestBase() {
 
@@ -84,7 +84,7 @@ class MonarchMechanicScenarioTest : ScenarioTestBase() {
     init {
         listOf(crowning, usurp, bear, sparker, slay, royalTithe).forEach { cardRegistry.register(it) }
 
-        test("the game starts with no monarch, and the conditions read false (CR 724.1)") {
+        test("the game starts with no monarch, and the conditions read false (CR 725.1)") {
             val game = monarchGame {
                 withCardInHand(1, "Test Royal Tithe")
             }
@@ -128,7 +128,7 @@ class MonarchMechanicScenarioTest : ScenarioTestBase() {
             again.flatMap { it.events }.filterIsInstance<MonarchChangedEvent>() shouldBe emptyList()
         }
 
-        test("the monarch draws a card at the beginning of their end step (CR 724.2)") {
+        test("the monarch draws a card at the beginning of their end step (CR 725.2)") {
             val game = monarchGame { withCardInHand(1, "Test Crowning") }
             game.castSpell(1, "Test Crowning")
             game.resolveStack()
@@ -158,7 +158,7 @@ class MonarchMechanicScenarioTest : ScenarioTestBase() {
             }
         }
 
-        test("a creature's combat damage to the monarch makes its controller the monarch (CR 724.2)") {
+        test("a creature's combat damage to the monarch makes its controller the monarch (CR 725.2)") {
             val game = monarchGame {
                 withCardOnBattlefield(1, "Test Monarch Bear", summoningSickness = false)
             }
@@ -211,7 +211,7 @@ class MonarchMechanicScenarioTest : ScenarioTestBase() {
             game.state.monarch shouldBe game.player2Id
         }
 
-        test("only one player can be the monarch (CR 724.3)") {
+        test("only one player can be the monarch (CR 725.3)") {
             val game = monarchGame(activePlayer = 2) {
                 withCardInHand(2, "Test Crowning")
             }
@@ -242,7 +242,7 @@ class MonarchMechanicScenarioTest : ScenarioTestBase() {
             game.resolveStack()
 
             game.state.monarch shouldBe game.player2Id
-            withClue("The trigger is controlled by who was the monarch when it triggered (CR 724.2)") {
+            withClue("The trigger is controlled by who was the monarch when it triggered (CR 725.2)") {
                 game.handSize(1) shouldBe p1Hand + 1
             }
         }

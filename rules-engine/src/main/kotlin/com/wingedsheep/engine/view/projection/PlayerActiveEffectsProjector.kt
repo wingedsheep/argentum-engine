@@ -544,7 +544,7 @@ internal class PlayerActiveEffectsProjector(
             )
         }
 
-        // The monarch (CR 724). Surface the Scryfall "The Monarch" marker card (tcn2 #1) as the badge
+        // The monarch (CR 725). Surface the Scryfall "The Monarch" marker card (tcn2 #1) as the badge
         // image, like the City's Blessing above.
         if (state.monarch == playerId) {
             effects.add(

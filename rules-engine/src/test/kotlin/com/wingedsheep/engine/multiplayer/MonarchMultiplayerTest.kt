@@ -22,8 +22,8 @@ import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
 /**
- * The monarch in a pod (CR 724): "an opponent is the monarch" must look at *every* opponent, and a
- * monarch who leaves the game hands the crown on at the same time (CR 724.4).
+ * The monarch in a pod (CR 725): "an opponent is the monarch" must look at *every* opponent, and a
+ * monarch who leaves the game hands the crown on at the same time (CR 725.4).
  */
 class MonarchMultiplayerTest : FunSpec({
 
@@ -55,7 +55,7 @@ class MonarchMultiplayerTest : FunSpec({
         state.holds(Conditions.AnOpponentIsTheMonarch, p[3]) shouldBe false
     }
 
-    test("with no monarch, both conditions are false and 'not the monarch' is true (CR 724.1)") {
+    test("with no monarch, both conditions are false and 'not the monarch' is true (CR 725.1)") {
         val (state, p) = boot()
         state.monarch shouldBe null
         state.holds(Conditions.YouAreTheMonarch, p[0]) shouldBe false
@@ -63,7 +63,7 @@ class MonarchMultiplayerTest : FunSpec({
         state.holds(NotCondition(Conditions.YouAreTheMonarch), p[0]) shouldBe true
     }
 
-    test("a monarch who leaves hands the crown to the active player (CR 724.4)") {
+    test("a monarch who leaves hands the crown to the active player (CR 725.4)") {
         val (initial, p) = boot()
         initial.activePlayerId shouldBe p[0]
         val processor = ActionProcessor(registry)
@@ -79,7 +79,7 @@ class MonarchMultiplayerTest : FunSpec({
         }
     }
 
-    test("an active monarch who leaves hands the crown to the next player in turn order (CR 724.4)") {
+    test("an active monarch who leaves hands the crown to the next player in turn order (CR 725.4)") {
         val (initial, p) = boot(starting = 1)
         initial.activePlayerId shouldBe p[1]
         val processor = ActionProcessor(registry)

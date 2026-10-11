@@ -2387,12 +2387,12 @@ object Conditions {
     val YouHaveCitysBlessing: ConditionInterface =
         PlayerHasCitysBlessing(Player.You)
 
-    /** If you're the monarch (CR 724). False while the game has no monarch. */
+    /** If you're the monarch (CR 725). False while the game has no monarch. */
     val YouAreTheMonarch: ConditionInterface =
         PlayerIsMonarch(Player.You)
 
     /**
-     * If an opponent is the monarch (CR 724) — any opponent, not just the first (Queen Marchesa's
+     * If an opponent is the monarch (CR 725) — any opponent, not just the first (Queen Marchesa's
      * upkeep Assassin). False while the game has no monarch.
      */
     val AnOpponentIsTheMonarch: ConditionInterface =

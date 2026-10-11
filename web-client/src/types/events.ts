@@ -94,8 +94,8 @@ export interface DayNightChangedEvent {
 }
 
 /**
- * The monarch changed hands (CR 724). `newMonarchId` is null only when the monarch left the game and
- * nobody still in it could take the title (CR 724.4). The crown itself is the player's active-effect badge.
+ * The monarch changed hands (CR 725). `newMonarchId` is null only when the monarch left the game and
+ * nobody still in it could take the title (CR 725.4). The crown itself is the player's active-effect badge.
  */
 export interface MonarchChangedEvent {
   readonly type: 'monarchChanged'

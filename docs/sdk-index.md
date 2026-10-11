@@ -699,7 +699,7 @@ Families:
 - `BecomeCopyOfLinkedExileEffect(affected: EffectTarget)` — The affected permanent becomes a copy of a creature card exiled with the effect's source (read from the source's linked exile — see `CardSource.FromLinkedExile`), for as long as the source remains…
 - `BecomeCreatureEffect(target: EffectTarget, power: DynamicAmount, toughness: DynamicAmount, keywords: Set<Keyword>, creatureTypes: Set<String>, removeTypes: Set<String>, addTypes: Set<String>, colors: Set<String>?, imageUri: String?, duration: Duration, dynamicPower: DynamicAmount?, dynamicToughness: DynamicAmount?)` — Target permanent becomes a creature with specified characteristics until end of turn.
 - `BecomeCreatureTypeEffect(target: EffectTarget, duration: Duration, excludedTypes: List<String>)` — Target creature becomes the creature type of your choice until end of turn.
-- `BecomeMonarchEffect(target: EffectTarget)` — "target becomes the monarch" (Conspiracy: Take the Crown, CR 724).
+- `BecomeMonarchEffect(target: EffectTarget)` — "target becomes the monarch" (Conspiracy: Take the Crown, CR 725).
 - `BecomeMonstrousEffect(target: EffectTarget)` — Target permanent becomes monstrous (CR 701.37b) — the designation half of the monstrosity keyword action.
 - `BecomePreparedEffect(target: EffectTarget)` — Make target become prepared (Secrets of Strixhaven).
 - `BecomeRenownedEffect(target: EffectTarget)` — Target permanent becomes renowned (CR 702.112b) — the designation half of the renown trigger the engine derives from com.wingedsheep.sdk.core.Keyword.RENOWN.

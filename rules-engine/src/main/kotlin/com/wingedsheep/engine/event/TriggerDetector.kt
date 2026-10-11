@@ -742,7 +742,7 @@ class TriggerDetector(
             }
         }
 
-        // The monarch's inherent end-step draw (CR 724.2) — sourceless, controlled by the monarch.
+        // The monarch's inherent end-step draw (CR 725.2) — sourceless, controlled by the monarch.
         state.monarch?.let { monarch ->
             val ability = MonarchAbilities.endStepDraw
             if (matcher.matchesStepTrigger(ability.trigger, step, monarch, state, monarch)) {
@@ -1899,7 +1899,7 @@ class TriggerDetector(
             damageDetector.detectDamageObserverTriggers(state, event, triggers, index)
         }
 
-        // The monarch's inherent combat-damage steal (CR 724.2) — a sourceless damage observer
+        // The monarch's inherent combat-damage steal (CR 725.2) — a sourceless damage observer
         if (event is DamageDealtEvent && state.monarch != null) {
             damageDetector.detectMonarchStealTrigger(state, event, triggers)
         }

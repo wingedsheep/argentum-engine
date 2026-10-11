@@ -764,7 +764,7 @@ data class PlayerHasCitysBlessing(val player: Player = Player.You) : Condition {
 }
 
 // =============================================================================
-// The monarch (Conspiracy: Take the Crown, CR 724)
+// The monarch (Conspiracy: Take the Crown, CR 725)
 // =============================================================================
 
 /**
@@ -776,8 +776,8 @@ data class PlayerHasCitysBlessing(val player: Player = Player.You) : Condition {
  * multiplayer, where the first opponent is not necessarily the one wearing the crown. Any other
  * [Player] resolves to one player and asks whether that player is the monarch.
  *
- * False while the game has no monarch (CR 724.1 — there is none until an effect makes one, and
- * CR 724.4 can leave the game without one), so "if you're not the monarch" is
+ * False while the game has no monarch (CR 725.1 — there is none until an effect makes one, and
+ * CR 725.4 can leave the game without one), so "if you're not the monarch" is
  * `Conditions.Not(Conditions.YouAreTheMonarch)` and is true then.
  */
 @SerialName("PlayerIsMonarch")

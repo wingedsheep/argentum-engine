@@ -13,7 +13,7 @@ import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 /**
- * The two inherent triggered abilities of being the monarch (CR 724.2).
+ * The two inherent triggered abilities of being the monarch (CR 725.2).
  *
  * *"At the beginning of the monarch's end step, that player draws a card"* and *"Whenever a creature
  * deals combat damage to the monarch, its controller becomes the monarch."*

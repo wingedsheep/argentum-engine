@@ -703,7 +703,7 @@ class ConditionEvaluator(
                 count > 0
             }
             is PlayerHasCitysBlessing -> evaluateHasCitysBlessingCtx(state, condition, ctx)
-            // CR 724 — one monarch at most; "an opponent" is existential over every opponent.
+            // CR 725 — one monarch at most; "an opponent" is existential over every opponent.
             is PlayerIsMonarch -> {
                 val monarch = state.monarch
                 if (monarch == null) false else when (condition.player) {

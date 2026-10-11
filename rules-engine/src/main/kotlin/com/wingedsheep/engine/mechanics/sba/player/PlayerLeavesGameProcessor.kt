@@ -39,7 +39,7 @@ import com.wingedsheep.sdk.scripting.Duration
  * [PlayerLeftGameComponent]) so it remains in [GameState.turnOrder] for history and the
  * game-end SBA. The turn-order iteration helpers already skip players who have left.
  *
- * - **CR 724.4 (the monarch)** — a monarch who leaves hands the title to the active player (or
+ * - **CR 725.4 (the monarch)** — a monarch who leaves hands the title to the active player (or
  *   the next player in turn order) at the same time; see [MonarchService.onPlayerLeft].
  * - **CR 800.4f–h (a choice the leaver was mid-way through making)** — a pending decision
  *   addressed to the leaver is abandoned: the decision is cleared, the continuation frames
@@ -145,7 +145,7 @@ object PlayerLeavesGameProcessor {
         // 8. Mark the leave processing done so the SBA loop never re-applies it.
         s = s.updateEntity(leaver) { it.with(PlayerLeftGameComponent) }
 
-        // 9. CR 724.4 — a monarch who leaves hands the title on at the same time.
+        // 9. CR 725.4 — a monarch who leaves hands the title on at the same time.
         val (afterMonarch, monarchEvents) = MonarchService.onPlayerLeft(s, leaver)
         s = afterMonarch
 

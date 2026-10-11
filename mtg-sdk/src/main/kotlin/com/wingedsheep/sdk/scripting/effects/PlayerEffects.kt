@@ -1046,12 +1046,12 @@ data class GainCitysBlessingEffect(
 }
 
 /**
- * "[target] becomes the monarch" (Conspiracy: Take the Crown, CR 724).
+ * "[target] becomes the monarch" (Conspiracy: Take the Crown, CR 725).
  *
  * The monarch is a single-holder player designation: as a player becomes the monarch, the current
- * monarch ceases to be (CR 724.3), so this effect *moves* the title rather than granting a copy.
+ * monarch ceases to be (CR 725.3), so this effect *moves* the title rather than granting a copy.
  * Making the current monarch the monarch again is a no-op. The two inherent monarch triggers — the
- * end-step draw and the combat-damage steal (CR 724.2) — belong to the engine, not to the card that
+ * end-step draw and the combat-damage steal (CR 725.2) — belong to the engine, not to the card that
  * crowned anyone, so they keep working after that card is gone.
  *
  * @param target The player who becomes the monarch. Defaults to the ability's controller, matching
