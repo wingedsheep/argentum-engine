@@ -138,7 +138,7 @@ class DecisionResponder(
             is ChooseReplacementDecision -> respondReplacement(decision)
             is BudgetModalDecision -> respondBudgetModal(decision)
             is AssignDamageDecision -> respondDamageAssignment(state, decision)
-            is CombatResolutionDecision -> respondCombatResolution(decision)
+            is CombatResolutionDecision -> respondCombatResolution(state, decision, playerId)
             is SearchLibraryDecision -> respondSearchLibrary(state, decision, playerId)
             is ReorderLibraryDecision -> respondReorderLibrary(state, decision, playerId)
             is SelectManaSourcesDecision -> respondManaSelection(decision)
@@ -903,9 +903,20 @@ class DecisionResponder(
         return DamageAssignmentResponse(decision.id, decision.defaultAssignments)
     }
 
-    private fun respondCombatResolution(decision: CombatResolutionDecision): DecisionResponse {
-        // Confirm the engine-computed default edge amounts (lethal-first, rest to drain).
-        return CombatResolutionResponse(decision.id, decision.edges.map { DamageEdgeAmount(it.id, it.amount) })
+    private fun respondCombatResolution(
+        state: GameState,
+        decision: CombatResolutionDecision,
+        playerId: EntityId,
+    ): DecisionResponse {
+        // The engine's defaults are lethal-in-declaration-order, which can waste a kill; divide the
+        // damage to kill the most valuable creatures instead (CR 510.1c has no assignment order).
+        val projected = state.projectedState
+        return CombatDamagePlanner.plan(
+            decision,
+            playerId,
+            controllerOf = projected::getController,
+            value = { id -> if (projected.hasKeyword(id, Keyword.INDESTRUCTIBLE)) 0.0 else creatureKillValue(state, id) },
+        )
     }
 
     // ── Library search ───────────────────────────────────────────────────

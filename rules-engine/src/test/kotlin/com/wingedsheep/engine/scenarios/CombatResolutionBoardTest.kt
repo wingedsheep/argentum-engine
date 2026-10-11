@@ -991,4 +991,44 @@ class CombatResolutionBoardTest : FunSpec({
         battlefield.contains(ne2) shouldBe true
         battlefield.contains(defBear) shouldBe true
     }
+
+    /**
+     * CR 510.1c: a creature blocked by two or more creatures "assigns its combat damage to those
+     * creatures divided as its controller chooses among them". There is no damage-assignment order
+     * any more, so leaving every blocker below lethal is a legal split (it used to be rejected as
+     * "must assign lethal damage to all but one blocker").
+     */
+    test("blocked creature may spread damage across blockers without reaching lethal on any") {
+        val driver = createDriver()
+        driver.initMirrorMatch(deck = Deck.of("Forest" to 40))
+        val attacker = driver.activePlayer!!
+        val defender = if (attacker == driver.player1) driver.player2 else driver.player1
+
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+        val goblin = driver.putCreatureOnBattlefield(attacker, "Goblin Guide")        // 2/1
+        val courser1 = driver.putCreatureOnBattlefield(defender, "Centaur Courser")  // 3/3
+        val courser2 = driver.putCreatureOnBattlefield(defender, "Centaur Courser")  // 3/3
+        driver.removeSummoningSickness(goblin)
+
+        driver.passPriorityUntil(Step.DECLARE_ATTACKERS)
+        driver.declareAttackers(attacker, listOf(goblin), defender)
+        driver.passPriorityUntil(Step.DECLARE_BLOCKERS)
+        driver.declareBlockers(defender, mapOf(courser1 to listOf(goblin), courser2 to listOf(goblin)))
+
+        advanceUntilDecision(driver)
+        val decision = driver.state.pendingDecision
+        decision.shouldBeInstanceOf<CombatResolutionDecision>()
+        val toFirst = decision.edges.single { it.sourceId == goblin && it.targetId == courser1 }
+        val toSecond = decision.edges.single { it.sourceId == goblin && it.targetId == courser2 }
+
+        val spread = CombatResolutionResponse(
+            decisionId = decision.id,
+            edges = listOf(DamageEdgeAmount(toFirst.id, 1), DamageEdgeAmount(toSecond.id, 1)),
+        )
+        driver.submitDecision(decision.playerId, spread).error shouldBe null
+        driver.state.getEntity(courser1)!!
+            .get<com.wingedsheep.engine.state.components.battlefield.DamageComponent>()?.amount shouldBe 1
+        driver.state.getEntity(courser2)!!
+            .get<com.wingedsheep.engine.state.components.battlefield.DamageComponent>()?.amount shouldBe 1
+    }
 })

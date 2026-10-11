@@ -59,8 +59,8 @@ export function CombatResolutionBoard({ decision }: { decision: CombatResolution
   const hasBanding = (id: EntityId): boolean =>
     gameState?.cards[id]?.keywords?.includes(Keyword.BANDING) ?? false
   // A source's edges are "banding-inverted" for this player when banding handed them the division:
-  // the order constraint is lifted (CR 702.22j/k) and they're a real combat edge, not a trample
-  // drain. On defense this is how the defender ends up assigning an attacker's damage.
+  // the edge is flagged `orderConstrained: false` (CR 702.22j/k) and it's a real combat edge, not a
+  // trample drain. On defense this is how the defender ends up assigning an attacker's damage.
   const sourceBandingInverted = (sourceId: EntityId): boolean =>
     myEdges.some((e) => e.sourceId === sourceId && !e.orderConstrained && !e.isTrampleDrain)
   const bandingActive =
@@ -68,7 +68,7 @@ export function CombatResolutionBoard({ decision }: { decision: CombatResolution
     [...decision.attackers, ...decision.blockers].some((c) => hasBanding(c.id))
 
   // Initial / reset assignment. Starts from the engine's lethal-first defaults, but for any source
-  // whose division banding handed to this player (order lifted) we instead dump the source's whole
+  // whose division banding handed to this player we instead dump the source's whole
   // power onto its FIRST target and zero the rest — the canonical banding line: sponge everything
   // onto one creature. This covers both directions symmetrically:
   //   - Defense (CR 702.22j): you block with a banding creature, so you assign the attacker's
@@ -240,7 +240,7 @@ export function CombatResolutionBoard({ decision }: { decision: CombatResolution
           </div>
           {!isDrain && (
             <span style={{ color: atLethal ? '#4ade80' : '#f59e0b', fontSize: responsive.fontSize.small }}>
-              lethal: {edge.lethal}{atLethal ? ' ✓' : ''}{edge.orderConstrained ? '' : ' (any order)'}
+              lethal: {edge.lethal}{atLethal ? ' ✓' : ''}{edge.orderConstrained ? '' : ' (banding)'}
             </span>
           )}
           {sharedTarget && (

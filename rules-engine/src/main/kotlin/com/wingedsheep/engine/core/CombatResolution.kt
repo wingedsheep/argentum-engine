@@ -11,22 +11,21 @@ import kotlinx.serialization.Serializable
  * drain nodes, and each [DamageEdge] carries an engine-computed default amount the player can
  * adjust before confirming.
  *
- * There is no separate damage-assignment *order* step: the chooser assigns damage to each edge
- * directly, and the validator accepts any split that is legal under *some* order the attacker
- * could pick (CR 510.1c) — i.e. for an [DamageEdge.orderConstrained] source, at most one blocker
- * it damages may be left below [DamageEdge.lethal] (counting cross-source damage this step).
- * Banding (CR 702.22j/k) lifts even that, letting the chooser divide freely, and flips
- * [DamageEdge.editableBy]; it does NOT lift the separate CR 702.19b trample lethal-first gate,
- * which keys off [DamageEdge.lethal] directly regardless of [DamageEdge.orderConstrained].
+ * There is no damage-assignment *order*: CR 510.1c/d let a creature blocked by (or blocking) two
+ * or more creatures divide its combat damage among them as its controller chooses, so the
+ * validator accepts any split within the source's power. The only lethal-first gate left is
+ * CR 702.19b trample (every blocker at [DamageEdge.lethal] before anything reaches the drain).
+ * Banding (CR 702.22j/k) flips [DamageEdge.editableBy] to the other player; it does NOT lift the
+ * trample gate.
  */
 
-/** Which way a [DamageEdge] points, and therefore how it is gated. */
+/** Which way a [DamageEdge] points. */
 @Serializable
 enum class DamageEdgeDirection {
-    /** Attacker assigns to one of its blockers (CR 510.1c order applies). */
+    /** Attacker assigns to one of its blockers (CR 510.1c). */
     ATTACKER_TO_BLOCKER,
 
-    /** Blocker assigns to one of the attackers it blocks (CR 510.1c order applies). */
+    /** Blocker assigns to one of the attackers it blocks (CR 510.1d). */
     BLOCKER_TO_ATTACKER,
 
     /** Trample / free-assignment overflow to the defending player (CR 702.19b drain). */
@@ -53,13 +52,14 @@ enum class ResolutionTargetKind { PLAYER, PLANESWALKER, BATTLE }
  * @property maximum Cap for this edge — the source's available combat damage (its power, or
  *   toughness for Doran-style sources).
  * @property lethal The true lethal need for [targetId] from this source: 1 for a deathtouch
- *   source, otherwise `toughness − damage already marked` (at least 1). Always the real value
- *   so the CR 702.19b trample gate stays correct even when [orderConstrained] is false.
- * @property orderConstrained Whether this edge participates in CR 510.1c damage-assignment order
- *   gating. False for banding (CR 702.22j/k) and free-assignment edges, which may be divided
- *   ignoring order.
+ *   source, otherwise `toughness − damage already marked` (at least 1). Drives the CR 702.19b
+ *   trample gate and the "at lethal" hint in clients.
+ * @property orderConstrained Historical name, kept for wire compatibility: false marks an edge
+ *   whose division banding handed to the other player (CR 702.22j/k) and free-assignment edges.
+ *   It no longer gates anything — CR 510.1c/d have no damage-assignment order — but clients use it
+ *   to recognise banding-inverted sources.
  * @property isTrampleDrain True for a trample overflow edge to a player/planeswalker/battle;
- *   gated by CR 702.19b (every blocker at lethal first), independent of [orderConstrained].
+ *   gated by CR 702.19b (every blocker at lethal first).
  * @property editableBy The player allowed to modify this edge. Banding flips this to the
  *   opposing player for the affected edges (CR 702.22j/k).
  */
@@ -110,7 +110,7 @@ data class ResolutionBlocker(
     val hasDoubleStrike: Boolean,
     val dealsDamageThisStep: Boolean,
     val blockedAttackerIds: List<EntityId>,
-    /** Damage-assignment order for the attackers this blocker blocks (CR 510.1c). */
+    /** Display / default-fill order for the attackers this blocker blocks. */
     val orderedAttackers: List<EntityId>,
     val markedDamage: Int,
 )
@@ -156,7 +156,7 @@ data class DamageEdgeAmount(val edgeId: String, val amount: Int)
  *
  * @property edges The chosen amounts. A chooser submits only the edges they own ([DamageEdge.editableBy]);
  *   the resumer filters out any others.
- * @property orderedBlockers Optional row-order overrides: attacker -> its blockers in assignment order.
+ * @property orderedBlockers Optional row-order overrides: attacker -> its blockers, in display order.
  * @property orderedAttackers Optional row-order overrides: blocker -> the attackers it blocks, in order.
  */
 @Serializable

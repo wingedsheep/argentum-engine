@@ -1,7 +1,9 @@
 package com.wingedsheep.ai.engine.rollout
 
+import com.wingedsheep.ai.engine.CombatDamagePlanner
 import com.wingedsheep.ai.engine.TargetSelection
 import com.wingedsheep.ai.engine.TrivialDecisions
+import com.wingedsheep.ai.engine.evaluation.BoardPresence
 import com.wingedsheep.ai.engine.knowledge.IntentCatalog
 import com.wingedsheep.engine.core.AssignDamageDecision
 import com.wingedsheep.engine.core.BatchYesNoDecision
@@ -17,9 +19,7 @@ import com.wingedsheep.engine.core.ChooseReplacementDecision
 import com.wingedsheep.engine.core.ChooseTargetsDecision
 import com.wingedsheep.engine.core.ColorChosenResponse
 import com.wingedsheep.engine.core.CombatResolutionDecision
-import com.wingedsheep.engine.core.CombatResolutionResponse
 import com.wingedsheep.engine.core.DamageAssignmentResponse
-import com.wingedsheep.engine.core.DamageEdgeAmount
 import com.wingedsheep.engine.core.DecisionResponse
 import com.wingedsheep.engine.core.DistributeDecision
 import com.wingedsheep.engine.core.DistributionResponse
@@ -42,6 +42,7 @@ import com.wingedsheep.engine.core.YesNoDecision
 import com.wingedsheep.engine.core.YesNoResponse
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.model.EntityId
 
 /**
@@ -159,10 +160,21 @@ class FastDecisionResponder(private val intents: IntentCatalog = IntentCatalog.N
                 decision.id,
                 decision.defaultAssignments.ifEmpty { decision.minimumAssignments }
             )
-            is CombatResolutionDecision -> CombatResolutionResponse(
-                decision.id,
-                decision.edges.map { DamageEdgeAmount(it.id, it.amount) }
-            )
+            // Same division the full responder uses: the engine's lethal-in-declaration-order default
+            // can waste a kill, which would bias every playout through a multi-block.
+            is CombatResolutionDecision -> {
+                val projected = state.projectedState
+                CombatDamagePlanner.plan(
+                    decision,
+                    decision.playerId,
+                    controllerOf = projected::getController,
+                    value = { id ->
+                        val card = state.getEntity(id)?.get<CardComponent>()
+                        if (card == null || projected.hasKeyword(id, Keyword.INDESTRUCTIBLE)) 0.0
+                        else BoardPresence.permanentValue(state, projected, id, card, intents)
+                    },
+                )
+            }
 
             // Auto-pay when the solver found a payment; otherwise submit nothing, which the engine
             // reads as a decline and ends the line cleanly rather than looping on it.

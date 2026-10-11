@@ -652,7 +652,7 @@ internal class CombatDamageManager(
         val edges = mutableListOf<DamageEdge>()
 
         // Attacker -> blocker edges, plus a trample drain to the defender. Defaults come from the
-        // lethal-first auto distribution (CR 510.1c order); the player may re-divide within budget.
+        // lethal-first default distribution; the player may re-divide freely within budget (CR 510.1c).
         for (c in candidates) {
             val auto = damageCalculator.calculateAutoDamageDistribution(state, c.attackerId).assignments
             for (blockerId in c.liveBlockers) {
