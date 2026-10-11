@@ -13,6 +13,8 @@ import com.wingedsheep.sdk.scripting.GrantKeyword
 import com.wingedsheep.sdk.scripting.GrantLandwalkOfChosenType
 import com.wingedsheep.sdk.scripting.ModifyStats
 import com.wingedsheep.sdk.scripting.StaticAbility
+import com.wingedsheep.sdk.scripting.effects.AdaptAsThoughNoCountersEffect
+import com.wingedsheep.sdk.scripting.effects.AdaptEffect
 import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
 import com.wingedsheep.sdk.scripting.effects.AddDynamicCountersEffect
 import com.wingedsheep.sdk.scripting.effects.CantBeRegeneratedEffect
@@ -195,6 +197,8 @@ object TargetPolarityAnalyzer {
             is GrantProtectionFromChosenColorEffect -> leaf.target to TargetPolarity.BENEFICIAL
             is GrantHexproofFromChosenColorEffect -> leaf.target to TargetPolarity.BENEFICIAL
             is AddCountersEffect -> leaf.target to counterPolarity(leaf.counterType)
+            is AdaptEffect -> leaf.target to TargetPolarity.BENEFICIAL
+            is AdaptAsThoughNoCountersEffect -> leaf.target to TargetPolarity.BENEFICIAL
             is AddDynamicCountersEffect -> leaf.target to counterPolarity(leaf.counterType)
             else -> return emptyList()
         }

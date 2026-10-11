@@ -1617,31 +1617,8 @@
                     }
                 },
                 "effect": {
-                    "type": "Gated",
-                    "gate": {
-                        "type": "Gate.WhenCondition",
-                        "condition": {
-                            "type": "Not",
-                            "condition": {
-                                "type": "EntityMatches",
-                                "entity": "Self",
-                                "filter": {
-                                    "statePredicates": [
-                                        {
-                                            "type": "HasCounter",
-                                            "counterType": "PLUS_ONE_PLUS_ONE"
-                                        }
-                                    ]
-                                }
-                            }
-                        }
-                    },
-                    "then": {
-                        "type": "AddCounters",
-                        "counterType": "PLUS_ONE_PLUS_ONE",
-                        "count": 1,
-                        "target": "Self"
-                    }
+                    "type": "Adapt",
+                    "amount": 1
                 }
             }
         ]
@@ -3962,31 +3939,8 @@
                     }
                 },
                 "effect": {
-                    "type": "Gated",
-                    "gate": {
-                        "type": "Gate.WhenCondition",
-                        "condition": {
-                            "type": "Not",
-                            "condition": {
-                                "type": "EntityMatches",
-                                "entity": "Self",
-                                "filter": {
-                                    "statePredicates": [
-                                        {
-                                            "type": "HasCounter",
-                                            "counterType": "PLUS_ONE_PLUS_ONE"
-                                        }
-                                    ]
-                                }
-                            }
-                        }
-                    },
-                    "then": {
-                        "type": "AddCounters",
-                        "counterType": "PLUS_ONE_PLUS_ONE",
-                        "count": 2,
-                        "target": "Self"
-                    }
+                    "type": "Adapt",
+                    "amount": 2
                 }
             }
         ],
@@ -5063,31 +5017,8 @@
                     }
                 },
                 "effect": {
-                    "type": "Gated",
-                    "gate": {
-                        "type": "Gate.WhenCondition",
-                        "condition": {
-                            "type": "Not",
-                            "condition": {
-                                "type": "EntityMatches",
-                                "entity": "Self",
-                                "filter": {
-                                    "statePredicates": [
-                                        {
-                                            "type": "HasCounter",
-                                            "counterType": "PLUS_ONE_PLUS_ONE"
-                                        }
-                                    ]
-                                }
-                            }
-                        }
-                    },
-                    "then": {
-                        "type": "AddCounters",
-                        "counterType": "PLUS_ONE_PLUS_ONE",
-                        "count": 1,
-                        "target": "Self"
-                    }
+                    "type": "Adapt",
+                    "amount": 1
                 }
             }
         ]
@@ -6088,31 +6019,8 @@
                     }
                 },
                 "effect": {
-                    "type": "Gated",
-                    "gate": {
-                        "type": "Gate.WhenCondition",
-                        "condition": {
-                            "type": "Not",
-                            "condition": {
-                                "type": "EntityMatches",
-                                "entity": "Self",
-                                "filter": {
-                                    "statePredicates": [
-                                        {
-                                            "type": "HasCounter",
-                                            "counterType": "PLUS_ONE_PLUS_ONE"
-                                        }
-                                    ]
-                                }
-                            }
-                        }
-                    },
-                    "then": {
-                        "type": "AddCounters",
-                        "counterType": "PLUS_ONE_PLUS_ONE",
-                        "count": 2,
-                        "target": "Self"
-                    }
+                    "type": "Adapt",
+                    "amount": 2
                 },
                 "descriptionOverride": "Adapt 2."
             }
@@ -6540,31 +6448,8 @@
                     }
                 },
                 "effect": {
-                    "type": "Gated",
-                    "gate": {
-                        "type": "Gate.WhenCondition",
-                        "condition": {
-                            "type": "Not",
-                            "condition": {
-                                "type": "EntityMatches",
-                                "entity": "Self",
-                                "filter": {
-                                    "statePredicates": [
-                                        {
-                                            "type": "HasCounter",
-                                            "counterType": "PLUS_ONE_PLUS_ONE"
-                                        }
-                                    ]
-                                }
-                            }
-                        }
-                    },
-                    "then": {
-                        "type": "AddCounters",
-                        "counterType": "PLUS_ONE_PLUS_ONE",
-                        "count": 4,
-                        "target": "Self"
-                    }
+                    "type": "Adapt",
+                    "amount": 4
                 },
                 "descriptionOverride": "{6}{B}: Adapt 4. This ability costs {1} less to activate for each other artifact you control.",
                 "genericCostReduction": {
@@ -6698,31 +6583,8 @@
                     }
                 },
                 "effect": {
-                    "type": "Gated",
-                    "gate": {
-                        "type": "Gate.WhenCondition",
-                        "condition": {
-                            "type": "Not",
-                            "condition": {
-                                "type": "EntityMatches",
-                                "entity": "Self",
-                                "filter": {
-                                    "statePredicates": [
-                                        {
-                                            "type": "HasCounter",
-                                            "counterType": "PLUS_ONE_PLUS_ONE"
-                                        }
-                                    ]
-                                }
-                            }
-                        }
-                    },
-                    "then": {
-                        "type": "AddCounters",
-                        "counterType": "PLUS_ONE_PLUS_ONE",
-                        "count": 2,
-                        "target": "Self"
-                    }
+                    "type": "Adapt",
+                    "amount": 2
                 }
             }
         ]
@@ -6800,31 +6662,8 @@
                     }
                 },
                 "effect": {
-                    "type": "Gated",
-                    "gate": {
-                        "type": "Gate.WhenCondition",
-                        "condition": {
-                            "type": "Not",
-                            "condition": {
-                                "type": "EntityMatches",
-                                "entity": "Self",
-                                "filter": {
-                                    "statePredicates": [
-                                        {
-                                            "type": "HasCounter",
-                                            "counterType": "PLUS_ONE_PLUS_ONE"
-                                        }
-                                    ]
-                                }
-                            }
-                        }
-                    },
-                    "then": {
-                        "type": "AddCounters",
-                        "counterType": "PLUS_ONE_PLUS_ONE",
-                        "count": 1,
-                        "target": "Self"
-                    }
+                    "type": "Adapt",
+                    "amount": 1
                 }
             }
         ]
@@ -7354,31 +7193,8 @@
                     }
                 },
                 "effect": {
-                    "type": "Gated",
-                    "gate": {
-                        "type": "Gate.WhenCondition",
-                        "condition": {
-                            "type": "Not",
-                            "condition": {
-                                "type": "EntityMatches",
-                                "entity": "Self",
-                                "filter": {
-                                    "statePredicates": [
-                                        {
-                                            "type": "HasCounter",
-                                            "counterType": "PLUS_ONE_PLUS_ONE"
-                                        }
-                                    ]
-                                }
-                            }
-                        }
-                    },
-                    "then": {
-                        "type": "AddCounters",
-                        "counterType": "PLUS_ONE_PLUS_ONE",
-                        "count": 2,
-                        "target": "Self"
-                    }
+                    "type": "Adapt",
+                    "amount": 2
                 }
             }
         ]
@@ -9908,31 +9724,8 @@
                     }
                 },
                 "effect": {
-                    "type": "Gated",
-                    "gate": {
-                        "type": "Gate.WhenCondition",
-                        "condition": {
-                            "type": "Not",
-                            "condition": {
-                                "type": "EntityMatches",
-                                "entity": "Self",
-                                "filter": {
-                                    "statePredicates": [
-                                        {
-                                            "type": "HasCounter",
-                                            "counterType": "PLUS_ONE_PLUS_ONE"
-                                        }
-                                    ]
-                                }
-                            }
-                        }
-                    },
-                    "then": {
-                        "type": "AddCounters",
-                        "counterType": "PLUS_ONE_PLUS_ONE",
-                        "count": 2,
-                        "target": "Self"
-                    }
+                    "type": "Adapt",
+                    "amount": 2
                 }
             }
         ],
@@ -20335,31 +20128,8 @@
                     }
                 },
                 "effect": {
-                    "type": "Gated",
-                    "gate": {
-                        "type": "Gate.WhenCondition",
-                        "condition": {
-                            "type": "Not",
-                            "condition": {
-                                "type": "EntityMatches",
-                                "entity": "Self",
-                                "filter": {
-                                    "statePredicates": [
-                                        {
-                                            "type": "HasCounter",
-                                            "counterType": "PLUS_ONE_PLUS_ONE"
-                                        }
-                                    ]
-                                }
-                            }
-                        }
-                    },
-                    "then": {
-                        "type": "AddCounters",
-                        "counterType": "PLUS_ONE_PLUS_ONE",
-                        "count": 2,
-                        "target": "Self"
-                    }
+                    "type": "Adapt",
+                    "amount": 2
                 }
             }
         ],

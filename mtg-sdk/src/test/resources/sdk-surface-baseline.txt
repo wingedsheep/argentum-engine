@@ -1623,6 +1623,8 @@ WardCost.PlayerCounters — WardCost
 WardCost.Sacrifice — WardCost
 
 [added]
+AdaptAsThoughNoCountersEffect — Effect — Biomancer's Familiar — RegenerateEffect, RemoveDamageShieldEffect — both drop a one-shot end-of-turn shield on a permanent, but each is consumed by a destruction; this one is consumed by an adapt and changes what that adapt checks, a different event and a different replacement
+AdaptEffect — Effect — Biomancer's Familiar — AddCountersEffect, ConditionalEffect — adapt was spelled If(Not(SourceHasCounter), AddCounters) on ten MH3 cards (migrated here); a generic If can't be seen as "this creature adapts", which AdaptAsThoughNoCounters must key to and consume, and AddCounters has no "only if it has none" axis that wouldn't fork its meaning
 BecomeMonarchEffect — Effect — Queen Marchesa — GainCitysBlessingEffect, ChangeSpeedEffect — both write a per-player designation every player may hold at once and never lose; the monarch is a single-holder title that moves (CR 725.3), so becoming it un-crowns someone and emits a hand-off, not a grant
 CantAttackYou — StaticAbility — Promise of Loyalty — CantBeAttackedBy, CantAttack — CantBeAttackedBy is defender-anchored (read off the defending player's board, attackers named by a class filter) so it can't name one creature or ride a per-creature "while it has a vow counter" grant, and it never covers planeswalkers; CantAttack is absolute and lowers to a projected flag, which can't carry which player is protected
 DynamicAmount.ManaOfColorSpent — DynamicAmount — Bladecoil Serpent — ManaSpentOnX, SnowManaSpent — ManaSpentOnX reads only the {X} portion, from the resolution context (it also serves activated abilities); SnowManaSpent/ManaSpentFromSubtype count mana by its source, not its color

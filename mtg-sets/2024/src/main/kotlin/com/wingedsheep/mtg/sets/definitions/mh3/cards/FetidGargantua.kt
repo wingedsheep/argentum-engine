@@ -1,7 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.mh3.cards
 
 import com.wingedsheep.sdk.core.CounterType
-import com.wingedsheep.sdk.dsl.Conditions
 import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
@@ -17,7 +16,7 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * Whenever one or more +1/+1 counters are put on this creature, you may draw two cards. If you do,
  * you lose 2 life.
  *
- * Adapt is the zero-counter gate over AddCounters (CR 701.46a). The "if you do" hangs only on the
+ * Adapt is `Effects.Adapt` (CR 701.46a). The "if you do" hangs only on the
  * optional draw, so the draw and the life loss sit together inside one [Effects.May].
  */
 val FetidGargantua = card("Fetid Gargantua") {
@@ -32,10 +31,7 @@ val FetidGargantua = card("Fetid Gargantua") {
     // {2}{B}: Adapt 2.
     activatedAbility {
         cost = Costs.Mana("{2}{B}")
-        effect = Effects.If(
-            Conditions.Not(Conditions.SourceHasCounter(CounterType.PLUS_ONE_PLUS_ONE)),
-            Effects.AddCounters(CounterType.PLUS_ONE_PLUS_ONE, 2, EffectTarget.Self),
-        )
+        effect = Effects.Adapt(2)
     }
 
     triggeredAbility {

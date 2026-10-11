@@ -391,6 +391,83 @@
     ]
 }
 
+// Biomancer's Familiar
+{
+    "name": "Biomancer's Familiar",
+    "manaCost": "{G}{U}",
+    "typeLine": "Creature — Mutant",
+    "oracleText": "Activated abilities of creatures you control cost {2} less to activate. This effect can't reduce the mana in that cost to less than one mana.\n{T}: The next time target creature adapts this turn, it adapts as though it had no +1/+1 counters on it.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Biomancer's Familiar:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AdaptAsThoughNoCounters",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ReduceActivatedAbilityCost",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                },
+                "amount": {
+                    "type": "Fixed",
+                    "amount": 2
+                },
+                "manaFloor": 1
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "158",
+        "rarity": "RARE",
+        "artist": "Izzy",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/3/d38c9891-36d1-4565-9c4a-1cd9dbf8c048.jpg?1783933657",
+        "rulings": [
+            {
+                "date": "2019-01-25",
+                "text": "Activated abilities contain a colon. They’re generally written “[Cost]: [Effect].” Some keyword abilities are activated abilities and will have colons in their reminder text. Triggered abilities (starting with “when,” “whenever,” or “at”) are unaffected by the cost reduction ability of Biomancer’s Familiar."
+            },
+            {
+                "date": "2019-01-25",
+                "text": "Biomancer’s Familiar affects only abilities of creatures you control on the battlefield. The costs of activated abilities of creature cards that work in other zones (such as cycling) won’t be reduced."
+            },
+            {
+                "date": "2019-01-25",
+                "text": "An ability that has only one generic mana and some amount of other mana symbols in its activation cost will have its cost reduced by {1}."
+            },
+            {
+                "date": "2019-01-25",
+                "text": "The last ability of Biomancer’s Familiar doesn’t add or remove any counters. It just lets the creature adapt despite already having +1/+1 counters on it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ]
+}
+
 // Bladebrand
 {
     "name": "Bladebrand",
