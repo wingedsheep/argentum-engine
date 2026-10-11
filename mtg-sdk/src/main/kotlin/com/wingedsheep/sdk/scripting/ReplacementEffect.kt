@@ -214,8 +214,20 @@ data class ModifyTokenCount(
  * Per the Worldwalker Helm ruling, the added token inherits the original effect's
  * "tapped" rider when [inheritTapped] is set, but never the original tokens' abilities.
  *
+ * [scale] says how many get added: [AdditionalTokenScale.PER_EVENT] adds
+ * [additionalTokenCount] once for the whole batch (Worldwalker Helm, Quina's Frog);
+ * [AdditionalTokenScale.PER_MATCHING_TOKEN] adds [additionalTokenCount] for *each* token of the
+ * batch the `tokenFilter` matches — "those tokens plus that many 1/1 green Squirrel creature
+ * tokens" (Chatterfang, Squirrel General). Several entries on one permanent are one ability:
+ * they all judge the batch as it stood before that permanent applied, so Academy Manufactor's
+ * "instead create one of each" is six entries (a Clue adds a Food and a Treasure, …) that don't
+ * see each other's additions — while a *second* permanent judges the batch the first one grew
+ * (two Manufactors make three of each, per the ruling).
+ *
  * @property additionalTokenType The predefined token to additionally create (e.g. "Map").
- * @property additionalTokenCount How many of that token to add per qualifying event.
+ * @property additionalTokenCount How many of that token to add per qualifying event, or per
+ *           matching token under [AdditionalTokenScale.PER_MATCHING_TOKEN].
+ * @property scale Whether the count is added once per event or once per matching token.
  * @property inheritTapped When true, the added token enters tapped if the original
  *           creation made tapped tokens.
  * @property restrictions Extra gates on when this applies, evaluated as described on
@@ -232,13 +244,22 @@ data class CreateAdditionalToken(
     val additionalTokenCount: Int = 1,
     val inheritTapped: Boolean = false,
     override val appliesTo: EventPattern = EventPattern.TokenCreationEvent(),
-    override val restrictions: List<Condition> = emptyList()
+    override val restrictions: List<Condition> = emptyList(),
+    val scale: AdditionalTokenScale = AdditionalTokenScale.PER_EVENT
 ) : ReplacementEffect {
     override val description: String = buildString {
         append("If ${appliesTo.description}, create those tokens plus ")
-        append(if (additionalTokenCount == 1) "an additional " else "$additionalTokenCount additional ")
+        when {
+            scale == AdditionalTokenScale.PER_MATCHING_TOKEN ->
+                append(if (additionalTokenCount == 1) "that many " else "$additionalTokenCount times that many ")
+            additionalTokenCount == 1 -> append("an additional ")
+            else -> append("$additionalTokenCount additional ")
+        }
         append(additionalTokenType)
-        append(if (additionalTokenCount == 1) " token instead" else " tokens instead")
+        append(
+            if (additionalTokenCount == 1 && scale == AdditionalTokenScale.PER_EVENT) " token instead"
+            else " tokens instead"
+        )
     }
 
     override fun applyTextReplacement(replacer: TextReplacer): ReplacementEffect {
@@ -248,6 +269,16 @@ data class CreateAdditionalToken(
             copy(appliesTo = newAppliesTo, restrictions = newRestrictions)
         } else this
     }
+}
+
+/** How many tokens a [CreateAdditionalToken] adds: once per creation event, or once per matching token. */
+@Serializable
+enum class AdditionalTokenScale {
+    /** [CreateAdditionalToken.additionalTokenCount] once for the whole batch ("plus an additional Map token"). */
+    PER_EVENT,
+
+    /** [CreateAdditionalToken.additionalTokenCount] for each token of the batch the filter matches ("plus that many"). */
+    PER_MATCHING_TOKEN
 }
 
 /**

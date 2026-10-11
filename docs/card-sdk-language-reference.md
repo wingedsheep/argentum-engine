@@ -15696,12 +15696,25 @@ The priority groups are (CR 616.1a–f):
   attachment-type validation already happens at cast/attach time via `equipmentTarget` /
   `auraTarget`. Token copies are summoning-sick only when the copy is a creature (CR 302.6).
   Mirrormind Crown: `attachmentVerb = "equipped"`; Moonlit Meditation: `attachmentVerb = "enchanted"`.
-- `CreateAdditionalToken(additionalTokenType, additionalTokenCount = 1, inheritTapped = false, appliesTo, restrictions = [])` —
+- `CreateAdditionalToken(additionalTokenType, additionalTokenCount = 1, inheritTapped = false, appliesTo, restrictions = [], scale = AdditionalTokenScale.PER_EVENT)` —
   token-creation replacement that keeps the original tokens and appends one or more predefined tokens of
   another type. `appliesTo = EventPattern.TokenCreationEvent(controller, tokenFilter)` gates the original
-  creation event, and the extra tokens are added once per qualifying event, not once per token. The added
-  tokens bypass the same replacement pass so a Map added for an artifact-token event does not recursively
-  trigger itself. Used by Worldwalker Helm (`TokenCreationEvent(You, Artifact)`, add `Map`, `inheritTapped = true`)
+  creation event. `scale` picks the count: `PER_EVENT` (default) adds `additionalTokenCount` once per
+  qualifying event, not once per token; `PER_MATCHING_TOKEN` adds `additionalTokenCount` for **each** token
+  of the batch the `tokenFilter` matches — "those tokens plus **that many** 1/1 green Squirrel creature
+  tokens" (Chatterfang, Squirrel General: `additionalTokenType = "Squirrel"`, `inheritTapped = true`,
+  `scale = PER_MATCHING_TOKEN`). Several riders compose **source by source** (CR 614.5: each replacement
+  modifies the event once, the next applies to the modified event): a permanent's entries all judge the
+  batch as it stood before that permanent applied, and the next permanent judges the grown batch. So
+  Academy Manufactor's "instead create one of each" is six `PER_MATCHING_TOKEN` entries — one per
+  (created kind, missing kind), `tokenFilter = Artifact.withSubtype("Clue")` adds `Food` and `Treasure`,
+  and so on — that never feed each other, while two Manufactors make three of each (its ruling). The
+  affected player would order the riders (CR 616.1); the engine applies the order that makes the most
+  tokens — `PER_EVENT` sources before `PER_MATCHING_TOKEN`, filtered before unfiltered — so Chatterfang
+  also counts Quina's Frog and every token a Manufactor added. No source re-judges its own additions, so
+  a Map added for an artifact-token event does not recursively trigger itself. Read only by
+  `CreateTokenExecutor` and `CreatePredefinedTokenExecutor`; token *copies* (`CreateTokenCopyOfTarget`)
+  don't reach this rider yet, nor the count doublers. Used by Worldwalker Helm (`TokenCreationEvent(You, Artifact)`, add `Map`, `inheritTapped = true`)
   and Peregrin Took (`additionalTokenType = "Food"`, "those tokens plus an additional Food token are created instead")
   and Quina, Qu Gourmet (`additionalTokenType = "Frog"`, default `appliesTo` = any token you create, adds a 1/1 green Frog).
   `restrictions` are extra `Condition` gates, evaluated by `TokenCreationReplacementHelper` with the

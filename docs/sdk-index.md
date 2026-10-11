@@ -1439,7 +1439,7 @@ Families:
 
 - `CapCounterPlacementThisTurn(amount: Int, appliesTo: EventPattern)` — Cap a counter placement at amount and lock the recipient out of further counters of that kind for the rest of the turn — "If you would get one or more poison counters, instead you get one poison co…
 - `CapDamage(maxAmount: Int, appliesTo: EventPattern)` — Cap damage at a maximum amount.
-- `CreateAdditionalToken(additionalTokenType: String, additionalTokenCount: Int, inheritTapped: Boolean, appliesTo: EventPattern, restrictions: List<Condition>)` — When a player would create one or more tokens matching appliesTo, also create additionalTokenCount predefined token(s) of a *different* type (additionalTokenType).
+- `CreateAdditionalToken(additionalTokenType: String, additionalTokenCount: Int, inheritTapped: Boolean, appliesTo: EventPattern, restrictions: List<Condition>, scale: AdditionalTokenScale)` — When a player would create one or more tokens matching appliesTo, also create additionalTokenCount predefined token(s) of a *different* type (additionalTokenType).
 - `DamageCantBePrevented(appliesTo: EventPattern)` — Damage can't be prevented.
 - `DoubleCounterPlacement(placedByYou: Boolean, appliesTo: EventPattern)` — Double the number of counters placed.
 - `DoubleDamage(restrictions: List<Condition>, appliesTo: EventPattern, multiplier: Int)` — Double damage dealt.

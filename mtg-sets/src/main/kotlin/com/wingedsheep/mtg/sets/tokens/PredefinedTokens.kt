@@ -708,6 +708,21 @@ object PredefinedTokens {
     }
 
     /**
+     * Squirrel token — a vanilla 1/1 green creature (Chatterfang, Squirrel General's "plus that
+     * many 1/1 green Squirrel creature tokens"). Green from its color indicator, like [Frog].
+     */
+    val Squirrel = card("Squirrel") {
+        typeLine = "Creature — Squirrel"
+        colorIdentity = "G"
+        power = 1
+        toughness = 1
+
+        metadata {
+            imageUri = "https://cards.scryfall.io/normal/front/5/a/5a6ec62e-0e9b-4312-bfe8-cc85d76fd9e0.jpg?1721425294"
+        }
+    }
+
+    /**
      * Vehicle token — the 3/2 colorless Vehicle artifact token with crew 1 that Aetherdrift's
      * Pilots hand out (Mu Yanling, Wind Rider; Chandra, Spark Hunter; …).
      *
@@ -1184,6 +1199,7 @@ object PredefinedTokens {
         Munitions,
         Mutagen,
         Frog,
+        Squirrel,
         Pest,
         PhyrexianMite,
         Vehicle,
