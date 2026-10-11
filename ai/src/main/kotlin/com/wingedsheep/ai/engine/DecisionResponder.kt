@@ -197,8 +197,8 @@ class DecisionResponder(
             // For optional targets (minTargets == 0), also consider picking no targets
             if (req.minTargets == 0) {
                 val skipResponse = TargetsResponse(decision.id, mapOf(req.index to emptyList()))
-                val bestScore = evaluateResult(simulator.simulateDecision(state, bestResponse), playerId)
-                val skipScore = evaluateResult(simulator.simulateDecision(state, skipResponse), playerId)
+                val bestScore = evaluateResult(state,simulator.simulateDecision(state, bestResponse), playerId)
+                val skipScore = evaluateResult(state,simulator.simulateDecision(state, skipResponse), playerId)
                 if (skipScore >= bestScore) return skipResponse
             }
 
@@ -234,8 +234,8 @@ class DecisionResponder(
                 if (req.minTargets == 0) {
                     val pickResponse = TargetsResponse(decision.id, selected + (req.index to picks))
                     val skipResponse = TargetsResponse(decision.id, selected + (req.index to emptyList()))
-                    val pickScore = evaluateResult(simulator.simulateDecision(state, pickResponse), playerId)
-                    val skipScore = evaluateResult(simulator.simulateDecision(state, skipResponse), playerId)
+                    val pickScore = evaluateResult(state,simulator.simulateDecision(state, pickResponse), playerId)
+                    val skipScore = evaluateResult(state,simulator.simulateDecision(state, skipResponse), playerId)
                     if (skipScore >= pickScore) emptyList()
                     else picks
                 } else {
@@ -266,11 +266,11 @@ class DecisionResponder(
     ): List<EntityId> {
         val picks = mutableListOf(first)
         if (req.maxTargets <= 1 && req.minTargets <= 1) return picks
-        var score = evaluateResult(simulator.simulateDecision(state, respond(picks)), playerId)
+        var score = evaluateResult(state,simulator.simulateDecision(state, respond(picks)), playerId)
         while (picks.size < req.maxTargets) {
             val mandatory = picks.size < req.minTargets
             val pool = (if (mandatory) candidates + allTargets else candidates).distinct().filterNot(picks::contains)
-            val scored = pool.map { it to evaluateResult(simulator.simulateDecision(state, respond(picks + it)), playerId) }
+            val scored = pool.map { it to evaluateResult(state,simulator.simulateDecision(state, respond(picks + it)), playerId) }
             val (next, nextScore) = scored.maxByOrNull { it.second } ?: break
             // Short of the minimum every probe is illegal, so an unscorable pick is still taken.
             val stillShort = picks.size + 1 < req.minTargets
@@ -385,8 +385,8 @@ class DecisionResponder(
                 // An optional sacrifice ("you may sacrifice …. If you do, …") asked as one pick:
                 // weigh paying with the cheapest permanent against declining, as the yes/no did.
                 val decline = CardsSelectedResponse(decision.id, emptyList())
-                val pickScore = evaluateChoice(simulator.simulateDecision(state, pick), playerId)
-                val declineScore = evaluateChoice(simulator.simulateDecision(state, decline), playerId)
+                val pickScore = evaluateChoice(state,simulator.simulateDecision(state, pick), playerId)
+                val declineScore = evaluateChoice(state,simulator.simulateDecision(state, decline), playerId)
                 if (pickScore >= declineScore) pick else decline
             }
             isChooseToKeep -> {
@@ -465,8 +465,8 @@ class DecisionResponder(
     ): DecisionResponse {
         val yesResult = simulator.simulateDecision(state, YesNoResponse(decision.id, true))
         val noResult = simulator.simulateDecision(state, YesNoResponse(decision.id, false))
-        val yesScore = evaluateChoice(yesResult, playerId)
-        val noScore = evaluateChoice(noResult, playerId)
+        val yesScore = evaluateChoice(state, yesResult, playerId)
+        val noScore = evaluateChoice(state, noResult, playerId)
         if (holdUnusablePumps && yesScore >= noScore && payoffIsUnspendable(state, yesResult, noResult, yesScore, noScore, playerId)) {
             return YesNoResponse(decision.id, false)
         }
@@ -535,7 +535,7 @@ class DecisionResponder(
             return yesScore == noScore && energyOf(yesState, playerId) < energyOf(noResult.state, playerId)
         }
         val stripped = yesState.copy(floatingEffects = yesState.floatingEffects - unspendable.toSet())
-        val strippedScore = evaluateChoice(SimulationResult.Terminal(stripped, yesResult.events), playerId)
+        val strippedScore = evaluateChoice(state, SimulationResult.Terminal(stripped, yesResult.events), playerId)
         return strippedScore <= noScore
     }
 
@@ -586,8 +586,8 @@ class DecisionResponder(
     ): DecisionResponse {
         val yesResult = simulator.simulateDecision(state, BatchYesNoResponse(decision.id, choice = true, applyToAll = true))
         val noResult = simulator.simulateDecision(state, BatchYesNoResponse(decision.id, choice = false, applyToAll = true))
-        val yesScore = evaluateChoice(yesResult, playerId)
-        val noScore = evaluateChoice(noResult, playerId)
+        val yesScore = evaluateChoice(state, yesResult, playerId)
+        val noScore = evaluateChoice(state, noResult, playerId)
         return BatchYesNoResponse(decision.id, choice = yesScore >= noScore, applyToAll = true)
     }
 
@@ -604,7 +604,7 @@ class DecisionResponder(
         }
 
         val best = available.maxByOrNull { mode ->
-            evaluateResult(
+            evaluateResult(state,
                 simulator.simulateDecision(state, ModesChosenResponse(decision.id, listOf(mode.index))),
                 playerId
             )
@@ -626,12 +626,12 @@ class DecisionResponder(
             val polarity = priors.polarityOf(state, decision.context.sourceId, ChoicePriors.Polarity.OPPONENT)
             val weights = priors.colorWeights(state, playerId, polarity)
             val best = bestWithTieBreak(decision.availableColors.toList(), { weights[it] ?: 0.0 }) { color ->
-                evaluateChoice(simulator.simulateDecision(state, ColorChosenResponse(decision.id, color)), playerId)
+                evaluateChoice(state,simulator.simulateDecision(state, ColorChosenResponse(decision.id, color)), playerId)
             }
             return ColorChosenResponse(decision.id, best)
         }
         val best = decision.availableColors.maxByOrNull { color ->
-            evaluateResult(
+            evaluateResult(state,
                 simulator.simulateDecision(state, ColorChosenResponse(decision.id, color)),
                 playerId
             )
@@ -655,7 +655,7 @@ class DecisionResponder(
         }
 
         val best = candidates.maxByOrNull { n ->
-            evaluateResult(
+            evaluateResult(state,
                 simulator.simulateDecision(state, NumberChosenResponse(decision.id, n)),
                 playerId
             )
@@ -773,7 +773,7 @@ class DecisionResponder(
         if (priors != null) return respondOptionInformed(state, decision, playerId, priors)
 
         val best = decision.options.indices.maxByOrNull { index ->
-            evaluateResult(
+            evaluateResult(state,
                 simulator.simulateDecision(state, OptionChosenResponse(decision.id, index)),
                 playerId
             )
@@ -805,7 +805,7 @@ class DecisionResponder(
     ): DecisionResponse {
         val options = decision.options
         val simulate = { index: Int ->
-            evaluateChoice(simulator.simulateDecision(state, OptionChosenResponse(decision.id, index)), playerId)
+            evaluateChoice(state,simulator.simulateDecision(state, OptionChosenResponse(decision.id, index)), playerId)
         }
         val sourceId = decision.context.sourceId
 
@@ -1149,9 +1149,13 @@ class DecisionResponder(
      * reached a real boundary: the AI still has to answer the decision it was asked, and refusing
      * to answer at all is how a live game wedges with no backstop able to see it.
      */
-    private fun evaluateResult(result: SimulationResult, playerId: EntityId): Double =
-        if (result is SimulationResult.Illegal) Double.NEGATIVE_INFINITY
-        else result.scoreOrRankLast { evaluator.evaluate(it, it.projectedState, playerId) }
+    private fun evaluateResult(root: GameState, result: SimulationResult, playerId: EntityId): Double {
+        if (result is SimulationResult.Illegal) return Double.NEGATIVE_INFINITY
+        // Rooted: every caller compares answers to one decision taken in [root], and a term that
+        // prices what a line cost (the land-sequencing refund) has to know where the line started.
+        val rooted = evaluator.rootedAt(root, playerId)
+        return result.scoreOrRankLast { rooted.evaluate(it, it.projectedState, playerId) }
+    }
 
     /**
      * [evaluateResult] plus, under [informedChoices], the price of every pending "skip your next
@@ -1165,8 +1169,8 @@ class DecisionResponder(
      * the card it costs restores the trade the choice actually is. The marker on an opponent is
      * the same card from the other side, and so counts for us.
      */
-    private fun evaluateChoice(result: SimulationResult, playerId: EntityId): Double {
-        val base = evaluateResult(result, playerId)
+    private fun evaluateChoice(root: GameState, result: SimulationResult, playerId: EntityId): Double {
+        val base = evaluateResult(root, result, playerId)
         if (!informedChoices || result is SimulationResult.Illegal || base.isInfinite()) return base
         val state = result.state
         if (state.gameOver) return base
@@ -1198,7 +1202,10 @@ class DecisionResponder(
         if (library.isEmpty()) return 0.0
         val samples = DRAW_VALUE_SAMPLES.coerceAtMost(library.size)
         val stride = library.size.toDouble() / samples
-        val before = evaluator.evaluate(state, state.projectedState, viewer)
+        // Rooted at the undrawn position, so the drawn card is priced as a card and never as
+        // mana the drawer's tapped lands "would have" spent on it.
+        val rooted = evaluator.rootedAt(state, viewer)
+        val before = rooted.evaluate(state, state.projectedState, viewer)
         val from = ZoneKey(drawer, Zone.LIBRARY)
         val dropWaiting = landDropWaiting(state, drawer)
         return (0 until samples).sumOf { i ->
@@ -1210,7 +1217,7 @@ class DecisionResponder(
             } else {
                 state.moveToZone(cardId, from, ZoneKey(drawer, Zone.HAND))
             }
-            evaluator.evaluate(drawn, drawn.projectedState, viewer) - before
+            rooted.evaluate(drawn, drawn.projectedState, viewer) - before
         } / samples
     }
 
@@ -1234,7 +1241,7 @@ class DecisionResponder(
         buildResponse: (T) -> DecisionResponse
     ): T {
         return candidates.maxByOrNull { candidate ->
-            evaluateResult(simulator.simulateDecision(state, buildResponse(candidate)), playerId)
+            evaluateResult(state,simulator.simulateDecision(state, buildResponse(candidate)), playerId)
         } ?: candidates.first()
     }
 

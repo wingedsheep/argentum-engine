@@ -171,6 +171,8 @@ object CardIntentAnalyzer {
         var expiringPump = false
         var pumpToughness = 0
         var expiringGroupPump = false
+        var gathersLibraryTop = false
+        var movesToHand = false
 
         for (effect in leaves) {
             tags += tagsOf(effect)
@@ -181,6 +183,10 @@ object CardIntentAnalyzer {
                 pumpToughness = maxOf(pumpToughness, expiringToughnessOf(effect))
             }
             if (isExpiringGroupPump(effect)) expiringGroupPump = true
+            if (effect is GatherCardsEffect && effect.source is CardSource.TopOfLibrary) gathersLibraryTop = true
+            if (effect is MoveCollectionEffect && (effect.destination as? CardDestination.ToZone)?.zone == Zone.HAND) {
+                movesToHand = true
+            }
         }
 
         var anthemBonus = 0
@@ -221,6 +227,7 @@ object CardIntentAnalyzer {
             hasHaste = Keyword.HASTE in card.keywords,
             targetsOnlyOurPermanents = targetsOnlyOurPermanents(scripts),
             expiringGroupPump = expiringGroupPump,
+            selectsIntoHand = gathersLibraryTop && movesToHand,
         )
         return intent.copy(staticPriorValue = priorValueOf(card, intent))
     }

@@ -13,7 +13,10 @@ import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.state.components.stack.TargetsComponent
 import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.ActivatedAbility
+import com.wingedsheep.sdk.scripting.TimingRule
 
 /**
  * "Is this the window for this card?" — the timing half of Phase 6.
@@ -98,6 +101,12 @@ class HoldPolicy(
      */
     private val holdUnusablePumps: Boolean = false,
     /**
+     * [AiProfile.drawWithIdleMana][com.wingedsheep.ai.engine.AiProfile.drawWithIdleMana] — spend
+     * the last main phase's idle mana on a sorcery-speed draw spell ([idleDrawWindow]), and keep an
+     * instant-speed draw activation for the opponent's end step ([drawActivationVerdict]).
+     */
+    private val drawWithIdleMana: Boolean = false,
+    /**
      * The profile's `EvaluationWeights.boardPresence`, so [RemovalPatience] can quote its discount
      * in the same currency as the board value it compares against. The default is the compiled
      * fallback's, which is what every profile that does not opt in would have used anyway.
@@ -131,11 +140,10 @@ class HoldPolicy(
         cast: CastSpell? = null,
         activation: ActivateAbility? = null,
     ): TimingVerdict {
-        // Asked first, and it can only ever return [TimingVerdict.NoWindow] or [TimingVerdict.
-        // Neutral], so with the flag off — or on any action that is not an activation — everything
-        // below is reached exactly as it was.
+        // Asked first. It returns [TimingVerdict.Neutral] with every flag off and on any action
+        // that is not an activation, so everything below is reached exactly as it was.
         activationVerdictFor(state, playerId, cardName, activation)
-            .takeIf { it is TimingVerdict.NoWindow }
+            .takeIf { it !is TimingVerdict.Neutral }
             ?.let { return it }
 
         val intent = intents.forName(cardName) ?: return TimingVerdict.Neutral
@@ -202,7 +210,9 @@ class HoldPolicy(
         activation: ActivateAbility?,
     ): TimingVerdict {
         if (activation == null) return TimingVerdict.Neutral
-        if (!(holdExpiringGrantsForCombat || refuseUnspendableGrants || refuseDeadSearches || refuseEmptyPayoffs)) {
+        if (!(holdExpiringGrantsForCombat || refuseUnspendableGrants || refuseDeadSearches ||
+                refuseEmptyPayoffs || drawWithIdleMana)
+        ) {
             return TimingVerdict.Neutral
         }
         val ability = intents.activatedAbility(cardName, activation.abilityId)
@@ -218,6 +228,7 @@ class HoldPolicy(
         if (refuseEmptyPayoffs && EmptyPayoff.holds(state, playerId, ability, activation, intents.predicates)) {
             return TimingVerdict.NoWindow
         }
+        if (drawWithIdleMana) drawActivationVerdict(state, playerId, ability)?.let { return it }
         if (!(holdExpiringGrantsForCombat || refuseUnspendableGrants)) return TimingVerdict.Neutral
         val holds = ExpiringGrantWindow.holds(
             state, playerId, ability, intents,
@@ -228,6 +239,78 @@ class HoldPolicy(
         return if (holds) TimingVerdict.NoWindow else TimingVerdict.Neutral
     }
 
+    /**
+     * An instant-speed activation that only draws, judged under [drawWithIdleMana]: cashed at the
+     * opponent's end step, held everywhere before it while an instant-speed card in hand wants the
+     * mana. Null when the ability is not that shape or the hold does not apply.
+     *
+     * The misplay (2026-10-11 logs, game 2 turn 11): Omashu City's "{4}, {T}, Sacrifice this land:
+     * Draw a card" activated in our precombat main, tapping five of six lands while Pillar Launch
+     * and Cunning Maneuver sat in hand — and a creature the trick could have saved traded on the
+     * opponent's turn. The leaf prices a card drawn now exactly as one drawn at their end step, so
+     * nothing told the AI the mana had a better use in between.
+     *
+     * The hold is a floor, like [ExpiringGrantWindow]'s, on the same argument: an ability cannot be
+     * stripped from hand, so it is still there at the opponent's end step at the same cost, and the
+     * mana it would have spent covered every trick until then. What casting it now buys that the end
+     * step cannot — playing a land or a sorcery it draws — is real but small, and only argued for
+     * when there is no instant-speed card holding the mana up; without one the leaf decides as
+     * before. A spell on the stack, or one of [Patience.releasedOutright]'s releases, hands the
+     * decision back too.
+     */
+    private fun drawActivationVerdict(
+        state: GameState,
+        playerId: EntityId,
+        ability: ActivatedAbility,
+    ): TimingVerdict? {
+        if (ability.isManaAbility || ability.timing != TimingRule.InstantSpeed) return null
+        if (CardIntentAnalyzer.analyzeEffect(ability.effect).tags != setOf(IntentTag.DRAW)) return null
+        if (isOpponentEndStep(state, playerId)) {
+            return TimingVerdict.Adjust(END_STEP_WINDOW, reason = "draw at their end step")
+        }
+        if (state.stack.isNotEmpty()) return null
+        if (!holdsInstantSpeedCard(state, playerId)) return null
+        if (Patience.releasedOutright(state, state.projectedState, playerId)) return null
+        return TimingVerdict.NoWindow
+    }
+
+    /**
+     * Whether casting [cast] — a sorcery-speed draw or card-selection spell — spends mana nothing
+     * else will: our postcombat main on an empty stack, with no instant-speed card in hand that the
+     * mana could still be held up for. Under [drawWithIdleMana].
+     *
+     * The misplay (2026-10-11 logs, game 3 turns 1–13): Sleight of Hand held for seven turns, on
+     * turn 11 with five untapped lands and nothing else to do. Its own board value is about zero —
+     * a card found against a card spent — so on a tie the AI passes, and [cashCantripsInTheEndStep]'s
+     * window is one a sorcery can never reach. Our last main phase is that window's sorcery-speed
+     * twin: the mana empties at the end of the turn whatever we do.
+     *
+     * "Nothing else will" has a second half this cannot see, which is the rest of the candidates:
+     * the bonus is [TimingVerdict.Adjust.onlyWhenIdle], so `Strategist` drops it whenever another
+     * action beats passing on its own — a threat, or a land drop, goes first.
+     */
+    private fun idleDrawWindow(
+        state: GameState,
+        playerId: EntityId,
+        intent: CardIntent,
+        cast: CastSpell?,
+    ): Boolean {
+        if (cast == null) return false
+        if (!intent.tags.all { it in CARD_FLOW_TAGS }) return false
+        if (intent.tags.isEmpty() && !intent.selectsIntoHand) return false
+        val card = state.getEntity(cast.cardId)?.get<CardComponent>() ?: return false
+        if (card.typeLine.isPermanent) return false
+        return state.isActiveTurnFor(playerId) && state.step == Step.POSTCOMBAT_MAIN &&
+            state.stack.isEmpty() && !holdsInstantSpeedCard(state, playerId)
+    }
+
+    /** Whether our hand holds an instant-speed card — something mana left untapped can still buy. */
+    private fun holdsInstantSpeedCard(state: GameState, playerId: EntityId): Boolean =
+        state.getZone(playerId, Zone.HAND).any { id ->
+            val name = state.getEntity(id)?.get<CardComponent>()?.name ?: return@any false
+            intents.forName(name)?.speed == Speed.INSTANT
+        }
+
     /** The window half — "is this the moment?", which only an instant-speed card can get wrong. */
     private fun windowVerdictFor(
         state: GameState,
@@ -235,6 +318,11 @@ class HoldPolicy(
         intent: CardIntent,
         cast: CastSpell?,
     ): TimingVerdict {
+        // The one sorcery-speed exception: a draw spell in our last main phase, where the mana is
+        // otherwise about to empty unused. See [idleDrawWindow].
+        if (drawWithIdleMana && intent.speed == Speed.SORCERY && idleDrawWindow(state, playerId, intent, cast)) {
+            return TimingVerdict.Adjust(END_STEP_WINDOW, reason = "draw with idle mana", onlyWhenIdle = true)
+        }
         if (intent.speed != Speed.INSTANT) return TimingVerdict.Neutral
 
         val stackHasSomething = state.stack.isNotEmpty()
@@ -512,6 +600,9 @@ class HoldPolicy(
 
         val REMOVAL_TAGS = setOf(IntentTag.REMOVAL, IntentTag.EXILE_REMOVAL, IntentTag.SWEEPER)
 
+        /** Tags of a spell whose whole payoff is cards into hand — see [idleDrawWindow]. */
+        val CARD_FLOW_TAGS = setOf(IntentTag.DRAW, IntentTag.TUTOR)
+
         /** Our turn, attackers already declared — see [trickTargetSitsOutTheFight]. */
         val ATTACKERS_DECLARED_STEPS = setOf(
             Step.DECLARE_ATTACKERS, Step.DECLARE_BLOCKERS, Step.FIRST_STRIKE_COMBAT_DAMAGE,
@@ -537,7 +628,15 @@ sealed interface TimingVerdict {
      * passed over despite a strong board score is only explicable if the panel can name which half
      * of the policy moved it. Null means the window half, which is what an `Adjust` used to be.
      */
-    data class Adjust(val delta: Double, val reason: String? = null) : TimingVerdict
+    data class Adjust(
+        val delta: Double,
+        val reason: String? = null,
+        /**
+         * The nudge is for spending mana that would otherwise go unused, so `Strategist` counts it
+         * only when no other candidate beats passing without one. See `HoldPolicy.idleDrawWindow`.
+         */
+        val onlyWhenIdle: Boolean = false,
+    ) : TimingVerdict
 
     /**
      * The card **cannot accomplish anything** in this window — a counterspell with an empty stack,

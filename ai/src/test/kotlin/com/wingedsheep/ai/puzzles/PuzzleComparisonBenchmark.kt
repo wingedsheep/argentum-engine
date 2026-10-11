@@ -144,6 +144,9 @@ class PuzzleComparisonBenchmark : ScenarioTestBase() {
                 // An activation that changes nothing refused outright.
                 AiProfile.PRODUCTION_EMPTYPAYOFF,
                 AiProfile.PRODUCTION_CANDIDATE_EMPTYPAYOFF,
+                // Idle mana spent on drawing, in the last window that can.
+                AiProfile.PRODUCTION_IDLEDRAW,
+                AiProfile.PRODUCTION_CANDIDATE_IDLEDRAW,
                 // A beginning-of-combat pump bought only for creatures the attack plan sends.
                 AiProfile.PRODUCTION_PLANNEDPUMPS,
                 AiProfile.PRODUCTION_CANDIDATE_PLANNEDPUMPS,

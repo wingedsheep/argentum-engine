@@ -207,6 +207,10 @@ object ArenaAgents {
         // second Equipment move after combat — is refused rather than paid for.
         ArenaAgent("production-emptypayoff", AiProfile.PRODUCTION_EMPTYPAYOFF),
         ArenaAgent("production-candidate-emptypayoff", AiProfile.PRODUCTION_CANDIDATE_EMPTYPAYOFF),
+        // Idle mana spent on drawing: a sorcery cantrip in the last main phase, a draw activation
+        // held for the opponent's end step.
+        ArenaAgent("production-idledraw", AiProfile.PRODUCTION_IDLEDRAW),
+        ArenaAgent("production-candidate-idledraw", AiProfile.PRODUCTION_CANDIDATE_IDLEDRAW),
         ArenaAgent("production-targeted", AiProfile.PRODUCTION_TARGETED),
         // Explicit ECL candidates. Their resource-backed weights fail closed to production's
         // evaluator until a validated artifact is installed; automatic selection is set-gated.

@@ -52,12 +52,9 @@ data class EvaluationWeights(
     ): BoardEvaluator = CompositeBoardEvaluator(
         listOf(
             life to LifeDifferential,
-            boardPresence to BoardFeature { state, projected, playerId ->
-                BoardPresence.score(
-                    state, projected, playerId, intents, sequenceLandsByUsableMana, creatureValuation,
-                    pendingLandDropIsMana,
-                )
-            },
+            boardPresence to BoardPresence.Bound(
+                intents, sequenceLandsByUsableMana, creatureValuation, pendingLandDropIsMana,
+            ),
             cardAdvantage to BoardFeature { state, projected, playerId ->
                 CardAdvantage.score(
                     state, projected, playerId, topdeckPenalty, landDropIsNotCardLoss,

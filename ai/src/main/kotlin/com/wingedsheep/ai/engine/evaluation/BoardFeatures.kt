@@ -154,17 +154,45 @@ object BoardPresence : BoardFeature {
         sequenceLandsByUsableMana: Boolean = false,
         creatureValuation: CreatureValuation = CreatureValuation.LEGACY,
         pendingLandDropIsMana: Boolean = false,
+        handAtRoot: Set<EntityId>? = null,
     ): Double {
         val sides = state.sidesFor(playerId) ?: return 0.0
         val mine = boardValue(state, projected, sides.mine, intents, creatureValuation) +
             if (sequenceLandsByUsableMana) {
-                landSequencing(state, projected, playerId, intents, pendingLandDropIsMana)
+                landSequencing(state, projected, playerId, intents, pendingLandDropIsMana, handAtRoot)
             } else {
                 0.0
             }
         return sides.against(OpponentAggregate.THREAT) { opponent ->
             mine - boardValue(state, projected, opponent, intents, creatureValuation)
         }
+    }
+
+    /**
+     * [score] with its profile switches bound — the feature `EvaluationWeights.toEvaluator` puts in
+     * the composite. It exists as a class rather than a lambda for [rootedAt]: the land-sequencing
+     * refund needs the decision root's hand (`handAtRoot`), and only a feature that knows its own
+     * parameters can hand back a copy carrying it.
+     */
+    class Bound(
+        private val intents: IntentCatalog,
+        private val sequenceLandsByUsableMana: Boolean,
+        private val creatureValuation: CreatureValuation,
+        private val pendingLandDropIsMana: Boolean,
+        private val handAtRoot: Set<EntityId>? = null,
+    ) : BoardFeature {
+        override fun score(state: GameState, projected: ProjectedState, playerId: EntityId): Double =
+            score(
+                state, projected, playerId, intents, sequenceLandsByUsableMana, creatureValuation,
+                pendingLandDropIsMana, handAtRoot,
+            )
+
+        override fun rootedAt(root: GameState, playerId: EntityId): BoardFeature =
+            if (!sequenceLandsByUsableMana) this
+            else Bound(
+                intents, sequenceLandsByUsableMana, creatureValuation, pendingLandDropIsMana,
+                handAtRoot = root.getZone(playerId, Zone.HAND).toSet(),
+            )
     }
 
     private fun boardValue(
@@ -226,6 +254,16 @@ object BoardPresence : BoardFeature {
      * own turn, with a land drop left and a land in hand, that land counts as one more untapped
      * land — so playing an untapped land leaves the window exactly where it was and is worth its
      * full [LAND_UNTAPPED], while a tapland still pays for the mana it withholds.
+     *
+     * **A card the line itself put into hand never closes the window** ([handAtRoot]). The window is
+     * a question about the lands — would their mana have been spent — so it is asked of the hand the
+     * decision started from. Asked of the leaf's hand instead, any draw or tutor while tapped out
+     * pays for itself twice: the card it fetches lands in the window, the refund (up to
+     * tapped × [IDLE_MANA_REFUND]) vanishes, and on four tapped lands that outweighs the card. That
+     * is how Goblin Matron declined its own search for a two-drop (2026-10-11 logs, game 3 turn 9).
+     * The comparisons the term exists for are untouched: a land drop or a spell leaves the root's
+     * other hand cards where they were, and those are exactly the ones still counted. `null` — no
+     * root known, a leaf scored on its own — counts the whole hand, as before.
      */
     private fun landSequencing(
         state: GameState,
@@ -233,6 +271,7 @@ object BoardPresence : BoardFeature {
         playerId: EntityId,
         intents: IntentCatalog,
         pendingLandDropIsMana: Boolean,
+        handAtRoot: Set<EntityId>? = null,
     ): Double {
         // Projection on the battlefield, base state in hand: an animated Mishra's Factory is still a
         // land and a Dryad Arbor is one from the moment it arrives, and only the projection knows.
@@ -252,10 +291,13 @@ object BoardPresence : BoardFeature {
             hand.any { it.isLand }
         ) 1 else 0
 
+        val window = (untapped + pending + 1)..(lands.size + pending)
+        val windowCandidates = state.getZone(playerId, Zone.HAND)
+            .filter { handAtRoot == null || it in handAtRoot }
+            .mapNotNull { state.getEntity(it)?.get<CardComponent>() }
+
         var score = 0.0
-        if (tapped > 0 &&
-            hand.none { !it.isLand && it.manaValue in (untapped + pending + 1)..(lands.size + pending) }
-        ) {
+        if (tapped > 0 && windowCandidates.none { !it.isLand && it.manaValue in window }) {
             score += tapped * IDLE_MANA_REFUND
         }
         score -= TAPLAND_IN_HAND * hand.count {

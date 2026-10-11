@@ -151,6 +151,18 @@ data class CardIntent(
      * [com.wingedsheep.ai.engine.AiProfile.holdUnusablePumps].
      */
     val expiringGroupPump: Boolean = false,
+    /**
+     * Whether the card **looks at the top of its library and puts what it picks into hand** —
+     * Sleight of Hand's "look at the top two, put one into your hand", which
+     * `Patterns.Library.lookAtTopAndKeep` lowers to a gather from the top of the library and a move
+     * to hand.
+     *
+     * Neither half is a [IntentTag.DRAW] (no card is drawn) nor a [IntentTag.TUTOR] (the gather is
+     * not a search), so such a card reads with no tags at all. Kept as its own field, like
+     * [expiringGroupPump], so no tag — and nothing that prices one — moves; the one consumer is
+     * [HoldPolicy] behind [com.wingedsheep.ai.engine.AiProfile.drawWithIdleMana].
+     */
+    val selectsIntoHand: Boolean = false,
 ) {
     operator fun contains(tag: IntentTag): Boolean = tag in tags
 

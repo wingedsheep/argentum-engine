@@ -78,13 +78,17 @@ class RolloutCandidateEvaluator(
         budget: DecisionBudget,
     ): List<Double> {
         if (afterActions.isEmpty()) return emptyList()
+        // The static leaves compare siblings of one root, so they are scored rooted (see
+        // `BoardEvaluator.rootedAt`). The playouts are not: their horizon is turns away, where the
+        // root's hand says nothing about which lands were left idle.
+        val rootedStatic = staticEvaluator.rootedAt(root, playerId)
 
         // TRIVIAL and ROUTINE get the static evaluator, per the plan's tier table. A routine
         // opponent's-turn window is not worth a playout, and spending one there is how a budget
         // ladder stops being monotone.
         val playoutBudget = budget.allowances.rolloutPlayouts
         if (playoutBudget <= 0 || budget.tier <= BudgetTier.ROUTINE) {
-            return afterActions.map { staticEvaluator.evaluate(it, it.projectedState, playerId) }
+            return afterActions.map { rootedStatic.evaluate(it, it.projectedState, playerId) }
         }
 
         val horizon = settings.horizonPlayerTurns +
@@ -159,7 +163,7 @@ class RolloutCandidateEvaluator(
         return afterActions.indices.map { index ->
             val rolloutDelta = WinProbability.logit(samples[index].mean(), winProbabilityScale)
             if (w <= 0.0) return@map baseline + rolloutDelta
-            val staticLeaf = staticEvaluator.evaluate(
+            val staticLeaf = rootedStatic.evaluate(
                 afterActions[index], afterActions[index].projectedState, playerId
             )
             val staticDelta = WinProbability.logit(

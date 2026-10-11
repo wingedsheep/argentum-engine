@@ -55,8 +55,9 @@ interface CandidateEvaluator {
  * The pre-Phase-7 leaf: one static evaluation of the post-action state.
  *
  * What `AiProfile.LEGACY_V0` uses, and what every profile that does not opt into rollouts keeps
- * using. `root` is unused — a greedy 1-ply evaluator has no use for where it came from — and that
- * asymmetry is the point of the interface.
+ * using. `root` reaches the evaluator only through [BoardEvaluator.rootedAt] — the one term that
+ * prices what a line cost, the land-sequencing refund, needs to know where the line started; for
+ * every other term a greedy 1-ply evaluator has no use for it.
  */
 class StaticCandidateEvaluator(private val evaluator: BoardEvaluator) : CandidateEvaluator {
 
@@ -65,7 +66,7 @@ class StaticCandidateEvaluator(private val evaluator: BoardEvaluator) : Candidat
         afterAction: GameState,
         playerId: EntityId,
         budget: DecisionBudget,
-    ): Double = evaluator.evaluate(afterAction, afterAction.projectedState, playerId)
+    ): Double = evaluator.rootedAt(root, playerId).evaluate(afterAction, afterAction.projectedState, playerId)
 
     override fun toString(): String = "static"
 }

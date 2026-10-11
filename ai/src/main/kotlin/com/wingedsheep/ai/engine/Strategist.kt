@@ -139,6 +139,11 @@ class Strategist(
      */
     private val refuseEmptyPayoffs: Boolean = false,
     /**
+     * [AiProfile.drawWithIdleMana] — passed through to [HoldPolicy]; its last-main-phase bonus is
+     * counted only when no other candidate beats passing (see [TimingVerdict.Adjust.onlyWhenIdle]).
+     */
+    private val drawWithIdleMana: Boolean = false,
+    /**
      * [AiProfile.targetPolarityFromEffect]: rank targets by what the effect does to them, drop a
      * candidate whose every legal target is on the wrong side, and keep "cast without the kicker"
      * as a candidate beside the kicked cast.
@@ -185,6 +190,7 @@ class Strategist(
         refuseDeadSearches = refuseDeadSearches,
         refuseEmptyPayoffs = refuseEmptyPayoffs,
         holdUnusablePumps = holdUnusablePumps,
+        drawWithIdleMana = drawWithIdleMana,
         boardPresenceWeight = boardPresenceWeight,
     )
 
@@ -352,7 +358,6 @@ class Strategist(
                 else adjustScore(evaluationState, leaves[i], playerId, leafScores[i], passScore, leafStates[i])
             Triple(leaves[i], leafScores[i], adjustment)
         }
-        val scored = adjusted.map { (action, _, adjustment) -> action to adjustment.score }
 
         // On the opponent's end step, unspent mana is about to be wasted. Reduce the pass threshold
         // so the AI is more willing to use instants rather than letting mana evaporate.
@@ -367,6 +372,16 @@ class Strategist(
             } else {
                 passScore
             }
+
+        // A bonus for spending mana nothing else will is void the moment something else will: if
+        // any candidate beats passing without one, every such bonus comes off and the candidates
+        // compete on their merits. See [TimingVerdict.Adjust.onlyWhenIdle].
+        val manaHasAUse = adjusted.any { (_, _, adjustment) ->
+            adjustment.idleBonus == 0.0 && adjustment.score > adjustedPassScore
+        }
+        val scored = adjusted.map { (action, _, adjustment) ->
+            action to if (manaHasAUse) adjustment.score - adjustment.idleBonus else adjustment.score
+        }
 
         val best = scored.maxByOrNull { it.second }
         val takeAction = best != null && (forcedPlay || best.second > adjustedPassScore)
@@ -821,6 +836,7 @@ class Strategist(
             return AdjustedScore(passScore - 1.0, "hold policy: wrong window — floored below passing")
         }
         val timingDelta = (timing as? TimingVerdict.Adjust)?.delta ?: 0.0
+        val idleBonus = if ((timing as? TimingVerdict.Adjust)?.onlyWhenIdle == true) timingDelta else 0.0
         val timingReason = (timing as? TimingVerdict.Adjust)?.reason ?: "timing"
         val timingNote = listOfNotNull(
             creditNote,
@@ -831,7 +847,7 @@ class Strategist(
         // advisor still sees the pure board score as its `defaultScore` and a card with both
         // keeps both.
         val advisor = advisorRegistry.getAdvisor(cardName)
-            ?: return AdjustedScore(leafScore + timingDelta, timingNote)
+            ?: return AdjustedScore(leafScore + timingDelta, timingNote, idleBonus)
         val context = CastContext(
             state = state,
             projected = state.projectedState,
@@ -847,6 +863,7 @@ class Strategist(
         return AdjustedScore(
             (override ?: leafScore) + timingDelta,
             listOfNotNull(advisorNote, timingNote).joinToString("; ").ifEmpty { null },
+            idleBonus,
         )
     }
 
@@ -935,7 +952,8 @@ class Strategist(
      * The [note] exists for the local testing mode: a candidate the AI passed over despite a strong
      * board score is only explicable if the panel can say *which* policy floored it.
      */
-    private data class AdjustedScore(val score: Double, val note: String? = null)
+    /** [idleBonus] is the part of [score] that only stands when nothing else beats passing. */
+    private data class AdjustedScore(val score: Double, val note: String? = null, val idleBonus: Double = 0.0)
 
     /**
      * Pick the targets the AI actually commits to for a chosen targeted action, by simulation

@@ -701,6 +701,33 @@ data class AiProfile(
      * `EmptyPayoffTest`. `PuzzleSuiteTest` unchanged (it runs [PRODUCTION]).
      */
     val refuseEmptyPayoffs: Boolean = false,
+    /**
+     * Spend mana that would otherwise go unused on drawing cards, in the last window that can —
+     * [cashCantripsInTheEndStep]'s argument carried to the two shapes it could not reach.
+     *
+     * 2026-10-11 AI-vs-AI logs under [LIVE]. Game 3, turns 1–13: Sleight of Hand ({U} sorcery) held
+     * for seven turns and never cast, on turn 11 with five untapped lands and nothing else to do —
+     * a card-selection spell scores about zero, so it ties with passing and loses, and the end-step
+     * window is one a sorcery can never use. Game 2, turn 11: Omashu City's "{4}, {T}, Sacrifice
+     * this land: Draw a card" activated in our precombat main with Pillar Launch and Cunning
+     * Maneuver in hand, tapping five of six lands; a creature a trick could have saved traded on the
+     * opponent's turn.
+     *
+     * With this on, `HoldPolicy` gives a sorcery-speed draw or card-selection spell the end-step
+     * bonus in our postcombat main on an empty stack when no instant-speed card in hand wants the
+     * mana — and `Strategist` drops that bonus whenever any other candidate beats passing on its
+     * own, so it never displaces a threat or a land drop. An instant-speed activated ability that
+     * only draws gets the end-step bonus at the opponent's end step, and is floored below passing
+     * before it while an instant-speed card is in hand (lethal on board or a full hand releases
+     * the hold). Needs [useCardIntent].
+     *
+     * Measured 2026-10-11: `just arena production-candidate-expiring production-candidate-idledraw
+     * 100` (BLB, seed 20260727) — 48W-51L-1D for the baseline, pair win 48.5% CI [45.0%, 52.0%]
+     * (the flag's side 51.5%), 0 illegal actions, one 600 s timeout scored as a draw. A CI spanning
+     * parity; the evidence is the two logged positions, pinned by `DrawWithIdleManaTest`.
+     * `PuzzleSuiteTest` unchanged (it runs [PRODUCTION]).
+     */
+    val drawWithIdleMana: Boolean = false,
     /** Non-null profiles may only be selected automatically for this set. Arena selection stays explicit. */
     val restrictedToSet: String? = null,
 ) {
@@ -1614,6 +1641,26 @@ data class AiProfile(
             pumpsNeedAPlannedAttack = true,
             fuelLoyaltyIsNotBoardValue = true,
             refuseEmptyPayoffs = true,
+            drawWithIdleMana = true,
+        )
+
+        /**
+         * [drawWithIdleMana] alone on top of [PRODUCTION], so a puzzle or an arena point that moves
+         * is attributable to it.
+         */
+        val PRODUCTION_IDLEDRAW = PRODUCTION.copy(
+            id = "production-idledraw",
+            drawWithIdleMana = true,
+        )
+
+        /**
+         * [drawWithIdleMana] on top of [PRODUCTION_CANDIDATE_EXPIRING] — the last pinned candidate
+         * [LIVE] builds on — so `just arena production-candidate-expiring
+         * production-candidate-idledraw` measures this flag and nothing else. [LIVE] ships it.
+         */
+        val PRODUCTION_CANDIDATE_IDLEDRAW = PRODUCTION_CANDIDATE_EXPIRING.copy(
+            id = "production-candidate-idledraw",
+            drawWithIdleMana = true,
         )
 
         /**

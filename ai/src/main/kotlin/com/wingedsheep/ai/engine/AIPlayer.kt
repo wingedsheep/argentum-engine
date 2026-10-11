@@ -324,6 +324,7 @@ class AIPlayer(
                     refuseUnspendableGrants = profile.refuseUnspendableGrants,
                     refuseDeadSearches = profile.refuseDeadSearches,
                     refuseEmptyPayoffs = profile.refuseEmptyPayoffs,
+                    drawWithIdleMana = profile.drawWithIdleMana,
                     holdUnusablePumps = profile.holdUnusablePumps,
                     targetPolarityFromEffect = profile.targetPolarityFromEffect,
                     permanentCastIsNotCardLoss = profile.permanentCastIsNotCardLoss,
