@@ -61,9 +61,10 @@ class OctomancerScenarioTest : ScenarioTestBase() {
                 game.tokensControlledBy(game.player1Id) shouldHaveSize 0
 
                 game.passUntilPhase(Phase.ENDING, Step.END)
-                if (game.getPendingDecision() is ChooseTargetsDecision) {
-                    game.selectTargets(gifted)
+                withClue("the Octopus entered this turn, so it is offered as a target") {
+                    (game.getPendingDecision() is ChooseTargetsDecision) shouldBe true
                 }
+                game.selectTargets(gifted)
                 game.resolveStack()
 
                 val copies = game.tokensControlledBy(game.player1Id)
@@ -78,11 +79,12 @@ class OctomancerScenarioTest : ScenarioTestBase() {
                 }
             }
 
-            test("with no token entered this turn the trigger has no target and creates nothing") {
+            test("with no creature token that entered this turn the trigger has no target and creates nothing") {
                 val game = scenario()
                     .withPlayers("Caster", "Opponent")
                     .withCardOnBattlefield(1, "Octomancer")
                     .withCardOnBattlefield(2, "Grizzly Bears")
+                    .withCardOnBattlefield(2, "Grizzly Bears", isToken = true)
                     .withCardInLibrary(1, "Forest")
                     .withCardInLibrary(2, "Forest")
                     .withActivePlayer(1)
@@ -90,13 +92,13 @@ class OctomancerScenarioTest : ScenarioTestBase() {
                     .build()
 
                 game.passUntilPhase(Phase.ENDING, Step.END)
-                withClue("a nontoken creature is not a legal target, so nothing is asked") {
+                withClue("neither a nontoken creature nor a token that entered on an earlier turn is a legal target") {
                     (game.getPendingDecision() is ChooseTargetsDecision) shouldBe false
                 }
                 game.resolveStack()
 
                 game.tokensControlledBy(game.player1Id) shouldHaveSize 0
-                game.tokensControlledBy(game.player2Id) shouldHaveSize 0
+                game.tokensControlledBy(game.player2Id) shouldHaveSize 1
             }
         }
     }
