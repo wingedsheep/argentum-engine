@@ -929,6 +929,14 @@ cast action advertises the first selection cost as `additionalCostInfo` and the 
   *every* spell exile-from-zone cost already leaves the card being cast out of its pool — it is on the stack
   by the time costs are paid (CR 601.2a before 601.2h) — and the payment validator rejects a submission that
   names the spell itself or repeats a card.
+- `Costs.additional.ExileVariableCards(minCount = 1, filter = Any, fromZone = GRAVEYARD)` — "exile X [filter]
+  cards from your graveyard". The number exiled **is the spell's X** (CR 107.3a): it's stamped onto
+  `SpellOnStackComponent.xValue`, so `DynamicAmount.XValue` and `manaValueAtMostX()` read it (Chill Haunting's
+  older `DynamicAmounts.additionalCostExiledCount()` reads the same number). That makes it the flashback cost of a
+  card whose flashback doesn't pay its `{X}` — Summons of Saruman `{X}{U}{R}`:
+  `keywordAbility(KeywordAbility.flashback("{3}{U}{R}", Costs.additional.ExileVariableCards(minCount = 0)))`; cast
+  from hand, X comes from the mana cost. Like every exile-from-zone spell cost, the card being cast is never in
+  its own pool (CR 601.2a). Don't combine it with a paid `{X}` on the same cast — both write the one X.
 - `Costs.additional.ExileOtherCardsWithCardTypes(minTypes, filter = Any)` — "exile any number of other
   cards from your graveyard with N or more card types among them" (Nethergoyf's escape cost). A
   `CostAtom.ExileFromGraveyardForTotal` under the union measure `CardMeasure.DistinctCardTypes`; see

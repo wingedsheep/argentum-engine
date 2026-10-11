@@ -81,6 +81,10 @@ sealed interface AdditionalCost : TextReplaceable<AdditionalCost> {
      * The player chooses how many matching cards to exile (at least [minCount]).
      * Example: "Exile X creature cards from your graveyard" for Chill Haunting
      *
+     * The number exiled is the spell's X (CR 107.3a), stamped onto its X value — so a flashback cost
+     * of this shape gives a `{X}` spell its X without paying the `{X}` (Summons of Saruman). The card
+     * being cast is never in its own pool: it's on the stack before costs are paid (CR 601.2a).
+     *
      * @property minCount Minimum number of cards to exile (default 1)
      * @property filter Which cards can be exiled
      * @property fromZone Zone to exile from

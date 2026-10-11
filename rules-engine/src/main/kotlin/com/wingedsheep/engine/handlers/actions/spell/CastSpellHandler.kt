@@ -654,7 +654,9 @@ class CastSpellHandler(
             action.cardId,
             action.playerId,
             action.targets,
-            action.xValue,
+            // An "exile X cards" cost defines X as it's paid (CR 107.3a) — a flashback cost that
+            // doesn't carry the card's {X} still gives the spell its X.
+            ledger.costDefinedX ?: action.xValue,
             ledger.sacrificedSnapshots,
             castFaceDown = action.castFaceDown,
             castTransformed = transformedFace != null,

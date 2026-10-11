@@ -203,6 +203,13 @@ class SpellCostLedger(
 
     val sacrificedSnapshots = mutableListOf<EntitySnapshot>()
     var exiledCardCount = 0
+
+    /**
+     * The X an additional cost defined as it was paid — "exile X cards from your graveyard" names
+     * the spell's X (CR 107.3a), so the number exiled *is* X. Null when no paid cost defines X; the
+     * spell's X then comes from its `{X}` alone.
+     */
+    var costDefinedX: Int? = null
     val beheldCards = mutableListOf<EntityId>()
 
     /** Creatures tapped for convoke, with their entry stamps (CR 702.51c) — `SpellOnStackComponent.convokedCreatures`. */

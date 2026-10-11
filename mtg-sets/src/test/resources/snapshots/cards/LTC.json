@@ -927,6 +927,115 @@
     ]
 }
 
+// Summons of Saruman
+{
+    "name": "Summons of Saruman",
+    "manaCost": "{X}{U}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Amass Orcs X. Mill X cards. You may cast an instant or sorcery spell with mana value X or less from among them without paying its mana cost. (To amass Orcs X, put X +1/+1 counters on an Army you control. It's also an Orc. If you don't control an Army, create a 0/0 black Orc Army creature token first.)\nFlashback—{3}{U}{R}, Exile X cards from your graveyard.",
+    "keywords": [
+        "FLASHBACK"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Flashback",
+            "cost": "{3}{U}{R}",
+            "additionalCost": {
+                "type": "ExileVariableCards",
+                "minCount": 0
+            }
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "Amass",
+                    "amount": "XValue",
+                    "subtype": "Orc"
+                },
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "TopOfLibrary",
+                        "count": "XValue",
+                        "isMill": true
+                    },
+                    "storeAs": "gathered1"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "gathered1",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard"
+                    }
+                },
+                {
+                    "type": "FilterCollection",
+                    "from": "gathered1",
+                    "filter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    "IsInstant",
+                                    "IsSorcery"
+                                ]
+                            },
+                            {
+                                "type": "CompareNumericProperty",
+                                "property": "MANA_VALUE",
+                                "operator": "LTE",
+                                "amount": "XValue"
+                            }
+                        ]
+                    },
+                    "storeMatching": "matching3"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "matching3",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "storeSelected": "selected4",
+                    "selectedLabel": "Cast without paying its mana cost"
+                },
+                {
+                    "type": "CastFromCollectionWithoutPayingCost",
+                    "from": "selected4"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "70",
+        "rarity": "RARE",
+        "artist": "Svetlin Velinov",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/b/cbb1bc1f-b1d6-4639-b892-9b1ff6ed65fb.jpg?1783916015",
+        "rulings": [
+            {
+                "date": "2023-06-23",
+                "text": "If you want to cast one of the milled cards, you cast it as part of the resolution of Summons of Saruman. You can't wait to cast the spell later in the turn. Timing permissions based on the card's type are ignored."
+            },
+            {
+                "date": "2023-06-23",
+                "text": "If the spell has {X} in its mana cost, you must choose 0 as the value of X."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
+    ]
+}
+
 // The Balrog of Moria
 {
     "name": "The Balrog of Moria",

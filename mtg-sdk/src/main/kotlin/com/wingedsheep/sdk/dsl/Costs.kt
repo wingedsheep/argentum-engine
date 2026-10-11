@@ -792,7 +792,10 @@ object Costs {
             )
         )
 
-        /** Exile a variable number (at least [minCount]) of cards matching [filter] from [fromZone] (Chill Haunting). */
+        /**
+         * Exile X (at least [minCount]) cards matching [filter] from [fromZone] (Chill Haunting). The number
+         * exiled is the spell's X (CR 107.3a) — Summons of Saruman's flashback cost.
+         */
         fun ExileVariableCards(
             minCount: Int = 1,
             filter: GameObjectFilter = GameObjectFilter.Any,
