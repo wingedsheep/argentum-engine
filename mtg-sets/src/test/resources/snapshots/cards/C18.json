@@ -263,3 +263,45 @@
         ]
     }
 }
+
+// Windgrace's Judgment
+{
+    "name": "Windgrace's Judgment",
+    "manaCost": "{3}{B}{G}",
+    "typeLine": "Instant",
+    "oracleText": "For any number of opponents, destroy target nonland permanent that player controls.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": "IterationSpace.Targets",
+            "body": {
+                "type": "MoveToZone",
+                "target": {
+                    "type": "ContextTarget",
+                    "index": 0
+                },
+                "destination": "Graveyard",
+                "byDestruction": true
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "optional": true,
+                "filter": {
+                    "baseFilter": "nonland permanent ctrl:opponent"
+                },
+                "id": "t0",
+                "dynamicMaxCount": "PlayerCount",
+                "differentControllers": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "49",
+        "rarity": "RARE",
+        "artist": "Grzegorz Rutkowski",
+        "flavorText": "Not all who remember Urza do so with fondness.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/8/d8b8f56c-091f-4932-9216-af58f7ea4bd7.jpg?1783934329"
+    }
+}

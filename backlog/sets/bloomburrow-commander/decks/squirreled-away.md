@@ -32,7 +32,7 @@
 - [ ] 1 Prosperous Innkeeper
 - [ ] 1 Ravenous Squirrel
 - [ ] 1 Scurry of Squirrels
-- [ ] 1 Skyfisher Spider
+- [x] 1 Skyfisher Spider
 - [ ] 1 Squirrel Sovereign
 - [ ] 1 The Odd Acorn Gang
 - [x] 1 Tireless Provisioner
@@ -53,7 +53,7 @@
 - [ ] 1 Saw in Half
 - [ ] 1 Second Harvest
 - [ ] 1 Tear Asunder
-- [ ] 1 Windgrace's Judgment
+- [x] 1 Windgrace's Judgment
 
 ## Sorceries (7)
 

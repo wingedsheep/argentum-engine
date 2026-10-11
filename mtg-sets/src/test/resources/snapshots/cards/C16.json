@@ -184,3 +184,47 @@
         "RED"
     ]
 }
+
+// Ishai, Ojutai Dragonspeaker
+{
+    "name": "Ishai, Ojutai Dragonspeaker",
+    "manaCost": "{2}{W}{U}",
+    "typeLine": "Legendary Creature — Bird Monk",
+    "oracleText": "Flying\nWhenever an opponent casts a spell, put a +1/+1 counter on Ishai.\nPartner (You can have two commanders if both have partner.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ishai, Ojutai Dragonspeaker:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "player": "EachOpponent"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "33",
+        "rarity": "MYTHIC",
+        "artist": "Zack Stella",
+        "flavorText": "\"Through me, the Great Teacher's voice will rattle this world.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/2/e2f04b83-da9d-4bb1-99ce-2ff78503c635.jpg?1783937085"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
+    ]
+}

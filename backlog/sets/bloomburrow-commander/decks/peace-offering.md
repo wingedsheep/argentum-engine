@@ -6,7 +6,7 @@
 
 ## Commander
 
-- [ ] 1 Ms. Bumbleflower
+- [x] 1 Ms. Bumbleflower
 
 ## Creatures (26)
 
@@ -24,7 +24,7 @@
 - [ ] 1 Loran of the Third Path
 - [ ] 1 Managorger Hydra
 - [ ] 1 Mangara, the Diplomat
-- [ ] 1 Mr. Foxglove
+- [x] 1 Mr. Foxglove
 - [ ] 1 Octomancer
 - [ ] 1 Psychosis Crawler
 - [ ] 1 Realm-Cloaked Giant // Cast Off

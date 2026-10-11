@@ -37,7 +37,7 @@
 - [x] Battlefield Forge
 - [x] Beast Within
 - [x] Beastmaster Ascension
-- [ ] Beledros Witherbloom
+- [x] Beledros Witherbloom
 - [x] Bello, Bard of the Brambles
 - [x] Berserkers' Onslaught
 - [x] Bident of Thassa
@@ -104,14 +104,14 @@
 - [ ] Ferrous Lake
 - [ ] Fisher's Talent
 - [ ] Flooded Grove
-- [ ] Flubs, the Fool
+- [x] Flubs, the Fool
 - [x] Forgotten Ancient
 - [x] Forgotten Cave
 - [ ] Fortune Teller's Talent
 - [x] Game Trail
 - [x] Garruk's Packleader
 - [x] Garruk's Uprising
-- [ ] Garruk, Cursed Huntsman
+- [x] Garruk, Cursed Huntsman
 - [x] Generous Gift
 - [x] Ghalta, Primal Hunger
 - [x] Ghirapur Orrery
@@ -133,7 +133,7 @@
 - [x] Harmonize
 - [ ] Haunted Mire
 - [x] Haywire Mite
-- [ ] Hazel of the Rootbloom
+- [x] Hazel of the Rootbloom
 - [ ] Hazel's Brewmaster
 - [x] Hedron Archive
 - [x] Helm of the Host
@@ -147,7 +147,7 @@
 - [ ] Insatiable Frugivore
 - [x] Inspiring Overseer
 - [x] Intellectual Offering
-- [ ] Ishai, Ojutai Dragonspeaker
+- [x] Ishai, Ojutai Dragonspeaker
 - [ ] Izzet Signet
 - [x] Jace, the Mind Sculptor
 - [x] Jacked Rabbit
@@ -181,8 +181,8 @@
 - [ ] Morbid Opportunist
 - [x] Mossfire Valley
 - [x] Mosswort Bridge
-- [ ] Mr. Foxglove
-- [ ] Ms. Bumbleflower
+- [x] Mr. Foxglove
+- [x] Ms. Bumbleflower
 - [ ] Murmuration
 - [x] Mystic Monastery
 - [ ] Nadier's Nightblade
@@ -252,7 +252,7 @@
 - [x] Skullclamp
 - [ ] Skyclave Apparition
 - [ ] Skycloud Expanse
-- [ ] Skyfisher Spider
+- [x] Skyfisher Spider
 - [x] Sol Ring
 - [ ] Solemn Simulacrum
 - [ ] Sphinx of Enlightenment
@@ -319,7 +319,7 @@
 - [ ] Viridescent Bog
 - [x] Warstorm Surge
 - [x] Wildsear, Scouring Maw
-- [ ] Windgrace's Judgment
+- [x] Windgrace's Judgment
 - [x] Wizard Class
 - [x] Woe Strider
 - [x] Wolfwillow Haven

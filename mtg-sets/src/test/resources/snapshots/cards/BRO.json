@@ -4860,6 +4860,154 @@
     ]
 }
 
+// Skyfisher Spider
+{
+    "name": "Skyfisher Spider",
+    "manaCost": "{2}{B}{G}",
+    "typeLine": "Creature — Spider",
+    "oracleText": "Reach\nWhen this creature enters, you may sacrifice another creature. When you do, destroy target nonland permanent.\nWhen this creature dies, you may gain 1 life for each creature card in your graveyard. If you do, exile this card from your graveyard.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "REACH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Skyfisher Spider:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ReflexiveTrigger",
+                    "action": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "SelectTarget",
+                                "requirement": {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": "creature ctrl:you",
+                                        "excludeSelf": true
+                                    }
+                                },
+                                "storeAs": "target0",
+                                "nonTargeting": true,
+                                "prompt": "Choose another creature to sacrifice"
+                            },
+                            {
+                                "type": "SacrificeTarget",
+                                "target": {
+                                    "type": "PipelineTarget",
+                                    "collectionName": "target0"
+                                }
+                            }
+                        ]
+                    },
+                    "reflexiveEffect": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "destination": "Graveyard",
+                        "byDestruction": true
+                    },
+                    "reflexiveTargetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "nonland permanent"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "descriptionOverride": "You may sacrifice another creature. When you do, destroy target nonland permanent."
+                },
+                "descriptionOverride": "When this creature enters, you may sacrifice another creature. When you do, destroy target nonland permanent."
+            },
+            {
+                "id": "Skyfisher Spider:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GainLife",
+                                "amount": {
+                                    "type": "Count",
+                                    "player": "You",
+                                    "zone": "Graveyard",
+                                    "filter": "creature"
+                                }
+                            },
+                            {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Graveyard",
+                                            "filter": {
+                                                "statePredicates": [
+                                                    "IsSource"
+                                                ]
+                                            }
+                                        },
+                                        "storeAs": "gathered0"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "gathered0",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Exile"
+                                        }
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    "descriptionOverride": "You may gain 1 life for each creature card in your graveyard. If you do, exile this card from your graveyard."
+                },
+                "descriptionOverride": "When this creature dies, you may gain 1 life for each creature card in your graveyard. If you do, exile this card from your graveyard."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "221",
+        "rarity": "UNCOMMON",
+        "artist": "Henry Peters",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/7/87300ac8-8b6f-4c37-8058-beb59eaa66be.jpg?1783920025",
+        "rulings": [
+            {
+                "date": "2022-10-14",
+                "text": "Skyfisher Spider's first triggered ability doesn't have any targets. If you choose to sacrifice another creature, a second triggered ability (called a \"reflexive\" triggered ability) goes on the stack and you choose a target nonland permanent at that time. Players may respond to that second ability as normal."
+            },
+            {
+                "date": "2022-10-14",
+                "text": "Notably, this means that players won't get to know what nonland permanent you plan to target before you choose whether to sacrifice a creature."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
+    ]
+}
+
 // Skystrike Officer
 {
     "name": "Skystrike Officer",

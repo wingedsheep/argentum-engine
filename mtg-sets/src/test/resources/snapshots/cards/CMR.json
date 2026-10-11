@@ -679,6 +679,99 @@
     ]
 }
 
+// Kwain, Itinerant Meddler
+{
+    "name": "Kwain, Itinerant Meddler",
+    "manaCost": "{W}{U}",
+    "typeLine": "Legendary Creature — Rabbit Wizard",
+    "oracleText": "{T}: Each player may draw a card, then each player who drew a card this way gains 1 life.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Kwain, Itinerant Meddler:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "ActivePlayerFirst"
+                    },
+                    "body": {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.MayDecide",
+                            "prompt": "Draw a card? (If you do, you gain 1 life.)"
+                        },
+                        "then": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "TopOfLibrary",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeAs": "gathered0"
+                                },
+                                {
+                                    "type": "DrawCards",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                {
+                                    "type": "FilterCollection",
+                                    "from": "gathered0",
+                                    "filter": {
+                                        "statePredicates": [
+                                            {
+                                                "type": "InZone",
+                                                "zone": "Hand"
+                                            }
+                                        ]
+                                    },
+                                    "storeMatching": "matching2"
+                                },
+                                {
+                                    "type": "ConditionalOnCollection",
+                                    "collection": "matching2",
+                                    "ifNotEmpty": {
+                                        "type": "GainLife",
+                                        "amount": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    }
+                                }
+                            ]
+                        },
+                        "decisionMaker": "Controller"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "284",
+        "rarity": "RARE",
+        "artist": "Lucas Graciano",
+        "flavorText": "\"Why so slow, why so slow? Hurry up! You never know what you'll find.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/5/f571fef1-1fd2-4355-b803-5edccb6f4b94.jpg?1783928771"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
+    ]
+}
+
 // Maelstrom Colossus
 {
     "name": "Maelstrom Colossus",
