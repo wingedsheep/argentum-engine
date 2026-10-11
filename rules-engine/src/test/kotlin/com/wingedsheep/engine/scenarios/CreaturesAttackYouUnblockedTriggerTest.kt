@@ -129,4 +129,28 @@ class CreaturesAttackYouUnblockedTriggerTest : FunSpec({
         d.getLifeTotal(p3) shouldBe 20
         d.getLifeTotal(p1) shouldBe 19
     }
+
+    test("2HG: unblocked attackers from both attacking teammates trigger once per attacking player") {
+        val d = GameTestDriver()
+        d.registerCards(TestCards.all + watcher)
+        val p = d.initMultiplayer(
+            List(4) { Deck.of("Plains" to 40) },
+            format = com.wingedsheep.sdk.core.Format.TwoHeadedGiant(),
+            teams = listOf(listOf(0, 1), listOf(2, 3))
+        )
+        d.passPriorityUntil(Step.PRECOMBAT_MAIN)
+        d.activePlayer shouldBe p[0]
+
+        d.putPermanentOnBattlefield(p[2], "Test Unblocked Watcher")
+        val fromP0 = d.ready(p[0], "Grizzly Bears")
+        val fromP1 = d.ready(p[1], "Grizzly Bears")
+
+        d.passPriorityUntil(Step.DECLARE_ATTACKERS)
+        d.declareAttackers(p[0], mapOf(fromP0 to p[2], fromP1 to p[2])).error shouldBe null
+        d.passPriorityUntil(Step.DECLARE_BLOCKERS)
+        d.declareNoBlockers(d.state.priorityPlayerId!!).error shouldBe null
+        d.declareNoBlockers(d.state.priorityPlayerId!!).error shouldBe null
+
+        withClue("one trigger for each attacking player (Coveted Jewel ruling)") { d.stackSize shouldBe 2 }
+    }
 })

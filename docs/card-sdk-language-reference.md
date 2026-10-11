@@ -7135,7 +7135,8 @@ The shapes in this family, with their engine notes.
   status then (CR 509.1h; `minAttackers` / `includePlaneswalkersYouControl` still apply). Each
   defending player declares in turn in multiplayer, so it fires once — on the declaration
   (`BlockersDeclaredEvent.blockingPlayerId`) that completes your team's — and the unblocked
-  attackers' controller is the triggering player: "that player draws three cards" is
+  attackers' controller is the triggering player (one firing per attacking player when teammates attack
+  together in 2HG): "that player draws three cards" is
   `Effects.DrawCards(3, EffectTarget.PlayerRef(Player.TriggeringPlayer))`. Creatures attacking you
   are always an opponent's, so the trigger carries no controller filter.
 - `Triggers.anOpponent.isAttacked()` — the "your opponents are attacked" counterpart of
