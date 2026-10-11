@@ -12291,7 +12291,8 @@ composite abilities).
   separately): a creature with a printed kicker that gains offspring isn't kicked when only the offspring was paid. The
   cast declares one optional-cost slot, so a creature with its own printed offspring or kicker pays either that or the
   granted cost on one cast, not both; two grants are one instance. A `staticAbility { condition = … }` grant applies
-  only while its condition holds.
+  only while its condition holds. Only permanent spells gain it, whatever `spellFilter` says; a copy of the spell doesn't
+  inherit a granted offspring payment (the grant isn't a copiable value).
 - `Emerge(cost, from = null)` — `card { emerge("{cost}") }` builder helper (CR 702.119, Eldritch Moon). A **hand** alternative
   cost that bundles a sacrifice *and* a cost reduction derived from it: *"You may cast this spell by paying [cost] and
   sacrificing a creature rather than paying its mana cost"* plus *"if you chose to pay this spell's emerge cost, its

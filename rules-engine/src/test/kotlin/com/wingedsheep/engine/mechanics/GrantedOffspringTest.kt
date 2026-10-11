@@ -17,6 +17,7 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.ChoiceSlot
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.GrantOffspringToOwnSpells
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import io.kotest.assertions.withClue
@@ -51,6 +52,15 @@ class GrantedOffspringTest : FunSpec({
         }
     }
 
+    /** "Spells you cast gain offspring {2}" — a filter wider than any printed card's. */
+    val broadGranter = card("Test Broad Offspring Granter") {
+        manaCost = "{2}"
+        typeLine = "Artifact"
+        staticAbility {
+            ability = GrantOffspringToOwnSpells(cost = ManaCost.parse("{2}"), spellFilter = GameObjectFilter.Any)
+        }
+    }
+
     val bear = card("Test Offspring Bear") {
         manaCost = "{1}{G}"
         typeLine = "Creature — Bear"
@@ -80,7 +90,7 @@ class GrantedOffspringTest : FunSpec({
 
     fun driver(): Pair<GameTestDriver, List<EntityId>> {
         val d = GameTestDriver()
-        d.registerCards(TestCards.all + listOf(granter, gatedGranter, bear, kickerBear, shock))
+        d.registerCards(TestCards.all + listOf(granter, gatedGranter, broadGranter, bear, kickerBear, shock))
         d.initMirrorMatch(Deck.of("Forest" to 40))
         d.passPriorityUntil(Step.PRECOMBAT_MAIN)
         return d to listOf(d.activePlayer!!, d.getOpponent(d.activePlayer!!))
@@ -198,5 +208,18 @@ class GrantedOffspringTest : FunSpec({
         withClue("20 life: the gate is shut") { d.offspringCasts(p1, bearCard).shouldBeEmpty() }
         d.setLifeTotal(p1, 25)
         withClue("25 life: the gate is open") { d.offspringCasts(p1, bearCard) shouldHaveSize 1 }
+    }
+
+    test("offspring only reaches permanent spells, even under a grant whose filter matches any spell") {
+        val (d, players) = driver()
+        val (p1, _) = players
+        d.putPermanentOnBattlefield(p1, "Test Broad Offspring Granter")
+        val sorcery = d.putCardInHand(p1, "Test Offspring Sorcery")
+        val bearCard = d.putCardInHand(p1, "Test Offspring Bear")
+
+        withClue("a sorcery can't gain offspring — its declared slot would pick kicker-only effects") {
+            d.offspringCasts(p1, sorcery).shouldBeEmpty()
+        }
+        d.offspringCasts(p1, bearCard) shouldHaveSize 1
     }
 })

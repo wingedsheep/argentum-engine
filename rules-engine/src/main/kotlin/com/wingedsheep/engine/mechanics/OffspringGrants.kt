@@ -77,7 +77,9 @@ object OffspringGrants {
         grants: List<GrantOffspringToOwnSpells> = grants(state, casterId, cardRegistry, predicateEvaluator),
     ): List<KeywordAbility.OptionalAdditionalCost> {
         val printed = cardDef?.keywordAbilities?.filterIsInstance<KeywordAbility.OptionalAdditionalCost>().orEmpty()
-        if (grants.isEmpty()) return printed
+        // Offspring only does anything on a permanent spell; granting it to an instant would let
+        // the declared slot pick kicker-only effects, which key off any declared slot.
+        if (grants.isEmpty() || cardDef?.typeLine?.isPermanent != true) return printed
         val context = PredicateContext(controllerId = casterId)
         val grant = grants.firstOrNull {
             predicateEvaluator.matches(state, state.projectedState, cardId, it.spellFilter, context)
