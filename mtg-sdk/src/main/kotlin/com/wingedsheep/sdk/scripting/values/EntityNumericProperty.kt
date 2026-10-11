@@ -91,6 +91,20 @@ sealed interface EntityNumericProperty {
     }
 
     /**
+     * The number of permanents sacrificed to pay the costs of casting a spell on the stack — the
+     * snapshots recorded on its `SpellOnStackComponent` as the cost was paid. The sibling of
+     * [ManaSpent]: a cast record read off a specific spell, so a "when you cast this spell"
+     * trigger can read it off `EffectTarget.TriggeringEntity` (Plumb the Forbidden's "copy this
+     * spell for each creature sacrificed this way"). Returns 0 if the entity is not a spell on
+     * the stack — a copy, which is never cast (CR 707.10), carries none of its own.
+     */
+    @SerialName("PermanentsSacrificedToCast")
+    @Serializable
+    data object PermanentsSacrificedToCast : EntityNumericProperty {
+        override val description: String = "the number of permanents sacrificed to cast it"
+    }
+
+    /**
      * The number the entity's controller chose as it entered the battlefield — Nameless Race's
      * "the life paid as it entered", read back by its characteristic-defining power and toughness.
      * Zero for a permanent that recorded no such choice.

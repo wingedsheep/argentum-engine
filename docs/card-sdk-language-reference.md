@@ -14220,6 +14220,16 @@ read is available to other snapshot-backed entity references once their captured
   mana spent to cast that spell was less than its mana value" gates (Unravel).
   Desugars to `EntityProperty(EffectTarget.ContextTarget(index), EntityNumericProperty.ManaSpent)`.
   Returns 0 if the target isn't a spell on the stack.
+- `DynamicAmounts.permanentsSacrificedToCast(entity)` — how many permanents were sacrificed to pay
+  the costs of casting `entity` (a spell on the stack), read off its `SpellOnStackComponent`.
+  Desugars to `EntityProperty(entity, EntityNumericProperty.PermanentsSacrificedToCast)`. Unlike
+  `permanentsSacrificedThisWay()` — which reads the *resolving* object's own cost, so it is the
+  spell's count only inside the spell's own effect — this one reaches the spell from a trigger:
+  **Plumb the Forbidden**'s "you may sacrifice one or more creatures. When you do, copy this spell
+  for each creature sacrificed this way" is `Triggers.self.isCast()` with
+  `Effects.Repeat(DynamicAmounts.permanentsSacrificedToCast(TriggeringEntity),
+  Effects.CopyTargetSpell(TriggeringEntity))`, gated on `≥ 1` so a no-sacrifice cast puts no
+  trigger on the stack. 0 for anything that isn't a spell on the stack, including a copy (never cast).
 - `DynamicAmounts.targetColorCount(index)` / `DynamicAmounts.colorCountOf(entity)` — number of
   distinct colors of the indexed cast-time target / any `EffectTarget.SingleEntity`. Desugars to
   `EntityProperty(entity, EntityNumericProperty.ColorCount)`. Read from projected state for

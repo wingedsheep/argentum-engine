@@ -1607,6 +1607,9 @@ class DynamicAmountEvaluator(
                     spell.manaSpentRed + spell.manaSpentGreen + spell.manaSpentColorless
             }
 
+            is EntityNumericProperty.PermanentsSacrificedToCast ->
+                state.getEntity(entityId)?.get<SpellOnStackComponent>()?.sacrificedPermanents?.size ?: 0
+
             is EntityNumericProperty.CounterCount ->
                 counterCountOf(state, entityId, property.counterType)
 

@@ -1011,6 +1011,14 @@ object DynamicAmounts {
     /** The amount of mana spent to cast [entity] (a spell) — reduced by cost reductions, unlike its mana value. */
     fun manaSpentToCast(entity: EffectTarget.SingleEntity): DynamicAmount = propertyOf(entity, EntityNumericProperty.ManaSpent)
 
+    /**
+     * The number of permanents sacrificed to pay the costs of casting [entity] (a spell) — read
+     * off the spell itself, so a cast trigger sees its spell's payment ("when you do, copy this
+     * spell for each creature sacrificed this way" — Plumb the Forbidden).
+     */
+    fun permanentsSacrificedToCast(entity: EffectTarget.SingleEntity): DynamicAmount =
+        propertyOf(entity, EntityNumericProperty.PermanentsSacrificedToCast)
+
     /** The number of [type] counters on [entity] (`null` = counters of any kind). */
     fun countersOn(entity: EffectTarget.SingleEntity, type: CounterType?): DynamicAmount =
         propertyOf(entity, EntityNumericProperty.CounterCount(type))

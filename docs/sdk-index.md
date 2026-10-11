@@ -1096,6 +1096,7 @@ Families:
 - `EntityNumericProperty.KeywordValue(keyword: Keyword)` — The total N across this entity's instances of a numeric keyword ("bushido N", "toxic N") — Takeno, Samurai General's "for each point of bushido it has".
 - `EntityNumericProperty.ManaSpent` — Total mana actually paid from the pool to cast a spell on the stack.
 - `EntityNumericProperty.ManaValue`
+- `EntityNumericProperty.PermanentsSacrificedToCast` — The number of permanents sacrificed to pay the costs of casting a spell on the stack — the snapshots recorded on its `SpellOnStackComponent` as the cost was paid.
 - `EntityNumericProperty.Power`
 - `EntityNumericProperty.SubtypeCount` — The number of distinct subtypes this entity has, read from projected state when available (so layer-4 type-changing effects, including Changeling, are honored).
 - `EntityNumericProperty.Toughness`

@@ -4685,6 +4685,91 @@
     ]
 }
 
+// Plumb the Forbidden
+{
+    "name": "Plumb the Forbidden",
+    "manaCost": "{1}{B}",
+    "typeLine": "Instant",
+    "oracleText": "As an additional cost to cast this spell, you may sacrifice one or more creatures. When you do, copy this spell for each creature sacrificed this way.\nYou draw a card and lose 1 life.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": "Controller"
+                }
+            ]
+        },
+        "triggeredAbilities": [
+            {
+                "id": "Plumb the Forbidden:1",
+                "trigger": "CastThisSpellEvent",
+                "effect": {
+                    "type": "RepeatDynamicTimes",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": "TriggeringEntity",
+                        "numericProperty": "PermanentsSacrificedToCast"
+                    },
+                    "body": {
+                        "type": "CopyTargetSpell",
+                        "target": "TriggeringEntity"
+                    }
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "EntityProperty",
+                        "entity": "TriggeringEntity",
+                        "numericProperty": "PermanentsSacrificedToCast"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "descriptionOverride": "When you do, copy this spell for each creature sacrificed this way."
+            }
+        ],
+        "additionalCosts": [
+            {
+                "type": "AdditionalAtom",
+                "atom": {
+                    "type": "AtomVariablePermanents",
+                    "filter": "creature",
+                    "minCount": 0,
+                    "excludeSelf": false,
+                    "action": "SACRIFICE",
+                    "xMeasure": "COUNT"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "81",
+        "rarity": "UNCOMMON",
+        "artist": "Andrey Kuzinskiy",
+        "flavorText": "Strixhaven forbade all magic from the Blood Age, so that is where Extus began his research.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/0/5034227f-3b8a-45bf-917c-c2cbd98f2192.jpg?1783927362"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Poet's Quill
 {
     "name": "Poet's Quill",
