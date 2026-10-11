@@ -1568,7 +1568,9 @@ class CastFromZoneEnumerator(
             val cardComponent = state.getEntity(cardId)?.get<CardComponent>() ?: continue
             if (cardComponent.typeLine.isLand) continue
             val cardDef = context.cardRegistry.getCard(cardComponent.cardDefinitionId) ?: continue
-            val escape = EscapeCasts.printedEscape(cardDef) ?: continue
+            val escape = EscapeCasts.effectiveEscape(
+                state, cardId, cardDef, playerId, context.cardRegistry, context.predicateEvaluator
+            ) ?: continue
 
             val isInstant = cardComponent.typeLine.isInstant
             val hasFlash = cardDef.keywords.contains(com.wingedsheep.sdk.core.Keyword.FLASH) ||

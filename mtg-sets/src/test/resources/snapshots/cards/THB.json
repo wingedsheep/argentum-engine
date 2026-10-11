@@ -4172,6 +4172,66 @@
     ]
 }
 
+// Underworld Breach
+{
+    "name": "Underworld Breach",
+    "manaCost": "{1}{R}",
+    "typeLine": "Enchantment",
+    "oracleText": "Each nonland card in your graveyard has escape. The escape cost is equal to the card's mana cost plus exile three other cards from your graveyard. (You may cast cards from your graveyard for their escape cost.)\nAt the beginning of the end step, sacrifice this enchantment.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Underworld Breach:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": "SacrificeSelf"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GraveyardCardsHaveEscape",
+                "filter": "nonland",
+                "additionalCost": {
+                    "type": "AdditionalAtom",
+                    "atom": {
+                        "type": "AtomExileFrom",
+                        "zone": "Graveyard",
+                        "count": 3,
+                        "excludeSelf": true
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "161",
+        "rarity": "RARE",
+        "artist": "Lie Setiawan",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/e/0e51d796-7279-4c06-87f0-37adbdaa41df.jpg?1783931543",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "After an escaped spell resolves, it returns to its owner's graveyard if it's not a permanent spell. If it is a permanent spell, it enters the battlefield and will return to its owner's graveyard if it dies later. Perhaps it will escape again—good underworld security is so hard to come by these days."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "Escape's permission doesn't change when you may cast the spell from your graveyard."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "If a card has no mana cost, its escape cost is an unpayable cost, so you can't cast it for that cost."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Venomous Hierophant
 {
     "name": "Venomous Hierophant",

@@ -10464,6 +10464,15 @@ riders, matching how the engine already treats e.g. City of Brass's damage durin
   wraps the ability in a `ConditionalStaticAbility`, and `MayhemGrants` matches the bare type
   without unwrapping it — so the grant never applies rather than applying conditionally. Teach
   that read site to unwrap first; `FlashTypeGrants.activeGrant` is the worked example.
+- `GraveyardCardsHaveEscape(filter, cost = null, additionalCost = null, duringYourTurnOnly = false)` —
+  the Escape (CR 702.138) analogue of `GraveyardCardsHaveFlashback`: every card in your graveyard
+  matching `filter` has escape. `cost = null` means "equal to the card's mana cost" (a card with no
+  mana cost then can't escape — its escape cost is unpayable); `additionalCost` is the non-mana half.
+  Read through `EscapeCasts.effectiveEscape` (enumerator, zone permission, cost totaller,
+  additional-cost collector), so a granted escape behaves exactly like a printed one: not exiled on
+  resolution, and a permanent cast this way "escaped" (`Conditions.Escaped`). A printed escape wins
+  over the grant. Underworld Breach: `GraveyardCardsHaveEscape(GameObjectFilter.Nonland,
+  additionalCost = Costs.additional.ExileOtherCards(3))`.
 - `GrantMayCastFromLinkedExile(filter = Nonland, duringYourTurnOnly = false, additionalCost = null, ownedByYou = false, withoutPayingManaCost = false, oncePerTurn = false, maxManaValue = null, exiledThisTurnOnly = false, entersWithCounter = null, withAnyManaType = false)`
   — "you may cast cards exiled with this permanent" — reads the source's `LinkedExileComponent` (Rona,
   Disciple of Gix; Maralen, Fae Ascendant; Dawnhand Dissident). Casting spells from linked exile is

@@ -766,6 +766,52 @@ data class GraveyardCardsHaveMayhem(
 }
 
 /**
+ * "Each [filter] card in your graveyard has escape." The Escape (CR 702.138) analogue of
+ * [GraveyardCardsHaveFlashback] — a whole-graveyard group grant of [KeywordAbility.Escape], read
+ * through `EscapeCasts.effectiveEscape` (enumerator, zone permission, cost totaller, additional-cost
+ * collector) so a granted escape behaves exactly like a printed one: the escaped spell is not
+ * exiled on resolution, and a permanent spell enters the battlefield as usual.
+ *
+ * Underworld Breach: "Each nonland card in your graveyard has escape. The escape cost is equal to
+ * the card's mana cost plus exile three other cards from your graveyard" —
+ * `GraveyardCardsHaveEscape(Nonland, additionalCost = Costs.additional.ExileOtherCards(3))`.
+ *
+ * A separate type rather than a keyword axis on [GraveyardCardsHaveFlashback]: escape carries a
+ * non-mana half ([additionalCost]) and neither exiles on resolution (flashback does) nor is gated on
+ * a discard this turn (mayhem is), so one shared type would fork its meaning on every engine read.
+ *
+ * @property filter Which graveyard cards gain escape (matched against the card's characteristics).
+ * @property cost The granted escape mana cost, or null for "equal to the card's mana cost" — a card
+ *   with no mana cost then has an unpayable escape cost and can't be cast this way.
+ * @property additionalCost The non-mana half of the escape cost ("exile three other cards from your
+ *   graveyard").
+ * @property duringYourTurnOnly If true, the grant is active only during the controller's turn.
+ */
+@SerialName("GraveyardCardsHaveEscape")
+@Serializable
+data class GraveyardCardsHaveEscape(
+    val filter: GameObjectFilter,
+    val cost: ManaCost? = null,
+    val additionalCost: AdditionalCost? = null,
+    val duringYourTurnOnly: Boolean = false
+) : StaticAbility {
+    override val description: String = buildString {
+        if (duringYourTurnOnly) append("During your turn, e") else append("E")
+        append("ach ${filter.description} card in your graveyard has escape")
+        if (cost != null) append(" $cost")
+        if (cost == null && additionalCost != null) {
+            append(". The escape cost is equal to the card's mana cost plus ${additionalCost.description.replaceFirstChar { it.lowercase() }}")
+        } else if (additionalCost != null) {
+            append(", ${additionalCost.description}")
+        }
+    }
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
+        val newFilter = filter.applyTextReplacement(replacer)
+        return if (newFilter !== filter) copy(filter = newFilter) else this
+    }
+}
+
+/**
  * "Creature cards in your graveyard have sneak [cost]. You may cast creature spells from your
  * graveyard using their sneak abilities." (Ninja Teen level 3.)
  *

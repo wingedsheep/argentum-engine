@@ -572,8 +572,9 @@ class CastZoneResolver(
     ): Boolean {
         if (cardId !in state.getZone(ZoneKey(playerId, Zone.GRAVEYARD))) return false
         val cardComponent = state.getEntity(cardId)?.get<CardComponent>() ?: return false
-        return EscapeCasts.printedEscape(
-            cardRegistry.getCard(cardComponent.cardDefinitionId)
+        return EscapeCasts.effectiveEscape(
+            state, cardId, cardRegistry.getCard(cardComponent.cardDefinitionId),
+            playerId, cardRegistry, predicateEvaluator
         ) != null
     }
 

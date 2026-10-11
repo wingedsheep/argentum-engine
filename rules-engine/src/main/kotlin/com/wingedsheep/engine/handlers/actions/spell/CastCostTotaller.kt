@@ -367,7 +367,7 @@ internal class CastCostTotaller(
         // Escape (CR 702.138a) — cast from graveyard for its escape mana; the non-mana half is
         // owed as an additional cost (CastAdditionalCosts).
         AlternativeCostType.ESCAPE to {
-            EscapeCasts.printedEscape(cardDef)
+            EscapeCasts.effectiveEscape(state, cardId, cardDef, playerId, cardRegistry, predicateEvaluator)
                 ?.takeIf { zoneResolver.hasEscapePermission(state, playerId, cardId) }
                 ?.let { priced(it.cost) }
         },

@@ -1139,6 +1139,7 @@ class StaticAbilityHandler(
             is MayCastFromGraveyard,
             is GraveyardCardsHaveFlashback,
             is com.wingedsheep.sdk.scripting.GraveyardCardsHaveMayhem,
+            is com.wingedsheep.sdk.scripting.GraveyardCardsHaveEscape,
             is com.wingedsheep.sdk.scripting.GraveyardCreaturesHaveSneak,
             is MayCastSelfFromZones,
             is MayCastWithoutPayingManaCost,
