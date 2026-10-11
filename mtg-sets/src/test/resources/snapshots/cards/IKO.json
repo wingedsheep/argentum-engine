@@ -1908,6 +1908,61 @@
     ]
 }
 
+// Luminous Broodmoth
+{
+    "name": "Luminous Broodmoth",
+    "manaCost": "{2}{W}{W}",
+    "typeLine": "Creature — Insect",
+    "oracleText": "Flying\nWhenever a creature you control without flying dies, return it to the battlefield under its owner's control with a flying counter on it.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Luminous Broodmoth:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "NotKeyword",
+                                "keyword": "FLYING"
+                            }
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    },
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "TriggeringEntity",
+                    "destination": "Battlefield",
+                    "fromZone": "Graveyard",
+                    "addCounterType": "FLYING"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "21",
+        "rarity": "MYTHIC",
+        "artist": "Lie Setiawan",
+        "flavorText": "It soars through currents of moonbeams to give hope to the forsaken.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/b/bb65df55-d6a6-4a57-a903-e5eb17637982.jpg?1783931087"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Lurking Deadeye
 {
     "name": "Lurking Deadeye",

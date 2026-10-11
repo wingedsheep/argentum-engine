@@ -1079,6 +1079,86 @@
     ]
 }
 
+// Mangara, the Diplomat
+{
+    "name": "Mangara, the Diplomat",
+    "manaCost": "{3}{W}",
+    "typeLine": "Legendary Creature — Human Cleric",
+    "oracleText": "Lifelink\nWhenever an opponent attacks with creatures, if two or more of those creatures are attacking you and/or planeswalkers you control, draw a card.\nWhenever an opponent casts their second spell each turn, draw a card.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "keywords": [
+        "LIFELINK"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Mangara, the Diplomat:1",
+                "trigger": {
+                    "type": "CreaturesAttackYouEvent",
+                    "minAttackers": 2,
+                    "includePlaneswalkersYouControl": true
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "descriptionOverride": "Whenever an opponent attacks with creatures, if two or more of those creatures are attacking you and/or planeswalkers you control, draw a card."
+            },
+            {
+                "id": "Mangara, the Diplomat:2",
+                "trigger": {
+                    "type": "NthSpellCastEvent",
+                    "nthSpell": 2,
+                    "player": "EachOpponent"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "descriptionOverride": "Whenever an opponent casts their second spell each turn, draw a card."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "27",
+        "rarity": "MYTHIC",
+        "artist": "Howard Lyon",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/b/9b4e628f-5fc5-4c17-a07d-448d361d7e7c.jpg?1783930737",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "If your opponent attacks you with one creature and your planeswalker with another, you draw a card."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "If some of the attacking creatures leave the battlefield while Mangara's triggered ability is on the stack, use the player or planeswalker they were attacking before they left to determine whether you draw a card. On the other hand, if they're removed from combat without leaving the battlefield, use their current information to determine that they're not attacking you or a planeswalker you control anymore."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "An ability that triggers when a player casts a spell resolves before the spell that caused it to trigger. It resolves even if that spell is countered."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "You draw just one card, no matter how many creatures are attacking you and your planeswalkers beyond the second."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Mazemind Tome
 {
     "name": "Mazemind Tome",

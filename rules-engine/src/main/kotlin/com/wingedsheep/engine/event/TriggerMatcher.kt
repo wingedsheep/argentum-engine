@@ -1250,6 +1250,17 @@ class TriggerMatcher(
                             projected.hasKeyword(event.entityId, predicate.keyword)
                         }
                     }
+                    is com.wingedsheep.sdk.scripting.predicates.CardPredicate.NotKeyword -> {
+                        // The mirror of HasKeyword: "whenever a creature you control without flying
+                        // dies" (Luminous Broodmoth) must read the keywords it died with. The generic
+                        // path below reads post-death projected state, where every keyword is gone,
+                        // so a dying flyer would match.
+                        if (event.isBattlefieldDeparture && event.lastKnown?.keywords?.isNotEmpty() == true) {
+                            !event.lastKnown.keywords.containsKeyword(predicate.keyword)
+                        } else {
+                            !projected.hasKeyword(event.entityId, predicate.keyword)
+                        }
+                    }
                     is com.wingedsheep.sdk.scripting.predicates.CardPredicate.HasChosenSubtype -> {
                         // Resolve the chosen subtype from the trigger source's CastChoicesComponent
                         // and check that the entering/leaving entity has that subtype.

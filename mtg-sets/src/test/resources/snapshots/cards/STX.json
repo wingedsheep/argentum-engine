@@ -5749,6 +5749,55 @@
     ]
 }
 
+// Secret Rendezvous
+{
+    "name": "Secret Rendezvous",
+    "manaCost": "{1}{W}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "You and target opponent each draw three cards.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetOpponent",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "26",
+        "rarity": "UNCOMMON",
+        "artist": "Manuel Castañón",
+        "flavorText": "Strixhaven's five colleges encourage natural rivalries among the students, but some bonds transcend all barriers.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/9/39528cf0-343e-499b-a69f-c5c3c2898c25.jpg?1783927387"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Silverquill Campus
 {
     "name": "Silverquill Campus",

@@ -3390,6 +3390,96 @@
     "colorIdentityOverride": []
 }
 
+// Loran of the Third Path
+{
+    "name": "Loran of the Third Path",
+    "manaCost": "{2}{W}",
+    "typeLine": "Legendary Creature — Human Artificer",
+    "oracleText": "Vigilance\nWhen Loran enters, destroy up to one target artifact or enchantment.\n{T}: You and target opponent each draw a card.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Loran of the Third Path:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "artifact|enchantment"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "When Loran enters, destroy up to one target artifact or enchantment."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Loran of the Third Path:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t1"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetOpponent",
+                        "id": "t1"
+                    }
+                ],
+                "descriptionOverride": "{T}: You and target opponent each draw a card."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "12",
+        "rarity": "RARE",
+        "artist": "Steven Belledin",
+        "flavorText": "As a scholar, she saw the sylex not as a weapon, but as a key to the past.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/9/59faa45d-868b-4bc7-934c-0e077642e129.jpg?1783920128"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Loran's Escape
 {
     "name": "Loran's Escape",

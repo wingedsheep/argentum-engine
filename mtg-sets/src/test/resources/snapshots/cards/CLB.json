@@ -350,6 +350,70 @@
     "colorIdentityOverride": []
 }
 
+// Cut a Deal
+{
+    "name": "Cut a Deal",
+    "manaCost": "{2}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Each opponent draws a card, then you draw a card for each opponent who drew a card this way.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "StoreNumber",
+                    "name": "opponentsWhoDrew",
+                    "amount": {
+                        "type": "CountPlayersWith",
+                        "scope": "EachOpponent",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "Count",
+                                "player": "You",
+                                "zone": "Library"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    }
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "EachOpponent"
+                    }
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "VariableReference",
+                        "variableName": "opponentsWhoDrew"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "14",
+        "rarity": "UNCOMMON",
+        "artist": "Jodie Muir",
+        "flavorText": "\"It's a win-win arrangement. I just happen to win the most.\"\n—Duke Thalamra Vanthampur",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/d/0d846a4d-da81-41e0-89a9-6685c821dbb4.jpg?1783922817"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Displacer Kitten
 {
     "name": "Displacer Kitten",

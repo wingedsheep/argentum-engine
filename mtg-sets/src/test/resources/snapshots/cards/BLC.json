@@ -1822,6 +1822,205 @@
     ]
 }
 
+// Murmuration
+{
+    "name": "Murmuration",
+    "manaCost": "{4}{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "Birds you control get +1/+1 and have vigilance.\nAt the beginning of your end step, for each spell you've cast this turn, create a 1/2 blue Bird creature token with flying named Storm Crow.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Murmuration:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "count": "SpellsCastThisTurn",
+                    "power": 1,
+                    "toughness": 2,
+                    "colors": [
+                        "BLUE"
+                    ],
+                    "creatureTypes": [
+                        "Bird"
+                    ],
+                    "keywords": [
+                        "FLYING"
+                    ],
+                    "name": "Storm Crow",
+                    "imageUri": "https://cards.scryfall.io/normal/front/d/4/d4498fac-e345-4cea-8d7e-7e0759600f33.jpg?1783909758"
+                },
+                "descriptionOverride": "At the beginning of your end step, for each spell you've cast this turn, create a 1/2 blue Bird creature token with flying named Storm Crow."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1,
+                "filter": {
+                    "baseFilter": "creature Bird ctrl:you"
+                }
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "VIGILANCE",
+                "filter": {
+                    "baseFilter": "creature Bird ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "10",
+        "rarity": "RARE",
+        "artist": "Xabi Gaztelua",
+        "flavorText": "Once the crow birdfolk realized augurs were using the shapes of their murmurations for divination, they decided to have some fun with it.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/6/561c9c4e-942e-40e8-b5f2-ac709a502f18.jpg?1783910736"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Perch Protection
+{
+    "name": "Perch Protection",
+    "manaCost": "{4}{W}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Gift an extra turn (You may promise an opponent a gift as you cast this spell. If you do, they take an extra turn after this one.)\nCreate four 2/2 blue Bird creature tokens with flying. If the gift was promised, all permanents you control phase out, and until your next turn, your life total can't change and you gain protection from everything.\nExile Perch Protection.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "CreateToken",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 4
+                        },
+                        "power": 2,
+                        "toughness": 2,
+                        "colors": [
+                            "BLUE"
+                        ],
+                        "creatureTypes": [
+                            "Bird"
+                        ],
+                        "keywords": [
+                            "FLYING"
+                        ],
+                        "imageUri": "https://cards.scryfall.io/normal/front/e/0/e0796ccd-b8ba-49c9-b76b-4fce55c242dc.jpg?1783909759"
+                    },
+                    "description": "Don't promise a gift — create four 2/2 blue Bird tokens with flying"
+                },
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "ChooseOpponentForSource",
+                                "prompt": "Choose an opponent to receive the gift"
+                            },
+                            {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "TakeExtraTurn",
+                                        "target": {
+                                            "type": "PlayerRef",
+                                            "player": "ChosenOpponent"
+                                        }
+                                    },
+                                    {
+                                        "type": "CreateToken",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 4
+                                        },
+                                        "power": 2,
+                                        "toughness": 2,
+                                        "colors": [
+                                            "BLUE"
+                                        ],
+                                        "creatureTypes": [
+                                            "Bird"
+                                        ],
+                                        "keywords": [
+                                            "FLYING"
+                                        ],
+                                        "imageUri": "https://cards.scryfall.io/normal/front/e/0/e0796ccd-b8ba-49c9-b76b-4fce55c242dc.jpg?1783909759"
+                                    },
+                                    {
+                                        "type": "ForEach",
+                                        "space": {
+                                            "type": "IterationSpace.Group",
+                                            "filter": {
+                                                "baseFilter": "permanent ctrl:you"
+                                            }
+                                        },
+                                        "body": {
+                                            "type": "PhaseOut",
+                                            "target": "IterationEntity"
+                                        }
+                                    },
+                                    {
+                                        "type": "LockLifeGain",
+                                        "target": "Controller",
+                                        "duration": "UntilYourNextTurn"
+                                    },
+                                    {
+                                        "type": "LockLifeLoss",
+                                        "target": "Controller",
+                                        "duration": "UntilYourNextTurn"
+                                    },
+                                    "GrantPlayerProtection",
+                                    "GiftGiven"
+                                ]
+                            }
+                        ]
+                    },
+                    "description": "Promise a gift — an opponent takes an extra turn; create four Birds, phase out your permanents, and until your next turn your life total can't change and you have protection from everything"
+                }
+            ],
+            "countsAsModalSpell": false
+        },
+        "selfExileOnResolve": true
+    },
+    "metadata": {
+        "collectorNumber": "11",
+        "rarity": "RARE",
+        "artist": "Edgar Sánchez Hidalgo",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/f/1f81d6ea-9a76-43b9-b030-d40c5cfbeefe.jpg?1783910735",
+        "rulings": [
+            {
+                "date": "2024-07-26",
+                "text": "For instants and sorceries with gift, the gift is given to the appropriate opponent as part of the resolution of the spell. This happens before any of the spell's other effects would take place."
+            },
+            {
+                "date": "2024-07-26",
+                "text": "Gaining protection from everything causes a spell or ability on the stack to have an illegal target if it targets you."
+            },
+            {
+                "date": "2024-07-26",
+                "text": "If a token is phased out, it will phase in as your next untap step begins."
+            },
+            {
+                "date": "2024-07-26",
+                "text": "If your untap step is somehow skipped as your next turn begins, your phased-out permanents won't phase in until the next untap step you actually have, but you'll no longer have protection from everything and your life total can change again."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Pollywog Prodigy
 {
     "name": "Pollywog Prodigy",

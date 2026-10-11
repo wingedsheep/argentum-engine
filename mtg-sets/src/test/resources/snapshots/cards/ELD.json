@@ -1604,6 +1604,71 @@
     ]
 }
 
+// Realm-Cloaked Giant
+{
+    "name": "Realm-Cloaked Giant",
+    "manaCost": "{5}{W}{W}",
+    "typeLine": "Creature — Giant",
+    "oracleText": "Vigilance",
+    "creatureStats": {
+        "power": 7,
+        "toughness": 7
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "metadata": {
+        "collectorNumber": "26",
+        "rarity": "MYTHIC",
+        "artist": "Adam Paquette",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/e/9e5c8cf1-1d7c-49e5-bfad-7e13c418118f.jpg?1783932668"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ],
+    "layout": "ADVENTURE",
+    "cardFaces": [
+        {
+            "name": "Cast Off",
+            "manaCost": "{3}{W}{W}",
+            "typeLine": "Sorcery — Adventure",
+            "oracleText": "Destroy all non-Giant creatures. (Then exile this card. You may cast the creature later from exile.)",
+            "script": {
+                "spellEffect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "BattlefieldMatching",
+                                "filter": {
+                                    "cardPredicates": [
+                                        "IsCreature",
+                                        {
+                                            "type": "NotSubtype",
+                                            "subtype": "Giant"
+                                        }
+                                    ]
+                                }
+                            },
+                            "storeAs": "destroyAll_gathered"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "destroyAll_gathered",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Destroy"
+                        }
+                    ]
+                }
+            }
+        }
+    ]
+}
+
 // Redcap Melee
 {
     "name": "Redcap Melee",

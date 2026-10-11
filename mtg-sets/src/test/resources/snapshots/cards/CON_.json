@@ -1617,6 +1617,89 @@
     ]
 }
 
+// Martial Coup
+{
+    "name": "Martial Coup",
+    "manaCost": "{X}{W}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Create X 1/1 white Soldier creature tokens. If X is 5 or more, destroy all other creatures.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "CreateToken",
+                    "count": "XValue",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Soldier"
+                    ]
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": "XValue",
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 5
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "BattlefieldMatching",
+                                    "filter": "creature"
+                                },
+                                "storeAs": "gathered0"
+                            },
+                            {
+                                "type": "FilterCollection",
+                                "from": "gathered0",
+                                "collectionFilter": {
+                                    "type": "ExcludeOtherCollection",
+                                    "otherCollectionName": "createdTokens"
+                                },
+                                "storeMatching": "matching1"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "matching1",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                },
+                                "moveType": "Destroy"
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "11",
+        "rarity": "RARE",
+        "artist": "Greg Staples",
+        "flavorText": "Their war forgotten, the nations of Bant stood united in the face of a common threat.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/2/4201385f-6f74-4e3d-aafb-0eff82cb24c1.jpg?1783942492"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Matca Rioters
 {
     "name": "Matca Rioters",
