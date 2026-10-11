@@ -13,7 +13,7 @@ import io.kotest.matchers.shouldBe
 /**
  * Skyclave Apparition — the ETB exiles a *target permanent* linked to the Apparition, and the
  * LTB reads that linked card back for the Illusion's size (its mana value) and controller (its
- * owner, since a card in exile has no controller).
+ * owner — even when someone else controlled the permanent it was exiled from).
  */
 class SkyclaveApparitionScenarioTest : ScenarioTestBase() {
 
@@ -61,6 +61,36 @@ class SkyclaveApparitionScenarioTest : ScenarioTestBase() {
                 tokenCard.baseStats?.basePower shouldBe 4
                 tokenCard.baseStats?.baseToughness shouldBe 4
                 token.get<ControllerComponent>()?.playerId shouldBe game.player2Id
+            }
+
+            test("a stolen permanent's Illusion goes to its owner, not the player who controlled it") {
+                val game = scenario()
+                    .withPlayers("Player1", "Opponent")
+                    .withCardInHand(1, "Skyclave Apparition")
+                    .withCardInHand(1, "End Hostilities")
+                    .withLandsOnBattlefield(1, "Plains", 8)
+                    .withCardOnBattlefield(1, "Hill Giant")
+                    .withCardInLibrary(1, "Plains")
+                    .withCardInLibrary(2, "Plains")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+                val giantId = game.findPermanent("Hill Giant")!!
+                // Player1 owns the Giant; the opponent has stolen it.
+                game.state = game.state.updateEntity(giantId) { it.with(ControllerComponent(game.player2Id)) }
+
+                game.castSpell(1, "Skyclave Apparition")
+                game.resolveStack()
+                game.selectTargets(listOf(giantId))
+                game.resolveStack()
+                game.state.getExile(game.player1Id).contains(giantId) shouldBe true
+
+                game.castSpell(1, "End Hostilities").error shouldBe null
+                game.resolveStack()
+
+                val tokenId = game.findPermanent("Illusion Token")
+                tokenId.shouldNotBeNull()
+                game.state.getEntity(tokenId)!!.get<ControllerComponent>()?.playerId shouldBe game.player1Id
             }
 
             test("choosing no target exiles nothing and makes no token") {

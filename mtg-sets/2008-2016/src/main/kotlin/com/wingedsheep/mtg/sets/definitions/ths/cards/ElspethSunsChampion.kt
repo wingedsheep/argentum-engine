@@ -35,8 +35,7 @@ val ElspethSunsChampion = card("Elspeth, Sun's Champion") {
             toughness = 1,
             colors = setOf(Color.WHITE),
             creatureTypes = setOf("Soldier"),
-            count = 3,
-            imageUri = "https://cards.scryfall.io/normal/front/6/8/688c8e63-1462-4ad6-8872-216384160b58.jpg?1783939699"
+            count = 3
         )
     }
 

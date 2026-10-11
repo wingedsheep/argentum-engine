@@ -2161,42 +2161,45 @@
                     "from": "Battlefield"
                 },
                 "effect": {
-                    "type": "Composite",
-                    "effects": [
-                        {
-                            "type": "GatherCards",
-                            "source": "FromLinkedExile",
-                            "storeAs": "gathered0"
-                        },
-                        {
-                            "type": "CreateToken",
-                            "count": {
-                                "type": "VariableReference",
-                                "variableName": "gathered0_count"
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "OwnersOfLinkedExile"
+                    },
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": "FromLinkedExile",
+                                "storeAs": "gathered0"
                             },
-                            "power": 0,
-                            "toughness": 0,
-                            "colors": [
-                                "BLUE"
-                            ],
-                            "creatureTypes": [
-                                "Illusion"
-                            ],
-                            "imageUri": "https://cards.scryfall.io/normal/front/2/3/2300635e-7771-4676-a5a5-29a9d8f49f1a.jpg?1783929499",
-                            "controller": {
-                                "type": "ControllerOfPipelineTarget",
-                                "collectionName": "gathered0"
-                            },
-                            "dynamicPower": {
-                                "type": "StoredCardManaValue",
-                                "collectionName": "gathered0"
-                            },
-                            "dynamicToughness": {
-                                "type": "StoredCardManaValue",
-                                "collectionName": "gathered0"
+                            {
+                                "type": "CreateToken",
+                                "count": {
+                                    "type": "VariableReference",
+                                    "variableName": "gathered0_count"
+                                },
+                                "power": 0,
+                                "toughness": 0,
+                                "colors": [
+                                    "BLUE"
+                                ],
+                                "creatureTypes": [
+                                    "Illusion"
+                                ],
+                                "imageUri": "https://cards.scryfall.io/normal/front/2/3/2300635e-7771-4676-a5a5-29a9d8f49f1a.jpg?1783929499",
+                                "dynamicPower": {
+                                    "type": "StoredCardManaValue",
+                                    "collectionName": "gathered0"
+                                },
+                                "dynamicToughness": {
+                                    "type": "StoredCardManaValue",
+                                    "collectionName": "gathered0"
+                                }
                             }
-                        }
-                    ]
+                        ]
+                    }
                 }
             }
         ]

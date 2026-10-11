@@ -8,6 +8,7 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardSource
+import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 
 /**
@@ -51,20 +52,24 @@ val SkyclaveApparition = card("Skyclave Apparition") {
 
     triggeredAbility {
         trigger = Triggers.self.leaves()
-        effect = Effects.Pipeline {
-            val exiledCard = gather(CardSource.FromLinkedExile())
-            run(Effects.CreateToken(
-                count = exiledCard.count,
-                power = 0,
-                toughness = 0,
-                colors = setOf(Color.BLUE),
-                creatureTypes = setOf("Illusion"),
-                dynamicPower = DynamicAmounts.manaValueOf(exiledCard),
-                dynamicToughness = DynamicAmounts.manaValueOf(exiledCard),
-                controller = exiledCard.controllerOf(),
-                imageUri = "https://cards.scryfall.io/normal/front/2/3/2300635e-7771-4676-a5a5-29a9d8f49f1a.jpg?1783929499"
-            ))
-        }
+        // The exiled card's *owner* creates the token: ForEachPlayer rebinds "you" to each owner of
+        // the linked pile (Spell Queller's construction), so a stolen permanent's token goes home.
+        effect = Effects.ForEachPlayer(
+            players = Player.OwnersOfLinkedExile,
+            Effects.Pipeline {
+                val exiledCard = gather(CardSource.FromLinkedExile())
+                run(Effects.CreateToken(
+                    count = exiledCard.count,
+                    power = 0,
+                    toughness = 0,
+                    colors = setOf(Color.BLUE),
+                    creatureTypes = setOf("Illusion"),
+                    dynamicPower = DynamicAmounts.manaValueOf(exiledCard),
+                    dynamicToughness = DynamicAmounts.manaValueOf(exiledCard),
+                    imageUri = "https://cards.scryfall.io/normal/front/2/3/2300635e-7771-4676-a5a5-29a9d8f49f1a.jpg?1783929499"
+                ))
+            }
+        )
     }
 
     metadata {
