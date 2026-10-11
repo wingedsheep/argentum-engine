@@ -424,6 +424,43 @@ data class GrantWebSlingingToSpells(
 }
 
 /**
+ * Grants **offspring [cost]** (CR 702.175) to spells the controller casts that match [spellFilter] —
+ * Zinnia, Valley's Voice: "Creature spells you cast gain offspring {2} as you cast them."
+ *
+ * Both halves of the keyword come with the grant (CR 702.175a): the cast enumerators offer an
+ * "Offspring" variant paying [cost] on top of the spell's own costs, declared under
+ * [ChoiceSlot.OFFSPRING]; and the permanent a paid spell becomes has the "when this permanent
+ * enters, if its offspring cost was paid, create a token that's a copy of it, except it's 1/1"
+ * trigger (`Offspring.tokenCopyAbility`) — synthesized by the engine off that slot, so it fires
+ * even if the granter has left by the time the spell resolves, and not if the permanent has lost
+ * all abilities as it enters (the offspring rulings).
+ *
+ * Closest neighbours: [GrantKeywordToOwnSpells] grants a parameterless (or Int-parameterised)
+ * [Keyword] and can't carry a [ManaCost]; [GrantWebSlingingToSpells] carries a cost but grants an
+ * alternative cost, not an optional additional one with an enters trigger.
+ *
+ * A grant is one instance of offspring on top of any printed one (CR 702.175b); the cast action
+ * declares one optional-cost slot, so a creature with printed offspring (or kicker) pays either its
+ * own or the granted cost on a given cast, not both. Scoped to the source's controller ("you").
+ *
+ * @property cost The granted offspring cost.
+ * @property spellFilter Which spells gain offspring (Zinnia: creature spells).
+ */
+@SerialName("GrantOffspringToOwnSpells")
+@Serializable
+data class GrantOffspringToOwnSpells(
+    val cost: ManaCost,
+    val spellFilter: GameObjectFilter = GameObjectFilter.Creature
+) : StaticAbility {
+    override val description: String =
+        "${spellFilter.description.replaceFirstChar { it.uppercase() }} spells you cast gain offspring $cost as you cast them"
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
+        val newFilter = spellFilter.applyTextReplacement(replacer)
+        return if (newFilter !== spellFilter) copy(spellFilter = newFilter) else this
+    }
+}
+
+/**
  * Grants warp (CR 702.185) to cards in the granter's controller's hand that match [filter].
  * Models oracle text like "Artifact cards and red creature cards in your hand have warp {2}{R}."
  *

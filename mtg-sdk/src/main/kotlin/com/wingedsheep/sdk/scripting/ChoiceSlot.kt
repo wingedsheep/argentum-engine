@@ -123,6 +123,20 @@ enum class ChoiceSlot {
     TEAMWORK,
 
     /**
+     * Whether a **granted** offspring cost was paid when cast (CR 702.175a) — "Creature spells you
+     * cast gain offspring {2} as you cast them" ([GrantOffspringToOwnSpells], Zinnia, Valley's
+     * Voice). A present value means the granted cost was declared and paid; the permanent the spell
+     * becomes then has the offspring trigger (`Offspring.tokenCopyAbility`), synthesized by the
+     * engine because no card prints it.
+     *
+     * Deliberately distinct from [KICKED], where a *printed* offspring rides: CR 702.175b pays each
+     * instance of offspring separately and triggers off its own payment only, and a creature spell
+     * with a printed kicker that gains offspring must not read as kicked when only the offspring
+     * cost was paid.
+     */
+    OFFSPRING,
+
+    /**
      * Whether the spell's **replicate** cost was paid at least once (CR 702.56a). The number of
      * payments rides on the cast itself (`CastSpell.declaredCostTimes`), because only the cast
      * trigger that copies the spell reads it. Distinct from [KICKED] so a replicated spell never

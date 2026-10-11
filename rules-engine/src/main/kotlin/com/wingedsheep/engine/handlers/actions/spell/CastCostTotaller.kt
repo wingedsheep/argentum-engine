@@ -79,7 +79,15 @@ internal class CastCostTotaller(
         if (!playForFree && !action.useAlternativeCost) {
             // Summed over every declared cost: "Kicker [A] and/or [B]" kicked with both pays both
             // (CR 702.33b); a single-cost declaration is the one-element case.
-            val kickerManaCost = optionalCostsManaPaid(declaredOptionalCosts(action, cardDef), action.declaredCostTimes)
+            val kickerManaCost = optionalCostsManaPaid(
+                declaredOptionalCosts(
+                    action,
+                    com.wingedsheep.engine.mechanics.OffspringGrants.effectiveOptionalCosts(
+                        state, action.cardId, cardDef, action.playerId, cardRegistry, predicateEvaluator
+                    )
+                ),
+                action.declaredCostTimes
+            )
             if (kickerManaCost != null) {
                 effectiveCost = ManaCost(effectiveCost.symbols + kickerManaCost.symbols)
             }

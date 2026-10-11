@@ -315,7 +315,7 @@ class CastSpellHandler(
         // a Choice's leg, so an unreduced wrapper would never match and would silently drop the tap
         // cause.
         val declaredSlotCosts = reduceCostAlternatives(
-            listOfNotNull(castCostPayer.declaredSlotCost(action, cardDef)), announcedState, action.playerId, action.additionalCostPayment, action.additionalCostChoices
+            listOfNotNull(castCostPayer.declaredSlotCost(announcedState, action, cardDef)), announcedState, action.playerId, action.additionalCostPayment, action.additionalCostChoices
         )
 
         // Server-initiated free cast: pay the spell's printed additional costs even though the mana
@@ -668,7 +668,9 @@ class CastSpellHandler(
             declaredCostSlot = action.declaredCostSlot,
             // Plus which kicker(s) of a two-kicker card were paid (CR 702.33f), recorded on the
             // same cast-choice rail so the linked "kicked with its [A] kicker" abilities read them.
-            additionalCostChoices = action.additionalCostChoices + linkedKickerChoices(action, cardDef),
+            additionalCostChoices = action.additionalCostChoices + linkedKickerChoices(
+                action, cardDef?.keywordAbilities?.filterIsInstance<KeywordAbility.OptionalAdditionalCost>().orEmpty()
+            ),
             wasBlightPaid = (action.additionalCostPayment?.blightTargets?.isNotEmpty() == true),
             // True when the spell's waterbend additional cost was paid (Avatar) — mandatory costs
             // always, optional "you may waterbend {N}" only when the player elected it.

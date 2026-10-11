@@ -2648,6 +2648,7 @@ class CastFromZoneEnumerator(
             .toMap()
 
         val kickerActions = mutableListOf<LegalAction>()
+        val offspringGrants = com.wingedsheep.engine.mechanics.OffspringGrants.grants(state, playerId, context.cardRegistry, context.predicateEvaluator)
 
         for ((cardId, originalAction) in zoneCastActions) {
             val originalCast = originalAction.action as CastSpell
@@ -2655,7 +2656,9 @@ class CastFromZoneEnumerator(
             if (cardComponent.typeLine.isLand) continue
 
             val cardDef = context.cardRegistry.getCard(cardComponent.name) ?: continue
-            val optionalCosts = cardDef.keywordAbilities.filterIsInstance<KeywordAbility.OptionalAdditionalCost>()
+            val optionalCosts = com.wingedsheep.engine.mechanics.OffspringGrants.effectiveOptionalCosts(
+                state, cardId, cardDef, playerId, context.cardRegistry, context.predicateEvaluator, offspringGrants
+            )
             if (optionalCosts.isEmpty()) continue
 
             val sourceZone = originalAction.sourceZone

@@ -43,19 +43,18 @@ internal fun isOverloadCast(action: CastSpell, cardDef: com.wingedsheep.sdk.mode
         cardDef.keywordAbilities.any { it is KeywordAbility.Overload }
 
 /**
- * Every optional-additional-cost keyword on the card under the slot this cast declared, in printed
- * order — the costs [CastSpell.declaredCostIndices] indexes into. Empty when the cast declared no
- * slot or the card has no keyword for it.
+ * Every optional-additional-cost keyword the spell has under the slot this cast declared, in printed
+ * order — the costs [CastSpell.declaredCostIndices] indexes into. [optionalCosts] is the spell's
+ * whole effective list, printed plus granted
+ * ([com.wingedsheep.engine.mechanics.OffspringGrants.effectiveOptionalCosts]). Empty when the cast
+ * declared no slot or the spell has no keyword for it.
  */
 internal fun slotOptionalCosts(
     action: CastSpell,
-    cardDef: com.wingedsheep.sdk.model.CardDefinition?,
+    optionalCosts: List<KeywordAbility.OptionalAdditionalCost>,
 ): List<KeywordAbility.OptionalAdditionalCost> {
     val slot = action.declaredCostSlot ?: return emptyList()
-    return cardDef?.keywordAbilities
-        ?.filterIsInstance<KeywordAbility.OptionalAdditionalCost>()
-        ?.filter { it.declaredSlot == slot }
-        ?: emptyList()
+    return optionalCosts.filter { it.declaredSlot == slot }
 }
 
 /**
@@ -68,9 +67,9 @@ internal fun slotOptionalCosts(
  */
 internal fun declaredOptionalCosts(
     action: CastSpell,
-    cardDef: com.wingedsheep.sdk.model.CardDefinition?,
+    optionalCosts: List<KeywordAbility.OptionalAdditionalCost>,
 ): List<KeywordAbility.OptionalAdditionalCost> {
-    val costs = slotOptionalCosts(action, cardDef)
+    val costs = slotOptionalCosts(action, optionalCosts)
     if (action.declaredCostIndices.isEmpty()) return costs
     return costs.filterIndexed { index, _ -> index in action.declaredCostIndices }
 }
@@ -84,10 +83,10 @@ internal fun declaredOptionalCosts(
  */
 internal fun linkedKickerChoices(
     action: CastSpell,
-    cardDef: com.wingedsheep.sdk.model.CardDefinition?,
+    optionalCosts: List<KeywordAbility.OptionalAdditionalCost>,
 ): Map<ChoiceSlot, Int> {
     if (action.declaredCostSlot != ChoiceSlot.KICKED) return emptyMap()
-    val costs = slotOptionalCosts(action, cardDef)
+    val costs = slotOptionalCosts(action, optionalCosts)
     if (costs.size < 2) return emptyMap()
     val paid = action.declaredCostIndices.ifEmpty { costs.indices.toSet() }
     return buildMap {

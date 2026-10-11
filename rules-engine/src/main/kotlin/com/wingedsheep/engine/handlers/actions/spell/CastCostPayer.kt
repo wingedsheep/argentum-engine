@@ -103,8 +103,8 @@ internal class CastCostPayer(
     fun additionalCostsForModes(cardDef: CardDefinition, action: CastSpell): List<AdditionalCost> =
         additionalCosts.additionalCostsForModes(cardDef, action)
 
-    fun declaredSlotCost(action: CastSpell, cardDef: CardDefinition?): AdditionalCost? =
-        additionalCosts.declaredSlotCost(action, cardDef)
+    fun declaredSlotCost(state: GameState, action: CastSpell, cardDef: CardDefinition?): AdditionalCost? =
+        additionalCosts.declaredSlotCost(state, action, cardDef)
 
     fun owedAdditionalCosts(state: GameState, action: CastSpell, cardDef: CardDefinition?): List<AdditionalCost> =
         additionalCosts.owedAdditionalCosts(state, action, cardDef)

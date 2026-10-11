@@ -45,8 +45,16 @@ class CastAdditionalCosts(
      * it carries the declared mechanic's identity, which is what names a tap's cause
      * ([com.wingedsheep.sdk.scripting.TapReason.forChoiceSlot]).
      */
-    fun declaredSlotCost(action: CastSpell, cardDef: CardDefinition?): AdditionalCost? =
-        optionalCostsAdditionalPaid(declaredOptionalCosts(action, cardDef), action.declaredCostTimes)
+    fun declaredSlotCost(state: GameState, action: CastSpell, cardDef: CardDefinition?): AdditionalCost? =
+        optionalCostsAdditionalPaid(
+            declaredOptionalCosts(
+                action,
+                com.wingedsheep.engine.mechanics.OffspringGrants.effectiveOptionalCosts(
+                    state, action.cardId, cardDef, action.playerId, cardRegistry, predicateEvaluator
+                )
+            ),
+            action.declaredCostTimes
+        )
 
     /**
      * Every additional cost this cast owes: the card's (or its chosen modes'), the declared optional
@@ -60,7 +68,7 @@ class CastAdditionalCosts(
             }
         }
         if (cardDef != null) addAll(additionalCostsForModes(cardDef, action))
-        declaredSlotCost(action, cardDef)?.let { add(it) }
+        declaredSlotCost(state, action, cardDef)?.let { add(it) }
         if (action.useAlternativeCost && cardDef != null) {
             // Each bundled additional cost is gated by the chosen alternative-cost type so a
             // collision (e.g. granted warp on a card also being evoked) doesn't drag in the

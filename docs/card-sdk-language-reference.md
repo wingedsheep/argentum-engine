@@ -12279,6 +12279,19 @@ composite abilities).
   wraps the ability in a `ConditionalStaticAbility`, and `WebSlinging` matches the bare type
   without unwrapping it — so the grant never applies rather than applying conditionally. Teach
   that read site to unwrap first; `FlashTypeGrants.activeGrant` is the worked example.
+- `GrantOffspringToOwnSpells(cost, spellFilter = Creature)` — a static ability that **grants offspring `cost`**
+  (CR 702.175) to spells the controller casts matching `spellFilter` — Zinnia, Valley's Voice: "Creature spells you cast
+  gain offspring {2} as you cast them" → `GrantOffspringToOwnSpells(ManaCost.parse("{2}"))`. Both halves of the keyword
+  come with the grant: `OffspringGrants.effectiveOptionalCosts` adds a synthetic `OptionalAdditionalCost` declared under
+  **`ChoiceSlot.OFFSPRING`** to the spell's printed optional costs, which the cast enumerators offer as an "Offspring"
+  variant and the validator / cost totaller charge; and a permanent whose cast stamped `OFFSPRING` gets the synthesized
+  `Offspring.tokenCopyAbility` ("when this permanent enters, if its offspring cost was paid, create a 1/1 token copy")
+  from `TriggerAbilityResolver` — keyed off the payment, so it fires even if the granter has left, and not if the
+  permanent has lost all abilities. Its own slot, not `KICKED` (CR 702.175b — each offspring is paid and triggers
+  separately): a creature with a printed kicker that gains offspring isn't kicked when only the offspring was paid. The
+  cast declares one optional-cost slot, so a creature with its own printed offspring or kicker pays either that or the
+  granted cost on one cast, not both; two grants are one instance. A `staticAbility { condition = … }` grant applies
+  only while its condition holds.
 - `Emerge(cost, from = null)` — `card { emerge("{cost}") }` builder helper (CR 702.119, Eldritch Moon). A **hand** alternative
   cost that bundles a sacrifice *and* a cost reduction derived from it: *"You may cast this spell by paying [cost] and
   sacrificing a creature rather than paying its mana cost"* plus *"if you chose to pay this spell's emerge cost, its

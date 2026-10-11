@@ -3447,3 +3447,62 @@
         "GREEN"
     ]
 }
+
+// Zinnia, Valley's Voice
+{
+    "name": "Zinnia, Valley's Voice",
+    "manaCost": "{U}{R}{W}",
+    "typeLine": "Legendary Creature — Bird Bard",
+    "oracleText": "Flying\nZinnia gets +X/+0, where X is the number of other creatures you control with base power 1.\nCreature spells you cast gain offspring {2} as you cast them. (You may pay an additional {2} as you cast a creature spell. If you do, when that creature enters, create a 1/1 token copy of it.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantDynamicStats",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "Self"
+                },
+                "powerBonus": {
+                    "type": "AggregateBattlefield",
+                    "player": "You",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "BasePowerEquals",
+                                "value": 1
+                            }
+                        ]
+                    },
+                    "excludeSelf": true
+                },
+                "toughnessBonus": {
+                    "type": "Fixed",
+                    "amount": 0
+                }
+            },
+            {
+                "type": "GrantOffspringToOwnSpells",
+                "cost": "{2}"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "4",
+        "rarity": "MYTHIC",
+        "artist": "Aldo Domínguez",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/f/dfe36901-5841-4942-8b61-c273111f715e.jpg?1783910737"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED",
+        "WHITE"
+    ]
+}

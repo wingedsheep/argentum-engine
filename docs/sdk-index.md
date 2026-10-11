@@ -1754,6 +1754,7 @@ Families:
 - `GrantMadnessToOwnedCards(filter: GameObjectFilter)` — Grants madness (CR 702.35) to cards the granter's controller **owns** that match filter and aren't on the battlefield, with the madness cost equal to each card's own mana cost.
 - `GrantMayCastFromLinkedExile(filter: GameObjectFilter, duringYourTurnOnly: Boolean, additionalCost: AdditionalCost?, ownedByYou: Boolean, withoutPayingManaCost: Boolean, oncePerTurn: Boolean, maxManaValue: DynamicAmount?, exiledThisTurnOnly: Boolean, entersWithCounter: CounterType?, withAnyManaType: Boolean)` — You may cast cards exiled with this permanent (linked via LinkedExileComponent).
 - `GrantMiracleToCardsInHand(filter: GameObjectFilter, cost: ManaCost)` — Grants miracle (CR 702.94) to cards in the granter's controller's hand that match filter.
+- `GrantOffspringToOwnSpells(cost: ManaCost, spellFilter: GameObjectFilter)` — Grants **offspring cost** (CR 702.175) to spells the controller casts that match spellFilter — Zinnia, Valley's Voice: "Creature spells you cast gain offspring {2} as you cast them." Both halves of…
 - `GrantOpponentsCantWinGame` — Your opponents can't win the game.
 - `GrantProtection(color: Color, filter: GroupFilter)` — Grants protection from a color to the target creature.
 - `GrantProtectionFromCardType(cardType: CardType, filter: GroupFilter)` — Grants protection from a card type (e.g. "from instants", "from sorceries") to a filtered set of creatures.

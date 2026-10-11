@@ -2028,6 +2028,7 @@ class CastSpellEnumerator(
     ) {
         val state = context.state
         val playerId = context.playerId
+        val offspringGrants = com.wingedsheep.engine.mechanics.OffspringGrants.grants(state, playerId, context.cardRegistry, context.predicateEvaluator)
 
         for (cardId in hand) {
             val cardComponent = state.getEntity(cardId)?.get<CardComponent>() ?: continue
@@ -2035,7 +2036,9 @@ class CastSpellEnumerator(
             if (context.cantCastSpell(cardId)) continue
 
             val cardDef = context.cardRegistry.getCard(cardComponent.name) ?: continue
-            val optionalCosts = cardDef.keywordAbilities.filterIsInstance<KeywordAbility.OptionalAdditionalCost>()
+            val optionalCosts = com.wingedsheep.engine.mechanics.OffspringGrants.effectiveOptionalCosts(
+                state, cardId, cardDef, playerId, context.cardRegistry, context.predicateEvaluator, offspringGrants
+            )
             if (optionalCosts.isEmpty()) continue
 
             // Card-level gates, checked before the per-slot loop so an unplayable card is skipped

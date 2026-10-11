@@ -499,7 +499,7 @@ internal class CastValidator(
             .any { it.asThoughFlash }
         // A flash-timing kicker unlocks instant-speed casting when paid — whether the optional cost
         // is mana (Ghitu Fire) or a non-mana cost like Behold (Molten Exhale).
-        val flashTimingKicker = declaredOptionalCosts(action, cardDef).any { it.grantsFlashTiming }
+        val flashTimingKicker = declaredOptionalCosts(action, optionalCosts(state, action, cardDef)).any { it.grantsFlashTiming }
         // A battlefield-granted alternative cost whose cast carries flash (Primal Prayers: "If you
         // cast a spell this way, you may cast it as though it had flash"). Reads the same grant the
         // totaller charges, so the timing and the price can't come from two different grants. Needs
@@ -592,6 +592,12 @@ internal class CastValidator(
      * the action arrives with modes chosen — the cast-time continuation flow starts with none, which
      * falls through to the pause in execute().
      */
+    /** The spell's printed optional costs plus any offspring a permanent grants it as it's cast. */
+    private fun optionalCosts(state: GameState, action: CastSpell, cardDef: CardDefinition?) =
+        com.wingedsheep.engine.mechanics.OffspringGrants.effectiveOptionalCosts(
+            state, action.cardId, cardDef, action.playerId, cardRegistry, predicateEvaluator
+        )
+
     private fun validateAnnouncements(state: GameState, action: CastSpell, cardDef: CardDefinition?): String? {
         if (cardDef == null) return null
         if (cardDef.script.castRestrictions.isNotEmpty()) {
@@ -606,7 +612,7 @@ internal class CastValidator(
         // The declared optional additional cost (kicker/offspring/bargain): the card must actually
         // have a keyword declaring that slot, so a hand-built action can't claim to have bargained a
         // kicker spell (or bargained a card with no bargain at all).
-        if (action.declaredCostSlot != null && declaredOptionalCosts(action, cardDef).isEmpty()) {
+        if (action.declaredCostSlot != null && declaredOptionalCosts(action, optionalCosts(state, action, cardDef)).isEmpty()) {
             val mechanic = when (action.declaredCostSlot) {
                 ChoiceSlot.BARGAINED -> "bargain"
                 ChoiceSlot.KICKED -> "kicker"
@@ -617,7 +623,7 @@ internal class CastValidator(
         // Picking among a slot's costs ("Kicker [A] and/or [B]", CR 702.33b): each index must name
         // one of the costs the card lists under that slot.
         if (action.declaredCostSlot != null && action.declaredCostIndices.isNotEmpty() &&
-            action.declaredCostIndices.any { it !in slotOptionalCosts(action, cardDef).indices }
+            action.declaredCostIndices.any { it !in slotOptionalCosts(action, optionalCosts(state, action, cardDef)).indices }
         ) {
             return "This card does not have that optional cost"
         }
@@ -625,7 +631,7 @@ internal class CastValidator(
         // CR 702.56a); a zero or negative count is not a declaration at all.
         if (action.declaredCostTimes < 1) return "An optional cost must be paid at least once"
         if (action.declaredCostTimes > 1 &&
-            (action.declaredCostSlot == null || declaredOptionalCosts(action, cardDef).none { it.multi })
+            (action.declaredCostSlot == null || declaredOptionalCosts(action, optionalCosts(state, action, cardDef)).none { it.multi })
         ) {
             return "This spell's optional cost can only be paid once"
         }
