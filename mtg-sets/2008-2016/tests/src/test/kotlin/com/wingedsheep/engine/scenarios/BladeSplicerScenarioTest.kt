@@ -18,11 +18,12 @@ class BladeSplicerScenarioTest : ScenarioTestBase() {
     init {
         context("Blade Splicer") {
 
-            test("creates a 3/3 Golem token that has first strike; non-Golems don't") {
+            test("creates a 3/3 Golem token that has first strike; non-Golems and opponents' Golems don't") {
                 val game = scenario()
                     .withPlayers("Player1", "Player2")
                     .withCardInHand(1, "Blade Splicer")
                     .withCardOnBattlefield(1, "Grizzly Bears")
+                    .withCardOnBattlefield(2, "Cobalt Golem")
                     .withLandsOnBattlefield(1, "Plains", 3)
                     .withActivePlayer(1)
                     .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
@@ -40,6 +41,7 @@ class BladeSplicerScenarioTest : ScenarioTestBase() {
                     projected.getPower(golem) shouldBe 3
                     projected.getToughness(golem) shouldBe 3
                     projected.isCreature(golem) shouldBe true
+                    projected.hasType(golem, "ARTIFACT") shouldBe true
                 }
                 withClue("Golems you control have first strike") {
                     projected.hasKeyword(golem, Keyword.FIRST_STRIKE) shouldBe true
@@ -47,6 +49,9 @@ class BladeSplicerScenarioTest : ScenarioTestBase() {
                 withClue("non-Golems (Blade Splicer itself, the Bears) don't") {
                     projected.hasKeyword(game.findPermanent("Blade Splicer")!!, Keyword.FIRST_STRIKE) shouldBe false
                     projected.hasKeyword(game.findPermanent("Grizzly Bears")!!, Keyword.FIRST_STRIKE) shouldBe false
+                }
+                withClue("an opponent's Golem doesn't") {
+                    projected.hasKeyword(game.findPermanent("Cobalt Golem")!!, Keyword.FIRST_STRIKE) shouldBe false
                 }
             }
         }
