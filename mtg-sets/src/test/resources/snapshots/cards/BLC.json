@@ -1271,6 +1271,83 @@
     ]
 }
 
+// Fortune Teller's Talent
+{
+    "name": "Fortune Teller's Talent",
+    "manaCost": "{U}",
+    "typeLine": "Enchantment — Class",
+    "oracleText": "(Gain the next level as a sorcery to add its ability.)\nYou may look at the top card of your library any time.\n{3}{U}: Level 2\nAs long as you've cast a spell this turn, you may play cards from the top of your library.\n{2}{U}: Level 3\nSpells you cast from anywhere other than your hand cost {2} less to cast.",
+    "script": {
+        "staticAbilities": [
+            "LookAtTopOfLibrary"
+        ],
+        "classLevels": [
+            {
+                "level": 2,
+                "cost": "{3}{U}",
+                "staticAbilities": [
+                    {
+                        "type": "ConditionalStaticAbility",
+                        "ability": {
+                            "type": "PlayLandsAndCastFilteredFromTopOfLibrary",
+                            "spellFilter": {}
+                        },
+                        "condition": {
+                            "type": "PlayerCastSpellsThisTurn",
+                            "atLeast": 1
+                        }
+                    }
+                ]
+            },
+            {
+                "level": 3,
+                "cost": "{2}{U}",
+                "staticAbilities": [
+                    {
+                        "type": "ModifySpellCost",
+                        "target": {
+                            "type": "YouCastFromZones",
+                            "zones": [
+                                "Library",
+                                "Graveyard",
+                                "Exile",
+                                "Command"
+                            ]
+                        },
+                        "modification": {
+                            "type": "ReduceGeneric",
+                            "amount": 2
+                        }
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "14",
+        "rarity": "RARE",
+        "artist": "Jarel Threat",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/1/a1d43877-20ab-4e84-a597-4b5e03a6bf90.jpg?1783910734",
+        "rulings": [
+            {
+                "date": "2024-07-26",
+                "text": "You must pay all costs and follow all timing rules for lands played and spells cast from the top of your library this way."
+            },
+            {
+                "date": "2024-07-26",
+                "text": "The cost reduction applies only to generic mana in the total cost of spells you cast from anywhere other than your hand."
+            },
+            {
+                "date": "2024-07-26",
+                "text": "Gaining a level won't remove abilities that a Class had at a previous level."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Grumgully, the Generous
 {
     "name": "Grumgully, the Generous",

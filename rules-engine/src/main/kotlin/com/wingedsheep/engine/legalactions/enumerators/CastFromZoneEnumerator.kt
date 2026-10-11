@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.legalactions.enumerators
 
+import com.wingedsheep.engine.state.components.battlefield.liveStaticAbilities
 import com.wingedsheep.engine.handlers.actions.spell.chosenKickersLabel
 import com.wingedsheep.engine.handlers.actions.spell.optionalCostDeclarations
 import com.wingedsheep.engine.handlers.actions.spell.optionalCostsManaPaid
@@ -2391,7 +2392,7 @@ class CastFromZoneEnumerator(
             if (controller != playerId) continue
             val cardComp = container.get<CardComponent>() ?: continue
             val cardDef = context.cardRegistry.getCard(cardComp.cardDefinitionId) ?: continue
-            for (sa in cardDef.script.staticAbilities) {
+            for (sa in cardDef.liveStaticAbilities(state, permId)) {
                 if (sa is MayCastFromGraveyard && !grantIsSpent(permId, sa)) {
                     permissions.add(sa to null)
                 }

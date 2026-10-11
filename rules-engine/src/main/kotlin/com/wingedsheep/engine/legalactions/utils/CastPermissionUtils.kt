@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.legalactions.utils
 
+import com.wingedsheep.engine.state.components.battlefield.liveStaticAbilities
 import com.wingedsheep.engine.state.manaAbilitySourceAllowed
 import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.core.AlternativeCostType
@@ -132,7 +133,7 @@ class CastPermissionUtils(
         return state.getBattlefield().flatMap { entityId ->
             val card = state.getEntity(entityId)?.get<CardComponent>() ?: return@flatMap emptyList()
             val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: return@flatMap emptyList()
-            cardDef.script.staticAbilities.filterIsInstance<RestrictSpellsCastPerTurn>()
+            cardDef.liveStaticAbilities(state, entityId).filterIsInstance<RestrictSpellsCastPerTurn>()
                 .filter { it.eachPlayer || entityId in controlled }
         }
     }
@@ -153,7 +154,7 @@ class CastPermissionUtils(
         val restrictionActive = state.getBattlefield().any { permanentId ->
             val card = state.getEntity(permanentId)?.get<CardComponent>()
             val cardDef = card?.let { cardRegistry.getCard(it.cardDefinitionId) }
-            cardDef?.script?.staticAbilities?.any { it is CantCastSpellsSharingColorWithLastCast } == true
+            cardDef?.liveStaticAbilities(state, permanentId)?.any { it is CantCastSpellsSharingColorWithLastCast } == true
         }
         if (!restrictionActive) return false
 
@@ -296,7 +297,7 @@ class CastPermissionUtils(
         state.getBattlefield().any { id ->
             val cardDef = state.getEntity(id)?.get<CardComponent>()
                 ?.let { cardRegistry.getCard(it.cardDefinitionId) }
-            cardDef?.script?.staticAbilities?.any {
+            cardDef?.liveStaticAbilities(state, id)?.any {
                 it is CantCastSpellsSharingColorWithLastCast || it is PlayersCantCastSpells ||
                     (it is RestrictSpellsCastPerTurn && it.spellFilter != GameObjectFilter.Any)
             } == true
@@ -323,7 +324,7 @@ class CastPermissionUtils(
             if (container.has<FaceDownComponent>()) continue
             val cardDef = container.get<CardComponent>()
                 ?.let { cardRegistry.getCard(it.cardDefinitionId) } ?: continue
-            for (sa in cardDef.script.staticAbilities) {
+            for (sa in cardDef.liveStaticAbilities(state, permanentId)) {
                 if (sa !is PlayersCantCastSpells) continue
                 val controller = projected.getController(permanentId)
                     ?: container.get<ControllerComponent>()?.playerId
@@ -379,7 +380,7 @@ class CastPermissionUtils(
         for (entityId in state.getBattlefield(playerId)) {
             val card = state.getEntity(entityId)?.get<CardComponent>() ?: continue
             val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
-            if (cardDef.script.staticAbilities.any { it is PlayFromTopOfLibrary }) {
+            if (cardDef.liveStaticAbilities(state, entityId).any { it is PlayFromTopOfLibrary }) {
                 return true
             }
         }
@@ -402,7 +403,7 @@ class CastPermissionUtils(
         for (entityId in state.getBattlefield(playerId)) {
             val card = state.getEntity(entityId)?.get<CardComponent>() ?: continue
             val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
-            cardDef.script.staticAbilities
+            cardDef.liveStaticAbilities(state, entityId)
                 .firstOrNull { it is com.wingedsheep.sdk.scripting.PlayFromTopWithAlternativeCost }
                 ?.let { return it as com.wingedsheep.sdk.scripting.PlayFromTopWithAlternativeCost }
         }
@@ -447,7 +448,7 @@ class CastPermissionUtils(
         for (entityId in state.getBattlefield(playerId)) {
             val card = state.getEntity(entityId)?.get<CardComponent>() ?: continue
             val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
-            if (cardDef.script.staticAbilities.any {
+            if (cardDef.liveStaticAbilities(state, entityId).any {
                     val active = activeStaticAbility(state, it, entityId, playerId)
                     active is PlayLandsAndCastFilteredFromTopOfLibrary && active.allowsLand(landCard)
                 }) {
@@ -468,7 +469,7 @@ class CastPermissionUtils(
         for (entityId in state.getBattlefield(playerId)) {
             val card = state.getEntity(entityId)?.get<CardComponent>() ?: continue
             val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
-            for (ability in cardDef.script.staticAbilities) {
+            for (ability in cardDef.liveStaticAbilities(state, entityId)) {
                 val active = activeStaticAbility(state, ability, entityId, playerId)
                 if (active is PlayLandsAndCastFilteredFromTopOfLibrary) {
                     active.spellFilter?.let { filters += it }
@@ -486,7 +487,7 @@ class CastPermissionUtils(
         for (entityId in state.getBattlefield(playerId)) {
             val card = state.getEntity(entityId)?.get<CardComponent>() ?: continue
             val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
-            for (ability in cardDef.script.staticAbilities) {
+            for (ability in cardDef.liveStaticAbilities(state, entityId)) {
                 if (ability is PlotFromTopOfLibrary) return ability.filter
             }
         }
@@ -508,7 +509,7 @@ class CastPermissionUtils(
         for (entityId in state.getBattlefield(playerId)) {
             val card = state.getEntity(entityId)?.get<CardComponent>() ?: continue
             val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
-            for (ability in cardDef.script.staticAbilities) {
+            for (ability in cardDef.liveStaticAbilities(state, entityId)) {
                 if (ability is CastSpellTypesFromTopOfLibrary) {
                     val uses = state.getEntity(entityId)
                         ?.get<CastFromTopOfLibraryUsesThisTurnComponent>()?.uses ?: 0
@@ -991,7 +992,7 @@ class CastPermissionUtils(
             val card = state.getEntity(entityId)?.get<CardComponent>() ?: continue
             val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
             val controllerId by lazy { state.getEntity(entityId)?.get<ControllerComponent>()?.playerId }
-            for (ability in cardDef.script.staticAbilities) {
+            for (ability in cardDef.liveStaticAbilities(state, entityId)) {
                 when (ability) {
                     is com.wingedsheep.sdk.scripting.ReduceActivatedAbilityCost -> {
                         if (ability.exhaustOnly && !isExhaustAbility) continue
@@ -1068,7 +1069,7 @@ class CastPermissionUtils(
         for (entityId in state.getBattlefield()) {
             val card = state.getEntity(entityId)?.get<CardComponent>() ?: continue
             val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
-            if (cardDef.script.staticAbilities.any { it is PreventCycling }) {
+            if (cardDef.liveStaticAbilities(state, entityId).any { it is PreventCycling }) {
                 return true
             }
         }
@@ -1112,7 +1113,7 @@ class CastPermissionUtils(
             val card = state.getEntity(entityId)?.get<CardComponent>() ?: continue
             val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
             var context: PredicateContext? = null
-            for (ability in cardDef.script.staticAbilities) {
+            for (ability in cardDef.liveStaticAbilities(state, entityId)) {
                 val prevent = ability as? PreventActivatedAbilities ?: continue
                 // "… can't be activated unless they're mana abilities" — exempt mana abilities.
                 if (prevent.nonManaAbilitiesOnly && abilityIsManaAbility) continue
@@ -1208,7 +1209,7 @@ class CastPermissionUtils(
             if (container.has<FaceDownComponent>()) continue
             val cardDef = container.get<CardComponent>()
                 ?.let { cardRegistry.getCard(it.cardDefinitionId) } ?: continue
-            for (sa in cardDef.script.staticAbilities) {
+            for (sa in cardDef.liveStaticAbilities(state, permanentId)) {
                 if (sa !is PlayersCantActivateAbilities) continue
                 if (sa.nonManaAbilitiesOnly && abilityIsManaAbility) continue
                 if (!sourceOnBattlefield && !sa.anyZone) continue
@@ -1312,7 +1313,7 @@ class CastPermissionUtils(
         for (entityId in state.getBattlefield(playerId)) {
             val card = state.getEntity(entityId)?.get<CardComponent>() ?: continue
             val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
-            if (cardDef.script.staticAbilities.any { it is MayPlayPermanentsFromGraveyard }) {
+            if (cardDef.liveStaticAbilities(state, entityId).any { it is MayPlayPermanentsFromGraveyard }) {
                 val tracker = state.getEntity(entityId)?.get<GraveyardPlayPermissionUsedComponent>()
                 if (tracker == null || !tracker.hasUsedType(typeName)) {
                     return true
