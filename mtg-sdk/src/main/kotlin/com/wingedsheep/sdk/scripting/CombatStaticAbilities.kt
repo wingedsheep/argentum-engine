@@ -80,6 +80,26 @@ data class MustAttack(
 }
 
 /**
+ * The affected creatures are goaded for as long as this ability applies (CR 701.15b): each attacks
+ * each combat if able and attacks a player other than its goader if able. The goader is the
+ * holder's controller — Martial Impetus: "Enchanted creature gets +1/+1 and is goaded" is
+ * [GroupFilter.attachedCreature], and the Aura's controller goads it. A goad from a resolving
+ * [com.wingedsheep.sdk.scripting.effects.GoadEffect] stacks with this one per CR 701.15c; unlike
+ * that designation, a static goad has no "until your next turn" — it ends when the ability does.
+ */
+@SerialName("Goaded")
+@Serializable
+data class Goaded(
+    val filter: GroupFilter = GroupFilter.attachedCreature()
+) : StaticAbility {
+    override val description: String = "${filter.description} is goaded"
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
+        val newFilter = filter.applyTextReplacement(replacer)
+        return if (newFilter !== filter) copy(filter = newFilter) else this
+    }
+}
+
+/**
  * Prevents the affected permanents from blocking.
  * Use [GroupFilter.source] for "this creature can't block", or any battlefield filter
  * for "Beasts can't block" / "Creatures can't block" effects.

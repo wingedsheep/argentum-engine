@@ -9,7 +9,6 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.combat.AttackedThisCombatComponent
 import com.wingedsheep.engine.state.components.combat.AttackersDeclaredThisCombatComponent
 import com.wingedsheep.engine.state.components.combat.AttackersDeclaredThisTurnComponent
-import com.wingedsheep.engine.state.components.combat.GoadedComponent
 import com.wingedsheep.engine.state.components.combat.MustAttackPlayerComponent
 import com.wingedsheep.engine.state.components.combat.MustAttackThisTurnComponent
 import com.wingedsheep.engine.state.components.combat.PlayerAttackedThisTurnComponent
@@ -898,7 +897,7 @@ internal class AttackPhaseManager(
      *
      * Per CR 701.15b a goaded creature has two combat requirements:
      *   1. It attacks each combat if able. We enforce this here by requiring every
-     *      valid attacker that carries [GoadedComponent] to appear in [attackers]
+     *      valid attacker [GoadRules] reports goaded to appear in [attackers]
      *      — same shape as the must-attack-this-turn check, just keyed off the
      *      component instead.
      *   2. It attacks a player other than each of its goaders if able. CR 701.15b
@@ -921,9 +920,11 @@ internal class AttackPhaseManager(
         opponents: List<EntityId>
     ): String? {
         val validAttackers = getValidAttackers(state, attackingPlayer)
+        val goadRules = GoadRules(state, cardRegistry, predicateEvaluator)
 
         for (attackerId in validAttackers) {
-            val goaded = state.getEntity(attackerId)?.get<GoadedComponent>() ?: continue
+            val goaderIds = goadRules.goadersOf(attackerId)
+            if (goaderIds.isEmpty()) continue
             val cardName = state.getEntity(attackerId)?.get<CardComponent>()?.name ?: "Creature"
 
             if (attackerId !in attackers.keys) {
@@ -938,14 +939,14 @@ internal class AttackPhaseManager(
                 state, projected, attackerId, attackingPlayer, cardRegistry
             )
             val hasNonGoaderPlayer = opponents.any { playerId ->
-                playerId !in goaded.goaderIds &&
+                playerId !in goaderIds &&
                     attackDefenderRules.all { rule -> rule.check(ctx, playerId) == null }
             }
             if (!hasNonGoaderPlayer) continue
 
             val chosenDefenderId = attackers[attackerId] ?: continue
             val chosenDefenderController = defenderControllerOf(state, projected, chosenDefenderId)
-            if (chosenDefenderController in goaded.goaderIds) {
+            if (chosenDefenderController in goaderIds) {
                 val goaderName = state.getEntity(chosenDefenderController)?.get<PlayerComponent>()?.name
                     ?: "their goader"
                 return "$cardName is goaded and must attack a player other than $goaderName if able"
@@ -983,6 +984,7 @@ internal class AttackPhaseManager(
             ?.takeIf { it.activeThisTurn }
         val opponents = state.getOpponents(attackingPlayer)
         val validAttackers by lazy { getValidAttackers(state, attackingPlayer) }
+        val goadRules by lazy { GoadRules(state, cardRegistry, predicateEvaluator) }
         for (player in requiring) {
             if (attackers.values.any { OpponentsMustAttackYouRequirement.isAttackOn(state, projected, it, player) }) {
                 continue
@@ -990,7 +992,7 @@ internal class AttackPhaseManager(
             if (taunt != null && taunt.defenderId != player) continue
             val defenders = OpponentsMustAttackYouRequirement.defendersOf(state, projected, player)
             val able = validAttackers.any { attackerId ->
-                canAttackFreely(state, projected, attackingPlayer, attackerId, defenders, player, opponents, validAttackers)
+                canAttackFreely(state, projected, attackingPlayer, attackerId, defenders, player, opponents, validAttackers, goadRules)
             }
             if (able) {
                 val name = state.getEntity(player)?.get<PlayerComponent>()?.name ?: "that player"
@@ -1015,14 +1017,15 @@ internal class AttackPhaseManager(
         defenders: List<EntityId>,
         player: EntityId,
         opponents: List<EntityId>,
-        validAttackers: List<EntityId>
+        validAttackers: List<EntityId>,
+        goadRules: GoadRules
     ): Boolean {
         if (AttackSacrificeCosts.requirementFor(state, attackerId, cardRegistry) != null) return false
         if (coAttackerRestrictions(state, attackerId).any {
                 !coAttackerAvailable(state, projected, attackerId, it, validAttackers)
             }) return false
         val ctx = AttackCheckContext(state, projected, attackerId, attackingPlayer, cardRegistry)
-        val goaders = state.getEntity(attackerId)?.get<GoadedComponent>()?.goaderIds.orEmpty()
+        val goaders = goadRules.goadersOf(attackerId)
         if (player in goaders) {
             val hasNonGoaderPlayer = opponents.any { other ->
                 other !in goaders && attackDefenderRules.all { it.check(ctx, other) == null }
@@ -1181,10 +1184,10 @@ internal class AttackPhaseManager(
             }
         }
 
-        // 4. GoadedComponent (CR 701.15b) — individual creatures
+        // 4. Goaded (CR 701.15b) — a resolved goad designation or a Goaded static
+        val goadRules = GoadRules(state, cardRegistry, predicateEvaluator)
         for (attackerId in validAttackers) {
-            val container = state.getEntity(attackerId) ?: continue
-            if (container.has<GoadedComponent>()) {
+            if (goadRules.isGoaded(attackerId)) {
                 mandatory.add(attackerId)
             }
         }

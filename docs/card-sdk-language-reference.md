@@ -2971,6 +2971,14 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   card (listing goader names) — there is no separate game-log event. Used by **Glóin, Dwarf
   Emissary**: `Costs.Composite(Costs.Tap, Costs.Sacrifice(Artifact.withSubtype("Treasure"))):
   Goad(target creature)`.
+- `Goaded(filter = GroupFilter.attachedCreature())` (static) — the affected creatures are goaded
+  for as long as the ability applies: "Enchanted creature … is goaded" (**Martial Impetus**). The
+  goader is the holder's projected controller (for a `GrantStaticAbility` grant, the grant's
+  controller). `GoadRules.goadersOf` unions these with the `GoadedComponent` designation a resolved
+  `Effects.Goad` leaves (CR 701.15c stacking), and every goad read — the attack-declaration checks in
+  `AttackPhaseManager`, the mandatory-attacker pre-selection, and the `Goaded` badge — goes through
+  it. Unlike the designation it has no "until your next turn" expiry; it ends with the ability. A
+  face-down or ability-stripped holder goads nothing.
 - `Effects.MarkMustAttackThisTurn(target = ContextTarget(0))` (`MarkMustAttackThisTurnEffect`) —
   require one creature to attack this turn if able. The transient marker is enforced by
   `AttackPhaseManager` and removed during cleanup. It composes with the token pipeline for “that

@@ -3,6 +3,7 @@ package com.wingedsheep.engine.view.projection
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.handlers.effects.DamageUtils
+import com.wingedsheep.engine.mechanics.combat.GoadRules
 import com.wingedsheep.engine.mechanics.combat.rules.DefenderBypass
 import com.wingedsheep.engine.mechanics.combat.rules.TappedBlockBypass
 import com.wingedsheep.engine.mechanics.layers.ActiveFloatingEffect
@@ -517,12 +518,14 @@ internal class CardActiveEffectsProjector(
             )
         }
 
-        // Check for GoadedComponent (CR 701.15). Surfaces the standing combat
-        // requirement on the creature so opposing combat decisions are obvious
+        // Goaded (CR 701.15), by a resolved goad or a Goaded static. Surfaces the standing
+        // combat requirement on the creature so opposing combat decisions are obvious
         // without the player having to recall who goaded it.
-        val goaded = state.getEntity(entityId)?.get<GoadedComponent>()
-        if (goaded != null) {
-            val goaderNames = goaded.goaderIds
+        val goaderIds = if (entityId in state.getBattlefield()) {
+            GoadRules(state, cardRegistry, predicateEvaluator).goadersOf(entityId)
+        } else emptySet()
+        if (goaderIds.isNotEmpty()) {
+            val goaderNames = goaderIds
                 .mapNotNull { state.getEntity(it)?.get<PlayerComponent>()?.name }
                 .ifEmpty { listOf("an opponent") }
             val goaderList = when (goaderNames.size) {
