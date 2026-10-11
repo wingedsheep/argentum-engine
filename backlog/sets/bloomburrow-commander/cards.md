@@ -2,7 +2,7 @@
 
 **Set Size:** 312 cards
 **Release Date:** August 2, 2024
-**Implemented:** 192 / 312
+**Implemented:** 206 / 312
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 37    | 0    |
@@ -144,7 +144,7 @@
 - [x] Illusory Ambusher
 - [x] Inferno Titan
 - [ ] Ink-Eyes, Servant of Oni
-- [ ] Insatiable Frugivore
+- [x] Insatiable Frugivore
 - [x] Inspiring Overseer
 - [x] Intellectual Offering
 - [x] Ishai, Ojutai Dragonspeaker
@@ -156,7 +156,7 @@
 - [x] Jungle Hollow
 - [x] Junk Winder
 - [x] Kalonian Hydra
-- [ ] Karn, the Great Creator
+- [x] Karn, the Great Creator
 - [x] Karplusan Forest
 - [x] Kodama of the East Tree
 - [ ] Kwain, Itinerant Meddler
@@ -231,7 +231,7 @@
 - [x] Rolling Hamsphere
 - [x] Rootbound Crag
 - [x] Rootcast Apprenticeship
-- [ ] Rose Room Treasurer
+- [x] Rose Room Treasurer
 - [x] Rowdy Research
 - [ ] Rugged Prairie
 - [x] Sakura-Tribe Elder
@@ -294,7 +294,7 @@
 - [x] Tempt with Bunnies
 - [x] Tempt with Discovery
 - [x] Tendershoot Dryad
-- [ ] Tenuous Truce
+- [x] Tenuous Truce
 - [x] Terramorphic Expanse
 - [x] Tetsuko Umezawa, Fugitive
 - [x] The Gitrog Monster

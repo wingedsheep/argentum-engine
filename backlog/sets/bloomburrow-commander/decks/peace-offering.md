@@ -84,7 +84,7 @@
 - [ ] 1 Martial Impetus
 - [ ] 1 Rites of Flourishing
 - [x] 1 Simic Ascendancy
-- [ ] 1 Tenuous Truce
+- [x] 1 Tenuous Truce
 - [ ] 1 Wizard Class
 
 ## Lands (38)

@@ -417,6 +417,97 @@
     ]
 }
 
+// Rose Room Treasurer
+{
+    "name": "Rose Room Treasurer",
+    "manaCost": "{3}{R}",
+    "typeLine": "Creature — Ogre Warrior",
+    "oracleText": "Alliance — Whenever another creature you control enters, create a Treasure token if this is the first or second time this ability has resolved this turn. Otherwise, you may pay {X}. When you do, this creature deals X damage to any target.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Rose Room Treasurer:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        "IncrementAbilityResolutionCount",
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Any",
+                                    "conditions": [
+                                        {
+                                            "type": "SourceAbilityResolvedNTimesThisTurn",
+                                            "count": 1
+                                        },
+                                        {
+                                            "type": "SourceAbilityResolvedNTimesThisTurn",
+                                            "count": 2
+                                        }
+                                    ]
+                                }
+                            },
+                            "then": {
+                                "type": "CreatePredefinedToken",
+                                "tokenType": "Treasure"
+                            },
+                            "otherwise": {
+                                "type": "Gated",
+                                "gate": "Gate.MayPayX",
+                                "then": {
+                                    "type": "ReflexiveTrigger",
+                                    "action": {
+                                        "type": "Composite",
+                                        "effects": []
+                                    },
+                                    "optional": false,
+                                    "reflexiveEffect": {
+                                        "type": "DealDamage",
+                                        "amount": "XValue",
+                                        "target": {
+                                            "type": "BoundVariable",
+                                            "name": "t0"
+                                        }
+                                    },
+                                    "reflexiveTargetRequirements": [
+                                        {
+                                            "type": "AnyTarget",
+                                            "id": "t0"
+                                        }
+                                    ],
+                                    "descriptionOverride": "this creature deals X damage to any target"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Alliance — Whenever another creature you control enters, create a Treasure token if this is the first or second time this ability has resolved this turn. Otherwise, you may pay {X}. When you do, this creature deals X damage to any target."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "51",
+        "rarity": "RARE",
+        "artist": "David Sladek",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/1/2167439d-792d-471e-9137-ee46dbf7a82d.jpg?1783923359"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Shield Broker
 {
     "name": "Shield Broker",
@@ -498,5 +589,108 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Tenuous Truce
+{
+    "name": "Tenuous Truce",
+    "manaCost": "{1}{W}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant opponent\nAt the beginning of enchanted opponent's end step, you and that player each draw a card.\nWhen you attack enchanted opponent or a planeswalker they control or when they attack you or a planeswalker you control, sacrifice this Aura.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Tenuous Truce:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END",
+                    "player": "EnchantedPlayer"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "EnchantedPlayer"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "At the beginning of enchanted opponent's end step, you and that player each draw a card."
+            },
+            {
+                "id": "Tenuous Truce:2",
+                "trigger": {
+                    "type": "YouAttackEvent",
+                    "attackerFilter": {
+                        "anyOf": [
+                            {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ],
+                                "statePredicates": [
+                                    {
+                                        "type": "IsAttackingDefenderOf",
+                                        "reference": "EnchantedPermanent"
+                                    },
+                                    {
+                                        "type": "StateNot",
+                                        "predicate": "IsAttackingABattle"
+                                    }
+                                ],
+                                "controllerPredicate": "ControlledByYou"
+                            },
+                            {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ],
+                                "statePredicates": [
+                                    "IsAttackingYouOrYourPlaneswalkers"
+                                ],
+                                "controllerPredicate": {
+                                    "type": "ControlledByReferencedPlayer",
+                                    "target": {
+                                        "type": "PlayerRef",
+                                        "player": "EnchantedPlayer"
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "SacrificeTarget",
+                    "target": "Self"
+                },
+                "descriptionOverride": "When you attack enchanted opponent or a planeswalker they control or when they attack you or a planeswalker you control, sacrifice this Aura."
+            }
+        ],
+        "auraTarget": "TargetOpponent"
+    },
+    "metadata": {
+        "collectorNumber": "87",
+        "rarity": "RARE",
+        "artist": "Kari Christensen",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/5/f511555a-09aa-41f8-b240-c21f911a57b4.jpg?1783923346"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }

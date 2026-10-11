@@ -35,7 +35,7 @@
 - [ ] 1 Pollywog Prodigy
 - [ ] 1 Rapid Augmenter
 - [ ] 1 Restoration Angel
-- [ ] 1 Rose Room Treasurer
+- [x] 1 Rose Room Treasurer
 - [ ] 1 Selfless Spirit
 - [ ] 1 Shield Broker
 - [x] 1 Siege-Gang Commander

@@ -2681,6 +2681,165 @@
     ]
 }
 
+// Karn, the Great Creator
+{
+    "name": "Karn, the Great Creator",
+    "manaCost": "{4}",
+    "typeLine": "Legendary Planeswalker — Karn",
+    "oracleText": "Activated abilities of artifacts your opponents control can't be activated.\n+1: Until your next turn, up to one target noncreature artifact becomes an artifact creature with power and toughness each equal to its mana value.\n−2: You may reveal an artifact card you own from outside the game or choose a face-up artifact card you own in exile. Put that card into your hand.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Karn, the Great Creator:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "BecomeCreature",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "power": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "toughness": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "addTypes": [
+                        "ARTIFACT"
+                    ],
+                    "duration": "UntilYourNextTurn",
+                    "dynamicPower": {
+                        "type": "EntityProperty",
+                        "entity": "AffectedEntity",
+                        "numericProperty": "ManaValue"
+                    },
+                    "dynamicToughness": {
+                        "type": "EntityProperty",
+                        "entity": "AffectedEntity",
+                        "numericProperty": "ManaValue"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "optional": true,
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsArtifact",
+                                    {
+                                        "type": "Not",
+                                        "predicate": "IsCreature"
+                                    }
+                                ]
+                            }
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Karn, the Great Creator:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -2
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromMultipleZones",
+                                "zones": [
+                                    "Sideboard",
+                                    "Exile"
+                                ],
+                                "filter": {
+                                    "cardPredicates": [
+                                        "IsArtifact"
+                                    ],
+                                    "statePredicates": [
+                                        "IsFaceUp"
+                                    ]
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected1",
+                            "prompt": "You may choose an artifact card from outside the game or a face-up one in exile"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            },
+                            "revealed": true
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "PreventActivatedAbilities",
+                "filter": "artifact ctrl:opponent"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "1",
+        "rarity": "RARE",
+        "artist": "Wisnu Tan",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/e/3ec0c0fb-1a4f-45f4-85b7-346a6d3ce2c5.jpg?1783933488",
+        "rulings": [
+            {
+                "date": "2019-05-03",
+                "text": "Karn's first ability affects only artifacts on the battlefield. Activated abilities that work in other zones can still be activated."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "A noncreature permanent that turns into a creature can attack, and its {T} abilities can be activated, only if its controller has continuously controlled that permanent since the beginning of their most recent turn. It doesn't matter how long the permanent has been a creature."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "If a permanent has {X} in its mana cost, X is considered to be 0."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "Karn's last ability can't get a face-down card in exile, even if you know it's an artifact card."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "In a tournament event, a card you choose from outside the game must come from your sideboard. You may look at your sideboard at any time."
+            }
+        ]
+    },
+    "startingLoyalty": 5,
+    "colorIdentityOverride": []
+}
+
 // Kasmina, Enigmatic Mentor
 {
     "name": "Kasmina, Enigmatic Mentor",

@@ -21,7 +21,7 @@
 - [ ] 1 Haywire Mite
 - [ ] 1 Hazel's Brewmaster
 - [ ] 1 Honored Dreyleader
-- [ ] 1 Insatiable Frugivore
+- [x] 1 Insatiable Frugivore
 - [ ] 1 Moonstone Eulogist
 - [ ] 1 Morbid Opportunist
 - [ ] 1 Nadier's Nightblade

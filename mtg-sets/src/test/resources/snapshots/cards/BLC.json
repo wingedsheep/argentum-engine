@@ -2313,6 +2313,302 @@
     ]
 }
 
+// Hazel's Brewmaster
+{
+    "name": "Hazel's Brewmaster",
+    "manaCost": "{3}{B}",
+    "typeLine": "Creature — Squirrel Warlock",
+    "oracleText": "Menace\nWhenever this creature enters or attacks, exile up to one target card from a graveyard and create a Food token.\nFoods you control have all activated abilities of all creature cards exiled with this creature.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "keywords": [
+        "MENACE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Hazel's Brewmaster:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "destination": "Exile",
+                            "linkToSource": true
+                        },
+                        {
+                            "type": "CreatePredefinedToken",
+                            "tokenType": "Food"
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": {},
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                }
+            },
+            {
+                "id": "Hazel's Brewmaster:2",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t1"
+                            },
+                            "destination": "Exile",
+                            "linkToSource": true
+                        },
+                        {
+                            "type": "CreatePredefinedToken",
+                            "tokenType": "Food"
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": {},
+                        "zone": "Graveyard"
+                    },
+                    "id": "t1"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "HasAllActivatedAbilitiesOfCards",
+                "donors": "LinkedExile",
+                "cardFilter": "creature",
+                "receivedBy": {
+                    "baseFilter": "artifact Food ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "17",
+        "rarity": "RARE",
+        "artist": "Simon Dominic",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/2/52af8b70-a9c8-40d7-99da-fa51dc293688.jpg?1783910733",
+        "rulings": [
+            {
+                "date": "2024-07-26",
+                "text": "You don't have to choose a target for Hazel's Brewmaster's second ability. However, if you do, and that target is illegal as the ability tries to resolve, it won't resolve and none of its effects will happen. You won't create a Food token."
+            },
+            {
+                "date": "2024-07-26",
+                "text": "Hazel's Brewmaster's last ability grants only activated abilities. It doesn't grant keyword abilities (unless those keyword abilities are activated), triggered abilities, or static abilities."
+            },
+            {
+                "date": "2024-07-26",
+                "text": "The granted abilities effectively use \"this permanent\" rather than \"[that card's name],\" so you treat the abilities as though they were printed on the permanent that gained the ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Insatiable Frugivore
+{
+    "name": "Insatiable Frugivore",
+    "manaCost": "{3}{B}",
+    "typeLine": "Creature — Rat Berserker",
+    "oracleText": "When this creature enters, create a Food token, then you may exile three cards from your graveyard. If you do, repeat this process.\n{3}{B}, Sacrifice X Foods: Creatures you control get +X/+0 and gain menace until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Insatiable Frugivore:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "RepeatWhile",
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "CreatePredefinedToken",
+                                "tokenType": "Food"
+                            },
+                            {
+                                "type": "Gated",
+                                "gate": {
+                                    "type": "Gate.WhenCondition",
+                                    "condition": {
+                                        "type": "Compare",
+                                        "left": {
+                                            "type": "Count",
+                                            "player": "You",
+                                            "zone": "Graveyard"
+                                        },
+                                        "operator": "GTE",
+                                        "right": {
+                                            "type": "Fixed",
+                                            "amount": 3
+                                        }
+                                    }
+                                },
+                                "then": {
+                                    "type": "Gated",
+                                    "gate": {
+                                        "type": "Gate.MayDecide",
+                                        "prompt": "Exile three cards from your graveyard to repeat this process?"
+                                    },
+                                    "then": {
+                                        "type": "Composite",
+                                        "effects": [
+                                            {
+                                                "type": "GatherCards",
+                                                "source": {
+                                                    "type": "FromZone",
+                                                    "zone": "Graveyard"
+                                                },
+                                                "storeAs": "gathered0"
+                                            },
+                                            {
+                                                "type": "SelectFromCollection",
+                                                "from": "gathered0",
+                                                "selection": {
+                                                    "type": "ChooseExactly",
+                                                    "count": {
+                                                        "type": "Fixed",
+                                                        "amount": 3
+                                                    }
+                                                },
+                                                "storeSelected": "frugivoreExiled",
+                                                "selectedLabel": "Exile"
+                                            },
+                                            {
+                                                "type": "MoveCollection",
+                                                "from": "frugivoreExiled",
+                                                "destination": {
+                                                    "type": "ToZone",
+                                                    "zone": "Exile"
+                                                }
+                                            }
+                                        ]
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    "repeatCondition": {
+                        "type": "WhileCondition",
+                        "condition": {
+                            "type": "CollectionContainsMatch",
+                            "collection": "frugivoreExiled"
+                        }
+                    }
+                },
+                "descriptionOverride": "When this creature enters, create a Food token, then you may exile three cards from your graveyard. If you do, repeat this process."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Insatiable Frugivore:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{3}{B}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomVariablePermanents",
+                                "filter": "artifact Food",
+                                "minCount": 0,
+                                "excludeSelf": false,
+                                "action": "SACRIFICE",
+                                "xMeasure": "COUNT"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "ModifyStats",
+                                "powerModifier": "XValue",
+                                "toughnessModifier": {
+                                    "type": "Fixed",
+                                    "amount": 0
+                                },
+                                "target": "IterationEntity"
+                            },
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "MENACE",
+                                "target": "IterationEntity"
+                            }
+                        ]
+                    }
+                },
+                "descriptionOverride": "{3}{B}, Sacrifice X Foods: Creatures you control get +X/+0 and gain menace until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "18",
+        "rarity": "RARE",
+        "artist": "Ben Wootten",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/e/2ef58a8f-ce72-40c2-b032-818cc16267ce.jpg?1783910731",
+        "rulings": [
+            {
+                "date": "2024-07-26",
+                "text": "The process in Insatiable Frugivore's first ability is repeated until you decline to exile three cards from your graveyard. You can't try to exile three cards from your graveyard if you don't have at least three cards in your graveyard."
+            },
+            {
+                "date": "2024-07-26",
+                "text": "You can choose 0 for the value of X in the cost of Insatiable Frugivore's last ability. If you do, creatures you control will just gain menace until end of turn."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Jacked Rabbit
 {
     "name": "Jacked Rabbit",
