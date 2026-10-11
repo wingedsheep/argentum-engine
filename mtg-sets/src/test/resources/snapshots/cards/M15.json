@@ -3223,6 +3223,85 @@
     ]
 }
 
+// Waste Not
+{
+    "name": "Waste Not",
+    "manaCost": "{1}{B}",
+    "typeLine": "Enchantment",
+    "oracleText": "Whenever an opponent discards a creature card, create a 2/2 black Zombie creature token.\nWhenever an opponent discards a land card, add {B}{B}.\nWhenever an opponent discards a noncreature, nonland card, draw a card.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Waste Not:1",
+                "trigger": {
+                    "type": "DiscardEvent",
+                    "player": "EachOpponent",
+                    "cardFilter": "creature"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 2,
+                    "toughness": 2,
+                    "colors": [
+                        "BLACK"
+                    ],
+                    "creatureTypes": [
+                        "Zombie"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/e/b/eb0a1ebd-a0ac-4a03-8ac2-4678d6fb03fa.jpg?1783939142"
+                },
+                "descriptionOverride": "Whenever an opponent discards a creature card, create a 2/2 black Zombie creature token."
+            },
+            {
+                "id": "Waste Not:2",
+                "trigger": {
+                    "type": "DiscardEvent",
+                    "player": "EachOpponent",
+                    "cardFilter": "land"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "BLACK",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                },
+                "descriptionOverride": "Whenever an opponent discards a land card, add {B}{B}."
+            },
+            {
+                "id": "Waste Not:3",
+                "trigger": {
+                    "type": "DiscardEvent",
+                    "player": "EachOpponent",
+                    "cardFilter": "noncreature nonland"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "descriptionOverride": "Whenever an opponent discards a noncreature, nonland card, draw a card."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "122",
+        "rarity": "RARE",
+        "artist": "Matt Stewart",
+        "flavorText": "Designed by the Magic community",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/4/241d8f7d-3981-47c1-b7b8-748277fa452f.jpg?1783939178"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Will-Forged Golem
 {
     "name": "Will-Forged Golem",

@@ -309,6 +309,49 @@
     "colorIdentityOverride": []
 }
 
+// Rite of Flame
+{
+    "name": "Rite of Flame",
+    "manaCost": "{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Add {R}{R}, then add {R} for each card named Rite of Flame in each graveyard.",
+    "script": {
+        "spellEffect": {
+            "type": "AddMana",
+            "color": "RED",
+            "amount": {
+                "type": "Add",
+                "left": {
+                    "type": "Fixed",
+                    "amount": 2
+                },
+                "right": {
+                    "type": "Count",
+                    "player": "Each",
+                    "zone": "Graveyard",
+                    "filter": {
+                        "cardPredicates": [
+                            {
+                                "type": "NameEquals",
+                                "name": "Rite of Flame"
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "96",
+        "artist": "Dany Orizio",
+        "flavorText": "Deep beneath the ice, beneath the soil and the rock, Dominaria's fire still burned hot.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/0/c062caf7-f0eb-44db-9f74-e6711a13fada.jpg?1783943336"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Ronom Unicorn
 {
     "name": "Ronom Unicorn",

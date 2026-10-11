@@ -2289,6 +2289,74 @@
     ]
 }
 
+// Ghostly Flicker
+{
+    "name": "Ghostly Flicker",
+    "manaCost": "{2}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Exile two target artifacts, creatures, and/or lands you control, then return those cards to the battlefield under your control.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": "ChosenTargets",
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "gathered0",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Exile"
+                    },
+                    "linkToSource": true
+                },
+                {
+                    "type": "GatherCards",
+                    "source": "FromLinkedExile",
+                    "storeAs": "gathered2"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "gathered2",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Battlefield"
+                    }
+                }
+            ],
+            "descriptionOverride": "Exile two target artifacts, creatures, and/or lands you control, then return those cards to the battlefield under your control"
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "count": 2,
+                "filter": {
+                    "baseFilter": "artifact|creature|land ctrl:you"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "57",
+        "artist": "Raymond Swanland",
+        "flavorText": "Sometimes it's useful to take a break from existence.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/0/f0a44373-0c50-4e14-a7c6-0de66796b81e.jpg?1783940717",
+        "rulings": [
+            {
+                "date": "2017-03-14",
+                "text": "The two targets can have different card types. For example, you can target one artifact and one creature with Ghostly Flicker."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Ghostly Touch
 {
     "name": "Ghostly Touch",

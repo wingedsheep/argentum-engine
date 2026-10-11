@@ -1408,6 +1408,48 @@
     ]
 }
 
+// Liliana's Caress
+{
+    "name": "Liliana's Caress",
+    "manaCost": "{1}{B}",
+    "typeLine": "Enchantment",
+    "oracleText": "Whenever an opponent discards a card, that player loses 2 life.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Liliana's Caress:1",
+                "trigger": {
+                    "type": "DiscardEvent",
+                    "player": "EachOpponent"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "TriggeringPlayer"
+                    }
+                },
+                "descriptionOverride": "Whenever an opponent discards a card, that player loses 2 life."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "103",
+        "rarity": "UNCOMMON",
+        "artist": "Steve Argyle",
+        "flavorText": "\"This might hurt less if you don't fight so hard. But I doubt it.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/d/0d995382-57a6-40a4-9050-31f57cb8dae3.jpg?1783941814"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Liliana's Specter
 {
     "name": "Liliana's Specter",
