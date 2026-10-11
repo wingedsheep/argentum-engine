@@ -99,9 +99,12 @@ class ManaAbilityEnumerator(
                 .filter { it.entityId == entityId }
                 .map { it.ability }
                 .filter { it.isManaAbility && it.activateFromZone == Zone.BATTLEFIELD }
-            val staticManaAbilities = context.castPermissionUtils
-                .getStaticGrantedActivatedAbilities(entityId, state)
-                .filter { it.isManaAbility && it.activateFromZone == Zone.BATTLEFIELD }
+            // …including those an emblem grants (Liliana of the Dark Realms' Swamps), the same
+            // grants `ManaStaticsIndex` hands the auto-payer.
+            val staticManaAbilities = (
+                context.castPermissionUtils.getStaticGrantedActivatedAbilities(entityId, state) +
+                    context.castPermissionUtils.getEmblemGrantedActivatedAbilities(entityId, state)
+                ).filter { it.isManaAbility && it.activateFromZone == Zone.BATTLEFIELD }
 
             // Intrinsic mana abilities from projected basic-land subtypes (CR 305.7).
             // When present, they replace the card definition's own mana abilities so

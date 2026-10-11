@@ -5,6 +5,8 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
 import com.wingedsheep.engine.state.components.battlefield.chosenColor
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.identity.ControllerComponent
+import com.wingedsheep.engine.state.components.identity.EmblemActivatedAbilityComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.identity.RoomFaceStatics
 import com.wingedsheep.sdk.core.Color
@@ -251,6 +253,21 @@ class ManaStaticsIndex private constructor(
                             ).add(SourceTapMultiplier(granted.entityId, static, controller))
                     }
                     else -> {}
+                }
+            }
+
+            // Emblem grants — Liliana of the Dark Realms' "Swamps you control have '{T}: Add
+            // {B}{B}{B}{B}.'" An emblem is a synthetic, non-zoned entity the battlefield walk above
+            // never visits, but its grant reads exactly like a battlefield-scope static of a
+            // permanent its owner controls, so it joins the same bucket the mana-ability
+            // enumerator's `getEmblemGrantedActivatedAbilities` mirrors.
+            for ((emblemId, container) in state.entities) {
+                val grant = container.get<EmblemActivatedAbilityComponent>() ?: continue
+                val controller = container.get<ControllerComponent>()?.playerId ?: continue
+                for (ability in grant.abilities) {
+                    if (!ability.isManaAbility || ability.activateFromZone != com.wingedsheep.sdk.core.Zone.BATTLEFIELD) continue
+                    (grantors ?: mutableListOf<ManaAbilityGrantor>().also { grantors = it })
+                        .add(ManaAbilityGrantor(emblemId, GrantActivatedAbility(ability, grant.filter), controller))
                 }
             }
 

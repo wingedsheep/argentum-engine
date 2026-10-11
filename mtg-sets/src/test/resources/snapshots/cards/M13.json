@@ -464,6 +464,191 @@
     ]
 }
 
+// Liliana of the Dark Realms
+{
+    "name": "Liliana of the Dark Realms",
+    "manaCost": "{2}{B}{B}",
+    "typeLine": "Legendary Planeswalker — Liliana",
+    "oracleText": "+1: Search your library for a Swamp card, reveal it, put it into your hand, then shuffle.\n−3: Target creature gets +X/+X or -X/-X until end of turn, where X is the number of Swamps you control.\n−6: You get an emblem with \"Swamps you control have '{T}: Add {B}{B}{B}{B}.'\"",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Liliana of the Dark Realms:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Library",
+                                "filter": "land Swamp"
+                            },
+                            "storeAs": "searchable",
+                            "search": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "searchable",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "found",
+                            "prompt": "Search your library for a Swamp land card to put into your hand",
+                            "selectedLabel": "Put into your hand"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "found",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            },
+                            "revealed": true
+                        },
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Liliana of the Dark Realms:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -3
+                },
+                "effect": {
+                    "type": "ChooseAction",
+                    "choices": [
+                        {
+                            "label": "+X/+X",
+                            "effect": {
+                                "type": "ModifyStats",
+                                "powerModifier": {
+                                    "type": "AggregateBattlefield",
+                                    "player": "You",
+                                    "filter": "land Swamp"
+                                },
+                                "toughnessModifier": {
+                                    "type": "AggregateBattlefield",
+                                    "player": "You",
+                                    "filter": "land Swamp"
+                                },
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        },
+                        {
+                            "label": "-X/-X",
+                            "effect": {
+                                "type": "ModifyStats",
+                                "powerModifier": {
+                                    "type": "Multiply",
+                                    "amount": {
+                                        "type": "AggregateBattlefield",
+                                        "player": "You",
+                                        "filter": "land Swamp"
+                                    },
+                                    "multiplier": -1
+                                },
+                                "toughnessModifier": {
+                                    "type": "Multiply",
+                                    "amount": {
+                                        "type": "AggregateBattlefield",
+                                        "player": "You",
+                                        "filter": "land Swamp"
+                                    },
+                                    "multiplier": -1
+                                },
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Liliana of the Dark Realms:4",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -6
+                },
+                "effect": {
+                    "type": "CreatePermanentEmblem",
+                    "groupFilter": {
+                        "baseFilter": "land Swamp ctrl:you"
+                    },
+                    "grantedActivatedAbilities": [
+                        {
+                            "id": "Liliana of the Dark Realms:1",
+                            "cost": "CostTap",
+                            "effect": {
+                                "type": "AddMana",
+                                "color": "BLACK",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 4
+                                }
+                            },
+                            "timing": "ManaAbility",
+                            "isManaAbility": true,
+                            "descriptionOverride": "{T}: Add {B}{B}{B}{B}."
+                        }
+                    ],
+                    "emblemDescription": "Swamps you control have '{T}: Add {B}{B}{B}{B}.'"
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "97",
+        "rarity": "MYTHIC",
+        "artist": "D. Alexander Gregory",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/c/2cd2d81e-1388-4f34-9917-2289971cf8da.jpg?1783940493",
+        "rulings": [
+            {
+                "date": "2012-07-01",
+                "text": "You choose whether the creature gets +X/+X or -X/-X as the second ability resolves."
+            },
+            {
+                "date": "2012-07-01",
+                "text": "The number of Swamps you control is counted when the second ability resolves."
+            }
+        ]
+    },
+    "startingLoyalty": 3,
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Mark of the Vampire
 {
     "name": "Mark of the Vampire",
