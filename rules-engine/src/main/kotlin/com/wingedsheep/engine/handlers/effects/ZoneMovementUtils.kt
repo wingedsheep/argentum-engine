@@ -526,6 +526,9 @@ object ZoneMovementUtils {
             // object; one that leaves and returns is a new object with fresh tallies (CR 400.7).
             .without<com.wingedsheep.engine.state.components.battlefield.AbilityActivatedThisTurnComponent>()
             .without<com.wingedsheep.engine.state.components.battlefield.AbilityResolutionCountThisTurnComponent>()
+            // Exert (CR 701.43a) is a fact about the old object; a new one is unexerted.
+            .without<com.wingedsheep.engine.state.components.battlefield.ExertedComponent>()
+            .without<com.wingedsheep.engine.state.components.battlefield.ExertedThisTurnComponent>()
             // The number chosen as it entered (Nameless Race) belongs to *this* object; one
             // that leaves and returns chooses afresh as it enters (CR 400.7).
             .without<com.wingedsheep.engine.state.components.battlefield.EnteredWithValueComponent>()

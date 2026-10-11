@@ -338,12 +338,22 @@ data class AssignUnblockedCombatDamageToDefendingCreature(
  * Read off the card definition like [CantAttackUnlessSacrifice]; a face-down creature or one that
  * has lost all abilities isn't offered the choice.
  *
- * Hydra Trainer (MH3).
+ * [onlyIfNotExertedThisTurn] is the "If this creature hasn't been exerted this turn, you may exert
+ * it as it attacks" template: the choice isn't offered to a creature exerted earlier this turn, by
+ * any means — an earlier attack's exert or an activated ability's `Costs.Exert` alike.
+ *
+ * Hydra Trainer (MH3); Combat Celebrant (AKH) with [onlyIfNotExertedThisTurn].
  */
 @SerialName("ExertAsItAttacks")
 @Serializable
-data object ExertAsItAttacks : StaticAbility {
-    override val description: String = "You may exert this creature as it attacks"
+data class ExertAsItAttacks(
+    val onlyIfNotExertedThisTurn: Boolean = false,
+) : StaticAbility {
+    override val description: String = if (onlyIfNotExertedThisTurn) {
+        "If this creature hasn't been exerted this turn, you may exert it as it attacks"
+    } else {
+        "You may exert this creature as it attacks"
+    }
 }
 
 @SerialName("CantAttackUnlessSacrifice")

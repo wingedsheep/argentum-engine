@@ -29,6 +29,7 @@ import com.wingedsheep.sdk.scripting.AttackerCountLimit
 import com.wingedsheep.sdk.scripting.CantAttackUnlessCoAttacker
 import com.wingedsheep.sdk.scripting.ExertAsItAttacks
 import com.wingedsheep.engine.state.components.battlefield.ExertedComponent
+import com.wingedsheep.engine.state.components.battlefield.ExertedThisTurnComponent
 import com.wingedsheep.sdk.scripting.MustAttack
 import com.wingedsheep.sdk.scripting.filters.unified.Scope
 import com.wingedsheep.engine.mechanics.battle.Battles
@@ -317,13 +318,18 @@ internal class AttackPhaseManager(
     /**
      * Whether [attackerId] carries [ExertAsItAttacks]. Read off the card definition like
      * [AttackSacrificeCosts.requirementFor]; a face-down creature (CR 708.2) or one that has lost
-     * all abilities has no such option.
+     * all abilities has no such option. A once-per-turn exert
+     * ([ExertAsItAttacks.onlyIfNotExertedThisTurn]) isn't offered once the creature has been
+     * exerted this turn — in an earlier combat phase or by an exert cost.
      */
     private fun canExertAsItAttacks(state: GameState, projected: ProjectedState, attackerId: EntityId): Boolean {
         val container = state.getEntity(attackerId) ?: return false
         if (container.has<FaceDownComponent>() || projected.hasLostAllAbilities(attackerId)) return false
         val cardDef = container.get<CardComponent>()?.let { cardRegistry.getCard(it.cardDefinitionId) } ?: return false
-        return cardDef.staticAbilities.any { it is ExertAsItAttacks }
+        val exertedThisTurn = container.has<ExertedThisTurnComponent>()
+        return cardDef.staticAbilities.any {
+            it is ExertAsItAttacks && !(it.onlyIfNotExertedThisTurn && exertedThisTurn)
+        }
     }
 
     /**
@@ -343,7 +349,7 @@ internal class AttackPhaseManager(
     ): ExecutionResult {
         var newState = state
         val exertEvents = exerted.map { attackerId ->
-            newState = newState.updateEntity(attackerId) { it.with(ExertedComponent) }
+            newState = newState.updateEntity(attackerId) { it.with(ExertedComponent).with(ExertedThisTurnComponent) }
             ExertedEvent(
                 attackerId,
                 state.getEntity(attackerId)?.get<CardComponent>()?.name ?: "Creature",

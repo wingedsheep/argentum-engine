@@ -608,6 +608,15 @@ data object EnteredThisTurnComponent : Component
 data object ExertedComponent : Component
 
 /**
+ * Permanent was exerted at some point this turn (CR 701.43a), by any means — an attack's exert
+ * (CR 701.43d) or an activated ability's exert cost. Unlike [ExertedComponent], which lives until
+ * its controller's next untap step, this is cleared at cleanup. Backs the "If this creature hasn't
+ * been exerted this turn" gate of [com.wingedsheep.sdk.scripting.ExertAsItAttacks] (Combat Celebrant).
+ */
+@Serializable
+data object ExertedThisTurnComponent : Component
+
+/**
  * Stores replacement effects on a permanent (e.g., Daunting Defender's damage prevention).
  * These are static replacement effects that are continuously active while the permanent
  * is on the battlefield, as opposed to one-shot floating effect shields.

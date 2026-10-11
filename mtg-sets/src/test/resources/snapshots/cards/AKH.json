@@ -829,6 +829,76 @@
     ]
 }
 
+// Combat Celebrant
+{
+    "name": "Combat Celebrant",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Human Warrior",
+    "oracleText": "If this creature hasn't been exerted this turn, you may exert it as it attacks. When you do, untap all other creatures you control and after this phase, there is an additional combat phase. (An exerted creature won't untap during your next untap step.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Combat Celebrant:1",
+                "trigger": "ExertedAsItAttacksEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Group",
+                                "filter": {
+                                    "baseFilter": "creature ctrl:you",
+                                    "excludeSelf": true
+                                }
+                            },
+                            "body": {
+                                "type": "TapUntap",
+                                "target": "IterationEntity",
+                                "tap": false
+                            }
+                        },
+                        "AddCombatPhase"
+                    ]
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ExertAsItAttacks",
+                "onlyIfNotExertedThisTurn": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "125",
+        "rarity": "MYTHIC",
+        "artist": "Chris Rallis",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/8/28b63c3d-2e55-4343-b49a-11fa602ec473.jpg?1783936491",
+        "rulings": [
+            {
+                "date": "2017-04-18",
+                "text": "Combat Celebrant's ability untaps all of your creatures, not just the ones that are attacking."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "There's no main phase between your combat phases, so you'll have no opportunity to cast spells or activate abilities that could only be cast any time you could cast a sorcery. For example, you won't be able to cast another creature or equip Equipment between combats."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "If you exert Combat Celebrant, you get an additional combat phase even if Combat Celebrant doesn't survive the first combat phase."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Companion of the Trials
 {
     "name": "Companion of the Trials",

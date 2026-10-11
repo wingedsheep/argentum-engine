@@ -35,7 +35,7 @@ val HydraTrainer = card("Hydra Trainer") {
     toughness = 1
 
     staticAbility {
-        ability = ExertAsItAttacks
+        ability = ExertAsItAttacks()
     }
 
     triggeredAbility {

@@ -31,6 +31,7 @@ import com.wingedsheep.engine.state.components.combat.MustAttackThisTurnComponen
 import com.wingedsheep.engine.state.components.combat.PlayerAttackedThisTurnComponent
 import com.wingedsheep.engine.state.components.combat.PlayerAttackersLastTurnComponent
 import com.wingedsheep.engine.state.components.combat.BlockedThisTurnComponent
+import com.wingedsheep.engine.state.components.battlefield.ExertedThisTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.DamageUnpreventableThisTurnComponent
 import com.wingedsheep.engine.state.components.combat.PlayerAttackersThisTurnComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
@@ -981,6 +982,9 @@ class CleanupPhaseManager(
             if (container.has<BlockedThisTurnComponent>()) {
                 needsUpdate = true
             }
+            if (container.has<ExertedThisTurnComponent>()) {
+                needsUpdate = true
+            }
             if (container.has<BlockedOrWasBlockedByLegendaryThisTurnComponent>()) {
                 needsUpdate = true
             }
@@ -1023,6 +1027,7 @@ class CleanupPhaseManager(
                         .without<WasDealtDamageThisTurnComponent>()
                         .without<DamageUnpreventableThisTurnComponent>()
                         .without<BlockedThisTurnComponent>()
+                        .without<ExertedThisTurnComponent>()
                         .without<BlockedOrWasBlockedByLegendaryThisTurnComponent>()
                         .without<com.wingedsheep.engine.state.components.combat.CombatPartnersThisTurnComponent>()
                         .without<DamageDealtByPlayersThisTurnComponent>()

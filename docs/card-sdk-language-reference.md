@@ -9477,7 +9477,7 @@ in the declare-blockers step, even before the turn-based block action has comple
   Copied token instances and later grants survive independently; removing abilities clears existing
   enlist instances, while a subsequent grant restores its own instance in layer order.
   First canonical user: Benalish Faithbonder. No new effect or dynamic-amount type is needed.
-- `ExertAsItAttacks` — "You may exert this creature as it attacks" (CR 701.43d): an **optional**
+- `ExertAsItAttacks(onlyIfNotExertedThisTurn = false)` — "You may exert this creature as it attacks" (CR 701.43d): an **optional**
   cost to attack (CR 508.1g). After any mandatory attack cost (tax, sacrifice) is settled,
   `AttackPhaseManager.commitAttackDeclaration` pauses with one `SelectCardsDecision` (battlefield
   selection, min 0) over the declared attackers carrying it; the chosen ones get `ExertedComponent`
@@ -9486,6 +9486,10 @@ in the declare-blockers step, even before the turn-based block action has comple
   (CR 701.43b). Face-down creatures and ones that lost all abilities aren't. Pair the "When you do, …"
   paragraph with `Triggers.self.exertedAsItAttacks()` — the trigger linked to it (CR 607.2h), which an
   exert paid through `Costs.Exert` never fires. Hydra Trainer (MH3).
+  `onlyIfNotExertedThisTurn = true` is "If this creature hasn't been exerted this turn, you may exert
+  it as it attacks": the offer is withheld once the creature carries `ExertedThisTurnComponent` — set
+  by every exert (attack or `Costs.Exert`), cleared at cleanup and on leaving the battlefield. Combat
+  Celebrant (AKH).
 - `CantAttackUnlessCoAttacker(coAttackerFilter, filter = source)` — "This creature can't attack
   unless [a creature matching coAttackerFilter] also attacks" (Scarred Puma). Unlike
   `CantAttackUnless` (which is defender-relative), this depends on the whole proposed attacker

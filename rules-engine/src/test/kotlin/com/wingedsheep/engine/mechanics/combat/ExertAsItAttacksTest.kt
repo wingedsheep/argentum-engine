@@ -15,6 +15,8 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.ExertAsItAttacks
+import com.wingedsheep.engine.state.components.battlefield.ExertedThisTurnComponent
+import com.wingedsheep.engine.handlers.effects.ZoneMovementUtils
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
@@ -38,7 +40,7 @@ class ExertAsItAttacksTest : FunSpec({
         typeLine = "Creature — Human Warrior"
         power = 2
         toughness = 2
-        staticAbility { ability = ExertAsItAttacks }
+        staticAbility { ability = ExertAsItAttacks() }
         triggeredAbility {
             trigger = Triggers.self.exertedAsItAttacks()
             effect = Effects.GainLife(3)
@@ -50,9 +52,26 @@ class ExertAsItAttacksTest : FunSpec({
         }
     }
 
+    // "If this creature hasn't been exerted this turn, you may exert it as it attacks."
+    val onceTrainee = card("Once Exert Trainee") {
+        manaCost = "{1}{R}"
+        typeLine = "Creature — Human Warrior"
+        power = 2
+        toughness = 2
+        staticAbility { ability = ExertAsItAttacks(onlyIfNotExertedThisTurn = true) }
+        triggeredAbility {
+            trigger = Triggers.self.exertedAsItAttacks()
+            effect = Effects.GainLife(3)
+        }
+        activatedAbility {
+            cost = Costs.Exert
+            effect = Effects.DrawCards(1)
+        }
+    }
+
     fun setup(): Triple<GameTestDriver, EntityId, EntityId> {
         val d = GameTestDriver()
-        d.registerCards(TestCards.all + trainee)
+        d.registerCards(TestCards.all + trainee + onceTrainee)
         d.initMirrorMatch(deck = Deck.of("Forest" to 40), skipMulligans = true)
         d.passPriorityUntil(Step.PRECOMBAT_MAIN)
         val active = d.activePlayer!!
@@ -159,5 +178,52 @@ class ExertAsItAttacksTest : FunSpec({
         d.bothPass() // resolve the draw; nothing else should be waiting
         d.state.stack.isEmpty() shouldBe true
         d.getLifeTotal(active) shouldBe life
+    }
+
+    test("a once-per-turn exert isn't offered after an exert cost was paid this turn") {
+        val (d, active, defender) = setup()
+        val creature = d.putCreatureOnBattlefield(active, "Once Exert Trainee")
+        d.removeSummoningSickness(creature)
+        d.submitSuccess(
+            ActivateAbility(playerId = active, sourceId = creature, abilityId = onceTrainee.activatedAbilities[0].id)
+        )
+        d.bothPass() // resolve the draw
+        d.state.getEntity(creature)?.has<ExertedThisTurnComponent>() shouldBe true
+
+        d.passPriorityUntil(Step.DECLARE_ATTACKERS)
+        d.declareAttackers(active, listOf(creature), defender).outcome shouldBe Outcome.Done
+        d.state.getEntity(creature)?.has<AttackingComponent>() shouldBe true
+    }
+
+    test("a once-per-turn exert is still offered when the creature was only exerted on an earlier turn") {
+        val (d, active, defender) = setup()
+        val creature = d.putCreatureOnBattlefield(active, "Once Exert Trainee")
+        // Exerted on an earlier turn: the untap marker survives, the this-turn record doesn't.
+        d.replaceState(d.state.updateEntity(creature) { it.with(ExertedComponent) })
+        attack(d, active, defender, listOf(creature))
+        d.pendingDecision.shouldBeInstanceOf<SelectCardsDecision>().options shouldContainExactly listOf(creature)
+
+        d.submitCardSelection(active, listOf(creature))
+        d.state.getEntity(creature)?.has<ExertedThisTurnComponent>() shouldBe true
+    }
+
+    test("the exerted-this-turn record clears at cleanup and when the permanent leaves the battlefield") {
+        val (d, active, defender) = setup()
+        val creature = d.putCreatureOnBattlefield(active, "Once Exert Trainee")
+        attack(d, active, defender, listOf(creature))
+        d.submitCardSelection(active, listOf(creature))
+        d.state.getEntity(creature)?.has<ExertedThisTurnComponent>() shouldBe true
+
+        d.passPriorityUntil(Step.END)
+        d.bothPass()
+        d.state.getEntity(creature)?.has<ExertedThisTurnComponent>() shouldBe false
+        // The untap marker outlives the turn; it waits for the controller's next untap step.
+        d.state.getEntity(creature)?.has<ExertedComponent>() shouldBe true
+
+        val stripped = ZoneMovementUtils.stripBattlefieldComponents(
+            d.state.getEntity(creature)!!.with(ExertedThisTurnComponent)
+        )
+        stripped.has<ExertedComponent>() shouldBe false
+        stripped.has<ExertedThisTurnComponent>() shouldBe false
     }
 })
