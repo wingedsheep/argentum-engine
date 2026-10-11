@@ -92,6 +92,59 @@
     ]
 }
 
+// Azorius Signet
+{
+    "name": "Azorius Signet",
+    "manaCost": "{2}",
+    "typeLine": "Artifact",
+    "oracleText": "{1}, {T}: Add {W}{U}.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Azorius Signet:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddMana",
+                            "color": "WHITE"
+                        },
+                        {
+                            "type": "AddMana",
+                            "color": "BLUE"
+                        }
+                    ]
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "159",
+        "artist": "Greg Hildebrandt",
+        "flavorText": "The maze-like design embodies the core of Azorius law—strict structure designed to test wills and stall change.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/9/d91a527d-51f1-4fb1-9016-fc923fd43a6a.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
+    ]
+}
+
 // Blood Crypt
 {
     "name": "Blood Crypt",

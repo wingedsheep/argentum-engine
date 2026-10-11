@@ -314,6 +314,39 @@
     ]
 }
 
+// Riot Control
+{
+    "name": "Riot Control",
+    "manaCost": "{2}{W}",
+    "typeLine": "Instant",
+    "oracleText": "You gain 1 life for each creature your opponents control. Prevent all damage that would be dealt to you this turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "AggregateBattlefield",
+                        "player": "EachOpponent",
+                        "filter": "creature"
+                    }
+                },
+                "PreventDamageShield"
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "6",
+        "artist": "Slawomir Maniak",
+        "flavorText": "\"Ravnicans need order. If they don't have it, we shall bring it to them.\"\n—Isperia",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/7/d7886607-86db-4221-8752-296104aaaef2.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Unflinching Courage
 {
     "name": "Unflinching Courage",

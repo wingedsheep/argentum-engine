@@ -4536,6 +4536,85 @@
     ]
 }
 
+// Time Wipe
+{
+    "name": "Time Wipe",
+    "manaCost": "{2}{W}{W}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Return a creature you control to its owner's hand, then destroy all creatures.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "BattlefieldMatching",
+                        "filter": "creature",
+                        "player": "You"
+                    },
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered0",
+                    "selection": {
+                        "type": "ChooseExactly",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "storeSelected": "selected1",
+                    "prompt": "Return a creature you control to its owner's hand",
+                    "useTargetingUI": true
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "selected1",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    }
+                },
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "BattlefieldMatching",
+                                "filter": "creature"
+                            },
+                            "storeAs": "destroyAll_gathered"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "destroyAll_gathered",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Destroy"
+                        }
+                    ]
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "223",
+        "rarity": "RARE",
+        "artist": "Svetlin Velinov",
+        "flavorText": "\"To comprehend the full answer requires years of temporal study. In short, they were now never born in the first place.\"\n—Teferi",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/2/62c59475-6f15-48d2-b105-f49901f20d44.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
+    ]
+}
+
 // Tithebearer Giant
 {
     "name": "Tithebearer Giant",
