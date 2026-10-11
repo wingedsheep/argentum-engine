@@ -1669,6 +1669,36 @@ data class AdditionalAttackTriggers(
 }
 
 /**
+ * If you casting or copying a spell matching [spellFilter] causes a triggered ability of a permanent
+ * you control to trigger, that ability triggers an additional time (CR 603.2d). The **cast-cause**
+ * analogue of [AdditionalAttackTriggers]: models Veyran, Voice of Duality ("If you casting or copying
+ * an instant or sorcery spell causes a triggered ability of a permanent you control to trigger, that
+ * ability triggers an additional time").
+ *
+ * Only spell-cast/spell-copied triggered abilities are doubled ("whenever you cast …", magecraft's
+ * "cast or copy", prowess, "your second spell each turn") — and only when the spell that caused them
+ * matches [spellFilter] and was cast or copied by the doubler's controller (a copy counts as copied
+ * by the player who controls it, CR 707.10). A "whenever you cast a spell" ability doubles when that
+ * spell is an instant or sorcery even though the ability itself doesn't care about the spell's type.
+ * The triggered ability must belong to a permanent the doubler's controller controls — a spell's own
+ * "when you cast this spell" ability isn't a permanent's.
+ *
+ * Multiple copies are additive: N copies add N extra firings of each affected trigger.
+ */
+@SerialName("AdditionalCastOrCopyTriggers")
+@Serializable
+data class AdditionalCastOrCopyTriggers(
+    val spellFilter: GameObjectFilter = GameObjectFilter.InstantOrSorcery,
+    override val description: String =
+        "If you casting or copying an instant or sorcery spell causes a triggered ability of a permanent you control to trigger, that ability triggers an additional time"
+) : StaticAbility {
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
+        val newFilter = spellFilter.applyTextReplacement(replacer)
+        return if (newFilter !== spellFilter) copy(spellFilter = newFilter) else this
+    }
+}
+
+/**
  * If a creature dying causes a triggered ability within the doubler's *scope* to trigger, that
  * ability triggers an additional time. The **death-cause** analogue of [AdditionalAttackTriggers]:
  * where that doubles triggers caused by an attack being declared, this doubles triggers caused by a

@@ -431,6 +431,10 @@ class TriggerDetector(
         // Mardu mode). The attack-cause analogue of duplicateETBTriggers.
         duplicateAttackTriggers(state, events, triggers)
 
+        // Duplicate spell-cast / spell-copied triggers caused by a matching spell (Veyran, Voice of
+        // Duality). The cast-cause analogue of duplicateAttackTriggers.
+        duplicateCastOrCopyTriggers(state, events, triggers)
+
         // Duplicate death/leave-the-battlefield triggers caused by a creature dying (Teysa Karlov;
         // The Masamune's granted ability). The death-cause analogue of duplicateAttackTriggers.
         duplicateDeathTriggers(state, events, triggers)
@@ -4173,6 +4177,86 @@ class TriggerDetector(
         }
 
         triggers.addAll(duplicates)
+    }
+
+    /**
+     * Duplicate triggers caused by casting or copying a spell for [AdditionalCastOrCopyTriggers]
+     * static abilities (Veyran, Voice of Duality). The cast-cause analogue of
+     * [duplicateAttackTriggers]: a spell-cast / spell-copied triggered ability of a permanent the
+     * doubler's controller controls, whose triggering spell that player cast or copied and that matches
+     * the doubler's spell filter, fires an additional time per copy.
+     */
+    private fun duplicateCastOrCopyTriggers(
+        state: GameState,
+        events: List<EngineGameEvent>,
+        triggers: MutableList<PendingTrigger>
+    ) {
+        if (triggers.isEmpty()) return
+        // (spell, the player who cast or copied it)
+        val spells = events.mapNotNull { event ->
+            when (event) {
+                is SpellCastEvent -> event.spellEntityId to event.casterId
+                is com.wingedsheep.engine.core.SpellCopiedEvent -> event.copyEntityId to event.controllerId
+                else -> null
+            }
+        }
+        if (spells.isEmpty()) return
+
+        val projected = state.projectedState
+        data class CastDoubler(val controllerId: EntityId, val filter: GameObjectFilter, val sourceId: EntityId)
+        val doublers = mutableListOf<CastDoubler>()
+        for (permanentId in state.getBattlefield()) {
+            val container = state.getEntity(permanentId) ?: continue
+            val card = container.get<CardComponent>() ?: continue
+            if (container.has<FaceDownComponent>()) continue
+            val controllerId = projected.getController(permanentId) ?: continue
+            val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
+            val classLevel = container.get<ClassLevelComponent>()?.currentLevel
+            for (ability in cardDef.script.effectiveStaticAbilities(classLevel)) {
+                val unwrapped: AdditionalCastOrCopyTriggers? = when (ability) {
+                    is AdditionalCastOrCopyTriggers -> ability
+                    is ConditionalStaticAbility ->
+                        (ability.ability as? AdditionalCastOrCopyTriggers)?.takeIf {
+                            conditionEvaluator.evaluate(
+                                state, ability.condition,
+                                EffectContext(sourceId = permanentId, controllerId = controllerId)
+                            )
+                        }
+                    else -> null
+                }
+                if (unwrapped != null) doublers.add(CastDoubler(controllerId, unwrapped.spellFilter, permanentId))
+            }
+        }
+        if (doublers.isEmpty()) return
+
+        val battlefield = state.getBattlefield().toSet()
+        val duplicates = mutableListOf<PendingTrigger>()
+        for (doubler in doublers) {
+            val causes = spells.filter { (spellId, playerId) ->
+                playerId == doubler.controllerId && predicateEvaluator.matches(
+                    state, projected, spellId, doubler.filter,
+                    PredicateContext(controllerId = doubler.controllerId, sourceId = doubler.sourceId)
+                )
+            }.map { it.first }.toSet()
+            if (causes.isEmpty()) continue
+            for (trigger in triggers) {
+                if (trigger.controllerId != doubler.controllerId) continue
+                // "of a permanent you control" — not a spell's own cast trigger, not an emblem.
+                if (trigger.sourceId !in battlefield) continue
+                if (!isSpellCastOrCopiedPattern(trigger.ability.trigger)) continue
+                if (trigger.triggerContext.triggeringEntityId !in causes) continue
+                duplicates.add(trigger)
+            }
+        }
+        triggers.addAll(duplicates)
+    }
+
+    private fun isSpellCastOrCopiedPattern(pattern: EventPattern): Boolean = when (pattern) {
+        is EventPattern.SpellCastEvent,
+        is EventPattern.SpellCopiedEvent,
+        is EventPattern.NthSpellCastEvent -> true
+        is EventPattern.AnyOf -> pattern.events.any(::isSpellCastOrCopiedPattern)
+        else -> false
     }
 
     /**

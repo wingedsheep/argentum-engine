@@ -9543,6 +9543,13 @@ in the declare-blockers step, even before the turn-based block action has comple
   being declared as an attacker causes an attack-related triggered ability ("whenever a creature
   attacks" / "whenever you attack") of a permanent you control to trigger, that ability triggers an
   additional time. `TriggerDetector.duplicateAttackTriggers`; additive across copies.
+- `AdditionalCastOrCopyTriggers(spellFilter = GameObjectFilter.InstantOrSorcery)` — Veyran, Voice of
+  Duality: the **cast-cause** analogue. If *you* casting or copying a spell matching `spellFilter`
+  causes a spell-cast / spell-copied triggered ability (`SpellCastEvent`, `SpellCopiedEvent`,
+  `NthSpellCastEvent`, or an `AnyOf` holding one — magecraft, prowess, "whenever you cast a spell") of
+  a permanent you control to trigger, that ability triggers an additional time. A spell's own "when
+  you cast this spell" ability isn't a permanent's and isn't doubled. `TriggerDetector.duplicateCastOrCopyTriggers`;
+  additive across copies.
 - `AdditionalDeathTriggers(attachedCreature = false, permanentsYouControl = null, includeEmblems = false)`
   — the **death-cause** analogue: if a creature dying (put into a graveyard from the battlefield,
   continuous effects included) causes a **death/leave-the-battlefield** triggered ability within

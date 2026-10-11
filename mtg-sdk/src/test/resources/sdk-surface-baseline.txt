@@ -1404,6 +1404,7 @@ StatePredicate.WasDealtDamageThisTurn — StatePredicate
 AddCreatureTypeByCounter — StaticAbility
 AddLandTypeByCounter — StaticAbility
 AdditionalAttackTriggers — StaticAbility
+AdditionalCastOrCopyTriggers — StaticAbility
 AdditionalDeathTriggers — StaticAbility
 AdditionalETBOrLTBTriggers — StaticAbility
 AdditionalManaForEntryCounters — StaticAbility
