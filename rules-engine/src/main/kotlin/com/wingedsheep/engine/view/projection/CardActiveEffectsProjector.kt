@@ -315,6 +315,12 @@ internal class CardActiveEffectsProjector(
             description = "This creature can't attack",
             icon = "cant-attack"
         )
+        is SerializableModification.AdaptAsThoughNoCountersShield -> ClientCardEffect(
+            effectId = "adapt_as_though_no_counters",
+            name = "Adapt Ready",
+            description = "The next time this creature adapts this turn, it adapts as though it had no +1/+1 counters on it",
+            icon = "condition-met"
+        )
         is SerializableModification.CantBeRegenerated -> ClientCardEffect(
             effectId = "cant_be_regenerated",
             name = "No Regen",

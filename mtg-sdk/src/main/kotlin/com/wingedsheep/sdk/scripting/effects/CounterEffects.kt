@@ -738,3 +738,42 @@ data object EmitTrainedEventEffect : Effect {
     // Intentionally blank: this is an internal training-ability tail with no player-facing text.
     override val description: String = ""
 }
+
+/**
+ * Adapt [amount] (CR 701.46a): "If this permanent has no +1/+1 counters on it, put [amount] +1/+1
+ * counters on it." The check happens as the effect resolves; a permanent that already has a +1/+1
+ * counter for any reason gets none.
+ *
+ * Named rather than composed from `If(Not(SourceHasCounter), AddCounters)` because "adapts" is an
+ * event other cards key to: [AdaptAsThoughNoCountersEffect] ("the next time target creature adapts
+ * this turn, it adapts as though it had no +1/+1 counters on it" — Biomancer's Familiar) is
+ * consumed by the next adapt of its creature, and only an adapt can consume it.
+ *
+ * @property amount How many +1/+1 counters to put.
+ * @property target The permanent that adapts — almost always the ability's source.
+ */
+@SerialName("Adapt")
+@Serializable
+data class AdaptEffect(
+    val amount: Int,
+    val target: EffectTarget = EffectTarget.Self
+) : Effect {
+    override val description: String =
+        if (target == EffectTarget.Self) "Adapt $amount" else "${target.description} adapts $amount"
+}
+
+/**
+ * "The next time [target] adapts this turn, it adapts as though it had no +1/+1 counters on it."
+ * (Biomancer's Familiar.) A one-shot shield on the creature that expires at end of turn: the next
+ * [AdaptEffect] of that creature ignores its existing +1/+1 counters and uses the shield up — even
+ * when it had none, since that adapt was still "the next time". It adds and removes no counters
+ * itself.
+ */
+@SerialName("AdaptAsThoughNoCounters")
+@Serializable
+data class AdaptAsThoughNoCountersEffect(
+    val target: EffectTarget
+) : Effect {
+    override val description: String =
+        "The next time ${target.description} adapts this turn, it adapts as though it had no +1/+1 counters on it"
+}

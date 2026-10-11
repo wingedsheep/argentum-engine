@@ -1,14 +1,12 @@
 package com.wingedsheep.mtg.sets.definitions.mh3.cards
 
 import com.wingedsheep.sdk.core.CounterType
-import com.wingedsheep.sdk.dsl.Conditions
 import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 /**
  * Evolution Witness {2}{G}
@@ -18,7 +16,7 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * Whenever one or more +1/+1 counters are put on this creature, return target permanent card from
  * your graveyard to your hand.
  *
- * Adapt is the zero-counter gate over AddCounters, checked on resolution (CR 701.46a). The trigger is
+ * Adapt is `Effects.Adapt`, checked on resolution (CR 701.46a). The trigger is
  * the per-recipient `getsCounters` template bound to this creature, with no once-per-turn rider.
  */
 val EvolutionWitness = card("Evolution Witness") {
@@ -34,10 +32,7 @@ val EvolutionWitness = card("Evolution Witness") {
     // {1}{G}: Adapt 2.
     activatedAbility {
         cost = Costs.Mana("{1}{G}")
-        effect = Effects.If(
-            Conditions.Not(Conditions.SourceHasCounter(CounterType.PLUS_ONE_PLUS_ONE)),
-            Effects.AddCounters(CounterType.PLUS_ONE_PLUS_ONE, 2, EffectTarget.Self),
-        )
+        effect = Effects.Adapt(2)
     }
 
     triggeredAbility {

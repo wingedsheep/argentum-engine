@@ -382,6 +382,14 @@ sealed interface SerializableModification {
     data object RemoveDamageShield : SerializableModification
 
     /**
+     * Adapt shield (Biomancer's Familiar): the next time the affected creature adapts this turn,
+     * it adapts as though it had no +1/+1 counters on it (CR 701.46a). Consumed by that adapt,
+     * whether or not the creature had counters; expires at end of turn.
+     */
+    @Serializable
+    data object AdaptAsThoughNoCountersShield : SerializableModification
+
+    /**
      * Marks a permanent as unable to be regenerated this turn.
      * Used by Smother, Cruel Revival, Wrath of God (noRegenerate), etc.
      */
@@ -861,6 +869,8 @@ fun SerializableModification.toModification(): Modification = when (this) {
     is SerializableModification.RegenerationShield -> Modification.NoOp
     // RemoveDamageShield doesn't map to a layer modification - it's checked during destruction
     is SerializableModification.RemoveDamageShield -> Modification.NoOp
+    // AdaptAsThoughNoCountersShield doesn't map to a layer modification - AdaptExecutor reads it
+    is SerializableModification.AdaptAsThoughNoCountersShield -> Modification.NoOp
     // CantBeRegenerated doesn't map to a layer modification - it's checked during destruction
     is SerializableModification.CantBeRegenerated -> Modification.NoOp
     // PreventAllCombatDamage doesn't map to a layer modification - it's checked by CombatManager directly

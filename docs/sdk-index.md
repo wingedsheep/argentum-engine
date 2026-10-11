@@ -664,6 +664,8 @@ Families:
 ## Effect
 
 - `ActivateManaAbilityEffect(permanent: EffectTarget)` — "<Its controller> activates a mana ability of permanent" — a mandatory activation made during resolution; the mana ability resolves immediately, off the stack (CR 605.3b).
+- `AdaptAsThoughNoCountersEffect(target: EffectTarget)` — "The next time target adapts this turn, it adapts as though it had no +1/+1 counters on it." (Biomancer's Familiar.) A one-shot shield on the creature that expires at end of turn: the next AdaptEff…
+- `AdaptEffect(amount: Int, target: EffectTarget)` — Adapt amount (CR 701.46a): "If this permanent has no +1/+1 counters on it, put amount +1/+1 counters on it." The check happens as the effect resolves; a permanent that already has a +1/+1 counter f…
 - `AddAdditionalEndStepsEffect(amount: DynamicAmount)` — Insert additional end step(s) directly after the current end step (Y'shtola Rhul: "there is an additional end step after this step").
 - `AddAdditionalUpkeepStepsEffect(amount: DynamicAmount)` — Give the controller additional upkeep steps after the current phase (Obeka, Splitter of Seconds: "you get that many additional upkeep steps after this phase").
 - `AddAnyColorManaSpendOnChosenTypeEffect(amount: DynamicAmount, creatureOnly: Boolean, riders: Set<ManaSpellRider>)` — Add one mana of any color, restricted to spells (and optionally activated abilities) of the source's chosen subtype, optionally carrying spell riders.

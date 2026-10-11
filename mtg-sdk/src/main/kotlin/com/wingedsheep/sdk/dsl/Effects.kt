@@ -2175,6 +2175,21 @@ object Effects {
         AddCountersEffect(counterType, count, target)
 
     /**
+     * Adapt [amount] (CR 701.46a): if [target] has no +1/+1 counters on it, put [amount] +1/+1
+     * counters on it. Use this rather than an `If` over `AddCounters` so an
+     * [AdaptAsThoughNoCounters] shield can see the adapt.
+     */
+    fun Adapt(amount: Int, target: EffectTarget = EffectTarget.Self): Effect =
+        com.wingedsheep.sdk.scripting.effects.AdaptEffect(amount, target)
+
+    /**
+     * "The next time [target] adapts this turn, it adapts as though it had no +1/+1 counters on
+     * it." — Biomancer's Familiar. Consumed by that creature's next [Adapt].
+     */
+    fun AdaptAsThoughNoCounters(target: EffectTarget): Effect =
+        com.wingedsheep.sdk.scripting.effects.AdaptAsThoughNoCountersEffect(target)
+
+    /**
      * Add a dynamic number of counters.
      */
     fun AddDynamicCounters(counterType: CounterType, amount: DynamicAmount, target: EffectTarget): Effect =

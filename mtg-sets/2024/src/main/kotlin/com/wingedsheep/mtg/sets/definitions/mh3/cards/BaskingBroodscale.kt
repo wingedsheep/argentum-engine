@@ -2,13 +2,11 @@ package com.wingedsheep.mtg.sets.definitions.mh3.cards
 
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Keyword
-import com.wingedsheep.sdk.dsl.Conditions
 import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 /**
  * Basking Broodscale
@@ -21,7 +19,7 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * Whenever one or more +1/+1 counters are put on this creature, you may create a 0/1 colorless
  * Eldrazi Spawn creature token with "Sacrifice this token: Add {C}."
  *
- * Adapt is the house composition `If(no +1/+1 counters, AddCounters)` (see Hydra Trainer). The
+ * Adapt is `Effects.Adapt` (CR 701.46a). The
  * trigger is the per-batch `Triggers.self.getsCounters(+1/+1)` watcher, so it fires once per
  * placement event regardless of how many counters land, and also when it enters with counters.
  */
@@ -41,10 +39,7 @@ val BaskingBroodscale = card("Basking Broodscale") {
     // {1}{G}: Adapt 1.
     activatedAbility {
         cost = Costs.Mana("{1}{G}")
-        effect = Effects.If(
-            Conditions.Not(Conditions.SourceHasCounter(CounterType.PLUS_ONE_PLUS_ONE)),
-            Effects.AddCounters(CounterType.PLUS_ONE_PLUS_ONE, 1, EffectTarget.Self),
-        )
+        effect = Effects.Adapt(1)
     }
 
     triggeredAbility {

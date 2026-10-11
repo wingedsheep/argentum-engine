@@ -1234,6 +1234,8 @@ serialized shape; the facade for each is:
 |---|---|
 | `AddCardTypeEffect` | `Effects.AddCardType` |
 | `AddColorlessManaEffect` | `Effects.AddColorlessMana` |
+| `AdaptEffect` | `Effects.Adapt` |
+| `AdaptAsThoughNoCountersEffect` | `Effects.AdaptAsThoughNoCounters` |
 | `AddCountersEffect` | `Effects.AddCounters` |
 | `AddCreatureTypeEffect` | `Effects.AddCreatureType` |
 | `AddDynamicCountersEffect` | `Effects.AddDynamicCounters` |
@@ -2066,6 +2068,14 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   `CounterTypeVocabularyTest` walks the corpus for it — so a new kind is a constant in `CounterType`
   (plus the client's mirror in `web-client/src/types/enums.ts`), never a string on a card.
 - `AddCounters(type, count, target)` — add N counters of `type`.
+- `Adapt(amount, target = Self)` (`AdaptEffect`) — adapt N (CR 701.46a): if the permanent has no +1/+1
+  counters as this resolves, put N +1/+1 counters on it. Always spell adapt this way, never as an `If` over
+  `AddCounters` — `AdaptAsThoughNoCounters` shields can only see a real adapt. Placement goes through the
+  ordinary counter path, so Hardened Scales-style replacements apply. MH3's adapt creatures, Biomancer's Familiar.
+- `AdaptAsThoughNoCounters(target)` (`AdaptAsThoughNoCountersEffect`) — "the next time target creature adapts this
+  turn, it adapts as though it had no +1/+1 counters on it" (Biomancer's Familiar). A one-shot shield until end of
+  turn, used up by that creature's next `Adapt` whether or not it had counters; adds no counters itself. Shown on
+  the card as an "Adapt Ready" badge.
 - `AddDynamicCounters(type, amount, target)` — count is computed at resolution.
 - `AddCountersUpTo(type, max, target)` — the effect's controller **chooses** how many (0 up to `max`, a
   `DynamicAmount` so "up to X" works) counters of `type` to put on the target, via one `ChooseNumberDecision`

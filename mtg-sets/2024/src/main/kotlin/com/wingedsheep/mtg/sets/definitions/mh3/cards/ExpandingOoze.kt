@@ -1,7 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.mh3.cards
 
 import com.wingedsheep.sdk.core.CounterType
-import com.wingedsheep.sdk.dsl.Conditions
 import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
@@ -10,7 +9,6 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.predicates.StatePredicate
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 /**
  * Expanding Ooze {1}{B}{G}
@@ -19,7 +17,7 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * {B}{G}: Adapt 1.
  * Whenever this creature attacks, put a +1/+1 counter on target modified creature you control.
  *
- * Adapt is the zero-counter gate over AddCounters (CR 701.46a). "Modified" (CR 700.9) is
+ * Adapt is `Effects.Adapt` (CR 701.46a). "Modified" (CR 700.9) is
  * [StatePredicate.IsModified] — counters, Equipment, or Auras its controller controls — checked on
  * the target at declaration and again on resolution. The Ooze itself is a legal target once it has
  * a counter.
@@ -37,10 +35,7 @@ val ExpandingOoze = card("Expanding Ooze") {
     // {B}{G}: Adapt 1.
     activatedAbility {
         cost = Costs.Mana("{B}{G}")
-        effect = Effects.If(
-            Conditions.Not(Conditions.SourceHasCounter(CounterType.PLUS_ONE_PLUS_ONE)),
-            Effects.AddCounters(CounterType.PLUS_ONE_PLUS_ONE, 1, EffectTarget.Self),
-        )
+        effect = Effects.Adapt(1)
     }
 
     triggeredAbility {
