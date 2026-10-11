@@ -642,6 +642,13 @@ value class CounterType(val name: String) {
         val INVITATION = CounterType("INVITATION")
 
         /**
+         * Vow counter (C21 — Promise of Loyalty). A pure marker with no inherent rule: the spell
+         * grants each chosen creature "can't attack you or planeswalkers you control" for as long
+         * as it has one (`Duration.WhileAffectedHasCounter(VOW)`).
+         */
+        val VOW = CounterType("VOW")
+
+        /**
          * Impostor counter (MKM — Illicit Masquerade). A pure marker: the enchantment's dies trigger
          * keys off any impostor counter, including ones another source placed.
          */
@@ -818,6 +825,7 @@ value class CounterType(val name: String) {
             JUDGMENT,
             BLOODLINE,
             INVITATION,
+            VOW,
             IMPOSTOR,
             DEVOTION,
             THEFT,

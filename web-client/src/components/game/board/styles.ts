@@ -2372,6 +2372,7 @@ const passiveCounterPalette: Record<string, CounterBadgePalette> = {
   JUDGMENT: { bg: 'rgba(52, 46, 24, 0.95)', border: 'rgba(232, 208, 132, 0.75)', color: '#f2e2a4', glow: 'rgba(232, 208, 132, 0.6)' },
   BLOODLINE: { bg: 'rgba(56, 16, 22, 0.95)', border: 'rgba(210, 80, 100, 0.75)', color: '#eaa0ae', glow: 'rgba(210, 80, 100, 0.55)' },
   INVITATION: { bg: 'rgba(50, 40, 50, 0.95)', border: 'rgba(225, 190, 225, 0.7)', color: '#efd6ef' },
+  VOW: { bg: 'rgba(44, 40, 24, 0.95)', border: 'rgba(220, 200, 140, 0.7)', color: '#eee0b0' },
   IMPOSTOR: { bg: 'rgba(36, 30, 44, 0.95)', border: 'rgba(170, 140, 200, 0.7)', color: '#cdb8e6' },
   DEVOTION: { bg: 'rgba(40, 18, 30, 0.95)', border: 'rgba(190, 90, 140, 0.7)', color: '#e3a9c8' },
   THEFT: { bg: 'rgba(24, 22, 30, 0.95)', border: 'rgba(150, 140, 110, 0.7)', color: '#d8cfa8' },

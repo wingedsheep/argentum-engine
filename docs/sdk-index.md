@@ -1679,6 +1679,7 @@ Families:
 - `CantAttackUnless(condition: Condition, filter: GroupFilter)`
 - `CantAttackUnlessCoAttacker(coAttackerFilter: GameObjectFilter, filter: GroupFilter)` — This creature can't attack unless another creature being declared as an attacker in the same declaration matches coAttackerFilter.
 - `CantAttackUnlessSacrifice(sacrificeFilter: GameObjectFilter, count: Int)`
+- `CantAttackYou(filter: GroupFilter, coversPlaneswalkers: Boolean)` — The affected permanents can't attack **you** — and, with coversPlaneswalkers, planeswalkers you control — but stay free to attack anyone else (CR 508.1c).
 - `CantBeAttackedBy(attackerFilter: GameObjectFilter)` — Creatures matching attackerFilter can't attack the controller of this permanent — the general defender-side attack restriction (CR 508.1c).
 - `CantBeAttackedWhileAttached` — The source permanent can't be chosen as an attack defender while it is attached to another permanent.
 - `CantBeBlocked(filter: GroupFilter)` — This creature can't be blocked.

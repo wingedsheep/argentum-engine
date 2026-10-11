@@ -845,6 +845,8 @@ export const PASSIVE_COUNTER_TYPES: readonly CounterType[] = [
   CounterType.BLOODLINE,
   CounterType.INVITATION,
   CounterType.IMPOSTOR,
+  // Promise of Loyalty's vow marker: while it's on, the creature can't attack the caster.
+  CounterType.VOW,
   // Champions of Kamigawa. Bloodthirsty Ogre's devotion tally is the size of its -X/-X.
   CounterType.DEVOTION,
   // Night Dealings' theft tally is spent as X to tutor a card.

@@ -26,6 +26,37 @@ data class CantAttack(
 }
 
 /**
+ * The affected permanents can't attack **you** — and, with [coversPlaneswalkers], planeswalkers
+ * you control — but stay free to attack anyone else (CR 508.1c). The player-scoped sibling of
+ * [CantAttack], and the attacker-side mirror of [CantBeAttackedBy]: that one names a *class* of
+ * attackers from the defender's board, this one names *which creatures* through a [GroupFilter],
+ * so it reaches a single creature, an enchanted creature, or a creature handed the restriction by
+ * a resolving spell.
+ *
+ * "You" is the controller of the ability's source when printed (Vow of Duty's
+ * `CantAttackYou(GroupFilter.attachedCreature(), coversPlaneswalkers = true)`); when granted with
+ * `Effects.GrantStaticAbility`, it is the controller of the **granting effect**, frozen at
+ * resolution — Promise of Loyalty's "each of those creatures can't attack you or planeswalkers you
+ * control for as long as it has a vow counter on it" grants `CantAttackYou(coversPlaneswalkers =
+ * true)` to each chosen creature with `Duration.WhileAffectedHasCounter(CounterType.VOW)`.
+ *
+ * Attacking a battle is never restricted — no printed wording names battles.
+ */
+@SerialName("CantAttackYou")
+@Serializable
+data class CantAttackYou(
+    val filter: GroupFilter = GroupFilter.source(),
+    val coversPlaneswalkers: Boolean = false
+) : StaticAbility {
+    override val description: String =
+        "${filter.description} can't attack you${if (coversPlaneswalkers) " or planeswalkers you control" else ""}"
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
+        val newFilter = filter.applyTextReplacement(replacer)
+        return if (newFilter !== filter) copy(filter = newFilter) else this
+    }
+}
+
+/**
  * Forces the affected permanents to attack each combat if able.
  * Use [GroupFilter.source] for "this creature attacks each combat", or any battlefield
  * filter for "All creatures attack each combat if able" effects (e.g. Grand Melee).

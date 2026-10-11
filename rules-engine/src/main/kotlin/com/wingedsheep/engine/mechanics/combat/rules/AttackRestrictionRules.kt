@@ -15,6 +15,7 @@ import com.wingedsheep.engine.state.components.player.InAdditionalCombatPhaseCom
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.CantAttackUnless
+import com.wingedsheep.sdk.scripting.CantAttackYou
 import com.wingedsheep.sdk.scripting.CantBeAttackedBy
 import com.wingedsheep.sdk.scripting.CantBeAttackedWhileAttached
 import com.wingedsheep.sdk.scripting.StaticAbility
@@ -23,6 +24,9 @@ import com.wingedsheep.sdk.scripting.CompositeStaticAbility
 import com.wingedsheep.engine.mechanics.durations.GrantDurationGate
 import com.wingedsheep.engine.state.components.identity.RoomFaceStatics
 import com.wingedsheep.engine.state.components.identity.TextChanges
+import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
+import com.wingedsheep.engine.mechanics.SoulbondPairing
+import com.wingedsheep.sdk.scripting.filters.unified.Scope
 
 // =========================================================================
 // Per-creature attack restrictions (AttackRestrictionRule)
@@ -300,6 +304,90 @@ class CantBeAttackedByDefenderRule(
 
 }
 
+/**
+ * [CantAttackYou]: the attacker is covered by a restriction that forbids it from attacking one
+ * particular player — "you", the restriction's side — and, when the ability says so, that player's
+ * planeswalkers (CR 508.1c). Attacking anyone else, or a battle, stays legal.
+ *
+ * Restrictions come from two places, read the way [com.wingedsheep.engine.mechanics.combat.BlockStaticRules]
+ * reads its rule statics:
+ *  - **printed** on a battlefield permanent (Vow of Duty on the creature it enchants, a lord over a
+ *    group) — "you" is that permanent's projected controller, and a face-down or ability-stripped
+ *    host contributes nothing;
+ *  - **granted** by a resolving effect (Promise of Loyalty) — "you" is the granting effect's
+ *    controller, recorded on the grant, and the grant's own "for as long as …" duration gates it.
+ *    The restriction is the spell's effect, not an ability of the creature, so losing all abilities
+ *    doesn't end it.
+ *
+ * The [CantAttackYou.filter] is resolved relative to the holder and matched on projected state.
+ */
+class CantAttackYouDefenderRule(
+    private val predicateEvaluator: PredicateEvaluator
+) : AttackDefenderRule {
+    override fun check(ctx: AttackCheckContext, defenderId: EntityId): String? {
+        val state = ctx.state
+        val projected = ctx.projected
+        val isPlayer = state.getEntity(defenderId)?.has<LifeTotalComponent>() == true
+        val isPlaneswalker = !isPlayer && projected.isPlaneswalker(defenderId)
+        if (!isPlayer && !isPlaneswalker) return null
+        val defendingPlayer = if (isPlayer) defenderId else projected.getController(defenderId) ?: return null
+
+        fun violates(holder: EntityId, you: EntityId, ability: StaticAbility): Boolean = when (ability) {
+            is ConditionalStaticAbility ->
+                predicateEvaluator.conditions.evaluate(state, ability.condition,
+                    EffectContext(sourceId = holder, controllerId = you)) &&
+                    violates(holder, you, ability.ability)
+            is CompositeStaticAbility -> ability.abilities.any { violates(holder, you, it) }
+            is CantAttackYou ->
+                you == defendingPlayer && (isPlayer || ability.coversPlaneswalkers) &&
+                    covers(ctx, holder, you, ability)
+            else -> false
+        }
+
+        fun error(): String {
+            val name = state.getEntity(ctx.attackerId)?.get<CardComponent>()?.name ?: "Creature"
+            return if (isPlayer) "$name can't attack that player" else "$name can't attack that planeswalker"
+        }
+
+        val battlefield = state.getBattlefield()
+        for (holder in battlefield) {
+            val container = state.getEntity(holder) ?: continue
+            if (container.has<FaceDownComponent>() || projected.hasLostAllAbilities(holder)) continue
+            val cardComponent = container.get<CardComponent>() ?: continue
+            val cardDef = ctx.cardRegistry.getCard(cardComponent.cardDefinitionId) ?: continue
+            val you = projected.getController(holder) ?: continue
+            val text = TextChanges.of(state, holder)
+            for (ability in RoomFaceStatics.activeStaticAbilities(container, cardDef)) {
+                if (violates(holder, you, if (text == null) ability else ability.applyTextReplacement(text))) {
+                    return error()
+                }
+            }
+        }
+        for (grant in state.grantedStaticAbilities) {
+            if (grant.entityId !in battlefield) continue
+            if (!GrantDurationGate.holds(state, grant.entityId, grant.sourceId, grant.duration)) continue
+            val you = grant.controllerId ?: projected.getController(grant.entityId) ?: continue
+            if (violates(grant.entityId, you, grant.ability)) return error()
+        }
+        return null
+    }
+
+    private fun covers(ctx: AttackCheckContext, holder: EntityId, you: EntityId, ability: CantAttackYou): Boolean {
+        val filter = ability.filter
+        val attacker = ctx.attackerId
+        val inScope = when (val scope = filter.scope) {
+            Scope.Self -> holder == attacker
+            Scope.Battlefield -> true
+            Scope.AttachedTo -> ctx.state.getEntity(holder)?.get<AttachedToComponent>()?.targetId == attacker
+            Scope.SoulbondPair -> SoulbondPairing.isInPairOf(ctx.state, holder, attacker)
+            is Scope.Specific -> scope.entityId == attacker
+        }
+        return inScope && !(filter.excludeSelf && holder == attacker) &&
+            predicateEvaluator.matches(ctx.state, ctx.projected, attacker, filter.baseFilter,
+                PredicateContext(sourceId = holder, controllerId = you))
+    }
+}
+
 /** Prevents an attached permanent with [CantBeAttackedWhileAttached] from being attacked. */
 class CantBeAttackedWhileAttachedDefenderRule : AttackDefenderRule {
     override fun check(ctx: AttackCheckContext, defenderId: EntityId): String? {
@@ -398,6 +486,7 @@ fun defaultAttackRestrictionRules(predicateEvaluator: PredicateEvaluator): List<
 fun defaultAttackDefenderRules(predicateEvaluator: PredicateEvaluator): List<AttackDefenderRule> = listOf(
     CantAttackUnlessDefenderRule(predicateEvaluator = predicateEvaluator),
     CantBeAttackedByDefenderRule(predicateEvaluator = predicateEvaluator),
+    CantAttackYouDefenderRule(predicateEvaluator = predicateEvaluator),
     CantBeAttackedWhileAttachedDefenderRule(),
     AttackModeDefenderRule()
 )

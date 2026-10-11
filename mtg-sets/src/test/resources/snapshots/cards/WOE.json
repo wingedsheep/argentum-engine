@@ -4918,7 +4918,7 @@
         ],
         "staticAbilities": [
             {
-                "type": "CantAttack",
+                "type": "CantAttackYou",
                 "filter": {
                     "baseFilter": {
                         "cardPredicates": [
@@ -4931,7 +4931,8 @@
                             }
                         ]
                     }
-                }
+                },
+                "coversPlaneswalkers": true
             }
         ]
     },
