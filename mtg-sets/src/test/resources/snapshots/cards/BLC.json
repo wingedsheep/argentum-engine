@@ -1271,6 +1271,170 @@
     ]
 }
 
+// Fisher's Talent
+{
+    "name": "Fisher's Talent",
+    "manaCost": "{2}{G}{U}",
+    "typeLine": "Enchantment — Class",
+    "oracleText": "(Gain the next level as a sorcery to add its ability.)\nAt the beginning of your upkeep, look at the top card of your library. You may reveal it if it's a land card. Create a 1/1 blue Fish creature token if you revealed it this way. Then draw a card.\n{G}{U}: Level 2\nIf you would create a Fish token, create a 3/3 blue Shark creature token instead.\n{2}{G}{U}: Level 3\nIf you would create a Shark token, create an 8/8 blue Octopus creature token instead.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Fisher's Talent:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "filter": "land",
+                            "storeSelected": "selected1",
+                            "prompt": "You may reveal the top card of your library if it's a land card",
+                            "selectedLabel": "Reveal",
+                            "showAllCards": true
+                        },
+                        {
+                            "type": "RevealCollection",
+                            "from": "selected1",
+                            "revealToSelf": false
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "CollectionContainsMatch",
+                                    "collection": "selected1",
+                                    "filter": "land"
+                                }
+                            },
+                            "then": {
+                                "type": "CreateToken",
+                                "power": 1,
+                                "toughness": 1,
+                                "colors": [
+                                    "BLUE"
+                                ],
+                                "creatureTypes": [
+                                    "Fish"
+                                ],
+                                "imageUri": "https://cards.scryfall.io/normal/front/d/e/de0d6700-49f0-4233-97ba-cef7821c30ed.jpg?1721431109"
+                            }
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "At the beginning of your upkeep, look at the top card of your library. You may reveal it if it's a land card. Create a 1/1 blue Fish creature token if you revealed it this way. Then draw a card."
+            }
+        ],
+        "classLevels": [
+            {
+                "level": 2,
+                "cost": "{G}{U}",
+                "replacementEffects": [
+                    {
+                        "type": "ReplaceTokenCreationWithToken",
+                        "token": {
+                            "type": "CreateToken",
+                            "power": 3,
+                            "toughness": 3,
+                            "colors": [
+                                "BLUE"
+                            ],
+                            "creatureTypes": [
+                                "Shark"
+                            ],
+                            "imageUri": "https://cards.scryfall.io/normal/front/f/9/f9424ef2-d271-4929-83e0-12775420bac3.jpg?1783909757"
+                        },
+                        "appliesTo": {
+                            "type": "TokenCreationEvent",
+                            "tokenFilter": "Fish"
+                        }
+                    }
+                ]
+            },
+            {
+                "level": 3,
+                "cost": "{2}{G}{U}",
+                "replacementEffects": [
+                    {
+                        "type": "ReplaceTokenCreationWithToken",
+                        "token": {
+                            "type": "CreateToken",
+                            "power": 8,
+                            "toughness": 8,
+                            "colors": [
+                                "BLUE"
+                            ],
+                            "creatureTypes": [
+                                "Octopus"
+                            ],
+                            "imageUri": "https://cards.scryfall.io/normal/front/9/f/9fc10475-5eaf-47ea-a45c-3948a632f365.jpg?1783909757"
+                        },
+                        "appliesTo": {
+                            "type": "TokenCreationEvent",
+                            "tokenFilter": "Shark"
+                        }
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "36",
+        "rarity": "RARE",
+        "artist": "Allen Douglas",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/7/47f0e0b9-d137-46ac-a6e4-13a529e30bb5.jpg?1783910727",
+        "rulings": [
+            {
+                "date": "2024-07-26",
+                "text": "You don't have to reveal the card if it's a land card. (Maybe you're not in the mood for fish. That's okay.)"
+            },
+            {
+                "date": "2024-07-26",
+                "text": "The level 2 and level 3 class abilities of Fisher's Talent will replace any Fish or Shark tokens you create, not just ones created by the abilities of Fisher's Talent."
+            },
+            {
+                "date": "2024-07-26",
+                "text": "Gaining a level won't remove abilities that a Class had at a previous level."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ]
+}
+
 // Fortune Teller's Talent
 {
     "name": "Fortune Teller's Talent",

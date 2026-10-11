@@ -50,6 +50,13 @@ import com.wingedsheep.sdk.scripting.references.Player
  * before tokens are created. If a replacement applies, returns a paused
  * EffectResult with a yes/no decision; otherwise returns null.
  */
+/**
+ * A [ReplaceTokenCreationWithToken] that applies to a token-creation event: the replacement in
+ * force ([applied], kept so a chained re-check can skip it — CR 614.5) and the [token] it creates
+ * instead.
+ */
+data class TokenSubstitution(val applied: ActiveReplacement, val token: CreateTokenEffect)
+
 object TokenCreationReplacementHelper {
 
     /**
@@ -316,19 +323,25 @@ object TokenCreationReplacementHelper {
      * would be created with.
      *
      * Printed and granted replacements are both consulted ([ActiveReplacements]). The first match
-     * wins; the substitute is created without re-entering this check, so a second Visitor has no
-     * further work (the Dragons it would see aren't artifacts anyway).
+     * wins. The substitute tokens are themselves checked again (CR 616.2: a replacement can become
+     * applicable to the event another replacement modified) — Fisher's Talent turns a Fish into a
+     * Shark, and its level-3 ability then turns that Shark into an Octopus — but every substitution
+     * in [alreadyApplied] is skipped, because a replacement gets only one opportunity to affect an
+     * event and the events that replace it (CR 614.5). That is what keeps a substitute that matches
+     * its own filter (a second Draconic Visitor's Dragons) from looping.
      *
-     * @return the substitute `CreateTokenEffect`, or null when nothing applies.
+     * @return the matching substitution, or null when nothing (not already applied) applies.
      */
     fun findTokenSubstitution(
         state: GameState,
         tokenControllerId: EntityId,
         prospectiveCard: CardComponent,
         predicateEvaluator: PredicateEvaluator,
-        conditionEvaluator: ConditionEvaluator = predicateEvaluator.conditions
-    ): CreateTokenEffect? {
-        val candidates = ActiveReplacements.all(state).filter { it.effect is ReplaceTokenCreationWithToken }
+        conditionEvaluator: ConditionEvaluator = predicateEvaluator.conditions,
+        alreadyApplied: Set<ActiveReplacement> = emptySet()
+    ): TokenSubstitution? {
+        val candidates = ActiveReplacements.all(state)
+            .filter { it.effect is ReplaceTokenCreationWithToken && it !in alreadyApplied }
         if (candidates.isEmpty()) return null
 
         val (probeId, withProbe) = state.newEntity()
@@ -355,7 +368,8 @@ object TokenCreationReplacementHelper {
                 val restrictionContext = EffectContext(sourceId = active.sourceId, controllerId = tokenControllerId)
                 if (!effect.restrictions.all { conditionEvaluator.evaluate(state, it, restrictionContext) }) continue
             }
-            return effect.token as? CreateTokenEffect ?: continue
+            val token = effect.token as? CreateTokenEffect ?: continue
+            return TokenSubstitution(active, token)
         }
         return null
     }

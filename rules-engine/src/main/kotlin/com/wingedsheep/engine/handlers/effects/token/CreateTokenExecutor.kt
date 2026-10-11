@@ -102,32 +102,41 @@ class CreateTokenExecutor(
      * the one creature-token path.
      *
      * [count] is already final — a doubler scaled the replaced event before the substitution — so
-     * no count replacement runs again, and the substitution isn't re-checked (no loop). The
+     * no count replacement runs again. The substitute tokens *are* checked for a further
+     * substitution (CR 616.2 — Fisher's Talent's Fish → Shark → Octopus), skipping every
+     * substitution already applied to this event (CR 614.5), so the chain can't loop. The
      * substitute's own `count`, `controller`, `tapped` and `attacking` are ignored: "that many",
      * under the player the replaced tokens were for, with none of the replaced effect's riders.
+     *
+     * @param alreadyApplied substitutions applied to this event before [substitution].
      */
     internal fun createSubstituteTokens(
         state: GameState,
-        substitute: CreateTokenEffect,
+        substitution: TokenSubstitution,
         context: EffectContext,
         count: Int,
-        tokenControllerId: EntityId
+        tokenControllerId: EntityId,
+        alreadyApplied: Set<com.wingedsheep.engine.replacement.ActiveReplacement> = emptySet()
     ): EffectResult {
         if (count <= 0) return EffectResult.success(state)
-        val normalized = substitute.copy(
+        val normalized = substitution.token.copy(
             count = com.wingedsheep.sdk.scripting.values.DynamicAmount.Fixed(count),
             controller = null,
             tapped = false,
             attacking = false
         )
-        return createTokensFor(state, normalized, context, count, tokenControllerId, substituted = true)
+        return createTokensFor(
+            state, normalized, context, count, tokenControllerId,
+            appliedSubstitutions = alreadyApplied + substitution.applied
+        )
     }
 
     /**
      * Create [baseCount] tokens (pre-replacement) under [tokenControllerId]'s control.
      *
-     * @param substituted true when these tokens are themselves the substitute of a
-     *   [com.wingedsheep.sdk.scripting.ReplaceTokenCreationWithToken] — see [createSubstituteTokens].
+     * @param appliedSubstitutions the [com.wingedsheep.sdk.scripting.ReplaceTokenCreationWithToken]s
+     *   already applied to this event — non-empty when these tokens are themselves a substitute;
+     *   see [createSubstituteTokens].
      */
     private fun createTokensFor(
         state: GameState,
@@ -135,8 +144,9 @@ class CreateTokenExecutor(
         context: EffectContext,
         baseCount: Int,
         tokenControllerId: EntityId,
-        substituted: Boolean = false
+        appliedSubstitutions: Set<com.wingedsheep.engine.replacement.ActiveReplacement> = emptySet()
     ): EffectResult {
+        val substituted = appliedSubstitutions.isNotEmpty()
         // Apply token-count replacements (Doubling Season / Exalted Sunborn,
         // and per-N modifiers) before downstream replacements get a look.
         val requestedCount = if (substituted) baseCount else TokenCreationReplacementHelper.applyCountReplacements(
@@ -189,21 +199,23 @@ class CreateTokenExecutor(
 
         // "If one or more artifact tokens would be created under your control, that many 5/5 red
         // Dragon creature tokens with flying are created instead" (Draconic Visitor): swap the whole
-        // batch for the substitute before any of it is created.
-        if (!substituted) {
-            val prospective = CardComponent(
-                cardDefinitionId = tokenCardDefinitionId,
-                name = tokenName,
-                manaCost = ManaCost.ZERO,
-                typeLine = tokenTypeLine,
-                baseStats = CreatureStats(tokenPower, tokenToughness),
-                baseKeywords = effect.keywords,
-                colors = effectiveColors,
-                ownerId = tokenControllerId
-            )
-            TokenCreationReplacementHelper.findTokenSubstitution(state, tokenControllerId, prospective, predicateEvaluator = amountEvaluator.predicates)
-                ?.let { return createSubstituteTokens(state, it, context, count, tokenControllerId) }
-        }
+        // batch for the substitute before any of it is created. A substitute is checked again, minus the
+        // substitutions already applied (Fisher's Talent: Fish → Shark → Octopus).
+        val prospective = CardComponent(
+            cardDefinitionId = tokenCardDefinitionId,
+            name = tokenName,
+            manaCost = ManaCost.ZERO,
+            typeLine = tokenTypeLine,
+            baseStats = CreatureStats(tokenPower, tokenToughness),
+            baseKeywords = effect.keywords,
+            colors = effectiveColors,
+            ownerId = tokenControllerId
+        )
+        TokenCreationReplacementHelper.findTokenSubstitution(
+            state, tokenControllerId, prospective,
+            predicateEvaluator = amountEvaluator.predicates,
+            alreadyApplied = appliedSubstitutions
+        )?.let { return createSubstituteTokens(state, it, context, count, tokenControllerId, appliedSubstitutions) }
 
         // Art: an explicit per-card override wins, then the art printed by the set the creating
         // card came from (so a reprint mints its own set's token), then the engine-wide generic

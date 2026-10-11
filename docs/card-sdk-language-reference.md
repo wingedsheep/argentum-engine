@@ -15742,7 +15742,11 @@ The priority groups are (CR 616.1a–f):
   exceptions (Molten Duplication's "except it's an artifact"). Read by the three token executors that read
   the other token replacements — `CreateTokenExecutor` (after count doublers), `CreatePredefinedTokenExecutor`
   and `CreateTokenCopyOfTargetExecutor` (after the Mirrormind-style attached-copy offer); the substitutes are
-  created without a second doubler pass and without re-checking this family, so they can't loop. Printed
+  created without a second doubler pass, but they *are* checked against this family again, minus every
+  substitution already applied to the event (CR 616.2 / 614.5) — so substitutions chain without looping:
+  Fisher's Talent's level 2 ("if you would create a Fish token, create a 3/3 blue Shark creature token
+  instead") and level 3 ("… a Shark token, … an 8/8 blue Octopus …") turn a Fish into an Octopus, while
+  a second Draconic Visitor never re-replaces the first one's Dragons. Printed
   or granted (`ActiveReplacements`). Not yet ordered against `CreateAdditionalToken` by the affected
   player (CR 616.1): the substitution runs first and `CreateAdditionalToken` then judges only the
   substitutes, so Worldwalker Helm adds no Map for a Treasure that became a Dragon.

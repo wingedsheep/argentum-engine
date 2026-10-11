@@ -298,8 +298,9 @@ enum class AdditionalTokenScale {
  * the tokens enter under the player the original tokens were being created for, and the original
  * effect's riders ("tapped", "sacrifice it at end of turn") belonged to the tokens it no longer
  * creates. The substitute tokens are created without a second count-replacement pass (a doubler
- * already scaled "that many") and without re-checking this family, so a substitute that would
- * itself match the filter can't loop.
+ * already scaled "that many"). They are checked against this family again (CR 616.2), skipping
+ * every substitution already applied to the event (CR 614.5): Fisher's Talent chains Fish → Shark
+ * → Octopus, and a substitute that would itself match its own filter can't loop.
  *
  * Read engine-side by `TokenCreationReplacementHelper.findTokenSubstitution` at the token-creation
  * executors that read the other token replacements (creature tokens, predefined tokens, token
