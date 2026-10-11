@@ -2356,6 +2356,14 @@ object Conditions {
         IsNotYourTurnCondition
 
     /**
+     * If you could cast a sorcery now — a main phase of your turn with an empty stack (CR 307.5).
+     * Wrap in [Not] on a caster-relative `PlayersCantCastSpells` for "can cast spells only any time
+     * they could cast a sorcery".
+     */
+    val CouldCastSorcery: ConditionInterface =
+        com.wingedsheep.sdk.scripting.conditions.CouldCastSorcery
+
+    /**
      * If it's an opponent's turn — the active player is one of your opponents, never a teammate.
      */
     val IsOpponentsTurn: ConditionInterface =

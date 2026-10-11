@@ -5,6 +5,8 @@ import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.conditions.Condition
+import com.wingedsheep.sdk.scripting.conditions.CouldCastSorcery
+import com.wingedsheep.sdk.scripting.conditions.NotCondition
 import com.wingedsheep.sdk.scripting.conditions.IsNotYourTurn
 import com.wingedsheep.sdk.scripting.conditions.IsYourTurn
 import com.wingedsheep.sdk.scripting.references.Player
@@ -984,6 +986,9 @@ data class MayCastWithoutPayingManaCost(
  *  - Dosan the Falling Leaf: `PlayersCantCastSpells(Player.Each, condition = IsNotYourTurn,
  *    conditionFromCaster = true)` ("Players can cast spells only during their own turns.") — a
  *    controller-relative pair of statics can say this only with exactly two players.
+ *  - Teferi, Time Raveler: `PlayersCantCastSpells(Player.EachOpponent, condition =
+ *    Not(CouldCastSorcery), conditionFromCaster = true)` ("Each opponent can cast spells only any
+ *    time they could cast a sorcery.") — CR 307.5, read from each caster's seat.
  *
  * @property affected Who is forbidden, relative to the source's controller.
  * @property spellFilter Which spells are forbidden (matched against the card being cast).
@@ -1172,6 +1177,10 @@ data class PlayersCantCastSpells(
             (fromZones?.let { " from ${zonePhrase(it)}" } ?: "")
         if (conditionFromCaster && condition is IsNotYourTurn) {
             append("$who can cast $spells only during their own turns")
+            return@buildString
+        }
+        if (conditionFromCaster && condition == NotCondition(CouldCastSorcery)) {
+            append("$who can cast $spells only any time they could cast a sorcery")
             return@buildString
         }
         append("$who can't cast $spells")

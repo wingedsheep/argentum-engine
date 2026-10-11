@@ -453,23 +453,31 @@ internal class PlayerActiveEffectsProjector(
             )
         }
 
-        // Check for FlashGrantsThisTurnComponent (e.g., Borne Upon a Wind).
-        // GameObjectFilter.Any describes itself as "card" — render it as a bare "spells"
-        // so the Borne-Upon-a-Wind case reads naturally, and join multiple filter branches
+        // Check for FlashGrantsComponent (Borne Upon a Wind, Teferi, Time Raveler's +1), one
+        // badge per lifetime. GameObjectFilter.Any describes itself as "card" — render it as a bare
+        // "spells" so the Borne-Upon-a-Wind case reads naturally, and join multiple filter branches
         // with "or" to keep stacked grants grammatical.
-        container.get<FlashGrantsThisTurnComponent>()?.let { component ->
-            val rendered = component.filters
-                .map { if (it == GameObjectFilter.Any) "" else it.description.lowercase() }
-                .filter { it.isNotEmpty() }
-            val spellPhrase = if (rendered.isEmpty()) "spells" else "${rendered.joinToString(" or ")} spells"
-            effects.add(
-                ClientPlayerEffect(
-                    effectId = "flash_grants_this_turn",
-                    name = "Flash",
-                    description = "You may cast $spellPhrase this turn as though they had flash",
-                    icon = "lightning"
+        container.get<FlashGrantsComponent>()?.let { component ->
+            for ((removeOn, grants) in component.grants.groupBy { it.removeOn }) {
+                val rendered = grants.map { it.filter }
+                    .map { if (it == GameObjectFilter.Any) "" else it.description.lowercase() }
+                    .filter { it.isNotEmpty() }
+                    .distinct()
+                val spellPhrase = if (rendered.isEmpty()) "spells" else "${rendered.joinToString(" or ")} spells"
+                val (idSuffix, window) = when (removeOn) {
+                    PlayerEffectRemoval.EndOfTurn -> "this_turn" to " this turn"
+                    PlayerEffectRemoval.UntilYourNextTurn -> "until_next_turn" to " until your next turn"
+                    PlayerEffectRemoval.Permanent -> "permanent" to ""
+                }
+                effects.add(
+                    ClientPlayerEffect(
+                        effectId = "flash_grants_$idSuffix",
+                        name = "Flash",
+                        description = "You may cast $spellPhrase$window as though they had flash",
+                        icon = "lightning"
+                    )
                 )
-            )
+            }
         }
 
         // Instant-speed loyalty activations (Jace's Machinations).

@@ -35,6 +35,24 @@ data object IsNotYourTurn : Condition {
 }
 
 /**
+ * Condition: "If you could cast a sorcery now" — CR 307.5: it is a main phase of your turn and the
+ * stack is empty (priority is implied wherever the condition is asked: at cast legality, the player
+ * acting holds it). Having a sorcery to cast doesn't matter, and nor do effects that would stop you
+ * casting one.
+ *
+ * The gate behind "each opponent can cast spells only any time they could cast a sorcery" (Teferi,
+ * Time Raveler; Teferi, Mage of Zhalfir): `PlayersCantCastSpells(EachOpponent, condition =
+ * Not(CouldCastSorcery), conditionFromCaster = true)`, so "you" is the player casting. Board-derived,
+ * so it reads the same at resolution and under projection. Distinct from [IsInPhase], which
+ * can't see the stack.
+ */
+@SerialName("CouldCastSorcery")
+@Serializable
+data object CouldCastSorcery : Condition {
+    override val description: String = "if you could cast a sorcery"
+}
+
+/**
  * Condition: "If it's an opponent's turn" — the active player is one of the controller's
  * opponents. Distinct from [IsNotYourTurn] in a team game: a teammate's turn is "not your turn" but
  * is never an opponent's turn (CR 808.4 Team vs. Team, where each teammate takes their own turn), so

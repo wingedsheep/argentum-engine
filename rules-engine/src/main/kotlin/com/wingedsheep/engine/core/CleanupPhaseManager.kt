@@ -60,7 +60,7 @@ import com.wingedsheep.engine.state.components.player.DamageReceivedFromArtifact
 import com.wingedsheep.engine.state.components.player.FlippedCoinsThisTurnComponent
 import com.wingedsheep.engine.state.components.player.DamageReceivedThisTurnComponent
 import com.wingedsheep.engine.state.components.player.RetainUnspentManaComponent
-import com.wingedsheep.engine.state.components.player.FlashGrantsThisTurnComponent
+import com.wingedsheep.engine.state.components.player.FlashGrantsComponent
 import com.wingedsheep.engine.state.components.player.PlayerCantPlayFromHandComponent
 import com.wingedsheep.engine.state.components.player.PlayerProtectionComponent
 import com.wingedsheep.engine.state.components.player.CardsLeftGraveyardThisTurnComponent
@@ -307,6 +307,18 @@ class CleanupPhaseManager(
             val expiryPlayer = restricted.expiresForPlayerId ?: playerId
             if (expiryPlayer in activeTeam) {
                 result = result.updateEntity(playerId) { it.without<CantCastFromNonHandZonesComponent>() }
+            }
+        }
+        // Teferi, Time Raveler's "until your next turn, you may cast sorcery spells as though they
+        // had flash" lapses on the same post-untap hook, keyed off the granting player.
+        for (playerId in result.turnOrder) {
+            val flashGrants = result.getEntity(playerId)?.get<FlashGrantsComponent>() ?: continue
+            val remaining = flashGrants.grants.filterNot {
+                it.removeOn == PlayerEffectRemoval.UntilYourNextTurn && (it.expiresForPlayerId ?: playerId) in activeTeam
+            }
+            if (remaining.size == flashGrants.grants.size) continue
+            result = result.updateEntity(playerId) {
+                if (remaining.isEmpty()) it.without<FlashGrantsComponent>() else it.with(FlashGrantsComponent(remaining))
             }
         }
         // "Until your next turn, this becomes a copy of …" (Absorbing Man, Taskmaster): restore the
@@ -767,9 +779,11 @@ class CleanupPhaseManager(
                 if (tapForManaGrants?.removeOn == PlayerEffectRemoval.EndOfTurn) {
                     result = result.without<com.wingedsheep.engine.state.components.player.TapForManaGrantsComponent>()
                 }
-                val flashGrants = result.get<FlashGrantsThisTurnComponent>()
-                if (flashGrants?.removeOn == PlayerEffectRemoval.EndOfTurn) {
-                    result = result.without<FlashGrantsThisTurnComponent>()
+                val flashGrants = result.get<FlashGrantsComponent>()
+                if (flashGrants != null) {
+                    val remaining = flashGrants.grants.filter { it.removeOn != PlayerEffectRemoval.EndOfTurn }
+                    result = if (remaining.isEmpty()) result.without<FlashGrantsComponent>()
+                        else result.with(FlashGrantsComponent(remaining))
                 }
                 // Colour-filtered mana retention (The Last Agni Kai): the kept mana already
                 // survived the step-2 emptying above; drop the now-spent marker here.

@@ -1029,17 +1029,34 @@ data class SpellsCantBeCounteredComponent(
  * leaving the stack, since the static-on-permanent variant would die with its source.
  *
  * Multiple grants stack additively — each [com.wingedsheep.sdk.scripting.effects.GrantFlashToSpellsEffect]
- * resolution appends to [filters]; a spell gains flash if it matches any entry. The whole
- * component is removed in one shot when the duration elapses.
+ * resolution appends a [FlashGrant]; a spell gains flash if it matches any entry. Each grant keeps
+ * its own lifetime, so an end-of-turn grant (Borne Upon a Wind) and an until-your-next-turn one
+ * (Teferi, Time Raveler's +1) expire independently; the component goes when its last grant does.
  *
- * @property filters Filters matched against the card being cast (read in any zone).
- * @property removeOn When this component is removed.
+ * @property grants The live grants.
  */
 @Serializable
-data class FlashGrantsThisTurnComponent(
-    val filters: List<GameObjectFilter> = emptyList(),
-    val removeOn: PlayerEffectRemoval = PlayerEffectRemoval.EndOfTurn
-) : Component
+data class FlashGrantsComponent(
+    val grants: List<FlashGrant> = emptyList()
+) : Component {
+    /** Every live grant's filter, regardless of lifetime. */
+    val filters: List<GameObjectFilter> get() = grants.map { it.filter }
+}
+
+/**
+ * One flash permission in a [FlashGrantsComponent].
+ *
+ * @property filter Matched against the card being cast (read in any zone).
+ * @property removeOn When this grant lapses.
+ * @property expiresForPlayerId For [PlayerEffectRemoval.UntilYourNextTurn], whose "next turn" ends
+ *   the grant. Null → the grant's holder (the normal case: "you may cast …").
+ */
+@Serializable
+data class FlashGrant(
+    val filter: GameObjectFilter,
+    val removeOn: PlayerEffectRemoval = PlayerEffectRemoval.EndOfTurn,
+    val expiresForPlayerId: EntityId? = null
+)
 
 /** Independent casting bans; cleanup removes only entries whose duration has ended. */
 @Serializable

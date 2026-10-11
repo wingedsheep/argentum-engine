@@ -2,7 +2,8 @@ package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.core.PaymentStrategy
-import com.wingedsheep.engine.state.components.player.FlashGrantsThisTurnComponent
+import com.wingedsheep.engine.state.components.player.FlashGrant
+import com.wingedsheep.engine.state.components.player.FlashGrantsComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.mtg.sets.definitions.ltr.cards.BorneUponAWind
@@ -24,7 +25,7 @@ import io.kotest.matchers.shouldNotBe
  * Borne Upon a Wind ({1}{U} Instant): "You may cast spells this turn as though they had
  * flash. Draw a card."
  *
- * The flash-permission primitive (GrantFlashToSpellsEffect / FlashGrantsThisTurnComponent)
+ * The flash-permission primitive (GrantFlashToSpellsEffect / FlashGrantsComponent)
  * has its own unit coverage in [GrantFlashToSpellsEffectTest]. This test pins the printed
  * card text end-to-end:
  *  * resolving Borne Upon a Wind grants flash AND draws exactly one card
@@ -65,7 +66,7 @@ class BorneUponAWindTest : FunSpec({
         // moved it back out, leaving the net change = +1 from the draw.
         driver.getHandSize(p1) shouldBe handBefore + 1
 
-        val grants = driver.state.getEntity(p1)?.get<FlashGrantsThisTurnComponent>()
+        val grants = driver.state.getEntity(p1)?.get<FlashGrantsComponent>()
         grants.shouldNotBeNull()
         grants.filters.size shouldBe 1
     }
@@ -107,11 +108,11 @@ class BorneUponAWindTest : FunSpec({
             CastSpell(playerId = p1, cardId = borne, paymentStrategy = PaymentStrategy.FromPool)
         )
         driver.bothPass()
-        driver.state.getEntity(p1)?.get<FlashGrantsThisTurnComponent>().shouldNotBeNull()
+        driver.state.getEntity(p1)?.get<FlashGrantsComponent>().shouldNotBeNull()
 
         // Advance past p1's CLEANUP into p2's upkeep.
         driver.passPriorityUntil(Step.UPKEEP)
-        driver.state.getEntity(p1)?.get<FlashGrantsThisTurnComponent>().shouldBeNull()
+        driver.state.getEntity(p1)?.get<FlashGrantsComponent>().shouldBeNull()
 
         val sorcery = driver.putCardInHand(p1, "Test Sorcery")
         driver.passPriorityUntil(Step.END)

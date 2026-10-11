@@ -316,6 +316,7 @@ class ConditionEvaluator(
             IsNight,
             IsNotYourTurn,
             IsOpponentsTurn,
+            is com.wingedsheep.sdk.scripting.conditions.CouldCastSorcery,
             is IsPlayersTurn,
             IsYourTurn,
             is ManaSpentToCastIncludes,
@@ -426,6 +427,11 @@ class ConditionEvaluator(
             // CR 805 — "your turn" is the active team's turn for every member of that team.
             is IsYourTurn -> ctx.controllerId?.let { state.isActiveTurnFor(it) } ?: false
             is IsNotYourTurn -> ctx.controllerId?.let { !state.isActiveTurnFor(it) } ?: false
+            // CR 307.5 — "any time you could cast a sorcery": a main phase of your (team's) turn with
+            // an empty stack. Priority is implied by whoever is asking (the player casting).
+            is com.wingedsheep.sdk.scripting.conditions.CouldCastSorcery -> ctx.controllerId?.let {
+                state.step.isMainPhase && state.stack.isEmpty() && state.isActiveTurnFor(it)
+            } ?: false
             // "An opponent's turn" — the active player is an opponent, so a teammate's turn is not one.
             is IsOpponentsTurn -> ctx.controllerId?.let { cid ->
                 state.activePlayerId?.let { state.isOpponentOf(it, cid) }

@@ -3,7 +3,8 @@ package com.wingedsheep.engine.scenarios
 import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.core.Outcome
 import com.wingedsheep.engine.state.components.battlefield.LinkedExileComponent
-import com.wingedsheep.engine.state.components.player.FlashGrantsThisTurnComponent
+import com.wingedsheep.engine.state.components.player.FlashGrant
+import com.wingedsheep.engine.state.components.player.FlashGrantsComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.sdk.core.Step
@@ -67,7 +68,7 @@ class LinkedExileFlashTimingTest : FunSpec({
                 when (grantKind) {
                     "static" -> d.putPermanentOnBattlefield(recipient, granter.name)
                     "turn" -> d.replaceState(d.state.updateEntity(recipient) {
-                        it.with(FlashGrantsThisTurnComponent(listOf(GameObjectFilter.Creature)))
+                        it.with(FlashGrantsComponent(listOf(FlashGrant(GameObjectFilter.Creature))))
                     })
                     "conditional" -> d.putPermanentOnBattlefield(recipient, enabler.name)
                 }

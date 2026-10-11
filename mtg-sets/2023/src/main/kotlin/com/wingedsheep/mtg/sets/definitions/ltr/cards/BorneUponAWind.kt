@@ -16,7 +16,7 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
  *
  * Granting flash to every spell the controller casts for the rest of the turn (CR 702.8a)
  * is modelled via [com.wingedsheep.sdk.scripting.effects.GrantFlashToSpellsEffect], which
- * stamps a turn-scoped `FlashGrantsThisTurnComponent` on the controller. The component is
+ * stamps a turn-scoped `FlashGrantsComponent` on the controller. The component is
  * cleared by `CleanupPhaseManager.cleanupEndOfTurn` (CR 514.2).
  */
 val BorneUponAWind = card("Borne Upon a Wind") {

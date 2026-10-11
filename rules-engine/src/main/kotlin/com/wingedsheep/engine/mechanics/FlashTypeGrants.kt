@@ -8,7 +8,7 @@ import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.ClassLevelComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
-import com.wingedsheep.engine.state.components.player.FlashGrantsThisTurnComponent
+import com.wingedsheep.engine.state.components.player.FlashGrantsComponent
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
 import com.wingedsheep.sdk.scripting.GrantFlashToSpellType
@@ -29,8 +29,8 @@ import com.wingedsheep.sdk.scripting.StaticAbility
  *
  * 1. **The card's own `conditionalFlash`** — "this spell has flash as long as …" printed on the
  *    card itself (ferocious and friends), evaluated in the caster's context.
- * 2. **Turn-scoped player grants** — `GrantFlashToSpellsEffect` writes
- *    [FlashGrantsThisTurnComponent] filters onto the caster (Borne Upon a Wind).
+ * 2. **Duration-bounded player grants** — `GrantFlashToSpellsEffect` writes
+ *    [FlashGrantsComponent] grants onto the caster (Borne Upon a Wind, Teferi, Time Raveler).
  * 3. **[GrantFlashToSpellType] statics on battlefield permanents** — Quick Sliver, Raff Capashen,
  *    Radagast of Rhosgobel, Captain Mar-Vell.
  *
@@ -76,9 +76,9 @@ object FlashTypeGrants {
 
         val context = PredicateContext(controllerId = casterId)
 
-        // 2. Turn-scoped grants on the caster (Borne Upon a Wind etc., via
-        // GrantFlashToSpellsEffect → FlashGrantsThisTurnComponent).
-        val turnGrants = state.getEntity(casterId)?.get<FlashGrantsThisTurnComponent>()
+        // 2. Duration-bounded grants on the caster (Borne Upon a Wind, Teferi, Time Raveler's +1,
+        // via GrantFlashToSpellsEffect → FlashGrantsComponent).
+        val turnGrants = state.getEntity(casterId)?.get<FlashGrantsComponent>()
         if (turnGrants != null) {
             for (filter in turnGrants.filters) {
                 if (predicateEvaluator.matches(state, state.projectedState, spellCardId, filter, context)) {

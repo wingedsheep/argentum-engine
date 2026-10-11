@@ -343,6 +343,7 @@ Families:
 - `Compare(left: DynamicAmount, operator: ComparisonOperator, right: DynamicAmount)` — Generic numeric comparison condition.
 - `ControlledCreatureDiedThisTurnCondition` — Intervening-if condition (Rule 603.4): "if a creature died under your control this turn".
 - `ControllerTurnsTakenAtMost(threshold: Int)` — Condition: "it's threshold or less of the controller's turn of the game".
+- `CouldCastSorcery` — Condition: "If you could cast a sorcery now" — CR 307.5: it is a main phase of your turn and the stack is empty (priority is implied wherever the condition is asked: at cast legality, the player ac…
 - `CounterPutOnPermanentYouControlledThisTurn(counterType: CounterType?, player: Player)` — Condition: "if a counterType counter was put on a permanent under player's control this turn" — Fairgrounds Trumpeter's end-step gate.
 - `CounterRemovedFromPermanentYouControlledThisTurn(counterType: CounterType?, player: Player)` — Condition: "if a counterType counter was removed from a permanent player controlled this turn" — the first half of Churning Reservoir's activation gate.
 - `CreatureDiedThisTurnCondition` — Intervening-if condition (Rule 603.4): "if a creature died this turn".
