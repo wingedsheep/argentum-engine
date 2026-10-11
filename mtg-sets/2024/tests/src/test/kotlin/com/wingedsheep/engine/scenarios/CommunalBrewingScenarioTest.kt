@@ -2,6 +2,7 @@ package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.ChooseTargetsDecision
 import com.wingedsheep.engine.mechanics.layers.StateProjector
+import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
@@ -9,6 +10,7 @@ import com.wingedsheep.mtg.sets.definitions.blc.cards.CommunalBrewing
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
 import io.kotest.core.spec.style.FunSpec
@@ -101,5 +103,18 @@ class CommunalBrewingScenarioTest : FunSpec({
 
         val courser = driver.castCourser(me)
         driver.counters(courser, CounterType.PLUS_ONE_PLUS_ONE) shouldBe 1
+    }
+
+    test("a target with an empty library draws nothing: only the base ingredient counter") {
+        val driver = createDriver()
+        val me = driver.activePlayer!!
+        val opponent = driver.getOpponent(me)
+        driver.replaceState(
+            driver.state.copy(zones = driver.state.zones + (ZoneKey(opponent, Zone.LIBRARY) to emptyList()))
+        )
+
+        val brewing = driver.castBrewing(me, listOf(opponent))
+
+        driver.counters(brewing, CounterType.INGREDIENT) shouldBe 1
     }
 })
