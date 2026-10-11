@@ -14229,7 +14229,8 @@ read is available to other snapshot-backed entity references once their captured
   for each creature sacrificed this way" is `Triggers.self.isCast()` with
   `Effects.Repeat(DynamicAmounts.permanentsSacrificedToCast(TriggeringEntity),
   Effects.CopyTargetSpell(TriggeringEntity))`, gated on `≥ 1` so a no-sacrifice cast puts no
-  trigger on the stack. 0 for anything that isn't a spell on the stack, including a copy (never cast).
+  trigger on the stack. 0 for anything that isn't a spell on the stack; a copy inherits the original's
+  count (CR 707.10), but since it isn't cast it never fires the cast trigger again.
 - `DynamicAmounts.targetColorCount(index)` / `DynamicAmounts.colorCountOf(entity)` — number of
   distinct colors of the indexed cast-time target / any `EffectTarget.SingleEntity`. Desugars to
   `EntityProperty(entity, EntityNumericProperty.ColorCount)`. Read from projected state for

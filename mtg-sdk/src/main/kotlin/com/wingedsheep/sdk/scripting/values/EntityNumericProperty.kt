@@ -96,7 +96,7 @@ sealed interface EntityNumericProperty {
      * [ManaSpent]: a cast record read off a specific spell, so a "when you cast this spell"
      * trigger can read it off `EffectTarget.TriggeringEntity` (Plumb the Forbidden's "copy this
      * spell for each creature sacrificed this way"). Returns 0 if the entity is not a spell on
-     * the stack — a copy, which is never cast (CR 707.10), carries none of its own.
+     * the stack. A copy inherits the original's snapshots (CR 707.10), so it reads the same count.
      */
     @SerialName("PermanentsSacrificedToCast")
     @Serializable
