@@ -3335,6 +3335,77 @@
     ]
 }
 
+// Narset's Reversal
+{
+    "name": "Narset's Reversal",
+    "manaCost": "{U}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Copy target instant or sorcery spell, then return it to its owner's hand. You may choose new targets for the copy.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "CopyTargetSpell",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "ReturnSpellOrPermanentToOwnersHand",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "instant|sorcery",
+                    "zone": "Stack"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "62",
+        "rarity": "RARE",
+        "artist": "Viktor Titov",
+        "flavorText": "\"In the disarray of battle, an enemy's attack may be your most convenient weapon.\"\n—Narset",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/3/63754036-d51e-47bb-925b-564d9dc922ff.jpg?1783933459",
+        "rulings": [
+            {
+                "date": "2019-05-03",
+                "text": "Narset's Reversal can copy any instant or sorcery spell, not just one with targets."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "The copy will have the same targets as the spell it's copying unless you choose new ones. You may change any number of the targets, including all of them or none of them. If, for one of the targets, you can't choose a new legal target, then it remains unchanged (even if the current target is illegal)."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "If you copy a spell, you control the copy. Narset's Reversal and the copy resolve before the original spell would have resolved."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "If a spell is returned to its owner's hand, it's removed from the stack and thus will not resolve. The spell isn't countered; it just no longer exists. This works against a spell that can't be countered."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "If a copy of a spell is returned to its owner's hand, it's moved there, then it will cease to exist as a state-based action."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // No Escape
 {
     "name": "No Escape",

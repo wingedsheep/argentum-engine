@@ -1510,6 +1510,34 @@
     ]
 }
 
+// Mana Geyser
+{
+    "name": "Mana Geyser",
+    "manaCost": "{3}{R}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Add {R} for each tapped land your opponents control.",
+    "script": {
+        "spellEffect": {
+            "type": "AddMana",
+            "color": "RED",
+            "amount": {
+                "type": "AggregateBattlefield",
+                "player": "EachOpponent",
+                "filter": "land tapped"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "75",
+        "artist": "Martina Pilcerova",
+        "flavorText": "The Quicksilver Sea hissed and bubbled at the indignity. The Vulshok shaman just smiled.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/9/3929662e-99d7-48e9-afac-1852af8be722.jpg?1783944392"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Night's Whisper
 {
     "name": "Night's Whisper",

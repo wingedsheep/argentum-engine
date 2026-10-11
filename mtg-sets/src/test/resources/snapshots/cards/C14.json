@@ -130,6 +130,79 @@
     ]
 }
 
+// Dualcaster Mage
+{
+    "name": "Dualcaster Mage",
+    "manaCost": "{1}{R}{R}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "Flash\nWhen this creature enters, copy target instant or sorcery spell. You may choose new targets for the copy.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Dualcaster Mage:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CopyTargetSpell",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "instant|sorcery",
+                        "zone": "Stack"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "34",
+        "rarity": "RARE",
+        "artist": "Matt Stewart",
+        "flavorText": "\"It has been my experience that disasters like to strike in pairs.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/b/0b80c8a0-0870-4836-bee1-f4a805d119d6.jpg?1783938867",
+        "rulings": [
+            {
+                "date": "2016-06-08",
+                "text": "Dualcaster Mage's triggered ability can target (and copy) any instant or sorcery spell, not just one with targets. It doesn't matter who controls it."
+            },
+            {
+                "date": "2016-06-08",
+                "text": "As Dualcaster Mage's triggered ability resolves, it creates a copy of a spell on the stack. The copy isn't cast, so abilities that trigger when a player casts a spell won't trigger."
+            },
+            {
+                "date": "2016-06-08",
+                "text": "The copy will have the same targets as the spell it's copying unless you choose new ones. You may change any number of the targets, including all of them or none of them. If, for one of the targets, you can't choose a new legal target, then it remains unchanged (even if the current target is illegal)."
+            },
+            {
+                "date": "2016-06-08",
+                "text": "If the spell is modal (that is, it says \"Choose one —\" or the like), the copy will have the same mode. You can't choose a different one."
+            },
+            {
+                "date": "2016-06-08",
+                "text": "If the spell has an X whose value was determined as it was cast (like Earthquake does), the copy has the same value of X."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Jazal Goldmane
 {
     "name": "Jazal Goldmane",

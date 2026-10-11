@@ -103,6 +103,56 @@
     ]
 }
 
+// Curiosity
+{
+    "name": "Curiosity",
+    "manaCost": "{U}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nWhenever enchanted creature deals damage to an opponent, you may draw a card.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Curiosity:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "EachOpponent"
+                    }
+                },
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    }
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "29",
+        "rarity": "UNCOMMON",
+        "artist": "Val Mayerik",
+        "flavorText": "All Mirri wanted to do was rest, but she couldn't ignore a nagging suspicion as she followed Crovax's skulking form.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/e/fee17ef5-7e1a-42ae-b680-df81204df7dd.jpg?1783946527"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Cursed Flesh
 {
     "name": "Cursed Flesh",
