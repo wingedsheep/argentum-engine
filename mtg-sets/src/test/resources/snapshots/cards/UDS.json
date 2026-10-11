@@ -1916,6 +1916,59 @@
     ]
 }
 
+// Sigil of Sleep
+{
+    "name": "Sigil of Sleep",
+    "manaCost": "{U}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nWhenever enchanted creature deals damage to a player, return target creature that player controls to its owner's hand.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sigil of Sleep:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Hand"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:triggering-player"
+                    },
+                    "id": "t0"
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "46",
+        "artist": "Greg Hildebrandt & Tim Hildebrandt",
+        "flavorText": "Arrows are only one way to remove an enemy.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/3/a31f3c70-e2c3-479e-8d22-2fd1429e9857.jpg?1783946076"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Skittering Horror
 {
     "name": "Skittering Horror",

@@ -232,6 +232,60 @@
     ]
 }
 
+// Cabal Ritual
+{
+    "name": "Cabal Ritual",
+    "manaCost": "{1}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Add {B}{B}{B}.\nThreshold — Add {B}{B}{B}{B}{B} instead if there are seven or more cards in your graveyard.",
+    "script": {
+        "spellEffect": {
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "Count",
+                        "player": "You",
+                        "zone": "Graveyard"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 7
+                    }
+                }
+            },
+            "then": {
+                "type": "AddMana",
+                "color": "BLACK",
+                "amount": {
+                    "type": "Fixed",
+                    "amount": 5
+                }
+            },
+            "otherwise": {
+                "type": "AddMana",
+                "color": "BLACK",
+                "amount": {
+                    "type": "Fixed",
+                    "amount": 3
+                }
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "51",
+        "artist": "Greg Hildebrandt",
+        "flavorText": "\"Each syllable chills your veins. Each word rattles your mind.\"\n—Cabal Patriarch",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/4/5403b49d-03a7-4cc3-af3c-df098c1c9c2e.jpg?1783945159"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Centaur Veteran
 {
     "name": "Centaur Veteran",

@@ -396,9 +396,23 @@ function LaunchPanel({
           {isAi && range && <span className={styles.playButtonMeta}>vs {opponents} AI</span>}
         </button>
         <p className={styles.footerHint}>
-          {isAi
-            ? 'Timer, pack count and other settings keep their defaults.'
-            : 'Settings stay editable in the lobby until you start.'}
+          {isAi ? (
+            <>
+              Timer, pack count and other settings keep their defaults.{' '}
+              {/* Advanced: the same lobby, held open so every setting can be changed before Start. */}
+              <button
+                type="button"
+                className={styles.footerLink}
+                data-testid="launch-open-lobby"
+                onClick={() => {
+                  onLaunch({ ...recipeForOptions(effective), autoStart: false })
+                  onClose()
+                }}
+              >
+                Open a lobby to change them
+              </button>
+            </>
+          ) : 'Settings stay editable in the lobby until you start.'}
         </p>
       </footer>
 

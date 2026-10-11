@@ -4604,6 +4604,186 @@
     ]
 }
 
+// Tergrid, God of Fright
+{
+    "name": "Tergrid, God of Fright",
+    "manaCost": "{3}{B}{B}",
+    "typeLine": "Legendary Creature — God",
+    "oracleText": "Menace\nWhenever an opponent sacrifices a nontoken permanent or discards a permanent card, you may put that card from a graveyard onto the battlefield under your control.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 5
+    },
+    "keywords": [
+        "MENACE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Tergrid, God of Fright:1",
+                "trigger": {
+                    "type": "PermanentsSacrificedEvent",
+                    "filter": "permanent nontoken",
+                    "sacrificedBy": "EachOpponent",
+                    "perPermanent": true
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "MoveToZone",
+                        "target": "TriggeringEntity",
+                        "destination": "Battlefield",
+                        "controllerOverride": "Controller",
+                        "fromZone": "Graveyard"
+                    },
+                    "descriptionOverride": "Whenever an opponent sacrifices a nontoken permanent, you may put that card from a graveyard onto the battlefield under your control."
+                },
+                "descriptionOverride": "Whenever an opponent sacrifices a nontoken permanent, you may put that card from a graveyard onto the battlefield under your control."
+            },
+            {
+                "id": "Tergrid, God of Fright:2",
+                "trigger": {
+                    "type": "DiscardEvent",
+                    "player": "EachOpponent",
+                    "cardFilter": "permanent"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "MoveToZone",
+                        "target": "TriggeringEntity",
+                        "destination": "Battlefield",
+                        "controllerOverride": "Controller",
+                        "fromZone": "Graveyard"
+                    },
+                    "descriptionOverride": "Whenever an opponent discards a permanent card, you may put that card from a graveyard onto the battlefield under your control."
+                },
+                "descriptionOverride": "Whenever an opponent discards a permanent card, you may put that card from a graveyard onto the battlefield under your control."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Tergrid's Lantern",
+        "manaCost": "{3}{B}",
+        "typeLine": "Legendary Artifact",
+        "oracleText": "{T}: Target player loses 3 life unless they sacrifice a nonland permanent of their choice or discard a card.\n{3}{B}: Untap Tergrid's Lantern.",
+        "script": {
+            "activatedAbilities": [
+                {
+                    "id": "Tergrid's Lantern:1",
+                    "cost": "CostTap",
+                    "effect": {
+                        "type": "PayOrSuffer",
+                        "cost": {
+                            "type": "Choice",
+                            "options": [
+                                {
+                                    "type": "PayAtom",
+                                    "atom": {
+                                        "type": "AtomSacrifice",
+                                        "filter": "nonland"
+                                    }
+                                },
+                                {
+                                    "type": "PayAtom",
+                                    "atom": "AtomDiscard"
+                                }
+                            ]
+                        },
+                        "suffer": {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 3
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetPlayer",
+                            "id": "t0"
+                        }
+                    ],
+                    "descriptionOverride": "Target player loses 3 life unless they sacrifice a nonland permanent of their choice or discard a card."
+                },
+                {
+                    "id": "Tergrid's Lantern:2",
+                    "cost": {
+                        "type": "CostAtomWrapper",
+                        "atom": {
+                            "type": "AtomMana",
+                            "cost": "{3}{B}"
+                        }
+                    },
+                    "effect": {
+                        "type": "TapUntap",
+                        "target": "Self",
+                        "tap": false
+                    },
+                    "descriptionOverride": "Untap Tergrid's Lantern."
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "112",
+            "rarity": "RARE",
+            "artist": "Yongjae Choi",
+            "flavorText": "When Tergrid was a child, her shadow tried to kill her. Only her lantern keeps it at bay.",
+            "imageUri": "https://cards.scryfall.io/normal/back/1/4/14dc88ee-bba9-4625-af0d-89f3762a0ead.jpg?1783928244",
+            "rulings": [
+                {
+                    "date": "2021-02-05",
+                    "text": "The player targeted by the first ability of Tergrid's Lantern can choose to lose 3 life even if they have nonland permanents to sacrifice or cards to discard. They can't choose to sacrifice a nonland permanent if they don't control any, nor can they choose to discard a card if they have none in hand."
+                }
+            ]
+        },
+        "colorIdentityOverride": [
+            "BLACK"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "112",
+        "rarity": "RARE",
+        "artist": "Yongjae Choi",
+        "flavorText": "Fear is her one true companion.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/4/14dc88ee-bba9-4625-af0d-89f3762a0ead.jpg?1783928244",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "If an opponent sacrifices a nontoken permanent, it doesn't matter which graveyard it goes to. Tergrid's ability will trigger."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If the card leaves the graveyard before Tergrid's ability resolves, you can't put it onto the battlefield, even if it returns to the graveyard before the ability resolves."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If an opponent sacrifices a nontoken permanent or discards a permanent card as part of paying the cost of a spell or ability, Tergrid's ability will trigger and goes on the stack on top of that spell or ability. Tergrid's ability will resolve before that spell or ability."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If you put an Aura onto the battlefield using Tergrid's ability, you choose what the Aura will enchant just before it enters the battlefield. An Aura put onto the battlefield this way doesn't target the player or permanent it will enchant, so permanents or players with hexproof may be chosen; however, the chosen recipient must be able to legally be enchanted by the Aura, so a player or permanent with protection from one of the Aura's qualities can't be chosen this way. If there's nothing legal for the Aura to enchant, it stays in the graveyard."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ],
+    "layout": "MODAL_DFC"
+}
+
 // Undersea Invader
 {
     "name": "Undersea Invader",

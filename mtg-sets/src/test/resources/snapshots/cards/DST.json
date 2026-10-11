@@ -624,6 +624,45 @@
     ]
 }
 
+// Geth's Grimoire
+{
+    "name": "Geth's Grimoire",
+    "manaCost": "{4}",
+    "typeLine": "Artifact — Book",
+    "oracleText": "Whenever an opponent discards a card, you may draw a card.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Geth's Grimoire:1",
+                "trigger": {
+                    "type": "DiscardEvent",
+                    "player": "EachOpponent"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "123",
+        "rarity": "UNCOMMON",
+        "artist": "Heather Hudson",
+        "flavorText": "The book shrieks horribly until its cover is opened, granting the spirit inside a moment's rest from the painful stirrings of the book's contents.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/a/0a21d76d-d86c-4348-be45-f65167d2b5a9.jpg?1783944424"
+    },
+    "colorIdentityOverride": []
+}
+
 // Grimclaw Bats
 {
     "name": "Grimclaw Bats",

@@ -1,3 +1,79 @@
+// Bone Miser
+{
+    "name": "Bone Miser",
+    "manaCost": "{4}{B}",
+    "typeLine": "Creature — Zombie Wizard",
+    "oracleText": "Whenever you discard a creature card, create a 2/2 black Zombie creature token.\nWhenever you discard a land card, add {B}{B}.\nWhenever you discard a noncreature, nonland card, draw a card.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Bone Miser:1",
+                "trigger": {
+                    "type": "DiscardEvent",
+                    "cardFilter": "creature"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 2,
+                    "toughness": 2,
+                    "colors": [
+                        "BLACK"
+                    ],
+                    "creatureTypes": [
+                        "Zombie"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/5/9/59bad855-ff86-4f98-bf18-0982c7aea9c5.jpg?1783932829"
+                },
+                "descriptionOverride": "Create a 2/2 black Zombie creature token."
+            },
+            {
+                "id": "Bone Miser:2",
+                "trigger": {
+                    "type": "DiscardEvent",
+                    "cardFilter": "land"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "BLACK",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                },
+                "descriptionOverride": "Add {B}{B}."
+            },
+            {
+                "id": "Bone Miser:3",
+                "trigger": {
+                    "type": "DiscardEvent",
+                    "cardFilter": "noncreature nonland"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "descriptionOverride": "Draw a card."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "15",
+        "rarity": "RARE",
+        "artist": "Antonio José Manzanedo",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/7/a7fa6901-e74f-448c-9d26-99a692092512.jpg?1783932810"
+    }
+}
+
 // Idol of Oblivion
 {
     "name": "Idol of Oblivion",

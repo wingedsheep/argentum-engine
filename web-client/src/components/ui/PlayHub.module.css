@@ -708,6 +708,20 @@
   text-align: center;
 }
 
+/* The advanced way in for an AI game: open its lobby instead of starting straight away. */
+.footerLink {
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  color: var(--hub-text, #dfe3ec);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+.footerLink:hover { color: #f2b45c; }
+.footerLink:focus-visible { outline: 2px solid var(--color-focus-ring); outline-offset: 2px; }
+
 /* Inside a page that fits the viewport (`Home.module.css`), the hub fills what is left and each
    column scrolls on its own rather than the page. */
 @media (min-width: 901px) and (min-height: 600px) {
