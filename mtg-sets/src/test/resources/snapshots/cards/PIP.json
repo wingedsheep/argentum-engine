@@ -1,1 +1,215 @@
+// Ferrous Lake
+{
+    "name": "Ferrous Lake",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "{1}, {T}: Add {U}{R}.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Ferrous Lake:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddMana",
+                            "color": "BLUE"
+                        },
+                        {
+                            "type": "AddMana",
+                            "color": "RED"
+                        }
+                    ]
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "148",
+        "rarity": "RARE",
+        "artist": "Hristo D. Chukov",
+        "flavorText": "Even before it was a super mutant camp, the water treatment plant was used for all sorts of questionable experiments.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/4/0406ff96-419b-44bc-b836-a39eaa55ae78.jpg?1783912375"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
+    ]
+}
 
+// Overflowing Basin
+{
+    "name": "Overflowing Basin",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "{1}, {T}: Add {G}{U}.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Overflowing Basin:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddMana",
+                            "color": "GREEN"
+                        },
+                        {
+                            "type": "AddMana",
+                            "color": "BLUE"
+                        }
+                    ]
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "152",
+        "rarity": "RARE",
+        "artist": "Marina Ortega Lorente",
+        "flavorText": "Unfortunately for Vault 34's remaining residents, a battle over the armory resulted in flooding, a leaking reactor, and broken doors.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/5/75372ba1-85fb-4923-a62f-4050761c1471.jpg?1783912373"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ]
+}
+
+// Sunscorched Divide
+{
+    "name": "Sunscorched Divide",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "{1}, {T}: Add {R}{W}.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Sunscorched Divide:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddMana",
+                            "color": "RED"
+                        },
+                        {
+                            "type": "AddMana",
+                            "color": "WHITE"
+                        }
+                    ]
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "153",
+        "rarity": "RARE",
+        "artist": "Zezhou Chen",
+        "flavorText": "\"To the Divide they came. In the Divide, they rest.\"\n—Ulysses",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/8/f84a8f54-9ede-40ee-a783-e58a7e4f2e94.jpg?1783912372"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
+    ]
+}
+
+// Viridescent Bog
+{
+    "name": "Viridescent Bog",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "{1}, {T}: Add {B}{G}.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Viridescent Bog:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddMana",
+                            "color": "BLACK"
+                        },
+                        {
+                            "type": "AddMana",
+                            "color": "GREEN"
+                        }
+                    ]
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "154",
+        "rarity": "RARE",
+        "artist": "Rafater",
+        "flavorText": "The Master had literally built his army one mutant at a time. Humans, preferably with little radiation damage, were captured and sent to the vats.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/a/ea4ce16b-39bb-4580-9c38-a7c6b9a33609.jpg?1783912372"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
+    ]
+}
