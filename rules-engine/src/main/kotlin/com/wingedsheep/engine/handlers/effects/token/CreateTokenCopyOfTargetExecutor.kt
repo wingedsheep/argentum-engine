@@ -28,11 +28,13 @@ import com.wingedsheep.engine.state.components.combat.AttackingComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.TokenComponent
+import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.conditions.SourceIsRingBearer
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
+import com.wingedsheep.sdk.scripting.effects.CopyExceptions
 import com.wingedsheep.sdk.scripting.effects.CreateTokenCopyOfTargetEffect
 import com.wingedsheep.sdk.scripting.effects.Gate
 import com.wingedsheep.sdk.scripting.effects.GatedEffect
@@ -205,7 +207,7 @@ class CreateTokenCopyOfTargetExecutor(
             is EffectTarget.BoundVariable -> context.pipeline.namedTargets[target.name]
             else -> return null
         }
-        if (chosen !is com.wingedsheep.engine.state.components.stack.ChosenTarget.Permanent) return null
+        if (chosen !is ChosenTarget.Permanent) return null
         if (id in state.getBattlefield()) return null
         val lastKnownCard = entity.get<LastKnownPermanentComponent>()?.snapshot?.copiableCard ?: return null
         return entity.with(lastKnownCard)
@@ -221,10 +223,10 @@ class CreateTokenCopyOfTargetExecutor(
         state: GameState,
         effect: CreateTokenCopyOfTargetEffect,
         context: EffectContext,
-    ): com.wingedsheep.sdk.scripting.effects.CopyExceptions {
+    ): CopyExceptions {
         val power = effect.basePower ?: return effect.copyExceptions
         val toughness = effect.baseToughness ?: return effect.copyExceptions
-        return com.wingedsheep.sdk.scripting.effects.CopyExceptions(
+        return CopyExceptions(
             powerOverride = amountEvaluator.evaluate(state, power, context),
             toughnessOverride = amountEvaluator.evaluate(state, toughness, context),
         ).over(effect.copyExceptions)
