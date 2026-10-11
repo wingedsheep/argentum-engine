@@ -575,22 +575,32 @@ class StateProjector {
             )
         }
 
-        // Collect cross-zone "is the chosen type" grants (Conspiracy / Leyline of Transformation).
-        // A GrantChosenSubtype with cross-zone flags lowers to a Modification.AddChosenSubtype whose
-        // Layer 4 application above only touched battlefield permanents; here we additionally record
-        // an overlay entry so the non-battlefield subtype read-sites (spells on the stack, cards in
-        // hand/library/graveyard/exile) can honor it. Reads the source's *projected* controller (so
-        // it follows control changes) and the creature type it was made with.
+        // Collect cross-zone creature-type grants: "is the chosen type" (Conspiracy / Leyline of
+        // Transformation, Modification.AddChosenSubtype) and "is every creature type" (Maskwood
+        // Nexus, Modification.AddAllCreatureTypes). Their Layer 4 application above only touched
+        // battlefield permanents; here we additionally record an overlay entry so the
+        // non-battlefield subtype read-sites (spells on the stack, cards in hand/library/graveyard/
+        // exile) can honor it. Reads the source's *projected* controller (so it follows control
+        // changes) and, for the chosen-type form, the creature type it was made with.
         val crossZoneGrants = sortedEffects.mapNotNull { effect ->
-            val mod = effect.modification as? Modification.AddChosenSubtype ?: return@mapNotNull null
-            if (!mod.includeControlledSpells && !mod.includeOwnedCardsOutsideBattlefield) return@mapNotNull null
+            val (spells, ownedCards, subtypes) = when (val mod = effect.modification) {
+                is Modification.AddChosenSubtype -> {
+                    if (!mod.includeControlledSpells && !mod.includeOwnedCardsOutsideBattlefield) return@mapNotNull null
+                    val chosenType = state.getEntity(effect.sourceId)?.chosenCreatureType() ?: return@mapNotNull null
+                    Triple(mod.includeControlledSpells, mod.includeOwnedCardsOutsideBattlefield, setOf(chosenType))
+                }
+                is Modification.AddAllCreatureTypes -> {
+                    if (!mod.includeControlledSpells && !mod.includeOwnedCardsOutsideBattlefield) return@mapNotNull null
+                    Triple(mod.includeControlledSpells, mod.includeOwnedCardsOutsideBattlefield, creatureTypeSet)
+                }
+                else -> return@mapNotNull null
+            }
             val controllerId = projectedValues[effect.sourceId]?.controllerId ?: return@mapNotNull null
-            val chosenType = state.getEntity(effect.sourceId)?.chosenCreatureType() ?: return@mapNotNull null
             CrossZoneSubtypeGrant(
                 controllerId = controllerId,
-                chosenType = chosenType,
-                includeControlledSpells = mod.includeControlledSpells,
-                includeOwnedCardsOutsideBattlefield = mod.includeOwnedCardsOutsideBattlefield
+                subtypes = subtypes,
+                includeControlledSpells = spells,
+                includeOwnedCardsOutsideBattlefield = ownedCards
             )
         }
 

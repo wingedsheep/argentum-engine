@@ -881,7 +881,7 @@ fun SerializableModification.toModification(): Modification = when (this) {
     is SerializableModification.SetCardTypes -> Modification.SetCardTypes(types)
     is SerializableModification.SetAllSubtypes -> Modification.SetAllSubtypes(subtypes)
     is SerializableModification.SetBasicLandTypes -> Modification.SetBasicLandTypes(subtypes)
-    is SerializableModification.AddAllCreatureTypes -> Modification.AddAllCreatureTypes
+    is SerializableModification.AddAllCreatureTypes -> Modification.AddAllCreatureTypes()
     // SetCantAttack maps to the layer modification for "can't attack" projection
     is SerializableModification.SetCantAttack -> Modification.SetCantAttack
     is SerializableModification.SetCantBeTurnedFaceUp -> Modification.SetCantBeTurnedFaceUp

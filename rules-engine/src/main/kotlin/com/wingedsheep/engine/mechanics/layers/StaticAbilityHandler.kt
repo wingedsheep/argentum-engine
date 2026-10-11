@@ -921,7 +921,10 @@ class StaticAbilityHandler(
             }
             is IsAllCreatureTypes -> {
                 ContinuousEffectData(
-                    modification = Modification.AddAllCreatureTypes,
+                    modification = Modification.AddAllCreatureTypes(
+                        includeControlledSpells = ability.includeControlledSpells,
+                        includeOwnedCardsOutsideBattlefield = ability.includeOwnedCardsOutsideBattlefield
+                    ),
                     affectsFilter = convertGroupFilter(ability.filter)
                 )
             }

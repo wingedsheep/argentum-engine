@@ -8862,6 +8862,14 @@ staticAbility {
   and `SelectFromCollectionExecutor` — so a granted type drives type-matters checks everywhere ("target Zombie spell",
   "return target Zombie card from your graveyard", search filters). Leave both flags `false` for battlefield-only effects
   like Xenograft. (Leyline of Transformation)
+- `IsAllCreatureTypes(filter = GroupFilter.attachedCreature(), includeControlledSpells = false,
+  includeOwnedCardsOutsideBattlefield = false)` — Layer 4 static that gives the group **every creature type** in addition
+  to its other types, without granting Changeling (no badge, and "loses all abilities" can't strip it) — Stalactite
+  Dagger's "equipped creature is all creature types", Undercover Skrull. The cross-zone flags work exactly as on
+  `GrantChosenSubtype`, through the same `ProjectedState.crossZoneGrantedSubtypes` overlay: `IsAllCreatureTypes(
+  GroupFilter.AllCreaturesYouControl, includeControlledSpells = true, includeOwnedCardsOutsideBattlefield = true)` is
+  Maskwood Nexus's "Creatures you control are every creature type. The same is true for creature spells you control and
+  creature cards you own that aren't on the battlefield." (Maskwood Nexus)
 - `TransformPermanent(setCardTypes, setSubtypes, setColors?, setName?, clearSubtypes, filter)` — Layer 3/4/5 "becomes a
   whole new identity" (Sugar Coat, Darksteel Mutation, Witness Protection, Imprisoned in the Moon). A non-empty `setSubtypes` replaces all
   subtypes; an empty `setSubtypes` leaves subtypes alone **unless** `clearSubtypes = true`, which replaces them with

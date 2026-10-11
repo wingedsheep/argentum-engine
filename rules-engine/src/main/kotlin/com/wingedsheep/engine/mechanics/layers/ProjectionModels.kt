@@ -395,9 +395,17 @@ sealed interface Modification {
      * Add every creature type to the affected entity, in addition to its other
      * subtypes. Used for cards that say "is all creature types" without granting
      * the Changeling keyword (e.g., Stalactite Dagger).
+     *
+     * As with [AddChosenSubtype], the two cross-zone flags are not read by [EffectApplicator]:
+     * [StateProjector] reads them to register an every-creature-type entry in
+     * [ProjectedState.crossZoneSubtypeGrants] (Maskwood Nexus: "The same is true for creature
+     * spells you control and creature cards you own that aren't on the battlefield").
      */
     @Serializable
-    data object AddAllCreatureTypes : Modification {
+    data class AddAllCreatureTypes(
+        val includeControlledSpells: Boolean = false,
+        val includeOwnedCardsOutsideBattlefield: Boolean = false
+    ) : Modification {
         override val layer get() = Layer.TYPE
     }
 

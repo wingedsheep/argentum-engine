@@ -10,11 +10,11 @@ import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.stack.SpellOnStackComponent
 
 /**
- * An active "this object is also the chosen creature type" grant that reaches **beyond** the
- * battlefield (the Conspiracy / Leyline of Transformation clause "The same is true for creature
+ * An active "this object is also the chosen creature type" (or "every creature type") grant that
+ * reaches **beyond** the battlefield (the Conspiracy / Leyline of Transformation / Maskwood Nexus clause "The same is true for creature
  * spells you control and creature cards you own that aren't on the battlefield").
  *
- * Built by [StateProjector] from each battlefield `GrantChosenSubtype` whose cross-zone flags are
+ * Built by [StateProjector] from each battlefield `GrantChosenSubtype` / `IsAllCreatureTypes` whose cross-zone flags are
  * set, then consulted by every subtype read-site for objects that have no battlefield projection
  * entry (spells on the stack, cards in hand/library/graveyard/exile/command) via
  * [ProjectedState.crossZoneGrantedSubtypes]. Battlefield permanents are unaffected — they get the
@@ -22,14 +22,15 @@ import com.wingedsheep.engine.state.components.stack.SpellOnStackComponent
  *
  * @property controllerId The granting permanent's controller — the player who "controls" the
  *   affected spells and "owns" the affected cards (the asymmetry is in the card text).
- * @property chosenType The creature type chosen as the granting permanent entered.
+ * @property subtypes The creature types granted: the one chosen as the granting permanent entered
+ *   (Leyline of Transformation), or every creature type (Maskwood Nexus).
  * @property includeControlledSpells Grant reaches creature spells [controllerId] controls (stack).
  * @property includeOwnedCardsOutsideBattlefield Grant reaches creature cards [controllerId] owns in
  *   any non-battlefield, non-stack zone.
  */
 data class CrossZoneSubtypeGrant(
     val controllerId: EntityId,
-    val chosenType: String,
+    val subtypes: Set<String>,
     val includeControlledSpells: Boolean,
     val includeOwnedCardsOutsideBattlefield: Boolean
 )
@@ -145,14 +146,14 @@ class ProjectedState(
                 ?: return emptySet()
             crossZoneSubtypeGrants
                 .filter { it.includeControlledSpells && it.controllerId == controller }
-                .mapTo(mutableSetOf()) { it.chosenType }
+                .flatMapTo(mutableSetOf()) { it.subtypes }
         } else {
             // Battlefield permanents are covered by Layer 4 projection, not this overlay.
             if (entityId in state.getBattlefield()) return emptySet()
             val owner = card.ownerId ?: return emptySet()
             crossZoneSubtypeGrants
                 .filter { it.includeOwnedCardsOutsideBattlefield && it.controllerId == owner }
-                .mapTo(mutableSetOf()) { it.chosenType }
+                .flatMapTo(mutableSetOf()) { it.subtypes }
         }
     }
 

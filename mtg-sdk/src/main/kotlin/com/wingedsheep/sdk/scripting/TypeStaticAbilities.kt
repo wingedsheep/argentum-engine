@@ -94,16 +94,29 @@ data class GrantChosenSubtype(
  * "Equipped creature ... is all creature types." The card text doesn't say
  * "changeling", so the equipped creature shouldn't display a Changeling badge.
  *
- * This is a Layer 4 (type-changing) continuous effect.
+ * This is a Layer 4 (type-changing) continuous effect. The two cross-zone flags work exactly as
+ * on [GrantChosenSubtype] — Maskwood Nexus: "Creatures you control are every creature type. The
+ * same is true for creature spells you control and creature cards you own that aren't on the
+ * battlefield."
  *
  * @property filter What this ability applies to (typically AttachedCreature for Equipment)
+ * @property includeControlledSpells Whether creature spells the controller controls are also every type.
+ * @property includeOwnedCardsOutsideBattlefield Whether creature cards the controller owns outside
+ *   the battlefield are also every type.
  */
 @SerialName("IsAllCreatureTypes")
 @Serializable
 data class IsAllCreatureTypes(
-    val filter: GroupFilter = GroupFilter.attachedCreature()
+    val filter: GroupFilter = GroupFilter.attachedCreature(),
+    val includeControlledSpells: Boolean = false,
+    val includeOwnedCardsOutsideBattlefield: Boolean = false
 ) : StaticAbility {
-    override val description: String = "is all creature types"
+    override val description: String = buildString {
+        append("is all creature types")
+        if (includeControlledSpells || includeOwnedCardsOutsideBattlefield) {
+            append("; so are your creature spells and creature cards outside the battlefield")
+        }
+    }
 }
 
 /**
