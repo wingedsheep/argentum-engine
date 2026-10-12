@@ -1386,6 +1386,41 @@
     ]
 }
 
+// Curate
+{
+    "name": "Curate",
+    "manaCost": "{1}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Surveil 2. (Look at the top two cards of your library, then put any number of them into your graveyard and the rest on top of your library in any order.)\nDraw a card.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "Surveil",
+                    "count": 2
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "40",
+        "artist": "Izzy",
+        "flavorText": "\"*Kathorran War Chants, Vol. III*? That doesn't even belong in this wing!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/2/f2a0e716-22b7-4a5e-9b7a-d4a806ee7427.jpg?1783927381"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Daemogoth Titan
 {
     "name": "Daemogoth Titan",
