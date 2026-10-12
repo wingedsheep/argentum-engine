@@ -135,7 +135,7 @@ describe('browser live action origins', () => {
   it('drops a combat selection from the replaced timeline without relabeling it', () => {
     const combat: CombatState = {
       interactionEpoch: 'original', mode: 'declareBlockers', actingSeat: ME, stickyDefenderId: null,
-      selectedAttackers: [], attackerTargets: {}, validAttackTargets: [],
+      selectedAttackers: [], attackerTargets: {}, validAttackTargets: [], attackTargetsByAttacker: {},
       blockerAssignments: { [MANA]: [TARGET] }, validCreatures: [MANA], mandatoryAttackers: [],
       attackingCreatures: [TARGET], mustBeBlockedAttackers: [], blockerMaxBlockCounts: {}, bands: [],
     }

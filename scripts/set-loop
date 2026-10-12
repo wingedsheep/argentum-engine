@@ -21,7 +21,7 @@ EOF
 
 usage() {
   cat <<'EOF'
-Usage: just set-loop <set code or quoted name> [model]
+Usage: just set-loop <set code or quoted name> [model] [priority-file]
 
 Examples:
   just set-loop ecl sonnet
@@ -29,6 +29,7 @@ Examples:
   just set-loop ecl astra
   just set-loop ecl codex:gpt-6-sol
   just set-loop lea codex:gpt-6.1-sol
+  just set-loop pip codex:gpt-6.1-sol backlog/sets/fallout/hail-caesar.txt
   just set-loop "March of the Machine" sonnet
   just set-loop ecl pick           # Choose from a menu
   just set-loop --models          # Show model shortcuts
@@ -41,7 +42,16 @@ case "${1:-}" in
   ""|-h|--help) usage; exit 0 ;;
   --models) models; exit 0 ;;
 esac
-if [ "$#" -gt 2 ]; then usage >&2; exit 2; fi
+if [ "$#" -gt 3 ]; then usage >&2; exit 2; fi
+PRIORITY=${3:-}
+PRIORITY_CARDS=""
+if [ -n "$PRIORITY" ]; then
+  if [ ! -f "$PRIORITY" ] || [ ! -r "$PRIORITY" ] || [ ! -s "$PRIORITY" ]; then
+    echo "set-loop: priority file must be a readable, nonempty file: $PRIORITY" >&2
+    exit 2
+  fi
+  PRIORITY_CARDS=$(cat "$PRIORITY")
+fi
 
 # Accept a code or a set name ("march" -> mom); fail here rather than spend a session on a bad code.
 CODE=$("$(dirname "$0")/resolve-set" "${1:-}") || exit 1
@@ -226,6 +236,28 @@ A human watches your text live, one line at a time, so keep them posted in short
 - just before your final line, one to three lines: 'Summary: <what you did / what's next>'
 No other long prose.
 End your reply with exactly one line: STEP <n> DONE | WAITING_CI | SET_COMPLETE | STUCK <reason>"
+
+if [ -n "$PRIORITY" ]; then
+  PROMPT="$PROMPT
+
+PRIORITY DECK — this overrides the global phase ordering in steps 5-7 while this deck is incomplete.
+The following is a card-name list, one name per line, captured from $PRIORITY at launch:
+<priority-cards>
+$PRIORITY_CARDS
+</priority-cards>
+At gap analysis and every pick, check these names against origin/main's actual corpus and this set's
+printing rows. Track the deck's missing cards and gaps separately in the ledger. Complete this deck
+before selecting cards or gaps only used by the rest of the set. Within the deck, sweep its Assay-ready
+cards first, then build gaps that unlock its remaining cards (dependencies first), then its ready cards.
+Filter the sweep's authored cards AND row-only/basic rows to the priority list; do not mark the whole-set
+sweep done merely because the deck's sweep is empty. Existing global gaps files must be re-ranked for
+this deck. Never bypass a deck engine gap to work on unrelated set cards. Include missing reprints and
+basic printing coverage, and place canonicals in their earliest real printing as usual. A blocked deck
+must report STUCK with its blockers, rather than silently proceeding to the other decks.
+Once all listed cards and their set printings are on origin/main, record PRIORITY_DECK_COMPLETE in the
+ledger and continue the ordinary whole-set phases. Deck completion is not SET_COMPLETE and does not
+drop the set's incomplete flag. Include deck progress in each Summary line."
+fi
 
 if [ "$HARNESS" = codex ]; then
   PROMPT="$PROMPT

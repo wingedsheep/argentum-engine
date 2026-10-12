@@ -5550,6 +5550,7 @@ This is the player-arm prerequisite for the planned composable mixed `TargetUnio
 - `Filters.PlainsCard` / `IslandCard` / `SwampCard` / `MountainCard` / `ForestCard` — specific basics.
 - `Filters.Instant` — instant card.
 - `Filters.Sorcery` — sorcery card.
+- `Filters.Kindred` — kindred card (`CardPredicate.IsKindred`, see **Kindred** below).
 - `Filters.HasAdventure` — card that has an Adventure (adventurer card), regardless of which face it
   currently shows (`CardPredicate.HasAdventure`, backed by `CardComponent.hasAdventure`). A static,
   whole-card characteristic evaluated the same way in every zone.
@@ -5585,6 +5586,12 @@ This is the player-arm prerequisite for the planned composable mixed `TargetUnio
   graveyard" is `GameObjectFilter.Creature or GameObjectFilter.Battle`). The March of the Machine burn
   wording has its own union: `GameObjectFilter.CreaturePlaneswalkerOrBattle` /
   `TargetFilter.CreaturePlaneswalkerOrBattle` — "target creature, planeswalker, or battle".
+- **Kindred** — `CardPredicate.IsKindred` / `GameObjectFilter.Kindred` / `Filters.Kindred` (FQL key
+  `kindred`): the kindred card type (CR 308, formerly tribal). Subtype tests already see a kindred
+  card's creature types, so this is only needed where *card type* itself is counted or matched —
+  "for each card type among noncreature spells you've cast this turn" (Hurkyl, Master Wizard: one
+  `chooseUpToSplit` per type, sized `min(1, spellsCastThisTurn(You, Noncreature and type))`). A
+  `ChooseUpTo` whose dynamic count comes out 0 selects nothing without prompting.
 - `Filters.WithSubtype(subtype)` — card of a given subtype.
 - `GameObjectFilter.Multicolored` — multicolored card (two or more colors; `CardPredicate.IsMulticolored`).
 - `CardPredicate.IsColored` — one or more colors (the complement of `IsColorless`). Used for "a

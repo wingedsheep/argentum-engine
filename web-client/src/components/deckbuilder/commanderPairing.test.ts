@@ -3,6 +3,8 @@ import {
   canCardBeCommander,
   canCrown,
   canPairAsCommanders,
+  commanderIdentityOf,
+  isWithinIdentity,
   toggleCommanderDesignation,
 } from './commanderPairing'
 import type { CardSummary } from './cardFilter'
@@ -82,5 +84,21 @@ describe('toggleCommanderDesignation', () => {
     expect(toggleCommanderDesignation(['P1', 'P2'], 'P1', pairs)).toEqual(['P2'])
     expect(toggleCommanderDesignation(['P1', 'P2'], 'P2', pairs)).toEqual(['P1'])
     expect(toggleCommanderDesignation(['P1'], 'P1', pairs)).toEqual([])
+  })
+})
+
+describe('commander colour identity', () => {
+  it('unions a partner pair and keeps a card only when every colour is inside', () => {
+    const identity = commanderIdentityOf([{ colorIdentity: ['GREEN'] }, { colorIdentity: ['RED', 'WHITE'] }])
+    expect([...identity].sort()).toEqual(['GREEN', 'RED', 'WHITE'])
+    expect(isWithinIdentity({ colorIdentity: ['RED', 'GREEN'] }, identity)).toBe(true)
+    expect(isWithinIdentity({ colorIdentity: ['BLUE'] }, identity)).toBe(false)
+    expect(isWithinIdentity({ colorIdentity: [] }, identity)).toBe(true)
+  })
+
+  it('lets only colourless cards into a colourless commander deck', () => {
+    const identity = commanderIdentityOf([{ colorIdentity: [] }])
+    expect(isWithinIdentity({ colorIdentity: [] }, identity)).toBe(true)
+    expect(isWithinIdentity({ colorIdentity: ['BLACK'] }, identity)).toBe(false)
   })
 })

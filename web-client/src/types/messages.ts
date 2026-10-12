@@ -969,6 +969,13 @@ export interface LegalActionInfo {
   readonly mandatoryAttackers?: readonly EntityId[]
   /** Valid attack targets: opponent planeswalker IDs that can be attacked */
   readonly validAttackTargets?: readonly EntityId[]
+  /**
+   * Sparse per-attacker narrowing of `validAttackTargets`: an attacker listed here may attack only
+   * the targets given (a per-defender restriction rules the rest out — "can't attack unless
+   * defending player controls a Mountain", "creatures can't attack you"). An absent attacker may
+   * attack any of `validAttackTargets`.
+   */
+  readonly attackTargetsByAttacker?: Readonly<Record<EntityId, readonly EntityId[]>>
   /** Valid blocker IDs for DeclareBlockers action */
   readonly validBlockers?: readonly EntityId[]
   /** Whether this spell has X in its mana cost */
@@ -1451,6 +1458,10 @@ export interface SealedCardInfo {
   readonly cmc?: number
   /** Keyword abilities as `Keyword` enum names (`FLYING`, `FIRST_STRIKE`, …) — drives the pool search's `kw:`. */
   readonly keywords?: readonly string[]
+  /** Can be a commander on its own (CR 903.3). Absent from older servers. */
+  readonly canBeCommander?: boolean
+  /** Partner abilities by printed name (CR 702.124) — "Partner", "Choose a Background", …. */
+  readonly partnerAbilities?: readonly string[]
 }
 
 /**

@@ -51,6 +51,21 @@ describe('DeckPicker paste parsing', () => {
     expect(parsed.sideboard).toEqual({ Counterspell: 1 })
   })
 
+  it('keeps the commander in the deck, a companion on the sideboard, and drops the maybeboard', () => {
+    const parsed = parseDeckText([
+      'Commander',
+      "1 Atraxa, Praetors' Voice",
+      'Companion',
+      '1 Lurrus of the Dream-Den',
+      'Deck',
+      '1 Sol Ring',
+      'Maybeboard',
+      '1 Doubling Season',
+    ].join('\n'))
+    expect(parsed.cards).toEqual({ "Atraxa, Praetors' Voice": 1, 'Sol Ring': 1 })
+    expect(parsed.sideboard).toEqual({ 'Lurrus of the Dream-Den': 1 })
+  })
+
   it('leaves the sideboard empty when the list has no sideboard section', () => {
     expect(parseDeckText('4 Lightning Bolt').sideboard).toEqual({})
   })

@@ -2002,6 +2002,74 @@
     ]
 }
 
+// Defabricate
+{
+    "name": "Defabricate",
+    "manaCost": "{1}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Choose one —\n• Counter target artifact or enchantment spell. If that spell is countered this way, exile it instead of putting it into its owner's graveyard.\n• Counter target activated or triggered ability.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "Counter",
+                        "counterDestination": "CounterDestination.Exile"
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "artifact|enchantment",
+                                "zone": "Stack"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "description": "Counter target artifact or enchantment spell; exile it instead of putting it into its owner's graveyard"
+                },
+                {
+                    "effect": {
+                        "type": "Counter",
+                        "target": "CounterTarget.Ability"
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": {
+                                    "cardPredicates": [
+                                        "IsActivatedOrTriggeredAbility"
+                                    ]
+                                },
+                                "zone": "Stack"
+                            },
+                            "id": "t1"
+                        }
+                    ],
+                    "description": "Counter target activated or triggered ability"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "45",
+        "rarity": "UNCOMMON",
+        "artist": "Uriah Voth",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/d/7dd32168-0b9c-4633-adec-d41cf125cc35.jpg?1783920114",
+        "rulings": [
+            {
+                "date": "2022-10-14",
+                "text": "The last mode can target delayed triggered abilities. Notably, it can target the delayed triggered ability that exiles an unearthed permanent at the beginning of the next end step. If that delayed triggered ability is countered, the unearthed permanent remains on the battlefield indefinitely."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Demolition Field
 {
     "name": "Demolition Field",
@@ -2178,6 +2246,148 @@
         "imageUri": "https://cards.scryfall.io/normal/front/d/9/d9c88546-13c9-4d7e-a618-cb2ccd1dbc0f.jpg?1782699688"
     },
     "colorIdentityOverride": []
+}
+
+// Desynchronize
+{
+    "name": "Desynchronize",
+    "manaCost": "{4}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Target nonland permanent's owner puts it on their choice of the top or bottom of their library. Scry 2.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "PutOnLibraryPositionOfChoice",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "Scry",
+                    "count": 2
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "nonland permanent"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "46",
+        "artist": "Rovina Cai",
+        "flavorText": "Before Kaya could pull Teferi's spirit back, the overloaded temporal anchor failed, and he was set adrift in the currents of time.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/6/46e101e5-2b20-48dd-aac4-15a3c32a7441.jpg?1783920113"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Drafna, Founder of Lat-Nam
+{
+    "name": "Drafna, Founder of Lat-Nam",
+    "manaCost": "{1}{U}",
+    "typeLine": "Legendary Creature — Human Artificer Advisor",
+    "oracleText": "{1}{U}: Return target artifact you control to its owner's hand.\n{3}, {T}: Copy target artifact spell you control. (The copy becomes a token.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Drafna, Founder of Lat-Nam:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{U}"
+                    }
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Hand"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "artifact ctrl:you"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{1}{U}: Return target artifact you control to its owner's hand."
+            },
+            {
+                "id": "Drafna, Founder of Lat-Nam:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{3}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "CopyTargetSpell",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "artifact ctrl:you",
+                            "zone": "Stack"
+                        },
+                        "id": "t1"
+                    }
+                ],
+                "descriptionOverride": "{3}, {T}: Copy target artifact spell you control. (The copy becomes a token.)"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "47",
+        "rarity": "RARE",
+        "artist": "Lie Setiawan",
+        "flavorText": "Alongside his wife, Hurkyl, Drafna built a legacy of scholarship that endured for millennia.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/7/f7355905-2b3b-4191-a89c-a0fc1494928b.jpg?1783920112",
+        "rulings": [
+            {
+                "date": "2022-10-14",
+                "text": "A resolving copy of a permanent spell becomes a token, so the token isn't \"created.\" Effects that care about a token being created won't interact with a token that enters the battlefield because the triggered ability copied a permanent spell."
+            },
+            {
+                "date": "2022-10-14",
+                "text": "If an effect copies a prototyped spell, that copy (as well as the token it becomes on the battlefield) will have the same characteristics as the prototyped spell."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
 }
 
 // Dreams of Steel and Oil
@@ -2819,6 +3029,68 @@
     "colorIdentityOverride": [
         "GREEN"
     ]
+}
+
+// Forging the Anchor
+{
+    "name": "Forging the Anchor",
+    "manaCost": "{2}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Look at the top five cards of your library. You may reveal any number of artifact cards from among them and put the revealed cards into your hand. Put the rest on the bottom of your library in a random order.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "TopOfLibrary",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 5
+                        }
+                    },
+                    "storeAs": "looked"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "looked",
+                    "selection": "ChooseAnyNumber",
+                    "filter": "artifact",
+                    "storeSelected": "kept",
+                    "storeRemainder": "rest",
+                    "prompt": "You may reveal any number of artifact cards and put them into your hand",
+                    "showAllCards": true
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "kept",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    },
+                    "revealed": true
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "rest",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Library",
+                        "placement": "Bottom"
+                    },
+                    "order": "Random"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "50",
+        "rarity": "UNCOMMON",
+        "artist": "Liiga Smilshkalne",
+        "flavorText": "The metal turned and blossomed with Saheeli's will, each filigreed twist bringing the temporal anchor closer to completion.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/5/057f6add-1f1d-4cce-9c9d-5e59fb74d78e.jpg?1783920112"
+    }
 }
 
 // Gaea's Courser
@@ -4086,6 +4358,346 @@
     ]
 }
 
+// Hurkyl's Final Meditation
+{
+    "name": "Hurkyl's Final Meditation",
+    "manaCost": "{4}{U}{U}{U}",
+    "typeLine": "Instant",
+    "oracleText": "During turns other than yours, this spell costs {3} more to cast.\nReturn all nonland permanents to their owners' hands. End the turn. (Exile all spells and abilities from the stack, including this card. The player whose turn it is discards down to their maximum hand size. Damage wears off, and \"this turn\" and \"until end of turn\" effects end.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "BattlefieldMatching",
+                        "filter": "nonland permanent"
+                    },
+                    "storeAs": "returnAllToHand_gathered"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "returnAllToHand_gathered",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    }
+                },
+                "EndTheTurn"
+            ]
+        },
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "IncreaseGeneric",
+                    "amount": 3
+                },
+                "gating": {
+                    "type": "OnlyIf",
+                    "condition": "IsNotYourTurn"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "52",
+        "rarity": "RARE",
+        "artist": "Nephelomancer",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/5/5577f345-9577-42f8-b244-089b9a7c2e56.jpg?1783920110"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Hurkyl, Master Wizard
+{
+    "name": "Hurkyl, Master Wizard",
+    "manaCost": "{1}{U}{U}",
+    "typeLine": "Legendary Creature — Human Wizard Advisor",
+    "oracleText": "At the beginning of your end step, if you've cast a noncreature spell this turn, reveal the top five cards of your library. For each card type among noncreature spells you've cast this turn, you may put a card of that type from among the revealed cards into your hand. Put the rest on the bottom of your library in a random order.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Hurkyl, Master Wizard:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 5
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "RevealCollection",
+                            "from": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Min",
+                                    "left": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    },
+                                    "right": {
+                                        "type": "SpellsCastThisTurn",
+                                        "filter": "noncreature artifact"
+                                    }
+                                }
+                            },
+                            "filter": "artifact",
+                            "storeSelected": "selected2",
+                            "storeRemainder": "remainder2",
+                            "prompt": "You may put a artifact card into your hand"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected2",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "remainder2",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Min",
+                                    "left": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    },
+                                    "right": {
+                                        "type": "SpellsCastThisTurn",
+                                        "filter": "noncreature battle"
+                                    }
+                                }
+                            },
+                            "filter": "battle",
+                            "storeSelected": "selected4",
+                            "storeRemainder": "remainder4",
+                            "prompt": "You may put a battle card into your hand"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected4",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "remainder4",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Min",
+                                    "left": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    },
+                                    "right": {
+                                        "type": "SpellsCastThisTurn",
+                                        "filter": "noncreature enchantment"
+                                    }
+                                }
+                            },
+                            "filter": "enchantment",
+                            "storeSelected": "selected6",
+                            "storeRemainder": "remainder6",
+                            "prompt": "You may put a enchantment card into your hand"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected6",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "remainder6",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Min",
+                                    "left": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    },
+                                    "right": {
+                                        "type": "SpellsCastThisTurn",
+                                        "filter": "noncreature instant"
+                                    }
+                                }
+                            },
+                            "filter": "instant",
+                            "storeSelected": "selected8",
+                            "storeRemainder": "remainder8",
+                            "prompt": "You may put a instant card into your hand"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected8",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "remainder8",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Min",
+                                    "left": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    },
+                                    "right": {
+                                        "type": "SpellsCastThisTurn",
+                                        "filter": "noncreature kindred"
+                                    }
+                                }
+                            },
+                            "filter": "kindred",
+                            "storeSelected": "selected10",
+                            "storeRemainder": "remainder10",
+                            "prompt": "You may put a kindred card into your hand"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected10",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "remainder10",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Min",
+                                    "left": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    },
+                                    "right": {
+                                        "type": "SpellsCastThisTurn",
+                                        "filter": "noncreature planeswalker"
+                                    }
+                                }
+                            },
+                            "filter": "planeswalker",
+                            "storeSelected": "selected12",
+                            "storeRemainder": "remainder12",
+                            "prompt": "You may put a planeswalker card into your hand"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected12",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "remainder12",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Min",
+                                    "left": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    },
+                                    "right": {
+                                        "type": "SpellsCastThisTurn",
+                                        "filter": "noncreature sorcery"
+                                    }
+                                }
+                            },
+                            "filter": "sorcery",
+                            "storeSelected": "selected14",
+                            "storeRemainder": "remainder14",
+                            "prompt": "You may put a sorcery card into your hand"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected14",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "remainder14",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Bottom"
+                            },
+                            "order": "Random"
+                        }
+                    ]
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "SpellsCastThisTurn",
+                        "filter": "noncreature"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "51",
+        "rarity": "RARE",
+        "artist": "Randy Vargas",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/f/5fcee066-425f-4341-bde5-13a5bdf06f2a.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // In the Trenches
 {
     "name": "In the Trenches",
@@ -4173,6 +4785,62 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Involuntary Cooldown
+{
+    "name": "Involuntary Cooldown",
+    "manaCost": "{3}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Tap up to two target artifacts and/or creatures. Put two stun counters on each of them. (If a permanent with a stun counter would become untapped, remove one from it instead.)",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": "IterationSpace.Targets",
+            "body": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "TapUntap",
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        }
+                    },
+                    {
+                        "type": "AddCounters",
+                        "counterType": "STUN",
+                        "count": 2,
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        }
+                    }
+                ]
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "count": 2,
+                "optional": true,
+                "filter": {
+                    "baseFilter": "creature|artifact"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "53",
+        "rarity": "UNCOMMON",
+        "artist": "Eelis Kyttanen",
+        "flavorText": "\"Back to the ivory towers! This won't hold for long!\"\n—Vayor, Third Path cryomancer",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/4/d4fcaf6d-6491-4459-98b0-b3c7d43df59e.jpg?1783920111"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -4491,6 +5159,62 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Keeper of the Cadence
+{
+    "name": "Keeper of the Cadence",
+    "manaCost": "{4}{U}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "{3}: Put target artifact, instant, or sorcery card from a graveyard on the bottom of its owner's library.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 5
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Keeper of the Cadence:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}"
+                    }
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Library",
+                    "placement": "Bottom"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "artifact|instant|sorcery",
+                            "zone": "Graveyard"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "Put target artifact, instant, or sorcery card from a graveyard on the bottom of its owner's library."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "54",
+        "rarity": "UNCOMMON",
+        "artist": "Alix Branwyn",
+        "flavorText": "\"What you call magic, I call the power of memory.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/9/09200388-47c9-4472-ac9e-98f57653e084.jpg?1783920111"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -5086,6 +5810,71 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Mightstone's Animation
+{
+    "name": "Mightstone's Animation",
+    "manaCost": "{3}{U}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant artifact\nWhen this Aura enters, draw a card.\nEnchanted artifact is a creature with base power and toughness 4/4 in addition to its other types.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Mightstone's Animation:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantCardType",
+                "cardType": "CREATURE",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            },
+            {
+                "type": "SetBasePowerToughnessStatic",
+                "power": 4,
+                "toughness": 4
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "artifact"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "58",
+        "artist": "Igor Kieryluk",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/c/8c540e42-22e2-4127-bbd9-2e9200023fec.jpg?1783920107",
+        "rulings": [
+            {
+                "date": "2022-10-14",
+                "text": "The artifact retains any types, subtypes, or supertypes it has. Notably, an Equipment that becomes an artifact creature usually can't be attached to another creature. If it was attached to a creature, it becomes unattached."
+            },
+            {
+                "date": "2022-10-14",
+                "text": "If the artifact was already a creature, its base power and toughness will each become 4. This overwrites any previous effects that set the creature's base power and toughness to specific values. Any power- or toughness-setting effects that start to apply after Mightstone's Animation becomes attached to the artifact will overwrite this effect."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -6387,6 +7176,42 @@
     ]
 }
 
+// Scatter Ray
+{
+    "name": "Scatter Ray",
+    "manaCost": "{1}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Counter target artifact or creature spell unless its controller pays {4}.",
+    "script": {
+        "spellEffect": {
+            "type": "Counter",
+            "condition": {
+                "type": "CounterCondition.UnlessPaysMana",
+                "cost": "{4}"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature|artifact",
+                    "zone": "Stack"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "61",
+        "artist": "Awanqi (Angela Wang)",
+        "flavorText": "Mishra's army demanded the secrets of the Third Path. Hurkyl's followers graciously showed them.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/c/1c2852c9-d566-4824-836a-2f4c7a5148a1.jpg?1783920109"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Shoot Down
 {
     "name": "Shoot Down",
@@ -7419,6 +8244,57 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Take Flight
+{
+    "name": "Take Flight",
+    "manaCost": "{3}{U}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature gets +1/+0 and has flying and \"Whenever this creature attacks, draw a card.\"",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 0
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "FLYING"
+            },
+            {
+                "type": "GrantTriggeredAbility",
+                "ability": {
+                    "id": "Take Flight:1",
+                    "trigger": "AttackEvent",
+                    "effect": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    }
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "65",
+        "rarity": "UNCOMMON",
+        "artist": "Joshua Cairos",
+        "flavorText": "Though neither brother cared to admit it, flying the ancient thopter was their last happy moment together.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/6/46a2108e-e45e-4b21-a03b-5f644b6043be.jpg?1783920104"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -9268,6 +10144,65 @@
     ]
 }
 
+// Weakstone's Subjugation
+{
+    "name": "Weakstone's Subjugation",
+    "manaCost": "{U}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant artifact or creature\nWhen this Aura enters, you may pay {3}. If you do, tap enchanted permanent.\nEnchanted permanent doesn't untap during its controller's untap step.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Weakstone's Subjugation:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayManaCost",
+                            "cost": "{3}"
+                        }
+                    },
+                    "then": {
+                        "type": "TapUntap",
+                        "target": "EnchantedPermanent"
+                    }
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "DOESNT_UNTAP"
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature|artifact"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "72",
+        "artist": "Igor Kieryluk",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/f/ef93ac79-8575-40f8-a222-63c2ffb30f60.jpg?1783920103",
+        "rulings": [
+            {
+                "date": "2022-10-14",
+                "text": "The enchanted permanent doesn't untap during its controller's untap step even if you didn't pay {3}."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Whirling Strike
 {
     "name": "Whirling Strike",
@@ -9639,6 +10574,85 @@
     },
     "colorIdentityOverride": [
         "WHITE",
+        "BLUE"
+    ]
+}
+
+// Zephyr Sentinel
+{
+    "name": "Zephyr Sentinel",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "Flash\nFlying\nWhen this creature enters, return up to one other target creature you control to its owner's hand. If it was a Soldier, put a +1/+1 counter on this creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLASH",
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Zephyr Sentinel:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "EntityMatches",
+                                    "entity": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    },
+                                    "filter": "creature Soldier"
+                                }
+                            },
+                            "then": {
+                                "type": "AddCounters",
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "count": 1,
+                                "target": "Self"
+                            }
+                        },
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "destination": "Hand"
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "creature ctrl:you",
+                        "excludeSelf": true
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this creature enters, return up to one other target creature you control to its owner's hand. If it was a Soldier, put a +1/+1 counter on this creature."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "74",
+        "rarity": "UNCOMMON",
+        "artist": "Inkognit",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/9/f935adbb-d2e3-48d0-b38c-41f3b583fecb.jpg?1783920100"
+    },
+    "colorIdentityOverride": [
         "BLUE"
     ]
 }

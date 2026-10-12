@@ -121,6 +121,7 @@ CardPredicate.IsCreature — CardPredicate
 CardPredicate.IsDoubleFaced — CardPredicate
 CardPredicate.IsEnchantment — CardPredicate
 CardPredicate.IsInstant — CardPredicate
+CardPredicate.IsKindred — CardPredicate
 CardPredicate.IsLand — CardPredicate
 CardPredicate.IsLegendary — CardPredicate
 CardPredicate.IsMonocolored — CardPredicate

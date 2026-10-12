@@ -57,7 +57,9 @@ submission happens. The rules that keep it honest:
 - **Server lists are trusted as-is.** `validCreatures` for attackers and blockers already
   excludes tapped creatures (the engine's `MustBeUntappedAttackRule`, `getValidBlockers`), so
   `GameCard` no longer re-checks `isTapped` on top of it; the default attack defender is the first
-  living seat in `validAttackTargets`, not the first living opponent in seat order.
+  living seat in `validAttackTargets`, not the first living opponent in seat order. A sticky or
+  default defender only applies to an attacker whose `attackTargetsByAttacker` entry (when it has one)
+  lists it — `utils/attackTargets.ts` is the lookup.
 - **A client-side pre-check reads the same data the server reads.** Banding (CR 702.22c, at most
   one member without banding) is checked in the `linkBand` reducer against `ClientCard.keywords`
   — the projected keyword set `validateBands` reads — so the client only refuses a band the

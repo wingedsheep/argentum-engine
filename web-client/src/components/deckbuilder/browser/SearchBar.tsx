@@ -15,6 +15,7 @@ export function SearchBar({
   resultLabel,
   errors,
   actionHint,
+  filterChip,
 }: {
   query: string
   onQueryChange: (next: string) => void
@@ -24,6 +25,8 @@ export function SearchBar({
   errors: ParseError[]
   /** Overrides the trailing "click adds / right-click removes" hint. */
   actionHint?: React.ReactNode
+  /** A filter toggle shown beside the result count — the deckbuilder's commander-identity chip. */
+  filterChip?: React.ReactNode
 }) {
   const [helpOpen, setHelpOpen] = useState(false)
   const hasErrors = errors.length > 0
@@ -81,6 +84,7 @@ export function SearchBar({
         <option value="color">Colour</option>
         <option value="rarity">Rarity</option>
       </select>
+      {filterChip}
       <span className={styles.resultCount}>{resultLabel}</span>
       <span className={styles.cardActionHint}>
         {actionHint ?? (

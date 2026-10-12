@@ -1427,6 +1427,14 @@ class TurnManager(
         }
     }
 
+    /** See [com.wingedsheep.engine.mechanics.combat.AttackPhaseManager.legalDefendersFor]. */
+    fun legalDefendersFor(
+        state: GameState,
+        attackerId: EntityId,
+        attackingPlayer: EntityId,
+        candidates: List<EntityId>,
+    ): List<EntityId> = combatManager.legalDefendersFor(state, attackerId, attackingPlayer, candidates)
+
     fun getValidBlockers(state: GameState, playerId: EntityId): List<EntityId> {
         val battlefield = state.getBattlefield()
         val projected = state.projectedState

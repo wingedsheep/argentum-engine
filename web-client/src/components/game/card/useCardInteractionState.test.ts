@@ -54,6 +54,7 @@ function combat(overrides: Record<string, unknown>) {
     selectedAttackers: [],
     attackerTargets: {},
     validAttackTargets: [],
+    attackTargetsByAttacker: {},
     blockerAssignments: {},
     validCreatures: [],
     attackingCreatures: [],

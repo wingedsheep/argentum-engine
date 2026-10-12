@@ -2743,6 +2743,8 @@ class TriggerDetector(
                     com.wingedsheep.sdk.core.CardType.PLANESWALKER in cardComponent.typeLine.cardTypes
                 is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsBattle ->
                     cardComponent.typeLine.isBattle
+                is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsKindred ->
+                    cardComponent.typeLine.isKindred
                 is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsPermanent ->
                     cardComponent.typeLine.isPermanent
                 is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsNonland ->

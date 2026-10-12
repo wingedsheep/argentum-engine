@@ -235,6 +235,15 @@ class SelectFromCollectionExecutor(
                     }
                     return EffectResult.success(state).copy(updatedCollections = collections)
                 }
+                if (count <= 0 && !effect.showAllCards) {
+                    // "Up to zero" is no choice at all — a dynamic count that came out 0 (Hurkyl,
+                    // Master Wizard's per-type pick for a type you didn't cast) selects nothing.
+                    val collections = mutableMapOf(effect.storeSelected to emptyList<EntityId>())
+                    if (remainderName != null) {
+                        collections[remainderName] = cards
+                    }
+                    return EffectResult.success(state).copy(updatedCollections = collections)
+                }
                 val nonSelectable = if (effect.showAllCards) cards.filter { it !in eligibleCards } else emptyList()
                 createDecision(state, context, effect, eligibleCards, 0, minOf(count, eligibleCards.size), decidingPlayerId, allCards = cards, nonSelectableCards = nonSelectable, controllerPermanentColors = controllerPermanentColors)
             }

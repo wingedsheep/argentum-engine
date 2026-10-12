@@ -142,6 +142,26 @@ echo '{"type":"result","result":"SET_COMPLETE","num_turns":1,"duration_ms":1000}
         self.assertEqual(result.returncode, 0, result.stdout)
         self.assertIn("harness claude, model claude-opus-5-5", result.stdout)
 
+    def test_priority_deck_is_carried_into_fresh_sessions(self):
+        priority = self.root / "deck list.txt"
+        priority.write_text("Caesar, Legion's Emperor\nWear // Tear\n")
+        result = self.run_loop("codex:gpt-6.1-sol", str(priority))
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        prompt = (self.root / "args").read_text()
+        self.assertIn(priority.read_text(), prompt)
+        self.assertIn("overrides the global phase ordering", prompt)
+        self.assertIn("Filter the sweep's authored cards AND row-only/basic rows", prompt)
+        self.assertIn("continue the ordinary whole-set phases", prompt)
+
+    def test_invalid_priority_file_does_not_launch(self):
+        empty = self.root / "empty.txt"
+        empty.touch()
+        for path in (self.root / "missing.txt", empty, self.root):
+            result = self.run_loop("astra", str(path))
+            self.assertEqual(result.returncode, 2, result.stderr)
+            self.assertIn("readable, nonempty file", result.stderr)
+            self.assertFalse((self.root / "args").exists())
+
     def test_stuck_and_launch_failure_stop(self):
         for options in ({"verdict": "STUCK missing capability"}, {"mode": "failure"}):
             with self.subTest(options=options):

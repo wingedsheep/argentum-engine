@@ -182,6 +182,7 @@ class GameTestDriver {
         commanders: List<String> = emptyList(),
         teams: List<List<Int>>? = null,
         partners: List<String?> = emptyList(),
+        attackMode: com.wingedsheep.sdk.core.AttackMode = com.wingedsheep.sdk.core.AttackMode.MULTIPLE,
     ): List<EntityId> {
         val initializer = GameInitializer(cardRegistry)
         val result = initializer.initializeGame(
@@ -200,6 +201,7 @@ class GameTestDriver {
                 skipMulligans = skipMulligans,
                 startingPlayerIndex = startingPlayer,
                 teams = teams,
+                attackMode = attackMode,
             )
         )
 

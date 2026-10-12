@@ -387,7 +387,18 @@ sealed interface ServerMessage {
          * spelling the constructed deckbuilder's catalog ships, so the pool search's `kw:` filter
          * reads both alike.
          */
-        val keywords: List<String> = emptyList()
+        val keywords: List<String> = emptyList(),
+        /**
+         * True when this card can be a commander on its own (CR 903.3) — the Commander Draft /
+         * Sealed builder offers its crown from this. Same field as the constructed catalog's.
+         */
+        val canBeCommander: Boolean = false,
+        /**
+         * The partner abilities this card has (CR 702.124), by printed name ("Partner",
+         * "Choose a Background", …) — lets the Commander Draft / Sealed builder offer a second
+         * commander beside it. Whether a pair is legal is the deck validator's call.
+         */
+        val partnerAbilities: List<String> = emptyList(),
     )
 
     /**

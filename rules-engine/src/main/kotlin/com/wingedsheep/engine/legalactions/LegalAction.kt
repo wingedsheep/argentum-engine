@@ -89,6 +89,17 @@ data class LegalAction(
     override val validAttackers: List<EntityId>? = null,
     val mandatoryAttackers: List<EntityId>? = null,
     val validAttackTargets: List<EntityId>? = null,
+    /**
+     * Per-attacker narrowing of [validAttackTargets] (CR 508.1b–c): each attacker chooses its own
+     * defender, and a restriction such as "can't attack unless defending player controls a
+     * Mountain" (Goblin Rock Sled) or "creatures can't attack you" (Blazing Archon) rules out one
+     * defender, not the whole attack. Sparse: only attackers whose legal targets are a strict
+     * subset of [validAttackTargets] appear, listing exactly those targets in the same order; an
+     * absent attacker may attack any of [validAttackTargets]. Read it through [attackTargetsFor].
+     * Null when no attacker is narrowed — always so in a two-player game, where a creature with
+     * no legal defender is simply left out of [validAttackers].
+     */
+    val attackTargetsByAttacker: Map<EntityId, List<EntityId>>? = null,
     override val validBlockers: List<EntityId>? = null,
     val blockerMaxBlockCounts: Map<EntityId, Int>? = null,
     val mandatoryBlockerAssignments: Map<EntityId, List<EntityId>>? = null,
@@ -240,6 +251,13 @@ data class LegalAction(
 
     override val hasUnfillableTargetRequirement: Boolean
         get() = targetRequirements?.any { it.minTargets > 0 && it.validTargets.isEmpty() } ?: false
+
+    /**
+     * What [attackerId] may legally attack in this DeclareAttackers action: its entry in
+     * [attackTargetsByAttacker] when narrowed, otherwise every one of [validAttackTargets].
+     */
+    fun attackTargetsFor(attackerId: EntityId): List<EntityId> =
+        attackTargetsByAttacker?.get(attackerId) ?: validAttackTargets.orEmpty()
 }
 
 /**

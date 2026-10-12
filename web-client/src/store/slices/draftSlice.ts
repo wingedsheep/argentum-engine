@@ -84,8 +84,11 @@ export interface DraftSliceActions {
   clearDeck: () => void
   setLandCount: (landType: string, count: number) => void
   setDeck: (deck: readonly string[], landCounts: Record<string, number>) => void
-  /** Set or clear the commander for Commander Draft / Sealed lobbies. */
-  setCommander: (cardName: string | null) => void
+  /**
+   * Set the commander designation for Commander Draft / Sealed lobbies: none, one, or a partner
+   * pair (CR 702.124). Further names are ignored.
+   */
+  setCommanders: (cardNames: readonly string[]) => void
   submitSealedDeck: () => void
   unsubmitDeck: () => void
   makePick: (cardNames: string[]) => void
@@ -270,13 +273,14 @@ export const createDraftSlice: SliceCreator<DraftSlice> = (set, get) => ({
     })
   },
 
-  setCommander: (cardName) => {
+  setCommanders: (cardNames) => {
     set((state) => {
       if (!state.deckBuildingState) return state
       return {
         deckBuildingState: {
           ...state.deckBuildingState,
-          commander: cardName,
+          commander: cardNames[0] ?? null,
+          secondCommander: cardNames[1] ?? null,
         },
       }
     })
@@ -307,19 +311,27 @@ export const createDraftSlice: SliceCreator<DraftSlice> = (set, get) => ({
     // above, so only add the +1 when it isn't — otherwise the server strips one too few and
     // the pool gets allocated twice for the commander, surfacing as "not enough copies of
     // your commander" on a singleton sealed pool.
+    // A partner pair's second commander (CR 702.124) follows the same rule.
     const commander = deckBuildingState.commander
-    if (commander && !(commander in deckList)) {
-      deckList[commander] = 1
+    const secondCommander = commander ? deckBuildingState.secondCommander : null
+    const commanders = [commander, secondCommander].filter((c): c is string => !!c)
+    let commandersOutsideDeck = 0
+    for (const name of commanders) {
+      if (!(name in deckList)) {
+        deckList[name] = 1
+        commandersOutsideDeck++
+      }
     }
 
     const landCount = Object.values(deckBuildingState.landCounts).reduce((a, b) => a + b, 0)
-    const commanderAlreadyInDeck = commander != null && deckBuildingState.deck.includes(commander)
     trackEvent('sealed_deck_submitted', {
-      deck_size: deckBuildingState.deck.length + landCount + (commander && !commanderAlreadyInDeck ? 1 : 0),
+      deck_size: deckBuildingState.deck.length + landCount + commandersOutsideDeck,
       land_count: landCount,
       nonland_count: deckBuildingState.deck.length,
     })
-    getWebSocket()?.send(createSubmitSealedDeckMessage(deckList, commander))
+    getWebSocket()?.send(
+      createSubmitSealedDeckMessage(deckList, commander, undefined, undefined, undefined, secondCommander),
+    )
   },
 
   unsubmitDeck: () => {

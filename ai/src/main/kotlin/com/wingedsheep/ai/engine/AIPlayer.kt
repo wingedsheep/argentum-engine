@@ -133,9 +133,12 @@ class AIPlayer(
                         // — opponents plus their planeswalkers, minus anyone this creature can't
                         // attack). Guessing "the other player in turn order" instead is wrong the
                         // moment there is more than one, and a teammate is never a legal defender.
-                        val opponentId = attackAction?.validAttackTargets?.firstOrNull()
-                        val attackerMap = if (mandatory.isNotEmpty() && opponentId != null) {
-                            mandatory.associateWith { opponentId }
+                        // Each attacker takes a defender the engine lists for *it* — a per-defender
+                        // restriction (Goblin Rock Sled, Blazing Archon) can rule out the first one.
+                        val attackerMap = if (attackAction != null) {
+                            mandatory.mapNotNull { attacker ->
+                                attackAction.attackTargetsFor(attacker).firstOrNull()?.let { attacker to it }
+                            }.toMap()
                         } else emptyMap()
                         DeclareAttackers(playerId, attackerMap)
                     }
@@ -160,9 +163,8 @@ class AIPlayer(
                     val attackAction = simulator.getLegalActions(current, playerId)
                         .find { it.actionType == "DeclareAttackers" }
                     val extra = attackAction?.validAttackers.orEmpty().filter { it !in fallback.attackers }
-                    val defenders = attackAction?.validAttackTargets.orEmpty()
                     fallbackResult = extra.asSequence()
-                        .flatMap { attacker -> defenders.asSequence().map { attacker to it } }
+                        .flatMap { attacker -> attackAction?.attackTargetsFor(attacker).orEmpty().asSequence().map { attacker to it } }
                         .map { (attacker, defender) ->
                             processor.process(
                                 current, DeclareAttackers(playerId, fallback.attackers + (attacker to defender))

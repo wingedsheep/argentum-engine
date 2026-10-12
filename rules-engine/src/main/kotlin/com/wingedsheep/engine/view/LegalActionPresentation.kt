@@ -114,6 +114,13 @@ data class LegalActionInfo(
     val validAttackers: List<EntityId>? = null,
     val mandatoryAttackers: List<EntityId>? = null,
     val validAttackTargets: List<EntityId>? = null,
+    /**
+     * Sparse per-attacker narrowing of [validAttackTargets]: an attacker listed here may attack
+     * only the targets given (a per-defender restriction rules the others out — Goblin Rock Sled,
+     * Blazing Archon); an absent attacker may attack any of [validAttackTargets]. Null when no
+     * attacker is narrowed.
+     */
+    val attackTargetsByAttacker: Map<EntityId, List<EntityId>>? = null,
     val validBlockers: List<EntityId>? = null,
     val hasXCost: Boolean = false,
     val maxAffordableX: Int? = null,

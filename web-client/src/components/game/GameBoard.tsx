@@ -39,6 +39,7 @@ import { TargetingOverlay, ManaColorSelectionOverlay, LifeDisplay, ActiveEffects
 import { HelpDrawer, HelpDrawerButton } from '../help/HelpDrawer'
 import { markLearnSignal } from '@/learn/signals'
 import { styles } from './board/styles'
+import { canAttackTarget } from '@/utils/attackTargets'
 
 /**
  * Props for GameBoard component.
@@ -1869,8 +1870,13 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
           const unassignedCount = combatState.selectedAttackers.filter((id) => !combatState.attackerTargets[id]).length
           // Only offer players the engine says are legal attack targets — in Two-Headed Giant
           // that excludes your own teammate (you can't attack your own team).
+          // and only those at least one still-unassigned attacker may attack (the server narrows
+          // some attackers per defender — Goblin Rock Sled, Blazing Archon).
+          const unassigned = combatState.selectedAttackers.filter((id) => !combatState.attackerTargets[id])
           const living = opponents.filter(
-            (o) => !o.hasLost && combatState.validAttackTargets.includes(o.playerId),
+            (o) => !o.hasLost &&
+              combatState.validAttackTargets.includes(o.playerId) &&
+              unassigned.some((id) => canAttackTarget(combatState, id, o.playerId)),
           )
           return (
             // One panel — the question and its answers together — rather than a floating label

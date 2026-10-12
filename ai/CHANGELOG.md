@@ -28,6 +28,7 @@ Format — newest first, one bullet each:
 
 ## Changes
 
+- #3128 In multiplayer the AI sends each attacker at a defender it may legally attack (skipping a seat behind Blazing Archon, routing Goblin Rock Sled to a seat with a Mountain) instead of aiming everything at the lowest-life opponent and getting the whole attack rejected
 - #3120 AI holds flash creatures for the opponent's turn and no longer releases them for its own triggers on the stack
 - #3114 AI keeps modal double-faced spells instead of playing them as lands it doesn't need, prices surplus lands in hand near zero, and won't bounce its own land into a hand that already holds the next land drops
 - #3079 AI divides multi-block combat damage to kill what it can

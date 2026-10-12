@@ -741,7 +741,9 @@ class ConnectionHandler(
                 layout = card.layout.name,
                 isLandscape = card.isLandscapePrint,
                 cmc = card.cmc,
-                keywords = card.keywords.map { it.name }.sorted()
+                keywords = card.keywords.map { it.name }.sorted(),
+                canBeCommander = com.wingedsheep.sdk.model.CommanderEligibility.isLegalCommander(card),
+                partnerAbilities = com.wingedsheep.sdk.model.CommanderEligibility.partnerKinds(card).map { it.description },
             )
         }
     }

@@ -61,6 +61,13 @@ class CombatManager(
     fun isRestrictedFromAllDefenders(state: GameState, attackerId: EntityId, attackingPlayer: EntityId): Boolean =
         attackPhase.isRestrictedFromAllDefenders(state, attackerId, attackingPlayer)
 
+    fun legalDefendersFor(
+        state: GameState,
+        attackerId: EntityId,
+        attackingPlayer: EntityId,
+        candidates: List<EntityId>,
+    ): List<EntityId> = attackPhase.legalDefendersFor(state, attackerId, attackingPlayer, candidates)
+
     // =========================================================================
     // Declare Blockers
     // =========================================================================

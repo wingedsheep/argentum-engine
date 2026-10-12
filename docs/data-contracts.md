@@ -509,7 +509,11 @@ sealed, or premade), then one N-player game".
   mode and in any two-player game (all three modes permit the sole opponent). In game,
   `ClientGameState.attackMode` repeats it (`LEFT` / `RIGHT`; null for `MULTIPLE`) — fixed for the
   game, so only the full state carries it, never a delta — for the rail's direction header and
-  seat tags; `validAttackTargets` stays the authority on what a declaration may name.
+  seat tags; `validAttackTargets` stays the authority on what a declaration may name. Per-defender
+  restrictions narrow it per attacker (CR 508.1b–c — Goblin Rock Sled, Blazing Archon): the sparse
+  `attackTargetsByAttacker` map lists the legal targets of each attacker that may not attack all of
+  `validAttackTargets`; an attacker absent from it may attack any of them, and a creature with no
+  legal target at all is left out of `validAttackers`.
 - **Team modes — Two-Headed Giant (CR 810) and Team vs. Team (CR 808).** Both split the pod into two
   even teams and share the same controls: an optional `randomTeams` (default **`true`**) and
   `teamAssignments` (playerId → team index `0`/`1`, full map), echoed by `LobbySettings`.

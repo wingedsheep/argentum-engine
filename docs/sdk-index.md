@@ -208,6 +208,7 @@ Families:
 - `CardPredicate.IsDoubleFaced` — The card is a **double-faced card** (CR 712.1) — it has a card face on each side rather than a Magic card back.
 - `CardPredicate.IsEnchantment`
 - `CardPredicate.IsInstant`
+- `CardPredicate.IsKindred` — Kindred (formerly Tribal, CR 308) — the card type that lets a non-creature card carry creature types.
 - `CardPredicate.IsLand`
 - `CardPredicate.IsLegendary`
 - `CardPredicate.IsMonocolored`

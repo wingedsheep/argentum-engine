@@ -236,6 +236,7 @@ data class GameObjectFilter(
         val Battle = GameObjectFilter(cardPredicates = listOf(CardPredicate.IsBattle))
         val Instant = GameObjectFilter(cardPredicates = listOf(CardPredicate.IsInstant))
         val Sorcery = GameObjectFilter(cardPredicates = listOf(CardPredicate.IsSorcery))
+        val Kindred = GameObjectFilter(cardPredicates = listOf(CardPredicate.IsKindred))
         val Permanent = GameObjectFilter(cardPredicates = listOf(CardPredicate.IsPermanent))
         val Nonland = GameObjectFilter(cardPredicates = listOf(CardPredicate.IsNonland))
         val NonlandPermanent = GameObjectFilter(

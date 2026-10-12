@@ -193,6 +193,7 @@ class GrantedKeywordResolver(
             CardPredicate.IsEnchantment -> cardDef.typeLine.isEnchantment
             CardPredicate.IsInstant -> cardDef.typeLine.isInstant
             CardPredicate.IsSorcery -> cardDef.typeLine.isSorcery
+            CardPredicate.IsKindred -> cardDef.typeLine.isKindred
             CardPredicate.IsLand -> cardDef.typeLine.isLand
             CardPredicate.IsNonland -> !cardDef.typeLine.isLand
             CardPredicate.IsLegendary -> cardDef.typeLine.isLegendary

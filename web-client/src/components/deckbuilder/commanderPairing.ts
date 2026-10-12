@@ -9,7 +9,7 @@
  */
 import type { CardSummary } from './cardFilter'
 
-type CommanderCard = Pick<CardSummary, 'supertypes' | 'cardTypes' | 'subtypes' | 'canBeCommander' | 'partnerAbilities'>
+export type CommanderCard = Pick<CardSummary, 'supertypes' | 'cardTypes' | 'subtypes' | 'canBeCommander' | 'partnerAbilities'>
 
 /** Whether a card is a legendary Background enchantment — the partner a "Choose a Background" takes. */
 export function isLegendaryBackground(card: CommanderCard): boolean {
@@ -99,4 +99,25 @@ export function toggleCommanderDesignation(
   if (first === undefined) return [name]
   if (current.length === 1 && canPair(first, name)) return [first, name]
   return [name]
+}
+
+type WithIdentity = { readonly colorIdentity?: readonly string[] | undefined }
+
+/**
+ * The colour identity a deck's commander(s) allow (CR 903.4): the union of every commander's
+ * identity — a partner pair plays both halves' colours. Empty means colourless.
+ */
+export function commanderIdentityOf(commanders: readonly WithIdentity[]): ReadonlySet<string> {
+  const out = new Set<string>()
+  for (const c of commanders) for (const color of c.colorIdentity ?? []) out.add(color)
+  return out
+}
+
+/**
+ * Whether every colour in [card]'s identity lies inside [identity] — the client-side mirror of the
+ * server's COLOR_IDENTITY_VIOLATION check. Builders use it only to filter what they *show*; the
+ * server still validates the deck.
+ */
+export function isWithinIdentity(card: WithIdentity, identity: ReadonlySet<string>): boolean {
+  return (card.colorIdentity ?? []).every((color) => identity.has(color))
 }

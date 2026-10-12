@@ -56,11 +56,20 @@ import {
 import {
   canonicalNameIn,
   designatedCommanders,
+  inferCommanders,
   parseArenaDeckList,
   resolveAgainstCatalog,
+  type InferredCommanderSource,
+  type ParseResult,
   type ResolveResult,
 } from './parseArenaDeck'
-import { canCrown, canPairAsCommanders, toggleCommanderDesignation } from './commanderPairing'
+import {
+  canCrown,
+  canPairAsCommanders,
+  commanderIdentityOf,
+  isWithinIdentity,
+  toggleCommanderDesignation,
+} from './commanderPairing'
 import {
   encodeSharedDeck,
   decodeSharedDeck,
@@ -618,20 +627,39 @@ export function DeckbuilderPage() {
   // Basic lands are hidden from the catalog grid — users add them from the sticky deck-list
   // rows or via "Suggest basic lands", and clogging the search results with five always-legal
   // names that match every color/land filter is just noise.
+  // In a commander format with a commander designated, the catalogue also narrows to cards inside
+  // the commander(s)' combined colour identity (CR 903.4) — the same rule, and the same helpers,
+  // as the Commander Draft / Sealed builder's "♛ Identity" chip. On by default and back on
+  // whenever the designation changes; the chip in the search bar turns it off.
+  const designatedCommanderCards = useCommanderCards(commanders, catalogIndex)
+  const catalogIdentity = useMemo(
+    () => (isCommanderFormat && designatedCommanderCards.length > 0 ? commanderIdentityOf(designatedCommanderCards) : null),
+    [isCommanderFormat, designatedCommanderCards],
+  )
+  const [restrictToIdentity, setRestrictToIdentity] = useState(true)
+  const commandersKey = commanders.join('\n')
+  useEffect(() => {
+    if (commandersKey) setRestrictToIdentity(true)
+  }, [commandersKey])
+  const identityFilterActive = catalogIdentity != null && restrictToIdentity
+
   const filtered = useMemo(() => {
     let result = catalog.filter((c) => !c.basicLand && predicate(c))
     if (activeFormat) {
       result = result.filter((c) => c.legalFormats?.includes(activeFormat) ?? false)
     }
+    if (identityFilterActive && catalogIdentity) {
+      result = result.filter((c) => isWithinIdentity(c, catalogIdentity))
+    }
     return sortCards(result, sortMode)
-  }, [catalog, predicate, sortMode, activeFormat])
+  }, [catalog, predicate, sortMode, activeFormat, identityFilterActive, catalogIdentity])
 
   // Pager: cap rendered tiles so a 1000+ card catalogue doesn't melt the browser.
   // Reset whenever the result set changes (new query / filter / sort).
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
   useEffect(() => {
     setVisibleCount(PAGE_SIZE)
-  }, [query, sortMode, activeFormat])
+  }, [query, sortMode, activeFormat, identityFilterActive, catalogIdentity])
 
   // Reprint override map: card name → the matching set's printing (ref + art). Populated
   // lazily via /api/printings whenever an `s:` filter is active and the visible set of
@@ -1127,18 +1155,27 @@ export function DeckbuilderPage() {
     importedCommanders: readonly string[],
     importedSideboard: Record<string, number> = {},
   ) => {
-    setDeckCards(cards)
-    // The Arena/MTGO list's "Sideboard"/"SB:" section becomes the wish sideboard (CR 100.4a).
-    setSideboardCards(importedSideboard)
-    // The commander designation rides along when the source list had a Commander
-    // section (both, for a partner pair); otherwise reset so a stale value from the previous
-    // deck doesn't leak.
-    setCommanders(importedCommanders)
-    setActiveDeckId(null)
-    setPinnedPrintings({})
-    setCoverCard(null)
-    if (suggestedName) setDeckName(suggestedName)
-    navigate(`/deckbuilder${searchSuffix()}`)
+    // A list that designates a commander is a Commander deck: switch the format when the current
+    // one has no commander, or the "clear the commander outside commander formats" guard would
+    // drop the designation the moment it lands. One transition, like the shared-deck load, so
+    // the new `fmt` and the commanders commit together and that guard never sees them apart.
+    const params = new URLSearchParams(searchParams)
+    if (importedCommanders.length > 0 && !isCommanderFormat) params.set('fmt', 'COMMANDER')
+    const nextSearch = params.toString()
+    startTransition(() => {
+      setDeckCards(cards)
+      // The Arena/MTGO list's "Sideboard"/"SB:" section becomes the wish sideboard (CR 100.4a).
+      setSideboardCards(importedSideboard)
+      // The commander designation rides along when the source list had a Commander
+      // section (both, for a partner pair); otherwise reset so a stale value from the previous
+      // deck doesn't leak.
+      setCommanders(importedCommanders)
+      setActiveDeckId(null)
+      setPinnedPrintings({})
+      setCoverCard(null)
+      if (suggestedName) setDeckName(suggestedName)
+      navigate(`/deckbuilder${nextSearch ? `?${nextSearch}` : ''}`)
+    })
     setImportOpen(false)
   }
 
@@ -1425,6 +1462,23 @@ export function DeckbuilderPage() {
                   ? 'Loading…'
                   : `Showing ${displayed.length} of ${filtered.length}`
               }
+              filterChip={
+                catalogIdentity != null ? (
+                  <button
+                    type="button"
+                    className={restrictToIdentity ? styles.identityChipOn : styles.identityChip}
+                    aria-pressed={restrictToIdentity}
+                    onClick={() => setRestrictToIdentity((v) => !v)}
+                    title={
+                      restrictToIdentity
+                        ? `Showing only cards inside ${commanders.join(' and ')}'s colour identity. Click to show every card.`
+                        : `Show only cards inside ${commanders.join(' and ')}'s colour identity.`
+                    }
+                  >
+                    ♛ Identity {restrictToIdentity ? 'on' : 'off'}
+                  </button>
+                ) : undefined
+              }
             />
             <CardGrid
               cards={displayed}
@@ -1573,6 +1627,7 @@ export function DeckbuilderPage() {
       {importOpen && (
         <ImportDeckModal
           catalog={catalog}
+          isCommanderFormat={isCommanderFormat}
           hasExisting={Object.keys(deckCards).length > 0}
           onCancel={() => setImportOpen(false)}
           onImport={handleImport}
@@ -1583,6 +1638,7 @@ export function DeckbuilderPage() {
         <BulkEditDeckModal
           deckCards={deckCards}
           commanders={commanders}
+          isCommanderFormat={isCommanderFormat}
           catalog={catalog}
           catalogIndex={catalogIndex}
           onClose={() => setBulkEditOpen(false)}
@@ -1905,13 +1961,46 @@ const IMPORT_PLACEHOLDER = `Deck
 Sideboard
 2 Disenchant`
 
+interface ImportPreviewModel {
+  parsed: ParseResult
+  resolved: ResolveResult
+  /** Where the commander(s) came from when the list didn't say (MTGO / Moxfield exports). */
+  inferredFrom: InferredCommanderSource | null
+  /** The commanders the import will designate, in catalogue casing. */
+  commanders: string[]
+}
+
+/**
+ * Parse pasted deck text for the import and bulk-edit dialogs: read every line shape the parser
+ * knows, resolve a commander the export left implicit ([inferCommanders]), and match the commander
+ * and main-deck entries against the catalogue. Commander entries are merged into the resolved list
+ * — the commander is also a card of the deck, carrying the crown.
+ */
+function buildImportPreview(
+  text: string,
+  catalog: CardSummary[],
+  commanderFormat: boolean,
+): ImportPreviewModel | null {
+  if (text.trim() === '') return null
+  const byName = new Map(catalog.map((c) => [c.name.toLowerCase(), c]))
+  const { parsed, inferredFrom } = inferCommanders(parseArenaDeckList(text), {
+    commanderFormat,
+    lookup: (name) => byName.get(name.toLowerCase()),
+  })
+  const resolved = resolveAgainstCatalog([...parsed.commander, ...parsed.entries], catalog)
+  const commanders = designatedCommanders(parsed.commander, canonicalNameIn(catalog))
+  return { parsed, resolved, inferredFrom, commanders }
+}
+
 function ImportDeckModal({
   catalog,
+  isCommanderFormat,
   hasExisting,
   onCancel,
   onImport,
 }: {
   catalog: CardSummary[]
+  isCommanderFormat: boolean
   hasExisting: boolean
   onCancel: () => void
   onImport: (
@@ -1924,19 +2013,11 @@ function ImportDeckModal({
   const [text, setText] = useState('')
 
   // Re-parse on every keystroke. The catalog is fixed for the modal lifetime,
-  // so only the text input drives the preview. Commander entries are merged
-  // into the main entries so they show up in the catalogue resolution and
-  // land in the imported deck list (the commander itself is also a card in
-  // the deck — see designation logic below).
-  const preview = useMemo(() => {
-    if (text.trim() === '') return null
-    const parsed = parseArenaDeckList(text)
-    const resolved = resolveAgainstCatalog(
-      [...parsed.commander, ...parsed.entries],
-      catalog,
-    )
-    return { parsed, resolved }
-  }, [text, catalog])
+  // so only the text input drives the preview.
+  const preview = useMemo(
+    () => buildImportPreview(text, catalog, isCommanderFormat),
+    [text, catalog, isCommanderFormat],
+  )
 
   const canImport = !!preview && preview.resolved.totalCards > 0
 
@@ -1952,14 +2033,18 @@ function ImportDeckModal({
     // reflects the full intended list. Unknown cards render as placeholder
     // rows in the deck list and are flagged by the validator.
     const merged = { ...preview.resolved.deckCards, ...preview.resolved.unmatchedCards }
-    // The first two distinct entries under a `Commander` header become the designation (a
-    // partner pair); any further ones stay ordinary deck cards. Canonical (catalogue) casing.
-    const commanderNames = designatedCommanders(preview.parsed.commander, canonicalNameIn(catalog))
     // Resolve the "Sideboard"/"SB:" section against the catalog the same way as the main deck,
     // so the imported sideboard becomes the wish sideboard (unknown cards survive as placeholders).
-    const sideResolved = resolveAgainstCatalog(preview.parsed.sideboard, catalog)
+    // A companion starts the game outside it (CR 702.139a), so it rides on the sideboard too;
+    // the companion rules themselves aren't enforced yet (the preview says so).
+    const sideResolved = resolveAgainstCatalog(
+      [...preview.parsed.sideboard, ...preview.parsed.companion],
+      catalog,
+    )
     const sideboard = { ...sideResolved.deckCards, ...sideResolved.unmatchedCards }
-    onImport(merged, preview.parsed.deckName ?? null, commanderNames, sideboard)
+    // The first two distinct commander entries become the designation (a partner pair); any
+    // further ones stay ordinary deck cards. Canonical (catalogue) casing.
+    onImport(merged, preview.parsed.deckName ?? null, preview.commanders, sideboard)
   }
 
   return (
@@ -1973,12 +2058,16 @@ function ImportDeckModal({
           </button>
         </div>
         <p className={styles.importHint}>
-          Paste a deck list in <strong>plain text</strong>, <strong>MTG Arena</strong>, or{' '}
-          <strong>Moxfield</strong> format — the parser detects all three. Each line is{' '}
-          <code>count name</code>, optionally followed by <code>(SET) NUM</code> and Moxfield
-          decorations (<code>*F*</code>, <code>*A*</code>, <code>#tag</code>). Section headers like{' '}
-          <code>Deck</code>, <code>Sideboard</code>, <code>Commander</code> are recognised; lines
-          starting with <code>//</code> or <code>#</code> are comments.
+          Paste an export from <strong>MTG Arena</strong>, <strong>MTGO</strong>,{' '}
+          <strong>Moxfield</strong>, <strong>Archidekt</strong>, <strong>TappedOut</strong>,{' '}
+          <strong>deckstats</strong> or plain text — the parser detects them. Each line is{' '}
+          <code>count name</code>, optionally followed by <code>(SET) NUM</code> and site
+          decorations (<code>*F*</code>, <code>#tag</code>, Archidekt <code>[Category]</code>).
+          Headers like <code>Deck</code>, <code>Sideboard</code>, <code>Commander</code>,{' '}
+          <code>Companion</code> and <code>Maybeboard</code> are recognised. A commander can be
+          marked by its section, an Archidekt <code>Commander</code> category or <code>*CMDR*</code>;
+          in a 100-card list, a one- or two-card sideboard of legal commanders is read as the
+          commander(s).
         </p>
         <textarea
           className={styles.importTextarea}
@@ -2008,16 +2097,10 @@ function ImportDeckModal({
   )
 }
 
-function ImportPreview({
-  preview,
-}: {
-  preview: {
-    parsed: ReturnType<typeof parseArenaDeckList>
-    resolved: ResolveResult
-  }
-}) {
-  const { parsed, resolved } = preview
+function ImportPreview({ preview }: { preview: ImportPreviewModel }) {
+  const { parsed, resolved, inferredFrom, commanders } = preview
   const issueCount = parsed.errors.length + resolved.unmatched.length + resolved.truncated.length
+  const countOf = (list: readonly { count: number }[]) => list.reduce((a, e) => a + e.count, 0)
   return (
     <div className={styles.importPreview}>
       <div className={styles.importSummary}>
@@ -2027,13 +2110,48 @@ function ImportPreview({
             ? ` of ${resolved.totalCards} (${resolved.totalCards - resolved.matchedCards} placeholder)`
             : ''}
         </span>
+        {commanders.length > 0 && (
+          <span className={styles.importMutedBadge}>
+            ♛ {commanders.join(' + ')}
+          </span>
+        )}
         {parsed.sideboard.length > 0 && (
           <span className={styles.importMutedBadge}>
-            sideboard ({parsed.sideboard.reduce((a, e) => a + e.count, 0)})
+            sideboard ({countOf(parsed.sideboard)})
           </span>
         )}
         {issueCount > 0 && <span className={styles.importBadBadge}>{issueCount} issue{issueCount === 1 ? '' : 's'}</span>}
       </div>
+
+      {inferredFrom && (
+        <p className={styles.importNote}>
+          No commander was marked, so {commanders.join(' and ')}{' '}
+          {inferredFrom === 'sideboard' ? 'on the sideboard' : 'in the last block of the list'}{' '}
+          {commanders.length > 1 ? 'are' : 'is'} taken as the commander{commanders.length > 1 ? 's' : ''}
+          {' '}— the way MTGO and Moxfield exports list them. Click the crown in the deck list to change it.
+        </p>
+      )}
+
+      {parsed.companion.length > 0 && (
+        <p className={styles.importNote}>
+          Companion {parsed.companion.map((e) => e.name).join(', ')} is kept on the sideboard.
+          Companion rules (the deck-building condition and putting it into your hand) aren&rsquo;t
+          supported yet.
+        </p>
+      )}
+
+      {parsed.excluded.length > 0 && (
+        <details className={styles.importDetails}>
+          <summary>Maybeboard skipped ({countOf(parsed.excluded)})</summary>
+          <ul>
+            {parsed.excluded.map((e) => (
+              <li key={`${e.line}-${e.raw}`}>
+                Line {e.line}: <code>{e.raw}</code>
+              </li>
+            ))}
+          </ul>
+        </details>
+      )}
 
       {resolved.unmatched.length > 0 && (
         <details className={styles.importDetails} open>
@@ -2051,8 +2169,8 @@ function ImportPreview({
       )}
 
       {parsed.errors.length > 0 && (
-        <details className={styles.importDetails}>
-          <summary>Unparseable lines ({parsed.errors.length})</summary>
+        <details className={styles.importDetails} open>
+          <summary>Skipped — lines not read as cards ({parsed.errors.length})</summary>
           <ul>
             {parsed.errors.map((e) => (
               <li key={`${e.line}-${e.raw}`}>
@@ -2096,6 +2214,7 @@ const EXPORT_FORMATS: Array<{ value: ExportFormat; label: string; hint: string }
 function BulkEditDeckModal({
   deckCards,
   commanders,
+  isCommanderFormat,
   catalog,
   catalogIndex,
   onClose,
@@ -2103,6 +2222,7 @@ function BulkEditDeckModal({
 }: {
   deckCards: Record<string, number>
   commanders: readonly string[]
+  isCommanderFormat: boolean
   catalog: CardSummary[]
   catalogIndex: Record<string, CardSummary>
   onClose: () => void
@@ -2117,19 +2237,11 @@ function BulkEditDeckModal({
   const [text, setText] = useState(rendered.text)
   const [copied, setCopied] = useState(false)
 
-  // Parse-and-resolve mirrors the import flow so both modals stay consistent.
-  // The parser is format-agnostic and accepts plain / Arena / Moxfield input.
-  // Commander entries are merged into the resolved set so the user sees them
-  // in the matched/unmatched preview just like main-deck cards.
-  const preview = useMemo(() => {
-    if (text.trim() === '') return null
-    const parsed = parseArenaDeckList(text)
-    const resolved = resolveAgainstCatalog(
-      [...parsed.commander, ...parsed.entries],
-      catalog,
-    )
-    return { parsed, resolved }
-  }, [text, catalog])
+  // Parse-and-resolve is the import flow's, so both modals read the same shapes.
+  const preview = useMemo(
+    () => buildImportPreview(text, catalog, isCommanderFormat),
+    [text, catalog, isCommanderFormat],
+  )
 
   const dirty = text !== rendered.text
   const canApply = !!preview && preview.resolved.totalCards > 0
@@ -2161,7 +2273,7 @@ function BulkEditDeckModal({
     if (!preview || !canApply) return
     if (!window.confirm('Replace your current deck contents with this list?')) return
     const merged = { ...preview.resolved.deckCards, ...preview.resolved.unmatchedCards }
-    onApply(merged, designatedCommanders(preview.parsed.commander, canonicalNameIn(catalog)))
+    onApply(merged, preview.commanders)
   }
 
   const formatHint = EXPORT_FORMATS.find((f) => f.value === format)?.hint ?? ''

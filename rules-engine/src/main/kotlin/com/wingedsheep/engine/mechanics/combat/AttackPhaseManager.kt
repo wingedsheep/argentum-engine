@@ -643,6 +643,24 @@ internal class AttackPhaseManager(
         return attackDefenderRules.any { it.restrictsAllDefenders(ctx) }
     }
 
+    /**
+     * The members of [candidates] (players, planeswalkers, battles) [attackerId] may legally attack
+     * under the per-defender rules — the same [attackDefenderRules] [declareAttackers] enforces, so
+     * a defender this returns never makes a declaration fail on its own (CR 508.1b–c: each attacker
+     * chooses its own defender, and a restriction such as "can't attack unless defending player
+     * controls a Mountain" or "creatures can't attack you" is about one particular defender).
+     * Order is preserved.
+     */
+    fun legalDefendersFor(
+        state: GameState,
+        attackerId: EntityId,
+        attackingPlayer: EntityId,
+        candidates: List<EntityId>,
+    ): List<EntityId> {
+        val ctx = AttackCheckContext(state, state.projectedState, attackerId, attackingPlayer, cardRegistry)
+        return candidates.filter { defenderId -> attackDefenderRules.all { it.check(ctx, defenderId) == null } }
+    }
+
     // =========================================================================
     // Private validation
     // =========================================================================

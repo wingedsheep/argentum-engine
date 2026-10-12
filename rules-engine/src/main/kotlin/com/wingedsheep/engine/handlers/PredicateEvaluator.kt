@@ -334,6 +334,7 @@ class PredicateEvaluator(
             CardPredicate.IsSorcery -> typeLine?.isSorcery
             CardPredicate.IsPlaneswalker -> typeLine?.cardTypes?.contains(CardType.PLANESWALKER)
             CardPredicate.IsBattle -> typeLine?.isBattle
+            CardPredicate.IsKindred -> typeLine?.isKindred
             CardPredicate.IsPermanent -> typeLine?.isPermanent
             CardPredicate.IsLegendary -> typeLine?.isLegendary
             CardPredicate.IsSnow -> typeLine?.isSnow
@@ -772,6 +773,7 @@ class PredicateEvaluator(
             CardPredicate.IsEnchantment -> "ENCHANTMENT" in types
             CardPredicate.IsPlaneswalker -> "PLANESWALKER" in types
             CardPredicate.IsBattle -> "BATTLE" in types
+            CardPredicate.IsKindred -> "KINDRED" in types
             CardPredicate.IsInstant -> "INSTANT" in types
             CardPredicate.IsSorcery -> "SORCERY" in types
             // Adventure-ness is a static characteristic of the whole card (not a projected type),
@@ -2494,6 +2496,7 @@ class PredicateEvaluator(
             CardPredicate.IsEnchantment -> typeLine.isEnchantment
             CardPredicate.IsPlaneswalker -> com.wingedsheep.sdk.core.CardType.PLANESWALKER in typeLine.cardTypes
             CardPredicate.IsBattle -> typeLine.isBattle
+            CardPredicate.IsKindred -> typeLine.isKindred
             CardPredicate.IsInstant -> typeLine.isInstant
             CardPredicate.IsSorcery -> typeLine.isSorcery
             // A cast-spell record stores only the resolved characteristics, not the card's layout,

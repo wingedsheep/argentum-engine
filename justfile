@@ -138,13 +138,15 @@ arena-report DIR:
 # readable log per game — board, hand, every action, and what was on offer when the AI passed.
 # For reading where the AI misplays; logs land in ai/build/game-logs/. AGENT defaults to `live`
 # (AiProfile.LIVE, what real players face), so the logs don't resurface misplays it already fixes.
-# SEATS > 2 plays a Free-for-All game (attack MULTIPLE), e.g. `just ai-game-logs 1 20261013 live 4`.
+# SEATS > 2 plays a Free-for-All game, e.g. `just ai-game-logs 1 20261013 live 4`. ATTACK picks its
+# attack rule (case-insensitive): LEFT (default — the FFA lobby's non-Commander rule, CR 803.1a), RIGHT
+# (CR 803.1b), or MULTIPLE / ALL (attack any opponent, CR 802), e.g. `just ai-game-logs 1 20261013 live 4 all`.
 [group: 'ai']
-ai-game-logs GAMES="24" SEED="20261009" AGENT="live" SEATS="2":
+ai-game-logs GAMES="24" SEED="20261009" AGENT="live" SEATS="2" ATTACK="LEFT":
     rm -rf ai/build/game-logs
     scripts/gradle-locked :ai:test --tests "*.GameLogBenchmark" -Dbenchmark=true -DgameLog=true \
         -DgameLogGames={{GAMES}} -DgameLogSeed={{SEED}} -DgameLogAgent={{AGENT}} -DgameLogSeats={{SEATS}} \
-        -DgameLogDir={{justfile_directory()}}/ai/build/game-logs
+        -DgameLogAttackMode={{ATTACK}} -DgameLogDir={{justfile_directory()}}/ai/build/game-logs
 
 # ECL apprentice promotion ladder. Artifacts are installed outside the repository and selected with
 # -Dargentum.ai.apprentice.dir; missing or invalid files safely use the production evaluator.
@@ -263,8 +265,8 @@ loops *ARGS:
 # Waits out subscription usage limits; stop with `touch .claude/loop-runs/<code>.stop`.
 # Implement a set: set-loop ecl sonnet|opus|astra|codex:<model-id>|pick; no args shows help
 [group: 'ai']
-set-loop CODE="" MODEL="":
-    scripts/set-loop "{{CODE}}" "{{MODEL}}"
+set-loop CODE="" MODEL="" PRIORITY="":
+    scripts/set-loop "{{CODE}}" "{{MODEL}}" "{{PRIORITY}}"
 
 # Waits out subscription usage limits; stop with `touch .claude/loop-runs/commander.stop`.
 # Make EDHREC's top Commander decks playable, one deck at a time: commander-loop [model] [top]
