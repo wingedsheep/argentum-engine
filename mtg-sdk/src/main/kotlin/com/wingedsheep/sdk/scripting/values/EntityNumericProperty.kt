@@ -40,10 +40,9 @@ sealed interface EntityNumericProperty {
     }
 
     /**
-     * The entity's printed **base** power — its power before counters, Auras, Equipment, anthems,
-     * and any other continuous modification. Reads the fixed
-     * [com.wingedsheep.sdk.model.CreatureStats.basePower] assigned when the card was printed; a
-     * creature with characteristic-defining `*`/CDA power has no fixed base and reads 0.
+     * The entity's **base** power — its power after copy effects, characteristic-defining abilities
+     * and effects that set power (layers 1–7b), before counters, Auras, Equipment, anthems and any
+     * other modification. Off the battlefield it is the printed (or CDA-evaluated) power.
      *
      * This is the *same* notion of "base power" that [com.wingedsheep.sdk.scripting.predicates
      * .CardPredicate.PowerGreaterThanBase] tests against, so pairing the two stays consistent:
@@ -58,8 +57,7 @@ sealed interface EntityNumericProperty {
     }
 
     /**
-     * The entity's printed **base** toughness — the toughness sibling of [BasePower]. Reads the
-     * fixed [com.wingedsheep.sdk.model.CreatureStats.baseToughness]; `*`/CDA toughness reads 0.
+     * The entity's **base** toughness — the toughness sibling of [BasePower], read the same way.
      */
     @SerialName("BaseToughness")
     @Serializable

@@ -30,6 +30,11 @@ import com.wingedsheep.sdk.model.Deck
  *
  * Sideboard and Companion sections are recognised but currently dropped — there's no place to
  * put them in [Deck] yet.
+ *
+ * Not the import path players use: pasted lists are parsed client-side by
+ * `web-client/src/components/deckbuilder/parseArenaDeck.ts`, which also reads the Archidekt /
+ * TappedOut / deckstats markers and infers an MTGO-style sideboard commander. Nothing in
+ * `main` calls this object; if a server endpoint ever does, port those rules here first.
  */
 object MtgaDeckFormat {
 

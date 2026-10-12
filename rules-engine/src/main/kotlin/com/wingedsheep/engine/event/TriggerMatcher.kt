@@ -1550,10 +1550,11 @@ class TriggerMatcher(
             }
             is com.wingedsheep.sdk.scripting.predicates.CardPredicate.PowerGreaterThanBase -> {
                 // Self-relative: last-known/projected power at event time vs the object's own
-                // printed base power. Face-down (base 2/2, power 2) never exceeds its base.
+                // effective (layer-7b) base power, printed base once it has no projection entry.
+                // Face-down (base 2/2, power 2) never exceeds its base.
                 if (isFaceDown) false
                 else {
-                    val basePower = cardComponent.baseStats?.basePower
+                    val basePower = projected.getBasePower(entityId) ?: cardComponent.baseStats?.basePower
                     val power = lastKnownPower ?: projected.getPower(entityId) ?: basePower
                     basePower != null && power != null && power > basePower
                 }

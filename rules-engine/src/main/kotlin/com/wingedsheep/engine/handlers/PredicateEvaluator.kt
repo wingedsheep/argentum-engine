@@ -1084,12 +1084,14 @@ class PredicateEvaluator(
             }
 
             CardPredicate.PowerGreaterThanBase -> {
-                // Self-relative: current (projected) power vs the object's own printed base power.
-                // A +1/+1 counter, an anthem, or any temporary pump raises projected power above
-                // base and qualifies; a shrunk/unmodified creature does not. No projected power
-                // (off-battlefield) or no fixed base (*/CDA power) → not greater.
-                val basePower = card.baseStats?.basePower ?: return false
-                val currentPower = projectedValues?.power ?: basePower
+                // Self-relative: current (projected) power vs the object's own effective base power
+                // — the layer-7b snapshot, so a CDA, a copy or a "base power is N" effect sets the
+                // base, while a +1/+1 counter, an anthem or a temporary pump raises power above it.
+                // An intermediate projection built before layer 7 has no snapshot yet and falls back
+                // to the printed base. No projection entry (off-battlefield) → not greater.
+                val values = projectedValues ?: return false
+                val currentPower = values.power ?: return false
+                val basePower = values.basePower ?: card.baseStats?.basePower ?: return false
                 currentPower > basePower
             }
 

@@ -10,6 +10,7 @@
  */
 import type { SealedCardInfo } from '@/types'
 import type { CardSummary } from '../deckbuilder/cardFilter'
+import type { CommanderCard } from '../deckbuilder/commanderPairing'
 import { parseManaCost } from '@/utils/manaCost'
 
 /** Card types (CR 205.2a) in the engine's uppercase spelling. `Tribal` is Kindred's old name. */
@@ -116,5 +117,21 @@ export function poolCardToSummary(card: SealedCardInfo): CardSummary {
     backFaceImageUri: card.backFaceImageUri ?? null,
     ...(card.layout !== undefined ? { layout: card.layout } : {}),
     ...(card.isLandscape !== undefined ? { isLandscape: card.isLandscape } : {}),
+    ...(card.canBeCommander !== undefined ? { canBeCommander: card.canBeCommander } : {}),
+    ...(card.partnerAbilities ? { partnerAbilities: [...card.partnerAbilities] } : {}),
+  }
+}
+
+/**
+ * The commander-pairing view of a pool card (`commanderPairing.ts`'s helpers). Front face only:
+ * whether a card can lead a deck, or is a Background / Time Lord Doctor partner, is read off the
+ * face it sits in the command zone with — a back face's types don't count.
+ */
+export function poolCardCommanderView(card: SealedCardInfo): CommanderCard {
+  const front = parseTypeLine(card.typeLine)
+  return {
+    ...front,
+    ...(card.canBeCommander !== undefined ? { canBeCommander: card.canBeCommander } : {}),
+    ...(card.partnerAbilities ? { partnerAbilities: [...card.partnerAbilities] } : {}),
   }
 }

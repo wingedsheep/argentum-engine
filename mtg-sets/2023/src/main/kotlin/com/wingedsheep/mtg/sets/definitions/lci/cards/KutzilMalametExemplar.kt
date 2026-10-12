@@ -26,7 +26,7 @@ import com.wingedsheep.sdk.dsl.Triggers
  *  - The draw is an [OneOrMoreDealCombatDamageToPlayerEvent] batch trigger (CR 603.2c — fires once
  *    per combat-damage step per damaged player, not once per creature) whose `sourceFilter` is
  *    `GameObjectFilter.Creature.powerGreaterThanBase()`: each qualifying creature's current
- *    (projected) power must exceed its own printed base power. A +1/+1 counter or an anthem both
+ *    (projected) power must exceed its own base power. A +1/+1 counter or an anthem both
  *    raise power above base and qualify; an unmodified 3/3 does not. "You control" is implicit in
  *    the batch grouping (events are grouped by the damage source's controller and matched to this
  *    observer's controller). Draws exactly one card regardless of how many qualifying creatures

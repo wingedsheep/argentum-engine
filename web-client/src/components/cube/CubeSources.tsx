@@ -387,7 +387,8 @@ export function PastePane({
   const preview = useMemo(() => {
     if (text.trim() === '') return null
     const parsed = parseArenaDeckList(text)
-    const resolved = resolveAgainstCatalog(parsed.entries, catalog as CardSummary[])
+    // A commander tagged as such (an Archidekt `Commander` category, `*CMDR*`) is still a cube card.
+    const resolved = resolveAgainstCatalog([...parsed.commander, ...parsed.entries], catalog as CardSummary[])
     return { parsed, resolved }
   }, [text, catalog])
 

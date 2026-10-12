@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import type { SealedCardInfo } from '@/types'
 import { parseQuery } from '../deckbuilder/query'
-import { parseTypeLine, poolCardToSummary } from './poolCardSummary'
+import { parseTypeLine, poolCardCommanderView, poolCardToSummary } from './poolCardSummary'
 
 function card(overrides: Partial<SealedCardInfo> & { name: string; typeLine: string }): SealedCardInfo {
   return {
@@ -132,5 +132,26 @@ describe('pool search', () => {
 
   it('reports unknown filters instead of silently matching', () => {
     expect(parseQuery('foo:bar').errors).toHaveLength(1)
+  })
+})
+
+describe('poolCardCommanderView', () => {
+  it('reads the front face only and carries the server commander flags', () => {
+    const view = poolCardCommanderView(card({
+      name: 'Raised by Giants',
+      typeLine: 'Legendary Enchantment — Background',
+      canBeCommander: false,
+      backFaceTypeLine: 'Legendary Creature — Giant',
+    }))
+    expect(view).toEqual({
+      supertypes: ['LEGENDARY'], cardTypes: ['ENCHANTMENT'], subtypes: ['Background'], canBeCommander: false,
+    })
+    const partner = poolCardCommanderView(card({
+      name: 'Kodama of the East Tree',
+      typeLine: 'Legendary Creature — Spirit',
+      canBeCommander: true,
+      partnerAbilities: ['Partner'],
+    }))
+    expect(partner.partnerAbilities).toEqual(['Partner'])
   })
 })

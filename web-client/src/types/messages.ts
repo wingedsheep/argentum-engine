@@ -1451,6 +1451,10 @@ export interface SealedCardInfo {
   readonly cmc?: number
   /** Keyword abilities as `Keyword` enum names (`FLYING`, `FIRST_STRIKE`, …) — drives the pool search's `kw:`. */
   readonly keywords?: readonly string[]
+  /** Can be a commander on its own (CR 903.3). Absent from older servers. */
+  readonly canBeCommander?: boolean
+  /** Partner abilities by printed name (CR 702.124) — "Partner", "Choose a Background", …. */
+  readonly partnerAbilities?: readonly string[]
 }
 
 /**

@@ -793,6 +793,26 @@
   cursor: not-allowed;
 }
 
+/* Commander colour-identity filter toggle in the catalogue search bar. */
+.identityChip,
+.identityChipOn {
+  font-size: 0.7rem;
+  font-weight: 600;
+  white-space: nowrap;
+  padding: 3px 10px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-secondary);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+}
+
+.identityChipOn {
+  background: #3a2b00;
+  color: #ffd76b;
+  border-color: #daa520;
+}
+
 .resultCount {
   color: var(--text-muted);
   font-size: 0.75rem;
@@ -1770,6 +1790,18 @@
   background: rgba(255, 255, 255, 0.05);
   border-radius: 999px;
   padding: 1px 8px;
+}
+
+/* A one-line explanation of what the import inferred or kept aside (commander, companion). */
+.importNote {
+  font-size: 0.75rem;
+  color: #ffd76b;
+  background: rgba(218, 165, 32, 0.1);
+  border: 1px solid rgba(218, 165, 32, 0.35);
+  border-radius: var(--radius-sm);
+  padding: 6px 8px;
+  margin: 0;
+  line-height: 1.4;
 }
 
 .importBadBadge {

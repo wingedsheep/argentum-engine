@@ -10,7 +10,14 @@ import { useDfcHoverFlip } from '../ui/useDfcHoverFlip'
 import { SetSynergiesButton, type Archetype } from '../draft/SetSynergiesOverlay'
 import { AssistStrip, AssistToolbar, ScoreBadge, useScoresStale } from './AssistControls'
 import { buildArenaDeckList } from './arenaExport'
-import { poolCardToSummary } from './poolCardSummary'
+import { poolCardCommanderView, poolCardToSummary } from './poolCardSummary'
+import {
+  canCrown,
+  canPairAsCommanders,
+  commanderIdentityOf,
+  isWithinIdentity,
+  toggleCommanderDesignation,
+} from '../deckbuilder/commanderPairing'
 import { parseQuery } from '../deckbuilder/query'
 import { SearchHelp } from '../deckbuilder/browser/SearchBar'
 import type { CardSummary } from '../deckbuilder/cardFilter'
@@ -140,7 +147,7 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
   const removeCardFromDeck = useGameStore((s) => s.removeCardFromDeck)
   const clearDeck = useGameStore((s) => s.clearDeck)
   const setLandCount = useGameStore((s) => s.setLandCount)
-  const setCommander = useGameStore((s) => s.setCommander)
+  const setCommanders = useGameStore((s) => s.setCommanders)
   const submitSealedDeck = useGameStore((s) => s.submitSealedDeck)
   const unsubmitDeck = useGameStore((s) => s.unsubmitDeck)
   const leaveLobby = useGameStore((s) => s.leaveLobby)
@@ -217,41 +224,59 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
   // state.deck" invariant (see effect below) means state.deck.length already includes the
   // commander once, so don't add another. Guard the !includes path defensively in case the
   // invariant is briefly broken between renders.
-  const commanderAlreadyInDeck =
-    state.commander != null && state.deck.includes(state.commander)
-  const commanderInTotal =
-    isCommanderShape && state.commander != null && !commanderAlreadyInDeck ? 1 : 0
+  // The designated commander(s): one, or a partner pair (CR 702.124).
+  const commanders = useMemo(
+    () => [state.commander, state.commander ? state.secondCommander : null].filter((c): c is string => !!c),
+    [state.commander, state.secondCommander],
+  )
+  const commanderInTotal = isCommanderShape
+    ? commanders.filter((name) => !state.deck.includes(name)).length
+    : 0
   const totalCount = state.deck.length + basicLandCount + commanderInTotal
   const requiredSize = isCommanderShape ? commanderMinDeckSize : 40
   const isValidDeck = totalCount >= requiredSize && (!isCommanderShape || state.commander != null)
 
-  // Pool-filtered eligible commanders for the limited commander formats. Matches the backend's
-  // CommanderEligibility: legendary creature, or any card with an explicit "can be your
-  // commander" clause in the oracle text (a planeswalker needs that clause too). Returned as a Set
-  // so each deck row can check eligibility in O(1) when deciding whether to enable its crown.
-  const eligibleCommanderNames = useMemo<Set<string>>(() => {
-    const out = new Set<string>()
+  // Commander-pairing view of each pool card, by name — the same crown helpers the constructed
+  // deckbuilder uses (`commanderPairing.ts`), fed the server's `canBeCommander` / `partnerAbilities`.
+  const commanderViews = useMemo(() => {
+    const out = new Map<string, ReturnType<typeof poolCardCommanderView>>()
     if (!isCommanderShape) return out
-    const re = /can be your commander/i
     for (const card of state.cardPool) {
-      const tl = card.typeLine.toLowerCase()
-      const isLegendary = tl.includes('legendary')
-      const isCreature = tl.includes('creature')
-      const override = re.test(card.oracleText ?? '')
-      if ((isLegendary && isCreature) || override) {
-        out.add(card.name)
-      }
+      if (!out.has(card.name)) out.set(card.name, poolCardCommanderView(card))
     }
     return out
   }, [state.cardPool, isCommanderShape])
 
-  // The chosen commander's colour identity. Empty = colourless. Null = no commander chosen.
-  // Used to decide which deck rows are off-identity.
+  // Which deck rows offer an active crown: a card that can lead alone, a commander's own crown (to
+  // unset it), or a Background beside a lone "Choose a Background" commander.
+  const eligibleCommanderNames = useMemo<Set<string>>(() => {
+    const out = new Set<string>()
+    const current = commanders.flatMap((name) => commanderViews.get(name) ?? [])
+    for (const [name, view] of commanderViews) {
+      if (canCrown(view, commanders.includes(name), current)) out.add(name)
+    }
+    return out
+  }, [commanderViews, commanders])
+
+  const toggleCommander = useCallback(
+    (name: string) => {
+      setCommanders(
+        toggleCommanderDesignation(commanders, name, (first, candidate) => {
+          const a = commanderViews.get(first)
+          const b = commanderViews.get(candidate)
+          return !!a && !!b && canPairAsCommanders(a, b)
+        }),
+      )
+    },
+    [commanders, commanderViews, setCommanders],
+  )
+
+  // The commanders' combined colour identity (a partner pair unions both). Empty = colourless.
+  // Null = no commander chosen. Used to decide which deck rows are off-identity.
   const commanderIdentity = useMemo<ReadonlySet<string> | null>(() => {
-    if (!isCommanderShape || state.commander == null) return null
-    const card = state.cardPool.find((c) => c.name === state.commander)
-    return new Set(card?.colorIdentity ?? [])
-  }, [state.cardPool, state.commander, isCommanderShape])
+    if (!isCommanderShape || commanders.length === 0) return null
+    return commanderIdentityOf(commanders.flatMap((name) => state.cardPool.find((c) => c.name === name) ?? []))
+  }, [state.cardPool, commanders, isCommanderShape])
 
   // Reset the identity filter to ON whenever a new commander is designated, so picking a
   // commander immediately restricts the pool view. Clearing the commander leaves the toggle's
@@ -260,15 +285,15 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
     if (state.commander != null) setRestrictToCommanderIdentity(true)
   }, [state.commander])
 
-  // If the designated commander is no longer in the deck (the user removed the last copy via
-  // the deck-row click), clear the designation. The identity-filter chip is gated on
-  // [commanderIdentity], so it disappears automatically as soon as state.commander goes null.
+  // If a designated commander is no longer in the deck (the user removed the last copy via the
+  // deck-row click), drop it from the designation; a partner pair's other half moves up. The
+  // identity-filter chip is gated on [commanderIdentity], so it disappears once none is left.
   // Mirrors the standalone /deckbuilder's "clear commander when removed from deckCards" effect.
   useEffect(() => {
-    if (state.commander != null && !state.deck.includes(state.commander)) {
-      setCommander(null)
+    if (commanders.some((name) => !state.deck.includes(name))) {
+      setCommanders(commanders.filter((name) => state.deck.includes(name)))
     }
-  }, [state.commander, state.deck, setCommander])
+  }, [commanders, state.deck, setCommanders])
 
   // Deck cards (and chosen commander) whose colour identity escapes the commander's identity.
   // Matches the server's COLOR_IDENTITY_VIOLATION check; surfaced as a red left border on the
@@ -276,23 +301,14 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
   const offIdentityNames = useMemo<Set<string>>(() => {
     const out = new Set<string>()
     if (!commanderIdentity) return out
-    const namesToCheck = new Set<string>(state.deck)
-    if (state.commander != null) namesToCheck.add(state.commander)
-    for (const name of namesToCheck) {
+    for (const name of new Set<string>(state.deck)) {
+      // The commanders are always within their own (combined) identity — skip them.
+      if (commanders.includes(name)) continue
       const card = state.cardPool.find((c) => c.name === name)
-      if (!card) continue
-      // The commander itself is always within its own identity — skip it.
-      if (name === state.commander) continue
-      const id = card.colorIdentity ?? []
-      for (const color of id) {
-        if (!commanderIdentity.has(color)) {
-          out.add(name)
-          break
-        }
-      }
+      if (card && !isWithinIdentity(card, commanderIdentity)) out.add(name)
     }
     return out
-  }, [state.cardPool, state.deck, state.commander, commanderIdentity])
+  }, [state.cardPool, state.deck, commanders, commanderIdentity])
 
   // Deck analytics
   const deckAnalytics = useMemo(() => {
@@ -461,14 +477,7 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
         // Commander-identity restriction: every colour in the card's identity must appear in
         // the commander's identity. Mirrors the server's COLOR_IDENTITY_VIOLATION check.
         if (commanderIdentity != null && restrictToCommanderIdentity) {
-          let outside = false
-          for (const color of card.colorIdentity ?? []) {
-            if (!commanderIdentity.has(color)) {
-              outside = true
-              break
-            }
-          }
-          if (outside) continue
+          if (!isWithinIdentity(card, commanderIdentity)) continue
         }
         if (typeFilter) {
           if (!matchesTypeFilter(card, typeFilter)) continue
@@ -624,7 +633,7 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
           )}
           {isCommanderShape && !isSubmitted && state.commander != null && (
             <div
-              title={`Commander: ${state.commander}`}
+              title={`${commanders.length > 1 ? 'Commanders' : 'Commander'}: ${commanders.join(' and ')}`}
               style={{
                 padding: responsive.isMobile ? '4px 10px' : '6px 14px',
                 fontSize: responsive.isMobile ? 11 : 12,
@@ -639,7 +648,7 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
                 whiteSpace: 'nowrap',
               }}
             >
-              ♛ {state.commander}
+              ♛ {commanders.join(' + ')}
             </div>
           )}
 
@@ -674,6 +683,7 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
                     basicLands: state.basicLands,
                     landCounts: state.landCounts,
                     commander: state.commander,
+                    secondCommander: commanders[1] ?? null,
                   })
                 )
               }
@@ -831,8 +841,8 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
                 onClick={() => setRestrictToCommanderIdentity((v) => !v)}
                 title={
                   restrictToCommanderIdentity
-                    ? `Showing only cards inside ${state.commander}'s colour identity. Click to show the full pool.`
-                    : `Restrict the pool to cards inside ${state.commander}'s colour identity.`
+                    ? `Showing only cards inside ${commanders.join(' and ')}'s colour identity. Click to show the full pool.`
+                    : `Restrict the pool to cards inside ${commanders.join(' and ')}'s colour identity.`
                 }
                 style={{
                   padding: '3px 10px',
@@ -1474,16 +1484,14 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
                 onHover={handleHover}
                 disabled={isSubmitted}
                 showCommanderControls={isCommanderShape && !isSubmitted}
-                isCommander={state.commander === card.name}
+                isCommander={commanders.includes(card.name)}
                 canBeCommander={eligibleCommanderNames.has(card.name)}
                 offIdentity={offIdentityNames.has(card.name)}
                 searchMatch={deckSearchMatches == null ? undefined : deckSearchMatches.names.has(card.name)}
                 score={deckCardScores?.[card.name]?.score ?? null}
                 reason={deckCardScores?.[card.name]?.reason}
                 scoreStale={scoresStale}
-                onToggleCommander={() => {
-                  setCommander(state.commander === card.name ? null : card.name)
-                }}
+                onToggleCommander={() => toggleCommander(card.name)}
               />
             ))}
 
@@ -2085,7 +2093,7 @@ function DeckListRow({
           aria-label={isCommander ? `Unset ${card.name} as commander` : `Set ${card.name} as commander`}
           title={
             !canBeCommander
-              ? 'Only legendary creatures or planeswalkers can be commanders'
+              ? 'Only a legendary creature (or a card that says so) can be a commander; a Background only beside a "Choose a Background" commander'
               : isCommander
               ? 'Commander — click to unset'
               : 'Set as commander'

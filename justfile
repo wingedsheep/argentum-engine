@@ -138,11 +138,12 @@ arena-report DIR:
 # readable log per game — board, hand, every action, and what was on offer when the AI passed.
 # For reading where the AI misplays; logs land in ai/build/game-logs/. AGENT defaults to `live`
 # (AiProfile.LIVE, what real players face), so the logs don't resurface misplays it already fixes.
+# SEATS > 2 plays a Free-for-All game (attack MULTIPLE), e.g. `just ai-game-logs 1 20261013 live 4`.
 [group: 'ai']
-ai-game-logs GAMES="24" SEED="20261009" AGENT="live":
+ai-game-logs GAMES="24" SEED="20261009" AGENT="live" SEATS="2":
     rm -rf ai/build/game-logs
     scripts/gradle-locked :ai:test --tests "*.GameLogBenchmark" -Dbenchmark=true -DgameLog=true \
-        -DgameLogGames={{GAMES}} -DgameLogSeed={{SEED}} -DgameLogAgent={{AGENT}} \
+        -DgameLogGames={{GAMES}} -DgameLogSeed={{SEED}} -DgameLogAgent={{AGENT}} -DgameLogSeats={{SEATS}} \
         -DgameLogDir={{justfile_directory()}}/ai/build/game-logs
 
 # ECL apprentice promotion ladder. Artifacts are installed outside the repository and selected with

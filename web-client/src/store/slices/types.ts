@@ -576,6 +576,11 @@ export interface DeckBuildingState {
    */
   commander: string | null
   /**
+   * The second commander of a partner pair (CR 702.124) for Commander Draft / Sealed. Null
+   * without [commander] or when only one is designated; like it, the card MUST be in [deck].
+   */
+  secondCommander: string | null
+  /**
    * Cube Pool Play: [cardPool] is the entire cube and copies are unlimited (bounded only by the
    * usual 4-of cap), so adding a card must not remove it from the pool view.
    */
@@ -1079,8 +1084,11 @@ export type GameStore = {
   setLandCount: (landType: string, count: number) => void
   /** Replace the entire deck (non-basic cards as a flat list) and basic land counts. */
   setDeck: (deck: readonly string[], landCounts: Record<string, number>) => void
-  /** Set or clear the commander for Commander Draft / Sealed lobbies. */
-  setCommander: (cardName: string | null) => void
+  /**
+   * Set the commander designation for Commander Draft / Sealed lobbies: none, one, or a partner
+   * pair (CR 702.124). Further names are ignored.
+   */
+  setCommanders: (cardNames: readonly string[]) => void
   submitSealedDeck: () => void
   unsubmitDeck: () => void
   makePick: (cardNames: string[]) => void

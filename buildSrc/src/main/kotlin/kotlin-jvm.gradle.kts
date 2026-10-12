@@ -63,7 +63,7 @@ tasks.withType<Test>().configureEach {
         "eclCollectRunId", "eclCollectStartIndex",
         "arenaGames", "arenaSeed", "arenaSet", "arenaMaxTurns", "arenaThreads", "arenaGameTimeoutSec",
         "arenaReport",
-        "gameLog", "gameLogGames", "gameLogSeed", "gameLogAgent", "gameLogDir",
+        "gameLog", "gameLogGames", "gameLogSeed", "gameLogAgent", "gameLogSeats", "gameLogDir",
     )) {
         System.getProperty(prop)?.let { systemProperty(prop, it) }
     }

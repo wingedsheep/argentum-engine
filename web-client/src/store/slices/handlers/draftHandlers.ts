@@ -34,6 +34,7 @@ export function createDraftHandlers(set: SetState, _get: GetState): Pick<Message
           },
           opponentReady: false,
           commander: null,
+          secondCommander: null,
           poolPlay: false,
         },
       })
@@ -69,6 +70,7 @@ export function createDraftHandlers(set: SetState, _get: GetState): Pick<Message
             },
             opponentReady: state.deckBuildingState?.opponentReady ?? false,
             commander: state.deckBuildingState?.commander ?? null,
+            secondCommander: state.deckBuildingState?.secondCommander ?? null,
             poolPlay: msg.poolPlay ?? false,
           },
         }
@@ -179,6 +181,7 @@ export function createDraftHandlers(set: SetState, _get: GetState): Pick<Message
           landCounts: { Plains: 0, Island: 0, Swamp: 0, Mountain: 0, Forest: 0 },
           opponentReady: false,
           commander: null,
+          secondCommander: null,
           poolPlay: false,
         },
       }))
