@@ -409,8 +409,11 @@ class BeginningPhaseManager(
         val toPhaseIn = state.allBattlefieldEntities().filter { entityId ->
             val phased = state.getEntity(entityId)?.get<PhasedOutComponent>()
             // Permanents phased out "until source leaves" (Oubliette) don't phase in at untap —
-            // they wait for the source's leaves-battlefield trigger.
-            phased?.phasedOutByController == activePlayer && phased.phaseInOnSourceLeaves == null
+            // they wait for the source's leaves-battlefield trigger. A locked one (The Phasing of
+            // Zhalfir) waits for EndedDurationExpiryCheck to release the lock.
+            phased?.phasedOutByController == activePlayer &&
+                phased.phaseInOnSourceLeaves == null &&
+                phased.phaseInLock == null
         }
 
         var newState = state
@@ -450,9 +453,11 @@ class BeginningPhaseManager(
         var newState = state
         val events = mutableListOf<GameEvent>()
 
-        val sagaIds = state.sharedTurnTeam(activePlayer).flatMap { member ->
-            newState.getZone(ZoneKey(member, Zone.BATTLEFIELD))
-        }
+        // Sagas the team *controls* (a stolen Saga advances on its controller's turn, not its
+        // owner's); getBattlefield also skips phased-out Sagas, which don't exist.
+        val team = state.sharedTurnTeam(activePlayer).toSet()
+        val projected = state.projectedState
+        val sagaIds = state.getBattlefield().filter { projected.getController(it) in team }
         for (entityId in sagaIds) {
             val container = newState.getEntity(entityId) ?: continue
             val cardComponent = container.get<CardComponent>() ?: continue

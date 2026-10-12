@@ -48,8 +48,23 @@ data class PhasedOutComponent(
      */
     val phaseInOnSourceLeaves: EntityId? = null,
     /** Tap this permanent when it phases back in (Oubliette: "Tap that creature as it phases in"). */
-    val tapOnPhaseIn: Boolean = false
+    val tapOnPhaseIn: Boolean = false,
+    /**
+     * When non-null, this permanent "can't phase in for as long as [PhaseInLock.controllerId]
+     * controls [PhaseInLock.sourceId]" (The Phasing of Zhalfir). The untap step skips it while the
+     * lock is present; `EndedDurationExpiryCheck` removes the lock the moment the source leaves the
+     * battlefield or changes controller (one-way, CR 611.2b). Releasing the lock does not phase the
+     * permanent in — it phases in at its controller's next untap step like any other.
+     */
+    val phaseInLock: PhaseInLock? = null
 ) : Component
+
+/** The "for as long as you control [sourceId]" prohibition on a [PhasedOutComponent]'s phase-in. */
+@Serializable
+data class PhaseInLock(
+    val sourceId: EntityId,
+    val controllerId: EntityId
+)
 
 /**
  * Marks a permanent as having been cast from its controller's hand.

@@ -5625,9 +5625,16 @@ object Effects {
     /**
      * Phase out a target permanent (Rule 702.26). It's treated as though it
      * doesn't exist until it phases back in before its controller's next untap step.
+     *
+     * Set [cantPhaseInWhileYouControlSource] for "It can't phase in for as long as you control
+     * this Saga" (The Phasing of Zhalfir): the untap step skips the permanent until you lose
+     * control of the source, after which it phases in at its controller's next untap step.
      */
-    fun PhaseOut(target: EffectTarget = EffectTarget.Self): Effect =
-        com.wingedsheep.sdk.scripting.effects.PhaseOutEffect(target)
+    fun PhaseOut(
+        target: EffectTarget = EffectTarget.Self,
+        cantPhaseInWhileYouControlSource: Boolean = false
+    ): Effect =
+        com.wingedsheep.sdk.scripting.effects.PhaseOutEffect(target, cantPhaseInWhileYouControlSource)
 
     /**
      * Phase a target permanent out indefinitely, linked to the effect's source — it stays phased
