@@ -5585,19 +5585,17 @@ object Effects {
 
     /**
      * "Lock or unlock a door of [target] Room" (Keys to the House). The controller chooses lock or
-     * unlock as this resolves — a resolution-time [ModalEffect.chooseOne] of [LockDoor] and
-     * [UnlockDoor], modeled as data exactly like [Endure] (no new modal machinery, not a printed
-     * modal spell so `countsAsModalSpell = false`). Both modes reference the same outer [target], so
+     * unlock as this resolves through [ChooseAction] over [LockDoor] and [UnlockDoor]. This is
+     * not a modal ability: its choice is made on resolution. Both options reference the same outer [target], so
      * pair this with a single "target Room you control" `TargetObject` on the ability; the chosen
      * mode then locks/unlocks one of that Room's doors, prompting for which door if the choice is
      * ambiguous.
      */
     fun LockOrUnlockDoor(target: EffectTarget): Effect =
-        ModalEffect.chooseOne(
-            Mode.noTarget(LockDoor(target), "Lock a door"),
-            Mode.noTarget(UnlockDoor(target), "Unlock a door"),
-            countsAsModalSpell = false
-        )
+        ChooseAction(listOf(
+            EffectChoice("Lock a door", LockDoor(target)),
+            EffectChoice("Unlock a door", UnlockDoor(target))
+        ))
 
     /**
      * Tap every creature/permanent chosen as a target ("tap up to N target creatures").

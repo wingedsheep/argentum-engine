@@ -165,6 +165,8 @@ internal class ActivatedManaAbilityResolver(
             }
         }
         val context = EffectContext(
+            chosenModes = action.chosenModes.orEmpty(),
+            modeTargetsOrdered = action.modeTargetsOrdered,
             sourceId = action.sourceId,
             objectReferences = activation.activationReferences.authorize(activationEvents),
             controllerId = action.playerId,

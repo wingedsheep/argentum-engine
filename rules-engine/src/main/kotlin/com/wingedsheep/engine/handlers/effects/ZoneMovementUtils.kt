@@ -551,6 +551,8 @@ object ZoneMovementUtils {
             // otherwise a blinked/bounced-and-recast exhaust permanent could never use its ability
             // again. Mirrors the documented intent of the sibling "ever" trackers.
             .without<AbilityActivatedEverComponent>()
+            .without<com.wingedsheep.engine.state.components.battlefield.ChosenModesEverComponent>()
+            .without<com.wingedsheep.engine.state.components.battlefield.ChosenModesThisTurnComponent>()
             .without<AttachedToComponent>()
             .without<AttachmentsComponent>()
             // A creature that leaves the battlefield becomes unpaired (CR 702.95e), and the object

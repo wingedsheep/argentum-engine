@@ -88,7 +88,7 @@ class InsidiousFungusScenarioTest : ScenarioTestBase() {
 
                 val modeDecision = game.state.pendingDecision as? ChooseOptionDecision
                     ?: error("expected a ChooseOptionDecision; got ${game.state.pendingDecision}")
-                game.submitDecision(OptionChosenResponse(modeDecision.id, optionIndex = 1))
+                game.submitDecision(OptionChosenResponse(modeDecision.id, optionIndex = modeDecision.options.indexOfFirst { it.contains("enchantment", ignoreCase = true) }))
 
                 val targetDecision = game.state.pendingDecision as? ChooseTargetsDecision
                     ?: error("expected a ChooseTargetsDecision after mode pick")
@@ -119,7 +119,7 @@ class InsidiousFungusScenarioTest : ScenarioTestBase() {
 
                 val modeDecision = game.state.pendingDecision as? ChooseOptionDecision
                     ?: error("expected a ChooseOptionDecision; got ${game.state.pendingDecision}")
-                game.submitDecision(OptionChosenResponse(modeDecision.id, optionIndex = 2))
+                game.submitDecision(OptionChosenResponse(modeDecision.id, optionIndex = modeDecision.options.indexOfFirst { it.contains("Draw", ignoreCase = true) }))
                 game.resolveStack()
 
                 // Drew Grizzly Bears (+1 to hand); the optional land put surfaces a selection.

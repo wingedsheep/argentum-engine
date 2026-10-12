@@ -78,13 +78,6 @@ class PowerConduitScenarioTest : ScenarioTestBase() {
                 )
                 withClue("Activating should succeed: ${act.error}") { act.error shouldBe null }
 
-                withClue("Both halves of the cost are paid on activation") {
-                    game.state.getEntity(conduit)?.has<TappedComponent>() shouldBe true
-                    countersOn(game, bears, CounterType.PLUS_ONE_PLUS_ONE) shouldBe 0
-                }
-
-                game.resolveStack()
-
                 val mode = game.state.pendingDecision as? ChooseOptionDecision
                     ?: error("expected a mode choice; got ${game.state.pendingDecision}")
                 withClue("Choose one — exactly two modes") { mode.options.size shouldBe 2 }
@@ -93,6 +86,10 @@ class PowerConduitScenarioTest : ScenarioTestBase() {
                 val targets = game.state.pendingDecision as? ChooseTargetsDecision
                     ?: error("expected a target choice after the mode; got ${game.state.pendingDecision}")
                 game.submitDecision(TargetsResponse(targets.id, mapOf(0 to listOf(bonesplitter))))
+                withClue("Both halves of the cost are paid after modes and targets are announced") {
+                    game.state.getEntity(conduit)?.has<TappedComponent>() shouldBe true
+                    countersOn(game, bears, CounterType.PLUS_ONE_PLUS_ONE) shouldBe 0
+                }
                 game.resolveStack()
 
                 withClue("The artifact gets the charge counter") {
@@ -133,9 +130,7 @@ class PowerConduitScenarioTest : ScenarioTestBase() {
                 withClue("A charge counter off the Conduit itself is a legal payment: ${act.error}") {
                     act.error shouldBe null
                 }
-                countersOn(game, conduit, CounterType.CHARGE) shouldBe 0
-
-                game.resolveStack()
+                countersOn(game, conduit, CounterType.CHARGE) shouldBe 1
 
                 val mode = game.state.pendingDecision as? ChooseOptionDecision
                     ?: error("expected a mode choice; got ${game.state.pendingDecision}")

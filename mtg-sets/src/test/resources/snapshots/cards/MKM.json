@@ -8762,31 +8762,31 @@
                     ]
                 },
                 "effect": {
-                    "type": "Modal",
-                    "modes": [
+                    "type": "ChooseAction",
+                    "choices": [
                         {
+                            "label": "Ezrim gains vigilance until end of turn",
                             "effect": {
                                 "type": "GrantKeyword",
                                 "keyword": "VIGILANCE",
                                 "target": "Self"
-                            },
-                            "description": "Ezrim gains vigilance until end of turn"
+                            }
                         },
                         {
+                            "label": "Ezrim gains lifelink until end of turn",
                             "effect": {
                                 "type": "GrantKeyword",
                                 "keyword": "LIFELINK",
                                 "target": "Self"
-                            },
-                            "description": "Ezrim gains lifelink until end of turn"
+                            }
                         },
                         {
+                            "label": "Ezrim gains hexproof until end of turn",
                             "effect": {
                                 "type": "GrantKeyword",
                                 "keyword": "HEXPROOF",
                                 "target": "Self"
-                            },
-                            "description": "Ezrim gains hexproof until end of turn"
+                            }
                         }
                     ]
                 },

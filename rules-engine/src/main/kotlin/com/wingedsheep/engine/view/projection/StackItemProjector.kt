@@ -98,6 +98,13 @@ internal class StackItemProjector(
             targets = StackTextRenderer.toClientTargets(targetsComponent),
             imageUri = sourceCard?.imageUri ?: cardDef?.metadata?.imageUri,
             chosenX = activatedAbility.xValue,
+            chosenModeDescriptions = (activatedAbility.effect as? com.wingedsheep.sdk.scripting.effects.ModalEffect)?.let { modal ->
+                activatedAbility.chosenModes.map { modal.modes[it].description }
+            } ?: emptyList(),
+            perModeTargets = (activatedAbility.effect as? com.wingedsheep.sdk.scripting.effects.ModalEffect)?.let { modal ->
+                stackText.perModeTargetGroups(state, activatedAbility.chosenModes, activatedAbility.modeTargetsOrdered,
+                    activatedAbility.chosenModes.map { modal.modes[it].description }, viewingPlayerId, isSpectator)
+            } ?: emptyList(),
             abilityIdentity = activatedAbility.abilityIdentity?.takeIf { identityVisible }?.let {
                 ClientAbilityIdentity(it.cardDefinitionId, it.abilityId.value)
             }

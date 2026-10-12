@@ -68,8 +68,7 @@ class BreyaEtheriumShaperScenarioTest : FunSpec({
                 abilityId = abilityId,
                 costPayment = AdditionalCostPayment(sacrificedPermanents = sacrifice)
             )
-        ).outcome shouldBe Outcome.Done
-        bothPass() // resolve → mode choice
+        ).let { (it.outcome is Outcome.Paused) shouldBe true }
         val decision = pendingDecision as ChooseOptionDecision
         submitDecision(me, OptionChosenResponse(decision.id, mode))
     }

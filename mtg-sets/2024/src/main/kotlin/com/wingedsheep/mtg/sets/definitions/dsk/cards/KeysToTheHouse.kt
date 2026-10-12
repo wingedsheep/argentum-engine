@@ -22,7 +22,7 @@ import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
  *   as a sorcery.
  *
  * The second ability uses the resolution-time "lock or unlock a door" choice
- * ([Effects.LockOrUnlockDoor], a `ModalEffect.chooseOne` of [Effects.LockDoor] / [Effects.UnlockDoor]):
+ * ([Effects.LockOrUnlockDoor], a resolution-time choice of [Effects.LockDoor] / [Effects.UnlockDoor]):
  * the controller chooses lock or unlock as it resolves, then locks/unlocks one of the targeted
  * Room's doors (CR 709.5f/g) — prompting which door if the Room has more than one eligible door.
  * "Target Room you control" carries no locked/unlocked restriction: any Room you control always has

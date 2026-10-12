@@ -12,16 +12,16 @@ import com.wingedsheep.sdk.scripting.effects.ModalEffect
  * Gandalf the Grey) and [ModalEffect.excludeModesChosenThisTurn] ("…this turn", turn-scoped,
  * Breeches / Eager Pillager).
  *
- * The memory is keyed to the source *object* (CR 700.4 object identity), so two copies of the same
+ * The memory is keyed to the source *object*, so two copies of the same
  * permanent track their choices independently and a permanent that leaves and returns starts fresh.
  * The turn-scoped component is cleared each cleanup step by
  * [com.wingedsheep.engine.core.CleanupPhaseManager].
  *
- * Two pickers read and write through here so they can never disagree about what a source remembers:
+ * The announcement and resolution pickers read and write through here so they can never disagree about what a source remembers:
  * the put-on-stack picker for modal *triggered* abilities
  * ([com.wingedsheep.engine.event.TriggerProcessor], CR 603.3c) and the resolution-time picker
- * ([com.wingedsheep.engine.handlers.effects.composite.ModalEffectExecutor]) that still serves modal
- * activated abilities and modals nested inside another effect.
+ * ([com.wingedsheep.engine.handlers.effects.composite.ModalEffectExecutor]) that serves modals nested inside another effect. Top-level activated abilities record their
+ * choices during successful activation, before they resolve.
  */
 object ChosenModeMemory {
 

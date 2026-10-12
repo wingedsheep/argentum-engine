@@ -6,8 +6,7 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.effects.ModalEffect
-import com.wingedsheep.sdk.scripting.effects.Mode
+import com.wingedsheep.sdk.scripting.effects.EffectChoice
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 
 /**
@@ -35,21 +34,20 @@ val GolemArtisan = card("Golem Artisan") {
     activatedAbility {
         val creature = target(TargetFilter(GameObjectFilter.ArtifactCreature))
         cost = Costs.Mana("{2}")
-        effect = ModalEffect.chooseOne(
-            Mode.noTarget(
-                Effects.GrantKeyword(Keyword.FLYING, creature),
-                "It gains flying until end of turn"
+        effect = Effects.ChooseAction(listOf(
+            EffectChoice(
+                label = "It gains flying until end of turn",
+                effect = Effects.GrantKeyword(Keyword.FLYING, creature),
             ),
-            Mode.noTarget(
-                Effects.GrantKeyword(Keyword.TRAMPLE, creature),
-                "It gains trample until end of turn"
+            EffectChoice(
+                label = "It gains trample until end of turn",
+                effect = Effects.GrantKeyword(Keyword.TRAMPLE, creature),
             ),
-            Mode.noTarget(
-                Effects.GrantKeyword(Keyword.HASTE, creature),
-                "It gains haste until end of turn"
-            ),
-            countsAsModalSpell = false
-        )
+            EffectChoice(
+                label = "It gains haste until end of turn",
+                effect = Effects.GrantKeyword(Keyword.HASTE, creature),
+            )
+        ))
         description = "{2}: Target artifact creature gains your choice of flying, trample, or haste until end of turn."
     }
 

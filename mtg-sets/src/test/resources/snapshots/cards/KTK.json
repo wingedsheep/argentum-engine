@@ -2096,31 +2096,31 @@
                     }
                 },
                 "effect": {
-                    "type": "Modal",
-                    "modes": [
+                    "type": "ChooseAction",
+                    "choices": [
                         {
+                            "label": "This creature gains vigilance until end of turn",
                             "effect": {
                                 "type": "GrantKeyword",
                                 "keyword": "VIGILANCE",
                                 "target": "Self"
-                            },
-                            "description": "This creature gains vigilance until end of turn"
+                            }
                         },
                         {
+                            "label": "This creature gains lifelink until end of turn",
                             "effect": {
                                 "type": "GrantKeyword",
                                 "keyword": "LIFELINK",
                                 "target": "Self"
-                            },
-                            "description": "This creature gains lifelink until end of turn"
+                            }
                         },
                         {
+                            "label": "This creature gains haste until end of turn",
                             "effect": {
                                 "type": "GrantKeyword",
                                 "keyword": "HASTE",
                                 "target": "Self"
-                            },
-                            "description": "This creature gains haste until end of turn"
+                            }
                         }
                     ]
                 },

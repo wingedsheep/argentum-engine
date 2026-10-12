@@ -771,7 +771,7 @@ data class AbilityActivatedEverComponent(
  *
  * NOT cleared at end of turn — the memory persists for as long as the permanent
  * remains the same object on the battlefield (it resets when the permanent leaves
- * and returns as a new object, per CR 700.4 / object identity).
+ * and returns as a new object).
  */
 @Serializable
 data class ChosenModesEverComponent(
@@ -791,7 +791,7 @@ data class ChosenModesEverComponent(
  *
  * The turn-scoped sibling of [ChosenModesEverComponent]: cleared at end of turn by
  * CleanupPhaseManager, so every mode becomes available again next turn. Keyed to the source
- * object, so two copies of the same source track their chosen modes independently (CR 700.4).
+ * object, so two copies of the same source track their chosen modes independently.
  */
 @Serializable
 data class ChosenModesThisTurnComponent(

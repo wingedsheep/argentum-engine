@@ -3548,8 +3548,7 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   to lock; with one it is locked directly; with none it is a harmless no-op. Both door effects share
   `RoomDoorResolution`, which raises the door-choice `ChooseOptionDecision` only when more than one door is eligible.
 - `Effects.LockOrUnlockDoor(target = ContextTarget(0))` — **"lock or unlock a door of target Room"**
-  (Keys to the House). A resolution-time `ModalEffect.chooseOne(LockDoor, UnlockDoor, countsAsModalSpell = false)`
-  (no new modal machinery, not a printed modal spell): the controller
+  (Keys to the House). A resolution-time `Effects.ChooseAction` over `LockDoor` and `UnlockDoor`: the controller
   chooses lock or unlock as it resolves, then the chosen door effect runs against the same outer `target`. Pair
   with a single **"target Room you control"** `TargetObject` (no locked/unlocked restriction — either choice can
   always do something on a Room you control).
@@ -15216,7 +15215,7 @@ spell {
 
 **Dynamic "choose up to X"** — `ModalEffect.chooseUpToDynamic(dynamicMax, *modes, allowRepeat = false)`
 caps the pick count by a `DynamicAmount`, evaluated as the ability goes onto the stack for a
-triggered ability and at resolution for an activated one. This factory sets no
+triggered ability and during announcement for a top-level activated one. This factory sets no
 `dynamicMinChooseCount`, so the floor stays `0` (the player may always decline); `chooseCount`
 becomes `min(eval, modes.size)` — or just `eval`, uncapped by the mode list, when
 `allowRepeat = true` lets one mode fill every pick.
@@ -15399,9 +15398,21 @@ Consequences for authoring and testing:
   mode's effect needs a further `resolveStack()`. The decision carries
   `DecisionPhase.TRIGGER`, not `RESOLUTION`.
 
-`ModalEffectExecutor`'s resolution-time picker still serves modal **activated** abilities and a
-`ModalEffect` **nested inside** another effect (a gated effect, a reflexive trigger, a pipeline step),
-where the mode question isn't the ability's own. See `ModalTriggeredAbilityOnStackTest`.
+### Modal activated abilities
+
+A top-level `ModalEffect` on an activated ability chooses modes and mode-specific targets during
+announcement, before tapping the source or paying any other cost. Both prompts can be cancelled
+without paying costs or consuming mode memory. The server offers only modes with satisfiable targets
+and excludes previously chosen modes; when none remain, activation is unavailable. Chosen modes,
+per-mode targets, and their requirements travel with the stack ability, appear to opponents before
+responses, survive ability copies, and are revalidated at resolution. Mode memory is written on
+successful activation even if the ability is later countered. Resolution-time “your choice” and “A or B” abilities use `Effects.ChooseAction`; these are not modal
+abilities and keep their choices at resolution. No new SDK type is needed. See
+`ModalActivatedAbilityAnnouncementTest` and `SurvivorsMedKitScenarioTest`.
+
+`ModalEffectExecutor`'s resolution-time picker serves a `ModalEffect` **nested inside** another effect
+(a gated effect, a reflexive trigger, a pipeline step), where the mode question isn't the ability's own.
+See `ModalTriggeredAbilityOnStackTest`.
 
 **"Choose one that hasn't been chosen"** — `ModalEffect.chooseOneNotYetChosen(*modes)` for a
 repeatable modal *ability* whose source remembers which modes it has already chosen across the
@@ -15410,8 +15421,8 @@ game and never offers them again (Gandalf the Grey). Equivalent raw shape:
 false)`. The engine records each chosen mode index in a per-source
 `ChosenModesEverComponent` and excludes it from every later presentation of the effect; once all
 modes have been chosen the ability has no legal mode (a triggered ability is removed from the stack,
-CR 603.3c; an activated one resolves as a no-op). The memory is keyed
-to the source object and persists while it remains the same object on the battlefield (CR 700.4) —
+CR 603.3c; an activated one cannot be activated). The memory is keyed
+to the source object and persists while it remains the same object on the battlefield —
 it resets if the permanent leaves and returns as a new object. Intended for triggered/activated
 abilities on a persistent source, not one-shot modal spells.
 

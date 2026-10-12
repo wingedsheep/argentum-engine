@@ -330,6 +330,8 @@ val engineSerializersModule = SerializersModule {
         subclass(TriggerModalTargetSelectionContinuation::class)
         subclass(CastModalModeSelectionContinuation::class)
         subclass(CastModalTargetSelectionContinuation::class)
+        subclass(ActivationModalModeContinuation::class)
+        subclass(ActivationModalTargetContinuation::class)
         subclass(ModalContinuation::class)
         subclass(ModalTargetContinuation::class)
         subclass(EffectCopyEntryContinuation::class)

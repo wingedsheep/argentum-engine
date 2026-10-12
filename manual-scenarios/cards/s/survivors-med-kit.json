@@ -1,0 +1,82 @@
+{
+  "player1Name": "Survivor",
+  "player2Name": "Wastelander",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": [
+      "Survivor's Med Kit"
+    ],
+    "battlefield": [
+      {
+        "name": "Survivor's Med Kit"
+      },
+      {
+        "name": "Survivor's Med Kit"
+      },
+      {
+        "name": "Plains"
+      },
+      {
+        "name": "Plains"
+      },
+      {
+        "name": "Plains"
+      },
+      {
+        "name": "Plains"
+      },
+      {
+        "name": "Plains"
+      }
+    ],
+    "library": [
+      "Plains",
+      "Plains",
+      "Plains",
+      "Plains",
+      "Plains",
+      "Plains",
+      "Plains",
+      "Plains"
+    ],
+    "graveyard": []
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "counters": {
+      "RAD": 5,
+      "ENERGY": 2
+    },
+    "hand": [
+      "Disenchant"
+    ],
+    "battlefield": [
+      {
+        "name": "Plains"
+      },
+      {
+        "name": "Plains"
+      }
+    ],
+    "library": [
+      "Plains",
+      "Plains",
+      "Plains",
+      "Plains",
+      "Plains",
+      "Plains",
+      "Plains",
+      "Plains"
+    ],
+    "graveyard": []
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [
+    "PRECOMBAT_MAIN"
+  ],
+  "player2StopAtSteps": [
+    "PRECOMBAT_MAIN"
+  ]
+}

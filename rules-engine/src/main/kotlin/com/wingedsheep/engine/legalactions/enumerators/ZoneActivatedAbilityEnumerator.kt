@@ -82,6 +82,12 @@ class ZoneActivatedAbilityEnumerator(
 
             for (ability in zoneAbilities) {
                 if (manaOnly && !ability.isManaAbility) continue
+                if (ability.effect is com.wingedsheep.sdk.scripting.effects.ModalEffect) {
+                    val picker = com.wingedsheep.engine.handlers.actions.ability.ActivationModalChoices(
+                        com.wingedsheep.engine.handlers.TargetFinder(context.predicateEvaluator), context.conditionEvaluator)
+                    if (picker.validate(state, ActivateAbility(playerId, entityId, ability.id), ability.effect) != null) continue
+                }
+
 
                 // "Activate only as a sorcery" — Renew and similar zone-activated abilities are
                 // gated to sorcery timing. Mirrors ActivatedAbilityEnumerator's battlefield check

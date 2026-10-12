@@ -1030,6 +1030,14 @@ class ActivatedAbilityEnumerator(
                     } else null
                 } else null
 
+                val modal = (ability.effect as? ModalEffect)
+                if (modal != null) {
+                    val picker = com.wingedsheep.engine.handlers.actions.ability.ActivationModalChoices(
+                        com.wingedsheep.engine.handlers.TargetFinder(context.predicateEvaluator), context.conditionEvaluator)
+                    val modalAction = ActivateAbility(playerId, entityId, ability.id)
+                    if (picker.validate(state, modalAction, modal) != null) continue
+                }
+
                 // Check for target requirements (apply text-changing effects to filter)
                 val allTargetReqs = if (textReplacement != null) {
                     ability.targetRequirements.map { it.applyTextReplacement(textReplacement) }
@@ -1242,6 +1250,12 @@ class ActivatedAbilityEnumerator(
             val textReplacement = TextChanges.merge(context.globalTextChanges, container.get<TextReplacementComponent>())
 
             for (ability in anyPlayerAbilities) {
+                if (ability.effect is ModalEffect) {
+                    val picker = com.wingedsheep.engine.handlers.actions.ability.ActivationModalChoices(
+                        com.wingedsheep.engine.handlers.TargetFinder(context.predicateEvaluator), context.conditionEvaluator)
+                    if (picker.validate(state, ActivateAbility(playerId, entityId, ability.id), ability.effect) != null) continue
+                }
+
                 // Kang the Conqueror's turn-scoped power-up lockout applies to every player, so it
                 // also covers an "any player may activate" power-up on an opponent's permanent.
                 if (context.castPermissionUtils.isPowerUpActivationRestricted(state, ability)) continue

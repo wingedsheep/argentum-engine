@@ -487,7 +487,11 @@ data class ActivatedAbilityOnStackComponent(
      * [SpellOnStackComponent.damageDistribution]. Null for every other ability, and for a divided
      * ability whose controller left the division to resolution time.
      */
-    val damageDistribution: Map<EntityId, Int>? = null
+    val damageDistribution: Map<EntityId, Int>? = null,
+    val chosenModes: List<Int> = emptyList(),
+    val modeTargetsOrdered: List<List<ChosenTarget>> = emptyList(),
+    val modeTargetRequirementsOrdered: List<List<TargetRequirement>> = emptyList(),
+    val modeTargetRequirements: Map<Int, List<TargetRequirement>> = emptyMap()
 ) : Component {
     val activatedAbilityId: AbilityId?
         get() = activatedAbility?.id

@@ -4373,9 +4373,10 @@
                 "id": "Urza's Avenger:1",
                 "cost": "CostFree",
                 "effect": {
-                    "type": "Modal",
-                    "modes": [
+                    "type": "ChooseAction",
+                    "choices": [
                         {
+                            "label": "This creature gets -1/-1 and gains banding until end of turn",
                             "effect": {
                                 "type": "Composite",
                                 "effects": [
@@ -4397,10 +4398,10 @@
                                         "target": "Self"
                                     }
                                 ]
-                            },
-                            "description": "This creature gets -1/-1 and gains banding until end of turn"
+                            }
                         },
                         {
+                            "label": "This creature gets -1/-1 and gains flying until end of turn",
                             "effect": {
                                 "type": "Composite",
                                 "effects": [
@@ -4422,10 +4423,10 @@
                                         "target": "Self"
                                     }
                                 ]
-                            },
-                            "description": "This creature gets -1/-1 and gains flying until end of turn"
+                            }
                         },
                         {
+                            "label": "This creature gets -1/-1 and gains first strike until end of turn",
                             "effect": {
                                 "type": "Composite",
                                 "effects": [
@@ -4447,10 +4448,10 @@
                                         "target": "Self"
                                     }
                                 ]
-                            },
-                            "description": "This creature gets -1/-1 and gains first strike until end of turn"
+                            }
                         },
                         {
+                            "label": "This creature gets -1/-1 and gains trample until end of turn",
                             "effect": {
                                 "type": "Composite",
                                 "effects": [
@@ -4472,11 +4473,9 @@
                                         "target": "Self"
                                     }
                                 ]
-                            },
-                            "description": "This creature gets -1/-1 and gains trample until end of turn"
+                            }
                         }
-                    ],
-                    "countsAsModalSpell": false
+                    ]
                 },
                 "descriptionOverride": "{0}: This creature gets -1/-1 and gains your choice of banding, flying, first strike, or trample until end of turn."
             }

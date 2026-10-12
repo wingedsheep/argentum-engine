@@ -73,6 +73,8 @@ internal class ActivationValidator(
     private val predicateEvaluator: PredicateEvaluator
 ) {
 
+    private val modalChoices = ActivationModalChoices(com.wingedsheep.engine.handlers.TargetFinder(predicateEvaluator), predicateEvaluator.conditions)
+
     fun validate(state: GameState, action: ActivateAbility): String? {
         rejectClientResumeFlag(action)?.let { return it }
         // CR 605.3a — a mana ability may also be activated "whenever a rule or effect asks for a
@@ -106,11 +108,24 @@ internal class ActivationValidator(
         // Apply text-changing effects to cost and target filters
         val textReplacement = com.wingedsheep.engine.state.components.identity.TextChanges.of(state, action.sourceId)
         val effectiveCost = costTotaller.totalForValidation(state, action, ability, textReplacement)
-        val effectiveTargetReqs = if (textReplacement != null) {
-            ability.targetRequirements.map { it.applyTextReplacement(textReplacement) }
-        } else {
-            ability.targetRequirements
+        modalChoices.validate(state, action, ability.effect)?.let { return it }
+        val modal = (ability.effect as? com.wingedsheep.sdk.scripting.effects.ModalEffect)
+        val allRequirements = ability.targetRequirements + action.chosenModes.orEmpty().flatMap {
+            modal?.modes?.getOrNull(it)?.targetRequirements.orEmpty()
         }
+        val effectiveTargetReqs = allRequirements.map { req -> textReplacement?.let { req.applyTextReplacement(it) } ?: req }
+
+        val targetAction = if (modal != null && action.chosenModes != null) {
+            val outerCount = action.targets.size - action.modeTargetsOrdered.sumOf { it.size }
+            val outer = ability.targetRequirements.map { req -> textReplacement?.let { req.applyTextReplacement(it) } ?: req }
+            val boundOuter = targetValidator.bindTargetGroups(state, action.targets.take(outerCount), outer,
+                action.playerId, sourceColors = modalChoices.sourceColors(state, action),
+                sourceSubtypes = modalChoices.sourceSubtypes(state, action), sourceId = action.sourceId,
+                xValue = action.xValue, targetingSourceType = TargetingSourceType.ACTIVATED_ABILITY,
+                explicitCounts = action.targetGroupCounts.takeIf { it?.size == outer.size })
+            boundOuter.error?.let { return it }
+            action.copy(targetGroupCounts = boundOuter.counts + modalChoices.boundModeCounts(state, action, modal).flatten())
+        } else action
 
         return checkBatchActivation(action, effectiveCost, effectiveTargetReqs)
             ?: checkSubmittedTotalExileSelection(state, action, effectiveCost)
@@ -123,7 +138,7 @@ internal class ActivationValidator(
             ?: checkLifeCostPayable(state, action, ability, effectiveCost)
             ?: checkTapSymbolSummoningSickness(state, action, container, effectiveCost)
             ?: checkActivationRestrictions(state, action, ability)
-            ?: checkTargets(state, action, cardComponent, effectiveCost, effectiveTargetReqs)
+            ?: checkTargets(state, targetAction, cardComponent, effectiveCost, effectiveTargetReqs)
             ?: checkDamageDistribution(state, action, ability)
     }
 
@@ -583,6 +598,7 @@ internal class ActivationValidator(
         effectiveCost: AbilityCost,
         effectiveTargetReqs: List<TargetRequirement>,
     ): String? {
+        if (effectiveTargetReqs.isEmpty() && action.targets.isNotEmpty()) return "This ability has no targets"
         val controllerTargetReqs = effectiveTargetReqs.filter { it.chooser == TargetChooser.Controller }
         // For a variable-count "exile/sacrifice one or more permanents you control" cost, X is
         // defined by the payer's cost choice (CR 601.2b) — the chosen set's total mana value
@@ -603,8 +619,8 @@ internal class ActivationValidator(
                 action.targets,
                 controllerTargetReqs,
                 action.playerId,
-                sourceColors = cardComponent.colors,
-                sourceSubtypes = cardComponent.typeLine.subtypes.map { it.value }.toSet(),
+                sourceColors = modalChoices.sourceColors(state, action),
+                sourceSubtypes = modalChoices.sourceSubtypes(state, action),
                 sourceId = action.sourceId,
                 // X-clamped target counts (e.g. Rot-Curse Rakshasa's Renew "X target creatures")
                 // and X-bounded "mana value X or less" reanimation targets (Fabrication Foundry)

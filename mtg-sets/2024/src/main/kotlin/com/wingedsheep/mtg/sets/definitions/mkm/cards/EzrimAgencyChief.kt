@@ -7,8 +7,7 @@ import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.effects.ModalEffect
-import com.wingedsheep.sdk.scripting.effects.Mode
+import com.wingedsheep.sdk.scripting.effects.EffectChoice
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 /**
@@ -66,20 +65,20 @@ val EzrimAgencyChief = card("Ezrim, Agency Chief") {
             Costs.Mana("{1}"),
             Costs.Sacrifice(GameObjectFilter.Artifact)
         )
-        effect = ModalEffect.chooseOne(
-            Mode.noTarget(
-                Effects.GrantKeyword(Keyword.VIGILANCE, EffectTarget.Self),
-                "Ezrim gains vigilance until end of turn"
+        effect = Effects.ChooseAction(listOf(
+            EffectChoice(
+                label = "Ezrim gains vigilance until end of turn",
+                effect = Effects.GrantKeyword(Keyword.VIGILANCE, EffectTarget.Self),
             ),
-            Mode.noTarget(
-                Effects.GrantKeyword(Keyword.LIFELINK, EffectTarget.Self),
-                "Ezrim gains lifelink until end of turn"
+            EffectChoice(
+                label = "Ezrim gains lifelink until end of turn",
+                effect = Effects.GrantKeyword(Keyword.LIFELINK, EffectTarget.Self),
             ),
-            Mode.noTarget(
-                Effects.GrantKeyword(Keyword.HEXPROOF, EffectTarget.Self),
-                "Ezrim gains hexproof until end of turn"
+            EffectChoice(
+                label = "Ezrim gains hexproof until end of turn",
+                effect = Effects.GrantKeyword(Keyword.HEXPROOF, EffectTarget.Self),
             )
-        )
+        ))
         description = "{1}, Sacrifice an artifact: Ezrim gains your choice of vigilance, " +
             "lifelink, or hexproof until end of turn."
     }
