@@ -2458,6 +2458,110 @@
     ]
 }
 
+// Ivy, Gleeful Spellthief
+{
+    "name": "Ivy, Gleeful Spellthief",
+    "manaCost": "{G}{U}",
+    "typeLine": "Legendary Creature — Faerie Rogue",
+    "oracleText": "Flying\nWhenever a player casts a spell that targets only a single creature other than Ivy, you may copy that spell. The copy targets Ivy. (A copy of an Aura spell becomes a token.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ivy, Gleeful Spellthief:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "player": "Each",
+                    "requires": [
+                        {
+                            "type": "SpellTargetsMatching",
+                            "filter": {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ],
+                                "statePredicates": [
+                                    {
+                                        "type": "StateNot",
+                                        "predicate": "IsSource"
+                                    }
+                                ]
+                            },
+                            "only": true
+                        }
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "CopyForEachOtherPossibleTarget",
+                        "candidates": {
+                            "cardPredicates": [
+                                "IsCreature"
+                            ],
+                            "statePredicates": [
+                                "IsSource"
+                            ]
+                        }
+                    }
+                },
+                "descriptionOverride": "Whenever a player casts a spell that targets only a single creature other than Ivy, you may copy that spell. The copy targets Ivy."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "201",
+        "rarity": "RARE",
+        "artist": "Evyn Fong",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/9/d94c15b7-6c8f-45a6-8734-975e3e3b790c.jpg?1783921286",
+        "rulings": [
+            {
+                "date": "2022-09-09",
+                "text": "The second ability triggers whenever a player casts a spell that targets only one creature and no other object or player. It doesn't matter who controls the creature."
+            },
+            {
+                "date": "2022-09-09",
+                "text": "If a spell has multiple targets but all of them are the same creature, Ivy, Gleeful Spellthief's second ability will trigger."
+            },
+            {
+                "date": "2022-09-09",
+                "text": "The copy is created even if the spell that caused the ability to trigger has been countered by the time the ability resolves. The copy resolves before the original spell."
+            },
+            {
+                "date": "2022-09-09",
+                "text": "If Ivy, Gleeful Spellthief isn't a legal target for the spell, no copy can be created."
+            },
+            {
+                "date": "2022-09-09",
+                "text": "The copy that Ivy, Gleeful Spellthief's second ability creates is created on the stack, so it's not \"cast.\" Other abilities that trigger when a player casts a spell won't trigger."
+            },
+            {
+                "date": "2022-09-09",
+                "text": "If the spell that's copied is modal (that is, it says \"Choose one —\" or the like), the copy will have the same mode. You can't choose a different one."
+            },
+            {
+                "date": "2022-09-09",
+                "text": "If the spell that's copied has an X whose value was determined as it was cast, the copy has the same value of X."
+            },
+            {
+                "date": "2022-09-09",
+                "text": "The controller of a copy can't choose to pay any additional costs for the copy. However, effects based on any additional costs that were paid for the original spell are copied as though those same costs were paid for the copy too. Notably, if the spell you copy was kicked, the copies will also be kicked."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ]
+}
+
 // Jaya's Firenado
 {
     "name": "Jaya's Firenado",

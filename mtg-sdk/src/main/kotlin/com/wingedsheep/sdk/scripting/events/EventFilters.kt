@@ -390,11 +390,19 @@ sealed interface SpellCastPredicate {
      * ("a spell that targets a creature you don't control" — Legolas, Master Archer).
      * The filter is evaluated against each chosen target relative to the trigger
      * controller (so `youControl()` / opponent-controlled predicates resolve correctly).
+     *
+     * [only] is "a spell that targets **only a single** [filter]" (Ivy, Gleeful Spellthief; Vesuvan
+     * Duplimancy): every instance of the word "target" on the spell — player targets included —
+     * points at one and the same object, and that object matches [filter]. Several instances all
+     * aimed at the same creature still count as a single creature (Ivy's 2022-09-09 ruling); a spell
+     * that also targets a player or a second object does not. The "those creatures" capture is the
+     * same either way, so with [only] the payoff acts on exactly that one object.
      */
     @SerialName("SpellTargetsMatching")
     @Serializable
-    data class TargetsMatching(val filter: GameObjectFilter) : SpellCastPredicate {
-        override val description = "that targets ${filter.description}"
+    data class TargetsMatching(val filter: GameObjectFilter, val only: Boolean = false) : SpellCastPredicate {
+        override val description =
+            if (only) "that targets only a single ${filter.description}" else "that targets ${filter.description}"
     }
 
     /**

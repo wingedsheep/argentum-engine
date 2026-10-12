@@ -101,7 +101,8 @@ class CopyForEachOtherPossibleTargetExecutor(
             else -> TargetingSourceType.SPELL
         }
         val candidates = candidatesFor(
-            state, effect, requirements, targetsComponent, copierId, targetingSourceId, targetingSourceType
+            state, effect, requirements, targetsComponent, copierId, targetingSourceId, targetingSourceType,
+            filterSourceId = context.sourceId ?: targetingSourceId
         )
         if (candidates.isEmpty()) return EffectResult.success(state)
 
@@ -129,7 +130,8 @@ class CopyForEachOtherPossibleTargetExecutor(
         targetsComponent: TargetsComponent?,
         copierId: EntityId,
         targetingSourceId: EntityId,
-        targetingSourceType: TargetingSourceType
+        targetingSourceType: TargetingSourceType,
+        filterSourceId: EntityId
     ): List<EntityId> {
         // Legal for *every* instance of "target" — intersect the per-requirement legal sets, keeping
         // the first requirement's ordering so the copies go on the stack deterministically.
@@ -152,7 +154,10 @@ class CopyForEachOtherPossibleTargetExecutor(
             .map { it.entityId }
             .toSet()
 
-        val predicateContext = PredicateContext(controllerId = copierId, sourceId = targetingSourceId)
+        // `candidates` is card text on the *ability's* source, so "this creature" in it is that
+        // permanent (Ivy, Gleeful Spellthief: "The copy targets Ivy" is `Creature.sourceItself()`),
+        // not the spell being copied — legality above still reads the targeting object.
+        val predicateContext = PredicateContext(controllerId = copierId, sourceId = filterSourceId)
         val projected = state.projectedState
         return couldTarget.filter { candidateId ->
             candidateId !in alreadyTargeted &&
