@@ -147,7 +147,7 @@ class AnyPlayerMayPayExecutor(
     ): EffectResult {
         val validPermanents = findValidPermanentsOnBattlefield(state, playerId, cost, sourceId)
 
-        val prompt = "You may sacrifice ${cost.count} ${cost.filter.description}s to cause $sourceName to be sacrificed, or skip"
+        val prompt = AnyPlayerMayPayPrompt.sacrifice(cost, sourceName, effect.consequence, effect.consequenceIfNonePaid)
 
         val continuation = anyPlayerMayPayContinuation(
             effect, context,

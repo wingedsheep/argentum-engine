@@ -15,6 +15,7 @@ import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.PipelineState
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.effects.BattlefieldFilterUtils
+import com.wingedsheep.engine.handlers.effects.player.AnyPlayerMayPayPrompt
 import com.wingedsheep.engine.mechanics.mana.ManaPaymentWindow
 import com.wingedsheep.engine.mechanics.mana.ManaPool
 import com.wingedsheep.engine.mechanics.mana.ManaSolver
@@ -961,7 +962,10 @@ class SacrificeAndPayContinuationResumer(
                         state, nextPlayerId, atom, continuation.sourceId
                     )
                     if (validPermanents.size >= atom.count) {
-                        val prompt = "You may sacrifice ${atom.count} ${atom.filter.description}s to cause ${continuation.sourceName} to be sacrificed, or skip"
+                        val prompt = AnyPlayerMayPayPrompt.sacrifice(
+                            atom, continuation.sourceName,
+                            continuation.consequence, continuation.consequenceIfNonePaid
+                        )
                         val newContinuation = continuation.copy(
                             currentPlayerId = nextPlayerId,
                             remainingPlayers = remainingAfter

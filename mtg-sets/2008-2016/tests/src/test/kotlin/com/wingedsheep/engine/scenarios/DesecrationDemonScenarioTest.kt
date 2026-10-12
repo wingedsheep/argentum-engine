@@ -54,6 +54,8 @@ class DesecrationDemonScenarioTest : FunSpec({
         val decision = driver.pendingDecision
         decision.shouldNotBeNull()
         decision.shouldBeInstanceOf<SelectCardsDecision>().playerId shouldBe opponent
+        decision.prompt shouldBe "You may sacrifice a creature. If you do, tap Desecration Demon. " +
+            "Put 1 +1/+1 counter on Desecration Demon."
 
         driver.submitCardSelection(opponent, listOf(opponentCreature))
 
