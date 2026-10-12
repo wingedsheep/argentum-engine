@@ -452,6 +452,14 @@ class TriggerProcessor(
         pinOpponentTargetChooserOrPause(state, trigger, allRequirements, targetRequirement)
             ?.let { return it }
 
+        val chooserId = resolveTargetChooser(state, trigger, allRequirements)
+        val identity = state.triggerIdentityFromCurrentCardDefinition(trigger.sourceId, ability.id)
+        // A remembered "always yes / always no" already answers the may-question at resolution;
+        // offering a decline here would let a target override it.
+        val consentAtTargeting = chooserId == trigger.controllerId &&
+            identity?.let { state.autoAnswerFor(trigger.controllerId, it) } == null &&
+            consentAnswerableAtTargeting(ability, allRequirements)
+
         // Create target requirement infos for the decision.
         //
         // A slot's minimum is the *requirement's* — "up to one" allows zero, "target creature" does
@@ -460,7 +468,11 @@ class TriggerProcessor(
         // wrong twice over. Targets follow CR 603.3d, while optional effects are chosen at resolution
         // under CR 603.5. An ability whose target is mandatory has to be removed from the stack
         // when there is no legal one (the loop above) rather than resolve targetless.
-        // Consent remains a gate on the effect and is answered as the ability resolves.
+        // Consent remains a gate on the effect and is answered as the ability resolves — except
+        // for the plain "you may <verb> target X" shape ([consentAnswerableAtTargeting]), where the
+        // slot's minimum is lowered to zero purely so the picker can offer "Decline". That isn't
+        // "up to one": the requirement stays mandatory, an empty answer declines the ability, and
+        // a target answers the may-question yes so resolution doesn't ask it a second time.
         val requirementInfos = visibleRequirements.mapIndexed { index, req ->
             // "Any number of target ..." (unlimited) caps at however many legal targets exist,
             // mirroring the cast-time path (TargetEnumerationUtils). Using req.count (always 1
@@ -482,8 +494,11 @@ class TriggerProcessor(
                 description = req.description,
                 mustDifferFromEarlier = req is com.wingedsheep.sdk.scripting.targets.TargetOther,
                 // A dependent slot is optional only if every slot after it is (DependentTargetSelection).
-                minTargets = if (sequential && !DependentTargetSelection.canStopAt(allRequirements, 0)) 1
-                    else req.effectiveMinCount,
+                minTargets = when {
+                    consentAtTargeting -> 0
+                    sequential && !DependentTargetSelection.canStopAt(allRequirements, 0) -> 1
+                    else -> req.effectiveMinCount
+                },
                 maxTargets = maxTargets,
                 sameOwner = (req as? com.wingedsheep.sdk.scripting.targets.TargetObject)?.sameOwner == true,
                 totalManaValueAtMost = resolveTotalManaValueAtMost(state, trigger, req),
@@ -518,7 +533,7 @@ class TriggerProcessor(
 
         val decisionResult = decisionHandler.createTargetDecision(
             state = state,
-            playerId = resolveTargetChooser(state, trigger, allRequirements),
+            playerId = chooserId,
             sourceId = trigger.sourceId,
             sourceName = trigger.sourceName,
             requirements = requirementInfos,
@@ -533,14 +548,15 @@ class TriggerProcessor(
                 controllerId = trigger.controllerId,
                 effect = ability.effect,
                 description = ability.description,
-                abilityIdentity = state.triggerIdentityFromCurrentCardDefinition(trigger.sourceId, ability.id),
+                abilityIdentity = identity,
                 triggerContext = trigger.triggerContext,
                 elseEffect = ability.elseEffect,
                 targetRequirements = allRequirements,
                 sequentialTargets = if (sequential) emptyList() else null,
                 carriedPipeline = trigger.carriedPipeline,
                 interveningIf = ability.interveningIf,
-                isBackup = ability.isBackup
+                isBackup = ability.isBackup,
+                consentAtTargeting = consentAtTargeting
             ),
         )
 
@@ -1361,6 +1377,39 @@ class TriggerProcessor(
          * `EffectOncePerTurnLoweringTest`'s sweep over the whole registry is what guarantees this
          * can never fire mid-game.
          */
+        /**
+         * True when choosing [ability]'s target can also answer its "you may" — the one-question
+         * shape "you may <verb> target X" (Lumengrid Sentinel). Asking for the target as the
+         * ability triggers (CR 603.3d) and then "you may …?" as it resolves (CR 603.5) puts the
+         * same question to the player twice, so the target decision offers "Decline" and a chosen
+         * target counts as yes. Declining doesn't put the ability on the stack: resolving it would
+         * do nothing, so skipping it is a shortcut with the same outcome.
+         *
+         * Deliberately narrow, so a target never commits the player to anything they'd want to
+         * weigh separately:
+         *  - the whole effect is one [Gate.MayDecide] — not a budget-wrapped one, not a cost gate
+         *    (`MayPay`), and with no "if you don't" branch (`otherwise` / `elseEffect`) that a
+         *    decline would have to run instead;
+         *  - its decider is the controller, and it isn't a peer-outcome choice ([Gate.MayDecide.choiceLabels]);
+         *  - exactly one mandatory, single-object target, so an empty answer can only mean
+         *    "decline", never "up to one, chose none".
+         */
+        internal fun consentAnswerableAtTargeting(
+            ability: TriggeredAbility,
+            requirements: List<TargetRequirement>
+        ): Boolean {
+            val gated = ability.effect as? GatedEffect ?: return false
+            val gate = gated.gate as? Gate.MayDecide ?: return false
+            val requirement = requirements.singleOrNull() ?: return false
+            return gate.choiceLabels == null &&
+                gated.otherwise == null &&
+                gated.decisionMaker == null &&
+                ability.elseEffect == null &&
+                !requirement.unlimited &&
+                requirement.count == 1 &&
+                requirement.effectiveMinCount == 1
+        }
+
         internal fun loweredEffectBudget(effect: Effect, abilityId: AbilityId): Effect {
             val spending = withSpendingGate(effect, abilityId)
             require(spending != null || !containsConsentGate(effect)) {

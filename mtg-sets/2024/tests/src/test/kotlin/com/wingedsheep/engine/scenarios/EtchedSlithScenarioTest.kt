@@ -1,7 +1,6 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.ChooseTargetsDecision
-import com.wingedsheep.engine.core.YesNoDecision
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.CounterType
@@ -21,7 +20,8 @@ import io.kotest.matchers.shouldBe
  *  you may remove a counter from another target permanent or opponent."
  *
  * The removal is a CR 603.12 reflexive trigger: its target is chosen after the +1/+1 counter lands,
- * and the "may" is answered on resolution. "Another" keeps the Slith itself off the target list,
+ * and the "may" is answered at that target prompt (a target is the yes, an empty selection declines).
+ * "Another" keeps the Slith itself off the target list,
  * and only opponents (not the controller) are legal player targets.
  */
 class EtchedSlithScenarioTest : ScenarioTestBase() {
@@ -76,7 +76,7 @@ class EtchedSlithScenarioTest : ScenarioTestBase() {
 
                 game.selectTargets(listOf(bears)).error shouldBe null
                 game.resolveStack()
-                game.answerYesNo(true).error shouldBe null
+                game.hasPendingDecision() shouldBe false
 
                 game.counters(bears, CounterType.PLUS_ONE_PLUS_ONE) shouldBe 1
                 game.counters(slith, CounterType.PLUS_ONE_PLUS_ONE) shouldBe 1
@@ -94,7 +94,7 @@ class EtchedSlithScenarioTest : ScenarioTestBase() {
                 game.attackToTargetPrompt()
                 game.selectTargets(listOf(game.player2Id)).error shouldBe null
                 game.resolveStack()
-                game.answerYesNo(true).error shouldBe null
+                game.hasPendingDecision() shouldBe false
 
                 game.counters(game.player2Id, CounterType.POISON) shouldBe 2
             }
@@ -111,10 +111,14 @@ class EtchedSlithScenarioTest : ScenarioTestBase() {
                 val bears = game.findPermanent("Grizzly Bears")!!
                 game.addCounters(bears, CounterType.PLUS_ONE_PLUS_ONE, 2)
 
-                game.attackToTargetPrompt()
-                game.selectTargets(listOf(bears)).error shouldBe null
+                val prompt = game.attackToTargetPrompt()
+                withClue("the target prompt offers the decline") {
+                    prompt.targetRequirements.single().minTargets shouldBe 0
+                }
+                // Declining is an empty target selection: the reflexive trigger never goes on the stack.
+                game.selectTargets(emptyList()).error shouldBe null
+                game.state.stack.isEmpty() shouldBe true
                 game.resolveStack()
-                game.answerYesNo(false).error shouldBe null
 
                 game.counters(bears, CounterType.PLUS_ONE_PLUS_ONE) shouldBe 2
                 game.counters(slith, CounterType.PLUS_ONE_PLUS_ONE) shouldBe 1

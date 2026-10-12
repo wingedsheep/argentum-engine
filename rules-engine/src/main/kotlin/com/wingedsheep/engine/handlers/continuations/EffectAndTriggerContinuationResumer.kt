@@ -134,6 +134,12 @@ class EffectAndTriggerContinuationResumer(
                 ?.let { alignedRequirements.add(it.withCount(targetIds.size)) }
         }
 
+        // The target decision doubled as the "you may" question and the player declined: the
+        // ability would resolve doing nothing, so it isn't put on the stack at all.
+        if (continuation.consentAtTargeting && selectedTargets.isEmpty()) {
+            return checkForMore(state, emptyList())
+        }
+
         // Zero-target resolution path. Two cases:
         //  - `elseEffect != null`: the ability has explicit "...; otherwise, X" wording —
         //    swap to that effect (Conditional/elseEffect pattern).
@@ -203,7 +209,8 @@ class EffectAndTriggerContinuationResumer(
             xValue = continuation.triggerContext?.xValue,
             carriedPipeline = continuation.carriedPipeline,
             interveningIf = continuation.interveningIf,
-            isBackup = continuation.isBackup
+            isBackup = continuation.isBackup,
+            consentAnsweredAtTargeting = continuation.consentAtTargeting
         )
 
         val stackResult = services.stackResolver.putTriggeredAbility(

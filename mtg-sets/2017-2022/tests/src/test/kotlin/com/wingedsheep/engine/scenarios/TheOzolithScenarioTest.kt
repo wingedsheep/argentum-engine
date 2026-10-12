@@ -77,11 +77,11 @@ class TheOzolithScenarioTest : FunSpec({
         d.setCounters(ozolith, mapOf(CounterType.PLUS_ONE_PLUS_ONE to 3, CounterType.FLYING to 1))
 
         d.passPriorityUntil(Step.BEGIN_COMBAT)
-        (d.pendingDecision is ChooseTargetsDecision) shouldBe true
-        d.submitTargetSelection(me, listOf(bear))
+        // The "you may" is answered at the target prompt: choosing a target is the yes.
+        (d.pendingDecision as ChooseTargetsDecision).targetRequirements.single().minTargets shouldBe 0
+        d.submitTargetSelection(me, listOf(bear)).error shouldBe null
         d.bothPass()
-        (d.pendingDecision is YesNoDecision) shouldBe true
-        d.submitYesNo(me, true)
+        (d.pendingDecision is YesNoDecision) shouldBe false
 
         d.counters(ozolith) shouldBe emptyMap()
         d.counters(bear) shouldBe mapOf(CounterType.PLUS_ONE_PLUS_ONE to 3, CounterType.FLYING to 1)
@@ -96,9 +96,9 @@ class TheOzolithScenarioTest : FunSpec({
         d.setCounters(ozolith, mapOf(CounterType.PLUS_ONE_PLUS_ONE to 3))
 
         d.passPriorityUntil(Step.BEGIN_COMBAT)
-        d.submitTargetSelection(me, listOf(bear))
-        d.bothPass()
-        d.submitYesNo(me, false)
+        // Declining is an empty target selection; the ability never goes on the stack.
+        d.submitTargetSelection(me, emptyList()).error shouldBe null
+        d.stackSize shouldBe 0
 
         d.counters(ozolith) shouldBe mapOf(CounterType.PLUS_ONE_PLUS_ONE to 3)
         d.counters(bear) shouldBe emptyMap()

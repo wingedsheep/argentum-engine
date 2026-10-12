@@ -1105,6 +1105,15 @@ that instance resolves, after target validation. Simultaneous identical optional
 separate targets, priority windows and resolution choices; no put-on-stack consent batch removes
 those choices. The server/client use the ordinary target decision followed by a resolution yes/no.
 
+One shape answers both at once: a trigger whose whole effect is a plain "you may" over exactly one
+mandatory single target, with no "if you don't" branch ("you may tap target permanent" —
+`TriggerProcessor.consentAnswerableAtTargeting`). Asking for the target and then "you may …?" puts
+one question to the player twice, so the target decision offers **Decline** (its slot minimum is
+lowered to zero for that purpose only). A chosen target marks the stack object
+`consentAnsweredAtTargeting`, and the gated executor takes the yes branch without prompting;
+declining skips the ability, which would have resolved doing nothing. A later "you may" nested
+inside the effect still asks.
+
 **Priority and the "both players pass" rule.** `GameState` tracks priority with two fields:
 
 ```kotlin

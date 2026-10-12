@@ -1,7 +1,6 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.ChooseTargetsDecision
-import com.wingedsheep.engine.core.YesNoDecision
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.mtg.sets.definitions.ons.cards.DawningPurist
@@ -10,6 +9,7 @@ import com.wingedsheep.sdk.model.Deck
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.types.shouldBeInstanceOf
 import io.kotest.matchers.shouldNotBe
 
 /**
@@ -63,13 +63,14 @@ class DawningPuristTest : FunSpec({
         // (no first strike creatures, so first strike step is skipped per CR 510.4)
         driver.currentStep shouldBe Step.COMBAT_DAMAGE
 
-        // Announce the target before resolution consent.
+        // Choosing the target is the "you may" answer — no second prompt at resolution.
         val chooseTargets = driver.pendingDecision as ChooseTargetsDecision
+        chooseTargets.targetRequirements.single().minTargets shouldBe 0
         driver.submitTargetSelection(attacker, listOf(enchantment))
 
         // Trigger goes on stack - resolve it
         driver.bothPass()
-        driver.submitYesNo(attacker, true).error shouldBe null
+        driver.pendingDecision shouldBe null
 
         // Enchantment should be destroyed
         driver.findPermanent(defender, "Test Enchantment") shouldBe null
@@ -107,12 +108,11 @@ class DawningPuristTest : FunSpec({
         driver.declareNoBlockers(defender)
         driver.bothPass()
 
-        // Combat damage - trigger fires with Effects.May, decline
+        // Combat damage - trigger fires with Effects.May; decline with an empty target selection
         // (no first strike creatures, so first strike step is skipped per CR 510.4)
-        driver.submitTargetSelection(attacker, listOf(enchantment)).error shouldBe null
-        driver.bothPass().error shouldBe null
-        val yesNoDecision = driver.pendingDecision as YesNoDecision
-        driver.submitYesNo(yesNoDecision.playerId, false)
+        driver.pendingDecision.shouldBeInstanceOf<ChooseTargetsDecision>()
+        driver.submitTargetSelection(attacker, emptyList()).error shouldBe null
+        driver.stackSize shouldBe 0
 
         // Enchantment should still be on the battlefield
         driver.findPermanent(defender, "Test Enchantment") shouldNotBe null

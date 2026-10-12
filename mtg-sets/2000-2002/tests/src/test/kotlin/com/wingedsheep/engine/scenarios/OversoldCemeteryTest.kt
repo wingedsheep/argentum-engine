@@ -62,7 +62,7 @@ class OversoldCemeteryTest : FunSpec({
         // Advance to the controller's upkeep
         advanceToPlayerUpkeep(driver, activePlayer)
 
-        // The trigger announces targets before consent.
+        // The trigger asks for its target; choosing one is the "you may" answer.
         driver.pendingDecision.shouldBeInstanceOf<ChooseTargetsDecision>()
 
         val targetDecision = driver.pendingDecision as ChooseTargetsDecision
@@ -75,9 +75,9 @@ class OversoldCemeteryTest : FunSpec({
         // Choose creature1 as target
         driver.submitTargetSelection(activePlayer, listOf(creature1))
 
-        // Resolve the trigger
+        // Resolve the trigger — no second yes/no
         driver.bothPass()
-        driver.submitYesNo(activePlayer, true).error shouldBe null
+        driver.pendingDecision shouldBe null
 
         // creature1 should be in hand now, not graveyard
         driver.getGraveyardCardNames(activePlayer).count { it == "Grizzly Bears" } shouldBe 3
@@ -166,7 +166,7 @@ class OversoldCemeteryTest : FunSpec({
         driver.pendingDecision.shouldBeInstanceOf<ChooseTargetsDecision>()
         driver.submitTargetSelection(activePlayer, listOf(target))
         driver.bothPass()
-        driver.submitYesNo(activePlayer, true).error shouldBe null
+        driver.pendingDecision shouldBe null
 
         // One creature should have moved from graveyard to hand
         driver.getGraveyard(activePlayer).size shouldBe graveyardSizeBefore - 1

@@ -41,9 +41,9 @@ class NecriteScenarioTest : ScenarioTestBase() {
                     game.state.pendingDecision shouldNotBe null
                 }
                 val bears = game.findPermanent("Grizzly Bears")!!
+                // Choosing the target is the "you may" — no second yes/no at resolution.
                 game.selectTargets(listOf(bears)).error shouldBe null
                 game.resolveStack()
-                game.answerYesNo(true).error shouldBe null
 
                 withClue("Necrite paid for the kill with itself") {
                     game.isOnBattlefield("Necrite") shouldBe false
@@ -67,9 +67,9 @@ class NecriteScenarioTest : ScenarioTestBase() {
                 game.passUntilPhase(Phase.COMBAT, Step.DECLARE_BLOCKERS)
                 game.declareNoBlockers()
 
-                game.selectTargets(listOf(game.findPermanent("Grizzly Bears")!!)).error shouldBe null
-                game.resolveStack()
-                game.answerYesNo(false).error shouldBe null
+                // Declining is an empty target selection: the trigger never goes on the stack.
+                game.selectTargets(emptyList()).error shouldBe null
+                game.state.stack.isEmpty() shouldBe true
 
                 game.isOnBattlefield("Necrite") shouldBe true
                 game.isOnBattlefield("Grizzly Bears") shouldBe true

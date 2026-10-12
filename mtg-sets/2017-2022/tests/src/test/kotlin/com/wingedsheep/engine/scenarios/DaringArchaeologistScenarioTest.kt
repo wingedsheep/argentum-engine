@@ -25,11 +25,16 @@ import com.wingedsheep.engine.core.Outcome
  * requires a choice for each of them — only "up to one target" makes one optional. The card
  * used to spell the consent as `optional = true` on the target requirement, which is the SDK's
  * phrasing for "up to one target" — a strictly different ability, since it lets the controller
- * decline to target at all and never asks for consent. Argentum Assay's differential reported it.
+ * put the ability on the stack without a target. Argentum Assay's differential reported it.
+ *
+ * For this plain "you may <verb> target X" shape the engine takes the may-answer at the target
+ * prompt: choosing a target is the yes (no second yes/no on resolution), and an empty selection
+ * declines — the ability never goes on the stack. That is what tells it apart from "up to one",
+ * where an empty selection would still put a targetless ability on the stack.
  *
  * Two artifact cards go in the graveyard rather than one, deliberately: with a single legal target
- * the engine auto-selects it and no `ChooseTargetsDecision` is raised at all, so the requirement's
- * minimum — the thing that changed — would not be observable.
+ * the engine auto-selects it and no `ChooseTargetsDecision` is raised at all, so the prompt would
+ * not be observable.
  */
 class DaringArchaeologistScenarioTest : FunSpec({
 
@@ -59,32 +64,31 @@ class DaringArchaeologistScenarioTest : FunSpec({
         return Triple(you, golem, myr)
     }
 
-    test("the target is mandatory before resolution consent") {
+    test("choosing a target is the yes: the card returns with no second may-prompt") {
         val d = driver()
         val (you, golem, myr) = d.castOverTwoArtifacts()
-
 
         val decision = d.pendingDecision.shouldBeInstanceOf<ChooseTargetsDecision>()
         decision.legalTargets[0].shouldNotBeNull() shouldContainAll listOf(golem, myr)
-        // The half that fails when the consent is spelled as `optional = true` on the requirement:
-        // that spelling makes this 0, i.e. "up to one target artifact card".
-        decision.targetRequirements.single().minTargets shouldBe 1
-
-        d.submitTargetSelection(you, listOf(golem))
-        d.bothPass().error shouldBe null
-        d.submitYesNo(you, true).error shouldBe null
-
-        d.getHand(you) shouldContain golem
-    }
-
-    test("declining after target selection leaves both cards in the graveyard") {
-        val d = driver()
-        val (you, golem, myr) = d.castOverTwoArtifacts()
+        // The target prompt carries the decline, so its minimum is zero.
+        decision.targetRequirements.single().minTargets shouldBe 0
 
         d.submitTargetSelection(you, listOf(golem)).error shouldBe null
         d.bothPass().error shouldBe null
-        d.submitYesNo(you, false).error shouldBe null
 
+        d.pendingDecision shouldBe null
+        d.getHand(you) shouldContain golem
+    }
+
+    test("declining at the target prompt keeps the ability off the stack and both cards in the graveyard") {
+        val d = driver()
+        val (you, golem, myr) = d.castOverTwoArtifacts()
+
+        d.submitTargetSelection(you, emptyList()).error shouldBe null
+
+        // An "up to one target" spelling would put a targetless ability on the stack here.
+        d.stackSize shouldBe 0
+        d.pendingDecision shouldBe null
         d.getGraveyard(you) shouldContainAll listOf(golem, myr)
     }
 })

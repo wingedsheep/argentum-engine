@@ -28,7 +28,7 @@ class AddDynamicCountersExecutor(
         effect: AddDynamicCountersEffect,
         context: EffectContext
     ): EffectResult {
-        val targetId = context.resolveTarget(effect.target)
+        val targetId = context.resolveTarget(effect.target, state)
             ?: return EffectResult.error(state, "No valid target for counters")
 
         val evaluator = amountEvaluator

@@ -1,7 +1,6 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.ChooseTargetsDecision
-import com.wingedsheep.engine.core.YesNoDecision
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
@@ -45,10 +44,9 @@ class DuplicantScenarioTest : FunSpec({
     }
 
     /**
-     * Cast Duplicant from hand so the imprint trigger fires, choose [victim] as its target (when
-     * given the choice) and answer the "you may" with [accept]. Returns Duplicant on the
-     * battlefield. Both decisions are handled by whichever arrives first — an optional trigger that
-     * also targets asks for consent and for the target in an order the harness shouldn't assume.
+     * Cast Duplicant from hand so the imprint trigger fires, and answer its "you may" at the target
+     * prompt: choosing [victim] is the yes, an empty selection (when not [accept]) is the decline.
+     * There is no second yes/no as the ability resolves. Returns Duplicant on the battlefield.
      */
     fun GameTestDriver.castDuplicant(victim: EntityId, accept: Boolean): EntityId {
         val inHand = putCardInHand(player1, "Duplicant")
@@ -59,8 +57,7 @@ class DuplicantScenarioTest : FunSpec({
             when (state.pendingDecision) {
                 null -> bothPass()
                 is ChooseTargetsDecision ->
-                    submitTargetSelection(player1, listOf(victim)).error shouldBe null
-                is YesNoDecision -> submitYesNo(player1, accept).error shouldBe null
+                    submitTargetSelection(player1, if (accept) listOf(victim) else emptyList()).error shouldBe null
                 else -> error("unexpected decision ${state.pendingDecision}")
             }
         }

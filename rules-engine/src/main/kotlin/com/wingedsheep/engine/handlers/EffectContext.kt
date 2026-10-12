@@ -57,6 +57,12 @@ data class EffectContext(
      */
     val abilityIdentity: com.wingedsheep.sdk.scripting.AbilityIdentity? = null,
     /**
+     * The resolving triggered ability's leading "you may" was answered yes when its target was
+     * chosen ([com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComponent.consentAnsweredAtTargeting]).
+     * Consumed by the first `Gate.MayDecide` the effect reaches, which clears it for its branch.
+     */
+    val consentAnsweredAtTargeting: Boolean = false,
+    /**
      * The concrete ability captured at activation. Resolution must not rediscover it from a
      * source or grant that can change before resolving (including "retain this ability" copies).
      * Null for spells, triggers, and synthesized activations without an ActivatedAbility.
@@ -570,6 +576,7 @@ data class EffectContext(
             controllerId = ability.controllerId,
             granterId = ability.granterId,
             abilityIdentity = ability.abilityIdentity,
+            consentAnsweredAtTargeting = ability.consentAnsweredAtTargeting,
             sourceFaceChanges = ability.sourceFaceChanges,
             sourceBattlefieldTimestamp = ability.sourceBattlefieldTimestamp,
             objectReferences = ability.objectReferences,

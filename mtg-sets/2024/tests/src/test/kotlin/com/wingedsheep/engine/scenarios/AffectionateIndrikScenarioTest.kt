@@ -59,9 +59,10 @@ class AffectionateIndrikScenarioTest : FunSpec({
         driver.castSpell(driver.player1, indrik).outcome shouldBe Outcome.Done
         driver.bothPass()
 
-        driver.submitTargetSelection(driver.player1, listOf(theirs))
+        // Choosing the target is the "you may" yes; resolution asks nothing further.
+        driver.submitTargetSelection(driver.player1, listOf(theirs)).error shouldBe null
         driver.bothPass() // resolve the triggered ability
-        driver.submitYesNo(driver.player1, true).error shouldBe null
+        driver.pendingDecision shouldBe null
 
         // 4 damage to a toughness-3 creature is lethal; the Indrik survives the 2 back.
         driver.findPermanent(driver.player2, "Minotaur Warrior") shouldBe null

@@ -7044,6 +7044,10 @@ What that gets you, uniformly, for targeted and untargeted triggers alike:
   answer will be "no". Remembered auto-answers run through the gated executor at resolution;
   they never skip target selection or priority. Multiple instances resolve independently so the
   player can inspect earlier outcomes before answering later instances.
+- **Except "you may <verb> target X".** When the whole effect is the one `MayDecide` over a single
+  mandatory target, with no `otherwise`/`elseEffect`, the target prompt *is* the question: it
+  offers Decline (the ability is skipped), and choosing a target answers yes, so resolution
+  doesn't ask again. Any other shape keeps the separate resolution yes/no.
 - **Targets follow CR 603.3d.** A slot's minimum is the *requirement's*: "target creature" stays
   mandatory and the ability is removed from the stack when nothing is legal. "Up to one target
   creature" is an optional **requirement** (`target(TargetFilter.Creature, optional = true)`), which is a different

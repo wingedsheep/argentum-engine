@@ -2,7 +2,6 @@ package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.ChooseTargetsDecision
 import com.wingedsheep.engine.core.SelectCardsDecision
-import com.wingedsheep.engine.core.YesNoDecision
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.mtg.sets.definitions.mrd.cards.ThoughtPrison
@@ -46,8 +45,9 @@ class ThoughtPrisonScenarioTest : FunSpec({
         repeat(20) {
             when (val decision = state.pendingDecision) {
                 null -> if (state.stack.isNotEmpty()) bothPass() else return
-                is ChooseTargetsDecision -> submitTargetSelection(player1, listOf(player2)).error shouldBe null
-                is YesNoDecision -> submitYesNo(player1, accept).error shouldBe null
+                // The imprint's "you may" is answered at its target prompt: an empty selection declines.
+                is ChooseTargetsDecision ->
+                    submitTargetSelection(player1, if (accept) listOf(player2) else emptyList()).error shouldBe null
                 is SelectCardsDecision -> submitCardSelection(player1, pick).error shouldBe null
                 else -> error("unexpected decision $decision")
             }

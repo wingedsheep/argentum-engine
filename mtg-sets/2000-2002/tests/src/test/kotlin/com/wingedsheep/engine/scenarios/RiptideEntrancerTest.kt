@@ -1,7 +1,6 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.ChooseTargetsDecision
-import com.wingedsheep.engine.core.YesNoDecision
 import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
@@ -10,6 +9,7 @@ import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.model.Deck
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.types.shouldBeInstanceOf
 
 /**
  * Tests for Riptide Entrancer.
@@ -70,14 +70,14 @@ class RiptideEntrancerTest : FunSpec({
 
         driveToCombatDamage(driver, attacker, defender, entrancer)
 
-        // Choose the target creature before optional sacrifice consent.
+        // Choosing the target is the "you may sacrifice" answer — no second prompt at resolution.
         val chooseTargets = driver.pendingDecision as ChooseTargetsDecision
         driver.submitTargetSelection(chooseTargets.playerId, listOf(targetCreature))
 
         // Step 3: Trigger is now on the stack — resolve it
         driver.stackSize shouldBe 1
         driver.bothPass()
-        driver.submitYesNo(attacker, true).error shouldBe null
+        driver.pendingDecision shouldBe null
 
         // Entrancer should be in graveyard (sacrificed)
         driver.assertInGraveyard(attacker, "Riptide Entrancer")
@@ -107,11 +107,10 @@ class RiptideEntrancerTest : FunSpec({
 
         driveToCombatDamage(driver, attacker, defender, entrancer)
 
-        // Announce a target, then decline at resolution.
-        driver.submitTargetSelection(attacker, listOf(targetCreature)).error shouldBe null
-        driver.bothPass().error shouldBe null
-        val yesNoDecision = driver.pendingDecision as YesNoDecision
-        driver.submitYesNo(yesNoDecision.playerId, false)
+        // Decline with an empty target selection: the trigger never goes on the stack.
+        driver.pendingDecision.shouldBeInstanceOf<ChooseTargetsDecision>()
+        driver.submitTargetSelection(attacker, emptyList()).error shouldBe null
+        driver.stackSize shouldBe 0
 
         // Entrancer should still be on battlefield
         driver.getController(entrancer) shouldBe attacker
