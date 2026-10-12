@@ -990,7 +990,7 @@ class CostCalculator(
         state: GameState,
         cardDef: CardDefinition,
         casterId: EntityId,
-        spellId: EntityId? = null
+        spellId: EntityId
     ): ManaCost {
         val optimisticTargets = mutableListOf<EntityId>()
         var legalTargets: List<EntityId>? = null
@@ -999,11 +999,11 @@ class CostCalculator(
             if (ability.target != SpellCostTarget.SelfCast) continue
             val src = sourceFromModification(ability.modification)
             if (src is CostReductionSource.FixedIfAnyTargetMatches) {
-                val candidates = legalTargets ?: spellLegalTargets(state, cardDef, casterId, spellId)
-                    .also { legalTargets = it }
                 val match = if (cardDef.script.targetRequirements.isEmpty()) {
                     findAnyBattlefieldMatch(state, casterId, src.filter)
                 } else {
+                    val candidates = legalTargets ?: spellLegalTargets(state, cardDef, casterId, spellId)
+                        .also { legalTargets = it }
                     findAnyMatch(state, casterId, candidates, src.filter)
                 }
                 if (match != null) optimisticTargets += match
@@ -1017,12 +1017,9 @@ class CostCalculator(
         state: GameState,
         cardDef: CardDefinition,
         casterId: EntityId,
-        spellId: EntityId?
-    ): List<EntityId> {
-        val requirements = cardDef.script.targetRequirements
-        if (requirements.isEmpty()) return emptyList()
-        return requirements.flatMap { targetFinder.findLegalTargets(state, it, casterId, sourceId = spellId) }
-    }
+        spellId: EntityId
+    ): List<EntityId> =
+        cardDef.script.targetRequirements.flatMap { targetFinder.findLegalTargets(state, it, casterId, sourceId = spellId) }
 
     private fun sourceFromModification(modification: CostModification): CostReductionSource? = when (modification) {
         is CostModification.ReduceGenericBy -> modification.source
