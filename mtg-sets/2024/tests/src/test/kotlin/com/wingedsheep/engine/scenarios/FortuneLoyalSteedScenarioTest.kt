@@ -22,7 +22,7 @@ import io.kotest.matchers.shouldNotBe
  *   control.
  * - Saddle 1.
  *
- * Exercises the new [com.wingedsheep.sdk.scripting.effects.CardSource.CreaturesThatSaddledSource]
+ * Exercises the new [com.wingedsheep.sdk.scripting.effects.CardSource.CreaturesThatCrewedOrSaddledSource]
  * gather (the creatures that saddled the Mount) feeding the end-of-combat linked-exile blink.
  */
 class FortuneLoyalSteedScenarioTest : FunSpec({

@@ -2852,6 +2852,94 @@
     ]
 }
 
+// Golden Argosy
+{
+    "name": "Golden Argosy",
+    "manaCost": "{4}",
+    "typeLine": "Legendary Artifact — Vehicle",
+    "oracleText": "Whenever Golden Argosy attacks, exile each creature that crewed it this turn. Return them to the battlefield tapped under their owner's control at the beginning of the next end step.\nCrew 1 (Tap any number of creatures you control with total power 1 or more: This Vehicle becomes an artifact creature until end of turn.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 6
+    },
+    "keywords": [
+        "CREW"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "CREW",
+            "n": 1
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Golden Argosy:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "CreaturesThatCrewedOrSaddledSource",
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            },
+                            "storeMovedAs": "argosyExiled"
+                        },
+                        {
+                            "type": "CreateDelayedTrigger",
+                            "step": "END",
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "argosyExiled",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Battlefield",
+                                            "placement": "Tapped"
+                                        },
+                                        "underOwnersControl": true
+                                    }
+                                ]
+                            },
+                            "carryCollections": [
+                                "argosyExiled"
+                            ]
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "230",
+        "rarity": "RARE",
+        "artist": "Daniel Ljunggren",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/8/f8611a53-e54e-4625-8e28-03511f1550e8.jpg?1783921270",
+        "rulings": [
+            {
+                "date": "2022-09-09",
+                "text": "Golden Argosy's triggered ability will only exile creatures that are still on the battlefield as it resolves, and any creatures that crewed it this turn that had already left the battlefield will not be returned."
+            },
+            {
+                "date": "2022-09-09",
+                "text": "The exiled creatures will be returned at the beginning of the next end step even if Golden Argosy is no longer on the battlefield at that time."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Haughty Djinn
 {
     "name": "Haughty Djinn",

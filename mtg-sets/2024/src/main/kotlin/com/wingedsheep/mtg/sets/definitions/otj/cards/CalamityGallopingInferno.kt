@@ -25,7 +25,7 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
  *
  * "While saddled" is the intervening-if [Conditions.SourceIsSaddled] (CR 603.4) on the attack
  * trigger. The pool of choosable creatures is "creatures that saddled it this turn"
- * ([CardSource.CreaturesThatSaddledSource], read off Calamity's [CrewSaddleContributorsComponent]),
+ * ([CardSource.CreaturesThatCrewedOrSaddledSource], read off Calamity's [CrewSaddleContributorsComponent]),
  * narrowed to nonlegendary ones via the selection filter.
  *
  * "Repeat this process once" means the choose-and-copy happens twice; each iteration makes an
@@ -58,7 +58,7 @@ val CalamityGallopingInferno = card("Calamity, Galloping Inferno") {
         triggerRestriction = Conditions.SourceIsSaddled
         effect = Effects.Pipeline {
             // First iteration.
-            val saddlersA = gather(CardSource.CreaturesThatSaddledSource)
+            val saddlersA = gather(CardSource.CreaturesThatCrewedOrSaddledSource)
             val chosenA = chooseExactly(
                 1,
                 from = saddlersA,
@@ -77,7 +77,7 @@ val CalamityGallopingInferno = card("Calamity, Galloping Inferno") {
             )
 
             // Repeat this process once — a second, independent choose-and-copy.
-            val saddlersB = gather(CardSource.CreaturesThatSaddledSource)
+            val saddlersB = gather(CardSource.CreaturesThatCrewedOrSaddledSource)
             val chosenB = chooseExactly(
                 1,
                 from = saddlersB,

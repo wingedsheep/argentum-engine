@@ -214,9 +214,14 @@ data object MonstrousComponent : Component
  *    persist even after a contributor leaves the battlefield, so the count includes creatures no
  *    longer present as the ability resolves (per the Luxurious Locomotive ruling).
  *
+ *  - gather, via [com.wingedsheep.sdk.scripting.effects.CardSource.CreaturesThatCrewedOrSaddledSource],
+ *    for "exile each creature that crewed it this turn" (Golden Argosy, Fortune, Loyal Steed).
+ *
  * Transient: the union across every crew/saddle activation this turn (saddle may be activated
- * repeatedly), cleared in [CleanupPhaseManager.cleanupEndOfTurn] and naturally gone if this
- * permanent itself leaves the battlefield (a fresh entity has no battlefield components).
+ * repeatedly), cleared in [CleanupPhaseManager.cleanupEndOfTurn]. Last-known information: it is
+ * deliberately *not* stripped when the permanent leaves the battlefield, so an attack trigger that
+ * resolves after its Vehicle is gone still knows who crewed it. It is stripped when the card
+ * re-enters the battlefield, because that is a new object that was never crewed (CR 400.7).
  */
 @Serializable
 data class CrewSaddleContributorsComponent(

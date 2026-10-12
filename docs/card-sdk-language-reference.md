@@ -4736,12 +4736,17 @@ their library into their graveyard. If it's a creature card, you create a 2/2 bl
   MoveCollection(BATTLEFIELD, ZonePlacement.TappedAndAttacking)`.
 - `CardSource.LastKnownCombatPairedWithSource` — creatures blocking/blocked by the source at the
   moment it last left the battlefield (Abu Ja'far).
-- `CardSource.CreaturesThatSaddledSource` — the creatures that saddled the source Mount this turn
-  (CR 702.171c), read off its crew/saddle-contributors record and restricted to creatures still on
-  the battlefield. Backs "exile it and up to one creature that saddled it this turn, then return
-  those cards" (Fortune, Loyal Steed): `gather(CreaturesThatSaddledSource)` → `chooseUpTo(1)` →
-  exile linked to the Mount alongside `CardSource.Self` → `gather(FromLinkedExile())` → return
-  under owners' control.
+- `CardSource.CreaturesThatCrewedOrSaddledSource` — the creatures that crewed (CR 702.122) or
+  saddled (CR 702.171c) the source this turn, read off its crew/saddle-contributors record and
+  restricted to creatures still on the battlefield. The record is last-known information: it
+  follows the source off the battlefield for the rest of the turn and is wiped when the card
+  re-enters as a new object (CR 400.7). Backs "exile it and up to one creature that saddled it this
+  turn, then return those cards" (Fortune, Loyal Steed): `gather(CreaturesThatCrewedOrSaddledSource)`
+  → `chooseUpTo(1)` → exile linked to the Mount alongside `CardSource.Self` →
+  `gather(FromLinkedExile())` → return under owners' control. And "exile each creature that crewed
+  it this turn, return them tapped at the next end step" (Golden Argosy): gather → `moveTracked` to
+  exile → `CreateDelayedTrigger(END)` carrying the moved collection → `move(...,
+  ToZone(BATTLEFIELD, placement = Tapped), underOwnersControl = true)`.
 - `CardSource.EnteredViaThisResolution` — every permanent this resolving spell/ability put onto the
   battlefield, found by the `EnteredViaAbilityComponent(this source)` stamp that a
   `MoveCollection(markEnteredViaSourceAbility = true)` leaves (restricted to permanents still on the

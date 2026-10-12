@@ -318,12 +318,12 @@ class GatherCardsExecutor(
                     .filter { it in battlefield }
             }
 
-            is CardSource.CreaturesThatSaddledSource -> {
+            is CardSource.CreaturesThatCrewedOrSaddledSource -> {
                 // CR 702.171c — the creatures tapped to saddle this Mount this turn, recorded on
                 // the source's CrewSaddleContributorsComponent. Restrict to creatures still on the
                 // battlefield; one that already left can't be exiled/returned.
                 val sourceId = context.sourceId
-                    ?: return EffectResult.error(state, "No source entity for CreaturesThatSaddledSource")
+                    ?: return EffectResult.error(state, "No source entity for CreaturesThatCrewedOrSaddledSource")
                 val battlefield = state.getBattlefield().toSet()
                 state.getEntity(sourceId)
                     ?.get<CrewSaddleContributorsComponent>()
