@@ -33,6 +33,21 @@ class HoldPolicyTest : ScenarioTestBase() {
                 .shouldBeInstanceOf<TimingVerdict.NoWindow>()
         }
 
+        test("a +X/+X trick outside combat has no window either") {
+            // Accelerated Mutation: "+X/+X, where X is the greatest mana value among permanents
+            // you control". It was cast in the precombat main on a creature that then stayed home.
+            val game = scenario()
+                .withPlayers()
+                .withLandsOnBattlefield(1, "Forest", 5)
+                .withCardInHand(1, "Accelerated Mutation")
+                .withCardOnBattlefield(1, "Grizzly Bears")
+                .build()
+            val policy = HoldPolicy(IntentCatalog.of(cardRegistry))
+
+            policy.verdictFor(game.state, game.player1Id, "Accelerated Mutation")
+                .shouldBeInstanceOf<TimingVerdict.NoWindow>()
+        }
+
         test("a trick answers damage the creature is dying to") {
             val game = scenario()
                 .withPlayers()

@@ -209,13 +209,12 @@ object TargetPolarityAnalyzer {
     }
 
     private fun statsPolarity(power: DynamicAmount, toughness: DynamicAmount): TargetPolarity? {
-        val p = (power as? DynamicAmount.Fixed)?.amount ?: return null
-        val t = (toughness as? DynamicAmount.Fixed)?.amount ?: return null
-        return when {
-            p >= 0 && t >= 0 && (p > 0 || t > 0) -> TargetPolarity.BENEFICIAL
-            p <= 0 && t <= 0 && (p < 0 || t < 0) -> TargetPolarity.HARMFUL
+        // A dynamic "+X/+X" reads like a fixed one when X cannot go negative — see [AmountSign].
+        return when (statsSign(power, toughness)) {
+            AmountSign.GAIN -> TargetPolarity.BENEFICIAL
+            AmountSign.LOSS -> TargetPolarity.HARMFUL
             // +N/-N and friends: depends on the board.
-            else -> null
+            AmountSign.ZERO, AmountSign.UNKNOWN -> null
         }
     }
 
