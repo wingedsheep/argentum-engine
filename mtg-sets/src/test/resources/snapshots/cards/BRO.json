@@ -220,6 +220,120 @@
     ]
 }
 
+// Arbalest Engineers
+{
+    "name": "Arbalest Engineers",
+    "manaCost": "{1}{R}{G}",
+    "typeLine": "Creature — Human Artificer",
+    "oracleText": "When this creature enters, choose one —\n• This creature deals 1 damage to any target.\n• Put a +1/+1 counter on target creature. It gains trample and haste until end of turn.\n• Create a tapped Powerstone token. (It's an artifact with \"{T}: Add {C}. This mana can't be spent to cast a nonartifact spell.\")",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Arbalest Engineers:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "DealDamage",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "AnyTarget",
+                                    "id": "t0"
+                                }
+                            ],
+                            "description": "This creature deals 1 damage to any target."
+                        },
+                        {
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "AddCounters",
+                                        "counterType": "PLUS_ONE_PLUS_ONE",
+                                        "count": 1,
+                                        "target": {
+                                            "type": "BoundVariable",
+                                            "name": "t1"
+                                        }
+                                    },
+                                    {
+                                        "type": "GrantKeyword",
+                                        "keyword": "TRAMPLE",
+                                        "target": {
+                                            "type": "BoundVariable",
+                                            "name": "t1"
+                                        }
+                                    },
+                                    {
+                                        "type": "GrantKeyword",
+                                        "keyword": "HASTE",
+                                        "target": {
+                                            "type": "BoundVariable",
+                                            "name": "t1"
+                                        }
+                                    }
+                                ]
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": "creature"
+                                    },
+                                    "id": "t1"
+                                }
+                            ],
+                            "description": "Put a +1/+1 counter on target creature. It gains trample and haste until end of turn."
+                        },
+                        {
+                            "effect": {
+                                "type": "CreatePredefinedToken",
+                                "tokenType": "Powerstone",
+                                "tapped": true
+                            },
+                            "description": "Create a tapped Powerstone token."
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "206",
+        "rarity": "UNCOMMON",
+        "artist": "Marta Nael",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/f/df343bf9-f535-42c7-a2d0-8adfd068b354.jpg?1783920034",
+        "rulings": [
+            {
+                "date": "2022-10-14",
+                "text": "Although all the cards in The Brothers' War that create Powerstone tokens create a tapped Powerstone token, entering the battlefield tapped isn't part of the token's definition. Notably, if you create a token that is a copy of a Powerstone token, the token copy won't enter the battlefield tapped."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN"
+    ]
+}
+
 // Argoth, Sanctum of Nature
 {
     "name": "Argoth, Sanctum of Nature",
@@ -330,6 +444,43 @@
     ]
 }
 
+// Argothian Opportunist
+{
+    "name": "Argothian Opportunist",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Human Scout",
+    "oracleText": "When this creature enters, create a tapped Powerstone token. (It's an artifact with \"{T}: Add {C}. This mana can't be spent to cast a nonartifact spell.\")",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Argothian Opportunist:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Powerstone",
+                    "tapped": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "167",
+        "artist": "Ina Wong",
+        "flavorText": "\"Nature adapts. So should we.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/2/b22586ce-efcc-4b20-83f9-c23b8eeaa88c.jpg?1783920053"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Argothian Sprite
 {
     "name": "Argothian Sprite",
@@ -379,6 +530,92 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Ashnod, Flesh Mechanist
+{
+    "name": "Ashnod, Flesh Mechanist",
+    "manaCost": "{B}",
+    "typeLine": "Legendary Creature — Human Artificer",
+    "oracleText": "Deathtouch\nWhenever Ashnod attacks, you may sacrifice another creature. If you do, create a tapped Powerstone token.\n{5}, Exile a creature card from your graveyard: Create a tapped 3/3 colorless Zombie artifact creature token.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "DEATHTOUCH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ashnod, Flesh Mechanist:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "Sacrifice",
+                            "filter": "creature",
+                            "excludeSource": true
+                        }
+                    },
+                    "then": {
+                        "type": "CreatePredefinedToken",
+                        "tokenType": "Powerstone",
+                        "tapped": true
+                    }
+                },
+                "descriptionOverride": "Whenever Ashnod attacks, you may sacrifice another creature. If you do, create a tapped Powerstone token."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Ashnod, Flesh Mechanist:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{5}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomExileFrom",
+                                "zone": "Graveyard",
+                                "filter": "creature"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 3,
+                    "toughness": 3,
+                    "colors": [],
+                    "creatureTypes": [
+                        "Zombie"
+                    ],
+                    "tapped": true,
+                    "artifactToken": true
+                },
+                "descriptionOverride": "{5}, Exile a creature card from your graveyard: Create a tapped 3/3 colorless Zombie artifact creature token."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "84",
+        "rarity": "RARE",
+        "artist": "Howard Lyon",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/e/5eb43c15-50a9-488f-b0be-84a5e0a6d10b.jpg?1783920096"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -2365,6 +2602,74 @@
     ]
 }
 
+// Geology Enthusiast
+{
+    "name": "Geology Enthusiast",
+    "manaCost": "{3}{U}{U}",
+    "typeLine": "Creature — Human Artificer",
+    "oracleText": "At the beginning of your end step, create a tapped Powerstone token. (It's an artifact with \"{T}: Add {C}. This mana can't be spent to cast a nonartifact spell.\")\n{6}: Draw a card and put a +1/+1 counter on this creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Geology Enthusiast:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Powerstone",
+                    "tapped": true
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Geology Enthusiast:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{6}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 1,
+                            "target": "Self"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "289",
+        "rarity": "RARE",
+        "artist": "Fajareka Setiawan",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/b/dbb1f21c-60fa-4fcc-844b-25bf5b47fd1f.jpg?1783919995"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Giant Cindermaw
 {
     "name": "Giant Cindermaw",
@@ -2408,6 +2713,89 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Gix's Caress
+{
+    "name": "Gix's Caress",
+    "manaCost": "{2}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target opponent reveals their hand. You choose a nonland card from it. That player discards that card.\nCreate a tapped Powerstone token. (It's an artifact with \"{T}: Add {C}. This mana can't be spent to cast a nonartifact spell.\")",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "RevealHand",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Hand",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "storeAs": "gathered1"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered1",
+                    "selection": {
+                        "type": "ChooseExactly",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "filter": "nonland",
+                    "storeSelected": "selected2",
+                    "prompt": "Choose a nonland card to discard",
+                    "showAllCards": true,
+                    "alwaysPrompt": true
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "selected2",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "moveType": "Discard"
+                },
+                {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Powerstone",
+                    "tapped": true
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetOpponent",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "96",
+        "artist": "Ignatius Budi",
+        "flavorText": "\"Show me all the delicious misery you've sown.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/1/f1140cb9-6c48-4054-966e-5cc02aa7d5a4.jpg?1783920089"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -3018,6 +3406,50 @@
     "colorIdentityOverride": []
 }
 
+// Great Desert Prospector
+{
+    "name": "Great Desert Prospector",
+    "manaCost": "{4}{W}",
+    "typeLine": "Creature — Human Artificer",
+    "oracleText": "When this creature enters, create a tapped Powerstone token for each other creature you control. (They're artifacts with \"{T}: Add {C}. This mana can't be spent to cast a nonartifact spell.\")",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Great Desert Prospector:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Powerstone",
+                    "tapped": true,
+                    "dynamicCount": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "creature",
+                        "excludeSelf": true
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "7",
+        "rarity": "UNCOMMON",
+        "artist": "Néstor Ossandón Leal",
+        "flavorText": "\"Hello, beautiful.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/c/dc83d586-bf46-437f-a5a3-996bd62d5866.jpg?1783920132"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Gruesome Realization
 {
     "name": "Gruesome Realization",
@@ -3304,6 +3736,147 @@
                 "text": "You can choose not to copy anything. In that case, Hulking Metamorph simply enters the battlefield as a 7/7 (or 3/3) artifact creature."
             }
         ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Junkyard Genius
+{
+    "name": "Junkyard Genius",
+    "manaCost": "{1}{B}{R}",
+    "typeLine": "Creature — Human Artificer",
+    "oracleText": "When this creature enters, create a tapped Powerstone token. (It's an artifact with \"{T}: Add {C}. This mana can't be spent to cast a nonartifact spell.\")\n{1}{B}{R}, Sacrifice another creature or artifact: Until end of turn, other creatures you control get +1/+0 and gain menace and haste.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Junkyard Genius:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Powerstone",
+                    "tapped": true
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Junkyard Genius:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{B}{R}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "creature|artifact",
+                                "excludeSelf": true
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you",
+                            "excludeSelf": true
+                        }
+                    },
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "ModifyStats",
+                                "powerModifier": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "toughnessModifier": {
+                                    "type": "Fixed",
+                                    "amount": 0
+                                },
+                                "target": "IterationEntity"
+                            },
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "MENACE",
+                                "target": "IterationEntity"
+                            },
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "HASTE",
+                                "target": "IterationEntity"
+                            }
+                        ]
+                    }
+                },
+                "descriptionOverride": "{1}{B}{R}, Sacrifice another creature or artifact: Until end of turn, other creatures you control get +1/+0 and gain menace and haste."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "214",
+        "rarity": "UNCOMMON",
+        "artist": "Rémi Jacquot",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/1/a15b0676-b698-4160-8d2f-a22a1011bac0.jpg?1783920029"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
+    ]
+}
+
+// Koilos Roc
+{
+    "name": "Koilos Roc",
+    "manaCost": "{4}{U}",
+    "typeLine": "Creature — Bird",
+    "oracleText": "Flash\nFlying\nWhen this creature enters, create a tapped Powerstone token. (It's an artifact with \"{T}: Add {C}. This mana can't be spent to cast a nonartifact spell.\")",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLASH",
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Koilos Roc:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Powerstone",
+                    "tapped": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "55",
+        "artist": "Antonio José Manzanedo",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/b/ebdbcb87-c6ea-477f-a560-c175d99e21b8.jpg?1783920113"
     },
     "colorIdentityOverride": [
         "BLUE"
@@ -4486,6 +5059,55 @@
     ]
 }
 
+// Repair and Recharge
+{
+    "name": "Repair and Recharge",
+    "manaCost": "{3}{W}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Return target artifact, enchantment, or planeswalker card from your graveyard to the battlefield. Create a tapped Powerstone token. (It's an artifact with \"{T}: Add {C}. This mana can't be spent to cast a nonartifact spell.\")",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Battlefield",
+                    "fromZone": "Graveyard"
+                },
+                {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Powerstone",
+                    "tapped": true
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "artifact|enchantment|planeswalker own:you",
+                    "zone": "Graveyard"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "24",
+        "rarity": "UNCOMMON",
+        "artist": "Ben Wootten",
+        "flavorText": "\"Throw the bodies out. They'll just weigh down the frame.\"\n—Rolf, Argivian mechanic",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/4/04ff4a4b-4e86-41d1-a6b6-312aac0d3e1a.jpg?1783920124"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Retrieval Agent
 {
     "name": "Retrieval Agent",
@@ -5071,6 +5693,91 @@
     ]
 }
 
+// Slagstone Refinery
+{
+    "name": "Slagstone Refinery",
+    "manaCost": "{4}",
+    "typeLine": "Artifact",
+    "oracleText": "Whenever this artifact or another nontoken artifact you control is put into a graveyard from the battlefield or is put into exile from the battlefield, create a tapped Powerstone token. (It's an artifact with \"{T}: Add {C}. This mana can't be spent to cast a nonartifact spell.\")",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Slagstone Refinery:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Powerstone",
+                    "tapped": true
+                }
+            },
+            {
+                "id": "Slagstone Refinery:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Exile"
+                },
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Powerstone",
+                    "tapped": true
+                }
+            },
+            {
+                "id": "Slagstone Refinery:3",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "artifact nontoken ctrl:you",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Powerstone",
+                    "tapped": true
+                }
+            },
+            {
+                "id": "Slagstone Refinery:4",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "artifact nontoken ctrl:you",
+                    "from": "Battlefield",
+                    "to": "Exile"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Powerstone",
+                    "tapped": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "243",
+        "rarity": "UNCOMMON",
+        "artist": "Victor Harmatiuk",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/7/d7dbfa72-2025-455c-8cc4-afbf6c8e141a.jpg?1783920016",
+        "rulings": [
+            {
+                "date": "2022-10-14",
+                "text": "If Slagstone Refinery is put into a graveyard from the battlefield or exiled from the battlefield at the same time that one or more other nontoken artifacts controlled by the same player are put into a graveyard from the battlefield and/or exiled from the battlefield, its triggered ability will trigger once for each of them plus once for itself."
+            },
+            {
+                "date": "2022-10-14",
+                "text": "Although all the cards in The Brothers' War that create Powerstone tokens create a tapped Powerstone token, entering the battlefield tapped isn't part of the token's definition. Notably, if you create a token that is a copy of a Powerstone token, the token copy won't enter the battlefield tapped."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Soul Partition
 {
     "name": "Soul Partition",
@@ -5160,6 +5867,257 @@
         "imageUri": "https://cards.scryfall.io/normal/front/9/3/936cbe05-7b36-4569-94f3-671c28c7468a.jpg"
     },
     "colorIdentityOverride": []
+}
+
+// Splitting the Powerstone
+{
+    "name": "Splitting the Powerstone",
+    "manaCost": "{2}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "As an additional cost to cast this spell, sacrifice an artifact.\nCreate two tapped Powerstone tokens. If the sacrificed artifact was legendary, draw a card. (The tokens are artifacts with \"{T}: Add {C}. This mana can't be spent to cast a nonartifact spell.\")",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Powerstone",
+                    "count": 2,
+                    "tapped": true
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": "SacrificedPermanentWasLegendary"
+                    },
+                    "then": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    }
+                }
+            ]
+        },
+        "additionalCosts": [
+            {
+                "type": "AdditionalAtom",
+                "atom": {
+                    "type": "AtomSacrifice",
+                    "filter": "artifact"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "63",
+        "rarity": "UNCOMMON",
+        "artist": "Campbell White",
+        "flavorText": "As the glowing stone broke apart, so too did the last shred of the brothers' bond.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/6/569dab90-a0d8-4c0a-8e32-b2cb3aec39a6.jpg?1783920104"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Static Net
+{
+    "name": "Static Net",
+    "manaCost": "{3}{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "When this enchantment enters, exile target nonland permanent an opponent controls until this enchantment leaves the battlefield.\nWhen this enchantment enters, you gain 2 life and create a tapped Powerstone token. (It's an artifact with \"{T}: Add {C}. This mana can't be spent to cast a nonartifact spell.\")",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Static Net:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ExileUntilLeaves",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "nonland permanent ctrl:opponent"
+                    },
+                    "id": "t0"
+                }
+            },
+            {
+                "id": "Static Net:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        },
+                        {
+                            "type": "CreatePredefinedToken",
+                            "tokenType": "Powerstone",
+                            "tapped": true
+                        }
+                    ]
+                }
+            },
+            {
+                "id": "Static Net:3",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "FromLinkedExile",
+                            "storeAs": "linked_return"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "linked_return",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            },
+                            "underOwnersControl": true
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "27",
+        "rarity": "UNCOMMON",
+        "artist": "Josh Hass",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/a/5ab5cb30-3ced-4450-a3c4-b519f3762620.jpg?1783920121"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Stern Lesson
+{
+    "name": "Stern Lesson",
+    "manaCost": "{2}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Draw two cards, then discard a card. Create a tapped Powerstone token. (It's an artifact with \"{T}: Add {C}. This mana can't be spent to cast a nonartifact spell.\")",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                },
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand"
+                            },
+                            "storeAs": "hand"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "hand",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "discarded",
+                            "prompt": "Choose 1 card to discard"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "discarded",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Discard"
+                        }
+                    ]
+                },
+                {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Powerstone",
+                    "tapped": true
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "64",
+        "artist": "Lie Setiawan",
+        "flavorText": "\"The brothers are brilliant, but their quarreling will be the death of me.\"\n—Tocasia, journal entry",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/1/3151caa2-10ed-4f30-83eb-cd1bd3f642ce.jpg?1783920104"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Stone Retrieval Unit
+{
+    "name": "Stone Retrieval Unit",
+    "manaCost": "{4}",
+    "typeLine": "Artifact Creature — Construct",
+    "oracleText": "When this creature enters, create a tapped Powerstone token. (It's an artifact with \"{T}: Add {C}. This mana can't be spent to cast a nonartifact spell.\")",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Stone Retrieval Unit:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Powerstone",
+                    "tapped": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "248",
+        "artist": "Andreas Zafiratos",
+        "flavorText": "Automatons could be rebuilt. Powerstones could not.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/8/e8a36d1f-f6cc-4962-9ad6-589f7b3e5f95.jpg?1783920013"
+    }
 }
 
 // Su-Chi Cave Guard
@@ -5985,6 +6943,125 @@
     "colorIdentityOverride": [
         "BLUE"
     ]
+}
+
+// Thran Spider
+{
+    "name": "Thran Spider",
+    "manaCost": "{3}",
+    "typeLine": "Artifact Creature — Spider",
+    "oracleText": "Reach\nWhen this creature enters, you and target opponent each create a tapped Powerstone token.\n{7}: Look at the top four cards of your library. You may reveal an artifact card from among them and put it into your hand. Put the rest on the bottom of your library in a random order.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "keywords": [
+        "REACH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Thran Spider:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CreatePredefinedToken",
+                            "tokenType": "Powerstone",
+                            "tapped": true
+                        },
+                        {
+                            "type": "CreatePredefinedToken",
+                            "tokenType": "Powerstone",
+                            "controller": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "tapped": true
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponent",
+                    "id": "t0"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Thran Spider:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{7}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 4
+                                }
+                            },
+                            "storeAs": "looked"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "looked",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "filter": "artifact",
+                            "storeSelected": "kept",
+                            "storeRemainder": "rest",
+                            "prompt": "You may reveal an artifact card from among them and put it into your hand",
+                            "showAllCards": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "kept",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            },
+                            "revealed": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "rest",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Bottom"
+                            },
+                            "order": "Random"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "254",
+        "rarity": "RARE",
+        "artist": "Joshua Cairos",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/7/e72e0ddb-3dd4-4db3-aa05-dec8691432a0.jpg?1783920010"
+    },
+    "colorIdentityOverride": []
 }
 
 // Thraxodemon
