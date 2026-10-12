@@ -196,7 +196,7 @@ class CastSpellEnumerator(
                 // costs are ignored here; a false negative just means we don't surface a
                 // grayed-out secondary face in those rare cases). Used by enumerateSecondaryFace
                 // to decide whether an unaffordable secondary face is still worth showing.
-                val primaryFaceCost = context.costCalculator.calculateMinPossibleCost(state, cardDef, playerId)
+                val primaryFaceCost = context.costCalculator.calculateMinPossibleCost(state, cardDef, playerId, cardId)
                 val primaryFaceAffordable = context.manaSolver.canPay(
                     state, playerId, primaryFaceCost, precomputedSources = context.availableManaSources
                 )
@@ -264,8 +264,8 @@ class CastSpellEnumerator(
 
             // Calculate effective cost after reductions (e.g., Goblin Warchief).
             // Uses minimum possible cost so target-conditional reductions (e.g., Dire Downdraft)
-            // mark the spell as castable when a valid discounted target exists on the battlefield.
-            var effectiveCost = context.costCalculator.calculateMinPossibleCost(state, cardDef, playerId)
+            // mark the spell as castable when a valid discounted target exists.
+            var effectiveCost = context.costCalculator.calculateMinPossibleCost(state, cardDef, playerId, cardId)
 
             // Apply maximum possible sacrifice cost reduction for affordability check
             if (offer.variableSacrificeTargets.isNotEmpty() && offer.variableSacrificeReduction > 0) {

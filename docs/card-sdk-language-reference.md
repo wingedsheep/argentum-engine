@@ -9764,7 +9764,10 @@ staticAbility {
   two exiled creature cards still shave only {1} off a creature spell. Fill the pile with a
   `linkToSource = true` exile and read it back elsewhere with
   `EffectTarget.LinkedExiledCard`. A face-down (morph) spell has no visible card types and
-  correctly reduces by 0), `FixedIfAnyTargetMatches`,
+  correctly reduces by 0), `FixedIfAnyTargetMatches` ("costs {N} less if it targets …"; priced
+  from the chosen targets at cast time. Affordability enumeration offers the discount when any of
+  the spell's legal targets matches, in whatever zone it targets — No One Left Behind's discounted
+  creature card is found in the caster's graveyard),
   `ChosenTargetsBeyondTheFirst` (the count of the spell's chosen targets minus one — "for each
   target beyond the first". Only meaningful on a `SelfCast` modifier, since only that path is priced
   with the caster's own chosen targets; before targets are chosen it reads 0, which is also the right

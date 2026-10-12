@@ -7160,6 +7160,59 @@
     ]
 }
 
+// No One Left Behind
+{
+    "name": "No One Left Behind",
+    "manaCost": "{4}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "This spell costs {3} less to cast if it targets a creature card with mana value 3 or less.\nReturn target creature card from your graveyard to the battlefield.",
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "destination": "Battlefield",
+            "fromZone": "Graveyard"
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature own:you",
+                    "zone": "Graveyard"
+                },
+                "id": "t0"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "ReduceGenericBy",
+                    "source": {
+                        "type": "FixedIfAnyTargetMatches",
+                        "amount": 3,
+                        "filter": "creature mv<=3"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "109",
+        "rarity": "UNCOMMON",
+        "artist": "Chris Cold",
+        "flavorText": "Dying for the cause is overrated.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/a/4a7e030c-98d1-452c-8020-cd92a3ef02c3.jpg?1783920086"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Obliterating Bolt
 {
     "name": "Obliterating Bolt",

@@ -110,6 +110,7 @@ class CostCalculator(
 
     private val conditionEvaluator = predicateEvaluator.conditions
     private val dynamicAmountEvaluator = predicateEvaluator.amounts
+    private val targetFinder by lazy { com.wingedsheep.engine.handlers.TargetFinder(predicateEvaluator) }
 
     /**
      * Calculate the effective cost of casting a spell after applying all cost reductions.
@@ -975,28 +976,52 @@ class CostCalculator(
     /**
      * Calculate the minimum possible cost for affordability gating during legal-action
      * enumeration. For target-conditional reductions, this assumes the reduction WILL apply
-     * iff at least one legal target matching the filter currently exists on the battlefield.
+     * iff at least one of the spell's legal targets currently matches the filter — wherever
+     * the spell targets, so a graveyard-targeting spell (No One Left Behind) finds its
+     * discounted target in the graveyard. A spell whose targets aren't declared on the script
+     * (modal modes) falls back to any matching battlefield permanent.
      *
      * Used by CastSpellEnumerator so spells like Dire Downdraft show as castable when a
      * discounted target exists, even though the actual cost is locked from chosen targets
-     * at cast time.
+     * at cast time. [spellId] is the card being cast, so targeting restrictions that read the
+     * source (hexproof, "another") are honoured.
      */
     fun calculateMinPossibleCost(
         state: GameState,
         cardDef: CardDefinition,
-        casterId: EntityId
+        casterId: EntityId,
+        spellId: EntityId? = null
     ): ManaCost {
         val optimisticTargets = mutableListOf<EntityId>()
+        var legalTargets: List<EntityId>? = null
         for (ability in cardDef.script.staticAbilities) {
             if (ability !is ModifySpellCost) continue
             if (ability.target != SpellCostTarget.SelfCast) continue
             val src = sourceFromModification(ability.modification)
             if (src is CostReductionSource.FixedIfAnyTargetMatches) {
-                val match = findAnyBattlefieldMatch(state, casterId, src.filter)
+                val candidates = legalTargets ?: spellLegalTargets(state, cardDef, casterId, spellId)
+                    .also { legalTargets = it }
+                val match = if (cardDef.script.targetRequirements.isEmpty()) {
+                    findAnyBattlefieldMatch(state, casterId, src.filter)
+                } else {
+                    findAnyMatch(state, casterId, candidates, src.filter)
+                }
                 if (match != null) optimisticTargets += match
             }
         }
         return calculateEffectiveCost(state, cardDef, casterId, optimisticTargets)
+    }
+
+    /** Every legal target of any of the spell's declared target requirements, in any zone. */
+    private fun spellLegalTargets(
+        state: GameState,
+        cardDef: CardDefinition,
+        casterId: EntityId,
+        spellId: EntityId?
+    ): List<EntityId> {
+        val requirements = cardDef.script.targetRequirements
+        if (requirements.isEmpty()) return emptyList()
+        return requirements.flatMap { targetFinder.findLegalTargets(state, it, casterId, sourceId = spellId) }
     }
 
     private fun sourceFromModification(modification: CostModification): CostReductionSource? = when (modification) {
@@ -1061,6 +1086,18 @@ class CostCalculator(
         return targets.any { entityId ->
             predicateEvaluator.matches(state, projected, entityId, filter, context)
         }
+    }
+
+    /** The first of [candidates] matching the filter. */
+    private fun findAnyMatch(
+        state: GameState,
+        playerId: EntityId,
+        candidates: List<EntityId>,
+        filter: GameObjectFilter
+    ): EntityId? {
+        val projected = state.projectedState
+        val context = PredicateContext(controllerId = playerId)
+        return candidates.firstOrNull { predicateEvaluator.matches(state, projected, it, filter, context) }
     }
 
     /**
