@@ -1,5 +1,9 @@
 package com.wingedsheep.engine.state.components.identity
 
+import com.wingedsheep.engine.core.CardEntityFactory
+import com.wingedsheep.engine.registry.CardRegistry
+import com.wingedsheep.engine.state.components.stack.EntitySnapshot
+import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.engine.state.ComponentContainer
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.ManaCost
@@ -50,4 +54,30 @@ fun ComponentContainer.copiableDoubleFacedComponent(
         currentFace = if (has<FaceDownComponent>()) DoubleFacedComponent.Face.FRONT else dfc.currentFace,
         copiedFaces = faces,
     )
+}
+
+/** Numeric ability values are copiable, while flipped status and face-down rules text are not. */
+fun ComponentContainer.copiableNumericKeywords(registry: CardRegistry? = null): List<KeywordAbility.Numeric> =
+    buildList {
+        if (!has<FaceDownComponent>()) {
+            val upright = get<FlippedComponent>()?.unflippedCard
+            if (upright != null) {
+                addAll(registry?.getCard(upright.cardDefinitionId)?.keywordAbilities
+                    ?.filterIsInstance<KeywordAbility.Numeric>().orEmpty())
+                addAll(upright.copyNumericKeywords)
+            } else {
+                get<ToxicComponent>()?.let { add(KeywordAbility.Numeric(Keyword.TOXIC, it.amount)) }
+                get<NumericKeywordValuesComponent>()?.values?.forEach { (keyword, n) ->
+                    add(KeywordAbility.Numeric(keyword, n))
+                }
+            }
+        }
+    }
+
+/** Rebuild the departed object's copiable values without borrowing any later object's components. */
+fun EntitySnapshot.copiableContainer(): ComponentContainer? {
+    val card = copiableCard ?: return null
+    var container = CardEntityFactory.applyNumericKeywords(ComponentContainer.of(card), copiableNumericKeywords)
+    copiableDoubleFaced?.let { container = container.with(it) }
+    return container
 }

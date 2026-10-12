@@ -29,4 +29,24 @@ class RepeatableCostModelTest : FunSpec({
             KeywordAbility.OptionalAdditionalCost(additionalCost = Costs.additional.SacrificePermanent(), multi = true)
         }
     }
+    test("nested composites cannot hide duplicate selection channels") {
+        listOf(Costs.additional.DiscardCards(), Costs.additional.ExileCards(4)).forEach { selection ->
+            shouldThrow<IllegalArgumentException> {
+                KeywordAbility.OptionalAdditionalCost(additionalCost = AdditionalCost.Composite(
+                    listOf(selection, AdditionalCost.Composite(listOf(selection)))
+                ), multi = true)
+            }
+        }
+    }
+    test("nested composites with independent channels still scale") {
+        val cost = AdditionalCost.Composite(listOf(
+            Costs.additional.DiscardCards(),
+            AdditionalCost.Composite(listOf(Costs.additional.ExileCards(4)))
+        ))
+        val keyword = KeywordAbility.OptionalAdditionalCost(additionalCost = cost, multi = true)
+        keyword.additionalCostPaid(2) shouldBe AdditionalCost.Composite(listOf(
+            Costs.additional.DiscardCards(2),
+            AdditionalCost.Composite(listOf(Costs.additional.ExileCards(8)))
+        ))
+    }
 })

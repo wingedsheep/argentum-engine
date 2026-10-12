@@ -2760,9 +2760,9 @@ class CastFromZoneEnumerator(
                             }
                             else -> {
                                 val env = SpellCostEnumeration(context, cardId)
-                                val candidates = SpellCosts.candidates(env, repeatedCost)
-                                canPayKickerAdditionalCost = SpellCosts.canPayFrom(env, repeatedCost, candidates)
-                                if (canPayKickerAdditionalCost) kickerCostInfo = SpellCosts.present(env, repeatedCost, candidates)?.second
+                                val (payable, costInfo) = optionalAdditionalCostPresentation(env, repeatedCost)
+                                canPayKickerAdditionalCost = payable
+                                kickerCostInfo = costInfo
                             }
                         }
                     }

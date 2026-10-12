@@ -414,13 +414,7 @@ sealed interface KeywordAbility {
         private fun scaleAdditionalCost(cost: AdditionalCost, times: Int): AdditionalCost? = when (cost) {
             is AdditionalCost.Composite -> {
                 val scaled = cost.steps.map { scaleAdditionalCost(it, times) }
-                val selections = scaled.filterIsInstance<AdditionalCost.Atom>().mapNotNull {
-                    when (it.atom) {
-                        is CostAtom.Discard -> "discard"
-                        is CostAtom.ExileFrom -> "exile"
-                        else -> null
-                    }
-                }
+                val selections = scaled.filterNotNull().flatMap { selectionChannels(it) }
                 // Each selection channel carries one chosen set, not independent per-step picks.
                 if (scaled.any { it == null } || selections.distinct().size != selections.size) null
                 else AdditionalCost.Composite(scaled.filterNotNull())
@@ -436,6 +430,18 @@ sealed interface KeywordAbility {
                 else -> null
             }
             else -> null
+        }
+
+        private fun selectionChannels(cost: AdditionalCost): List<String> = when (cost) {
+            is AdditionalCost.Composite -> cost.steps.flatMap { selectionChannels(it) }
+            is AdditionalCost.Atom -> listOfNotNull(
+                when (cost.atom) {
+                    is CostAtom.Discard -> "discard"
+                    is CostAtom.ExileFrom -> "exile"
+                    else -> null
+                }
+            )
+            else -> emptyList()
         }
 
         override val description: String = when {
