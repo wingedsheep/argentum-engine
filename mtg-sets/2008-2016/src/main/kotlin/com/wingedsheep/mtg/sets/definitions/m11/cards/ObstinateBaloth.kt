@@ -21,7 +21,7 @@ import com.wingedsheep.sdk.scripting.ZoneChangeCause
  * battlefield instead of putting it into your graveyard.
  *
  * - The discard clause is the same card-intrinsic self-replacement Wilt-Leaf Liege uses
- *   ([RedirectZoneChange] with `selfOnly = true`, functioning from hand per CR 614.12), narrowed by
+ *   ([RedirectZoneChange] with `selfOnly = true`, functioning from hand per CR 113.6m), narrowed by
  *   [ZoneChangeCause.DiscardedByOpponentEffect] so cleanup-step hand-size discards and discards paid
  *   as your own costs still go to the graveyard.
  * - Entering this way is still entering, so the life-gain trigger fires.

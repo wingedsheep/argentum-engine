@@ -1635,7 +1635,8 @@
                                 "count": {
                                     "type": "Fixed",
                                     "amount": 3
-                                }
+                                },
+                                "isMill": true
                             },
                             "storeAs": "gathered0"
                         },
@@ -9123,7 +9124,8 @@
                                 "count": {
                                     "type": "Fixed",
                                     "amount": 3
-                                }
+                                },
+                                "isMill": true
                             },
                             "storeAs": "gathered0"
                         },
