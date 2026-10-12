@@ -247,7 +247,7 @@ class ZoneActivatedAbilityEnumerator(
                 val abilityMaxAffordableX: Int? = if (abilityHasXCost) {
                     context.costUtils.calculateMaxAffordableX(state, playerId, effectiveCost, abilityManaCost,
                         precomputedSources = context.availableManaSources, sourceId = entityId,
-                        lifePurpose = com.wingedsheep.engine.state.LifePaymentPurpose.activating(ability.isManaAbility))
+                        lifePurpose = LifePaymentPurpose.activating(ability.isManaAbility))
                 } else null
 
                 // Compute auto-tap preview for UI highlighting (skipped in ACTIONS_ONLY mode)

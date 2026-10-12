@@ -135,7 +135,7 @@ class CommandZoneAbilityEnumerator : ActionEnumerator {
                         // Same source scoping the battlefield enumerator passes: cost filters
                         // routinely resolve against the ability's own permanent.
                         sourceId = entityId,
-                        lifePurpose = com.wingedsheep.engine.state.LifePaymentPurpose.activating(ability.isManaAbility)
+                        lifePurpose = LifePaymentPurpose.activating(ability.isManaAbility)
                     )
                 } else null
 

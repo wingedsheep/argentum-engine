@@ -1,7 +1,5 @@
 package com.wingedsheep.engine.state.components.battlefield
 
-import com.wingedsheep.engine.state.LifePaymentPurpose
-
 import com.wingedsheep.engine.mechanics.layers.AffectsFilter
 import com.wingedsheep.engine.state.Component
 import com.wingedsheep.sdk.core.CounterType

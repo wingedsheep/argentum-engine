@@ -400,7 +400,7 @@ class ManaAbilityEnumerator(
                     context.costUtils.calculateMaxAffordableX(
                         state, playerId, effectiveCost, effectiveCost.manaCostOrNull,
                         precomputedSources = context.availableManaSources, sourceId = entityId,
-                        lifePurpose = com.wingedsheep.engine.state.LifePaymentPurpose.ACTIVATE_MANA_ABILITY
+                        lifePurpose = LifePaymentPurpose.ACTIVATE_MANA_ABILITY
                     )
                 } else null
 
