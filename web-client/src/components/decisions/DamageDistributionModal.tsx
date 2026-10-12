@@ -18,7 +18,9 @@ interface TargetCardInfo {
 
 /**
  * Modal for distributing damage at cast time for DividedDamageEffect spells (e.g., Forked Lightning).
- * Shows selected target cards with +/- buttons to allocate damage amounts.
+ * Shows selected target cards with +/- buttons to allocate damage amounts. The same modal divides
+ * counters announced at activation (Ajani, Sleeper Agent's −3) when the state carries a `unit`; the
+ * lethal-damage hints are then hidden.
  *
  * This is shown AFTER target selection, BEFORE the spell is cast.
  */
@@ -34,6 +36,10 @@ export function DamageDistributionModal() {
   const [minimized, setMinimized] = useState(false)
 
   if (!damageDistributionState) return null
+
+  // A counter division names its unit ("+1/+1 counter"); damage is the default.
+  const counterUnit = damageDistributionState.unit
+  const unitLabel = (n: number) => (counterUnit ? `${counterUnit}${n === 1 ? '' : 's'}` : 'damage')
 
   if (minimized) {
     return (
@@ -57,7 +63,7 @@ export function DamageDistributionModal() {
           pointerEvents: 'auto',
         }}
       >
-        Return to Damage Distribution
+        {counterUnit ? 'Return to Counter Distribution' : 'Return to Damage Distribution'}
       </button>
     )
   }
@@ -145,7 +151,9 @@ export function DamageDistributionModal() {
             fontSize: responsive.fontSize.normal,
           }}
         >
-          Divide {totalDamage} damage among {targetIds.length} targets
+          {counterUnit
+            ? `Distribute ${totalDamage} ${unitLabel(totalDamage)} among ${targetIds.length} targets`
+            : `Divide ${totalDamage} damage among ${targetIds.length} targets`}
         </p>
       </div>
 
@@ -166,10 +174,10 @@ export function DamageDistributionModal() {
           }}
         >
           {remaining === 0 ? (
-            'All damage allocated'
+            counterUnit ? 'All counters allocated' : 'All damage allocated'
           ) : (
             <>
-              Remaining: <span style={{ color: '#f87171' }}>{remaining}</span> damage
+              Remaining: <span style={{ color: '#f87171' }}>{remaining}</span> {unitLabel(remaining)}
             </>
           )}
         </span>
@@ -191,7 +199,7 @@ export function DamageDistributionModal() {
           const toughness = card.toughness ?? 0
           const existingDamage = card.damage ?? 0
           const remainingToughness = Math.max(0, toughness - existingDamage)
-          const isLethal = allocated >= remainingToughness && remainingToughness > 0
+          const isLethal = !counterUnit && allocated >= remainingToughness && remainingToughness > 0
 
           return (
             <div
@@ -235,7 +243,7 @@ export function DamageDistributionModal() {
                       position: 'absolute',
                       top: 8,
                       right: 8,
-                      backgroundColor: '#dc2626',
+                      backgroundColor: counterUnit ? '#16a34a' : '#dc2626',
                       color: 'white',
                       width: 36,
                       height: 36,
@@ -323,7 +331,7 @@ export function DamageDistributionModal() {
                   {card.name}
                 </span>
                 {/* Damage vs Toughness indicator */}
-                {toughness > 0 && (
+                {!counterUnit && toughness > 0 && (
                   <span
                     style={{
                       color: isLethal ? '#f87171' : '#888',

@@ -18,6 +18,7 @@ import com.wingedsheep.engine.state.components.combat.*
 import com.wingedsheep.engine.state.components.identity.*
 import com.wingedsheep.engine.state.components.stack.SpellOnStackComponent
 import com.wingedsheep.engine.state.components.stack.TargetsComponent
+import com.wingedsheep.engine.state.components.stack.ActivatedAbilityOnStackComponent
 import com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComponent
 import com.wingedsheep.engine.state.permissions.hasMayPlayFor
 import com.wingedsheep.engine.view.ClientCard
@@ -597,7 +598,9 @@ internal class CardProjector(
             } else frame.projectedState.crossZoneGrantedCardTypes(frame.entityId)
                 .filterNot { name -> cardComponent.typeLine.cardTypes.any { it.name == name } }
                 .toSet(),
-            damageDistribution = (spellOnStack?.damageDistribution ?: container.get<TriggeredAbilityOnStackComponent>()?.damageDistribution)?.takeIf { it.isNotEmpty() },
+            damageDistribution = (spellOnStack?.damageDistribution
+                ?: container.get<TriggeredAbilityOnStackComponent>()?.damageDistribution
+                ?: container.get<ActivatedAbilityOnStackComponent>()?.damageDistribution)?.takeIf { it.isNotEmpty() },
             sagaTotalChapters = cardDef?.finalChapter,
             classLevel = container.get<ClassLevelComponent>()?.currentLevel,
             classMaxLevel = cardDef?.maxClassLevel,

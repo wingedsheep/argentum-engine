@@ -173,6 +173,8 @@ data class LegalActionInfo(
     val requiresDamageDistribution: Boolean = false,
     val totalDamageToDistribute: Int? = null,
     val minDamagePerTarget: Int? = null,
+    /** What the division divides when it isn't damage — "+1/+1 counter". Null means damage. */
+    val distributionUnit: String? = null,
     val autoTapPreview: List<EntityId>? = null,
     val availableManaSources: List<ManaSourceInfo>? = null,
     /**
