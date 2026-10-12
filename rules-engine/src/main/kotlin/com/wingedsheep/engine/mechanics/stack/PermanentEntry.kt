@@ -17,6 +17,7 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.CastFromHandComponent
 import com.wingedsheep.engine.state.components.battlefield.ClassLevelComponent
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
+import com.wingedsheep.engine.state.components.battlefield.CrewSaddleContributorsComponent
 import com.wingedsheep.engine.state.components.battlefield.EnteredThisTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.SagaComponent
 import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
@@ -238,6 +239,9 @@ internal class PermanentEntry(
         var updated = c.without<SpellOnStackComponent>()
             .without<TargetsComponent>()
             .without<com.wingedsheep.engine.state.components.stack.GraveyardCastRiderComponent>()
+            // The crew/saddle record outlives the permanent as last-known information; a recast
+            // card is a new object nothing has crewed (CR 400.7).
+            .without<CrewSaddleContributorsComponent>()
             .with(ControllerComponent(controllerId))
 
         if (resolvingAsSpellCopy) {

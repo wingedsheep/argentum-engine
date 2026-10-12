@@ -403,19 +403,21 @@ sealed interface CardSource {
     }
 
     /**
-     * The creatures that saddled the effect's source this turn (CR 702.171c) — the union of every
-     * creature tapped to pay a Saddle ability's cost on this Mount, read off the source's
-     * `CrewSaddleContributorsComponent`. Restricted to creatures still on the battlefield, since a
-     * saddler that has since left can't be affected (the component records last-known crew/saddle
-     * contributors and is cleared at cleanup).
+     * The creatures that crewed (CR 702.122) or saddled (CR 702.171c) the effect's source this
+     * turn — the union of every creature tapped to pay a Crew or Saddle cost on it, read off the
+     * source's `CrewSaddleContributorsComponent`. A permanent is a Vehicle or a Mount, so one record
+     * serves both. Restricted to creatures still on the battlefield, since a contributor that has
+     * since left can't be affected. The record is last-known information about the source: it
+     * survives the source leaving the battlefield (cleared at cleanup, or when the card re-enters
+     * as a new object).
      *
-     * Backs "exile … up to one creature that saddled it this turn" (Fortune, Loyal Steed): gather
-     * the saddlers, then [SelectFromCollectionEffect] picks up to one of them.
+     * Backs "exile … up to one creature that saddled it this turn" (Fortune, Loyal Steed) and
+     * "exile each creature that crewed it this turn" (Golden Argosy).
      */
-    @SerialName("CreaturesThatSaddledSource")
+    @SerialName("CreaturesThatCrewedOrSaddledSource")
     @Serializable
-    data object CreaturesThatSaddledSource : CardSource {
-        override val description: String = "creatures that saddled it this turn"
+    data object CreaturesThatCrewedOrSaddledSource : CardSource {
+        override val description: String = "creatures that crewed or saddled it this turn"
     }
 
     /**

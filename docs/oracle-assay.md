@@ -195,7 +195,7 @@ something earlier bound*:
 ```
 TappedAsCost      ChosenTargets       FromLinkedExile
 CraftedMaterials  TriggeringEntity    EnteredViaThisResolution
-LastKnownCombatPairedWithSource       CreaturesThatSaddledSource
+LastKnownCombatPairedWithSource       CreaturesThatCrewedOrSaddledSource
 LastKnownEquipmentAttachedToSource
 
 // ...against exactly one general mechanism:
@@ -203,7 +203,7 @@ FromVariable
 ```
 
 These are our `TheCardsExiledThisWay` and `TheTokensCreatedThisWay`. Every new mechanic adds one —
-saddle added `CreaturesThatSaddledSource`, craft added `CraftedMaterials` — because minting an enum
+saddle added `CreaturesThatCrewedOrSaddledSource`, craft added `CraftedMaterials` — because minting an enum
 case is a two-line change and generalising is not.
 
 **mtgish finished that curve at 382 bespoke variants and no general mechanism**, across 25 owning

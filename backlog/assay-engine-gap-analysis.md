@@ -969,7 +969,7 @@ Also (1–2 cards each): `BlightVariable`, `ChooseEntity`, `ExileVariableCards`,
 | `Self` | 6 | Estrid's Invocation; Hanabi Blast; Petals of Insight; Sphinx's Approach |
 | `TriggeringEntity` | 6 | Deadeye Navigator; Lightning Mauler; Spectral Gateguards; Tandem Lookout |
 | `FromVariable` | 4 | Curator of Destinies; Extrapolate the Impossible; Riddles in the Dark; Sauron's Ransom |
-| `CreaturesThatSaddledSource` | 3 | Calamity, Galloping Inferno; Fortune, Loyal Steed; The Gitrog, Ravenous Ride |
+| `CreaturesThatCrewedOrSaddledSource` | 3 | Calamity, Galloping Inferno; Fortune, Loyal Steed; The Gitrog, Ravenous Ride |
 | `ExiledAsCost` | 3 | Necropolis; Baron Helmut Zemo; Dollhouse of Horrors |
 
 Also (1–2 cards each): `CraftedMaterials`, `EnteredViaThisResolution`, `LastKnownCombatPairedWithSource`, `LastKnownEquipmentAttachedToSource`, `TappedAsCost`
