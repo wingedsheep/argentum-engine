@@ -28,7 +28,10 @@ object RadiationAbilities {
             DynamicAmounts.playerCounterCount(CounterType.RAD, Player.TriggeringPlayer), ComparisonOperator.GTE, 1
         ),
         effect = Effects.Pipeline {
-            val top = gather(CardSource.TopOfLibrary(DynamicAmounts.playerCounterCount(CounterType.RAD, Player.TriggeringPlayer), player = Player.TriggeringPlayer, isMill = true))
+            val top = gather(
+                CardSource.TopOfLibrary(DynamicAmounts.playerCounterCount(CounterType.RAD, Player.TriggeringPlayer), player = Player.TriggeringPlayer, isMill = true),
+                lookAudience = LookAudience.None
+            )
             val moved = moveTracked(top, CardDestination.ToZone(Zone.GRAVEYARD, Player.TriggeringPlayer))
             // A replacement can move milled cards elsewhere. Hidden-zone cards cannot be found.
             val publicCards = filter(moved,

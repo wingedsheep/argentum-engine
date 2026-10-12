@@ -21,6 +21,7 @@ export interface BuilderSeat {
   id: string
   name: string
   life: number
+  counters: Record<string, number>
   battlefield: ScenarioBattlefieldCard[]
   hand: string[]
   graveyard: string[]
@@ -68,6 +69,7 @@ export function emptySeat(name: string): BuilderSeat {
     id: nextSeatId(),
     name,
     life: 20,
+    counters: {},
     battlefield: [],
     hand: [],
     graveyard: [],
@@ -269,6 +271,7 @@ export function swapSeatBoards(state: BuilderState, aId: string, bId: string): B
   if (!a || !b) return state
   const boardOf = (seat: BuilderSeat) => ({
     life: seat.life,
+    counters: { ...seat.counters },
     battlefield: seat.battlefield,
     hand: seat.hand,
     graveyard: seat.graveyard,
@@ -290,6 +293,7 @@ export function swapSeatBoards(state: BuilderState, aId: string, bId: string): B
 
 function seatConfig(seat: BuilderSeat): ScenarioPlayerConfig {
   const cfg: ScenarioPlayerConfig = { lifeTotal: seat.life }
+  if (Object.keys(seat.counters).length) cfg.counters = { ...seat.counters }
   if (seat.hand.length) cfg.hand = seat.hand
   if (seat.battlefield.length) cfg.battlefield = seat.battlefield
   if (seat.graveyard.length) cfg.graveyard = seat.graveyard
@@ -327,6 +331,7 @@ function seatFromConfig(name: string, cfg: ScenarioPlayerConfig | undefined): Bu
     id: nextSeatId(),
     name,
     life: cfg?.lifeTotal ?? 20,
+    counters: { ...cfg?.counters },
     battlefield: cfg?.battlefield ? cfg.battlefield.map((c) => ({ ...c })) : [],
     hand: cfg?.hand ? [...cfg.hand] : [],
     graveyard: cfg?.graveyard ? [...cfg.graveyard] : [],

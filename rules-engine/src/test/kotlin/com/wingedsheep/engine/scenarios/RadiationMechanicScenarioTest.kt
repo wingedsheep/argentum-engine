@@ -181,6 +181,44 @@ class RadiationMechanicScenarioTest : ScenarioTestBase() {
             g.radCount() shouldBe 0
             g.state.getZone(ZoneKey(g.player2Id, Zone.LIBRARY)).size shouldBe 1
         }
+        test("copied radiation never reveals cards redirected into the original player's hand") {
+            val copier = card("Radiation Hidden Mill Copy Probe") {
+                manaCost = "{0}"
+                typeLine = "Instant"
+                spell {
+                    val ability = target(com.wingedsheep.sdk.scripting.filters.unified.TargetFilter.ActivatedOrTriggeredAbilityOnStack)
+                    effect = Effects.CopyTargetTriggeredAbility(ability)
+                }
+            }
+            val redirect = card("Radiation Hidden Mill Redirect Probe") {
+                manaCost = "{0}"
+                typeLine = "Enchantment"
+                replacementEffect(com.wingedsheep.sdk.scripting.RedirectZoneChange(
+                    newDestination = Zone.HAND,
+                    appliesTo = com.wingedsheep.sdk.scripting.EventPattern.ZoneChangeEvent(
+                        from = Zone.LIBRARY, to = Zone.GRAVEYARD
+                    )
+                ))
+            }
+            listOf(copier, redirect).forEach { cardRegistry.register(it) }
+            val g = scenario().withPlayers().withCardInHand(2, copier.name)
+                .withCardOnBattlefield(1, redirect.name)
+                .withCardInLibrary(1, "Grizzly Bears").withCardInLibrary(2, "Forest").build()
+            val bear = g.state.getZone(ZoneKey(g.player1Id, Zone.LIBRARY)).single()
+            g.state = g.state.copy(phase = Phase.BEGINNING, step = Step.DRAW)
+            g.rads(1); g.beginMain()
+            val radiation = g.state.stack.single()
+            g.passPriority()
+            val copy = g.findCardsInHand(2, copier.name).single()
+            g.execute(CastSpell(g.player2Id, copy, targets = listOf(
+                com.wingedsheep.engine.state.components.stack.ChosenTarget.Spell(radiation)
+            ))).error shouldBe null
+            g.resolveStack()
+            g.state.getZone(ZoneKey(g.player1Id, Zone.HAND)).contains(bear) shouldBe true
+            g.getLifeTotal(1) shouldBe 20; g.radCount() shouldBe 1
+            stateTransformer.transform(g.state, g.player1Id).cards.containsKey(bear) shouldBe true
+            stateTransformer.transform(g.state, g.player2Id).cards.containsKey(bear) shouldBe false
+        }
         test("postcombat main never triggers radiation") {
             val g = board("Forest"); g.rads(1)
             services.triggerDetector.detectPhaseStepTriggers(g.state, Step.POSTCOMBAT_MAIN, g.player1Id)
