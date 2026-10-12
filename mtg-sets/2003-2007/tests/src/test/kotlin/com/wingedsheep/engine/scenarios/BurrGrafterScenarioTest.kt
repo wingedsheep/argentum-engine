@@ -2,7 +2,6 @@ package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.core.ChooseTargetsDecision
-import com.wingedsheep.engine.core.YesNoDecision
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.mtg.sets.definitions.chk.cards.BurrGrafter
@@ -60,8 +59,6 @@ class BurrGrafterScenarioTest : ScenarioTestBase() {
                     decision.legalTargets[0].orEmpty() shouldContainExactlyInAnyOrder listOf(hunt)
                 }
                 game.selectTargets(listOf(hunt))
-                game.resolveStack()
-                game.answerYesNo(true).error shouldBe null
                 game.resolveStack()
 
                 game.isInHand(1, "Kami of the Hunt") shouldBe true

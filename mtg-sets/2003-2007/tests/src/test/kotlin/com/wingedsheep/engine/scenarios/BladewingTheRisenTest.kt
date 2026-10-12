@@ -66,18 +66,18 @@ class BladewingTheRisenTest : FunSpec({
         driver.castSpell(activePlayer, bladewing)
         driver.bothPass() // resolve Bladewing
 
-        // The ETB trigger announces a target before consent.
-        driver.submitTargetSelection(activePlayer, listOf(dragonInGraveyard))
+        // Choosing the ETB trigger's target is also its "you may" yes.
+        driver.submitTargetSelection(activePlayer, listOf(dragonInGraveyard)).error shouldBe null
 
-        // Trigger on stack — resolve it
+        // Trigger on stack — resolve it; no second yes/no is asked
         driver.bothPass()
-        driver.submitYesNo(activePlayer, true).error shouldBe null
+        driver.pendingDecision shouldBe null
 
         // Dragon should now be on the battlefield
         driver.findPermanent(activePlayer, "Test Dragon") shouldNotBe null
     }
 
-    test("ETB can be declined") {
+    test("ETB can be declined at its target prompt") {
         val driver = createDriver()
         driver.initMirrorMatch(
             deck = Deck.of("Swamp" to 20, "Mountain" to 20),
@@ -96,13 +96,14 @@ class BladewingTheRisenTest : FunSpec({
         driver.castSpell(activePlayer, bladewing)
         driver.bothPass()
 
-        // Decline the ETB trigger at its may-question
-        driver.submitTargetSelection(activePlayer, listOf(dragon)).error shouldBe null
-        driver.bothPass().error shouldBe null
-        driver.submitYesNo(activePlayer, false).error shouldBe null
+        // Decline the ETB trigger with an empty target selection: it never goes on the stack
+        driver.submitTargetSelection(activePlayer, emptyList()).error shouldBe null
+        driver.pendingDecision shouldBe null
+        driver.state.stack.isEmpty() shouldBe true
 
         // Dragon should remain in graveyard
         driver.findPermanent(activePlayer, "Test Dragon") shouldBe null
+        driver.getGraveyardCardNames(activePlayer).contains("Test Dragon") shouldBe true
     }
 
     test("activated ability gives all Dragons +1/+1") {

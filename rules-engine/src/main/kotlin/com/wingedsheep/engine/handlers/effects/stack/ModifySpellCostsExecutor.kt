@@ -5,16 +5,18 @@ import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
-import com.wingedsheep.engine.state.SpellCostReduction
+import com.wingedsheep.engine.state.SpellCostModifier
 import com.wingedsheep.engine.state.components.identity.CardComponent
-import com.wingedsheep.sdk.scripting.effects.ReduceSpellCostsEffect
+import com.wingedsheep.sdk.scripting.effects.ModifySpellCostsEffect
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import kotlin.reflect.KClass
 
 /**
- * Executor for [ReduceSpellCostsEffect].
+ * Executor for [ModifySpellCostsEffect].
  *
- * Evaluates the discount **once, here**, and records a [SpellCostReduction] on the game state.
- * The cost calculator applies it to every matching spell the controller casts until the effect's
+ * Evaluates the amount and the affected players **once, here**, and records one [SpellCostModifier]
+ * per affected player on the game state. The cost calculator applies it to every matching spell
+ * that player casts until the effect's
  * duration ends — [com.wingedsheep.engine.core.TurnManager.startTurn] clears end-of-turn entries,
  * [com.wingedsheep.engine.core.CleanupPhaseManager.expireUntilYourNextTurnEffects] the
  * "until your next turn" ones.
@@ -23,18 +25,18 @@ import kotlin.reflect.KClass
  * value of X is determined only once, at the time the ability resolves". Mirrors
  * [GrantNextSpellAffinityExecutor], which installs the one-shot variant of the same idea.
  *
- * A resolved amount of 0 or less installs nothing: the discount would be a no-op, and skipping it
+ * A resolved amount of 0 or less installs nothing: the modifier would be a no-op, and skipping it
  * keeps the state (and the client's cost display) free of dead entries.
  */
-class ReduceSpellCostsExecutor(
+class ModifySpellCostsExecutor(
     private val amountEvaluator: DynamicAmountEvaluator
-) : EffectExecutor<ReduceSpellCostsEffect> {
+) : EffectExecutor<ModifySpellCostsEffect> {
 
-    override val effectType: KClass<ReduceSpellCostsEffect> = ReduceSpellCostsEffect::class
+    override val effectType: KClass<ModifySpellCostsEffect> = ModifySpellCostsEffect::class
 
     override fun execute(
         state: GameState,
-        effect: ReduceSpellCostsEffect,
+        effect: ModifySpellCostsEffect,
         context: EffectContext
     ): EffectResult {
         val amount = amountEvaluator.evaluate(state, effect.amount, context)
@@ -48,17 +50,21 @@ class ReduceSpellCostsExecutor(
         }
         val sourceName = effectiveState.getEntity(sourceId)?.get<CardComponent>()?.name ?: "Unknown"
 
-        val reduction = SpellCostReduction(
-            controllerId = context.controllerId,
-            spellFilter = effect.spellFilter,
-            amount = amount,
-            sourceId = sourceId,
-            sourceName = sourceName,
-            duration = effect.duration,
-        )
+        val modifiers = context.resolvePlayerTargets(EffectTarget.PlayerRef(effect.player), effectiveState)
+            .map { playerId ->
+                SpellCostModifier(
+                    controllerId = playerId,
+                    spellFilter = effect.spellFilter,
+                    amount = amount,
+                    sourceId = sourceId,
+                    sourceName = sourceName,
+                    duration = effect.duration,
+                    increase = effect.increase,
+                )
+            }
         return EffectResult.success(
             effectiveState.copy(
-                spellCostReductions = effectiveState.spellCostReductions + reduction
+                spellCostModifiers = effectiveState.spellCostModifiers + modifiers
             )
         )
     }

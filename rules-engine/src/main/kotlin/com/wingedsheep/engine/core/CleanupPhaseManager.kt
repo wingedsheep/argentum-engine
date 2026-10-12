@@ -247,11 +247,11 @@ class CleanupPhaseManager(
             !(grant.duration is Duration.UntilYourNextTurn && grant.controllerId in activeTeam)
         }
         // "Until your next turn, … spells you cast cost {N} less" (Ral, Leyline Prodigy's +1).
-        val remainingCostReductions = state.spellCostReductions.filter { reduction ->
+        val remainingCostReductions = state.spellCostModifiers.filter { reduction ->
             !(reduction.duration is Duration.UntilYourNextTurn && reduction.controllerId in activeTeam)
         }
         val floatingChanged = remainingFloating.size != state.floatingEffects.size
-        val costReductionsChanged = remainingCostReductions.size != state.spellCostReductions.size
+        val costReductionsChanged = remainingCostReductions.size != state.spellCostModifiers.size
         val grantedStaticChanged = remainingGrantedStatic.size != state.grantedStaticAbilities.size
         val globalChanged = remainingGlobal.size != state.globalGrantedTriggeredAbilities.size
         val grantedActivatedChanged = remainingGrantedActivated.size != state.grantedActivatedAbilities.size
@@ -265,7 +265,7 @@ class CleanupPhaseManager(
                 grantedActivatedAbilities = if (grantedActivatedChanged) remainingGrantedActivated else state.grantedActivatedAbilities,
                 grantedStaticAbilities = if (grantedStaticChanged) remainingGrantedStatic else state.grantedStaticAbilities,
                 delayedTriggers = if (delayedChanged) remainingDelayed else state.delayedTriggers,
-                spellCostReductions = if (costReductionsChanged) remainingCostReductions else state.spellCostReductions
+                spellCostModifiers = if (costReductionsChanged) remainingCostReductions else state.spellCostModifiers
             )
         } else {
             state

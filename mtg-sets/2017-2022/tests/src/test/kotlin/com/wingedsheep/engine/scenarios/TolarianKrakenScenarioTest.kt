@@ -22,6 +22,9 @@ import io.kotest.matchers.types.shouldBeInstanceOf
 /**
  * Tolarian Kraken (M21 #80) — "Whenever you draw a card, you may pay {1}. When you do, you may tap
  * or untap target creature."
+ *
+ * The first "you may" (pay {1}) is asked as the draw trigger resolves; the reflexive ability's
+ * "you may tap or untap target creature" is answered at its target prompt (a target is the yes).
  */
 class TolarianKrakenScenarioTest : FunSpec({
 
@@ -63,12 +66,13 @@ class TolarianKrakenScenarioTest : FunSpec({
             d.pendingDecision.shouldBeInstanceOf<YesNoDecision>()
             d.submitYesNo(me, true).error shouldBe null
 
+            // The reflexive ability's own "you may" is answered at its target prompt: choosing a
+            // target is the yes, so resolution goes straight to the tap-or-untap choice.
             val targets = d.pendingDecision as ChooseTargetsDecision
+            targets.targetRequirements.single().minTargets shouldBe 0
             d.submitDecision(me, TargetsResponse(targets.id, mapOf(0 to listOf(bears)))).error shouldBe null
             d.bothPass() // resolve the reflexive trigger
 
-            d.pendingDecision.shouldBeInstanceOf<YesNoDecision>()
-            d.submitYesNo(me, true).error shouldBe null
             val choice = d.pendingDecision as ChooseOptionDecision
             d.submitDecision(me, OptionChosenResponse(choice.id, mode)).error shouldBe null
 

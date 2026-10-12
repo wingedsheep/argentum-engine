@@ -187,12 +187,12 @@ class InvertedIcebergScenarioTest : FunSpec({
         val attackResult = driver.declareAttackers(p1, listOf(iceberg), p2)
         attackResult.error shouldBe null
 
-        // Announce the target, then answer consent at resolution.
-        driver.pendingDecision.shouldBeInstanceOf<ChooseTargetsDecision>()
-        driver.submitTargetSelection(p1, listOf(victim))
+        // The "you may" is answered at the target prompt: choosing a target is the yes.
+        val targets = driver.pendingDecision.shouldBeInstanceOf<ChooseTargetsDecision>()
+        targets.targetRequirements.single().minTargets shouldBe 0
+        driver.submitTargetSelection(p1, listOf(victim)).error shouldBe null
 
-        driver.bothPass() // resolve to optional consent
-        driver.submitYesNo(p1, true).error shouldBe null // then the tap-or-untap choice
+        driver.bothPass() // resolve straight to the tap-or-untap choice
 
         val modeDecision = driver.pendingDecision.shouldBeInstanceOf<ChooseOptionDecision>()
         val tapIndex = modeDecision.options.indexOfFirst { it.startsWith("Tap") }

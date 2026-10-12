@@ -41,7 +41,7 @@ class RemoveAnyNumberOfCountersExecutor(
         val maxTotal = effect.maxTotal?.let { amountEvaluator.evaluate(state, it, context) }
         if (maxTotal != null && maxTotal <= 0) return EffectResult.success(state, emptyList())
 
-        val targetId = context.resolveTarget(effect.target)
+        val targetId = context.resolveTarget(effect.target, state)
             ?: return EffectResult.success(state, emptyList())
 
         val targetEntity = state.getEntity(targetId)

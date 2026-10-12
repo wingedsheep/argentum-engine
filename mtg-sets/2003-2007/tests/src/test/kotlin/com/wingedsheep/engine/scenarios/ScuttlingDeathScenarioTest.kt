@@ -61,8 +61,6 @@ class ScuttlingDeathScenarioTest : ScenarioTestBase() {
                 }
                 game.selectTargets(listOf(ghostShip))
                 game.resolveStack()
-                game.answerYesNo(true).error shouldBe null
-                game.resolveStack()
 
                 game.isInHand(1, "Ghost Ship") shouldBe true
                 game.state.projectedState.getPower(bears) shouldBe 1

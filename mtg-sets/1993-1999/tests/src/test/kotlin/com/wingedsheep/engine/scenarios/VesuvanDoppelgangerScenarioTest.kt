@@ -1,7 +1,7 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
-import com.wingedsheep.engine.core.YesNoDecision
+import com.wingedsheep.engine.core.ChooseTargetsDecision
 import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.*
@@ -55,10 +55,15 @@ class VesuvanDoppelgangerScenarioTest : FunSpec({
         d.passPriorityUntil(Step.PRECOMBAT_MAIN)
         d.passPriorityUntil(Step.UPKEEP)
     }
-    fun recopy(d: GameTestDriver, target: EntityId, yes: Boolean = true) {
-        d.submitTargetSelection(d.player1, listOf(target)).error shouldBe null
-        d.bothPass().error shouldBe null
-        d.submitYesNo(d.player1, yes).error shouldBe null
+    /**
+     * Answers the upkeep trigger. The "you may" is answered at targeting: choosing a target is the
+     * yes (no second prompt at resolution); `null` submits an empty selection, which declines and
+     * keeps the ability off the stack.
+     */
+    fun recopy(d: GameTestDriver, target: EntityId?) {
+        d.submitTargetSelection(d.player1, listOfNotNull(target)).error shouldBe null
+        if (target != null) d.bothPass().error shouldBe null
+        d.pendingDecision shouldBe null
     }
     test("entry copies mana cost stats and subtypes but keeps blue and gains the upkeep ability") {
         val d = driver()
@@ -98,17 +103,21 @@ class VesuvanDoppelgangerScenarioTest : FunSpec({
         card(d, id).name shouldBe ""
         card(d, id).copyTriggeredAbilities.size shouldBe 1
     }
-    test("upkeep chooses targets before resolution consent and declining preserves its current identity") {
+    test("declining the upkeep recopy at the target prompt preserves its current identity") {
         val d = driver()
         val bear = d.putPermanentOnBattlefield(d.player2, "Grizzly Bears")
         val hill = d.putPermanentOnBattlefield(d.player2, "Hill Giant")
         val id = enter(d, bear)
         ownUpkeep(d)
-        recopy(d, hill, false)
+        d.pendingDecision.shouldBeInstanceOf<ChooseTargetsDecision>()
+            .targetRequirements.single().minTargets shouldBe 0
+        (hill in d.pendingDecision.shouldBeInstanceOf<ChooseTargetsDecision>().legalTargets[0].orEmpty()) shouldBe true
+        recopy(d, null)
+        d.state.stack.isEmpty() shouldBe true
         card(d, id).name shouldBe "Grizzly Bears"
         card(d, id).colors shouldBe setOf(Color.BLUE)
     }
-    test("upkeep recopy of a face-down source survives a serialized resolution pause and can recopy again") {
+    test("upkeep recopy of a face-down source survives a serialized round trip on the stack and can recopy again") {
         val d = driver()
         val bear = d.putPermanentOnBattlefield(d.player2, "Grizzly Bears")
         val hidden = d.putPermanentOnBattlefield(d.player2, "Hill Giant")
@@ -116,10 +125,11 @@ class VesuvanDoppelgangerScenarioTest : FunSpec({
         d.replaceState(d.state.updateEntity(hidden) { it.with(FaceDownComponent) })
         ownUpkeep(d)
         d.submitTargetSelection(d.player1, listOf(hidden)).error shouldBe null
-        d.bothPass().error shouldBe null
+        // The consent answered at targeting has to survive serialization of the stacked ability.
         val json = Json { serializersModule = com.wingedsheep.engine.core.engineSerializersModule; allowStructuredMapKeys = true }
         d.replaceState(json.decodeFromString<GameState>(json.encodeToString(d.state)))
-        d.submitYesNo(d.player1, true).error shouldBe null
+        d.bothPass().error shouldBe null
+        d.pendingDecision shouldBe null
         card(d, id).name shouldBe ""
         card(d, id).colors shouldBe setOf(Color.BLUE)
         card(d, id).copyTriggeredAbilities.size shouldBe 1
@@ -181,7 +191,7 @@ class VesuvanDoppelgangerScenarioTest : FunSpec({
             card(d, id).copyTriggeredAbilities.size shouldBe 1
         }
     }
-    test("flipped upkeep recopy selects the new alternative after an ordinary creature and serialized pause") {
+    test("flipped upkeep recopy selects the new alternative after an ordinary creature and a serialized round trip") {
         val d = driver()
         val source = d.putPermanentOnBattlefield(d.player2, flipA.name)
         val id = enter(d, source)
@@ -196,10 +206,10 @@ class VesuvanDoppelgangerScenarioTest : FunSpec({
         val next = d.putPermanentOnBattlefield(d.player2, flipB.name)
         ownUpkeep(d)
         d.submitTargetSelection(d.player1, listOf(next)).error shouldBe null
-        d.bothPass().error shouldBe null
         val json = Json { serializersModule = com.wingedsheep.engine.core.engineSerializersModule; allowStructuredMapKeys = true }
         d.replaceState(json.decodeFromString<GameState>(json.encodeToString(d.state)))
-        d.submitYesNo(d.player1, true).error shouldBe null
+        d.bothPass().error shouldBe null
+        d.pendingDecision shouldBe null
         card(d, id).name shouldBe flipB.flipSide!!.name
         card(d, id).colors shouldBe setOf(Color.BLUE)
         card(d, id).copyTriggeredAbilities.size shouldBe 1
@@ -211,7 +221,7 @@ class VesuvanDoppelgangerScenarioTest : FunSpec({
         card(d, id).name shouldBe copier.name
         d.state.getEntity(id)!!.has<FlippedComponent>() shouldBe false
     }
-    test("self-copy instances choose every target before priority and resolve consent independently") {
+    test("self-copy instances answer consent independently at targeting before priority") {
         val d = driver()
         val bear = d.putPermanentOnBattlefield(d.player2, "Grizzly Bears")
         val hill = d.putPermanentOnBattlefield(d.player2, "Hill Giant")
@@ -221,18 +231,14 @@ class VesuvanDoppelgangerScenarioTest : FunSpec({
         card(d, id).copyTriggeredAbilities.size shouldBe 2
         d.passPriorityUntil(Step.PRECOMBAT_MAIN)
         ownUpkeep(d)
+        // First instance takes Hill Giant (yes); the second declines with an empty selection.
         d.submitTargetSelection(d.player1, listOf(hill)).error shouldBe null
-        d.submitTargetSelection(d.player1, listOf(bear)).error shouldBe null
+        d.submitTargetSelection(d.player1, emptyList()).error shouldBe null
         d.pendingDecision shouldBe null
-        d.state.stack.size shouldBe 2
-        d.bothPass().error shouldBe null
-        d.pendingDecision.shouldBeInstanceOf<YesNoDecision>().context.targetIds shouldBe listOf(bear)
-        d.submitYesNo(d.player1, false).error shouldBe null
-        card(d, id).name shouldBe "Grizzly Bears"
         d.state.stack.size shouldBe 1
+        card(d, id).name shouldBe "Grizzly Bears"
         d.bothPass().error shouldBe null
-        d.pendingDecision.shouldBeInstanceOf<YesNoDecision>().context.targetIds shouldBe listOf(hill)
-        d.submitYesNo(d.player1, true).error shouldBe null
+        d.pendingDecision shouldBe null
         card(d, id).name shouldBe "Hill Giant"
         card(d, id).copyTriggeredAbilities.size shouldBe 1
     }

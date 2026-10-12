@@ -100,10 +100,10 @@ class ArcboundCondorScenarioTest : ScenarioTestBase() {
                     game.isInGraveyard(1, "Arcbound Condor") shouldBe true
                 }
 
-                // Modular announces the artifact creature target before optional consent.
+                // Modular's "you may" is answered at its target prompt: choosing Ornithopter is the yes.
                 game.selectTargets(listOf(thopter)).error shouldBe null
                 game.resolveStack()
-                game.answerYesNo(true).error shouldBe null
+                withClue("no second may-prompt on resolution") { game.hasPendingDecision() shouldBe false }
 
                 withClue("all three of the Condor's last-known +1/+1 counters moved to Ornithopter") {
                     plusOne(game, thopter) shouldBe 3

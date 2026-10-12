@@ -1,7 +1,6 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.ChooseTargetsDecision
-import com.wingedsheep.engine.core.YesNoDecision
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Phase
@@ -90,25 +89,25 @@ class ThiefOfHopeScenarioTest : ScenarioTestBase() {
                 }
                 game.selectTargets(listOf(soilshaper))
                 game.resolveStack()
-                game.answerYesNo(true).error shouldBe null
-                game.resolveStack()
 
                 game.isInHand(1, "Soilshaper") shouldBe true
                 game.isInGraveyard(1, "Kami of the Hunt") shouldBe true
             }
 
-            test("the return is optional") {
+            test("the return is optional — declined at the target prompt") {
                 val game = thiefBoard()
                     .withCardInGraveyard(1, "Soilshaper")
                     .build()
 
                 game.boltTheThief()
 
-                game.selectTargets(listOf(game.findCardsInGraveyard(1, "Soilshaper").single())).error shouldBe null
-                game.resolveStack()
-                game.getPendingDecision().shouldBeInstanceOf<YesNoDecision>()
-                game.answerYesNo(false).error shouldBe null
+                val decision = game.getPendingDecision()
+                decision.shouldBeInstanceOf<ChooseTargetsDecision>()
+                decision.targetRequirements.single().minTargets shouldBe 0
+                game.selectTargets(emptyList()).error shouldBe null
 
+                game.hasPendingDecision() shouldBe false
+                game.state.stack.isEmpty() shouldBe true
                 game.isInGraveyard(1, "Soilshaper") shouldBe true
                 game.isInHand(1, "Soilshaper") shouldBe false
             }

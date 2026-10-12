@@ -1,7 +1,6 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.ChooseTargetsDecision
-import com.wingedsheep.engine.core.YesNoDecision
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.mtg.sets.definitions.mrd.cards.MirrorGolem
@@ -32,23 +31,23 @@ class MirrorGolemScenarioTest : FunSpec({
     }
 
     /**
-     * Cast Mirror Golem from hand so the imprint trigger fires, choose [graveyardCard] as its
-     * target (when given), and answer the "you may" with [accept]. Returns the Golem on the
-     * battlefield.
+     * Cast Mirror Golem from hand so the imprint trigger fires, and answer its "you may" at the
+     * target prompt: choosing [graveyardCard] is the yes, an empty selection (when not [accept]) is
+     * the decline. Returns the Golem on the battlefield.
      */
     fun GameTestDriver.castGolem(graveyardCard: EntityId, accept: Boolean): EntityId {
         val inHand = putCardInHand(player1, "Mirror Golem")
         giveColorlessMana(player1, 6)
         castSpell(player1, inHand).error shouldBe null
 
-        // Resolve the creature, then work through the imprint trigger: the target is chosen as the
-        // ability goes on the stack, the "you may" is answered when it resolves.
+        // Resolve the creature, then work through the imprint trigger: the target prompt raised as
+        // the ability goes on the stack also carries the "you may" — no yes/no follows.
         repeat(12) {
             when (state.pendingDecision) {
                 null -> bothPass()
                 is ChooseTargetsDecision ->
-                    submitTargetSelection(player1, listOf(graveyardCard)).error shouldBe null
-                is YesNoDecision -> submitYesNo(player1, accept).error shouldBe null
+                    submitTargetSelection(player1, if (accept) listOf(graveyardCard) else emptyList())
+                        .error shouldBe null
                 else -> error("unexpected decision ${state.pendingDecision}")
             }
         }

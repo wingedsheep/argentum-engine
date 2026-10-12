@@ -293,6 +293,13 @@ data class TriggeredAbilityOnStackComponent(
      * Blunderbuss". Null for the source's own printed abilities.
      */
     val granterId: EntityId? = null,
+    /**
+     * The controller already answered this ability's leading "you may" when choosing its target:
+     * picking a target is the yes, so the resolution-time yes/no isn't asked a second time (see
+     * [com.wingedsheep.engine.event.TriggerProcessor.consentAnswerableAtTargeting]). Only the
+     * ability's top-level consent gate reads it; a later "you may" inside the effect still asks.
+     */
+    val consentAnsweredAtTargeting: Boolean = false,
     // Modal fields — populated when this triggered ability is a copy of a modal spell (700.2g).
     // Copies inherit the original's chosen modes; targets either inherit too (StormCopy default)
     // or are re-chosen by the copy controller while modes stay fixed.

@@ -23,18 +23,20 @@ class BladeOfSharedSoulsScenarioTest : ScenarioTestBase() {
 
     private fun TestGame.nameOf(id: EntityId): String? = state.getEntity(id)?.get<CardComponent>()?.name
 
-    /** Cast the Blade and resolve For Mirrodin! and the attach trigger, targeting the Hill Giant. */
+    /**
+     * Cast the Blade and resolve For Mirrodin! and the attach trigger. The "you may" is answered at
+     * the attach trigger's target prompt: targeting the Hill Giant accepts, an empty selection
+     * declines (the trigger never goes on the stack).
+     */
     private fun TestGame.castBladeAndCopy(giant: EntityId, accept: Boolean) {
         val cast = castSpell(1, "Blade of Shared Souls")
         withClue("Casting should succeed: ${cast.error}") { cast.error shouldBe null }
         if (hasPendingDecision()) submitManaSourcesAutoPay()
         resolveStack()
-        // Announce the attach trigger target before consent.
         withClue("The attach trigger asks whether to copy") { hasPendingDecision() shouldBe true }
-        selectTargets(listOf(giant)).error shouldBe null
+        selectTargets(if (accept) listOf(giant) else emptyList()).error shouldBe null
         resolveStack()
-        answerYesNo(accept).error shouldBe null
-        resolveStack()
+        withClue("No second may-prompt on resolution") { hasPendingDecision() shouldBe false }
     }
 
     init {
@@ -72,13 +74,12 @@ class BladeOfSharedSoulsScenarioTest : ScenarioTestBase() {
                 withClue("Equip should succeed: ${equip.error}") { equip.error shouldBe null }
                 if (game.hasPendingDecision()) game.submitManaSourcesAutoPay()
                 game.resolveStack()
-                // The new attach trigger (Giant may copy the Rebel) — decline it.
+                // The new attach trigger (Giant may copy the Rebel) — decline it at the target prompt.
                 withClue("The new attach trigger offers the Giant a copy of the Rebel") {
                     game.hasPendingDecision() shouldBe true
                 }
-                game.selectTargets(listOf(rebel)).error shouldBe null
-                game.resolveStack()
-                game.answerYesNo(false).error shouldBe null
+                game.selectTargets(emptyList()).error shouldBe null
+                game.state.stack.isEmpty() shouldBe true
 
                 withClue("Blade moved to the Hill Giant") {
                     game.state.getEntity(blade)?.get<AttachedToComponent>()?.targetId shouldBe giant

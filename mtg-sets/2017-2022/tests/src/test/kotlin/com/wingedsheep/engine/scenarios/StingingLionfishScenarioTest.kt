@@ -26,7 +26,8 @@ import io.kotest.matchers.types.shouldBeInstanceOf
  *
  * Covers the `Triggers.you.castsNth(1)` trigger gated by `Conditions.IsOpponentsTurn`: it fires on
  * the first spell cast on an opponent's turn (both directions of the resolution-time choice), not on
- * the second, and not on your own turn; lands are not legal targets.
+ * the second, and not on your own turn; lands are not legal targets. The "you may" is answered at the
+ * target prompt (choosing a target is the yes), so resolution asks only for the direction.
  */
 class StingingLionfishScenarioTest : ScenarioTestBase() {
 
@@ -78,11 +79,15 @@ class StingingLionfishScenarioTest : ScenarioTestBase() {
                     legal shouldContain bears
                     legal shouldNotContain forest
                 }
+                withClue("the \"you may\" is answered at the target prompt, which offers the decline") {
+                    targets.targetRequirements.single().minTargets shouldBe 0
+                }
                 game.submitDecision(TargetsResponse(targets.id, mapOf(0 to listOf(bears)))).error shouldBe null
 
                 game.resolveStack()
-                game.getPendingDecision().shouldBeInstanceOf<YesNoDecision>()
-                game.answerYesNo(true)
+                withClue("choosing the target was the yes — no second may-prompt on resolution") {
+                    (game.getPendingDecision() is YesNoDecision) shouldBe false
+                }
                 game.chooseMode("Tap")
                 game.resolveStack()
 
@@ -113,7 +118,6 @@ class StingingLionfishScenarioTest : ScenarioTestBase() {
                 game.castSpell(1, "Flash Probe").error shouldBe null
                 game.selectTargets(listOf(bears)).error shouldBe null
                 game.resolveStack()
-                game.answerYesNo(true)
                 game.chooseMode("Untap")
                 game.resolveStack()
 

@@ -218,6 +218,14 @@ class GatedEffectExecutor(
             return executeWaterbendPayment(state, playerId, pay.cost, effect.then, effect.otherwise, context)
         }
 
+        // The controller said yes when they chose this ability's target (the target decision
+        // offered a decline) — don't ask the same question again. Cleared for the branch so a
+        // later "you may" inside it still asks.
+        if (gate is Gate.MayDecide && context.consentAnsweredAtTargeting) {
+            val answered = context.copy(consentAnsweredAtTargeting = false)
+            return effectExecutor(state, effect.then, answered)
+        }
+
         // Persistent auto-answer yield (backlog §C): if the decision-maker has remembered a yes/no
         // for this ability, resolve the "you may" question without prompting and run the matching
         // branch. Scoped to Gate.MayDecide — the pure may-question — never a cost/pay gate, so a

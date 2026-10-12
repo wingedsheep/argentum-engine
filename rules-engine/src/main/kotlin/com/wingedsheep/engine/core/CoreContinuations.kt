@@ -74,7 +74,11 @@ data class TriggeredAbilityContinuation(
     /** The ability is a backup ability — see
      *  [com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComponent.isBackup]. */
     val isBackup: Boolean = false,
-    val resolvingTriggeredAbility: com.wingedsheep.sdk.scripting.TriggeredAbility? = null
+    val resolvingTriggeredAbility: com.wingedsheep.sdk.scripting.TriggeredAbility? = null,
+    /** The target decision doubles as the ability's "you may" question: an empty answer declines
+     *  the ability, a target answers yes (see
+     *  [com.wingedsheep.engine.event.TriggerProcessor.consentAnswerableAtTargeting]). */
+    val consentAtTargeting: Boolean = false
 ) : AnswerContinuation
 
 /**

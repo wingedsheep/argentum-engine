@@ -3,7 +3,6 @@ package com.wingedsheep.engine.scenarios
 import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.core.ChooseTargetsDecision
 import com.wingedsheep.engine.core.SelectCardsDecision
-import com.wingedsheep.engine.core.YesNoDecision
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
@@ -49,8 +48,9 @@ class MournersShieldScenarioTest : FunSpec({
             when (val decision = state.pendingDecision) {
                 null -> if (state.stack.isNotEmpty()) bothPass() else return
                 is ChooseTargetsDecision ->
-                    submitTargetSelection(player1, listOfNotNull(graveyardCard)).error shouldBe null
-                is YesNoDecision -> submitYesNo(player1, accept).error shouldBe null
+                    // The imprint's "you may" rides on its target prompt: an empty selection declines.
+                    submitTargetSelection(player1, if (accept) listOfNotNull(graveyardCard) else emptyList())
+                        .error shouldBe null
                 else -> error("unexpected decision $decision")
             }
         }

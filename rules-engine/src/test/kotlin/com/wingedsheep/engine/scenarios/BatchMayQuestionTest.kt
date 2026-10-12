@@ -16,7 +16,11 @@ import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 
-/** Simultaneous optional instances announce targets individually and consent only at resolution. */
+/**
+ * Simultaneous optional instances announce targets individually. For the one-target "you may"
+ * shape the target prompt is also the consent: a target is yes, Decline skips the instance. A
+ * remembered yield, or a shape with more than one target, keeps consent at resolution.
+ */
 class BatchMayQuestionTest : FunSpec({
     val pinger = card("Batch Pinger") {
         manaCost = "{1}"; typeLine = "Creature — Test"; power = 1; toughness = 1
@@ -54,29 +58,30 @@ class BatchMayQuestionTest : FunSpec({
         d.state.stack.map { d.state.getEntity(it)!!.get<TargetsComponent>()!!.targets.single() }
             .all { it == chosen } shouldBe true
     }
-    test("identical optional triggers are not asked or batched before targets and priority") {
+    test("identical optional triggers each target, then resolve in their own priority window without a second ask") {
         val d = game(2)
         targetAll(d, 2)
         d.bothPass().error shouldBe null
-        d.pendingDecision.shouldBeInstanceOf<YesNoDecision>().context.targetIds shouldBe listOf(d.player2)
-        d.submitYesNo(d.player1, true).error shouldBe null
+        d.pendingDecision shouldBe null
         d.assertLifeTotal(d.player2, 19)
         d.state.stack.size shouldBe 1
-        d.pendingDecision shouldBe null
         d.bothPass().error shouldBe null
-        d.submitYesNo(d.player1, false).error shouldBe null
-        d.assertLifeTotal(d.player2, 19)
+        d.pendingDecision shouldBe null
+        d.assertLifeTotal(d.player2, 18)
         d.state.stack.size shouldBe 0
     }
-    test("declining every instance still announces all targets and retains all response windows") {
+    test("the target prompt offers decline, and declining an instance keeps it off the stack") {
         val d = game(3)
-        targetAll(d, 3)
-        repeat(3) {
-            d.bothPass().error shouldBe null
-            d.pendingDecision.shouldBeInstanceOf<YesNoDecision>().context.targetIds shouldBe listOf(d.player2)
-            d.submitYesNo(d.player1, false).error shouldBe null
+        repeat(3) { index ->
+            val decision = d.pendingDecision.shouldBeInstanceOf<ChooseTargetsDecision>()
+            decision.targetRequirements.single().minTargets shouldBe 0
+            val targets = if (index == 1) listOf(d.player2) else emptyList()
+            d.submitTargetSelection(d.player1, targets).error shouldBe null
         }
-        d.assertLifeTotal(d.player2, 20)
+        d.pendingDecision shouldBe null
+        d.state.stack.size shouldBe 1
+        d.bothPass().error shouldBe null
+        d.assertLifeTotal(d.player2, 19)
         d.state.stack.size shouldBe 0
     }
     test("remembered no suppresses consent at resolution but never target announcements") {
@@ -145,10 +150,12 @@ class BatchMayQuestionTest : FunSpec({
         d.submitYesNo(d.player1, true).error shouldBe null
         d.assertLifeTotal(d.player2, 19)
     }
-    test("one optional instance also targets first and asks only after passing priority") {
+    test("one optional instance waits for priority and resolves on the target alone") {
         val d = game(1)
         targetAll(d, 1)
+        d.assertLifeTotal(d.player2, 20)
         d.bothPass().error shouldBe null
-        d.pendingDecision.shouldBeInstanceOf<YesNoDecision>().context.targetIds shouldBe listOf(d.player2)
+        d.pendingDecision shouldBe null
+        d.assertLifeTotal(d.player2, 19)
     }
 })

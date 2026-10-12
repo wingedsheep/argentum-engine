@@ -1,7 +1,6 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.ChooseTargetsDecision
-import com.wingedsheep.engine.core.YesNoDecision
 import com.wingedsheep.engine.core.PlayLand
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.support.ScenarioTestBase
@@ -35,25 +34,26 @@ class MortuaryMireScenarioTest : ScenarioTestBase() {
             game.state.getEntity(mire)!!.has<TappedComponent>() shouldBe true
             val decision = game.getPendingDecision().shouldBeInstanceOf<ChooseTargetsDecision>()
             decision.legalTargets[0].orEmpty() shouldContainExactlyInAnyOrder listOf(bears, giant)
+            decision.targetRequirements.single().minTargets shouldBe 0
+            // Choosing the target is the "you may" answer — no second yes/no at resolution.
             game.selectTargets(listOf(bears)).error shouldBe null
             game.resolveStack()
-            game.getPendingDecision().shouldBeInstanceOf<YesNoDecision>().context.targetIds shouldBe listOf(bears)
-            game.answerYesNo(true).error shouldBe null
+            game.hasPendingDecision() shouldBe false
             game.state.getLibrary(game.player1Id).first() shouldBe bears
             game.findCardsInGraveyard(1, "Grizzly Bears").size shouldBe 0
             game.findCardsInGraveyard(1, "Hill Giant").single() shouldBe giant
         }
 
-        test("declining leaves the targeted creature in the graveyard") {
+        test("declining at the target prompt leaves the creature in the graveyard") {
             val game = mireGame()
             val mire = game.findCardsInHand(1, "Mortuary Mire").single()
             val bears = game.findCardsInGraveyard(1, "Grizzly Bears").single()
             val library = game.state.getLibrary(game.player1Id)
             game.execute(PlayLand(game.player1Id, mire)).error shouldBe null
-            game.selectTargets(listOf(bears)).error shouldBe null
-            game.resolveStack()
-            game.getPendingDecision().shouldBeInstanceOf<YesNoDecision>()
-            game.answerYesNo(false).error shouldBe null
+            game.getPendingDecision().shouldBeInstanceOf<ChooseTargetsDecision>()
+            // An empty target selection declines: the trigger never goes on the stack.
+            game.selectTargets(emptyList()).error shouldBe null
+            game.state.stack.isEmpty() shouldBe true
             game.findCardsInGraveyard(1, "Grizzly Bears").single() shouldBe bears
             game.state.getLibrary(game.player1Id) shouldBe library
             game.hasPendingDecision() shouldBe false

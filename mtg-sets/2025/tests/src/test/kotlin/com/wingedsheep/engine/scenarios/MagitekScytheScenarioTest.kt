@@ -52,8 +52,8 @@ class MagitekScytheScenarioTest : FunSpec({
         driver.castSpell(me, scythe)
         driver.bothPass() // resolve the artifact -> it enters -> ETB trigger on stack
 
-        // Resolve the ETB trigger, answering its decisions: accept the "you may attach" and pick the
-        // creature to equip (order-agnostic).
+        // Resolve the ETB trigger, answering its decisions: picking the creature to equip is the
+        // "you may attach" yes (any yes/no still offered is accepted, order-agnostic).
         repeat(8) {
             when (driver.state.pendingDecision) {
                 is YesNoDecision -> driver.submitYesNo(me, true)
@@ -84,10 +84,12 @@ class MagitekScytheScenarioTest : FunSpec({
         driver.bothPass()
         if (driver.stackSize > 0) driver.bothPass()
 
-        driver.submitTargetSelection(me, listOf(courser)).error shouldBe null
-        driver.bothPass().error shouldBe null
-        driver.submitYesNo(me, false).error shouldBe null
-        if (driver.isPaused) driver.bothPass()
+        // The "you may attach" is answered at the target prompt: an empty selection declines, and
+        // the trigger never goes on the stack.
+        (driver.pendingDecision as ChooseTargetsDecision).targetRequirements.single().minTargets shouldBe 0
+        driver.submitTargetSelection(me, emptyList()).error shouldBe null
+        driver.stackSize shouldBe 0
+        driver.pendingDecision shouldBe null
 
         val swordId = driver.findPermanent(me, "Magitek Scythe")!!
         driver.state.getEntity(swordId)?.get<AttachedToComponent>() shouldBe null

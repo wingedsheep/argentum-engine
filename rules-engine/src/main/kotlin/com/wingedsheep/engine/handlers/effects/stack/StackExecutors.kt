@@ -38,7 +38,7 @@ class StackExecutors(
         GrantNextSpellAffinityExecutor(),
         GrantNextSpellKeywordExecutor(),
         GrantNextSpellFreeCastExecutor(),
-        ReduceSpellCostsExecutor(amountEvaluator),
+        ModifySpellCostsExecutor(amountEvaluator),
         ReselectTargetRandomlyExecutor(predicateEvaluator = zones.predicateEvaluator, targetFinder = targetFinder),
         ChangeTriggeringObjectTargetsExecutor(targetFinder = targetFinder),
         GrantKeywordToSpellExecutor(),

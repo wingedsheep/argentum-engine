@@ -19,6 +19,8 @@ import com.wingedsheep.engine.legalactions.utils.TargetEnumerationUtils
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.battlefield.*
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.identity.EmblemOwnedActivatedAbilityComponent
+import com.wingedsheep.engine.state.components.identity.emblemsWithOwnedActivatedAbilities
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.identity.TextChanges
 import com.wingedsheep.engine.state.components.identity.TextReplacementComponent
@@ -57,7 +59,11 @@ class ActivatedAbilityEnumerator(
         val playerId = context.playerId
         val projected = context.projected
 
-        for (entityId in context.battlefieldPermanents) {
+        // An emblem with activated abilities of its own (Karn, Living Legacy's) is walked like one
+        // of the player's permanents: it carries a characteristic-less CardComponent, resolves to
+        // no definition, and offers only the abilities on its EmblemOwnedActivatedAbilityComponent.
+        val sources = context.battlefieldPermanents + state.emblemsWithOwnedActivatedAbilities(playerId)
+        for (entityId in sources) {
             val container = state.getEntity(entityId) ?: continue
             val cardComponent = container.get<CardComponent>() ?: continue
 
@@ -99,7 +105,8 @@ class ActivatedAbilityEnumerator(
             // Which permanent granted each statically-granted ability, so a cost that names the
             // granter (AbilityCost.TapGrantingPermanent) can be gated on *its* state, not the host's.
             val granterByAbilityId = staticGrants.associate { it.ability.id to it.granterId }
-            val allAbilities = grantedAbilities + staticAbilities + emblemAbilities
+            val emblemOwnAbilities = container.get<EmblemOwnedActivatedAbilityComponent>()?.abilities.orEmpty()
+            val allAbilities = grantedAbilities + staticAbilities + emblemAbilities + emblemOwnAbilities
 
             // If no card definition (e.g., tokens) and no granted abilities, skip
             if (cardDef == null && allAbilities.isEmpty()) continue

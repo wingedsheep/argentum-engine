@@ -256,11 +256,11 @@ data class GameState(
      * Duration-bounded "spells you cast [this turn | until your next turn] that match … cost {N}
      * less" discounts (the Scion cycle; Ral, Leyline Prodigy). Unlike [pendingNextSpellAffinities]
      * these are not consumed by the spell they discount — they apply to every matching spell until
-     * their [SpellCostReduction.duration] ends. Serialized under its pre-duration name so recorded
+     * their [SpellCostModifier.duration] ends. Serialized under its pre-duration name so recorded
      * states keep decoding.
      */
     @kotlinx.serialization.SerialName("turnSpellCostReductions")
-    val spellCostReductions: List<SpellCostReduction> = emptyList(),
+    val spellCostModifiers: List<SpellCostModifier> = emptyList(),
 
     /** Whether a spell was warped this turn (for Void condition: "a spell was warped this turn") */
     val spellWarpedThisTurn: Boolean = false,

@@ -110,6 +110,7 @@ class CostCalculator(
 
     private val conditionEvaluator = predicateEvaluator.conditions
     private val dynamicAmountEvaluator = predicateEvaluator.amounts
+    private val targetFinder by lazy { com.wingedsheep.engine.handlers.TargetFinder(predicateEvaluator) }
 
     /**
      * Calculate the effective cost of casting a spell after applying all cost reductions.
@@ -175,13 +176,14 @@ class CostCalculator(
         }
 
         // Duration-bounded "spells you cast this turn / until your next turn that match … cost {N}
-        // less" discounts (Will / Rowan, Scion of …; Ral, Leyline Prodigy). The amount was fixed when the granting ability resolved, so unlike
+        // less (or more)" modifiers (Will / Rowan, Scion of …; Ral, Leyline Prodigy; Academy
+        // Loremaster's tax). The amount was fixed when the granting ability resolved, so unlike
         // the affinity riders above nothing is recomputed here — and unlike them, a matching cast
         // does not consume the entry.
-        for (reduction in state.spellCostReductions) {
-            if (reduction.controllerId != casterId) continue
-            if (!matchesCardDefinition(cardDef, reduction.spellFilter, null, state, state.projectedState)) continue
-            totalReduction += reduction.amount
+        for (modifier in state.spellCostModifiers) {
+            if (modifier.controllerId != casterId) continue
+            if (!matchesCardDefinition(cardDef, modifier.spellFilter, null, state, state.projectedState)) continue
+            if (modifier.increase) totalIncrease += modifier.amount else totalReduction += modifier.amount
         }
 
         // ModifySpellCost abilities on battlefield permanents and emblems.
@@ -975,29 +977,50 @@ class CostCalculator(
     /**
      * Calculate the minimum possible cost for affordability gating during legal-action
      * enumeration. For target-conditional reductions, this assumes the reduction WILL apply
-     * iff at least one legal target matching the filter currently exists on the battlefield.
+     * iff at least one of the spell's legal targets currently matches the filter — wherever
+     * the spell targets, so a graveyard-targeting spell (No One Left Behind) finds its
+     * discounted target in the graveyard. A spell whose targets aren't declared on the script
+     * (modal modes) falls back to any matching battlefield permanent.
      *
      * Used by CastSpellEnumerator so spells like Dire Downdraft show as castable when a
      * discounted target exists, even though the actual cost is locked from chosen targets
-     * at cast time.
+     * at cast time. [spellId] is the card being cast, so targeting restrictions that read the
+     * source (hexproof, "another") are honoured.
      */
     fun calculateMinPossibleCost(
         state: GameState,
         cardDef: CardDefinition,
-        casterId: EntityId
+        casterId: EntityId,
+        spellId: EntityId
     ): ManaCost {
         val optimisticTargets = mutableListOf<EntityId>()
+        var legalTargets: List<EntityId>? = null
         for (ability in cardDef.script.staticAbilities) {
             if (ability !is ModifySpellCost) continue
             if (ability.target != SpellCostTarget.SelfCast) continue
             val src = sourceFromModification(ability.modification)
             if (src is CostReductionSource.FixedIfAnyTargetMatches) {
-                val match = findAnyBattlefieldMatch(state, casterId, src.filter)
+                val match = if (cardDef.script.targetRequirements.isEmpty()) {
+                    findAnyBattlefieldMatch(state, casterId, src.filter)
+                } else {
+                    val candidates = legalTargets ?: spellLegalTargets(state, cardDef, casterId, spellId)
+                        .also { legalTargets = it }
+                    findAnyMatch(state, casterId, candidates, src.filter)
+                }
                 if (match != null) optimisticTargets += match
             }
         }
         return calculateEffectiveCost(state, cardDef, casterId, optimisticTargets)
     }
+
+    /** Every legal target of any of the spell's declared target requirements, in any zone. */
+    private fun spellLegalTargets(
+        state: GameState,
+        cardDef: CardDefinition,
+        casterId: EntityId,
+        spellId: EntityId
+    ): List<EntityId> =
+        cardDef.script.targetRequirements.flatMap { targetFinder.findLegalTargets(state, it, casterId, sourceId = spellId) }
 
     private fun sourceFromModification(modification: CostModification): CostReductionSource? = when (modification) {
         is CostModification.ReduceGenericBy -> modification.source
@@ -1061,6 +1084,18 @@ class CostCalculator(
         return targets.any { entityId ->
             predicateEvaluator.matches(state, projected, entityId, filter, context)
         }
+    }
+
+    /** The first of [candidates] matching the filter. */
+    private fun findAnyMatch(
+        state: GameState,
+        playerId: EntityId,
+        candidates: List<EntityId>,
+        filter: GameObjectFilter
+    ): EntityId? {
+        val projected = state.projectedState
+        val context = PredicateContext(controllerId = playerId)
+        return candidates.firstOrNull { predicateEvaluator.matches(state, projected, it, filter, context) }
     }
 
     /**
@@ -1649,7 +1684,16 @@ class CostCalculator(
             }
         }
 
-        return reduceGenericCost(baseMorphCost, totalReduction)
+        // Duration-bounded modifiers that cover every spell the caster casts ("spells they cast
+        // this turn cost {2} more" — Academy Loremaster). A face-down spell has no name, colour or
+        // mana cost of its own, so only an unfiltered modifier can be said to match it.
+        var totalIncrease = 0
+        for (modifier in state.spellCostModifiers) {
+            if (modifier.controllerId != casterId || modifier.spellFilter != GameObjectFilter.Any) continue
+            if (modifier.increase) totalIncrease += modifier.amount else totalReduction += modifier.amount
+        }
+
+        return reduceGenericCost(increaseGenericCost(baseMorphCost, totalIncrease), totalReduction)
     }
 
     /**

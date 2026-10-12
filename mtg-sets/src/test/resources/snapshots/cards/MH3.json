@@ -15050,7 +15050,7 @@
                         "change": 1
                     },
                     "effect": {
-                        "type": "ReduceSpellCosts",
+                        "type": "ModifySpellCosts",
                         "spellFilter": {
                             "cardPredicates": [
                                 {

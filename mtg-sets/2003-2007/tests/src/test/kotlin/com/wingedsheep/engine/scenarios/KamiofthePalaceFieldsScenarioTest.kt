@@ -1,7 +1,6 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.ChooseTargetsDecision
-import com.wingedsheep.engine.core.YesNoDecision
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Phase
@@ -60,8 +59,6 @@ class KamiofthePalaceFieldsScenarioTest : ScenarioTestBase() {
                     decision.legalTargets[0].orEmpty() shouldContainExactlyInAnyOrder listOf(kumo, hunt)
                 }
                 game.selectTargets(listOf(kumo))
-                game.resolveStack()
-                game.answerYesNo(true).error shouldBe null
                 game.resolveStack()
 
                 game.isInHand(1, "Venerable Kumo") shouldBe true

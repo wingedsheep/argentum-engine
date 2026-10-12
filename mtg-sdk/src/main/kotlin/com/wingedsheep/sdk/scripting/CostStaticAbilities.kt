@@ -622,7 +622,8 @@ sealed interface CostReductionSource {
      *
      * At cast resolution, the reduction applies if any of the spell's chosen targets match.
      * For affordability enumeration (before targets are chosen), the reduction is treated as
-     * applicable if at least one legal target exists on the battlefield.
+     * applicable if at least one of the spell's legal targets matches — in whatever zone the spell
+     * targets (No One Left Behind finds its discounted creature card in the graveyard).
      */
     @SerialName("FixedIfAnyTargetMatches")
     @Serializable

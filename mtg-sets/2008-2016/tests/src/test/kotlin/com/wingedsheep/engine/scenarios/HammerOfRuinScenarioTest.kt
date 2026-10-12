@@ -18,7 +18,8 @@ import io.kotest.matchers.shouldBe
  * `controlledByTriggeringPlayer()`. This pins that "that player" is the damaged player on the
  * Equipment's trigger too: only the damaged player's Equipment are legal targets — not the Hammer
  * itself, not another Equipment its controller has, and not the damaged player's non-Equipment
- * artifact — and that the "you may" is honoured both ways at resolution.
+ * artifact — and that the "you may" is honoured both ways. It is answered at the target prompt:
+ * choosing an Equipment is the yes, an empty selection declines and the trigger never resolves.
  */
 class HammerOfRuinScenarioTest : ScenarioTestBase() {
 
@@ -63,14 +64,16 @@ class HammerOfRuinScenarioTest : ScenarioTestBase() {
                 withClue("only the damaged player's Equipment are legal — not ours, not their Sol Ring") {
                     td.legalTargets[0]!!.shouldContainExactlyInAnyOrder(bonesplitter, collar)
                 }
+                withClue("the target prompt carries the 'you may' and offers a decline") {
+                    td.targetRequirements.single().minTargets shouldBe 0
+                }
 
                 game.submitDecision(TargetsResponse(td.id, mapOf(0 to listOf(bonesplitter)))).error shouldBe null
                 game.resolveStack()
 
-                withClue("the 'you may' is asked on resolution") {
-                    (game.state.pendingDecision is YesNoDecision) shouldBe true
+                withClue("choosing the target was the yes — nothing is asked on resolution") {
+                    (game.state.pendingDecision is YesNoDecision) shouldBe false
                 }
-                game.answerYesNo(true).error shouldBe null
                 game.resolveStack()
 
                 withClue("4 combat damage went through") {
@@ -87,7 +90,7 @@ class HammerOfRuinScenarioTest : ScenarioTestBase() {
                 }
             }
 
-            test("declining the may leaves the targeted Equipment in play") {
+            test("declining the may at the target prompt leaves the Equipment in play") {
                 val game = buildGame()
                 val bonesplitter = game.findPermanent("Bonesplitter")!!
 
@@ -103,10 +106,9 @@ class HammerOfRuinScenarioTest : ScenarioTestBase() {
                 }
                 val td = game.state.pendingDecision as? ChooseTargetsDecision
                     ?: error("expected ChooseTargetsDecision for Hammer of Ruin's trigger; got ${game.state.pendingDecision}")
-                game.submitDecision(TargetsResponse(td.id, mapOf(0 to listOf(bonesplitter)))).error shouldBe null
-                game.resolveStack()
-
-                game.answerYesNo(false).error shouldBe null
+                // An empty target selection declines: the trigger never goes on the stack.
+                game.submitDecision(TargetsResponse(td.id, mapOf(0 to emptyList()))).error shouldBe null
+                game.state.stack.isEmpty() shouldBe true
                 game.resolveStack()
 
                 withClue("declined — Bonesplitter survives") {

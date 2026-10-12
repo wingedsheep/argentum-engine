@@ -1300,8 +1300,10 @@ data class GrantNextSpellKeywordEffect(
 }
 
 /**
- * "Spells you cast [duration] that match [spellFilter] cost {X} less to cast" — a duration-bounded,
- * controller-scoped generic cost reduction installed when this effect resolves.
+ * "Spells [player] casts [duration] that match [spellFilter] cost {X} less — or, with
+ * [increase], {X} more — to cast": a duration-bounded, player-scoped generic cost modifier
+ * installed when this effect resolves. Not to be confused with the static
+ * [com.wingedsheep.sdk.scripting.ModifySpellCost], which lasts only while its source is around.
  *
  * The *repeating* counterpart of [GrantNextSpellAffinityEffect]: that rider is consumed by the
  * first matching spell, this one applies to every matching spell until [duration] ends.
@@ -1310,45 +1312,60 @@ data class GrantNextSpellKeywordEffect(
  * cost calculator uses for the whole duration. That is what the Scion cycle's rulings require —
  * "the value of X is determined only once, at the time the ability resolves" — so life gained or
  * lost after activation does not change the discount. Use a static
- * [com.wingedsheep.sdk.scripting.ModifySpellCost] instead when the reduction should track board
+ * [com.wingedsheep.sdk.scripting.ModifySpellCost] instead when the modifier should track board
  * state continuously.
  *
- * The reduction lives on the game state rather than on the source permanent, so it survives the
+ * The modifier lives on the game state rather than on the source permanent, so it survives the
  * source leaving the battlefield (the ability has already resolved; its effect lasts on its own),
- * and it only reduces the generic portion of a cost (CR 601.2f) — never colored mana.
+ * and it only changes the generic portion of a cost (CR 601.2f) — never colored mana.
+ *
+ * [player] is resolved once, at resolution, to the players whose spells are affected — "you" by
+ * default; [Player.TriggeringPlayer] for Academy Loremaster's "spells they cast this turn cost
+ * {2} more", where "they" is the player whose draw step it is.
  *
  * [duration] is [Duration.EndOfTurn] ("this turn") or [Duration.UntilYourNextTurn] (Ral, Leyline
  * Prodigy's +1 — the discount keeps applying to instants cast on opponents' turns and ends when
  * the controller's next turn begins). Any other duration is rejected at construction rather than
- * silently treated as one of these.
+ * silently treated as one of these; so is `UntilYourNextTurn` for anyone but [Player.You], whose
+ * turn it would have to end on.
  *
- * Will, Scion of Peace: `ReduceSpellCostsEffect(Filters.whiteOrBlue,
+ * Will, Scion of Peace: `ModifySpellCostsEffect(Filters.whiteOrBlue,
  * DynamicAmount.TurnTracking(Player.You, TurnTracker.LIFE_GAINED))`.
  *
- * @property spellFilter Which of the controller's spells are discounted.
- * @property amount How much generic mana to take off, resolved at execution time.
- * @property duration How long the discount lasts.
+ * @property spellFilter Which of the affected players' spells are modified.
+ * @property amount How much generic mana to take off (or add), resolved at execution time.
+ * @property duration How long the modifier lasts.
+ * @property player Whose spells are affected, resolved at execution time.
+ * @property increase `true` for a tax ("cost {X} more"), `false` for a discount.
  */
-@SerialName("ReduceSpellCosts")
+@SerialName("ModifySpellCosts")
 @Serializable
-data class ReduceSpellCostsEffect(
+data class ModifySpellCostsEffect(
     val spellFilter: GameObjectFilter,
     val amount: com.wingedsheep.sdk.scripting.values.DynamicAmount,
     val duration: Duration = Duration.EndOfTurn,
+    val player: Player = Player.You,
+    val increase: Boolean = false,
 ) : Effect {
     init {
         require(duration == Duration.EndOfTurn || duration == Duration.UntilYourNextTurn) {
-            "ReduceSpellCostsEffect supports EndOfTurn or UntilYourNextTurn, not $duration"
+            "ModifySpellCostsEffect supports EndOfTurn or UntilYourNextTurn, not $duration"
+        }
+        require(duration == Duration.EndOfTurn || player == Player.You) {
+            "ModifySpellCostsEffect supports UntilYourNextTurn only for Player.You, not $player"
         }
     }
 
     override val description: String = buildString {
-        append("Spells you cast ")
+        append("Spells ")
+        append(if (player == Player.You) "you cast " else "${player.description} casts ")
         append(if (duration == Duration.EndOfTurn) "this turn" else duration.description)
-        append(" that are ${spellFilter.description} cost ")
+        append(" that are ${spellFilter.description}")
+        append(" cost ")
+        val direction = if (increase) "more" else "less"
         val fixed = (amount as? DynamicAmount.Fixed)?.amount
-        if (fixed != null) append("{$fixed} less to cast")
-        else append("{X} less to cast, where X is ${amount.description}")
+        if (fixed != null) append("{$fixed} $direction to cast")
+        else append("{X} $direction to cast, where X is ${amount.description}")
     }
 
     override fun applyTextReplacement(replacer: TextReplacer): Effect =
