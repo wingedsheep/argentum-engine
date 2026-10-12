@@ -1027,7 +1027,8 @@ data class MayCastWithoutPayingManaCost(
         val noun = if (spellFilter == GameObjectFilter.Any) "spells" else "${spellFilter.description} spells"
         val singular = if (spellFilter == GameObjectFilter.Any) "spell" else "${spellFilter.description} spell"
         val fromZone = fromZones?.let { zones ->
-            " from " + zones.sortedBy { listOf(Zone.HAND, Zone.LIBRARY, Zone.GRAVEYARD, Zone.EXILE).indexOf(it).let { i -> if (i < 0) Int.MAX_VALUE else i } }.joinToString(" or ") {
+            val oracleOrder = listOf(Zone.HAND, Zone.LIBRARY, Zone.GRAVEYARD, Zone.EXILE)
+            " from " + zones.sortedBy { oracleOrder.indexOf(it).takeIf { i -> i >= 0 } ?: Int.MAX_VALUE }.joinToString(" or ") {
                 when (it) {
                     Zone.HAND -> "your hand"
                     Zone.LIBRARY -> "the top of your library"
