@@ -7977,6 +7977,9 @@ Triggers.you.casts(GameObjectFilter.Noncreature or
   fires on the departed permanent's look-back exactly like the bare atom, once per departure:
   `Triggers.or(Triggers.self.dies(), Triggers.self.leaves(to = Zone.EXILE))` (Slagstone Refinery),
   `Triggers.or(Triggers.self.transforms(true), Triggers.self.dies())` (Blightsower Thallid).
+  The look-back also covers `another`/`a` leave triggers on a permanent that leaves *together* with
+  others (CR 603.10a), whichever zone each went to: Slagstone Refinery exiled alongside another
+  nontoken artifact triggers once for that artifact as well as for itself.
 - `Triggers.<subject>.becomesAttached(to, controller)`
   — "whenever an Aura/Equipment becomes attached to a permanent" (CR 603.2f). Fires from
   `PermanentAttachedEvent`, emitted at every attach site (aura ETB onto its enchant target, equip

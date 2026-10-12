@@ -134,56 +134,57 @@ class DeathAndLeaveTriggerDetector(
     }
 
     /**
-     * Rule 603.10: Handle "look back in time" for simultaneous deaths.
-     * When multiple creatures die at the same time, each dead creature should
-     * still see the others dying for trigger purposes. The main battlefield loop
-     * misses these because the creatures are already in the graveyard.
+     * Rule 603.10a: "look back in time" for permanents that leave the battlefield together.
+     * When several permanents leave at once (a wipe, a mass exile, or one dying while another is
+     * exiled), each departed permanent's leaves-the-battlefield abilities still see the others
+     * leaving. The main battlefield loop misses these because the sources are already gone.
      *
-     * This checks dead creatures' non-self death triggers (e.g., ZoneChangeEvent with OTHER/ANY binding)
-     * against other death events in the same batch.
+     * Checks departed permanents' non-self triggers (OTHER/ANY binding) against the batch's other
+     * battlefield departures. Death-to-death pairs match any trigger, as they always have; a pair
+     * where either side left for a zone other than the graveyard only fires abilities that are
+     * themselves leaves-the-battlefield abilities ([TriggerMatcher.battlefieldExitAtoms]), the
+     * class CR 603.10a names — Slagstone Refinery exiled alongside another artifact still sees it.
      */
-    fun detectSimultaneousDeathTriggers(
+    fun detectSimultaneousDepartureTriggers(
         state: GameState,
         statics: BattlefieldStaticsIndex,
         events: List<EngineGameEvent>,
         triggers: MutableList<PendingTrigger>
     ) {
-        // Collect all death events from this batch
-        val deathEvents = events.filterIsInstance<ZoneChangeEvent>().filter {
-            it.toZone == Zone.GRAVEYARD &&
-                it.isBattlefieldDeparture
-        }
-        if (deathEvents.size < 2) return // Need at least 2 simultaneous deaths
+        val departures = events.filterIsInstance<ZoneChangeEvent>().filter { it.isBattlefieldDeparture }
+        if (departures.size < 2) return // Need at least 2 simultaneous departures
 
-        // For each dead creature, check its triggers against OTHER death events
-        for (deadEvent in deathEvents) {
-            val deadEntityId = deadEvent.entityId
+        for (departedEvent in departures) {
+            val departedId = departedEvent.entityId
 
-            // Skip if this creature is still on the battlefield (already handled by main loop)
-            if (deadEntityId in state.getBattlefield()) continue
+            // Skip if this permanent is still on the battlefield (already handled by main loop)
+            if (departedId in state.getBattlefield()) continue
 
-            // Skip creatures whose abilities were stripped at leaving time (Xu-Ifit's
+            // Skip permanents whose abilities were stripped at leaving time (Xu-Ifit's
             // ability-stripped reanimate target contributes no triggers of its own even
             // when it dies alongside other creatures).
-            if (deadEvent.lastKnown?.lostAllAbilities == true) continue
+            if (departedEvent.lastKnown?.lostAllAbilities == true) continue
 
-            val info = resolveDyingEntity(state, deadEvent) ?: continue
+            val info = resolveDyingEntity(state, departedEvent) ?: continue
 
-            val abilities = abilityResolver.getDepartedTriggeredAbilities(deadEvent, info.cardDefinitionId, state, statics)
-            val controllerId = deadEvent.lastKnown?.controllerId ?: deadEvent.ownerId
+            val abilities = abilityResolver.getDepartedTriggeredAbilities(departedEvent, info.cardDefinitionId, state, statics)
+            val controllerId = departedEvent.lastKnown?.controllerId ?: departedEvent.ownerId
 
             for (ability in abilities) {
-                for (otherDeathEvent in deathEvents) {
-                    if (otherDeathEvent.entityId == deadEntityId) continue // Skip self
+                val isLeaveAbility = matcher.battlefieldExitAtoms(ability.trigger).isNotEmpty()
+                for (otherEvent in departures) {
+                    if (otherEvent.entityId == departedId) continue // Skip self
+                    val bothDied = departedEvent.toZone == Zone.GRAVEYARD && otherEvent.toZone == Zone.GRAVEYARD
+                    if (!bothDied && !isLeaveAbility) continue
 
-                    if (matcher.matchesTrigger(ability.trigger, ability.binding, otherDeathEvent, deadEntityId, controllerId, state)) {
+                    if (matcher.matchesTrigger(ability.trigger, ability.binding, otherEvent, departedId, controllerId, state)) {
                         triggers.add(
                             PendingTrigger(
                                 ability = ability,
-                                sourceId = deadEntityId,
+                                sourceId = departedId,
                                 sourceName = info.name,
                                 controllerId = controllerId,
-                                triggerContext = TriggerContext.fromEvent(otherDeathEvent)
+                                triggerContext = TriggerContext.fromEvent(otherEvent)
                             )
                         )
                     }

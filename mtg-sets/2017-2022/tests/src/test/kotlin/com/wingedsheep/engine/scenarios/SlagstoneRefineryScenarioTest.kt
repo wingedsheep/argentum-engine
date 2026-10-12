@@ -89,6 +89,27 @@ class SlagstoneRefineryScenarioTest : ScenarioTestBase() {
             game.findAllPermanents("Powerstone") shouldHaveSize 1
         }
 
+        test("the Refinery exiled together with another nontoken artifact triggers once for each") {
+            // Ruling 2022-10-14: leaving at the same time as other nontoken artifacts, it triggers once
+            // for each of them plus once for itself (CR 603.10a look-back).
+            val game = scenario()
+                .withPlayers("Player1", "Player2")
+                .withCardOnBattlefield(1, "Slagstone Refinery")
+                .withCardOnBattlefield(1, "Ornithopter")
+                .withCardInHand(1, "Decree of Annihilation")
+                .withLandsOnBattlefield(1, "Mountain", 10)
+                .withActivePlayer(1)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+
+            game.castSpell(1, "Decree of Annihilation").error shouldBe null
+            game.resolveStack()
+
+            game.isInExile(1, "Slagstone Refinery") shouldBe true
+            game.isInExile(1, "Ornithopter") shouldBe true
+            game.findAllPermanents("Powerstone") shouldHaveSize 2
+        }
+
         test("an artifact token you control being destroyed does not trigger") {
             val game = scenario()
                 .withPlayers("Player1", "Player2")

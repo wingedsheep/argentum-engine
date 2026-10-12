@@ -336,12 +336,12 @@ class TriggerDetector(
         // on it" event for that recipient (CR 603.2c), so fold the per-kind/per-source events.
         mergePerRecipientCounterTriggers(triggers)
 
-        // Rule 603.10: "Look back in time" for simultaneous deaths.
-        // When multiple creatures die at the same time (e.g., from Infest),
-        // each creature's death triggers should still see the others dying.
-        // The main loop in detectTriggersForEvent only checks battlefield creatures,
-        // so dead creatures miss each other's death events. Fix that here.
-        deathAndLeaveDetector.detectSimultaneousDeathTriggers(state, index.statics, events, triggers)
+        // Rule 603.10a: "Look back in time" for permanents leaving the battlefield together.
+        // When several permanents leave at the same time (e.g., Infest, or a mass exile),
+        // each one's leaves-the-battlefield triggers should still see the others leaving.
+        // The main loop in detectTriggersForEvent only checks battlefield permanents,
+        // so departed ones miss each other's departures. Fix that here.
+        deathAndLeaveDetector.detectSimultaneousDepartureTriggers(state, index.statics, events, triggers)
         // The same look-back for "a creature dealt damage by this creature this turn dies" whose
         // damaging creature died alongside its victim (Dread Slaver trading in combat).
         deathAndLeaveDetector.detectDepartedDamagingSourceDiesTriggers(state, index.statics, events, triggers)
@@ -3577,7 +3577,7 @@ class TriggerDetector(
      * Two source populations are considered: permanents that survived the batch (taken from the
      * post-batch battlefield index) and — for Rule 603.10 "look back in time" — a source that
      * itself died in this same batch, recovered from its last-known card definition since it is no
-     * longer on the battlefield (mirrors [DeathAndLeaveTriggerDetector.detectSimultaneousDeathTriggers]).
+     * longer on the battlefield (mirrors [DeathAndLeaveTriggerDetector.detectSimultaneousDepartureTriggers]).
      */
     private fun detectCreaturesDiedBatchTriggers(
         state: GameState,
@@ -3623,7 +3623,7 @@ class TriggerDetector(
         // (2) Rule 603.10 "look back in time": a source that itself died in this same batch must
         // still see the *other* creatures that died alongside it. The index is built from the
         // current (post-batch) battlefield, so such a source is absent from it — recover its
-        // abilities from its last-known card definition, exactly as detectSimultaneousDeathTriggers
+        // abilities from its last-known card definition, exactly as detectSimultaneousDepartureTriggers
         // does for the per-creature path. (For Vengeful Townsfolk the on-self +1/+1 is a harmless
         // no-op once it is in the graveyard, but a non-self payoff — draw a card, make a token,
         // deal damage — would otherwise be silently dropped on a board wipe that also kills it.)
