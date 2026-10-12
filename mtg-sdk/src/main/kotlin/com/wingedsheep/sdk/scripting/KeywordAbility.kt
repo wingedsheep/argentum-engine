@@ -1711,6 +1711,16 @@ sealed interface KeywordAbility {
         fun afflict(n: Int): KeywordAbility = Numeric(Keyword.AFFLICT, n)
         fun crew(n: Int, onceEachTurn: Boolean = false): KeywordAbility =
             Numeric(Keyword.CREW, n, onceEachTurn)
+
+        /**
+         * The projected keyword a *granted* "crew [n]" floats — `CREW_<n>` — for
+         * `GrantKeyword(KeywordAbility.grantedCrew(1), vehicles)` ("Vehicles you control have
+         * crew 1", Astor, Bearer of Blades). The same `<KEYWORD>_<n>` encoding granted toxic and
+         * bushido use, but crew instances are separate abilities rather than a sum: a Vehicle
+         * with printed crew 3 that gains crew 1 can be crewed by either (CR 702.122), so the
+         * projection keeps one `CREW_<n>` per distinct N and the crew readers take the cheapest.
+         */
+        fun grantedCrew(n: Int): String = "${Keyword.CREW.name}_$n"
         fun saddle(n: Int): KeywordAbility = Numeric(Keyword.SADDLE, n)
         fun modular(n: Int): KeywordAbility = Numeric(Keyword.MODULAR, n)
         fun fading(n: Int): KeywordAbility = Numeric(Keyword.FADING, n)

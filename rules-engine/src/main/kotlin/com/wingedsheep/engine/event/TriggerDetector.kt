@@ -774,6 +774,20 @@ class TriggerDetector(
             }
         }
 
+        // Radiation has no source and is controlled by each active player (CR 728.1).
+        if (step == com.wingedsheep.sdk.core.Step.PRECOMBAT_MAIN) {
+            for (player in state.sharedTurnTeam(activePlayerId)) {
+                val ability = RadiationAbilities.ability
+                triggers.add(PendingTrigger(
+                    ability = ability,
+                    sourceId = player,
+                    sourceName = RadiationAbilities.SOURCE_NAME,
+                    controllerId = player,
+                    triggerContext = TriggerContext(step = step, triggeringEntityId = player, triggeringPlayerId = player)
+                ))
+            }
+        }
+
         // The monarch's inherent end-step draw (CR 725.2) — sourceless, controlled by the monarch.
         state.monarch?.let { monarch ->
             val ability = MonarchAbilities.endStepDraw

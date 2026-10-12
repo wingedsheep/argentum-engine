@@ -1117,6 +1117,7 @@ sealed interface ServerMessage {
         val playerName: String,
         val life: Int,
         val poisonCounters: Int = 0,
+        val radCounters: Int = 0,
         val handSize: Int,
         val librarySize: Int,
         val battlefield: List<SpectatorCardInfo>,

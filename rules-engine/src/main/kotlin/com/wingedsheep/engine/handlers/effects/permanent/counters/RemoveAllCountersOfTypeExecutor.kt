@@ -34,7 +34,8 @@ class RemoveAllCountersOfTypeExecutor : EffectExecutor<RemoveAllCountersOfTypeEf
             if (remaining.isEmpty()) container.without<CountersComponent>()
             else container.with(CountersComponent(remaining))
         }
-        val entityName = targetEntity.get<CardComponent>()?.name ?: ""
+        val entityName = targetEntity.get<CardComponent>()?.name
+            ?: targetEntity.get<com.wingedsheep.engine.state.components.identity.PlayerComponent>()?.name.orEmpty()
         return EffectResult.success(
             newState,
             listOf(CountersRemovedEvent(targetId, effect.counterType, amount, entityName))

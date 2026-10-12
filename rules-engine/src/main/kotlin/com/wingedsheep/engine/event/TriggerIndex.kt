@@ -400,7 +400,7 @@ class TriggerIndex(
             is com.wingedsheep.engine.core.PhasedInEvent -> PHASES_IN_LIST
             is LifeChangedEvent -> when (event.reason) {
                 LifeChangeReason.LIFE_GAIN -> LIFE_GAIN_LIST
-                LifeChangeReason.DAMAGE, LifeChangeReason.LIFE_LOSS, LifeChangeReason.PAYMENT -> LIFE_LOSS_LIST
+                LifeChangeReason.DAMAGE, LifeChangeReason.LIFE_LOSS, LifeChangeReason.RADIATION, LifeChangeReason.PAYMENT -> LIFE_LOSS_LIST
             }
             is BecomesTargetEvent -> BECOMES_TARGET_LIST
             is TurnFaceUpEvent -> TURN_FACE_UP_LIST

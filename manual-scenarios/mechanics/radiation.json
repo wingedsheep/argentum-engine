@@ -1,0 +1,101 @@
+{
+  "player1Name": "Vault Dweller",
+  "player2Name": "Wastelander",
+  "player1": {
+    "lifeTotal": 20,
+    "counters": {
+      "RAD": 2
+    },
+    "battlefield": [
+      {
+        "name": "Island"
+      },
+      {
+        "name": "Island"
+      },
+      {
+        "name": "Island"
+      },
+      {
+        "name": "Island"
+      },
+      {
+        "name": "Swamp"
+      },
+      {
+        "name": "Swamp"
+      },
+      {
+        "name": "Swamp"
+      },
+      {
+        "name": "Swamp"
+      }
+    ],
+    "hand": [
+      "Contaminated Drink"
+    ],
+    "library": [
+      "Island",
+      "Grizzly Bears",
+      "Island",
+      "Grizzly Bears",
+      "Island",
+      "Grizzly Bears",
+      "Island",
+      "Grizzly Bears",
+      "Island",
+      "Grizzly Bears",
+      "Island",
+      "Grizzly Bears",
+      "Island",
+      "Grizzly Bears",
+      "Island",
+      "Grizzly Bears",
+      "Island",
+      "Grizzly Bears",
+      "Island",
+      "Grizzly Bears"
+    ]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "counters": {
+      "RAD": 3
+    },
+    "battlefield": [],
+    "hand": [],
+    "library": [
+      "Forest",
+      "Grizzly Bears",
+      "Forest",
+      "Grizzly Bears",
+      "Forest",
+      "Grizzly Bears",
+      "Forest",
+      "Grizzly Bears",
+      "Forest",
+      "Grizzly Bears",
+      "Forest",
+      "Grizzly Bears",
+      "Forest",
+      "Grizzly Bears",
+      "Forest",
+      "Grizzly Bears",
+      "Forest",
+      "Grizzly Bears",
+      "Forest",
+      "Grizzly Bears"
+    ]
+  },
+  "phase": "BEGINNING",
+  "step": "DRAW",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [
+    "PRECOMBAT_MAIN"
+  ],
+  "player2StopAtSteps": [
+    "PRECOMBAT_MAIN"
+  ]
+}

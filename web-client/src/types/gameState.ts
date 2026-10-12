@@ -717,6 +717,7 @@ export interface ClientPlayer {
    * badge is rendered.
    */
   readonly energyCounters?: number
+  readonly radCounters?: number
   /**
    * This player's experience counter total (CR 122.1 — a counter on a player). `0` means no badge
    * is rendered.

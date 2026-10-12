@@ -16,8 +16,6 @@ import com.wingedsheep.engine.state.components.battlefield.CrewSaddleContributor
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.stack.ActivatedAbilityOnStackComponent
-import com.wingedsheep.sdk.core.Keyword
-import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.CrewSaddleCost
 import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.effects.AddCardTypeEffect
@@ -48,7 +46,7 @@ class CrewVehicleHandler(
         val vehicleContainer = state.getEntity(action.vehicleId)
             ?: return "Vehicle not found: ${action.vehicleId}"
 
-        val vehicleCard = vehicleContainer.get<CardComponent>()
+        vehicleContainer.get<CardComponent>()
             ?: return "Not a card: ${action.vehicleId}"
 
         // Vehicle must be on the battlefield
@@ -70,23 +68,14 @@ class CrewVehicleHandler(
             return "An effect prevents you from activating that ability right now"
         }
 
-        // Vehicle must have Crew keyword ability
-        val cardDef = cardRegistry.getCard(vehicleCard.cardDefinitionId)
-            ?: return "Card definition not found"
-
-        val crewAbility = cardDef.keywordAbilities
-            .filterIsInstance<KeywordAbility.Numeric>()
-            .firstOrNull { it.keyword == Keyword.CREW }
-            ?: return "This permanent doesn't have crew"
-
-        // "Crew N. Activate only once each turn." (Luxurious Locomotive): block a second crew
-        // activation this turn. Vanilla Crew (onceEachTurn = false) has no such cap.
-        if (crewAbility.onceEachTurn) {
-            val crewActivations = vehicleContainer.get<CrewSaddleContributorsComponent>()?.crewActivations ?: 0
-            if (crewActivations >= 1) {
-                return "This Vehicle's crew ability can only be activated once each turn"
+        // Vehicle must have a crew ability it can activate now — printed or granted, minus a
+        // once-each-turn crew (Luxurious Locomotive) already used this turn.
+        val crewAbility = CrewRequirement.available(state, projected, cardRegistry, action.vehicleId)
+            ?: return if (CrewRequirement.hasAny(state, projected, cardRegistry, action.vehicleId)) {
+                "This Vehicle's crew ability can only be activated once each turn"
+            } else {
+                "This permanent doesn't have crew"
             }
-        }
 
         if (action.crewCreatures.isEmpty()) {
             return "Must select at least one creature to crew"

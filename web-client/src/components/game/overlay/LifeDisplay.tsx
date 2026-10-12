@@ -24,6 +24,7 @@ export function LifeDisplay({
   spectatorMode = false,
   poisonCounters = 0,
   energyCounters = 0,
+  radCounters = 0,
   experienceCounters = 0,
   commanderDamage,
   seatColor,
@@ -41,6 +42,7 @@ export function LifeDisplay({
   poisonCounters?: number
   /** Current energy counter total (Kaladesh block onward, CR 107.14). No badge when 0. */
   energyCounters?: number
+  radCounters?: number
   /** Current experience counter total (CR 122.1 — a counter on a player). No badge when 0. */
   experienceCounters?: number
   commanderDamage?: readonly ClientCommanderDamage[]
@@ -513,6 +515,12 @@ export function LifeDisplay({
           }}
         >
           POISON {poisonCounters}/10
+        </div>
+      )}
+      {radCounters > 0 && (
+        <div title="Radiation: at this player's precombat main phase, they mill this many cards. Each nonland costs 1 life and removes a rad counter."
+          style={{ marginTop: 4, color: '#a3e635', fontSize: 11, fontWeight: 800 }}>
+          ☢ {radCounters} RAD
         </div>
       )}
       {energyCounters > 0 && (

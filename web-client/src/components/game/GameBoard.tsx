@@ -1219,6 +1219,7 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
                 // bottom-seat orb already does.
                 spectatorMode={viewerIsObserver}
                 poisonCounters={centerOrbOpponent.poisonCounters}
+                radCounters={centerOrbOpponent.radCounters ?? 0}
                 energyCounters={centerOrbOpponent.energyCounters ?? 0}
                 experienceCounters={centerOrbOpponent.experienceCounters ?? 0}
                 commanderDamage={centerOrbOpponent.commanderDamage ?? []}
@@ -1380,7 +1381,7 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
               {/* The emote button normally sits beside that orb; with the orb stood down it stays
                   here on its own, so you can still talk at a multiplayer table. */}
               {(teamBannersActive || (bottomStripActive && !viewerIsObserver)) && !spectatorMode && eliminatedBottomSeat == null && <EmotePicker />}
-              {!teamBannersActive && !(bottomStripActive && !viewerIsObserver) && <LifeDisplay life={bottomHudPlayer.life} isPlayer playerId={bottomHudPlayer.playerId} playerName={bottomHudPlayer.name} spectatorMode={spectatorMode || eliminatedBottomSeat != null} poisonCounters={bottomHudPlayer.poisonCounters} energyCounters={bottomHudPlayer.energyCounters ?? 0} experienceCounters={bottomHudPlayer.experienceCounters ?? 0} commanderDamage={bottomHudPlayer.commanderDamage ?? []} handSize={bottomHudPlayer.handSize} maxHandSize={bottomHudPlayer.maxHandSize} {...(isMulti ? { seatColor: bottomHudSeatColor.base } : {})} {...(teamCenterOrbs ? { teamName: bottomTeamLabel, teamMembers: bottomTeamMembers } : {})} />}
+              {!teamBannersActive && !(bottomStripActive && !viewerIsObserver) && <LifeDisplay life={bottomHudPlayer.life} isPlayer playerId={bottomHudPlayer.playerId} playerName={bottomHudPlayer.name} spectatorMode={spectatorMode || eliminatedBottomSeat != null} poisonCounters={bottomHudPlayer.poisonCounters} radCounters={bottomHudPlayer.radCounters ?? 0} energyCounters={bottomHudPlayer.energyCounters ?? 0} experienceCounters={bottomHudPlayer.experienceCounters ?? 0} commanderDamage={bottomHudPlayer.commanderDamage ?? []} handSize={bottomHudPlayer.handSize} maxHandSize={bottomHudPlayer.maxHandSize} {...(isMulti ? { seatColor: bottomHudSeatColor.base } : {})} {...(teamCenterOrbs ? { teamName: bottomTeamLabel, teamMembers: bottomTeamMembers } : {})} />}
               <SpeedGauge speed={bottomHudPlayer.speed ?? 0} />
               {!responsive.isMobile && <ActiveEffectsBadges effects={bottomHudPlayer.activeEffects} />}
               {!responsive.isMobile && bottomHudPlayer.manaPool && <ManaPool manaPool={bottomHudPlayer.manaPool} />}

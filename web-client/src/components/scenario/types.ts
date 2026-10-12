@@ -21,6 +21,7 @@ export interface ScenarioBattlefieldCard {
 
 export interface ScenarioPlayerConfig {
   lifeTotal?: number
+  counters?: Record<string, number>
   hand?: string[]
   battlefield?: ScenarioBattlefieldCard[]
   graveyard?: string[]

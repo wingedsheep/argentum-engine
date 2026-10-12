@@ -46,7 +46,8 @@ class RemoveCountersExecutor(
             container.with(current.withRemoved(counterType, removed))
         }
 
-        val entityName = state.getEntity(targetId)?.get<CardComponent>()?.name ?: ""
+        val entityName = state.getEntity(targetId)?.get<CardComponent>()?.name
+            ?: state.getEntity(targetId)?.get<com.wingedsheep.engine.state.components.identity.PlayerComponent>()?.name.orEmpty()
 
         return EffectResult.success(
             newState,

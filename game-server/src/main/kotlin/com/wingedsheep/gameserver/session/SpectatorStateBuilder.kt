@@ -220,6 +220,7 @@ class SpectatorStateBuilder(
             playerName = seat.playerName,
             life = life,
             poisonCounters = poisonCounters,
+            radCounters = playerEntity?.get<CountersComponent>()?.getCount(CounterType.RAD) ?: 0,
             handSize = hand.size,
             librarySize = library.size,
             battlefield = battlefield.mapNotNull { cardId -> buildCardInfo(state, cardId) },

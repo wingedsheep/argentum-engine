@@ -39,11 +39,15 @@ internal class EffectApplicator(
      * projected keyword set can't hold two equal strings, so two "gains toxic 1" grants — or a
      * printed toxic 2 plus a granted toxic 2 — would otherwise collapse to one and lose the N the
      * readers sum (CR 702.164b's total toxic value, `KeywordValue`).
+     *
+     * Crew is the exception: each `CREW_<n>` is a separate crew ability, not a share of one total
+     * (a Vehicle with crew 3 that gains crew 1 can be crewed for 1, not 4), so distinct Ns sit side
+     * by side and the crew readers take the cheapest.
      */
     private fun addKeyword(keywords: MutableSet<String>, keyword: String) {
         val split = keyword.lastIndexOf('_')
         val n = if (split > 0) keyword.substring(split + 1).toIntOrNull() else null
-        if (n == null) {
+        if (n == null || keyword.startsWith(CREW_PREFIX)) {
             keywords.add(keyword)
             return
         }
@@ -499,3 +503,6 @@ internal class EffectApplicator(
         }
     }
 }
+
+/** Prefix of a granted crew keyword ([com.wingedsheep.sdk.scripting.KeywordAbility.grantedCrew]); see `addKeyword`. */
+private val CREW_PREFIX = "${com.wingedsheep.sdk.core.Keyword.CREW.name}_"

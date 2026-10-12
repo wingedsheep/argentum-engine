@@ -126,6 +126,8 @@ data class ScenarioRequest(
 
 data class PlayerConfig(
     val lifeTotal: Int? = null,
+    /** Staged player counters, e.g. RAD, ENERGY or EXPERIENCE. */
+    val counters: Map<String, Int>? = null,
     val hand: List<String>? = null,
     val battlefield: List<BattlefieldCardConfig>? = null,
     val graveyard: List<String>? = null,

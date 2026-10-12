@@ -39,7 +39,8 @@ class LoseLifeExecutor(
         for (playerId in playerIds) {
             val (updatedState, event) = DamageUtils.loseLife(
                 newState, playerId, amount,
-                reason = LifeChangeReason.LIFE_LOSS,
+                reason = if (effect.origin == com.wingedsheep.sdk.scripting.effects.LifeLossOrigin.RADIATION)
+                    LifeChangeReason.RADIATION else LifeChangeReason.LIFE_LOSS,
                 applyLifeLossModification = true,
                 predicateEvaluator = amountEvaluator.predicates
             )

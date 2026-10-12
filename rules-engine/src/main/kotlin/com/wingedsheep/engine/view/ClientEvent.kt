@@ -1124,7 +1124,10 @@ object ClientEventTransformer {
                 newLife = event.newLife,
                 change = event.newLife - event.oldLife,
                 isYours = event.playerId == viewingPlayerId
-            )
+            ).let { client ->
+                if (event.reason == LifeChangeReason.RADIATION) client.copy(description = "${client.description} from radiation")
+                else client
+            }
 
             is DamageDealtEvent -> ClientEvent.DamageDealt(
                 sourceId = event.sourceId,

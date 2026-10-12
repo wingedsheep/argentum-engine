@@ -43,7 +43,8 @@ data class GainLifeEffect(
 @Serializable
 data class LoseLifeEffect(
     val amount: DynamicAmount,
-    val target: EffectTarget = EffectTarget.PlayerRef(Player.TargetOpponent)
+    val target: EffectTarget = EffectTarget.PlayerRef(Player.TargetOpponent),
+    val origin: LifeLossOrigin = LifeLossOrigin.EFFECT
 ) : Effect {
     /** Convenience constructor for fixed amounts */
     constructor(amount: Int, target: EffectTarget = EffectTarget.PlayerRef(Player.TargetOpponent))
@@ -248,3 +249,7 @@ data class ExchangeLifeTotalsEffect(
 data object RedistributeLifeTotalsEffect : Effect {
     override val description: String = "Redistribute any number of players' life totals"
 }
+
+/** Provenance of life loss; radiation-specific replacements can distinguish it from other effects. */
+@Serializable
+enum class LifeLossOrigin { EFFECT, RADIATION }
