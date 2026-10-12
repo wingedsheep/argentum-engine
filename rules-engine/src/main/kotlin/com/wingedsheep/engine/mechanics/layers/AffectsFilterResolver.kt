@@ -972,6 +972,7 @@ internal class AffectsFilterResolver(
         CardPredicate.IsEnchantment -> "ENCHANTMENT" in types
         CardPredicate.IsPlaneswalker -> "PLANESWALKER" in types
         CardPredicate.IsBattle -> "BATTLE" in types
+        CardPredicate.IsKindred -> "KINDRED" in types
         CardPredicate.IsInstant -> "INSTANT" in types
         CardPredicate.IsSorcery -> "SORCERY" in types
         // Adventure-ness is a static whole-card characteristic, not a projected type.

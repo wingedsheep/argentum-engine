@@ -66,6 +66,17 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
         override val description: String = "battle"
     }
 
+    /**
+     * Kindred (formerly Tribal, CR 308) — the card type that lets a non-creature card carry
+     * creature types. Only "for each card type among …" counting ever needs to name it
+     * (Hurkyl, Master Wizard); subtype tests already see a Kindred card's creature types.
+     */
+    @SerialName("IsKindred")
+    @Serializable
+    data object IsKindred : CardPredicate {
+        override val description: String = "kindred"
+    }
+
     @SerialName("IsInstant")
     @Serializable
     data object IsInstant : CardPredicate {

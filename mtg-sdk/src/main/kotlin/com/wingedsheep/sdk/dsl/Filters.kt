@@ -90,6 +90,11 @@ object Filters {
     val Sorcery: GameObjectFilter = GameObjectFilter.Sorcery
 
     /**
+     * Kindred card (CR 308) — a card type a non-creature card carries alongside its other type.
+     */
+    val Kindred: GameObjectFilter = GameObjectFilter.Kindred
+
+    /**
      * Card that has an Adventure (adventurer card), regardless of which face it shows.
      */
     val HasAdventure: GameObjectFilter = GameObjectFilter.Any.withCardPredicate(CardPredicate.HasAdventure)

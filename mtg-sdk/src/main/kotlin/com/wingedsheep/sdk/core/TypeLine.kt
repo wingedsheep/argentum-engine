@@ -16,6 +16,7 @@ data class TypeLine(
     val isEnchantment: Boolean get() = CardType.ENCHANTMENT in cardTypes
     val isArtifact: Boolean get() = CardType.ARTIFACT in cardTypes
     val isBattle: Boolean get() = CardType.BATTLE in cardTypes
+    val isKindred: Boolean get() = CardType.KINDRED in cardTypes
     val isPermanent: Boolean get() = cardTypes.any { it.isPermanent }
 
     val isAura: Boolean get() = isEnchantment && hasSubtype(Subtype.AURA)

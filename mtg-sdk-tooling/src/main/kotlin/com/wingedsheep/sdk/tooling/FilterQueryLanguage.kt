@@ -65,6 +65,7 @@ object FilterQueryLanguage {
         "basicland" to "IsBasicLand",
         "planeswalker" to "IsPlaneswalker",
         "battle" to "IsBattle",
+        "kindred" to "IsKindred",
     )
 
     // Reverse: SerialName → query term

@@ -4413,6 +4413,291 @@
     ]
 }
 
+// Hurkyl, Master Wizard
+{
+    "name": "Hurkyl, Master Wizard",
+    "manaCost": "{1}{U}{U}",
+    "typeLine": "Legendary Creature — Human Wizard Advisor",
+    "oracleText": "At the beginning of your end step, if you've cast a noncreature spell this turn, reveal the top five cards of your library. For each card type among noncreature spells you've cast this turn, you may put a card of that type from among the revealed cards into your hand. Put the rest on the bottom of your library in a random order.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Hurkyl, Master Wizard:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 5
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "RevealCollection",
+                            "from": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Min",
+                                    "left": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    },
+                                    "right": {
+                                        "type": "SpellsCastThisTurn",
+                                        "filter": "noncreature artifact"
+                                    }
+                                }
+                            },
+                            "filter": "artifact",
+                            "storeSelected": "selected2",
+                            "storeRemainder": "remainder2",
+                            "prompt": "You may put a artifact card into your hand"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected2",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "remainder2",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Min",
+                                    "left": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    },
+                                    "right": {
+                                        "type": "SpellsCastThisTurn",
+                                        "filter": "noncreature battle"
+                                    }
+                                }
+                            },
+                            "filter": "battle",
+                            "storeSelected": "selected4",
+                            "storeRemainder": "remainder4",
+                            "prompt": "You may put a battle card into your hand"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected4",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "remainder4",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Min",
+                                    "left": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    },
+                                    "right": {
+                                        "type": "SpellsCastThisTurn",
+                                        "filter": "noncreature enchantment"
+                                    }
+                                }
+                            },
+                            "filter": "enchantment",
+                            "storeSelected": "selected6",
+                            "storeRemainder": "remainder6",
+                            "prompt": "You may put a enchantment card into your hand"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected6",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "remainder6",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Min",
+                                    "left": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    },
+                                    "right": {
+                                        "type": "SpellsCastThisTurn",
+                                        "filter": "noncreature instant"
+                                    }
+                                }
+                            },
+                            "filter": "instant",
+                            "storeSelected": "selected8",
+                            "storeRemainder": "remainder8",
+                            "prompt": "You may put a instant card into your hand"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected8",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "remainder8",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Min",
+                                    "left": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    },
+                                    "right": {
+                                        "type": "SpellsCastThisTurn",
+                                        "filter": "noncreature kindred"
+                                    }
+                                }
+                            },
+                            "filter": "kindred",
+                            "storeSelected": "selected10",
+                            "storeRemainder": "remainder10",
+                            "prompt": "You may put a kindred card into your hand"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected10",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "remainder10",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Min",
+                                    "left": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    },
+                                    "right": {
+                                        "type": "SpellsCastThisTurn",
+                                        "filter": "noncreature planeswalker"
+                                    }
+                                }
+                            },
+                            "filter": "planeswalker",
+                            "storeSelected": "selected12",
+                            "storeRemainder": "remainder12",
+                            "prompt": "You may put a planeswalker card into your hand"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected12",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "remainder12",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Min",
+                                    "left": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    },
+                                    "right": {
+                                        "type": "SpellsCastThisTurn",
+                                        "filter": "noncreature sorcery"
+                                    }
+                                }
+                            },
+                            "filter": "sorcery",
+                            "storeSelected": "selected14",
+                            "storeRemainder": "remainder14",
+                            "prompt": "You may put a sorcery card into your hand"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected14",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "remainder14",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Bottom"
+                            },
+                            "order": "Random"
+                        }
+                    ]
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "SpellsCastThisTurn",
+                        "filter": "noncreature"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "51",
+        "rarity": "RARE",
+        "artist": "Randy Vargas",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/f/5fcee066-425f-4341-bde5-13a5bdf06f2a.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // In the Trenches
 {
     "name": "In the Trenches",

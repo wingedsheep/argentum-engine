@@ -223,7 +223,7 @@ data class TriggeringEntityWas(val filter: GameObjectFilter) : Condition {
         fun unsupportedPredicates(predicate: CardPredicate): List<CardPredicate> = when (predicate) {
             CardPredicate.IsCreature, CardPredicate.IsLand, CardPredicate.IsArtifact,
             CardPredicate.IsEnchantment, CardPredicate.IsInstant, CardPredicate.IsSorcery,
-            CardPredicate.IsPlaneswalker, CardPredicate.IsBattle, CardPredicate.IsPermanent,
+            CardPredicate.IsPlaneswalker, CardPredicate.IsBattle, CardPredicate.IsKindred, CardPredicate.IsPermanent,
             is CardPredicate.HasSubtype -> emptyList()
             is CardPredicate.Not -> unsupportedPredicates(predicate.predicate)
             is CardPredicate.And -> predicate.predicates.flatMap { unsupportedPredicates(it) }
