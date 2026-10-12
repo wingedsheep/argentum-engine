@@ -544,6 +544,118 @@
     ]
 }
 
+// Arcane Proxy
+{
+    "name": "Arcane Proxy",
+    "manaCost": "{7}",
+    "typeLine": "Artifact Creature — Wizard",
+    "oracleText": "Prototype {1}{U}{U} — 2/1 (You may cast this spell with different mana cost, color, and size. It keeps its abilities and types.)\nWhen this creature enters, if you cast it, exile target instant or sorcery card with mana value less than or equal to this creature's power from your graveyard. Copy that card. You may cast the copy without paying its mana cost.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "keywords": [
+        "PROTOTYPE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Prototype",
+            "cost": "{1}{U}{U}",
+            "power": 2,
+            "toughness": 1
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Arcane Proxy:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "destination": "Exile"
+                        },
+                        {
+                            "type": "CopyCardIntoCollection",
+                            "source": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "storeAs": "copy1"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": "Gate.MayDecide",
+                            "then": {
+                                "type": "CastFromCollectionWithoutPayingCost",
+                                "from": "copy1"
+                            },
+                            "descriptionOverride": "You may cast the copy without paying its mana cost."
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                {
+                                    "type": "Or",
+                                    "predicates": [
+                                        "IsInstant",
+                                        "IsSorcery"
+                                    ]
+                                },
+                                {
+                                    "type": "ManaValueAtMostDynamic",
+                                    "amount": {
+                                        "type": "EntityProperty",
+                                        "entity": "Self",
+                                        "numericProperty": "Power"
+                                    }
+                                }
+                            ],
+                            "controllerPredicate": "OwnedByYou"
+                        },
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                },
+                "interveningIf": "WasCast",
+                "descriptionOverride": "When this creature enters, if you cast it, exile target instant or sorcery card with mana value less than or equal to this creature's power from your graveyard. Copy that card. You may cast the copy without paying its mana cost."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "75",
+        "rarity": "MYTHIC",
+        "artist": "Kekai Kotaki",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/6/d6d74d2e-7382-4fe3-ac3e-6906203ffcc7.jpg?1783920101",
+        "rulings": [
+            {
+                "date": "2022-10-14",
+                "text": "You cast the copy while the ability is resolving and still on the stack. You can't wait to cast it later in the turn."
+            },
+            {
+                "date": "2022-10-14",
+                "text": "If another effect causes Arcane Proxy's power to be less than the mana value of the target card as the ability tries to resolve, the target is illegal. The card won't be exiled, and you won't get to cast a copy."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Argivian Avenger
 {
     "name": "Argivian Avenger",
@@ -928,6 +1040,117 @@
     ]
 }
 
+// Ashnod's Harvester
+{
+    "name": "Ashnod's Harvester",
+    "manaCost": "{2}",
+    "typeLine": "Artifact Creature — Construct",
+    "oracleText": "Whenever this creature attacks, exile target card from a graveyard.\nUnearth {1}{B} ({1}{B}: Return this card from your graveyard to the battlefield. It gains haste. Exile it at the beginning of the next end step or if it would leave the battlefield. Unearth only as a sorcery.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "keywords": [
+        "UNEARTH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ashnod's Harvester:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Exile"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {},
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Whenever this creature attacks, exile target card from a graveyard."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "unearth_{1}{B}",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{B}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": "Self",
+                            "destination": "Battlefield",
+                            "fromZone": "Graveyard"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "SourceInZone",
+                                    "zones": [
+                                        "Battlefield"
+                                    ]
+                                }
+                            },
+                            "then": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GrantKeyword",
+                                        "keyword": "HASTE",
+                                        "target": "Self",
+                                        "duration": "Permanent"
+                                    },
+                                    {
+                                        "type": "CreateDelayedTrigger",
+                                        "step": "END",
+                                        "effect": {
+                                            "type": "MoveTrackedBattlefieldObject",
+                                            "target": "Self",
+                                            "destination": "Exile"
+                                        }
+                                    },
+                                    {
+                                        "type": "GrantExileOnLeave",
+                                        "target": "Self"
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "activateFromZone": "Graveyard",
+                "descriptionOverride": "Unearth {1}{B} ({1}{B}: Return this card from your graveyard to the battlefield. It gains haste. Exile it at the beginning of the next end step or if it would leave the battlefield. Unearth only as a sorcery.)"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "117",
+        "rarity": "UNCOMMON",
+        "artist": "Halil Ural",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/8/58baa977-16c1-4983-8343-dbd65e98ddb7.jpg?1783920078"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Ashnod's Intervention
 {
     "name": "Ashnod's Intervention",
@@ -1157,6 +1380,78 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Autonomous Assembler
+{
+    "name": "Autonomous Assembler",
+    "manaCost": "{5}",
+    "typeLine": "Artifact Creature — Assembly-Worker",
+    "oracleText": "Prototype {1}{W} — 2/2 (You may cast this spell with different mana cost, color, and size. It keeps its abilities and types.)\nVigilance\n{1}, {T}: Put a +1/+1 counter on target Assembly-Worker you control.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 5
+    },
+    "keywords": [
+        "VIGILANCE",
+        "PROTOTYPE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Prototype",
+            "cost": "{1}{W}",
+            "power": 2,
+            "toughness": 2
+        }
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Autonomous Assembler:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "permanent Assembly-Worker ctrl:you"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{1}, {T}: Put a +1/+1 counter on target Assembly-Worker you control."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "34",
+        "rarity": "RARE",
+        "artist": "Slawomir Maniak",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/5/d5dee863-e6ef-4061-a877-ddd3c4dbe87e.jpg?1783920118"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -1693,6 +1988,96 @@
         "collectorNumber": "172",
         "artist": "Justine Cruz",
         "imageUri": "https://cards.scryfall.io/normal/front/9/c/9c6988b6-ade0-4cd5-b27c-146e5e7ae91f.jpg?1783920050"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Blitz Automaton
+{
+    "name": "Blitz Automaton",
+    "manaCost": "{7}",
+    "typeLine": "Artifact Creature — Construct",
+    "oracleText": "Prototype {2}{R} — 3/2 (You may cast this spell with different mana cost, color, and size. It keeps its abilities and types.)\nHaste",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 4
+    },
+    "keywords": [
+        "HASTE",
+        "PROTOTYPE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Prototype",
+            "cost": "{2}{R}",
+            "power": 3,
+            "toughness": 2
+        }
+    ],
+    "metadata": {
+        "collectorNumber": "158",
+        "artist": "Simon Dominic",
+        "flavorText": "While Urza's machines favored defense, Mishra built his to end the war quickly.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/4/e4e5529a-848b-486c-97fb-1def35df7837.jpg?1783920058"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Boulderbranch Golem
+{
+    "name": "Boulderbranch Golem",
+    "manaCost": "{7}",
+    "typeLine": "Artifact Creature — Golem",
+    "oracleText": "Prototype {3}{G} — 3/3 (You may cast this spell with different mana cost, color, and size. It keeps its abilities and types.)\nWhen this creature enters, you gain life equal to its power.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 5
+    },
+    "keywords": [
+        "PROTOTYPE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Prototype",
+            "cost": "{3}{G}",
+            "power": 3,
+            "toughness": 3
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Boulderbranch Golem:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": "Power"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "197",
+        "artist": "Dan Murayama Scott",
+        "flavorText": "\"Artifice is not the only form of creation.\"\n—Titania",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/e/6e6e5338-9b95-4ac7-a57c-5efaa6423531.jpg?1783920037",
+        "rulings": [
+            {
+                "date": "2022-10-14",
+                "text": "If Boulderbranch Golem leaves the battlefield before its enters-the-battlefield triggered ability resolves, use its power as it last existed on the battlefield to determine how much life is gained, not its power in the zone it moved to."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "GREEN"
@@ -2606,6 +2991,57 @@
     ]
 }
 
+// Combat Thresher
+{
+    "name": "Combat Thresher",
+    "manaCost": "{7}",
+    "typeLine": "Artifact Creature — Construct",
+    "oracleText": "Prototype {2}{W} — 1/1 (You may cast this spell with different mana cost, color, and size. It keeps its abilities and types.)\nDouble strike\nWhen this creature enters, draw a card.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "DOUBLE_STRIKE",
+        "PROTOTYPE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Prototype",
+            "cost": "{2}{W}",
+            "power": 1,
+            "toughness": 1
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Combat Thresher:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "35",
+        "rarity": "UNCOMMON",
+        "artist": "Victor Harmatiuk",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/4/74dfabfd-e13b-4512-a733-abe514be6404.jpg?1783920117"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Conscripted Infantry
 {
     "name": "Conscripted Infantry",
@@ -2646,6 +3082,58 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Cradle Clearcutter
+{
+    "name": "Cradle Clearcutter",
+    "manaCost": "{6}",
+    "typeLine": "Artifact Creature — Golem",
+    "oracleText": "Prototype {2}{G} — 1/3 (You may cast this spell with different mana cost, color, and size. It keeps its abilities and types.)\n{T}: Add an amount of {G} equal to this creature's power.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 6
+    },
+    "keywords": [
+        "PROTOTYPE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Prototype",
+            "cost": "{2}{G}",
+            "power": 1,
+            "toughness": 3
+        }
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Cradle Clearcutter:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "GREEN",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": "Power"
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "198",
+        "rarity": "UNCOMMON",
+        "artist": "Daarken",
+        "flavorText": "A thousand years of growth, harvested in minutes.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/0/50cc9b90-792e-4cf7-ab8c-cb616d94092a.jpg?1783920035"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -2986,6 +3474,60 @@
         "imageUri": "https://cards.scryfall.io/normal/front/d/9/d9c88546-13c9-4d7e-a618-cb2ccd1dbc0f.jpg?1782699688"
     },
     "colorIdentityOverride": []
+}
+
+// Depth Charge Colossus
+{
+    "name": "Depth Charge Colossus",
+    "manaCost": "{9}",
+    "typeLine": "Artifact Creature — Dreadnought",
+    "oracleText": "Prototype {4}{U}{U} — 6/6 (You may cast this spell with different mana cost, color, and size. It keeps its abilities and types.)\nThis creature doesn't untap during your untap step.\n{3}: Untap this creature.",
+    "creatureStats": {
+        "power": 9,
+        "toughness": 9
+    },
+    "keywords": [
+        "PROTOTYPE"
+    ],
+    "flags": [
+        "DOESNT_UNTAP"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Prototype",
+            "cost": "{4}{U}{U}",
+            "power": 6,
+            "toughness": 6
+        }
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Depth Charge Colossus:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}"
+                    }
+                },
+                "effect": {
+                    "type": "TapUntap",
+                    "target": "Self",
+                    "tap": false
+                },
+                "descriptionOverride": "{3}: Untap this creature."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "78",
+        "artist": "Daniel Ljunggren",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/4/34e09173-a92d-4cc3-9d02-bf18ab0850ec.jpg?1783920099"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
 }
 
 // Desynchronize
@@ -3416,6 +3958,86 @@
                 "text": "If the opponent has no artifact or creature cards in their hand, you must still choose an artifact or creature card from their graveyard to exile."
             }
         ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Dredging Claw
+{
+    "name": "Dredging Claw",
+    "manaCost": "{2}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Equipped creature gets +1/+0 and has menace. (It can't be blocked except by two or more creatures.)\nWhenever a creature enters from your graveyard, you may attach this Equipment to it.\nEquip {1}{B} ({1}{B}: Attach to target creature you control. Equip only as a sorcery.)",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Dredging Claw:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature own:you",
+                    "from": "Graveyard",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "AttachEquipment",
+                        "target": "TriggeringEntity"
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Dredging Claw:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{B}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 0
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "MENACE"
+            }
+        ]
+    },
+    "equipCost": "{1}{B}",
+    "metadata": {
+        "collectorNumber": "119",
+        "artist": "Artur Nakhodkin",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/8/c8e133a2-631f-43f6-9fdd-e542d4d15e10.jpg?1783920080"
     },
     "colorIdentityOverride": [
         "BLACK"
@@ -3969,6 +4591,65 @@
         "artist": "Filipe Pagliuso",
         "flavorText": "She was eager to show the invading Yotians how she earned her nickname, \"The Sandstorm of Tomakul.\"",
         "imageUri": "https://cards.scryfall.io/normal/front/4/d/4dc2da75-160d-47f9-b978-e153262ec1fc.jpg?1783920073"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Fallaji Dragon Engine
+{
+    "name": "Fallaji Dragon Engine",
+    "manaCost": "{8}",
+    "typeLine": "Artifact Creature — Dragon",
+    "oracleText": "Prototype {2}{R} — 1/3 (You may cast this spell with different mana cost, color, and size. It keeps its abilities and types.)\nFlying\n{2}: This creature gets +1/+0 until end of turn.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "FLYING",
+        "PROTOTYPE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Prototype",
+            "cost": "{2}{R}",
+            "power": 1,
+            "toughness": 3
+        }
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Fallaji Dragon Engine:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}"
+                    }
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "159",
+        "rarity": "UNCOMMON",
+        "artist": "Filip Burburan",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/7/f7761ed0-a784-4dfb-ab6c-0f4b9a411cf3.jpg?1783920061"
     },
     "colorIdentityOverride": [
         "RED"
@@ -5582,6 +6263,39 @@
     "colorIdentityOverride": []
 }
 
+// Goring Warplow
+{
+    "name": "Goring Warplow",
+    "manaCost": "{6}",
+    "typeLine": "Artifact Creature — Construct",
+    "oracleText": "Prototype {1}{B} — 1/1 (You may cast this spell with different mana cost, color, and size. It keeps its abilities and types.)\nDeathtouch",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 4
+    },
+    "keywords": [
+        "DEATHTOUCH",
+        "PROTOTYPE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Prototype",
+            "cost": "{1}{B}",
+            "power": 1,
+            "toughness": 1
+        }
+    ],
+    "metadata": {
+        "collectorNumber": "120",
+        "artist": "Wayne Reynolds",
+        "flavorText": "Built to crush walls and wills in equal measure.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/d/9d927dfd-ae66-4235-a61b-39c85d0c1222.jpg?1783920076"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Great Desert Prospector
 {
     "name": "Great Desert Prospector",
@@ -6172,6 +6886,119 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Heavyweight Demolisher
+{
+    "name": "Heavyweight Demolisher",
+    "manaCost": "{7}",
+    "typeLine": "Artifact Creature — Construct",
+    "oracleText": "Menace\nAt the beginning of your upkeep, tap this creature unless you pay {3}.\nUnearth {6}{R}{R} ({6}{R}{R}: Return this card from your graveyard to the battlefield. It gains haste. Exile it at the beginning of the next end step or if it would leave the battlefield. Unearth only as a sorcery.)",
+    "creatureStats": {
+        "power": 8,
+        "toughness": 6
+    },
+    "keywords": [
+        "MENACE",
+        "UNEARTH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Heavyweight Demolisher:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "PayOrSuffer",
+                    "cost": {
+                        "type": "PayAtom",
+                        "atom": {
+                            "type": "AtomMana",
+                            "cost": "{3}"
+                        }
+                    },
+                    "suffer": {
+                        "type": "TapUntap",
+                        "target": "Self"
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "unearth_{6}{R}{R}",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{6}{R}{R}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": "Self",
+                            "destination": "Battlefield",
+                            "fromZone": "Graveyard"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "SourceInZone",
+                                    "zones": [
+                                        "Battlefield"
+                                    ]
+                                }
+                            },
+                            "then": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GrantKeyword",
+                                        "keyword": "HASTE",
+                                        "target": "Self",
+                                        "duration": "Permanent"
+                                    },
+                                    {
+                                        "type": "CreateDelayedTrigger",
+                                        "step": "END",
+                                        "effect": {
+                                            "type": "MoveTrackedBattlefieldObject",
+                                            "target": "Self",
+                                            "destination": "Exile"
+                                        }
+                                    },
+                                    {
+                                        "type": "GrantExileOnLeave",
+                                        "target": "Self"
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "activateFromZone": "Graveyard",
+                "descriptionOverride": "Unearth {6}{R}{R} ({6}{R}{R}: Return this card from your graveyard to the battlefield. It gains haste. Exile it at the beginning of the next end step or if it would leave the battlefield. Unearth only as a sorcery.)"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "160",
+        "rarity": "UNCOMMON",
+        "artist": "Svetlin Velinov",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/7/f72de800-b28e-42c4-a3ca-5ec3a765d807.jpg?1783920056"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -7034,6 +7861,69 @@
     ]
 }
 
+// Iron-Craw Crusher
+{
+    "name": "Iron-Craw Crusher",
+    "manaCost": "{7}",
+    "typeLine": "Artifact Creature — Wurm",
+    "oracleText": "Prototype {2}{G}{G} — 2/5 (You may cast this spell with different mana cost, color, and size. It keeps its abilities and types.)\nWhenever this creature attacks, target attacking creature gets +X/+0 until end of turn, where X is this creature's power.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 6
+    },
+    "keywords": [
+        "PROTOTYPE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Prototype",
+            "cost": "{2}{G}{G}",
+            "power": 2,
+            "toughness": 5
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Iron-Craw Crusher:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": "Power"
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature attacking"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "200",
+        "rarity": "UNCOMMON",
+        "artist": "Filip Burburan",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/4/64e2ec10-f45f-46ef-a076-52425bf3fe3b.jpg?1783920036"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Junkyard Genius
 {
     "name": "Junkyard Genius",
@@ -7757,6 +8647,86 @@
     "colorIdentityOverride": []
 }
 
+// Liberator, Urza's Battlethopter
+{
+    "name": "Liberator, Urza's Battlethopter",
+    "manaCost": "{3}",
+    "typeLine": "Legendary Artifact Creature — Thopter",
+    "oracleText": "Flash\nFlying\nYou may cast colorless spells and artifact spells as though they had flash.\nWhenever you cast a spell, if the amount of mana spent to cast that spell is greater than Liberator's power, put a +1/+1 counter on Liberator.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLASH",
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Liberator, Urza's Battlethopter:1",
+                "trigger": "SpellCastEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "EntityProperty",
+                        "entity": "TriggeringEntity",
+                        "numericProperty": "ManaSpent"
+                    },
+                    "operator": "GT",
+                    "right": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": "Power"
+                    }
+                },
+                "descriptionOverride": "Whenever you cast a spell, if the amount of mana spent to cast that spell is greater than Liberator's power, put a +1/+1 counter on Liberator."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantFlashToSpellType",
+                "filter": {
+                    "cardPredicates": [
+                        {
+                            "type": "Or",
+                            "predicates": [
+                                "IsColorless",
+                                "IsArtifact"
+                            ]
+                        }
+                    ]
+                },
+                "controllerOnly": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "237",
+        "rarity": "RARE",
+        "artist": "Ekaterina Burmak",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/3/c31e6768-bcab-43c4-bfc1-76e961689ae9.jpg?1783920018",
+        "rulings": [
+            {
+                "date": "2022-10-14",
+                "text": "The third ability applies only to casting spells. It does not, for example, change when you may activate abilities that can be activated \"only as a sorcery.\""
+            },
+            {
+                "date": "2022-10-14",
+                "text": "The last ability cares only about the amount of mana that was actually spent to cast the spell, regardless of its mana cost."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Loran of the Third Path
 {
     "name": "Loran of the Third Path",
@@ -8010,6 +8980,128 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Mask of the Jadecrafter
+{
+    "name": "Mask of the Jadecrafter",
+    "manaCost": "{2}",
+    "typeLine": "Artifact",
+    "oracleText": "{X}, {T}, Sacrifice this artifact: Create an X/X colorless Golem artifact creature token. Activate only as a sorcery.\nUnearth {2}{G} ({2}{G}: Return this card from your graveyard to the battlefield. Exile it at the beginning of the next end step or if it would leave the battlefield. Unearth only as a sorcery.)",
+    "keywords": [
+        "UNEARTH"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Mask of the Jadecrafter:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{X}"
+                            }
+                        },
+                        "CostTap",
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 0,
+                    "toughness": 0,
+                    "colors": [],
+                    "creatureTypes": [
+                        "Golem"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/4/7/474c8cfe-71ce-46c7-8cf4-dfeae3c0e73b.jpg?1783919909",
+                    "dynamicPower": "XValue",
+                    "dynamicToughness": "XValue",
+                    "artifactToken": true
+                },
+                "timing": "SorcerySpeed",
+                "descriptionOverride": "{X}, {T}, Sacrifice this artifact: Create an X/X colorless Golem artifact creature token. Activate only as a sorcery."
+            },
+            {
+                "id": "unearth_{2}{G}",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{G}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": "Self",
+                            "destination": "Battlefield",
+                            "fromZone": "Graveyard"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "SourceInZone",
+                                    "zones": [
+                                        "Battlefield"
+                                    ]
+                                }
+                            },
+                            "then": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GrantKeyword",
+                                        "keyword": "HASTE",
+                                        "target": "Self",
+                                        "duration": "Permanent"
+                                    },
+                                    {
+                                        "type": "CreateDelayedTrigger",
+                                        "step": "END",
+                                        "effect": {
+                                            "type": "MoveTrackedBattlefieldObject",
+                                            "target": "Self",
+                                            "destination": "Exile"
+                                        }
+                                    },
+                                    {
+                                        "type": "GrantExileOnLeave",
+                                        "target": "Self"
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "activateFromZone": "Graveyard",
+                "descriptionOverride": "Unearth {2}{G} ({2}{G}: Return this card from your graveyard to the battlefield. It gains haste. Exile it at the beginning of the next end step or if it would leave the battlefield. Unearth only as a sorcery.)"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "201",
+        "rarity": "UNCOMMON",
+        "artist": "Alessandra Pisano",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/d/5db83275-bfd2-42c2-8d0f-e8a9b4f60e78.jpg?1783920038",
+        "rulings": [
+            {
+                "date": "2022-10-14",
+                "text": "If a permanent returned to the battlefield with unearth would leave the battlefield for any reason, it's exiled instead—unless the spell or ability that's causing the permanent to leave the battlefield is actually trying to exile it! In that case, it succeeds at exiling it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
