@@ -1,7 +1,19 @@
 package com.wingedsheep.ai.engine
 
 import com.wingedsheep.sdk.core.Color
+import com.wingedsheep.sdk.core.ManaCost
+import com.wingedsheep.sdk.core.ManaSymbol
+import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.model.CardDefinition
+import com.wingedsheep.sdk.scripting.effects.AddAnyColorManaSpendOnChosenTypeEffect
+import com.wingedsheep.sdk.scripting.effects.AddColorlessManaEffect
+import com.wingedsheep.sdk.scripting.effects.AddDynamicManaEffect
+import com.wingedsheep.sdk.scripting.effects.AddManaEffect
+import com.wingedsheep.sdk.scripting.effects.AddManaOfChoiceEffect
+import com.wingedsheep.sdk.scripting.effects.AddOneManaOfEachColorAmongEffect
+import com.wingedsheep.sdk.scripting.effects.CompositeEffect
+import com.wingedsheep.sdk.scripting.effects.Effect
+import com.wingedsheep.sdk.scripting.values.ManaColorSet
 
 /**
  * Heuristic sealed deck builder that uses [LimitedCardRater] to evaluate card quality.
@@ -49,7 +61,7 @@ private fun buildFreshSealedDeck(pool: List<CardDefinition>, targetSize: Int): M
     val colorScores = mutableMapOf<Color, Double>()
     for (card in nonLands) {
         val rating = ratings[card] ?: 0.0
-        for (color in card.colors) {
+        for (color in spellColors(card)) {
             colorScores[color] = (colorScores[color] ?: 0.0) + rating
         }
     }
@@ -57,10 +69,8 @@ private fun buildFreshSealedDeck(pool: List<CardDefinition>, targetSize: Int): M
     // Pick top 2 colors
     val bestColors = colorScores.entries.sortedByDescending { it.value }.take(2).map { it.key }.toSet()
 
-    // Select on-color + colorless cards, sorted by rating (best first)
-    val candidates = nonLands.filter { card ->
-        card.colors.isEmpty() || card.colors.all { it in bestColors }
-    }.sortedByDescending { ratings[it] ?: 0.0 }
+    // Select cards castable off the chosen colors, sorted by rating (best first)
+    val candidates = nonLands.filter { castableWithColors(it, bestColors) }.sortedByDescending { ratings[it] ?: 0.0 }
 
     // Pick top 23, but ensure a reasonable mana curve:
     // At least 5 creatures at CMC <= 3, and at least 13 creatures total
@@ -124,6 +134,7 @@ private fun buildFreshSealedDeck(pool: List<CardDefinition>, targetSize: Int): M
 
     // Add on-color non-basic lands (capped at 4 per name)
     for (land in poolLands) {
+        if (!landFitsColors(land, bestColors)) continue
         val current = deck[land.name] ?: 0
         if (current >= 4) continue
         deck[land.name] = current + 1
@@ -158,12 +169,12 @@ private fun completeSealedDeck(
     for ((name, count) in deck) {
         val def = defOf(name) ?: continue
         if (def.typeLine.isLand) continue
-        for (color in def.colors) colorScores[color] = (colorScores[color] ?: 0.0) + count
+        for (color in spellColors(def)) colorScores[color] = (colorScores[color] ?: 0.0) + count
     }
     if (colorScores.isEmpty()) {
         for (card in pool.filter { !it.typeLine.isLand }) {
             val rating = ratings[card] ?: 0.0
-            for (color in card.colors) colorScores[color] = (colorScores[color] ?: 0.0) + rating
+            for (color in spellColors(card)) colorScores[color] = (colorScores[color] ?: 0.0) + rating
         }
     }
     val bestColors = colorScores.entries.sortedByDescending { it.value }.take(2).map { it.key }.toSet()
@@ -174,7 +185,7 @@ private fun completeSealedDeck(
 
     // Fill spell slots with the best on-color (or colorless) candidates not already maxed out.
     val candidates = pool
-        .filter { !it.typeLine.isLand && (it.colors.isEmpty() || it.colors.all { c -> c in bestColors }) }
+        .filter { !it.typeLine.isLand && castableWithColors(it, bestColors) }
         .sortedByDescending { ratings[it] ?: 0.0 }
     for (card in candidates) {
         if (nonLandCount() >= spellTarget || total() >= targetSize) break
@@ -185,7 +196,7 @@ private fun completeSealedDeck(
     }
 
     // On-color non-basic lands from the pool.
-    for (land in pool.filter { it.typeLine.isLand && !it.typeLine.isBasicLand }) {
+    for (land in pool.filter { it.typeLine.isLand && !it.typeLine.isBasicLand && landFitsColors(it, bestColors) }) {
         if (total() >= targetSize) break
         val have = deck[land.name] ?: 0
         val available = poolCounts[land.name] ?: 0
@@ -238,5 +249,84 @@ private fun addBasicLands(
             deck[land] = (deck[land] ?: 0) + landsNeeded
         }
         else -> deck["Forest"] = (deck["Forest"] ?: 0) + landsNeeded
+    }
+}
+
+/**
+ * The colors a spell asks of its caster: the colored symbols in its mana cost (hybrid and Phyrexian
+ * pips count for their colors), plus a color indicator. Deliberately *not* [CardDefinition.colors] —
+ * devoid makes a card colorless (CR 702.114a) without making its `{U}` payable with any mana.
+ */
+internal fun spellColors(card: CardDefinition): Set<Color> =
+    card.manaCost.colors + (card.colorIndicator ?: emptySet())
+
+/**
+ * Whether a deck whose mana comes from [deckColors] basics can pay [card]'s mana cost. Every pip
+ * must be payable: a colored pip needs its color, a hybrid either half, a Phyrexian pip can always
+ * be paid with 2 life (CR 107.4f) and a monocolored hybrid `{2/W}` with two generic (CR 107.4e).
+ * A `{C}` pip needs a colorless *source*, which a basic-land mana base doesn't have. A card with no
+ * mana cost at all (cast only by suspend or the like) falls back to its color indicator.
+ */
+internal fun castableWithColors(card: CardDefinition, deckColors: Set<Color>): Boolean {
+    if (card.manaCost.symbols.isEmpty()) return (card.colorIndicator ?: emptySet()).all { it in deckColors }
+    return manaCostPayableWith(card.manaCost, deckColors)
+}
+
+internal fun manaCostPayableWith(cost: ManaCost, deckColors: Set<Color>): Boolean =
+    cost.symbols.all { symbol ->
+        when (symbol) {
+            is ManaSymbol.Phyrexian, is ManaSymbol.HybridPhyrexian, is ManaSymbol.MonocolorHybrid -> true
+            is ManaSymbol.Colorless -> false
+            else -> symbol.colors.isEmpty() || symbol.colors.any { it in deckColors }
+        }
+    }
+
+private val BASIC_TYPE_COLORS = mapOf(
+    Subtype.PLAINS to Color.WHITE, Subtype.ISLAND to Color.BLUE, Subtype.SWAMP to Color.BLACK,
+    Subtype.MOUNTAIN to Color.RED, Subtype.FOREST to Color.GREEN,
+)
+
+/**
+ * Whether a non-basic [land] belongs in a deck playing [deckColors]:
+ *  - a land that taps for colored mana (its basic land types, CR 305.6, and the `Add …` effects of
+ *    its activated abilities) fits when at least one of those colors is a deck color — Goblin-town
+ *    ({B} or {R}) is in a B/x deck, never a G/W one; a five-color land fits everywhere;
+ *  - a land that only fetches (Wooded Foothills) fits when a basic land type it names is on-color,
+ *    or when it names none ("a basic land card", Evolving Wilds);
+ *  - anything else (colorless mana, pure utility) fits when every colored symbol in its rules text
+ *    — the cost of its other abilities — is a deck color.
+ */
+internal fun landFitsColors(land: CardDefinition, deckColors: Set<Color>): Boolean {
+    val produced = mutableSetOf<Color>()
+    land.typeLine.subtypes.forEach { BASIC_TYPE_COLORS[it]?.let(produced::add) }
+    land.script.activatedAbilities.forEach { collectProducedColors(it.effect, produced) }
+    if (produced.isNotEmpty()) return produced.any { it in deckColors }
+
+    val fetched = BASIC_TYPE_COLORS.filterKeys { type ->
+        Regex("""\b${type.value}\b""").containsMatchIn(land.oracleText)
+    }.values.toSet()
+    if (fetched.isNotEmpty()) return fetched.any { it in deckColors }
+
+    return land.colorIdentity.all { it in deckColors }
+}
+
+private fun collectProducedColors(effect: Effect, out: MutableSet<Color>) {
+    when (effect) {
+        is AddManaEffect -> out.add(effect.color)
+        is AddColorlessManaEffect -> Unit
+        is AddManaOfChoiceEffect -> collectChoiceColors(effect.colorSet, out)
+        is AddDynamicManaEffect -> out.addAll(effect.allowedColors)
+        is AddAnyColorManaSpendOnChosenTypeEffect, is AddOneManaOfEachColorAmongEffect -> out.addAll(Color.entries)
+        is CompositeEffect -> effect.effects.forEach { collectProducedColors(it, out) }
+        else -> Unit
+    }
+}
+
+/** State-dependent color sets (chosen color, colors among permanents, …) could be any color. */
+private fun collectChoiceColors(colorSet: ManaColorSet, out: MutableSet<Color>) {
+    when (colorSet) {
+        is ManaColorSet.Specific -> out.addAll(colorSet.colors)
+        is ManaColorSet.Union -> colorSet.members.forEach { collectChoiceColors(it, out) }
+        else -> out.addAll(Color.entries)
     }
 }
