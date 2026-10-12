@@ -200,7 +200,8 @@ internal object DiscardCostKind : SpellCostKind<CostAtom.Discard> {
     override fun validate(check: SpellCostCheck, cost: CostAtom.Discard): String? {
         val state = check.state
         val discarded = check.payment?.discardedCards ?: emptyList()
-        if (discarded.size < cost.count) {
+        if (discarded.distinct().size != discarded.size) return "Cannot discard the same card more than once"
+        if (discarded.size != cost.count) {
             return "You must discard ${cost.count} card(s) to cast this spell"
         }
         val handCards = state.getZone(ZoneKey(check.playerId, Zone.HAND))
@@ -307,7 +308,8 @@ internal object ExileFromCostKind : SpellCostKind<CostAtom.ExileFrom> {
         val state = check.state
         val exiled = check.payment?.exiledCards ?: emptyList()
         val zoneDesc = cost.zone.name.lowercase()
-        if (exiled.distinct().size < cost.count) {
+        if (exiled.distinct().size != exiled.size) return "Cannot exile the same card more than once"
+        if (exiled.size != cost.count) {
             return "You must exile ${cost.count} ${cost.filter.description}(s) from your $zoneDesc"
         }
         val zoneCards = state.getZone(ZoneKey(check.playerId, cost.zone))

@@ -106,6 +106,108 @@
     ]
 }
 
+// Gary Clone
+{
+    "name": "Gary Clone",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Human Citizen",
+    "oracleText": "Squad {2} (As an additional cost to cast this spell, you may pay {2} any number of times. When this creature enters, create that many tokens that are copies of it.)\nWhenever this creature attacks, each creature you control named Gary Clone gets +1/+0 until end of turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "keywords": [
+        "SQUAD"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Kicker",
+            "manaCost": "{2}",
+            "multi": true,
+            "displayPrefix": "Squad",
+            "keyword": "SQUAD",
+            "declaredSlot": "SQUAD"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Gary Clone:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateTokenCopyOfTarget",
+                    "target": "TriggeringEntity",
+                    "count": {
+                        "type": "CastChoice",
+                        "slot": "SQUAD"
+                    }
+                },
+                "interveningIf": {
+                    "type": "CastChoiceMade",
+                    "slot": "SQUAD"
+                }
+            },
+            {
+                "id": "Gary Clone:2",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature name:Gary Clone ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 0
+                        },
+                        "target": "IterationEntity"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "16",
+        "rarity": "UNCOMMON",
+        "artist": "Nicholas Gregory",
+        "flavorText": "\"Gary!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/4/a45346ac-54a9-4fda-bde7-92ff75ac34f7.jpg?1783912419",
+        "rulings": [
+            {
+                "date": "2024-03-08",
+                "text": "You may pay the squad cost any number of times. You will create a token that is a copy of that permanent for each time you paid the squad cost. If you paid the squad cost multiple times, the tokens will all enter the battlefield simultaneously."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "If the spell is countered, the squad ability will not trigger, and no tokens will be created."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "If the spell resolves but the creature with squad leaves the battlefield before its squad ability resolves, you'll still create the token copies."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "The tokens created by the squad ability aren't \"cast,\" so any abilities that trigger when a spell is cast won't trigger for the copies."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "If, for some reason, the creature doesn't have the squad ability when it's on the battlefield, the ability won't trigger, even if you've paid the squad cost one or more times."
+            }
+        ]
+    }
+}
+
 // Overflowing Basin
 {
     "name": "Overflowing Basin",
@@ -158,6 +260,95 @@
         "GREEN",
         "BLUE"
     ]
+}
+
+// Ruthless Radrat
+{
+    "name": "Ruthless Radrat",
+    "manaCost": "{1}{B}{B}",
+    "typeLine": "Creature — Rat Mutant",
+    "oracleText": "Squad—Exile four cards from your graveyard. (As an additional cost to cast this spell, you may pay its squad cost any number of times. When this creature enters, create that many tokens that are copies of it.)\nMenace (This creature can't be blocked except by two or more creatures.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "MENACE",
+        "SQUAD"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Kicker",
+            "additionalCost": {
+                "type": "AdditionalAtom",
+                "atom": {
+                    "type": "AtomExileFrom",
+                    "zone": "Graveyard",
+                    "count": 4
+                }
+            },
+            "multi": true,
+            "displayPrefix": "Squad",
+            "keyword": "SQUAD",
+            "declaredSlot": "SQUAD"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ruthless Radrat:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateTokenCopyOfTarget",
+                    "target": "TriggeringEntity",
+                    "count": {
+                        "type": "CastChoice",
+                        "slot": "SQUAD"
+                    }
+                },
+                "interveningIf": {
+                    "type": "CastChoiceMade",
+                    "slot": "SQUAD"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "48",
+        "rarity": "UNCOMMON",
+        "artist": "Bruno Biazotto",
+        "flavorText": "They'll make you miss the mole rats.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/4/a4542e34-2905-41ce-9182-a432c8f2c451.jpg?1783912407",
+        "rulings": [
+            {
+                "date": "2024-03-08",
+                "text": "Once you announce that you’re casting Ruthless Radrat, no player may take actions until you’re done casting it. Notably, opponents can’t try to remove cards from your graveyard to stop you from paying Ruthless Radrat’s squad cost."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "You may pay the squad cost any number of times. You will create a token that is a copy of that permanent for each time you paid the squad cost. If you paid the squad cost multiple times, the tokens will all enter the battlefield simultaneously."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "If the spell is countered, the squad ability will not trigger, and no tokens will be created."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "If the spell resolves but the creature with squad leaves the battlefield before its squad ability resolves, you’ll still create the token copies."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "The tokens created by the squad ability aren’t “cast,” so any abilities that trigger when a spell is cast won’t trigger for the copies."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "If, for some reason, the creature doesn’t have the squad ability when it’s on the battlefield, the ability won’t trigger, even if you’ve paid the squad cost one or more times."
+            }
+        ]
+    }
 }
 
 // Sunscorched Divide

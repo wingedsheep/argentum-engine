@@ -412,6 +412,9 @@ enum class Keyword(val displayName: String) {
      */
     REPLICATE("Replicate"),
 
+    /** Optional repeated additional cost followed by an enters-the-battlefield token-copy trigger. */
+    SQUAD("Squad"),
+
     /**
      * Bargain (CR 702.166, Wilds of Eldraine). A static ability that functions while the spell is
      * on the stack: "As an additional cost to cast this spell, you may sacrifice an artifact,

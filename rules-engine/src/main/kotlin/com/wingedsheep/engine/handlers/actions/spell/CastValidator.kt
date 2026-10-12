@@ -200,6 +200,9 @@ internal class CastValidator(
 ) {
 
     fun validate(inputState: GameState, action: CastSpell, duringResolution: Boolean = false): String? {
+        if (action.declaredCostTimes > MAX_OPTIONAL_COST_REPEATS) {
+            return "Optional cost payment count exceeds the engine safety limit"
+        }
         if (com.wingedsheep.engine.mechanics.BestowCasts.selected(action) &&
             (action.castFaceDown || action.faceIndex != null)) return "Bestow cannot be combined with another face or face-down casting"
         if (action.castPrototyped) {

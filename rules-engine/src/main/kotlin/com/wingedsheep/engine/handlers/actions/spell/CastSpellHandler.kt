@@ -669,7 +669,11 @@ class CastSpellHandler(
             declaredCostSlot = action.declaredCostSlot,
             // Plus which kicker(s) of a two-kicker card were paid (CR 702.33f), recorded on the
             // same cast-choice rail so the linked "kicked with its [A] kicker" abilities read them.
-            additionalCostChoices = action.additionalCostChoices + linkedKickerChoices(
+            additionalCostChoices = action.additionalCostChoices +
+                listOfNotNull(action.declaredCostSlot?.takeIf {
+                    declaredOptionalCosts(action, cardDef?.keywordAbilities
+                        ?.filterIsInstance<KeywordAbility.OptionalAdditionalCost>().orEmpty()).any { it.multi }
+                }?.let { it to action.declaredCostTimes }).toMap() + linkedKickerChoices(
                 action, cardDef?.keywordAbilities?.filterIsInstance<KeywordAbility.OptionalAdditionalCost>().orEmpty()
             ),
             wasBlightPaid = (action.additionalCostPayment?.blightTargets?.isNotEmpty() == true),

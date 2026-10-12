@@ -1156,6 +1156,7 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
       'Drag a card from your hand onto the battlefield to cast it, drag an attacker onto a defender to attack, and drag a blocker onto an attacker to block. Clicking works everywhere dragging does.',
     body: [
       { kind: 'p', text: 'Clicking a card with more than one way to play opens its action menu — Cast, Play, Turn Face-Up, an activated ability, or View card. A permanent’s abilities are in the same menu.' },
+      { kind: 'p', text: 'Repeatable additional costs such as Squad appear as separate cast options: Squad ×1, Squad ×2, and so on. Choose the number of payments in the card’s action menu, then select any cards the cost asks you to discard or exile.' },
       { kind: 'p', text: 'Some spells ask for targets in sequence. Choose the player or permanent first, then Confirm to see the valid next targets. Back lets you change an earlier choice and updates the later choices.' },
       { kind: 'p', text: 'Attacking: Attack All sends every creature that can attack, Skip Attacking declares none, and after choosing some the button reads Attack with N. In multiplayer each attacker needs a defender; the banner says who you are allowed to attack.' },
       { kind: 'p', text: 'Enlist: after confirming attackers, each enlisting creature asks you to click an eligible creature on the battlefield to tap. Choose Select None to skip it. The power bonus appears on the stack after the attack is declared, so players can respond before it resolves.' },

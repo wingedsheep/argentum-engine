@@ -180,6 +180,11 @@ class CreateTokenCopyOfTargetExecutor(
             return departedPermanentTarget(state, effect, context, id, entity) ?: entity
         }
         if (effect.target != EffectTarget.TriggeringEntity) return null
+        // The departure snapshot belongs to the captured object, even after a blink or a
+        // second zone change has erased the card's temporary last-known component.
+        context.triggerContext?.triggeringLastKnownSnapshot?.copiableCard?.let {
+            return ComponentContainer.of(it)
+        }
         val departed = context.triggeringEntityId?.let { state.getEntity(it) } ?: return null
         val lastKnownCard = departed.get<LastKnownPermanentComponent>()?.snapshot?.copiableCard
             ?: return null

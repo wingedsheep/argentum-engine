@@ -5,6 +5,9 @@ import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.sdk.scripting.ChoiceSlot
 import com.wingedsheep.sdk.scripting.KeywordAbility
 
+/** Bound optional-cost menu growth at the engine's token-materialization safety limit. */
+internal const val MAX_OPTIONAL_COST_REPEATS = com.wingedsheep.engine.core.GameLimits.MAX_TOKENS_PER_EFFECT
+
 /*
  * Readings of what a [CastSpell] action declared (CR 601.2b) — which alternative cost, which optional
  * cost slot — shared by every stage of the casting pipeline.

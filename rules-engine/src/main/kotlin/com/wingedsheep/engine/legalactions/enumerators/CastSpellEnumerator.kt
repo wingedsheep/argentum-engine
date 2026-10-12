@@ -16,6 +16,7 @@ import com.wingedsheep.engine.legalactions.TapForGenericPermanentData
 import com.wingedsheep.engine.legalactions.TapForPowerCreatureData
 import com.wingedsheep.engine.legalactions.TargetInfo
 import com.wingedsheep.engine.handlers.actions.spell.chosenKickersLabel
+import com.wingedsheep.engine.handlers.actions.spell.MAX_OPTIONAL_COST_REPEATS
 import com.wingedsheep.engine.handlers.actions.spell.optionalCostDeclarations
 import com.wingedsheep.engine.handlers.actions.spell.optionalCostsAdditionalPaid
 import com.wingedsheep.engine.handlers.actions.spell.optionalCostsManaPaid
@@ -86,12 +87,7 @@ class CastSpellEnumerator(
             "CastWithConspire",
         )
 
-        /**
-         * The most times a repeatable optional cost (replicate) is offered as a separate cast
-         * variant. Affordability ends the run first in any real game; this only bounds a free-mana
-         * board so the action list stays finite.
-         */
-        private const val MAX_OPTIONAL_COST_REPEATS = 10
+
     }
 
     override fun enumerate(context: EnumerationContext): List<LegalAction> {
@@ -2184,6 +2180,7 @@ class CastSpellEnumerator(
                     val kickLabel = when {
                         declaredSlot == ChoiceSlot.BARGAINED -> "Bargained"
                         declaredSlot == ChoiceSlot.REPLICATED -> "Replicate"
+                        declaredSlot == ChoiceSlot.SQUAD -> "Squad"
                         // Collect evidence names the amount, because the amount is the whole choice —
                         // "Collect evidence 6" reads the way the card is printed, where a bare
                         // "Evidence" would not (CR 701.59).

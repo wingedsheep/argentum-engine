@@ -308,7 +308,7 @@ sealed interface KeywordAbility {
 
     /**
      * **Optional additional cost paid at cast time.** Generalises Kicker, Multikicker,
-     * Offspring, Bargain, and the pre-kicker "pay {N} more to cast as though it had flash"
+     * Offspring, Squad, Bargain, and the pre-kicker "pay {N} more to cast as though it had flash"
      * pattern (Ghitu Fire et al.). The card script gates effect variations on the durable
      * fact recorded in [declaredSlot] — read via [WasKicked] / `Conditions.WasBargained`,
      * or `wasKicked` in trigger filters — when [branchesEffect] is `true`.
@@ -388,7 +388,7 @@ sealed interface KeywordAbility {
             }
             require(!multi || additionalCost == null || additionalCostPaid(2) != null) {
                 "A repeatable optional cost's non-mana half must be an amount that scales " +
-                    "(pay life, pay player counters); got ${additionalCost?.description}"
+                    "(pay life, pay player counters, discard, exile); got ${additionalCost?.description}"
             }
         }
 
@@ -401,22 +401,41 @@ sealed interface KeywordAbility {
 
         /**
          * The non-mana half of this cost paid [times] times over, as one cost whose amount is
-         * multiplied — "pay {E}{E}{E}" twice is "pay six energy". Only amount-shaped atoms scale;
+         * multiplied — "pay {E}{E}{E}" twice is "pay six energy". Amount-shaped atoms and composites of them scale;
          * anything else returns null for [times] > 1, which is why a [multi] cost is restricted to
          * them at construction.
          */
         fun additionalCostPaid(times: Int): AdditionalCost? {
             val cost = additionalCost ?: return null
             if (times == 1) return cost
-            val atom = (cost as? AdditionalCost.Atom)?.atom ?: return null
-            return when {
-                atom is CostAtom.PayLife ->
-                    AdditionalCost.Atom(atom.copy(amount = atom.amount * times))
-                atom is CostAtom.PayPlayerCounters &&
-                    atom.amount is DynamicAmount.Fixed ->
-                    AdditionalCost.Atom(atom.copy(amount = DynamicAmount.Fixed((atom.amount as DynamicAmount.Fixed).amount * times)))
+            return scaleAdditionalCost(cost, times)
+        }
+
+        private fun scaleAdditionalCost(cost: AdditionalCost, times: Int): AdditionalCost? = when (cost) {
+            is AdditionalCost.Composite -> {
+                val scaled = cost.steps.map { scaleAdditionalCost(it, times) }
+                val selections = scaled.filterIsInstance<AdditionalCost.Atom>().mapNotNull {
+                    when (it.atom) {
+                        is CostAtom.Discard -> "discard"
+                        is CostAtom.ExileFrom -> "exile"
+                        else -> null
+                    }
+                }
+                // Each selection channel carries one chosen set, not independent per-step picks.
+                if (scaled.any { it == null } || selections.distinct().size != selections.size) null
+                else AdditionalCost.Composite(scaled.filterNotNull())
+            }
+            is AdditionalCost.Atom -> when (val atom = cost.atom) {
+                is CostAtom.PayLife -> AdditionalCost.Atom(atom.copy(amount = atom.amount * times))
+                is CostAtom.PayPlayerCounters -> (atom.amount as? DynamicAmount.Fixed)?.let {
+                    AdditionalCost.Atom(atom.copy(amount = DynamicAmount.Fixed(it.amount * times)))
+                }
+                is CostAtom.Discard -> AdditionalCost.Atom(atom.copy(count = atom.count * times))
+                is CostAtom.ExileFrom -> if (atom.singleZone) null
+                    else AdditionalCost.Atom(atom.copy(count = atom.count * times))
                 else -> null
             }
+            else -> null
         }
 
         override val description: String = when {

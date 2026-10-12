@@ -144,6 +144,9 @@ enum class ChoiceSlot {
      */
     REPLICATED,
 
+    /** Number of times the squad additional cost was paid. Distinct from kicker. */
+    SQUAD,
+
     /**
      * Whether the spell's sneak cost was paid when cast (CR 702.190, e.g. Leonardo, Leader
      * in Blue). A present value means "cast for its sneak cost". Read back through
