@@ -13760,16 +13760,22 @@ default to "you" so card authors don't need to pass it explicitly.
 - `ControlledCreatureDiedThisTurn` — intervening-if "if a creature died **under your control** this
   turn", scoped to the source's controller (reads only that player's `CreaturesDiedThisTurnComponent`).
   Used by Barrensteppe Siege (Mardu). Dual-mode.
-- `SubtypeCreatureDiedThisTurn(subtype)` / `NonSubtypeCreatureDiedThisTurn(subtype)` — **global**,
-  subtype-filtered death gates. Backed by `CreatureSubtypesDiedThisTurnComponent`, which records one
+- `SubtypeCreatureDiedThisTurn(subtype, player = Player.Each)` /
+  `NonSubtypeCreatureDiedThisTurn(subtype, player = Player.Each)` — subtype-filtered death gates,
+  **global** by default. Backed by `CreatureSubtypesDiedThisTurnComponent`, which records one
   entry per death holding the dying creature's **last-known subtypes** (captured from projected state
   at the moment it left the battlefield, CR 603.10), so a creature whose types change after death is
   still recorded by the subtypes it had as it died. `SubtypeCreatureDiedThisTurn(Subtype.GOBLIN)` is
   true iff some dead creature *had* Goblin; `NonSubtypeCreatureDiedThisTurn(Subtype.ZOMBIE)` is true
   iff some dead creature *lacked* Zombie (note the asymmetry — a turn in which only Zombies died does
   not satisfy the non-Zombie form; a Zombie + a Human both dying satisfies both forms). Used by Undead
-  Sprinter (DSK): "if a non-Zombie creature died this turn". Dual-mode. The underlying SDK condition
-  is `CreatureWithSubtypeDiedThisTurn(subtype, present)`. Cleared at end of turn by `CleanupPhaseManager`.
+  Sprinter (DSK): "if a non-Zombie creature died this turn". Pass `player = Player.You` for "died
+  **under your control**": each death is recorded under its last-known controller, so the scoped form
+  reads only that player's records and one death must satisfy both the subtype test and the scope —
+  don't spell it as `ControlledCreatureDiedThisTurn` AND a global subtype gate, which two different
+  deaths could satisfy between them. Used by Cult Conscript (DMU): "Activate only if a non-Skeleton
+  creature died under your control this turn". Dual-mode. The underlying SDK condition is
+  `CreatureWithSubtypeDiedThisTurn(subtype, present, player)`. Cleared at end of turn by `CleanupPhaseManager`.
 - `YouHadPermanentLeaveBattlefieldThisTurn` — intervening-if "if a permanent you controlled left
   the battlefield this turn". Per-player, scoped to the source's controller. Counts every permanent
   type (creatures, lands, artifacts, enchantments, planeswalkers) and includes tokens — broader

@@ -764,14 +764,22 @@ class ConditionEvaluator(
             is com.wingedsheep.sdk.scripting.conditions.IsNight ->
                 state.dayNight == com.wingedsheep.sdk.core.DayNight.NIGHT
 
-            // Global, subtype-filtered death tracker — matched against each dying creature's
-            // last-known subtypes recorded across every player. present=true: some dead creature
+            // Subtype-filtered death tracker — matched against each dying creature's last-known
+            // subtypes, recorded under its last-known controller. present=true: some dead creature
             // had the subtype; present=false: some dead creature lacked it ("a non-Zombie died").
-            is CreatureWithSubtypeDiedThisTurn -> state.turnOrder.any { playerId ->
-                val died = state.getEntity(playerId)
-                    ?.get<CreatureSubtypesDiedThisTurnComponent>()
-                    ?.diedSubtypeSets.orEmpty()
-                died.any { subtypes -> (condition.subtype in subtypes) == condition.present }
+            // Player.Each reads every player's records; a single player reads only theirs, so one
+            // death must meet both the subtype test and the controller scope.
+            is CreatureWithSubtypeDiedThisTurn -> {
+                val players = when (condition.player) {
+                    Player.Each, Player.Any -> state.turnOrder
+                    else -> listOfNotNull(resolvePlayer(state, condition.player, ctx))
+                }
+                players.any { playerId ->
+                    val died = state.getEntity(playerId)
+                        ?.get<CreatureSubtypesDiedThisTurnComponent>()
+                        ?.diedSubtypeSets.orEmpty()
+                    died.any { subtypes -> (condition.subtype in subtypes) == condition.present }
+                }
             }
 
             // Board-derived only — no targets/triggering/kicker — so it works identically in

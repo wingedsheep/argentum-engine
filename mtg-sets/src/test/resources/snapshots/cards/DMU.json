@@ -1428,6 +1428,63 @@
     "colorIdentityOverride": []
 }
 
+// Cult Conscript
+{
+    "name": "Cult Conscript",
+    "manaCost": "{B}",
+    "typeLine": "Creature — Skeleton Warrior",
+    "oracleText": "This creature enters tapped.\n{1}{B}: Return this card from your graveyard to the battlefield. Activate only if a non-Skeleton creature died under your control this turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Cult Conscript:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{B}"
+                    }
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "Self",
+                    "destination": "Battlefield",
+                    "fromZone": "Graveyard"
+                },
+                "restrictions": [
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "CreatureWithSubtypeDiedThisTurn",
+                            "subtype": "Skeleton",
+                            "present": false,
+                            "player": "You"
+                        }
+                    }
+                ],
+                "activateFromZone": "Graveyard"
+            }
+        ],
+        "replacementEffects": [
+            "EntersTapped"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "88",
+        "rarity": "UNCOMMON",
+        "artist": "Joe Slucher",
+        "flavorText": "His eternal rest turned out to be more of a quick nap.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/e/fed77513-94ab-44e2-b9a1-30ba927cd6ee.jpg?1783921335"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Cut Down
 {
     "name": "Cut Down",

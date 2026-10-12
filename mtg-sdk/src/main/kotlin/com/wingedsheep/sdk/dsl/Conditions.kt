@@ -2270,19 +2270,20 @@ object Conditions {
         com.wingedsheep.sdk.scripting.conditions.ControlledCreatureDiedThisTurnCondition
 
     /**
-     * "if a [subtype] creature died this turn" — global, matched against each dying creature's
-     * last-known subtypes. Used for "a Goblin died this turn"-style gates.
+     * "if a [subtype] creature died this turn" — matched against each dying creature's last-known
+     * subtypes. Global by default; pass [player] (e.g. `Player.You`) for "died under your control".
      */
-    fun SubtypeCreatureDiedThisTurn(subtype: Subtype): ConditionInterface =
-        com.wingedsheep.sdk.scripting.conditions.CreatureWithSubtypeDiedThisTurn(subtype.value, present = true)
+    fun SubtypeCreatureDiedThisTurn(subtype: Subtype, player: Player = Player.Each): ConditionInterface =
+        com.wingedsheep.sdk.scripting.conditions.CreatureWithSubtypeDiedThisTurn(subtype.value, present = true, player = player)
 
     /**
-     * "if a non-[subtype] creature died this turn" — global, satisfied when at least one creature
-     * that died this turn did *not* have [subtype] among its last-known subtypes. Used by Undead
-     * Sprinter (DSK): "if a non-Zombie creature died this turn".
+     * "if a non-[subtype] creature died this turn" — satisfied when at least one creature that died
+     * this turn did *not* have [subtype] among its last-known subtypes. Global by default (Undead
+     * Sprinter, DSK); `player = Player.You` scopes it to deaths under the source controller's
+     * control (Cult Conscript, DMU: "a non-Skeleton creature died under your control this turn").
      */
-    fun NonSubtypeCreatureDiedThisTurn(subtype: Subtype): ConditionInterface =
-        com.wingedsheep.sdk.scripting.conditions.CreatureWithSubtypeDiedThisTurn(subtype.value, present = false)
+    fun NonSubtypeCreatureDiedThisTurn(subtype: Subtype, player: Player = Player.Each): ConditionInterface =
+        com.wingedsheep.sdk.scripting.conditions.CreatureWithSubtypeDiedThisTurn(subtype.value, present = false, player = player)
 
     /**
      * Intervening-if: "if a permanent you controlled left the battlefield this turn".

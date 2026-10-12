@@ -357,7 +357,7 @@ Families:
 - `CounterPutOnPermanentYouControlledThisTurn(counterType: CounterType?, player: Player)` — Condition: "if a counterType counter was put on a permanent under player's control this turn" — Fairgrounds Trumpeter's end-step gate.
 - `CounterRemovedFromPermanentYouControlledThisTurn(counterType: CounterType?, player: Player)` — Condition: "if a counterType counter was removed from a permanent player controlled this turn" — the first half of Churning Reservoir's activation gate.
 - `CreatureDiedThisTurnCondition` — Intervening-if condition (Rule 603.4): "if a creature died this turn".
-- `CreatureWithSubtypeDiedThisTurn(subtype: String, present: Boolean)` — Condition: "if a creature with (or without) the subtype subtype died this turn".
+- `CreatureWithSubtypeDiedThisTurn(subtype: String, present: Boolean, player: Player)` — Condition: "if a creature with (or without) the subtype subtype died this turn".
 - `EnchantedCreatureHasSubtype(subtype: Subtype)` — Condition: "If enchanted creature is a subtype" Used by auras like Lavamancer's Skill that have different effects based on the creature type of the enchanted creature.
 - `EnchantedCreatureIsLegendary` — Condition: "If enchanted creature is legendary" Used by auras whose continuous effects apply only while the enchanted creature has the legendary supertype.
 - `EntityMatches(entity: EffectTarget, filter: GameObjectFilter)` — Condition: "the entity matches filter".

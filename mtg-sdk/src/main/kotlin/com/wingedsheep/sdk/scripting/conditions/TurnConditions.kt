@@ -666,19 +666,29 @@ data object ControlledCreatureDiedThisTurnCondition : Condition {
  *
  *  - Undead Sprinter (DSK): `CreatureWithSubtypeDiedThisTurn(Subtype.ZOMBIE.value, present = false)`
  *    gates its conditional cast-from-graveyard permission ("if a non-Zombie creature died this turn").
+ *  - Cult Conscript (DMU): `player = Player.You` — "a non-Skeleton creature died under your control
+ *    this turn". Each death is recorded under its last-known controller, so the scoped form reads
+ *    only that player's records and a single death must satisfy both the subtype test and the
+ *    controller scope (unlike `ControlledCreatureDiedThisTurn` AND a global subtype test, which two
+ *    different deaths could satisfy between them).
  *
  * @property subtype The creature subtype to test for, stored as its raw string (e.g. "Zombie").
  * @property present Whether a creature *with* the subtype (true) or *without* it (false) must have died.
+ * @property player Whose deaths count — [Player.Each] (default, global) or a single player resolved
+ *   relative to the source ([Player.You] = died under the source controller's control).
  */
 @SerialName("CreatureWithSubtypeDiedThisTurn")
 @Serializable
 data class CreatureWithSubtypeDiedThisTurn(
     val subtype: String,
-    val present: Boolean = true
+    val present: Boolean = true,
+    val player: Player = Player.Each
 ) : Condition {
-    override val description: String =
-        if (present) "if a $subtype creature died this turn"
-        else "if a non-$subtype creature died this turn"
+    override val description: String = buildString {
+        append(if (present) "if a $subtype creature died" else "if a non-$subtype creature died")
+        if (player != Player.Each) append(" under ${player.possessive} control")
+        append(" this turn")
+    }
 }
 
 /**
