@@ -752,6 +752,103 @@
     ]
 }
 
+// Arms Race
+{
+    "name": "Arms Race",
+    "manaCost": "{3}{R}",
+    "typeLine": "Enchantment",
+    "oracleText": "{3}{R}: You may put an artifact card from your hand onto the battlefield. That artifact gains haste. Sacrifice it at the beginning of the next end step.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Arms Race:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}{R}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand",
+                                "filter": "artifact"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected1",
+                            "prompt": "Put an artifact card onto the battlefield"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            }
+                        },
+                        {
+                            "type": "ConditionalOnCollection",
+                            "collection": "selected1",
+                            "ifNotEmpty": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GrantKeyword",
+                                        "keyword": "HASTE",
+                                        "target": {
+                                            "type": "PipelineTarget",
+                                            "collectionName": "selected1"
+                                        },
+                                        "duration": "Permanent"
+                                    },
+                                    {
+                                        "type": "CreateDelayedTrigger",
+                                        "step": "END",
+                                        "effect": {
+                                            "type": "SacrificeTarget",
+                                            "target": {
+                                                "type": "PipelineTarget",
+                                                "collectionName": "selected1"
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Put an artifact card from your hand onto the battlefield. It gains haste. Sacrifice it at the beginning of the next end step."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "126",
+        "rarity": "UNCOMMON",
+        "artist": "Leesha Hannigan",
+        "flavorText": "\"You want it good, fast, or cheap? You can't have all three.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/d/cd83b2c3-bb06-42db-83bf-8903a126512c.jpg?1783920074"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Ashnod's Intervention
 {
     "name": "Ashnod's Intervention",
@@ -1427,6 +1524,76 @@
     "colorIdentityOverride": [
         "BLUE",
         "BLACK",
+        "RED"
+    ]
+}
+
+// Brotherhood's End
+{
+    "name": "Brotherhood's End",
+    "manaCost": "{1}{R}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Choose one —\n• Brotherhood's End deals 3 damage to each creature and each planeswalker.\n• Destroy all artifacts with mana value 3 or less.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Group",
+                            "filter": {
+                                "baseFilter": "creature|planeswalker"
+                            }
+                        },
+                        "body": {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 3
+                            },
+                            "target": "IterationEntity"
+                        }
+                    },
+                    "description": "Deal 3 damage to each creature and each planeswalker"
+                },
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "BattlefieldMatching",
+                                    "filter": "artifact mv<=3"
+                                },
+                                "storeAs": "destroyAll_gathered"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "destroyAll_gathered",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                },
+                                "moveType": "Destroy"
+                            }
+                        ]
+                    },
+                    "description": "Destroy all artifacts with mana value 3 or less"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "128",
+        "rarity": "RARE",
+        "artist": "Bryan Sola",
+        "flavorText": "The brothers' rivalry escalated into all-out enmity, and Tocasia paid the price.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/0/50f7666d-0d60-4fe5-b144-286d4e47b704.jpg?1783920075"
+    },
+    "colorIdentityOverride": [
         "RED"
     ]
 }
@@ -2594,6 +2761,101 @@
     ]
 }
 
+// Draconic Destiny
+{
+    "name": "Draconic Destiny",
+    "manaCost": "{1}{R}{R}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature gets +1/+1 and has flying, haste, and \"{1}: This creature gets +1/+0 until end of turn.\" It's a Dragon in addition to its other types.\nWhen enchanted creature dies, return this card to its owner's hand.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Draconic Destiny:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "Self",
+                    "destination": "Hand"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "FLYING"
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "HASTE"
+            },
+            {
+                "type": "GrantActivatedAbility",
+                "ability": {
+                    "id": "Draconic Destiny:1",
+                    "cost": {
+                        "type": "CostAtomWrapper",
+                        "atom": {
+                            "type": "AtomMana",
+                            "cost": "{1}"
+                        }
+                    },
+                    "effect": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 0
+                        },
+                        "target": "Self"
+                    }
+                }
+            },
+            {
+                "type": "GrantSubtype",
+                "subtype": "Dragon",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "130",
+        "rarity": "MYTHIC",
+        "artist": "Justin Hernandez & Alexis Hernandez",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/7/f71240ad-1daf-419a-aaeb-5f9d5079c3dd.jpg?1783920074",
+        "rulings": [
+            {
+                "date": "2022-10-14",
+                "text": "Being a Dragon isn't part of the activated ability the enchanted creature has. It's a Dragon in addition to its other types whether or not that ability has been activated."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Drafna, Founder of Lat-Nam
 {
     "name": "Drafna, Founder of Lat-Nam",
@@ -2990,6 +3252,52 @@
     }
 }
 
+// Excavation Explosion
+{
+    "name": "Excavation Explosion",
+    "manaCost": "{2}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Excavation Explosion deals 3 damage to any target. Create a tapped Powerstone token. (It's an artifact with \"{T}: Add {C}. This mana can't be spent to cast a nonartifact spell.\")",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Powerstone",
+                    "tapped": true
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "AnyTarget",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "132",
+        "artist": "Campbell White",
+        "flavorText": "Urza's engineers could take weeks to dig out a powerstone. The goblins weren't so painstaking.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/1/a169612e-f5de-4653-bc31-9ede8c5bdc75.jpg?1783920073"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Fallaji Archaeologist
 {
     "name": "Fallaji Archaeologist",
@@ -3297,6 +3605,90 @@
     "colorIdentityOverride": [
         "BLACK"
     ]
+}
+
+// Feldon, Ronom Excavator
+{
+    "name": "Feldon, Ronom Excavator",
+    "manaCost": "{1}{R}",
+    "typeLine": "Legendary Creature — Human Artificer",
+    "oracleText": "Haste\nFeldon can't block.\nWhenever Feldon is dealt damage, exile that many cards from the top of your library. Choose one of them. Until the end of your next turn, you may play that card.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "HASTE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Feldon, Ronom Excavator:1",
+                "trigger": "DamageReceivedEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "ContextProperty",
+                                    "key": "TRIGGER_DAMAGE_AMOUNT"
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected2",
+                            "prompt": "Choose a card you may play until the end of your next turn"
+                        },
+                        {
+                            "type": "GrantMayPlayFromExile",
+                            "from": "selected2",
+                            "expiry": {
+                                "type": "UntilControllerStep",
+                                "step": "CLEANUP",
+                                "includeCurrentTurn": false
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "staticAbilities": [
+            "CantBlock"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "135",
+        "rarity": "RARE",
+        "artist": "Howard Lyon",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/c/5ca4cb0e-63ad-4275-a27f-da476260b467.jpg?1783920069",
+        "rulings": [
+            {
+                "date": "2022-10-14",
+                "text": "You must pay all costs and follow all normal timing rules when casting a spell this way."
+            }
+        ]
+    }
 }
 
 // Flow of Knowledge
@@ -4419,6 +4811,75 @@
     ]
 }
 
+// Goblin Blast-Runner
+{
+    "name": "Goblin Blast-Runner",
+    "manaCost": "{R}",
+    "typeLine": "Creature — Goblin",
+    "oracleText": "This creature gets +2/+0 and has menace as long as you sacrificed a permanent this turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "CompositeStaticAbility",
+                    "abilities": [
+                        {
+                            "type": "ModifyStats",
+                            "powerBonus": 2,
+                            "toughnessBonus": 0,
+                            "filter": {
+                                "baseFilter": "permanent",
+                                "scope": "Self"
+                            }
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "MENACE",
+                            "filter": {
+                                "baseFilter": "permanent",
+                                "scope": "Self"
+                            }
+                        }
+                    ]
+                },
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "TurnTracking",
+                        "player": "You",
+                        "tracker": "PERMANENTS_SACRIFICED"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "137",
+        "artist": "Joseph Weston",
+        "flavorText": "Most goblins can light a fuse and run, but only the cleverest remember to drop the bomb.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/d/bd77c575-93a4-44ec-8940-adcbfc6e7a84.jpg?1783920067",
+        "rulings": [
+            {
+                "date": "2022-10-14",
+                "text": "Goblin Blast-Runner doesn't need to have been on the battlefield at the time the permanent was sacrificed in order to get the bonus."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Goblin Firebomb
 {
     "name": "Goblin Firebomb",
@@ -4824,6 +5285,54 @@
         "WHITE",
         "BLACK"
     ]
+}
+
+// Horned Stoneseeker
+{
+    "name": "Horned Stoneseeker",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Lizard",
+    "oracleText": "Menace\nWhen this creature enters, create a tapped Powerstone token. (It's an artifact with \"{T}: Add {C}. This mana can't be spent to cast a nonartifact spell.\")\nWhen this creature leaves the battlefield, sacrifice a Powerstone.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "MENACE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Horned Stoneseeker:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Powerstone",
+                    "tapped": true
+                }
+            },
+            {
+                "id": "Horned Stoneseeker:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield"
+                },
+                "effect": {
+                    "type": "Sacrifice",
+                    "filter": "artifact Powerstone"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "138",
+        "rarity": "UNCOMMON",
+        "artist": "Eric Velhagen",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/c/5cd965a9-caa2-42a3-b2f9-e4f57341ac27.jpg?1783920069"
+    }
 }
 
 // Hostile Negotiations
@@ -6440,6 +6949,73 @@
     ]
 }
 
+// Mechanized Warfare
+{
+    "name": "Mechanized Warfare",
+    "manaCost": "{1}{R}{R}",
+    "typeLine": "Enchantment",
+    "oracleText": "If a red or artifact source you control would deal damage to an opponent or a permanent an opponent controls, it deals that much damage plus 1 instead.",
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "ModifyDamageAmount",
+                "modifier": 1,
+                "appliesTo": {
+                    "type": "DamageEvent",
+                    "recipient": {
+                        "type": "RecipientAnyOf",
+                        "options": [
+                            {
+                                "type": "RecipientPlayer",
+                                "player": "EachOpponent"
+                            },
+                            {
+                                "type": "RecipientObject",
+                                "filter": "permanent ctrl:opponent"
+                            }
+                        ]
+                    },
+                    "source": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    {
+                                        "type": "HasColor",
+                                        "color": "RED"
+                                    },
+                                    "IsArtifact"
+                                ]
+                            }
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "139",
+        "rarity": "RARE",
+        "artist": "Robin Olausson",
+        "flavorText": "First the automatons reinforced depleted squads. Then they replaced them entirely.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/a/ba2d026f-bdca-4376-9d70-c81c707598e8.jpg?1783920064",
+        "rulings": [
+            {
+                "date": "2022-10-14",
+                "text": "The additional 1 damage is dealt by the original source of damage. The additional damage isn't dealt by Mechanized Warfare."
+            },
+            {
+                "date": "2022-10-14",
+                "text": "If damage dealt by a red or artifact source you control is being divided or assigned among multiple opponents and/or permanents opponents' control, divide the original amount before adding 1. For example, if you cast a red spell that deals 4 damage divided among any number of targets and you choose to have it deal 2 damage to a creature and 2 damage to that creature's controller, that spell will deal 3 damage to each of them instead."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Meticulous Excavation
 {
     "name": "Meticulous Excavation",
@@ -6714,6 +7290,229 @@
     ]
 }
 
+// Mishra's Command
+{
+    "name": "Mishra's Command",
+    "manaCost": "{X}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Choose two —\n• Choose target player. They may discard up to X cards. Then they draw a card for each card discarded this way.\n• This spell deals X damage to target creature.\n• This spell deals X damage to target planeswalker.\n• Target creature gets +X/+0 and gains haste until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand",
+                                    "player": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    }
+                                },
+                                "storeAs": "gathered0"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "gathered0",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": "XValue"
+                                },
+                                "chooser": "TargetPlayer",
+                                "storeSelected": "selected1",
+                                "prompt": "Discard up to X cards, then draw that many"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "selected1",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard",
+                                    "player": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    }
+                                },
+                                "moveType": "Discard"
+                            },
+                            {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "DistinctEntitiesInCollections",
+                                    "collections": [
+                                        "selected1"
+                                    ]
+                                },
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        ]
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetPlayer",
+                            "id": "t0"
+                        }
+                    ],
+                    "description": "Target player may discard up to X cards, then draws a card for each card discarded this way"
+                },
+                {
+                    "effect": {
+                        "type": "DealDamage",
+                        "amount": "XValue",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t1"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature"
+                            },
+                            "id": "t1"
+                        }
+                    ],
+                    "description": "This spell deals X damage to target creature"
+                },
+                {
+                    "effect": {
+                        "type": "DealDamage",
+                        "amount": "XValue",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t2"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "planeswalker"
+                            },
+                            "id": "t2"
+                        }
+                    ],
+                    "description": "This spell deals X damage to target planeswalker"
+                },
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "ModifyStats",
+                                "powerModifier": "XValue",
+                                "toughnessModifier": {
+                                    "type": "Fixed",
+                                    "amount": 0
+                                },
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t3"
+                                }
+                            },
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "HASTE",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t3"
+                                }
+                            }
+                        ]
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature"
+                            },
+                            "id": "t3"
+                        }
+                    ],
+                    "description": "Target creature gets +X/+0 and gains haste until end of turn"
+                }
+            ],
+            "chooseCount": 2
+        }
+    },
+    "metadata": {
+        "collectorNumber": "141",
+        "rarity": "RARE",
+        "artist": "Dominik Mayer",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/4/f4d2e518-30c6-480c-aaf4-b7596c9479e4.jpg?1783920068"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Mishra's Domination
+{
+    "name": "Mishra's Domination",
+    "manaCost": "{1}{R}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nAs long as you control enchanted creature, it gets +2/+2. Otherwise, it can't block.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "ModifyStats",
+                    "powerBonus": 2,
+                    "toughnessBonus": 2
+                },
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "EnchantedPermanent",
+                    "filter": "ctrl:you"
+                }
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "CantBlock",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "AttachedTo"
+                    }
+                },
+                "condition": {
+                    "type": "Not",
+                    "condition": {
+                        "type": "EntityMatches",
+                        "entity": "EnchantedPermanent",
+                        "filter": "ctrl:you"
+                    }
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "142",
+        "artist": "Fajareka Setiawan",
+        "flavorText": "Power radiated from the Weakstone, binding the dragon engine to Mishra's command.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/7/87c71fb1-a30b-4e0e-a6d6-4656cfff2da1.jpg?1783920067"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Mishra's Foundry
 {
     "name": "Mishra's Foundry",
@@ -6884,6 +7683,90 @@
         "artist": "Josu Hernaiz",
         "flavorText": "\"Hah. Urza has underestimated my strength yet again.\"\n—Mishra",
         "imageUri": "https://cards.scryfall.io/normal/front/e/d/eda82e38-c1d4-4019-8f79-f91602d941b0.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Mishra, Excavation Prodigy
+{
+    "name": "Mishra, Excavation Prodigy",
+    "manaCost": "{2}{R}",
+    "typeLine": "Legendary Creature — Human Artificer",
+    "oracleText": "Haste\n{1}, {T}, Discard a card: Draw a card.\nWhenever you discard one or more artifact cards, add {R}{R}. This ability triggers only once each turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "HASTE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Mishra, Excavation Prodigy:2",
+                "trigger": {
+                    "type": "DiscardEvent",
+                    "cardFilter": "artifact",
+                    "batch": true
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "RED",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                },
+                "oncePerTurn": true,
+                "descriptionOverride": "Whenever you discard one or more artifact cards, add {R}{R}. This ability triggers only once each turn."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Mishra, Excavation Prodigy:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": "AtomDiscard"
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "descriptionOverride": "{1}, {T}, Discard a card: Draw a card."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "140",
+        "rarity": "UNCOMMON",
+        "artist": "Donato Giancola",
+        "flavorText": "While Urza read books, Mishra learned to read the desert itself.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/5/f5d02416-8578-40a5-bf31-d1ef9b8764f1.jpg?1783920068",
+        "rulings": [
+            {
+                "date": "2022-10-14",
+                "text": "The last ability will trigger if you discard artifact cards for any reason, not just due to its activated ability."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "RED"
@@ -7297,6 +8180,90 @@
     ]
 }
 
+// Over the Top
+{
+    "name": "Over the Top",
+    "manaCost": "{5}{R}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Each player reveals a number of cards from the top of their library equal to the number of nonland permanents they control, puts all permanent cards they revealed this way onto the battlefield, and puts the rest into their graveyard.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "ActivePlayerFirst"
+                    },
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "ControlledPermanents",
+                                    "filter": "nonland permanent"
+                                },
+                                "storeAs": "gathered1"
+                            },
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "TopOfLibrary",
+                                    "count": {
+                                        "type": "VariableReference",
+                                        "variableName": "gathered1_count"
+                                    }
+                                },
+                                "storeAs": "gathered2",
+                                "revealed": true
+                            },
+                            {
+                                "type": "FilterCollection",
+                                "from": "gathered2",
+                                "filter": "permanent",
+                                "storeMatching": "matching3",
+                                "storeNonMatching": "rest3"
+                            }
+                        ]
+                    },
+                    "collectCollections": {
+                        "matching3": "collected4",
+                        "rest3": "collected5"
+                    }
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "collected4",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Battlefield"
+                    },
+                    "underOwnersControl": true
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "collected5",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "146",
+        "rarity": "RARE",
+        "artist": "Cristi Balanescu",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/1/01eb9702-55c5-41b2-8bef-63d33dafa599.jpg?1783920066"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Overwhelming Remorse
 {
     "name": "Overwhelming Remorse",
@@ -7350,6 +8317,82 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Penregon Strongbull
+{
+    "name": "Penregon Strongbull",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Minotaur",
+    "oracleText": "{1}, Sacrifice an artifact: This creature gets +1/+1 until end of turn and deals 1 damage to each opponent.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Penregon Strongbull:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "artifact"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": "Self"
+                        },
+                        {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "EachOpponent"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "{1}, Sacrifice an artifact: This creature gets +1/+1 until end of turn and deals 1 damage to each opponent."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "147",
+        "artist": "Michael Phillippi",
+        "flavorText": "His child-lifting act was second only to his cauldron-punting routine.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/c/1c2deb43-7134-4f9c-b02d-78407a8986b1.jpg?1783920064"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -7596,6 +8639,71 @@
     ]
 }
 
+// Pyrrhic Blast
+{
+    "name": "Pyrrhic Blast",
+    "manaCost": "{3}{R}",
+    "typeLine": "Instant",
+    "oracleText": "As an additional cost to cast this spell, sacrifice a creature.\nPyrrhic Blast deals damage equal to the sacrificed creature's power to any target. Draw a card.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": "SacrificedAsCost",
+                        "numericProperty": "Power"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "AnyTarget",
+                "id": "t0"
+            }
+        ],
+        "additionalCosts": [
+            {
+                "type": "AdditionalAtom",
+                "atom": {
+                    "type": "AtomSacrifice",
+                    "filter": "creature"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "148",
+        "rarity": "UNCOMMON",
+        "artist": "Raf Kayupov",
+        "flavorText": "Only the quartermaster wept for their loss.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/5/a523d5a7-58b1-45a3-81a7-078da02fda16.jpg?1783920061",
+        "rulings": [
+            {
+                "date": "2022-10-14",
+                "text": "The sacrificed creature's last known existence on the battlefield is checked to determine its power."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Ravenous Gigamole
 {
     "name": "Ravenous Gigamole",
@@ -7684,6 +8792,93 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Raze to the Ground
+{
+    "name": "Raze to the Ground",
+    "manaCost": "{2}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "This spell can't be countered.\nDestroy target artifact. If its mana value was 1 or less, draw a card.",
+    "script": {
+        "spellEffect": {
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "EntityProperty",
+                        "entity": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "numericProperty": "ManaValue"
+                    },
+                    "operator": "LTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            },
+            "then": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "destination": "Graveyard",
+                        "byDestruction": true
+                    },
+                    {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    }
+                ]
+            },
+            "otherwise": {
+                "type": "MoveToZone",
+                "target": {
+                    "type": "BoundVariable",
+                    "name": "t0"
+                },
+                "destination": "Graveyard",
+                "byDestruction": true
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "artifact"
+                },
+                "id": "t0"
+            }
+        ],
+        "cantBeCountered": true
+    },
+    "metadata": {
+        "collectorNumber": "149",
+        "artist": "Joshua Raphael",
+        "flavorText": "First one, then a second, then a third of the ivory towers fell to the invaders, who moved in a circle around the city like an apocalyptic clock.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/3/838b25d2-7615-4375-a5e6-3d762c9072a5.jpg?1783920061",
+        "rulings": [
+            {
+                "date": "2022-10-14",
+                "text": "\"This spell can't be countered\" means it can't be countered even by the ward keyword ability. The spell's controller may still pay the ward cost if it targets an artifact with ward, but Raze to the Ground won't be countered if they don't."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
