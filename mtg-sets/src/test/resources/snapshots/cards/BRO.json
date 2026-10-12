@@ -13377,6 +13377,122 @@
     ]
 }
 
+// Scrapwork Rager
+{
+    "name": "Scrapwork Rager",
+    "manaCost": "{4}",
+    "typeLine": "Artifact Creature — Phyrexian Horror",
+    "oracleText": "When this creature enters, you draw a card and you lose 1 life.\nUnearth {3}{B} ({3}{B}: Return this card from your graveyard to the battlefield. It gains haste. Exile it at the beginning of the next end step or if it would leave the battlefield. Unearth only as a sorcery.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "UNEARTH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Scrapwork Rager:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": "Controller"
+                        }
+                    ]
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "unearth_{3}{B}",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}{B}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": "Self",
+                            "destination": "Battlefield",
+                            "fromZone": "Graveyard"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "SourceInZone",
+                                    "zones": [
+                                        "Battlefield"
+                                    ]
+                                }
+                            },
+                            "then": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GrantKeyword",
+                                        "keyword": "HASTE",
+                                        "target": "Self",
+                                        "duration": "Permanent"
+                                    },
+                                    {
+                                        "type": "CreateDelayedTrigger",
+                                        "step": "END",
+                                        "effect": {
+                                            "type": "MoveTrackedBattlefieldObject",
+                                            "target": "Self",
+                                            "destination": "Exile"
+                                        }
+                                    },
+                                    {
+                                        "type": "GrantExileOnLeave",
+                                        "target": "Self"
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "activateFromZone": "Graveyard",
+                "descriptionOverride": "Unearth {3}{B} ({3}{B}: Return this card from your graveyard to the battlefield. It gains haste. Exile it at the beginning of the next end step or if it would leave the battlefield. Unearth only as a sorcery.)"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "123",
+        "artist": "Michal Ivan",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/2/e28de770-7975-4aa9-b656-e7dbe6bff290.jpg?1783920077"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Shoot Down
 {
     "name": "Shoot Down",
@@ -13566,6 +13682,176 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Simian Simulacrum
+{
+    "name": "Simian Simulacrum",
+    "manaCost": "{3}",
+    "typeLine": "Artifact Creature — Ape",
+    "oracleText": "When this creature enters, put two +1/+1 counters on target creature you control.\nUnearth {2}{G}{G} ({2}{G}{G}: Return this card from your graveyard to the battlefield. It gains haste. Exile it at the beginning of the next end step or if it would leave the battlefield. Unearth only as a sorcery.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "UNEARTH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Simian Simulacrum:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 2,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you"
+                    },
+                    "id": "t0"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "unearth_{2}{G}{G}",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{G}{G}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": "Self",
+                            "destination": "Battlefield",
+                            "fromZone": "Graveyard"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "SourceInZone",
+                                    "zones": [
+                                        "Battlefield"
+                                    ]
+                                }
+                            },
+                            "then": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GrantKeyword",
+                                        "keyword": "HASTE",
+                                        "target": "Self",
+                                        "duration": "Permanent"
+                                    },
+                                    {
+                                        "type": "CreateDelayedTrigger",
+                                        "step": "END",
+                                        "effect": {
+                                            "type": "MoveTrackedBattlefieldObject",
+                                            "target": "Self",
+                                            "destination": "Exile"
+                                        }
+                                    },
+                                    {
+                                        "type": "GrantExileOnLeave",
+                                        "target": "Self"
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "activateFromZone": "Graveyard",
+                "descriptionOverride": "Unearth {2}{G}{G} ({2}{G}{G}: Return this card from your graveyard to the battlefield. It gains haste. Exile it at the beginning of the next end step or if it would leave the battlefield. Unearth only as a sorcery.)"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "205",
+        "rarity": "RARE",
+        "artist": "Randy Vargas",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/8/c85e2a35-cb55-434c-bbd7-54c3438345c1.jpg?1783920033"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Skitterbeam Battalion
+{
+    "name": "Skitterbeam Battalion",
+    "manaCost": "{9}",
+    "typeLine": "Artifact Creature — Construct",
+    "oracleText": "Prototype {3}{R}{R} — 2/2 (You may cast this spell with different mana cost, color, and size. It keeps its abilities and types.)\nTrample, haste\nWhen this creature enters, if you cast it, create two tokens that are copies of it.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "TRAMPLE",
+        "HASTE",
+        "PROTOTYPE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Prototype",
+            "cost": "{3}{R}{R}",
+            "power": 2,
+            "toughness": 2
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Skitterbeam Battalion:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateTokenCopyOfSource",
+                    "count": 2
+                },
+                "interveningIf": "WasCast",
+                "descriptionOverride": "When this creature enters, if you cast it, create two tokens that are copies of it."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "165",
+        "rarity": "MYTHIC",
+        "artist": "Leon Tukker",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/8/38fc1715-4ddb-4404-83c6-0b8a61922578.jpg?1783920054",
+        "rulings": [
+            {
+                "date": "2022-10-14",
+                "text": "The copies will have the same mana cost, mana value, color, power, and toughness as Skitterbeam Battalion, which vary depending on whether it was cast as a prototyped spell."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -14003,6 +14289,123 @@
     ]
 }
 
+// Spotter Thopter
+{
+    "name": "Spotter Thopter",
+    "manaCost": "{8}",
+    "typeLine": "Artifact Creature — Thopter",
+    "oracleText": "Prototype {3}{U} — 2/3 (You may cast this spell with different mana cost, color, and size. It keeps its abilities and types.)\nFlying\nWhen this creature enters, scry X, where X is its power.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 5
+    },
+    "keywords": [
+        "FLYING",
+        "PROTOTYPE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Prototype",
+            "cost": "{3}{U}",
+            "power": 2,
+            "toughness": 3
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Spotter Thopter:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "EntityProperty",
+                                    "entity": "Self",
+                                    "numericProperty": "Power"
+                                },
+                                "isScry": true
+                            },
+                            "storeAs": "scried"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "scried",
+                            "selection": "ChooseAnyNumber",
+                            "storeSelected": "toBottom",
+                            "storeRemainder": "toTop",
+                            "prompt": "Scry: choose cards to put on the bottom of your library",
+                            "selectedLabel": "Put on bottom",
+                            "remainderLabel": "Put on top"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "toBottom",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Bottom"
+                            }
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "toTop",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Top"
+                            },
+                            "order": "ControllerChooses"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "EntityProperty",
+                                        "entity": "Self",
+                                        "numericProperty": "Power"
+                                    },
+                                    "operator": "GT",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 0
+                                    }
+                                }
+                            },
+                            "then": "EmitScriedEvent"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "80",
+        "rarity": "UNCOMMON",
+        "artist": "Michael Phillippi",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/9/d90175ae-4109-4845-b3ff-1531fb67a0e1.jpg?1783920096",
+        "rulings": [
+            {
+                "date": "2022-10-14",
+                "text": "Use Spotter Thopter's power at the time its triggered ability resolves (not the time it triggered) to determine the value of X. If Spotter Thopter is no longer on the battlefield at the time the ability resolves, use its power as it existed the last time it was on the battlefield."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Static Net
 {
     "name": "Static Net",
@@ -14093,6 +14496,46 @@
     "colorIdentityOverride": [
         "WHITE"
     ]
+}
+
+// Steel Exemplar
+{
+    "name": "Steel Exemplar",
+    "manaCost": "{5}",
+    "typeLine": "Artifact Creature — Wizard",
+    "oracleText": "Trample\nThis creature enters with two +1/+1 counters on it unless two or more colors of mana were spent to cast it.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "count": 2,
+                "selfOnly": true,
+                "condition": {
+                    "type": "Compare",
+                    "left": "DistinctColorsManaSpent",
+                    "operator": "LT",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "246",
+        "rarity": "UNCOMMON",
+        "artist": "Kekai Kotaki",
+        "flavorText": "Reports differed on whether the figure was an automaton or a mage, mostly because few who saw it survived.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/8/386c139a-13fc-49ca-923d-45faca4f9a2f.jpg?1783920013"
+    }
 }
 
 // Steel Seraph
@@ -14424,6 +14867,151 @@
     }
 }
 
+// Surge Engine
+{
+    "name": "Surge Engine",
+    "manaCost": "{2}",
+    "typeLine": "Artifact Creature — Construct",
+    "oracleText": "Defender\n{U}: This creature loses defender and gains \"This creature can't be blocked.\"\n{2}{U}: This creature becomes blue and has base power and toughness 5/4. Activate only if this creature doesn't have defender.\n{4}{U}{U}: Draw three cards. Activate only if this creature is blue and only once.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "DEFENDER"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Surge Engine:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{U}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "RemoveKeyword",
+                            "keyword": "DEFENDER",
+                            "target": "Self",
+                            "duration": "Permanent"
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "CANT_BE_BLOCKED",
+                            "target": "Self",
+                            "duration": "Permanent"
+                        }
+                    ]
+                }
+            },
+            {
+                "id": "Surge Engine:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{U}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ChangeColor",
+                            "target": "Self",
+                            "colors": [
+                                "BLUE"
+                            ],
+                            "duration": "Permanent"
+                        },
+                        {
+                            "type": "SetBaseStats",
+                            "target": "Self",
+                            "power": {
+                                "type": "Fixed",
+                                "amount": 5
+                            },
+                            "toughness": {
+                                "type": "Fixed",
+                                "amount": 4
+                            }
+                        }
+                    ]
+                },
+                "restrictions": [
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "Not",
+                            "condition": {
+                                "type": "EntityMatches",
+                                "entity": "Self",
+                                "filter": "kw:defender"
+                            }
+                        }
+                    }
+                ]
+            },
+            {
+                "id": "Surge Engine:3",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{4}{U}{U}"
+                    }
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                },
+                "restrictions": [
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": "Self",
+                            "filter": "blue"
+                        }
+                    },
+                    "Once"
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "81",
+        "rarity": "MYTHIC",
+        "artist": "Daarken",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/2/12b9c9c5-e992-4f1c-a779-124176c3aade.jpg?1783920094",
+        "rulings": [
+            {
+                "date": "2022-10-14",
+                "text": "If Surge Engine loses defender in some way other than its first ability, its second ability may still be activated. Likewise, if it becomes blue in some way other than its second ability, its last ability may still be activated."
+            },
+            {
+                "date": "2022-10-14",
+                "text": "Surge Engine's last ability can be activated only once per game, not once per turn."
+            },
+            {
+                "date": "2022-10-14",
+                "text": "If a Surge Engine whose last ability has been activated leaves the battlefield and comes back, it's a new object on the battlefield and its last ability can be activated again (once it's blue, of course)."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Survivor of Korlis
 {
     "name": "Survivor of Korlis",
@@ -14471,6 +15059,117 @@
     "colorIdentityOverride": [
         "WHITE"
     ]
+}
+
+// Swiftgear Drake
+{
+    "name": "Swiftgear Drake",
+    "manaCost": "{5}",
+    "typeLine": "Artifact Creature — Drake",
+    "oracleText": "Flying, haste\nWhen this creature enters, put up to one target card from a graveyard on the bottom of its owner's library.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING",
+        "HASTE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Swiftgear Drake:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Library",
+                    "placement": "Bottom"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": {},
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "251",
+        "artist": "Zoltan Boros",
+        "flavorText": "Inspired by fishing raptors, Tawnos designed the drake's talons to seize prey with overwhelming speed and precision.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/5/d5ae38a2-2f95-4750-9b59-53eb1771e5ab.jpg?1783920011"
+    },
+    "colorIdentityOverride": []
+}
+
+// Symmetry Matrix
+{
+    "name": "Symmetry Matrix",
+    "manaCost": "{4}",
+    "typeLine": "Artifact",
+    "oracleText": "Whenever a creature you control with power equal to its toughness enters, you may pay {1}. If you do, draw a card.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Symmetry Matrix:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayManaCost",
+                            "cost": "{1}"
+                        }
+                    },
+                    "then": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    }
+                },
+                "triggerRestriction": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "EntityProperty",
+                        "entity": "TriggeringEntity",
+                        "numericProperty": "Power"
+                    },
+                    "operator": "EQ",
+                    "right": {
+                        "type": "EntityProperty",
+                        "entity": "TriggeringEntity",
+                        "numericProperty": "Toughness"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "252",
+        "rarity": "UNCOMMON",
+        "artist": "Slawomir Maniak",
+        "flavorText": "\"Achieving perfection is simple. Watch, I'll do it twice.\"\n—Mishra",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/8/786bce65-1c04-45fc-b81b-e7590afbd117.jpg?1783920011"
+    }
 }
 
 // Take Flight
@@ -14946,6 +15645,135 @@
     ]
 }
 
+// Terisian Mindbreaker
+{
+    "name": "Terisian Mindbreaker",
+    "manaCost": "{7}",
+    "typeLine": "Artifact Creature — Juggernaut",
+    "oracleText": "Whenever this creature attacks, defending player mills half their library, rounded up.\nUnearth {1}{U}{U}{U} ({1}{U}{U}{U}: Return this card from your graveyard to the battlefield. It gains haste. Exile it at the beginning of the next end step or if it would leave the battlefield. Unearth only as a sorcery.)",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 4
+    },
+    "keywords": [
+        "UNEARTH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Terisian Mindbreaker:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Divide",
+                                    "numerator": {
+                                        "type": "AggregateZone",
+                                        "player": "DefendingPlayer",
+                                        "zone": "Library"
+                                    },
+                                    "denominator": {
+                                        "type": "Fixed",
+                                        "amount": 2
+                                    }
+                                },
+                                "player": "DefendingPlayer",
+                                "isMill": true
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": "DefendingPlayer"
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "unearth_{1}{U}{U}{U}",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{U}{U}{U}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": "Self",
+                            "destination": "Battlefield",
+                            "fromZone": "Graveyard"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "SourceInZone",
+                                    "zones": [
+                                        "Battlefield"
+                                    ]
+                                }
+                            },
+                            "then": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GrantKeyword",
+                                        "keyword": "HASTE",
+                                        "target": "Self",
+                                        "duration": "Permanent"
+                                    },
+                                    {
+                                        "type": "CreateDelayedTrigger",
+                                        "step": "END",
+                                        "effect": {
+                                            "type": "MoveTrackedBattlefieldObject",
+                                            "target": "Self",
+                                            "destination": "Exile"
+                                        }
+                                    },
+                                    {
+                                        "type": "GrantExileOnLeave",
+                                        "target": "Self"
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "activateFromZone": "Graveyard",
+                "descriptionOverride": "Unearth {1}{U}{U}{U} ({1}{U}{U}{U}: Return this card from your graveyard to the battlefield. It gains haste. Exile it at the beginning of the next end step or if it would leave the battlefield. Unearth only as a sorcery.)"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "83",
+        "rarity": "RARE",
+        "artist": "Steve Prescott",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/b/6bd86daf-7cee-454c-8d4d-97f59fe36958.jpg?1783920095"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // The Fall of Kroog
 {
     "name": "The Fall of Kroog",
@@ -15129,6 +15957,189 @@
         "rarity": "RARE",
         "artist": "Ryan Pancoast",
         "imageUri": "https://cards.scryfall.io/normal/front/0/2/02aea379-b444-46a3-82f4-3038f698d4f4.jpg?1783920017"
+    },
+    "colorIdentityOverride": []
+}
+
+// The Stasis Coffin
+{
+    "name": "The Stasis Coffin",
+    "manaCost": "{3}",
+    "typeLine": "Legendary Artifact",
+    "oracleText": "{2}, {T}, Exile The Stasis Coffin: You gain protection from everything until your next turn.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "The Stasis Coffin:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}"
+                            }
+                        },
+                        "CostTap",
+                        "CostExileSelf"
+                    ]
+                },
+                "effect": "GrantPlayerProtection"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "245",
+        "rarity": "RARE",
+        "artist": "Artur Nakhodkin",
+        "flavorText": "Tawnos built it to be absolutely impermeable to any force inside. Luckily it worked for any force outside as well.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/5/45537ac3-fc61-4253-a782-7f3e436b2aa6.jpg?1783920013"
+    }
+}
+
+// The Stone Brain
+{
+    "name": "The Stone Brain",
+    "manaCost": "{2}",
+    "typeLine": "Legendary Artifact",
+    "oracleText": "{2}, {T}, Exile The Stone Brain: Choose a card name. Search target opponent's graveyard, hand, and library for up to four cards with that name and exile them. That player shuffles, then draws a card for each card exiled from their hand this way. Activate only as a sorcery.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "The Stone Brain:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}"
+                            }
+                        },
+                        "CostTap",
+                        "CostExileSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ChooseOption",
+                            "optionType": "CARD_NAME",
+                            "storeAs": "cardName0",
+                            "prompt": "Choose a card name"
+                        },
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromMultipleZones",
+                                "zones": [
+                                    "Graveyard",
+                                    "Hand",
+                                    "Library"
+                                ],
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "filter": {
+                                    "cardPredicates": [
+                                        {
+                                            "type": "NameEqualsChosen",
+                                            "variableName": "cardName0"
+                                        }
+                                    ]
+                                }
+                            },
+                            "storeAs": "gathered1",
+                            "search": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered1",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 4
+                                }
+                            },
+                            "storeSelected": "selected2",
+                            "prompt": "Choose up to four cards with that name to exile",
+                            "selectedLabel": "Exile"
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "selected2",
+                            "filter": {
+                                "statePredicates": [
+                                    {
+                                        "type": "InZone",
+                                        "zone": "Hand"
+                                    }
+                                ]
+                            },
+                            "storeMatching": "matching3"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected2",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        },
+                        {
+                            "type": "ShuffleLibrary",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "VariableReference",
+                                "variableName": "matching3_count"
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetOpponent",
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "247",
+        "rarity": "RARE",
+        "artist": "Irina Nordsol",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/5/3570ebf2-a94c-4621-8808-b06e6e830c06.jpg?1783920013",
+        "rulings": [
+            {
+                "date": "2022-10-14",
+                "text": "You target a player as The Stone Brain's activated ability is put on the stack, but you don't name a card until it resolves. Notably, this means that players don't get to respond to the ability knowing what card you will name."
+            },
+            {
+                "date": "2022-10-14",
+                "text": "Unlike most effects of this kind, The Stone Brain's ability allows its controller to choose the name of a basic land. Note that you may only search for up to four copies of that card, even if you find more of them."
+            }
+        ]
     },
     "colorIdentityOverride": []
 }
@@ -15422,6 +16433,80 @@
     "colorIdentityOverride": [
         "BLUE"
     ]
+}
+
+// Thran Power Suit
+{
+    "name": "Thran Power Suit",
+    "manaCost": "{2}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Equipped creature gets +1/+1 for each Aura and Equipment attached to it and has ward {2}. (Whenever equipped creature becomes the target of a spell or ability an opponent controls, counter it unless that player pays {2}.)\nEquip {2} ({2}: Attach to target creature you control. Equip only as a sorcery.)",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Thran Power Suit:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantDynamicStats",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                },
+                "powerBonus": {
+                    "type": "EntityProperty",
+                    "entity": "EnchantedCreature",
+                    "numericProperty": "AttachmentCount"
+                },
+                "toughnessBonus": {
+                    "type": "EntityProperty",
+                    "entity": "EnchantedCreature",
+                    "numericProperty": "AttachmentCount"
+                }
+            },
+            {
+                "type": "GrantWard",
+                "cost": {
+                    "type": "WardCost.Mana",
+                    "manaCost": "{2}"
+                }
+            }
+        ]
+    },
+    "equipCost": "{2}",
+    "metadata": {
+        "collectorNumber": "253",
+        "rarity": "UNCOMMON",
+        "artist": "Raf Kayupov",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/7/17bfb8c5-9105-41e4-a58f-9c9eee32b18a.jpg?1783920012"
+    },
+    "colorIdentityOverride": []
 }
 
 // Thran Spider
@@ -16106,6 +17191,109 @@
     }
 }
 
+// Tocasia's Onulet
+{
+    "name": "Tocasia's Onulet",
+    "manaCost": "{5}",
+    "typeLine": "Artifact Creature — Construct",
+    "oracleText": "When this creature leaves the battlefield, you gain 2 life.\nUnearth {3}{W} ({3}{W}: Return this card from your graveyard to the battlefield. It gains haste. Exile it at the beginning of the next end step or if it would leave the battlefield. Unearth only as a sorcery.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "UNEARTH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Tocasia's Onulet:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield"
+                },
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "unearth_{3}{W}",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}{W}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": "Self",
+                            "destination": "Battlefield",
+                            "fromZone": "Graveyard"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "SourceInZone",
+                                    "zones": [
+                                        "Battlefield"
+                                    ]
+                                }
+                            },
+                            "then": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GrantKeyword",
+                                        "keyword": "HASTE",
+                                        "target": "Self",
+                                        "duration": "Permanent"
+                                    },
+                                    {
+                                        "type": "CreateDelayedTrigger",
+                                        "step": "END",
+                                        "effect": {
+                                            "type": "MoveTrackedBattlefieldObject",
+                                            "target": "Self",
+                                            "destination": "Exile"
+                                        }
+                                    },
+                                    {
+                                        "type": "GrantExileOnLeave",
+                                        "target": "Self"
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "activateFromZone": "Graveyard",
+                "descriptionOverride": "Unearth {3}{W} ({3}{W}: Return this card from your graveyard to the battlefield. It gains haste. Exile it at the beginning of the next end step or if it would leave the battlefield. Unearth only as a sorcery.)"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "39",
+        "artist": "Eddie Mendoza",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/4/e4abf2fb-f78a-4e75-b46f-524d3d7405db.jpg?1783920118"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Tocasia's Welcome
 {
     "name": "Tocasia's Welcome",
@@ -16530,6 +17718,110 @@
     ]
 }
 
+// Transmogrant's Crown
+{
+    "name": "Transmogrant's Crown",
+    "manaCost": "{2}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Equipped creature gets +2/+0.\nWhenever equipped creature dies, draw a card.\nEquip {2} or {B}",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Transmogrant's Crown:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Transmogrant's Crown:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            },
+            {
+                "id": "Transmogrant's Crown:3",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{B}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 2,
+                "toughnessBonus": 0
+            }
+        ]
+    },
+    "equipCost": "{B}",
+    "metadata": {
+        "collectorNumber": "125",
+        "rarity": "RARE",
+        "artist": "Nino Vecia",
+        "flavorText": "Fallaji soldiers hated seeing loved ones' faces among the transmogrants. Ashnod devised a solution.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/c/dc913ed6-3032-4b45-a6c1-6a4208a7e00a.jpg?1783920074"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Trench Stalker
 {
     "name": "Trench Stalker",
@@ -16936,6 +18228,181 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Urza's Sylex
+{
+    "name": "Urza's Sylex",
+    "manaCost": "{3}",
+    "typeLine": "Legendary Artifact",
+    "oracleText": "{2}{W}{W}, {T}, Exile Urza's Sylex: Each player chooses six lands they control. Destroy all other permanents. Activate only as a sorcery.\nWhen Urza's Sylex is put into exile from the battlefield, you may pay {2}. If you do, search your library for a planeswalker card, reveal it, put it into your hand, then shuffle.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Urza's Sylex:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Exile"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayManaCost",
+                            "cost": "{2}"
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Library",
+                                    "filter": "planeswalker"
+                                },
+                                "storeAs": "searchable",
+                                "search": true
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "searchable",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "found",
+                                "prompt": "Search your library for a planeswalker card to put into your hand",
+                                "selectedLabel": "Put into your hand"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "found",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Hand"
+                                },
+                                "revealed": true
+                            },
+                            "ShuffleLibrary",
+                            "EmitLibrarySearchedEvent"
+                        ]
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Urza's Sylex:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{W}{W}"
+                            }
+                        },
+                        "CostTap",
+                        "CostExileSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Players",
+                                "players": "ActivePlayerFirst"
+                            },
+                            "body": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "ControlledPermanents",
+                                            "filter": "land"
+                                        },
+                                        "storeAs": "gathered1"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "gathered1",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 6
+                                            }
+                                        },
+                                        "storeSelected": "selected2",
+                                        "prompt": "Choose six lands you control. All other permanents will be destroyed.",
+                                        "selectedLabel": "Keep",
+                                        "useTargetingUI": true
+                                    }
+                                ]
+                            },
+                            "collectCollections": {
+                                "selected2": "collected3"
+                            }
+                        },
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "BattlefieldMatching",
+                                "filter": "permanent"
+                            },
+                            "storeAs": "gathered4"
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "gathered4",
+                            "collectionFilter": {
+                                "type": "ExcludeOtherCollection",
+                                "otherCollectionName": "collected3"
+                            },
+                            "storeMatching": "matching5"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "matching5",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Destroy"
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "descriptionOverride": "{2}{W}{W}, {T}, Exile Urza's Sylex: Each player chooses six lands they control. Destroy all other permanents."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "40",
+        "rarity": "MYTHIC",
+        "artist": "Joseph Meehan",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/0/3000d1c6-dbb3-4e65-b428-dbf167bb8797.jpg?1783920116",
+        "rulings": [
+            {
+                "date": "2022-10-14",
+                "text": "The triggered ability of Urza's Sylex will resolve before the activated ability. This means that you choose whether to pay {2} and search your library before any player chooses lands. Notably, this means that the other players will get to know which planeswalker card you searched for before choosing any lands."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
