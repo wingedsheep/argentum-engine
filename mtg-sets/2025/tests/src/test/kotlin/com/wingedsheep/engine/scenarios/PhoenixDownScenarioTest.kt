@@ -44,7 +44,7 @@ class PhoenixDownScenarioTest : FunSpec({
         driver.giveMana(me, Color.WHITE, 2) // {1}{W}
 
         val abilityId = PhoenixDown.activatedAbilities[0].id
-        driver.submit(ActivateAbility(playerId = me, sourceId = down, abilityId = abilityId)).outcome shouldBe Outcome.Paused
+        (driver.submit(ActivateAbility(playerId = me, sourceId = down, abilityId = abilityId)).outcome is Outcome.Paused) shouldBe true
 
         val modeDecision = driver.pendingDecision as ChooseOptionDecision
         driver.submitDecision(me, OptionChosenResponse(modeDecision.id, 0))
@@ -71,7 +71,7 @@ class PhoenixDownScenarioTest : FunSpec({
         driver.giveMana(me, Color.WHITE, 2)
 
         val abilityId = PhoenixDown.activatedAbilities[0].id
-        driver.submit(ActivateAbility(playerId = me, sourceId = down, abilityId = abilityId)).outcome shouldBe Outcome.Paused
+        (driver.submit(ActivateAbility(playerId = me, sourceId = down, abilityId = abilityId)).outcome is Outcome.Paused) shouldBe true
 
         val modeDecision = driver.pendingDecision as ChooseOptionDecision
         driver.submitDecision(me, OptionChosenResponse(modeDecision.id, modeDecision.options.indexOfFirst { it.contains("Exile", ignoreCase = true) }))

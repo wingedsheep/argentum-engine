@@ -57,7 +57,7 @@ class SurvivorsMedKitScenarioTest : ScenarioTestBase() {
             g.state.getEntity(kit)!!.has<TappedComponent>() shouldBe true
             g.state.getEntity(g.player2Id)!!.get<CountersComponent>()!!.getCount(CounterType.RAD) shouldBe 5
             g.resolveStack()
-            g.state.getEntity(g.player2Id)!!.get<CountersComponent>()!!.getCount(CounterType.RAD) shouldBe 0
+            (g.state.getEntity(g.player2Id)?.get<CountersComponent>()?.getCount(CounterType.RAD) ?: 0) shouldBe 0
             g.state.getEntity(g.player2Id)!!.get<CountersComponent>()!!.getCount(CounterType.ENERGY) shouldBe 2
             g.isInGraveyard(1, "Survivor's Med Kit") shouldBe true
         }
@@ -102,7 +102,7 @@ class SurvivorsMedKitScenarioTest : ScenarioTestBase() {
             g.state = zones.moveToZone(g.state, kit, com.wingedsheep.sdk.core.Zone.BATTLEFIELD).state.withPriority(g.player1Id)
             g.resolveStack()
             g.findPermanent("Survivor's Med Kit") shouldBe kit
-            g.state.getEntity(g.player2Id)!!.get<CountersComponent>()!!.getCount(CounterType.RAD) shouldBe 0
+            (g.state.getEntity(g.player2Id)?.get<CountersComponent>()?.getCount(CounterType.RAD) ?: 0) shouldBe 0
             g.state.getEntity(kit)!!.get<ChosenModesEverComponent>() shouldBe null
         }
     }

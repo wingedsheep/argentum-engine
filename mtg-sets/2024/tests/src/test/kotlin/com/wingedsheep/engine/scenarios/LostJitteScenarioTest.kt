@@ -103,7 +103,7 @@ class LostJitteScenarioTest : FunSpec({
         val result = driver.submit(
             ActivateAbility(playerId = me, sourceId = jitte, abilityId = abilityId)
         )
-        result.outcome shouldBe Outcome.Paused
+        (result.outcome is Outcome.Paused) shouldBe true
 
 
         // Choose "Put a +1/+1 counter on equipped creature" (mode 2)
