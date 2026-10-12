@@ -417,7 +417,7 @@ sealed interface CardSource {
     @SerialName("CreaturesThatCrewedOrSaddledSource")
     @Serializable
     data object CreaturesThatCrewedOrSaddledSource : CardSource {
-        override val description: String = "creatures that saddled it this turn"
+        override val description: String = "creatures that crewed or saddled it this turn"
     }
 
     /**

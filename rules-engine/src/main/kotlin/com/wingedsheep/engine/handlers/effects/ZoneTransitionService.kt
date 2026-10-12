@@ -1509,7 +1509,7 @@ class ZoneTransitionService(
             // The crew/saddle record rides off the battlefield as last-known information (an
             // attack trigger can resolve after its Vehicle left); the object entering now is a
             // new one that nothing has crewed yet.
-            updated = updated.without<com.wingedsheep.engine.state.components.battlefield.CrewSaddleContributorsComponent>()
+            updated = updated.without<CrewSaddleContributorsComponent>()
 
             // Track that this permanent entered the battlefield this turn
             updated = updated.with(EnteredThisTurnComponent)
