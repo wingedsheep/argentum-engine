@@ -8507,7 +8507,7 @@
             "type": "Composite",
             "effects": [
                 {
-                    "type": "GrantInstantSpeedLoyaltyAbilities",
+                    "type": "GrantLoyaltyActivationPermission",
                     "planeswalkerFilter": {
                         "cardPredicates": [
                             "IsPlaneswalker",
@@ -8517,7 +8517,8 @@
                             }
                         ],
                         "controllerPredicate": "ControlledByYou"
-                    }
+                    },
+                    "instantSpeed": true
                 },
                 {
                     "type": "Composite",

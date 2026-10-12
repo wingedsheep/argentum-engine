@@ -577,20 +577,20 @@ class CastPermissionUtils(
         hasActiveEquipPermission(state, playerId) { it is EquipAbilitiesAtInstantSpeed }
 
     /**
-     * True when [playerId] holds a turn-scoped instant-speed loyalty grant
-     * ([com.wingedsheep.engine.state.components.player.InstantSpeedLoyaltyGrantsComponent] —
+     * True when [playerId] holds an instant-speed loyalty permission
+     * ([com.wingedsheep.engine.state.components.player.LoyaltyActivationPermissionsComponent] —
      * Jace's Machinations) whose planeswalker filter matches [sourceId], read on projected state
      * from [playerId]'s perspective. Lifts only the sorcery-timing half of CR 606.3; the caller
      * still enforces the once-per-turn limit.
      */
     fun canActivateLoyaltyAtInstantSpeed(state: GameState, playerId: EntityId, sourceId: EntityId): Boolean {
         val grants = state.getEntity(playerId)
-            ?.get<com.wingedsheep.engine.state.components.player.InstantSpeedLoyaltyGrantsComponent>()
-            ?: return false
-        if (grants.filters.isEmpty()) return false
+            ?.get<com.wingedsheep.engine.state.components.player.LoyaltyActivationPermissionsComponent>()
+            ?.grants ?: return false
         val context = PredicateContext(controllerId = playerId, sourceId = sourceId)
-        return grants.filters.any { filter ->
-            predicateEvaluator.matches(state, state.projectedState, sourceId, filter, context)
+        return grants.any { grant ->
+            grant.instantSpeed &&
+                predicateEvaluator.matches(state, state.projectedState, sourceId, grant.filter, context)
         }
     }
 
@@ -1374,6 +1374,16 @@ class CastPermissionUtils(
                     state, grant.entityId, grant.sourceId, grant.duration)) continue
             consider(grant.entityId, grant.ability)
         }
+        // Resolved player-wide permissions (Urza Assembles the Titans) — held by the player, not a
+        // permanent, so they outlive the spell or Saga that granted them.
+        state.getEntity(playerId)
+            ?.get<com.wingedsheep.engine.state.components.player.LoyaltyActivationPermissionsComponent>()
+            ?.grants?.forEach { grant ->
+                if (grant.times > maximum && predicateEvaluator.matches(state, projected, walkerId, grant.filter,
+                        PredicateContext(controllerId = playerId, sourceId = walkerId))) {
+                    maximum = grant.times
+                }
+            }
         return maximum
     }
 

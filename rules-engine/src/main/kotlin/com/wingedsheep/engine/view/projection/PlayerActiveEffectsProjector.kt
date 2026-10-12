@@ -480,17 +480,34 @@ internal class PlayerActiveEffectsProjector(
             }
         }
 
-        // Instant-speed loyalty activations (Jace's Machinations).
-        container.get<com.wingedsheep.engine.state.components.player.InstantSpeedLoyaltyGrantsComponent>()?.let { component ->
-            val rendered = component.filters.joinToString(" or ") { "${it.description}s" }
-            effects.add(
-                ClientPlayerEffect(
-                    effectId = "instant_speed_loyalty",
-                    name = "Instant-speed loyalty",
-                    description = "You may activate loyalty abilities of $rendered any time you could cast an instant this turn",
-                    icon = "lightning"
+        // Loyalty-activation permissions (Jace's Machinations, Urza Assembles the Titans).
+        container.get<com.wingedsheep.engine.state.components.player.LoyaltyActivationPermissionsComponent>()?.let { component ->
+            val instant = component.grants.filter { it.instantSpeed }
+            if (instant.isNotEmpty()) {
+                val rendered = instant.joinToString(" or ") { "${it.filter.description}s" }
+                effects.add(
+                    ClientPlayerEffect(
+                        effectId = "instant_speed_loyalty",
+                        name = "Instant-speed loyalty",
+                        description = "You may activate loyalty abilities of $rendered any time you could cast an instant this turn",
+                        icon = "lightning"
+                    )
                 )
-            )
+            }
+            val extra = component.grants.filter { it.times >= 2 }
+            if (extra.isNotEmpty()) {
+                val rendered = extra.joinToString(" or ") {
+                    "${it.filter.description}s " + (if (it.times == 2) "twice" else "${it.times} times")
+                }
+                effects.add(
+                    ClientPlayerEffect(
+                        effectId = "extra_loyalty_activations",
+                        name = "Extra loyalty activations",
+                        description = "You may activate loyalty abilities of $rendered this turn rather than only once",
+                        icon = "lightning"
+                    )
+                )
+            }
         }
 
         // Tapping other players' permanents for mana (Piracy).

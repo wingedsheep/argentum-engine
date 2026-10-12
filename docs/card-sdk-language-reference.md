@@ -3122,15 +3122,21 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
 - `CantActivateLoyaltyAbilitiesEffect(target, duration)` — target can't activate planeswalkers' loyalty abilities.
   Facade: `Effects.CantActivateLoyaltyAbilities(target, duration)`. Sibling of `CantCastSpells`; compose the two for
   cards that forbid both (e.g. Revel in Silence).
-- `GrantInstantSpeedLoyaltyAbilitiesEffect(target, planeswalkerFilter, duration)` — the permissive mirror: target
-  may activate loyalty abilities of planeswalkers matching `planeswalkerFilter` on any player's turn, any time they
-  could cast an instant, for `duration` (default `EndOfTurn`). Facade:
-  `Effects.InstantSpeedLoyaltyAbilities(planeswalkerFilter, duration, target)`. Lifts only the timing half of
-  CR 606.3 — each permanent's one-loyalty-activation-per-turn limit still applies. A resolution-time one-shot that
-  records the grant on the player (`InstantSpeedLoyaltyGrantsComponent`, removed at cleanup), so it outlives the
-  instant that made it; the filter is matched on projected state against the ability's source when the ability is
-  offered and when it is activated, so a Jace that enters later that turn is covered. **Jace's Machinations**:
-  `planeswalkerFilter = GameObjectFilter.Planeswalker.withSubtype("Jace").youControl()`.
+- `GrantLoyaltyActivationPermissionEffect(target, planeswalkerFilter, instantSpeed, times, duration)` — the
+  permissive mirror: target may activate loyalty abilities of planeswalkers matching `planeswalkerFilter` more freely
+  for `duration` (default `EndOfTurn`). Each axis relaxes one half of CR 606.3; the grant must relax at least one.
+  A resolution-time one-shot that records the grant on the player (`LoyaltyActivationPermissionsComponent`, removed
+  at cleanup), so it outlives the spell or Saga that made it; the filter is matched on projected state against the
+  ability's source when the ability is offered and when it is activated, so a planeswalker that enters later that
+  turn is covered. Two facades:
+  - `Effects.InstantSpeedLoyaltyAbilities(planeswalkerFilter, duration, target)` — `instantSpeed = true`: on any
+    player's turn, any time they could cast an instant. Lifts only the timing half — each permanent's
+    one-activation-per-turn limit still applies. **Jace's Machinations**:
+    `planeswalkerFilter = GameObjectFilter.Planeswalker.withSubtype("Jace").youControl()`.
+  - `Effects.ExtraLoyaltyActivations(times = 2, planeswalkerFilter = Planeswalker.youControl(), duration, target)` —
+    "you may activate the loyalty abilities of planeswalkers you control twice this turn rather than only once".
+    Lifts only the count half; sorcery timing still applies. Like the static `ExtraLoyaltyActivation`, allowances
+    take the largest, never a sum. **Urza Assembles the Titans** III: `Effects.ExtraLoyaltyActivations()`.
 - `ExtraLoyaltyActivation(filter = GameObjectFilter.Planeswalker.youControl(), times = 2)` — a static
   maximum loyalty-activation allowance for matching permanents. `GameObjectFilter.Any.sourceItself()`
   scopes it to its own permanent (Urza, Planeswalker); the default preserves Oath of Teferi. Multiple

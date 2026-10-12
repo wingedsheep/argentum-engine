@@ -5933,6 +5933,151 @@
     ]
 }
 
+// Urza Assembles the Titans
+{
+    "name": "Urza Assembles the Titans",
+    "manaCost": "{3}{W}{W}",
+    "typeLine": "Enchantment — Saga",
+    "oracleText": "Read ahead (Choose a chapter and start with that many lore counters. Add one after your draw step. Skipped chapters don't trigger. Sacrifice after III.)\nI — Scry 4, then you may reveal the top card of your library. If a planeswalker card is revealed this way, put it into your hand.\nII — You may put a planeswalker card with mana value 6 or less from your hand onto the battlefield.\nIII — You may activate the loyalty abilities of planeswalkers you control twice this turn rather than only once.",
+    "keywords": [
+        "READ_AHEAD"
+    ],
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "EntersWithChoice",
+                "choiceType": "NUMBER",
+                "minValue": 1,
+                "maxValue": 3
+            }
+        ],
+        "sagaChapters": [
+            {
+                "chapter": 1,
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "Scry",
+                            "count": 4
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": "Gate.MayDecide",
+                            "then": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "TopOfLibrary",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeAs": "gathered0",
+                                        "revealed": true
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "gathered0",
+                                        "selection": "SelectAll",
+                                        "filter": "planeswalker",
+                                        "storeSelected": "selected1"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "selected1",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Hand"
+                                        }
+                                    }
+                                ]
+                            },
+                            "descriptionOverride": "You may reveal the top card of your library."
+                        }
+                    ]
+                }
+            },
+            {
+                "chapter": 2,
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand",
+                                "filter": "planeswalker mv<=6"
+                            },
+                            "storeAs": "put_candidates"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "put_candidates",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "putting"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "putting",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "chapter": 3,
+                "effect": {
+                    "type": "GrantLoyaltyActivationPermission",
+                    "planeswalkerFilter": {
+                        "cardPredicates": [
+                            "IsPlaneswalker"
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    },
+                    "times": 2
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "37",
+        "rarity": "RARE",
+        "artist": "Josu Hernaiz",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/0/10a544d7-ead7-42fd-a35a-c1b672771d5b.jpg?1783921356",
+        "rulings": [
+            {
+                "date": "2022-09-09",
+                "text": "After this Saga's third chapter ability resolves, you may activate the same ability of a planeswalker twice that turn, or you may activate two different abilities of that planeswalker that turn."
+            },
+            {
+                "date": "2022-09-09",
+                "text": "If more than one effect allows you to activate loyalty abilities of planeswalkers your control twice rather than only once, those effects don't continue to increase the number of activations. You won't be able to activate abilities of planeswalkers you control more than twice in a turn."
+            },
+            {
+                "date": "2022-09-09",
+                "text": "As a Saga with read ahead enters the battlefield, its controller chooses a number from one to that Saga's greatest chapter number. The Saga enters the battlefield with the chosen number of lore counters. Neither choosing the number nor putting the counters on the Saga use the stack, and neither can be responded to."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Uurg, Spawn of Turg
 {
     "name": "Uurg, Spawn of Turg",

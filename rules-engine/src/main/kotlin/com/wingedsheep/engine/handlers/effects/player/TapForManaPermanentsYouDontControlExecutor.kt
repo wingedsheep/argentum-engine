@@ -15,7 +15,7 @@ import kotlin.reflect.KClass
  * Records a turn-scoped "you may tap [filter]s you don't control for mana" permission on the
  * target player (Piracy). Appends to the player's [TapForManaGrantsComponent]; a second grant the
  * same turn stacks and all of them expire together. Shaped like
- * [GrantInstantSpeedLoyaltyAbilitiesExecutor].
+ * [GrantLoyaltyActivationPermissionExecutor].
  */
 class TapForManaPermanentsYouDontControlExecutor : EffectExecutor<TapForManaPermanentsYouDontControlEffect> {
 

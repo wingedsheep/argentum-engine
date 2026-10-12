@@ -704,7 +704,7 @@ val engineSerializersModule = SerializersModule {
         subclass(EquipActivationsThisTurnComponent::class)
         subclass(ExhaustAbilitiesActivatedThisTurnComponent::class)
         subclass(LoyaltyAbilitiesActivatedThisTurnComponent::class)
-        subclass(InstantSpeedLoyaltyGrantsComponent::class)
+        subclass(LoyaltyActivationPermissionsComponent::class)
         subclass(com.wingedsheep.engine.state.components.player.TapForManaGrantsComponent::class)
         subclass(WasDealtCombatDamageThisTurnComponent::class)
         subclass(CombatDamageReceivedThisTurnComponent::class)

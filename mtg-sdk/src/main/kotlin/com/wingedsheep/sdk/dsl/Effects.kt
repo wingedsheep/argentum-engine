@@ -5791,9 +5791,30 @@ object Effects {
             com.wingedsheep.sdk.scripting.GameObjectFilter.Planeswalker.youControl(),
         duration: Duration = Duration.EndOfTurn,
         target: EffectTarget = EffectTarget.Controller,
-    ): Effect = com.wingedsheep.sdk.scripting.effects.GrantInstantSpeedLoyaltyAbilitiesEffect(
+    ): Effect = com.wingedsheep.sdk.scripting.effects.GrantLoyaltyActivationPermissionEffect(
         target = target,
         planeswalkerFilter = planeswalkerFilter,
+        instantSpeed = true,
+        duration = duration,
+    )
+
+    /**
+     * "[You] may activate the loyalty abilities of [planeswalkerFilter] planeswalkers [times] times
+     * this turn rather than only once" for [duration] (Urza Assembles the Titans III). Lifts only the
+     * once-per-turn half of CR 606.3, for every matching planeswalker including ones that arrive
+     * later; the largest allowance wins, never a sum. For one named permanent use
+     * [AllowLoyaltyActivationsThisTurn]; for a static on a permanent, `ExtraLoyaltyActivation`.
+     */
+    fun ExtraLoyaltyActivations(
+        times: Int = 2,
+        planeswalkerFilter: com.wingedsheep.sdk.scripting.GameObjectFilter =
+            com.wingedsheep.sdk.scripting.GameObjectFilter.Planeswalker.youControl(),
+        duration: Duration = Duration.EndOfTurn,
+        target: EffectTarget = EffectTarget.Controller,
+    ): Effect = com.wingedsheep.sdk.scripting.effects.GrantLoyaltyActivationPermissionEffect(
+        target = target,
+        planeswalkerFilter = planeswalkerFilter,
+        times = times,
         duration = duration,
     )
 

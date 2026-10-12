@@ -67,7 +67,7 @@ class PlayerExecutors(
         ForagedExecutor(),
         GrantCastCreaturesFromGraveyardWithForageExecutor(),
         GrantFlashToSpellsExecutor(),
-        GrantInstantSpeedLoyaltyAbilitiesExecutor(),
+        GrantLoyaltyActivationPermissionExecutor(),
         TapForManaPermanentsYouDontControlExecutor(),
         GrantSpellKeywordExecutor(),
         GrantSpellsCantBeCounteredExecutor(),

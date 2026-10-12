@@ -1231,16 +1231,27 @@ data class LoyaltyAbilitiesActivatedThisTurnComponent(
 ) : Component
 
 /**
- * Turn-scoped permission to activate loyalty abilities of planeswalkers matching any of [filters]
- * on any player's turn, any time this player could cast an instant (Jace's Machinations). Lifts
- * only the sorcery-timing half of CR 606.3; the once-per-turn limit still applies. Written by
- * [com.wingedsheep.sdk.scripting.effects.GrantInstantSpeedLoyaltyAbilitiesEffect]; grants stack
- * by appending filters, and the component is removed whole at cleanup when [removeOn] is
- * [PlayerEffectRemoval.EndOfTurn].
+ * One "you may activate loyalty abilities of [filter] more freely" permission: [instantSpeed] lifts
+ * the sorcery-timing half of CR 606.3 (Jace's Machinations), [times] raises the once-per-turn half
+ * (Urza Assembles the Titans; 1 leaves it alone).
  */
 @Serializable
-data class InstantSpeedLoyaltyGrantsComponent(
-    val filters: List<GameObjectFilter> = emptyList(),
+data class LoyaltyActivationPermission(
+    val filter: GameObjectFilter,
+    val instantSpeed: Boolean = false,
+    val times: Int = 1,
+)
+
+/**
+ * A player's loyalty-activation permissions, written by
+ * [com.wingedsheep.sdk.scripting.effects.GrantLoyaltyActivationPermissionEffect]. Grants stack by
+ * appending; each filter is matched against the planeswalker on projected state when its ability is
+ * offered or activated, so planeswalkers that enter after the grant are covered. The component is
+ * removed whole at cleanup when [removeOn] is [PlayerEffectRemoval.EndOfTurn].
+ */
+@Serializable
+data class LoyaltyActivationPermissionsComponent(
+    val grants: List<LoyaltyActivationPermission> = emptyList(),
     val removeOn: PlayerEffectRemoval = PlayerEffectRemoval.EndOfTurn
 ) : Component
 

@@ -2,7 +2,7 @@ package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
-import com.wingedsheep.engine.state.components.player.InstantSpeedLoyaltyGrantsComponent
+import com.wingedsheep.engine.state.components.player.LoyaltyActivationPermissionsComponent
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Phase
@@ -103,11 +103,11 @@ class JacesMachinationsScenarioTest : ScenarioTestBase() {
             val game = opponentsTurn().build()
             game.castSpell(1, "Jace's Machinations").error shouldBe null
             game.resolveAndTakePriority()
-            game.state.getEntity(game.player1Id)!!.has<InstantSpeedLoyaltyGrantsComponent>() shouldBe true
+            game.state.getEntity(game.player1Id)!!.has<LoyaltyActivationPermissionsComponent>() shouldBe true
 
             game.passUntilPhase(Phase.BEGINNING, Step.UPKEEP)
             game.state.activePlayerId shouldBe game.player1Id
-            game.state.getEntity(game.player1Id)!!.has<InstantSpeedLoyaltyGrantsComponent>() shouldBe false
+            game.state.getEntity(game.player1Id)!!.has<LoyaltyActivationPermissionsComponent>() shouldBe false
         }
     }
 }

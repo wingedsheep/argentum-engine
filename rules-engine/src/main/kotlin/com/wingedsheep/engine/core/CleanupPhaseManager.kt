@@ -772,9 +772,9 @@ class CleanupPhaseManager(
                 if (spellsUncounterable?.removeOn == PlayerEffectRemoval.EndOfTurn) {
                     result = result.without<SpellsCantBeCounteredComponent>()
                 }
-                val loyaltyGrants = result.get<com.wingedsheep.engine.state.components.player.InstantSpeedLoyaltyGrantsComponent>()
+                val loyaltyGrants = result.get<com.wingedsheep.engine.state.components.player.LoyaltyActivationPermissionsComponent>()
                 if (loyaltyGrants?.removeOn == PlayerEffectRemoval.EndOfTurn) {
-                    result = result.without<com.wingedsheep.engine.state.components.player.InstantSpeedLoyaltyGrantsComponent>()
+                    result = result.without<com.wingedsheep.engine.state.components.player.LoyaltyActivationPermissionsComponent>()
                 }
                 val tapForManaGrants = result.get<com.wingedsheep.engine.state.components.player.TapForManaGrantsComponent>()
                 if (tapForManaGrants?.removeOn == PlayerEffectRemoval.EndOfTurn) {

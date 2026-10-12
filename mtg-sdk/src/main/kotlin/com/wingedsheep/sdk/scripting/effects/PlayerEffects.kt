@@ -663,29 +663,45 @@ data class CantActivateLoyaltyAbilitiesEffect(
 }
 
 /**
- * [target] may activate loyalty abilities of planeswalkers matching [planeswalkerFilter] on any
- * player's turn, any time they could cast an instant, for [duration] — the permissive mirror of
- * [CantActivateLoyaltyAbilitiesEffect].
+ * [target] may activate loyalty abilities of planeswalkers matching [planeswalkerFilter] more
+ * freely for [duration] — the permissive mirror of [CantActivateLoyaltyAbilitiesEffect]. Each grant
+ * relaxes one or both halves of CR 606.3, which lets a player activate a loyalty ability only any
+ * time they could cast a sorcery, and only if none of that permanent's loyalty abilities has been
+ * activated that turn:
  *
- * CR 606.3 lets a player activate a loyalty ability only any time they could cast a sorcery, and
- * only if none of that permanent's loyalty abilities has been activated that turn. This lifts the
- * first half alone: the once-per-turn limit still applies. Jace's Machinations: "Until end of turn,
- * you may activate loyalty abilities of Jace planeswalkers you control on any player's turn any
- * time you could cast an instant." — `planeswalkerFilter =
- * GameObjectFilter.Planeswalker.withSubtype("Jace").youControl()`.
+ * - [instantSpeed] lifts the timing half. Jace's Machinations: "Until end of turn, you may activate
+ *   loyalty abilities of Jace planeswalkers you control on any player's turn any time you could
+ *   cast an instant." — `planeswalkerFilter = Planeswalker.withSubtype("Jace").youControl()`,
+ *   `instantSpeed = true`.
+ * - [times] raises the count half. Urza Assembles the Titans III: "You may activate the loyalty
+ *   abilities of planeswalkers you control twice this turn rather than only once." —
+ *   `planeswalkerFilter = Planeswalker.youControl()`, `times = 2`. Like the static
+ *   [com.wingedsheep.sdk.scripting.ExtraLoyaltyActivation], allowances take the largest, never a
+ *   sum.
  *
- * A resolution-time one-shot that records a turn-scoped grant on the player, so it outlives the
- * instant that made it. [planeswalkerFilter] is matched against the ability's source when the
- * ability is offered and activated, on projected state, so a permanent that becomes a Jace later in
- * the turn is covered.
+ * A resolution-time one-shot that records the grant on the player, so it outlives the spell or
+ * ability that made it. [planeswalkerFilter] is matched against the ability's source on projected
+ * state each time an ability is offered and activated, so a planeswalker that enters later in the
+ * turn is covered. Narrower than the per-permanent
+ * [AllowLoyaltyActivationsThisTurnEffect] (one object, lapses when it leaves) and than the static
+ * `ExtraLoyaltyActivation` (lasts only while its source does).
  */
-@SerialName("GrantInstantSpeedLoyaltyAbilities")
+@SerialName("GrantLoyaltyActivationPermission")
 @Serializable
-data class GrantInstantSpeedLoyaltyAbilitiesEffect(
+data class GrantLoyaltyActivationPermissionEffect(
     val target: EffectTarget = EffectTarget.Controller,
     val planeswalkerFilter: GameObjectFilter = GameObjectFilter.Planeswalker,
+    val instantSpeed: Boolean = false,
+    val times: Int = 1,
     val duration: Duration = Duration.EndOfTurn
 ) : Effect {
+    init {
+        require(times >= 1) { "GrantLoyaltyActivationPermissionEffect.times must be at least 1, was $times" }
+        require(instantSpeed || times >= 2) {
+            "GrantLoyaltyActivationPermissionEffect must lift timing or allow at least two activations"
+        }
+    }
+
     override val description: String = buildString {
         if (duration != Duration.Permanent) {
             append(duration.description.replaceFirstChar { it.uppercase() })
@@ -696,7 +712,10 @@ data class GrantInstantSpeedLoyaltyAbilitiesEffect(
         }
         append(" may activate loyalty abilities of ")
         append(planeswalkerFilter.description)
-        append("s on any player's turn any time you could cast an instant")
+        append("s")
+        if (times >= 2) append(if (times == 2) " twice" else " $times times")
+        if (instantSpeed) append(" on any player's turn any time you could cast an instant")
+        if (times >= 2) append(" rather than only once")
     }
 
     override fun applyTextReplacement(replacer: TextReplacer): Effect {
