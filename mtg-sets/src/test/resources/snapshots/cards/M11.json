@@ -1807,6 +1807,64 @@
     ]
 }
 
+// Obstinate Baloth
+{
+    "name": "Obstinate Baloth",
+    "manaCost": "{2}{G}{G}",
+    "typeLine": "Creature — Beast",
+    "oracleText": "When this creature enters, you gain 4 life.\nIf a spell or ability an opponent controls causes you to discard this card, put it onto the battlefield instead of putting it into your graveyard.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Obstinate Baloth:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 4
+                    }
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "RedirectZoneChange",
+                "newDestination": "Battlefield",
+                "appliesTo": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Hand",
+                    "to": "Graveyard"
+                },
+                "selfOnly": true,
+                "requiredCause": "DiscardedByOpponentEffect"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "188",
+        "rarity": "RARE",
+        "artist": "Chris Rahn",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/6/6694496c-45b9-4ddf-bfcd-b632441b8811.jpg?1783941795",
+        "rulings": [
+            {
+                "date": "2017-11-17",
+                "text": "If you discard Obstinate Baloth and put it onto the battlefield, you've still discarded it. Abilities that trigger when you discard a card will still trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Preordain
 {
     "name": "Preordain",

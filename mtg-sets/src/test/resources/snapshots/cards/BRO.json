@@ -291,6 +291,85 @@
     ]
 }
 
+// Alloy Animist
+{
+    "name": "Alloy Animist",
+    "manaCost": "{G}",
+    "typeLine": "Creature — Human Druid",
+    "oracleText": "{2}{G}: Until end of turn, target noncreature artifact you control becomes a 4/4 artifact creature.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Alloy Animist:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{G}"
+                    }
+                },
+                "effect": {
+                    "type": "BecomeCreature",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "power": {
+                        "type": "Fixed",
+                        "amount": 4
+                    },
+                    "toughness": {
+                        "type": "Fixed",
+                        "amount": 4
+                    },
+                    "addTypes": [
+                        "ARTIFACT"
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsArtifact",
+                                    {
+                                        "type": "Not",
+                                        "predicate": "IsCreature"
+                                    }
+                                ],
+                                "controllerPredicate": "ControlledByYou"
+                            }
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{2}{G}: Until end of turn, target noncreature artifact you control becomes a 4/4 artifact creature."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "166",
+        "rarity": "UNCOMMON",
+        "artist": "Kim Sokol",
+        "flavorText": "\"This metal belonged to Argoth before it was ripped from the ground. Now it belongs to Argoth again.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/1/71a49b18-a339-401c-ab77-fcd04772cf69.jpg?1783920052",
+        "rulings": [
+            {
+                "date": "2022-10-14",
+                "text": "As Alloy Animist's ability resolves, the target permanent keeps any other types and subtypes it had before it became an artifact creature."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Ambush Paratrooper
 {
     "name": "Ambush Paratrooper",
@@ -1525,6 +1604,97 @@
         "BLUE",
         "BLACK",
         "RED"
+    ]
+}
+
+// Blanchwood Prowler
+{
+    "name": "Blanchwood Prowler",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Elemental",
+    "oracleText": "When this creature enters, mill three cards. You may put a land card from among the cards milled this way into your hand. If you don't, put a +1/+1 counter on this creature. (To mill a card, put the top card of your library into your graveyard.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Blanchwood Prowler:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            }
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "gathered0",
+                            "filter": "land",
+                            "storeMatching": "matching2"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "matching2",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected3"
+                        },
+                        {
+                            "type": "ConditionalOnCollection",
+                            "collection": "selected3",
+                            "ifNotEmpty": {
+                                "type": "MoveCollection",
+                                "from": "selected3",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Hand"
+                                }
+                            },
+                            "ifEmpty": {
+                                "type": "AddCounters",
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "count": 1,
+                                "target": "Self"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "172",
+        "artist": "Justine Cruz",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/c/9c6988b6-ade0-4cd5-b27c-146e5e7ae91f.jpg?1783920050"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -3295,6 +3465,85 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Fade from History
+{
+    "name": "Fade from History",
+    "manaCost": "{2}{G}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Each player who controls an artifact or enchantment creates a 2/2 green Bear creature token. Then destroy all artifacts and enchantments.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "Each"
+                    },
+                    "body": {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.WhenCondition",
+                            "condition": {
+                                "type": "Exists",
+                                "player": "You",
+                                "zone": "Battlefield",
+                                "filter": "artifact|enchantment"
+                            }
+                        },
+                        "then": {
+                            "type": "CreateToken",
+                            "power": 2,
+                            "toughness": 2,
+                            "colors": [
+                                "GREEN"
+                            ],
+                            "creatureTypes": [
+                                "Bear"
+                            ],
+                            "imageUri": "https://cards.scryfall.io/normal/front/7/7/772dac39-269b-4a35-aad3-320279af833f.jpg?1783919910",
+                            "controller": "Controller"
+                        }
+                    }
+                },
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "BattlefieldMatching",
+                                "filter": "artifact|enchantment"
+                            },
+                            "storeAs": "destroyAll_gathered"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "destroyAll_gathered",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Destroy"
+                        }
+                    ]
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "177",
+        "rarity": "RARE",
+        "artist": "Alessandra Pisano",
+        "flavorText": "After a long hibernation, Argoth began slowly recovering from the ravages of war.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/1/71f13f67-e852-4a6a-8f32-b16195e53ec3.jpg?1783920046"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -5135,6 +5384,91 @@
     ]
 }
 
+// Gwenna, Eyes of Gaea
+{
+    "name": "Gwenna, Eyes of Gaea",
+    "manaCost": "{2}{G}",
+    "typeLine": "Legendary Creature — Elf Druid Scout",
+    "oracleText": "{T}: Add two mana in any combination of colors. Spend this mana only to cast creature spells or activate abilities of creature sources.\nWhenever you cast a creature spell with power 5 or greater, put a +1/+1 counter on Gwenna and untap it.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Gwenna, Eyes of Gaea:2",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "PowerAtLeast",
+                                "min": 5
+                            }
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 1,
+                            "target": "Self"
+                        },
+                        {
+                            "type": "TapUntap",
+                            "target": "Self",
+                            "tap": false
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever you cast a creature spell with power 5 or greater, put a +1/+1 counter on Gwenna and untap it."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Gwenna, Eyes of Gaea:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddDynamicMana",
+                    "amountSource": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "allowedColors": [
+                        "WHITE",
+                        "BLUE",
+                        "BLACK",
+                        "RED",
+                        "GREEN"
+                    ],
+                    "restriction": {
+                        "type": "CardTypeSpellsOrAbilitiesOnly",
+                        "cardType": "CREATURE",
+                        "allowAbilities": true
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "185",
+        "rarity": "RARE",
+        "artist": "Steve Prescott",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/e/7ee387b7-18e4-41b7-aefe-f2b5954e3051.jpg?1783920043"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Haywire Mite
 {
     "name": "Haywire Mite",
@@ -5284,6 +5618,63 @@
     "colorIdentityOverride": [
         "WHITE",
         "BLACK"
+    ]
+}
+
+// Hoarding Recluse
+{
+    "name": "Hoarding Recluse",
+    "manaCost": "{3}{G}",
+    "typeLine": "Creature — Spider",
+    "oracleText": "Reach, deathtouch\nWhen this creature dies, put up to one other target card from a graveyard on the bottom of its owner's library.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "REACH",
+        "DEATHTOUCH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Hoarding Recluse:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Library",
+                    "placement": "Bottom"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": {},
+                        "zone": "Graveyard",
+                        "excludeSelf": true
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this creature dies, put up to one other target card from a graveyard on the bottom of its owner's library."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "186",
+        "artist": "Jorge Jacinto",
+        "flavorText": "To the spiders of Argoth, thopters were just bigger, crunchier flies.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/5/6559afec-6bb8-4501-8805-4eb108443048.jpg?1783920043"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -9401,6 +9792,187 @@
     ]
 }
 
+// Sardian Cliffstomper
+{
+    "name": "Sardian Cliffstomper",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Minotaur Barbarian",
+    "oracleText": "As long as it's your turn and you control four or more Mountains, this creature gets +X/+0, where X is the number of Mountains you control.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 4
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantDynamicStats",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    },
+                    "powerBonus": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "land Mountain"
+                    },
+                    "toughnessBonus": {
+                        "type": "Fixed",
+                        "amount": 0
+                    }
+                },
+                "condition": {
+                    "type": "All",
+                    "conditions": [
+                        "IsYourTurn",
+                        {
+                            "type": "Compare",
+                            "left": {
+                                "type": "AggregateBattlefield",
+                                "player": "You",
+                                "filter": "land Mountain"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 4
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "151",
+        "rarity": "UNCOMMON",
+        "artist": "Joseph Weston",
+        "flavorText": "When Urza betrayed the Sardian dwarves, they called upon the might of their neighbors for aid.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/1/c1c42d56-5b0e-4624-8831-77280f8d56cf.jpg?1783920062"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Sarinth Steelseeker
+{
+    "name": "Sarinth Steelseeker",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Human Artificer Scout",
+    "oracleText": "Whenever an artifact you control enters, look at the top card of your library. If it's a land card, you may reveal it and put it into your hand. If you don't put the card into your hand, you may put it into your graveyard.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sarinth Steelseeker:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "artifact ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "filter": "land",
+                            "storeSelected": "selected1",
+                            "storeRemainder": "remainder1",
+                            "prompt": "Reveal the land card and put it into your hand?",
+                            "selectedLabel": "Reveal and put into your hand",
+                            "remainderLabel": "Leave it"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            },
+                            "revealed": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "remainder1",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected3",
+                            "storeRemainder": "remainder3",
+                            "prompt": "Put the card into your graveyard?",
+                            "selectedLabel": "Put into your graveyard",
+                            "remainderLabel": "Leave on top of your library"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected3",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            }
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "remainder3",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Top"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever an artifact you control enters, look at the top card of your library. If it's a land card, you may reveal it and put it into your hand. If you don't put the card into your hand, you may put it into your graveyard."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "189",
+        "rarity": "UNCOMMON",
+        "artist": "Olivier Bernard",
+        "flavorText": "\"This metal junk is ugly, but it's got its uses.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/9/d96761b2-eb9c-4963-a496-ba53a01f4b17.jpg?1783920040",
+        "rulings": [
+            {
+                "date": "2022-10-14",
+                "text": "You don't have to reveal the card if it's a land card. You may choose not to reveal it and instead put it into your graveyard."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Scatter Ray
 {
     "name": "Scatter Ray",
@@ -9495,6 +10067,67 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Sibling Rivalry
+{
+    "name": "Sibling Rivalry",
+    "manaCost": "{3}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Gain control of target artifact or creature until end of turn. Untap it. It gains haste until end of turn. Create a tapped Powerstone token. (It's an artifact with \"{T}: Add {C}. This mana can't be spent to cast a nonartifact spell.\")",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GainControl",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "duration": "EndOfTurn"
+                },
+                {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "tap": false
+                },
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "HASTE",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Powerstone",
+                    "tapped": true
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature|artifact"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "152",
+        "artist": "Rovina Cai",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/4/c44b24de-60b4-4855-9111-f1237f71bc4d.jpg?1783920061"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -10523,6 +11156,182 @@
     ]
 }
 
+// Tawnos's Tinkering
+{
+    "name": "Tawnos's Tinkering",
+    "manaCost": "{3}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Put two +1/+1 counters on target artifact, creature, or land you control. Untap that permanent. If it isn't a creature, it becomes a 0/0 creature in addition to its other types.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 2,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "tap": false
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "filter": "noncreature"
+                        }
+                    },
+                    "then": {
+                        "type": "BecomeCreature",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "power": {
+                            "type": "Fixed",
+                            "amount": 0
+                        },
+                        "toughness": {
+                            "type": "Fixed",
+                            "amount": 0
+                        },
+                        "duration": "Permanent"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "artifact|creature|land ctrl:you"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "191",
+        "artist": "Alex Stone",
+        "flavorText": "While his master tried to surpass nature, Tawnos aimed to capture its beauty.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/c/acbd975d-52f8-4fba-bf97-b8837413edd8.jpg?1783920042",
+        "rulings": [
+            {
+                "date": "2022-10-14",
+                "text": "Tawnos's Tinkering doesn't grant haste, so if a noncreature permanent that entered the battlefield since the beginning of your upkeep becomes a creature this way, it can't attack until your next turn. Any activated abilities that it has with a {T} symbol in their cost also can't be activated until your next upkeep step."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Teething Wurmlet
+{
+    "name": "Teething Wurmlet",
+    "manaCost": "{G}",
+    "typeLine": "Creature — Wurm",
+    "oracleText": "This creature has deathtouch as long as you control three or more artifacts.\nWhenever an artifact you control enters, you gain 1 life. If this is the first time this ability has resolved this turn, put a +1/+1 counter on this creature.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Teething Wurmlet:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "artifact ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        "IncrementAbilityResolutionCount",
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "SourceAbilityResolvedNTimesThisTurn",
+                                    "count": 1
+                                }
+                            },
+                            "then": {
+                                "type": "AddCounters",
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "count": 1,
+                                "target": "Self"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever an artifact you control enters, you gain 1 life. If this is the first time this ability has resolved this turn, put a +1/+1 counter on this creature."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "DEATHTOUCH",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "artifact"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "192",
+        "rarity": "RARE",
+        "artist": "Jesper Ejsing",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/3/2350027a-f3a4-4cba-9dfc-27e33bddb3be.jpg?1783920039"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Teferi, Temporal Pilgrim
 {
     "name": "Teferi, Temporal Pilgrim",
@@ -11291,6 +12100,53 @@
     "colorIdentityOverride": []
 }
 
+// Thran Vigil
+{
+    "name": "Thran Vigil",
+    "manaCost": "{1}{B}",
+    "typeLine": "Enchantment",
+    "oracleText": "Whenever one or more artifact and/or creature cards leave your graveyard during your turn, put a +1/+1 counter on target creature you control.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Thran Vigil:1",
+                "trigger": {
+                    "type": "CardsLeftYourGraveyardEvent",
+                    "filter": "artifact|creature"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you"
+                    },
+                    "id": "t0"
+                },
+                "triggerRestriction": "IsYourTurn"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "114",
+        "rarity": "UNCOMMON",
+        "artist": "Jinho Bae",
+        "flavorText": "Glacian built his automatons to last, and last they did, beyond even the Thran themselves.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/f/3faed400-0712-4fc1-b710-144db40a5e11.jpg?1783920081"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Thraxodemon
 {
     "name": "Thraxodemon",
@@ -11344,6 +12200,165 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Titania's Command
+{
+    "name": "Titania's Command",
+    "manaCost": "{4}{G}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Choose two —\n• Exile target player's graveyard. You gain 1 life for each card exiled this way.\n• Search your library for up to two land cards, put them onto the battlefield tapped, then shuffle.\n• Create two 2/2 green Bear creature tokens.\n• Put two +1/+1 counters on each creature you control.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Graveyard",
+                                    "player": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    }
+                                },
+                                "storeAs": "gathered0"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "gathered0",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Exile",
+                                    "player": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    }
+                                },
+                                "storeMovedAs": "moved1"
+                            },
+                            {
+                                "type": "GainLife",
+                                "amount": {
+                                    "type": "DistinctEntitiesInCollections",
+                                    "collections": [
+                                        "moved1"
+                                    ]
+                                }
+                            }
+                        ]
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetPlayer",
+                            "id": "t0"
+                        }
+                    ],
+                    "description": "Exile target player's graveyard. You gain 1 life for each card exiled this way"
+                },
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Library",
+                                    "filter": "land"
+                                },
+                                "storeAs": "searchable",
+                                "search": true
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "searchable",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 2
+                                    }
+                                },
+                                "storeSelected": "found",
+                                "prompt": "Search your library for up to two land cards to put onto the battlefield tapped",
+                                "selectedLabel": "Put onto the battlefield tapped"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "found",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Battlefield",
+                                    "placement": "Tapped"
+                                }
+                            },
+                            "ShuffleLibrary",
+                            "EmitLibrarySearchedEvent"
+                        ]
+                    },
+                    "description": "Search your library for up to two land cards, put them onto the battlefield tapped, then shuffle"
+                },
+                {
+                    "effect": {
+                        "type": "CreateToken",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "power": 2,
+                        "toughness": 2,
+                        "colors": [
+                            "GREEN"
+                        ],
+                        "creatureTypes": [
+                            "Bear"
+                        ],
+                        "imageUri": "https://cards.scryfall.io/normal/front/7/7/772dac39-269b-4a35-aad3-320279af833f.jpg?1783919910"
+                    },
+                    "description": "Create two 2/2 green Bear creature tokens"
+                },
+                {
+                    "effect": {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Group",
+                            "filter": {
+                                "baseFilter": "creature ctrl:you"
+                            }
+                        },
+                        "body": {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 2,
+                            "target": "IterationEntity"
+                        }
+                    },
+                    "description": "Put two +1/+1 counters on each creature you control"
+                }
+            ],
+            "chooseCount": 2
+        }
+    },
+    "metadata": {
+        "collectorNumber": "194",
+        "rarity": "RARE",
+        "artist": "Dominik Mayer",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/5/753567c7-c484-4c0d-8128-7710e23c428f.jpg?1783920039",
+        "rulings": [
+            {
+                "date": "2022-10-14",
+                "text": "If you choose the first mode and that player is an illegal target by the time Titania's Command would resolve, the spell is removed from the stack and none of its effects happen."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -11803,6 +12818,61 @@
         "artist": "Dan Murayama Scott",
         "flavorText": "\"The human body—like any other machine—can be stripped for parts.\"\n—Ashnod",
         "imageUri": "https://cards.scryfall.io/normal/front/c/a/ca28d210-a35d-491e-beda-76b95d09dc2d.jpg?1783920077"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Trench Stalker
+{
+    "name": "Trench Stalker",
+    "manaCost": "{4}{B}",
+    "typeLine": "Creature — Beast Horror",
+    "oracleText": "As long as you've drawn two or more cards this turn, this creature has deathtouch and lifelink.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 5
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "DEATHTOUCH",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "PlayerDrewCardsThisTurn",
+                    "atLeast": 2
+                }
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "LIFELINK",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "PlayerDrewCardsThisTurn",
+                    "atLeast": 2
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "116",
+        "artist": "Nino Vecia",
+        "flavorText": "It can hear a panicked heartbeat from a thousand paces away.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/a/aa1b987a-a3b9-4cd1-85b0-e58df4130934.jpg?1783920079"
     },
     "colorIdentityOverride": [
         "BLACK"
@@ -12366,6 +13436,75 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Wasteful Harvest
+{
+    "name": "Wasteful Harvest",
+    "manaCost": "{2}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Mill five cards. You may put a permanent card from among the cards milled this way into your hand. (To mill a card, put the top card of your library into your graveyard.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "TopOfLibrary",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 5
+                        },
+                        "isMill": true
+                    },
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "gathered0",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard"
+                    }
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered0",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "filter": "permanent",
+                    "storeSelected": "selected2",
+                    "prompt": "You may put a permanent card milled this way into your hand",
+                    "selectedLabel": "Put in hand",
+                    "remainderLabel": "Leave in graveyard",
+                    "showAllCards": true
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "selected2",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "196",
+        "artist": "Alex Stone",
+        "flavorText": "Once the brothers discovered the pristine island of Argoth, the war came down to who could plunder it faster.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/0/00a0c819-36d1-442b-bec5-e6df58a122c0.jpg?1783920037"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
