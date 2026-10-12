@@ -188,7 +188,10 @@ multi-paragraph entry down the same way when you touch it.
   its caster (Banefire: `Conditions.CompareAmounts(DynamicAmounts.xValue(), GTE, 5)`). Pair it with an `Effects.If`
   over the same condition when the rider also changes the effect ("…and the damage can't be prevented").
 - `cantBeCopied: Boolean` — spell can't be copied (CR 707.10); copy effects that name it create no copy (Display of Power).
-- `conditionalFlash: Condition?` — gains flash while condition holds.
+- `conditionalFlash: Condition?` — gains flash while condition holds. `DynamicAmounts.xValue()` reads the
+  announced X (Silver Scrutiny: `Conditions.CompareAmounts(DynamicAmounts.xValue(), LTE, 3)`): the cast is
+  re-checked against the X it announces, and an instant-speed offer's `maxAffordableX` is capped to the largest X
+  the condition allows.
 - `layout: CardLayout` — physical layout shape (see §2).
 - `meldResult: Boolean` — this card is the permanent a **meld pair** combines into (CR 701.42) — Chittering Host,
   Brisela, Voice of Nightmares, Hanweir, the Writhing Township, Ragnarok, Divine Deliverance. Set it on the *result*,
@@ -905,7 +908,7 @@ counts a hybrid Phyrexian pip paid with life like any other Phyrexian pip.
 - `warp` — cast from anywhere; exiled at end of turn.
 - `dash` — cast from hand for the dash cost (CR 702.109); gains haste, returned to owner's hand at
   the beginning of the next end step (not exiled — unlike warp, dash has no later recast).
-- `conditionalFlash` — flash while condition holds.
+- `conditionalFlash` — flash while condition holds (may read the announced X — Silver Scrutiny).
 - `cantBeCountered` — spell is uncounterable.
 - `cantBeCounteredIf = condition` — uncounterable only while `condition` holds for the spell on the stack (Banefire).
 - `cantBeCopied` — spell can't be copied (CR 707.10).

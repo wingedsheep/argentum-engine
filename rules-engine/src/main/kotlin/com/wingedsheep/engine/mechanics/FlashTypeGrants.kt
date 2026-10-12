@@ -28,7 +28,11 @@ import com.wingedsheep.sdk.scripting.StaticAbility
  * Three sources are consulted, in order:
  *
  * 1. **The card's own `conditionalFlash`** — "this spell has flash as long as …" printed on the
- *    card itself (ferocious and friends), evaluated in the caster's context.
+ *    card itself (ferocious and friends), evaluated in the caster's context. A condition over the
+ *    announced X ("you may cast this spell as though it had flash if X is 3 or less", Silver
+ *    Scrutiny) reads the `xValue` passed in: the cast-time re-check passes the announced X, and
+ *    enumeration — which has no X yet — passes none, so the condition sees X = 0 and the offer's
+ *    X ceiling is then capped by [maxFlashX].
  * 2. **Duration-bounded player grants** — `GrantFlashToSpellsEffect` writes
  *    [FlashGrantsComponent] grants onto the caster (Borne Upon a Wind, Teferi, Time Raveler).
  * 3. **[GrantFlashToSpellType] statics on battlefield permanents** — Quick Sliver, Raff Capashen,
@@ -64,13 +68,14 @@ object FlashTypeGrants {
         cardRegistry: CardRegistry,
         predicateEvaluator: PredicateEvaluator,
         conditionEvaluator: ConditionEvaluator,
+        xValue: Int? = null,
     ): Boolean {
         // 1. The card's own conditionalFlash (e.g. Ferocious).
         val spellDef = state.getEntity(spellCardId)?.get<CardComponent>()
             ?.let { cardRegistry.getCard(it.cardDefinitionId) }
         val conditionalFlash = spellDef?.script?.conditionalFlash
         if (conditionalFlash != null) {
-            val effectContext = EffectContext(sourceId = spellCardId, controllerId = casterId)
+            val effectContext = EffectContext(sourceId = spellCardId, controllerId = casterId, xValue = xValue)
             if (conditionEvaluator.evaluate(state, conditionalFlash, effectContext)) return true
         }
 
@@ -112,6 +117,25 @@ object FlashTypeGrants {
             }
         }
         return false
+    }
+
+    /**
+     * The largest X in `0..maxX` for which [spellCardId] may be cast as though it had flash, or null
+     * when no X allows it. Only the card's own `conditionalFlash` can depend on X, so when another
+     * source grants flash outright (or the card has no `conditionalFlash`) the ceiling is [maxX]
+     * unchanged. Used by enumeration to cap an instant-speed offer's X (Silver Scrutiny: "if X is 3
+     * or less"), so the client never offers an X the cast-time re-check would reject.
+     */
+    fun maxFlashX(
+        state: GameState,
+        spellCardId: EntityId,
+        casterId: EntityId,
+        maxX: Int,
+        cardRegistry: CardRegistry,
+        predicateEvaluator: PredicateEvaluator,
+        conditionEvaluator: ConditionEvaluator,
+    ): Int? = (maxX downTo 0).firstOrNull { x ->
+        hasGrantedFlash(state, spellCardId, casterId, cardRegistry, predicateEvaluator, conditionEvaluator, xValue = x)
     }
 
     /**

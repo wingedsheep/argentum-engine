@@ -610,7 +610,15 @@ class CastSpellEnumerator(
                     .coerceAtLeast(0)
             } else null
 
-            val maxAffordableX = listOfNotNull(manaMaxX, counterMaxX).minOrNull()
+            val affordableX = listOfNotNull(manaMaxX, counterMaxX).minOrNull()
+            // Outside a sorcery-speed window, a flash that hangs on the announced X ("as though it
+            // had flash if X is 3 or less", Silver Scrutiny) caps the X the offer may carry — the
+            // cast-time re-check rejects anything above it.
+            val instantSpeedViaOwnCondition = !isInstant && !hasFlash && !context.canPlaySorcerySpeed &&
+                cardDef.script.conditionalFlash != null && grantedAltFlashOnly?.first != cardId
+            val maxAffordableX = if (instantSpeedViaOwnCondition && affordableX != null) {
+                context.castPermissionUtils.maxFlashX(state, cardId, playerId, affordableX) ?: continue
+            } else affordableX
 
             // Always include mana cost string for cast actions
             val manaCostString = effectiveCost.toString()

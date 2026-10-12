@@ -690,9 +690,10 @@ class CastZoneResolver(
      * `ConditionalStaticAbility` — by a turn-scoped player grant, or by its own conditionalFlash
      * condition. Delegates to [FlashTypeGrants], the shared decision
      * `CastPermissionUtils.hasGrantedFlash` also uses, so this authoritative cast-time re-check can
-     * never disagree with what enumeration offered.
+     * never disagree with what enumeration offered. [xValue] is the announced X, read by a
+     * `conditionalFlash` over X (Silver Scrutiny).
      */
-    fun hasGrantedFlash(state: GameState, spellCardId: EntityId, casterId: EntityId): Boolean =
+    fun hasGrantedFlash(state: GameState, spellCardId: EntityId, casterId: EntityId, xValue: Int? = null): Boolean =
         FlashTypeGrants.hasGrantedFlash(
             state = state,
             spellCardId = spellCardId,
@@ -700,6 +701,7 @@ class CastZoneResolver(
             cardRegistry = cardRegistry,
             predicateEvaluator = predicateEvaluator,
             conditionEvaluator = conditionEvaluator,
+            xValue = xValue,
         )
 
     /**

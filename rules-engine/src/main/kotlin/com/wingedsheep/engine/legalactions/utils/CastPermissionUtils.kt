@@ -554,6 +554,21 @@ class CastPermissionUtils(
         )
 
     /**
+     * The largest X in `0..maxX` at which [spellCardId] may be cast at instant speed by something
+     * other than a printed flash keyword, or null when none — see [FlashTypeGrants.maxFlashX].
+     */
+    fun maxFlashX(state: GameState, spellCardId: EntityId, casterId: EntityId, maxX: Int): Int? =
+        FlashTypeGrants.maxFlashX(
+            state = state,
+            spellCardId = spellCardId,
+            casterId = casterId,
+            maxX = maxX,
+            cardRegistry = cardRegistry,
+            predicateEvaluator = predicateEvaluator,
+            conditionEvaluator = conditionEvaluator,
+        )
+
+    /**
      * True when [playerId] controls a permanent granting [EquipAbilitiesAtInstantSpeed]
      * (Forge Anew, Leonin Shikari) whose condition — if wrapped in [ConditionalStaticAbility]
      * (Forge Anew's "During your turn") — currently holds. Equip is otherwise sorcery-speed.

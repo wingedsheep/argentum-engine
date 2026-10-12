@@ -4635,6 +4635,39 @@
     ]
 }
 
+// Silver Scrutiny
+{
+    "name": "Silver Scrutiny",
+    "manaCost": "{X}{U}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "You may cast this spell as though it had flash if X is 3 or less.\nDraw X cards.",
+    "script": {
+        "spellEffect": {
+            "type": "DrawCards",
+            "count": "XValue"
+        },
+        "conditionalFlash": {
+            "type": "Compare",
+            "left": "XValue",
+            "operator": "LTE",
+            "right": {
+                "type": "Fixed",
+                "amount": 3
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "65",
+        "rarity": "RARE",
+        "artist": "Donato Giancola",
+        "flavorText": "Karn's creation allowed him to monitor events across Dominaria—and everything he saw worried him.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/b/8b650ab6-9c22-424f-99e5-8ef5235a18a3.jpg?1783921345"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Silverback Elder
 {
     "name": "Silverback Elder",
