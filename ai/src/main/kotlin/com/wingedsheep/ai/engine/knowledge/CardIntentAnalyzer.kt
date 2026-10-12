@@ -281,7 +281,9 @@ object CardIntentAnalyzer {
                     removalTags(effect.target)
 
                 toughness < 0 -> emptySet()
-                power > 0 || toughness > 0 -> setOf(IntentTag.PUMP)
+                AmountSign.of(effect.toughnessModifier) == AmountSign.LOSS -> emptySet()
+                // "+X/+X where X is …" is a pump whenever X cannot go negative — see [AmountSign].
+                raises(effect.powerModifier) || raises(effect.toughnessModifier) -> setOf(IntentTag.PUMP)
                 else -> emptySet()
             }
         }
@@ -380,10 +382,14 @@ object CardIntentAnalyzer {
     private fun isExpiringPump(effect: Effect): Boolean {
         if (effect !is ModifyStatsEffect) return false
         if (effect.duration != Duration.EndOfTurn) return false
-        val power = fixed(effect.powerModifier) ?: 0
-        val toughness = fixed(effect.toughnessModifier) ?: 0
-        return power > 0 || toughness > 0
+        return raises(effect.powerModifier) || raises(effect.toughnessModifier)
     }
+
+    /**
+     * Whether a stat modifier only ever adds. A dynamic "+X" (a count, a mana value) counts: reading
+     * only [DynamicAmount.Fixed] left Accelerated Mutation's +X/+X out of [IntentTag.COMBAT_TRICK].
+     */
+    private fun raises(amount: DynamicAmount): Boolean = AmountSign.of(amount) == AmountSign.GAIN
 
     /**
      * A group `ForEach` whose body pumps each member until end of turn — the lowered form of

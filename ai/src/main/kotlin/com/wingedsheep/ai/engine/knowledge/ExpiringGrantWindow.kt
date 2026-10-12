@@ -29,7 +29,6 @@ import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
 import com.wingedsheep.sdk.scripting.effects.SetLandTypeEffect
 import com.wingedsheep.sdk.scripting.effects.TapUntapEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
-import com.wingedsheep.sdk.scripting.values.DynamicAmount
 
 /**
  * "Why are you paying for that now?" — the **activated ability** half of [HoldPolicy].
@@ -451,8 +450,8 @@ internal object ExpiringGrantWindow {
      * of turn" is removal with a duration on it: the modifier expires, the creature it killed does
      * not, so its payoff is permanent and waiting is not free. `CardIntentAnalyzer` draws the same
      * line one file over, tagging a negative toughness modifier `REMOVAL` rather than `PUMP`. A
-     * modifier this cannot read as a number at all — anything but a [DynamicAmount.Fixed] — fails
-     * for the same fail-safe reason an unrecognized leaf does.
+     * modifier whose sign [AmountSign] cannot pin down (power, a pipeline variable) fails for the same
+     * fail-safe reason an unrecognized leaf does; a "+X" that cannot go negative is a pump.
      */
     private fun everyPayoffExpiresThisTurn(effect: Effect): Boolean {
         val leaves = EffectWalker.leaves(effect)
@@ -469,9 +468,8 @@ internal object ExpiringGrantWindow {
 
     /** Whether [effect] only ever adds stats — see [everyPayoffExpiresThisTurn]. */
     private fun isPump(effect: ModifyStatsEffect): Boolean {
-        val power = (effect.powerModifier as? DynamicAmount.Fixed)?.amount ?: return false
-        val toughness = (effect.toughnessModifier as? DynamicAmount.Fixed)?.amount ?: return false
-        return power >= 0 && toughness >= 0
+        val sign = statsSign(effect.powerModifier, effect.toughnessModifier)
+        return sign == AmountSign.GAIN || sign == AmountSign.ZERO
     }
 
     /**

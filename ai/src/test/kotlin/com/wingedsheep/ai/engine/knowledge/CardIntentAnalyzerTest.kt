@@ -106,6 +106,18 @@ class CardIntentAnalyzerTest : ScenarioTestBase() {
             }
         }
 
+        test("a +X/+X instant whose X cannot go negative is a combat trick") {
+            // Regression: an engine-vs-engine game cast Accelerated Mutation in its precombat main
+            // on a creature it then did not attack with. Only `Fixed` modifiers were read, so the
+            // +X/+X (X = greatest mana value among your permanents) was not a pump at all.
+            val intent = intentOf("Accelerated Mutation")
+            intent.tags shouldContain IntentTag.PUMP
+            intent.tags shouldContain IntentTag.COMBAT_TRICK
+            withClue("X is unknown until resolution, so it claims no toughness against lethal damage") {
+                intent.pumpToughness shouldBe 0
+            }
+        }
+
         test("a permanent pump is not a combat trick and buys no trick toughness") {
             val intent = intentOf("Unholy Strength")
             intent.tags shouldContain IntentTag.PUMP

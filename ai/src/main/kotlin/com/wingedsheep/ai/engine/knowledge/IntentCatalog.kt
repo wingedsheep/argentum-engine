@@ -168,9 +168,14 @@ class IntentCatalog private constructor(private val registry: CardRegistry?) {
      * [TargetPolarity] of each target slot of the card called [cardName] cast as a spell, in
      * requirement order. Empty when the catalog is off, the name is not a real card, or the card's
      * targeting cannot be read — callers treat every missing slot as [TargetPolarity.UNKNOWN].
+     *
+     * [transformed] reads the card's **back face** — the face a disturb, modal-back-face or
+     * cast-transformed cast puts on the stack, whose targets are its own (Catlike Curiosity's
+     * "enchant creature", not Mischievous Catgeist's none).
      */
-    fun spellTargetPolarities(cardName: String): List<TargetPolarity> {
-        val definition = registry?.getCard(cardName) ?: return emptyList()
+    fun spellTargetPolarities(cardName: String, transformed: Boolean = false): List<TargetPolarity> {
+        val printed = registry?.getCard(cardName) ?: return emptyList()
+        val definition = if (transformed) printed.backFace ?: return emptyList() else printed
         return TargetPolarityAnalyzer.forSpell(definition)
     }
 
