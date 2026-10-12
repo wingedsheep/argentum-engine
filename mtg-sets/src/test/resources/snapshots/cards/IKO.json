@@ -2690,6 +2690,50 @@
     ]
 }
 
+// Ruinous Ultimatum
+{
+    "name": "Ruinous Ultimatum",
+    "manaCost": "{R}{R}{W}{W}{W}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Destroy all nonland permanents your opponents control.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "BattlefieldMatching",
+                        "filter": "nonland permanent ctrl:opponent"
+                    },
+                    "storeAs": "destroyAll_gathered"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "destroyAll_gathered",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard"
+                    },
+                    "moveType": "Destroy"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "204",
+        "rarity": "RARE",
+        "artist": "Chase Stone",
+        "flavorText": "\"Strike those abominations down. Let their names rot with their remains.\"\n—General Kudro",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/0/50c1d6ca-7789-46b5-bc89-85cc3915cb85.jpg?1783931018"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED",
+        "WHITE"
+    ]
+}
+
 // Rumbling Rockslide
 {
     "name": "Rumbling Rockslide",
