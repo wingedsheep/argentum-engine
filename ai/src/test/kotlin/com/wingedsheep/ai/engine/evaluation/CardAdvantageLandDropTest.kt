@@ -288,4 +288,51 @@ class CardAdvantageLandDropTest : FunSpec({
                 withSpell.cards(me, landDropIsNotCardLoss = true)
         }
     }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // `AiProfile.surplusAwareLands` — a flood is not a full hand
+    // ═══════════════════════════════════════════════════════════════════════
+
+    fun GameState.surplus(playerId: EntityId): Double =
+        CardAdvantage.score(this, projectedState, playerId, penalty, landDropIsNotCardLoss = true, surplusAwareLands = true)
+
+    fun GameState.drawAll(playerId: EntityId, vararg names: String): GameState =
+        names.fold(this) { s, name -> s.draw(playerId, name) }
+
+    test("surplus: lands past this turn's drop and the next two count a tenth of a card") {
+        val base = boot().withEmptyHands()
+        val me = base.turnOrder[0]
+        val bears = base.draw(me, "Grizzly Bears")
+        // One drop left: the earmark takes the first Forest, the next two are the next two turns'
+        // drops, and every Forest after that is surplus.
+        val threeLands = bears.drawAll(me, "Forest", "Forest", "Forest")
+        val sixLands = threeLands.drawAll(me, "Forest", "Forest", "Forest")
+
+        withClue("within the lookahead nothing changes") {
+            threeLands.surplus(me) shouldBe threeLands.cards(me, landDropIsNotCardLoss = true)
+        }
+        withClue("three surplus Forests add 0.3 of a card, not three cards") {
+            // Held: Bears + two counted Forests + 3 × 0.1 = 3.3 against 3.0, on the 0.8 slope.
+            sixLands.surplus(me) shouldBe ((threeLands.surplus(me) + 0.3 * 0.8) plusOrMinus EPSILON)
+            sixLands.cards(me, landDropIsNotCardLoss = true) shouldBeGreaterThan sixLands.surplus(me) + 2.0
+        }
+    }
+
+    test("surplus: a land drop is still exactly card-neutral") {
+        val base = boot().withEmptyHands()
+        val me = base.turnOrder[0]
+        val before = base.drawAll(me, "Grizzly Bears", "Forest", "Forest", "Forest", "Forest", "Forest")
+        val after = before.playLand(me)
+
+        after.surplus(me) shouldBe (before.surplus(me) plusOrMinus EPSILON)
+    }
+
+    test("surplus: off, every whole-number count scores exactly as before") {
+        val base = boot().withEmptyHands()
+        val me = base.turnOrder[0]
+        val hand = base.drawAll(me, "Grizzly Bears", "Forest", "Forest")
+
+        CardAdvantage.score(hand, hand.projectedState, me, penalty, landDropIsNotCardLoss = true, surplusAwareLands = false) shouldBe
+            hand.cards(me, landDropIsNotCardLoss = true)
+    }
 })

@@ -147,6 +147,9 @@ class PuzzleComparisonBenchmark : ScenarioTestBase() {
                 // Idle mana spent on drawing, in the last window that can.
                 AiProfile.PRODUCTION_IDLEDRAW,
                 AiProfile.PRODUCTION_CANDIDATE_IDLEDRAW,
+                // Lands in hand priced by the land drop that will reach them.
+                AiProfile.PRODUCTION_SURPLUSLANDS,
+                AiProfile.PRODUCTION_CANDIDATE_SURPLUSLANDS,
                 // A beginning-of-combat pump bought only for creatures the attack plan sends.
                 AiProfile.PRODUCTION_PLANNEDPUMPS,
                 AiProfile.PRODUCTION_CANDIDATE_PLANNEDPUMPS,

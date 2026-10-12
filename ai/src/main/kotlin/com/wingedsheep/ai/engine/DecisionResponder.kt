@@ -7,6 +7,7 @@ import com.wingedsheep.ai.engine.budget.DecisionBudget
 import com.wingedsheep.ai.engine.budget.LegacyBudgetPolicy
 import com.wingedsheep.ai.engine.evaluation.BoardEvaluator
 import com.wingedsheep.ai.engine.evaluation.BoardPresence
+import com.wingedsheep.ai.engine.evaluation.CardAdvantage
 import com.wingedsheep.ai.engine.knowledge.ExpiringGrantWindow
 import com.wingedsheep.ai.engine.knowledge.GraveyardSynergy
 import com.wingedsheep.ai.engine.knowledge.IntentCatalog
@@ -96,6 +97,12 @@ class DecisionResponder(
      * keeps "can attack" as the only test.
      */
     private val combatAdvisor: CombatAdvisor? = null,
+    /**
+     * [AiProfile.surplusAwareLands]: an optional target is not picked when the pick returns one of
+     * our own lands to a hand whose other lands already cover this turn's and next turn's land
+     * drops ([strandsALand]). Off is the historical evaluator-only comparison.
+     */
+    private val surplusAwareLands: Boolean = false,
 ) {
     private val priors: ChoicePriors? = if (informedChoices) ChoicePriors(simulator.cardRegistry) else null
 
@@ -183,7 +190,11 @@ class DecisionResponder(
                 targets.sortedByDescending { targetHeuristic(state, it, playerId) }.take(maxCandidates)
             }
 
-            val best = pickBestBySimulation(state, candidates, playerId) { target ->
+            val optional = req.minTargets == 0
+            val best = pickBestBySimulation(
+                state, candidates, playerId,
+                reject = { optional && strandsALand(state, it.state, playerId) },
+            ) { target ->
                 TargetsResponse(decision.id, mapOf(req.index to listOf(target)))
             }
             val picks = if (fillUpToMaxTargets) {
@@ -196,9 +207,10 @@ class DecisionResponder(
             val bestResponse = TargetsResponse(decision.id, mapOf(req.index to picks))
 
             // For optional targets (minTargets == 0), also consider picking no targets
-            if (req.minTargets == 0) {
+            if (optional) {
                 val skipResponse = TargetsResponse(decision.id, mapOf(req.index to emptyList()))
                 val bestResult = simulator.simulateDecision(state, bestResponse)
+                if (strandsALand(state, bestResult.state, playerId)) return skipResponse
                 val bestScore = evaluateResult(state, bestResult, playerId)
                 val skipScore = evaluateResult(state,simulator.simulateDecision(state, skipResponse), playerId)
                 // An even trade is still worth taking when it strips the opponent's graveyard (or
@@ -232,7 +244,10 @@ class DecisionResponder(
             val answer = if (targets.isEmpty()) {
                 emptyList()
             } else {
-                val best = pickBestBySimulation(state, targets.take(maxCandidates), playerId) { target ->
+                val best = pickBestBySimulation(
+                    state, targets.take(maxCandidates), playerId,
+                    reject = { req.minTargets == 0 && strandsALand(state, it.state, playerId) },
+                ) { target ->
                     probe(req.index, listOf(target))
                 }
                 val picks = if (fillUpToMaxTargets) {
@@ -246,9 +261,10 @@ class DecisionResponder(
                 if (req.minTargets == 0) {
                     val pickResponse = probe(req.index, picks)
                     val skipResponse = probe(req.index, emptyList())
-                    val pickScore = evaluateResult(state,simulator.simulateDecision(state, pickResponse), playerId)
+                    val pickResult = simulator.simulateDecision(state, pickResponse)
+                    val pickScore = evaluateResult(state, pickResult, playerId)
                     val skipScore = evaluateResult(state,simulator.simulateDecision(state, skipResponse), playerId)
-                    if (skipScore >= pickScore) emptyList()
+                    if (skipScore >= pickScore || strandsALand(state, pickResult.state, playerId)) emptyList()
                     else picks
                 } else {
                     picks
@@ -1269,15 +1285,41 @@ class DecisionResponder(
      * (the 2026-10-12 VOW-vs-LRW engine log). Among tied candidates the pick goes to the best
      * [libraryAndGraveyardPreference] of its result, then to [targetHeuristic], then to the earliest.
      */
+    /**
+     * Whether the line from [root] to [leaf] returned one of [playerId]'s own lands to their hand
+     * while the other lands there already cover this turn's land drop and the next — so the land
+     * can only come back by pushing every later land drop back a turn. [AiProfile.surplusAwareLands].
+     *
+     * A static evaluation sees that line lose one land for one turn; it actually loses a land drop
+     * for the rest of the game. 2026-10-12 AI-vs-AI logs (`live`), game 2 turn 9: Mirkwood
+     * Nurturer's "return up to one other target permanent you control … if you do, put a +1/+1
+     * counter on this creature" sent the AI's own tapped Plains back with Hobbit Hole and Forest in
+     * hand. The evaluator put that pick 2.9 above skipping — the counter alone outscores a fifth land
+     * on its scale — so this is a rule, not a re-weighting. A bounce that is free (no other land in
+     * hand, or one with this turn's drop still unused) is left to the evaluator.
+     */
+    private fun strandsALand(root: GameState, leaf: GameState, playerId: EntityId): Boolean {
+        if (!surplusAwareLands) return false
+        val leafHand = leaf.getZone(playerId, Zone.HAND).toSet()
+        if (leafHand.isEmpty()) return false
+        val projected = root.projectedState
+        val returned = projected.getBattlefieldControlledBy(playerId)
+            .any { it in leafHand && projected.hasType(it, "LAND") }
+        return returned && CardAdvantage.surplusLands(leaf, playerId, lookahead = 1) > 0
+    }
+
     private fun pickBestBySimulation(
         state: GameState,
         candidates: List<EntityId>,
         playerId: EntityId,
+        /** A candidate whose result this accepts ranks last, whatever it scores. */
+        reject: (SimulationResult) -> Boolean = { false },
         buildResponse: (EntityId) -> DecisionResponse
     ): EntityId {
         val scored = candidates.map { candidate ->
             val result = simulator.simulateDecision(state, buildResponse(candidate))
-            Triple(candidate, result, evaluateResult(state, result, playerId))
+            val score = if (reject(result)) Double.NEGATIVE_INFINITY else evaluateResult(state, result, playerId)
+            Triple(candidate, result, score)
         }
         val top = scored.maxOfOrNull { it.third } ?: return candidates.first()
         if (top == Double.NEGATIVE_INFINITY) return candidates.first()

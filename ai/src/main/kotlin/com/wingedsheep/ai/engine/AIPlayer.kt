@@ -276,6 +276,7 @@ class AIPlayer(
                 priceLandsInHandAsMana = profile.priceLandsInHandAsMana,
                 evasionAfterAttacking = profile.evasionAfterAttacking,
                 pendingLandDropIsMana = profile.pendingLandDropIsMana,
+                surplusAwareLands = profile.surplusAwareLands,
             )
             val combatAdvisor = CombatAdvisor(
                 simulator, evaluator, cardRegistry, advisorRegistry,
@@ -295,6 +296,7 @@ class AIPlayer(
                 selectionCountsByValue = profile.selectionCountsByValue,
                 holdUnusablePumps = profile.holdUnusablePumps,
                 combatAdvisor = combatAdvisor.takeIf { profile.pumpsNeedAPlannedAttack },
+                surplusAwareLands = profile.surplusAwareLands,
             )
 
             // Wire up the decision resolver so simulations can resolve non-trivial

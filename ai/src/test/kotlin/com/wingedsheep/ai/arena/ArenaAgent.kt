@@ -211,6 +211,10 @@ object ArenaAgents {
         // held for the opponent's end step.
         ArenaAgent("production-idledraw", AiProfile.PRODUCTION_IDLEDRAW),
         ArenaAgent("production-candidate-idledraw", AiProfile.PRODUCTION_CANDIDATE_IDLEDRAW),
+        // A land in hand priced by the land drop that will play it: a flood is not a full hand, a
+        // modal DFC played as a land costs its spell, and a bounce never strands a land.
+        ArenaAgent("production-surpluslands", AiProfile.PRODUCTION_SURPLUSLANDS),
+        ArenaAgent("production-candidate-surpluslands", AiProfile.PRODUCTION_CANDIDATE_SURPLUSLANDS),
         ArenaAgent("production-targeted", AiProfile.PRODUCTION_TARGETED),
         // Explicit ECL candidates. Their resource-backed weights fail closed to production's
         // evaluator until a validated artifact is installed; automatic selection is set-gated.

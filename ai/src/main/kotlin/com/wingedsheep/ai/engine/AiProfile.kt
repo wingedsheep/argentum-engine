@@ -728,6 +728,34 @@ data class AiProfile(
      * `PuzzleSuiteTest` unchanged (it runs [PRODUCTION]).
      */
     val drawWithIdleMana: Boolean = false,
+    /**
+     * Price a land in hand by whether a land drop will ever reach it, and charge the spell thrown
+     * away when a modal double-faced card is played as its land face.
+     *
+     * 2026-10-12 AI-vs-AI logs under [LIVE]. Game 3 turn 1: `PlayLand(Drowner of Truth,
+     * asBackFace=true)` with Forest, Mountain and Shattered Landscape in hand; turn 13 Pinnacle Monk
+     * went in as a seventh land with the Monk castable next turn. Game 2 turn 9: Mirkwood Nurturer's
+     * optional "return up to one other target permanent you control" sent its own tapped Plains
+     * back for a +1/+1 counter with Hobbit Hole and Forest already in hand — a land drop lost for
+     * the rest of the game.
+     *
+     * Three parts, one idea — a land in hand is worth the land drop that will play it:
+     *  - `CardAdvantage` counts a land past the drops of this turn and the next two as a tenth of a
+     *    card instead of a whole one. Earmark model ([landDropIsNotCardLoss]) only.
+     *  - Playing a modal DFC whose front is a spell as its land face costs that spell's hand value.
+     *    With a real land in hand the earmark sat on the real land and the play was card-neutral,
+     *    so `CardAdvantage` charges it; as the only land it was already a lost card, refunded when
+     *    its controller is behind on lands (the spot the land face is printed for). And
+     *    `BoardPresence`'s idle-mana refund still counts the thrown-away spell as something the
+     *    tapped mana was for — otherwise playing it away "freed" every tapped land, which is what
+     *    tipped the turn-13 Monk. Needs [landDropIsNotCardLoss] and [sequenceLandsByUsableMana].
+     *  - `DecisionResponder` declines an optional target whose pick returns one of the AI's own lands
+     *    to a hand whose other lands already cover this turn's and next turn's drops. A static
+     *    evaluation sees that line lose one land for one turn; it loses the land drop for good, and
+     *    a +1/+1 counter outscores a fifth land on the evaluator's one-turn scale, so no honest
+     *    re-pricing of the hand alone flips it.
+     */
+    val surplusAwareLands: Boolean = false,
     /** Non-null profiles may only be selected automatically for this set. Arena selection stays explicit. */
     val restrictedToSet: String? = null,
 ) {
@@ -1642,6 +1670,27 @@ data class AiProfile(
             fuelLoyaltyIsNotBoardValue = true,
             refuseEmptyPayoffs = true,
             drawWithIdleMana = true,
+            surplusAwareLands = true,
+        )
+
+        /**
+         * [surplusAwareLands] on top of [PRODUCTION_LANDDROP] — the flag needs
+         * [landDropIsNotCardLoss], which [PRODUCTION] does not carry — so a puzzle or an arena point
+         * that moves is attributable to it.
+         */
+        val PRODUCTION_SURPLUSLANDS = PRODUCTION_LANDDROP.copy(
+            id = "production-surpluslands",
+            surplusAwareLands = true,
+        )
+
+        /**
+         * [surplusAwareLands] on top of [PRODUCTION_CANDIDATE_EXPIRING] — the last pinned candidate
+         * [LIVE] builds on — so `just arena production-candidate-expiring
+         * production-candidate-surpluslands` measures this flag and nothing else. [LIVE] ships it.
+         */
+        val PRODUCTION_CANDIDATE_SURPLUSLANDS = PRODUCTION_CANDIDATE_EXPIRING.copy(
+            id = "production-candidate-surpluslands",
+            surplusAwareLands = true,
         )
 
         /**
