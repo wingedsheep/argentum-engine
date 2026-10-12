@@ -19,7 +19,7 @@ import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
  * Return all nonland permanents to their owners' hands. End the turn.
  *
  * The tax is a self-cast [ModifySpellCost] gated on [Conditions.IsNotYourTurn], evaluated against
- * the caster as the spell is cast. The bounce resolves first, then [Effects.EndTheTurn] (CR 724.1)
+ * the caster as the spell is cast. The bounce resolves first, then [Effects.EndTheTurn] (CR 723.1)
  * exiles the rest of the stack — this spell included — and skips to the cleanup step.
  */
 val HurkylsFinalMeditation = card("Hurkyl's Final Meditation") {
