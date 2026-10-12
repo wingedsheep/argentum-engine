@@ -149,3 +149,73 @@ export async function fetchRecentGames(
   const entries = (await res.json()) as AdminRecentGame[]
   return { entries, total: Number.isFinite(total) ? total : entries.length }
 }
+
+/** Who won an AI-vs-human game. `DRAW` also covers an AI and a human winning together (a mixed 2HG team). */
+export type AiMatchOutcome = 'AI' | 'HUMAN' | 'DRAW'
+
+/** A tally from the AI's side. Rates are over decisive games (draws excluded); null when there were none. */
+export interface AiRecord {
+  readonly games: number
+  readonly aiWins: number
+  readonly humanWins: number
+  readonly draws: number
+  readonly aiWinRate: number | null
+  /** 95% Wilson interval around `aiWinRate`. */
+  readonly aiWinRateLow: number | null
+  readonly aiWinRateHigh: number | null
+}
+
+export type AiBucket = 'DAY' | 'WEEK' | 'MONTH'
+
+/** A change to the engine AI merged to main, and the first deployed build that carried it (null = none yet). */
+export interface AiChange {
+  readonly sha: string
+  readonly committedAt: string
+  readonly pr: number | null
+  readonly subject: string
+  readonly shippedIn: string | null
+  readonly shippedAt: string | null
+  /** The series bucket it was merged in. */
+  readonly bucketStart: string
+}
+
+export interface AiVsHumanReport {
+  /** Range length in days; null for all time. */
+  readonly days: number | null
+  readonly bucket: AiBucket
+  readonly overall: AiRecord
+  /** The equally long window before the range; null for all time. */
+  readonly previous: AiRecord | null
+  /** Oldest first, gap-filled. `start` is the bucket's first UTC day; `aiChanges` counts engine AI changes merged in it. */
+  readonly series: { readonly start: string; readonly record: AiRecord; readonly aiChanges: number }[]
+  readonly byMode: { readonly gameMode: string | null; readonly format: string | null; readonly record: AiRecord }[]
+  /** Newest deployed build first. `newAiChanges`: AI changes it added over the build before it (null = unknown). */
+  readonly byBuild: {
+    readonly version: string
+    readonly firstSeen: string
+    readonly lastSeen: string
+    readonly record: AiRecord
+    readonly newAiChanges: number | null
+  }[]
+  /** Engine AI changes merged within the time axis, newest first. */
+  readonly aiChanges: {
+    /** False when the server build had no git history, so changes can't be shown. */
+    readonly available: boolean
+    readonly changes: AiChange[]
+  }
+  /** Latest games, oldest first. */
+  readonly recent: { readonly endedAt: string; readonly gameMode: string | null; readonly format: string | null; readonly outcome: AiMatchOutcome }[]
+  /** Humans who played the AI most, from the human's side. */
+  readonly topHumans: {
+    readonly name: string
+    readonly isGuest: boolean
+    readonly games: number
+    readonly wins: number
+    readonly losses: number
+    readonly draws: number
+  }[]
+}
+
+/** The AI's record against humans over the last `days` days (0 = all time). */
+export const fetchAiVsHuman = (auth: AdminAuth, days: number, bucket: 'day' | 'week' | 'month') =>
+  getAdminStats<AiVsHumanReport>(auth, `/ai-vs-human?days=${days}&bucket=${bucket}`)

@@ -284,6 +284,7 @@ class StatsQueryService(
     private val cardRegistry: CardRegistry,
     private val printingRegistry: PrintingRegistry,
     private val geoIp: GeoIpService,
+    private val engineAiHistory: EngineAiHistory,
 ) {
     private companion object {
         /** Table names safe to splice into `count(*)` SQL — see [databaseStats]. */
@@ -981,6 +982,72 @@ class StatsQueryService(
         { rs, _ -> DailyCount(rs.getString("day"), rs.getLong("n")) },
         days,
     )
+
+    /**
+     * How the AI fares against human players over the last [days] days (null = all time), bucketed by
+     * [bucket] — see [AiVsHumanReport]. Reads the range plus the equally long window before it, so the
+     * report can show the change against the previous period. The build each game ran on comes from
+     * its replay row; a game whose replay was never stored still counts everywhere but per-build.
+     */
+    fun aiVsHuman(days: Int?, bucket: AiBucket): AiVsHumanReport {
+        val now = java.time.Instant.now()
+        val since = java.sql.Timestamp.from(days?.let { now.minusSeconds(2L * it * 86_400L) } ?: java.time.Instant.EPOCH)
+        val games = jdbc.query(
+            """
+            SELECT mr.id, mr.ended_at, mr.game_mode, mr.format, gr.engine_version,
+                   bool_or(mp.won AND mp.is_ai) AS ai_won,
+                   bool_or(mp.won AND NOT mp.is_ai) AS human_won
+            FROM match_results mr
+            JOIN match_participants mp ON mp.match_id = mr.id
+            LEFT JOIN game_replays gr ON gr.game_id = mr.game_id
+            WHERE mr.ended_at >= ?
+            GROUP BY mr.id, mr.ended_at, mr.game_mode, mr.format, gr.engine_version
+            HAVING bool_or(mp.is_ai) AND bool_or(NOT mp.is_ai)
+            ORDER BY mr.ended_at
+            """.trimIndent(),
+            { rs, _ ->
+                val aiWon = rs.getBoolean("ai_won")
+                val humanWon = rs.getBoolean("human_won")
+                AiMatchGame(
+                    matchId = rs.getLong("id"),
+                    endedAt = rs.getTimestamp("ended_at").toInstant(),
+                    gameMode = rs.getString("game_mode"),
+                    format = rs.getString("format"),
+                    engineVersion = rs.getString("engine_version"),
+                    outcome = when {
+                        aiWon && !humanWon -> AiMatchOutcome.AI
+                        humanWon && !aiWon -> AiMatchOutcome.HUMAN
+                        else -> AiMatchOutcome.DRAW
+                    },
+                )
+            },
+            since,
+        )
+        val humanSeats = jdbc.query(
+            """
+            SELECT mp.match_id, mp.user_id, mp.player_name, u.display_name, mp.won
+            FROM match_participants mp
+            JOIN match_results mr ON mr.id = mp.match_id
+            LEFT JOIN users u ON u.id = mp.user_id
+            WHERE mp.is_ai = false AND mr.ended_at >= ?
+              AND EXISTS (SELECT 1 FROM match_participants a WHERE a.match_id = mp.match_id AND a.is_ai)
+            ORDER BY mr.ended_at
+            """.trimIndent(),
+            { rs, _ ->
+                val userId = rs.getObject("user_id")?.toString()
+                val name = rs.getString("player_name")
+                AiMatchHumanSeat(
+                    matchId = rs.getLong("match_id"),
+                    playerKey = userId?.let { "user:$it" } ?: "guest:$name",
+                    displayName = rs.getString("display_name") ?: name,
+                    isGuest = userId == null,
+                    won = rs.getBoolean("won"),
+                )
+            },
+            since,
+        )
+        return AiVsHumanAggregator.aggregate(games, humanSeats, days, bucket, now, engineAiHistory.timeline)
+    }
 
     /**
      * Global game-mode distribution, most-played first. The label is a composite `"<gameMode>~<format>"`

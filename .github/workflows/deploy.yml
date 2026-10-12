@@ -21,8 +21,14 @@ jobs:
       GRADLE_BUILD_CACHE_DIR: ${{ github.workspace }}/.gradle/build-cache
 
     steps:
+      # Full first-parent history (trees only — blobs are fetched lazily) so the jar can bake in the
+      # engine AI's change history for the admin "AI vs humans" view; see game-server's
+      # generateEngineAiHistory. A shallow clone still builds — the view then says it has no history.
       - name: Checkout repository
         uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          filter: blob:none
 
       - name: Set up JDK 21
         uses: actions/setup-java@v5

@@ -8449,6 +8449,9 @@ Dominant back faces that "stay" instead self-exile on their final chapter, dodgi
   omitting the dynamic minimum retains the existing "up to" behavior. Pre-chosen modes execute in
   printed order regardless of click order, with their own targets and the enclosing trigger record;
   that record also survives a decision pause between modes.
+  A permanent's own `Triggers.self.enters()` trigger takes the same snapshot from the permanent's
+  cast-choices bag as it enters, so "When this enters, if it was kicked, …" (Phyrexian Missionary,
+  Battlewing Mystic) still resolves after the permanent is removed in response (CR 603.4 recheck).
   Pair with a `interveningIf` for an intervening "if" (CR 603.4). Sage of the Skies — "When you
   cast this spell, if you've cast another spell this turn, copy this spell" — uses
   `interveningIf = Conditions.YouCastSpellsThisTurn(atLeast = 2)` (the spell itself is already

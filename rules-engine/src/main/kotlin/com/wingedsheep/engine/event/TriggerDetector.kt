@@ -35,6 +35,7 @@ import com.wingedsheep.engine.state.components.battlefield.SagaComponent
 import com.wingedsheep.engine.state.components.combat.BlockingComponent
 import com.wingedsheep.engine.state.components.battlefield.TriggeredAbilityFiredEverComponent
 import com.wingedsheep.engine.state.components.battlefield.TriggeredAbilityFiredThisTurnComponent
+import com.wingedsheep.engine.state.components.battlefield.CastChoicesComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.EmblemSourceComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
@@ -294,7 +295,20 @@ class TriggerDetector(
                     else if (attachedDeparture) events.take(eventIndex).filterIsInstance<ZoneChangeEvent>().lastOrNull {
                         it.entityId == pending.triggerContext.triggeringEntityId && it.isBattlefieldDeparture
                     } else null
-                val eventContext = triggeringZoneEvent?.let(TriggerContext::fromEvent) ?: pending.triggerContext
+                val eventContext = (triggeringZoneEvent?.let(TriggerContext::fromEvent) ?: pending.triggerContext)
+                    .let { ctx ->
+                        // "When this enters, if it was kicked, …" — freeze the source's own
+                        // optional-cost choices at trigger time. The durable cast-choices bag is
+                        // stripped when the permanent leaves (CR 400.7), but the intervening "if"
+                        // is rechecked on resolution (CR 603.4) and how the spell was cast is
+                        // fixed, so removing the permanent in response must not untick it.
+                        if (!selfZoneEvent || (event as ZoneChangeEvent).toZone != Zone.BATTLEFIELD) return@let ctx
+                        val source = state.getEntity(pending.sourceId) ?: return@let ctx
+                        val definitionId = source.get<CardComponent>()?.cardDefinitionId ?: return@let ctx
+                        val chosen = source.get<CastChoicesComponent>()?.chosen.orEmpty()
+                        val choices = optionalCostChoices(definitionId) { it in chosen }
+                        if (choices.isEmpty()) ctx else ctx.copy(selfCastCostChoices = choices)
+                    }
                 val sourceEventContext = (event as? ZoneChangeEvent)?.takeIf { selfZoneEvent }?.let(TriggerContext::fromEvent)
                 val sourceAtEvent = events.subList(eventIndex + 1, events.size)
                     .filterIsInstance<ZoneChangeEvent>().firstOrNull { it.entityId == pending.sourceId }?.oldObject
@@ -2100,6 +2114,16 @@ class TriggerDetector(
      * (CR 113.6), so a Hearthborn Battler or Plan for All Outcomes that is itself the Nth spell
      * cast does **not** trigger off its own cast.
      */
+    /** Each optional additional cost [cardDefinitionId] offers, mapped to whether [declared] says it was paid. */
+    private fun optionalCostChoices(
+        cardDefinitionId: String,
+        declared: (ChoiceSlot) -> Boolean
+    ): Map<ChoiceSlot, Boolean> =
+        cardRegistry.getCard(cardDefinitionId)?.keywordAbilities
+            ?.filterIsInstance<KeywordAbility.OptionalAdditionalCost>()
+            ?.associate { it.declaredSlot to declared(it.declaredSlot) }
+            ?: emptyMap()
+
     private fun detectSelfCastTriggers(
         state: GameState,
         statics: BattlefieldStaticsIndex,
@@ -2116,11 +2140,8 @@ class TriggerDetector(
 
         val castManaSpent by lazy { com.wingedsheep.engine.handlers.ManaSpentReader.snapshot(state, entityId) }
         val castCostChoices by lazy {
-            val offered = cardRegistry.getCard(cardComponent.cardDefinitionId)?.keywordAbilities
-                ?.filterIsInstance<KeywordAbility.OptionalAdditionalCost>()
-                ?.associate { it.declaredSlot to (it.declaredSlot == event.declaredCostSlot) }
-                ?: emptyMap()
-            offered + listOfNotNull(event.declaredCostSlot?.let { it to true }).toMap()
+            optionalCostChoices(cardComponent.cardDefinitionId) { it == event.declaredCostSlot } +
+                listOfNotNull(event.declaredCostSlot?.let { it to true }).toMap()
         }
         for (ability in abilities) {
             if (ability.trigger !is EventPattern.CastThisSpellEvent) continue

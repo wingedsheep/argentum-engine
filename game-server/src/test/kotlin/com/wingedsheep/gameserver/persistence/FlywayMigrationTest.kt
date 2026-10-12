@@ -3,6 +3,7 @@ package com.wingedsheep.gameserver.persistence
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.registry.PrintingRegistry
 import com.wingedsheep.gameserver.stats.DeckProfiler
+import com.wingedsheep.gameserver.stats.EngineAiHistory
 import com.wingedsheep.gameserver.stats.GeoIpService
 import com.wingedsheep.gameserver.stats.StatsQueryService
 import io.kotest.core.spec.style.FunSpec
@@ -366,6 +367,7 @@ class FlywayMigrationTest : FunSpec({
                 cardRegistry = CardRegistry(),
                 printingRegistry = PrintingRegistry(),
                 geoIp = GeoIpService(),
+                engineAiHistory = EngineAiHistory(),
             ).databaseStats()
 
             stats.databaseName shouldBe postgres.databaseName

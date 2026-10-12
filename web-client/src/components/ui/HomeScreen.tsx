@@ -41,12 +41,10 @@ import { loadLobbyId, clearLobbyId } from '@/store/slices/shared'
 import styles from './GameUI.module.css'
 import home from './Home.module.css'
 import welcome from './Welcome.module.css'
+import { GITHUB_REPOSITORY_URL } from '@/utils/links'
 
 /** Community invite, also linked from the contributing guide's "get help" section. */
 const DISCORD_INVITE_URL = 'https://discord.com/invite/dy6eSRPWzu'
-
-/** Public source repository for the engine and web client. */
-const GITHUB_REPOSITORY_URL = 'https://github.com/wingedsheep/argentum-engine'
 
 /** The maker's portfolio site — a byline in the credits, not a community link. */
 const MAKER_PORTFOLIO_URL = 'https://wingedsheep.com'

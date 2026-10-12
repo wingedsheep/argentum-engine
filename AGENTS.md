@@ -79,6 +79,13 @@ docs it points at; load those when the work needs them.
   in the *same* PR. A set entry needs `setCode`, a `body` that pitches what the set is like to play, and
   `tryIf`; never change a shipped `id`. Card batches, fixes and UI polish don't go in. The file's header
   comment has the bar.
+- **Log engine AI behaviour changes in [`ai/CHANGELOG.md`](ai/CHANGELOG.md).** A PR that changes how
+  the engine AI plays or builds decks — a decision it makes, or the profile live players face — adds
+  a line at the top of its list in the *same* PR: `- #<pr> <what the AI now does differently>`. The
+  admin dashboard's **AI vs humans** screen marks each entry on its win-rate timeline and credits it
+  to the first deployed build that carried it, so an unlogged change is an improvement nobody can see
+  paying off. Refactors, perf work, tooling, per-card advisors and archetype data stay out; the file's
+  header has the rules.
 - **Document user-facing features in the in-app Help wiki.** A new mode, screen, or change to how
   players use the site updates [`web-client/src/help/topics.ts`](web-client/src/help/topics.ts) — the
   single source behind `/help` and the inline `HelpTip` popovers — in the *same* PR: add a topic, or

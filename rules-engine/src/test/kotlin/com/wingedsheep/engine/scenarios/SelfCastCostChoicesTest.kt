@@ -18,6 +18,7 @@ import com.wingedsheep.sdk.dsl.*
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.ChoiceSlot
 import com.wingedsheep.sdk.scripting.KeywordAbility
+import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import io.kotest.matchers.types.shouldBeInstanceOf
 import io.kotest.matchers.shouldBe
 import kotlinx.serialization.json.Json
@@ -99,6 +100,46 @@ class SelfCastCostChoicesTest : ScenarioTestBase() {
                 game.selectCards(game.findCardsInHand(1, "Forest").take(1)).error shouldBe null
                 game.resolveStack()
                 game.getLifeTotal(1) shouldBe if (mandatory) 24 else 21
+            }
+        }
+
+        cardRegistry.register(card("Self Entry Kicked") {
+            manaCost = "{1}"
+            typeLine = "Creature — Bear"
+            power = 2
+            toughness = 2
+            keywordAbility(KeywordAbility.kicker("{1}"))
+            triggeredAbility {
+                trigger = Triggers.self.enters()
+                interveningIf = Conditions.WasKicked
+                effect = Effects.GainLife(3)
+            }
+        })
+        cardRegistry.register(card("Self Entry Removal") {
+            manaCost = "{0}"
+            typeLine = "Instant"
+            spell {
+                val creature = target(TargetFilter.Creature)
+                effect = Effects.Destroy(creature)
+            }
+        })
+        for (paid in listOf(false, true)) {
+            test("entry trigger keeps its source's kicker after the source dies in response - kicked $paid") {
+                val game = scenario().withPlayers("Player1", "Player2").withCardInHand(1, "Self Entry Kicked")
+                    .withCardInHand(1, "Self Entry Removal")
+                    .withLandsOnBattlefield(1, "Snow-Covered Wastes", 2)
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN).build()
+                game.execute(CastSpell(game.player1Id, game.findCardsInHand(1, "Self Entry Kicked").single(),
+                    declaredCostSlot = ChoiceSlot.KICKED.takeIf { paid })).error shouldBe null
+                // Both players pass once: the creature spell resolves and its entry trigger waits.
+                game.passPriority()
+                game.passPriority()
+                game.state.stack.size shouldBe if (paid) 1 else 0
+                game.castSpell(1, "Self Entry Removal", game.findPermanent("Self Entry Kicked")!!).error shouldBe null
+                game.resolveStack()
+                game.isInGraveyard(1, "Self Entry Kicked") shouldBe true
+                game.getLifeTotal(1) shouldBe if (paid) 23 else 20
             }
         }
 
