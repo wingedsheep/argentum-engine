@@ -28,6 +28,7 @@ Format — newest first, one bullet each:
 
 ## Changes
 
+- AI holds flash creatures for the opponent's turn and no longer releases them for its own triggers on the stack
 - #3114 AI keeps modal double-faced spells instead of playing them as lands it doesn't need, prices surplus lands in hand near zero, and won't bounce its own land into a hand that already holds the next land drops
 - #3079 AI divides multi-block combat damage to kill what it can
 - #3078 AI treats its own stack objects as never threats; block-only grants need a blocker

@@ -290,8 +290,9 @@ data class AiProfile(
      * made three steps earlier, and unlike "hold the removal" the claim is provable. Casting a
      * no-haste flash permanent now is dominated by casting it at the next free window *unless the
      * permanent does something in between*, and that list is finite and readable off the card:
-     * it attacks, its ETB changes a combat, its ETB hands us a resource to spend, or there is
-     * something on the stack. Any of the four and the floor declines.
+     * it attacks, its ETB changes a combat, its ETB hands us a resource to spend, or the opponent
+     * has something on the stack (our own triggers and spells are not a window to respond in). Any
+     * of the four and the floor declines. [LIVE] ships it.
      *
      * It inherits [com.wingedsheep.ai.engine.knowledge.Patience]'s three releases whole — lethal on
      * board, a hand at maximum size, a game past turn 14 — which is what keeps a floor this hard
@@ -1521,6 +1522,24 @@ data class AiProfile(
             holdExpiringGrantsForCombat = true,
         )
 
+        /**
+         * [holdFlashPermanentsForAmbush] on top of [PRODUCTION_CANDIDATE_EXPIRING] — the last pinned
+         * candidate [LIVE] builds on — so `just arena production-candidate-expiring
+         * production-candidate-expiring-ambush` measures this flag and nothing else. [LIVE] ships it.
+         *
+         * [PRODUCTION_CANDIDATE_AMBUSH] passed its gate (100 games at parity, 0 illegal actions,
+         * `instants-09` closed) but its promotion never reached the controller, and every later
+         * candidate was stacked on the one without it. An AI-vs-AI log then showed what the gap
+         * cost: Little Bear flashed in during the AI's own upkeep, in response to its own delayed
+         * Bird-token trigger, with its ETB fizzling for want of a target. The same promotion also
+         * narrowed [com.wingedsheep.ai.engine.knowledge.AmbushWindow]'s stack release to objects the
+         * opponent controls, which is why it was releasing there.
+         */
+        val PRODUCTION_CANDIDATE_EXPIRING_AMBUSH = PRODUCTION_CANDIDATE_EXPIRING.copy(
+            id = "production-candidate-expiring-ambush",
+            holdFlashPermanentsForAmbush = true,
+        )
+
         /** [permanentCastIsNotCardLoss] alone on top of [PRODUCTION], for attribution. */
         val PRODUCTION_DEPLOY = PRODUCTION.copy(
             id = "production-deploy",
@@ -1671,6 +1690,7 @@ data class AiProfile(
             refuseEmptyPayoffs = true,
             drawWithIdleMana = true,
             surplusAwareLands = true,
+            holdFlashPermanentsForAmbush = true,
         )
 
         /**

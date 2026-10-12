@@ -100,6 +100,7 @@ class PuzzleComparisonBenchmark : ScenarioTestBase() {
                 // controls for haste, an ETB that clears a blocker, and the late-game release.
                 AiProfile.PRODUCTION_AMBUSH,
                 AiProfile.PRODUCTION_CANDIDATE_AMBUSH,
+                AiProfile.PRODUCTION_CANDIDATE_EXPIRING_AMBUSH,
                 // Expiring grants held for a window that can spend them, alone and on top of what
                 // is live. `instants-14` is the verdict that should move; `instants-15` (the
                 // released window) and `instants-16` (a payoff that outlives the turn) are the

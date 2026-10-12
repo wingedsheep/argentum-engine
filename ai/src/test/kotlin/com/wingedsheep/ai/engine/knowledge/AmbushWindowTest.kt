@@ -17,8 +17,9 @@ import io.kotest.matchers.shouldBe
  *     before any window reasoning runs.
  *  2. The window is **our whole turn, and theirs until attackers are known**. That is the entire
  *     behaviour: hold on ours, hold through their upkeep, release once they have committed.
- *  3. The **four payoffs** each decline it — haste, a stack object, an ETB that changes a combat,
- *     an ETB that hands us something to spend.
+ *  3. The **four payoffs** each decline it — haste, an opponent's stack object, an ETB that changes
+ *     a combat, an ETB that hands us something to spend. Our own stack objects do not — see
+ *     `AmbushOwnTriggerTest`.
  *  4. It **ends**, by [Patience]'s releases rather than by any of its own.
  *
  * Where the claim is about the policy's shape the intent is synthesized, so the test says what it
@@ -146,7 +147,7 @@ class AmbushWindowTest : ScenarioTestBase() {
             position().floors(kavu) shouldBe false
         }
 
-        test("something on the stack declines the floor") {
+        test("an opponent's spell on the stack declines the floor") {
             // Seat 2 needs priority to put the spell there, which is why this position hands them
             // the turn. `floors` overwrites the active player on the state it tests either way, so
             // the assertions below are about the stack and nothing else.
