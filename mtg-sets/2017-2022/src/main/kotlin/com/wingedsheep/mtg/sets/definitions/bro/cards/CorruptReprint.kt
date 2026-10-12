@@ -15,6 +15,7 @@ val CorruptReprint = Printing(
     name = "Corrupt",
     setCode = "BRO",
     collectorNumber = "88",
+    scryfallId = "c92ea561-80da-4fe1-ad87-ce47d9eb80bc",
     artist = "Julie Dillon",
     imageUri = "https://cards.scryfall.io/normal/front/c/9/c92ea561-80da-4fe1-ad87-ce47d9eb80bc.jpg?1783920094",
     releaseDate = "2022-11-18",

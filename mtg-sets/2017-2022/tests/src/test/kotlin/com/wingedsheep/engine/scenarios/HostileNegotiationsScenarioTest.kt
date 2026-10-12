@@ -5,6 +5,7 @@ import com.wingedsheep.engine.core.OptionChosenResponse
 import com.wingedsheep.engine.core.Outcome
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
+import com.wingedsheep.engine.state.components.identity.MayLookAtInExileComponent
 import com.wingedsheep.engine.state.components.identity.RevealedToComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
@@ -77,11 +78,12 @@ class HostileNegotiationsScenarioTest : FunSpec({
         driver.castNegotiations(active)
         val handAfterCast = driver.getHandSize(active)
 
-        // All six are exiled face down and hidden from the opponent.
+        // All six are exiled face down: you may look at them, the opponent may not.
         val exile = driver.state.getZone(ZoneKey(active, Zone.EXILE))
         (firstPile + secondPile).forEach {
             exile.contains(it) shouldBe true
             driver.state.getEntity(it)!!.has<FaceDownComponent>() shouldBe true
+            driver.state.getEntity(it)!!.get<MayLookAtInExileComponent>()?.mayLook(active) shouldBe true
             driver.revealedTo(it, opponent) shouldBe false
         }
 

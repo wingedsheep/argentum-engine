@@ -15,6 +15,7 @@ val GoForTheThroatReprint = Printing(
     name = "Go for the Throat",
     setCode = "BRO",
     collectorNumber = "102",
+    scryfallId = "94117b09-d852-4f2e-be8e-68ee0ee3c3d8",
     artist = "Kristina Carroll",
     imageUri = "https://cards.scryfall.io/normal/front/9/4/94117b09-d852-4f2e-be8e-68ee0ee3c3d8.jpg?1783920086",
     releaseDate = "2022-11-18",
