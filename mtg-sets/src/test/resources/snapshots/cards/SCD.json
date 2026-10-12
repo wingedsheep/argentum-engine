@@ -1,1 +1,62 @@
-
+// Sphinx of Enlightenment
+{
+    "name": "Sphinx of Enlightenment",
+    "manaCost": "{4}{U}{U}",
+    "typeLine": "Creature — Sphinx",
+    "oracleText": "Flying\nWhen this creature enters, target opponent draws a card and you draw three cards.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sphinx of Enlightenment:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 3
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponent",
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "61",
+        "rarity": "MYTHIC",
+        "artist": "Johan Grenier",
+        "flavorText": "\"I would be a fool if I taught you everything I know.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/c/0c681f35-e584-45a0-aa4d-bc8955ab1a8a.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
