@@ -1289,11 +1289,13 @@ class DynamicAmountEvaluator(
             Aggregation.DISTINCT_NAMES -> matchingEntities.mapNotNullTo(mutableSetOf()) { entityId ->
                 state.getEntity(entityId)?.get<CardComponent>()?.name
             }.size
+            // A projected entry with no subtypes means an effect erased them (Ultima, Origin of Oblivion's
+            // blight), so it counts nothing; only an unprojected entity reads base.
             Aggregation.DISTINCT_BASIC_LAND_SUBTYPES -> matchingEntities.flatMapTo(mutableSetOf<String>()) { entityId ->
-                projection.getSubtypes(entityId).ifEmpty {
-                    state.getEntity(entityId)?.get<CardComponent>()?.typeLine?.subtypes?.map { it.value }?.toSet()
-                        ?: emptySet()
-                }.intersect(BASIC_LAND_SUBTYPES)
+                (projection.getProjectedValues(entityId)?.subtypes
+                    ?: state.getEntity(entityId)?.get<CardComponent>()?.typeLine?.subtypes?.map { it.value }?.toSet()
+                    ?: emptySet()
+                ).intersect(BASIC_LAND_SUBTYPES)
             }.size
             // CR 205.3j — only a planeswalker contributes, and a planeswalker that is also a
             // creature carries creature types too (CR 205.3d), which are not planeswalker types.
@@ -1303,9 +1305,10 @@ class DynamicAmountEvaluator(
                     ?.contains("PLANESWALKER")
                     ?: (card?.typeLine?.cardTypes?.contains(com.wingedsheep.sdk.core.CardType.PLANESWALKER) == true)
                 if (!isPlaneswalker) return@flatMapTo emptySet()
-                projection.getSubtypes(entityId).ifEmpty {
-                    card?.typeLine?.subtypes?.map { it.value }?.toSet() ?: emptySet()
-                }.filterNotTo(mutableSetOf()) { it in CREATURE_TYPE_NAMES }
+                (projection.getProjectedValues(entityId)?.subtypes
+                    ?: card?.typeLine?.subtypes?.map { it.value }?.toSet()
+                    ?: emptySet()
+                ).filterNotTo(mutableSetOf()) { it in CREATURE_TYPE_NAMES }
             }.size
             // Counters are physically stored on the permanent (base state, not layered), so read
             // CountersComponent directly. The map only holds kinds with a positive count

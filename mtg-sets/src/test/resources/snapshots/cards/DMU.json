@@ -775,6 +775,67 @@
     ]
 }
 
+// Briar Hydra
+{
+    "name": "Briar Hydra",
+    "manaCost": "{5}{G}",
+    "typeLine": "Creature — Plant Hydra",
+    "oracleText": "Trample\nDomain — Whenever this creature deals combat damage to a player, put X +1/+1 counters on target creature you control, where X is the number of basic land types among lands you control.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Briar Hydra:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": {
+                    "type": "AddDynamicCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "amount": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "land",
+                        "aggregation": "DISTINCT_BASIC_LAND_SUBTYPES"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "286",
+        "rarity": "RARE",
+        "artist": "Caio Monteiro",
+        "flavorText": "Flora and fauna alike rose to Yavimaya's defense.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/9/390fd5d1-3ce9-456e-b130-30ad0557f4cf.jpg?1783921241"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Charismatic Vanguard
 {
     "name": "Charismatic Vanguard",
@@ -2874,6 +2935,54 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Meria's Outrider
+{
+    "name": "Meria's Outrider",
+    "manaCost": "{4}{R}",
+    "typeLine": "Creature — Elf Archer",
+    "oracleText": "Reach\nDomain — When this creature enters, it deals damage to each opponent equal to the number of basic land types among lands you control.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "REACH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Meria's Outrider:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "land",
+                        "aggregation": "DISTINCT_BASIC_LAND_SUBTYPES"
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "EachOpponent"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "138",
+        "artist": "Lius Lasahido",
+        "flavorText": "Arrows fashioned from the living wood of Yavimaya carry all of the forest's rage in their fire-hardened points.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/8/48aa964f-99b5-4b6b-b158-42f39514c910.jpg?1783921313"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 

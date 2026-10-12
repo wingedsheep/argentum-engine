@@ -13929,7 +13929,9 @@ forbids `DynamicAmount.X` in card definitions.
   `property` (`POWER`/`TOUGHNESS`/`MANA_VALUE`), and the distinct-set counters
   `DISTINCT_TYPES`, `DISTINCT_PERMANENT_TYPES`, `DISTINCT_COLORS`, `DISTINCT_COLOR_PAIRS`,
   `DISTINCT_NAMES`, `DISTINCT_BASIC_LAND_SUBTYPES`
-  (Domain), `DISTINCT_PLANESWALKER_SUBTYPES` (planeswalker types, CR 205.3j, among the matched
+  (Domain; reads *projected* subtypes, so a land that lost all land types — Ultima, Origin of
+  Oblivion's blight — still matches a land filter but adds no type),
+  `DISTINCT_PLANESWALKER_SUBTYPES` (planeswalker types, CR 205.3j, among the matched
   permanents that are planeswalkers — two Jaces count once; creature types a creature-planeswalker
   also carries are excluded rather than a fixed planeswalker-type list included, so a newly printed
   walker is never silently missed; facade `DynamicAmounts.planeswalkerTypes(player)` — Tam, the
