@@ -2117,8 +2117,8 @@ class TriggerDetector(
     /** Each optional additional cost [cardDefinitionId] offers, mapped to whether [declared] says it was paid. */
     private fun optionalCostChoices(
         cardDefinitionId: String,
-        declared: (com.wingedsheep.sdk.scripting.ChoiceSlot) -> Boolean
-    ): Map<com.wingedsheep.sdk.scripting.ChoiceSlot, Boolean> =
+        declared: (ChoiceSlot) -> Boolean
+    ): Map<ChoiceSlot, Boolean> =
         cardRegistry.getCard(cardDefinitionId)?.keywordAbilities
             ?.filterIsInstance<KeywordAbility.OptionalAdditionalCost>()
             ?.associate { it.declaredSlot to declared(it.declaredSlot) }
