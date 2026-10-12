@@ -1,3 +1,57 @@
+// Desolate Mire
+{
+    "name": "Desolate Mire",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "{1}, {T}: Add {W}{B}.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Desolate Mire:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddMana",
+                            "color": "WHITE"
+                        },
+                        {
+                            "type": "AddMana",
+                            "color": "BLACK"
+                        }
+                    ]
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "146",
+        "rarity": "RARE",
+        "artist": "Tomáš Honz",
+        "flavorText": "The region known to survivors as \"Toxic Valley\" is covered by industrial white powder and polluted water sources. The lake and other deadly waters of the Toxic Valley region are home to all manner of mutated, aquatic beasts.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/5/05f38637-8cdc-42bb-b164-85596b6b14b9.jpg?1783912374"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "WHITE"
+    ]
+}
+
 // Ferrous Lake
 {
     "name": "Ferrous Lake",
