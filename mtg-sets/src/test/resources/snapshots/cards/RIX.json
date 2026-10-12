@@ -2394,6 +2394,52 @@
     ]
 }
 
+// Pitiless Plunderer
+{
+    "name": "Pitiless Plunderer",
+    "manaCost": "{3}{B}",
+    "typeLine": "Creature — Human Pirate",
+    "oracleText": "Whenever another creature you control dies, create a Treasure token. (It's an artifact with \"{T}, Sacrifice this token: Add one mana of any color.\")",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Pitiless Plunderer:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:you",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Treasure"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "81",
+        "rarity": "UNCOMMON",
+        "artist": "David Palumbo",
+        "flavorText": "\"Shame to let good gold go to the grave.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/8/c87ebffe-5907-427b-9f9b-7c36a12b4a03.jpg?1783935307",
+        "rulings": [
+            {
+                "date": "2018-01-19",
+                "text": "If Pitiless Plunderer dies at the same time as one or more other creatures you control, its ability will still trigger for each of those other creatures."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Raging Regisaur
 {
     "name": "Raging Regisaur",
