@@ -12040,7 +12040,13 @@ composite abilities).
   "Crew N. Activate only once each turn." (Luxurious Locomotive): the crew enumerator + handler then refuse a
   second crew activation in the same turn (counted via `CrewSaddleContributorsComponent.crewActivations`, reset
   at end of turn). Vanilla Crew is uncapped. `onceEachTurn` is omitted from compiled JSON when false
-  (`encodeDefaults = false`). To make a Vehicle a creature **conditionally** instead of via crew (e.g. Grond,
+  (`encodeDefaults = false`). **Granted crew** — "Vehicles you control have crew 1" (Astor, Bearer of Blades) —
+  is `GrantKeyword(KeywordAbility.grantedCrew(1), GroupFilter(GameObjectFilter.Artifact.withSubtype(Subtype.VEHICLE).youControl()))`,
+  the projected `CREW_<n>` keyword (the encoding granted toxic uses). Unlike toxic, crew instances are **not
+  summed**: each is its own crew ability, so distinct Ns sit side by side and the crew enumerator + handler
+  (both via `CrewRequirement`) take the cheapest one still available — a printed crew 3 plus a granted crew 1
+  crews for 1; a used once-each-turn printed crew leaves a granted one open. Printed crew is read only while
+  the projected bare `CREW` keyword survives, so a Vehicle that lost all abilities has none. To make a Vehicle a creature **conditionally** instead of via crew (e.g. Grond,
   the Gatebreaker — "As long as it's your turn and you control an Army, this is an artifact creature"), use a
   `staticAbility { }` with `ability = GrantCardType("CREATURE", GroupFilter.source())` gated by a `condition`
   (Layer 4 type change; printed P/T applies automatically). The same `GrantCardType("CREATURE", …)` pattern
