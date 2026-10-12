@@ -494,13 +494,12 @@ class TriggerProcessor(
             )
         }
 
-        // Create the target selection decision. The effect description becomes the
-        // prominent hint banner so the player knows *what* they're targeting for
-        // (e.g., "Put 1 -1/-1 counter on target creature") rather than just
-        // seeing the generic "Choose target" label.
-        // Resolve dynamic amounts so the player sees concrete values
+        // Create the target selection decision. The hint banner tells the player *what*
+        // they're targeting for (e.g., "Put a -1/-1 counter on target creature") rather than
+        // just the generic "Choose target" label. TriggerTargetHint picks between the authored
+        // ability text and the effect's runtime text, which resolves dynamic amounts
         // (e.g., Gloom Ripper showing "+3/+0" instead of "+X/+0").
-        val effectHint = try {
+        val runtimeText = try {
             val evaluator = amountEvaluator
             val context = EffectContext(
                 sourceId = trigger.sourceId,
@@ -515,6 +514,7 @@ class TriggerProcessor(
         } catch (_: Exception) {
             ability.effect.description
         }
+        val effectHint = TriggerTargetHint.choose(ability.descriptionOverride, ability.effect, runtimeText)
 
         val decisionResult = decisionHandler.createTargetDecision(
             state = state,

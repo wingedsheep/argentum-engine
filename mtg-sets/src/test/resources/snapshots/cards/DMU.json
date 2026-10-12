@@ -283,6 +283,72 @@
     ]
 }
 
+// Anointed Peacekeeper
+{
+    "name": "Anointed Peacekeeper",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Human Cleric",
+    "oracleText": "Vigilance\nAs this creature enters, look at an opponent's hand, then choose any card name.\nSpells your opponents cast with the chosen name cost {2} more to cast.\nActivated abilities of sources with the chosen name cost {2} more to activate unless they're mana abilities.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": {
+                    "type": "OpponentsCast",
+                    "filter": {
+                        "cardPredicates": [
+                            "NameEqualsChosenComponent"
+                        ]
+                    }
+                },
+                "modification": {
+                    "type": "IncreaseGeneric",
+                    "amount": 2
+                }
+            },
+            {
+                "type": "IncreaseActivatedAbilityCost",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "NameEqualsChosenComponent"
+                        ]
+                    }
+                },
+                "amount": {
+                    "type": "Fixed",
+                    "amount": 2
+                },
+                "excludeManaAbilities": true
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithChoice",
+                "choiceType": "CARD_NAME",
+                "cardNamePool": "ANY",
+                "lookAtOpponentHand": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "2",
+        "rarity": "RARE",
+        "artist": "Tia Masic",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/b/5b8127b5-3a65-411a-84bc-54e5c1be1477.jpg?1783921372"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Argivian Phalanx
 {
     "name": "Argivian Phalanx",

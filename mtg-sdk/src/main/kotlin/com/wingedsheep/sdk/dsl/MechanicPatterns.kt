@@ -381,7 +381,7 @@ object MechanicPatterns {
         descriptionOverride = buildString {
             append("Clash with an opponent. If you win, ")
             append(ifYouWin.description.replaceFirstChar { it.lowercase() })
-            if (otherwise != null) {
+            if (otherwise != null && otherwise.description.isNotBlank()) {
                 append(". Otherwise, ${otherwise.description.replaceFirstChar { it.lowercase() }}")
             }
         }

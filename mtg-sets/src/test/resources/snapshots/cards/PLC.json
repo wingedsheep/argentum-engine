@@ -2839,6 +2839,43 @@
     ]
 }
 
+// Simian Spirit Guide
+{
+    "name": "Simian Spirit Guide",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Ape Spirit",
+    "oracleText": "Exile this card from your hand: Add {R}.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Simian Spirit Guide:1",
+                "cost": "CostExileSelf",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "RED"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true,
+                "activateFromZone": "Hand",
+                "descriptionOverride": "Exile this card from your hand: Add {R}."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "122",
+        "artist": "Dave DeVries",
+        "flavorText": "\"All my spells smell like burnt hair lately.\"\n—Jaya Ballard, task mage",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/d/5d7f701c-dcdc-4067-8d00-b4b7aadee9ba.jpg?1783943142"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Sinew Sliver
 {
     "name": "Sinew Sliver",

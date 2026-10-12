@@ -577,7 +577,10 @@ export function isHighlightable(a: LegalActionInfo): boolean {
   // The X exception needs its own guard: a storage land with no counters still enumerates the
   // ability (X = 0 is legal), so without this the land glows, the picker opens with maxX 0, and
   // confirming taps it for nothing.
+  // A mana ability that works from another zone (Simian Spirit Guide, exiled from the hand) is
+  // never offered by the payment flow — clicking the card is the only way to use it.
   const needsPlayerInput =
+    (a.sourceZone != null && a.sourceZone !== 'BATTLEFIELD') ||
     a.additionalCostInfo != null ||
     a.manaCostString != null ||
     (a.hasXCost === true && (a.maxAffordableX ?? 0) > 0)

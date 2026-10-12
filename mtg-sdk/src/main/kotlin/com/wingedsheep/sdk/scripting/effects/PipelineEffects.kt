@@ -27,6 +27,21 @@ private fun cardsPhrase(filter: GameObjectFilter): String =
 /**
  * Where to gather cards from.
  */
+/**
+ * "the top 3 cards of your library" / "the top X cards of …" — or, when the count is a phrase
+ * rather than a number ("the number of attacking creatures you control"), Oracle's
+ * "a number of cards from the top of … library equal to …", since the phrase can't stand
+ * between "top" and "cards".
+ */
+internal fun libraryEndDescription(end: String, count: DynamicAmount, player: Player): String {
+    val amount = count.description
+    return if (count is DynamicAmount.Fixed || amount.none { it.isWhitespace() }) {
+        "the $end $amount cards of ${player.possessive} library"
+    } else {
+        "a number of cards from the $end of ${player.possessive} library equal to $amount"
+    }
+}
+
 @Serializable
 sealed interface CardSource {
     val description: String
@@ -94,7 +109,7 @@ sealed interface CardSource {
         constructor(count: Int, player: Player = Player.You, isMill: Boolean = false) :
             this(DynamicAmount.Fixed(count), player, isMill)
 
-        override val description: String = "the top ${count.description} cards of ${player.possessive} library"
+        override val description: String = libraryEndDescription("top", count, player)
     }
 
     /**
@@ -113,7 +128,7 @@ sealed interface CardSource {
         /** The bottom [count] cards — a constant count ("the bottom card of their library"). */
         constructor(count: Int, player: Player = Player.You) : this(DynamicAmount.Fixed(count), player)
 
-        override val description: String = "the bottom ${count.description} cards of ${player.possessive} library"
+        override val description: String = libraryEndDescription("bottom", count, player)
     }
 
     /**
@@ -1850,7 +1865,7 @@ data class ConditionalOnCollectionEffect(
             append("If those cards include at least $minSize$restrict cards, ")
         }
         append(ifNotEmpty.description.replaceFirstChar { it.lowercase() })
-        if (ifEmpty != null) {
+        if (ifEmpty != null && ifEmpty.description.isNotBlank()) {
             append(". Otherwise, ")
             append(ifEmpty.description.replaceFirstChar { it.lowercase() })
         }

@@ -10415,6 +10415,13 @@ riders, matching how the engine already treats e.g. City of Brass's damage durin
   more to activate unless they're mana abilities" →
   `IncreaseActivatedAbilityCost(GroupFilter(GameObjectFilter.Any), DynamicAmount.Fixed(2), excludeManaAbilities = true)`.
   Without it, every land's `{T}: Add …` would be taxed too.
+  The tax reaches every activated ability of a matching source in any zone, keyword ones included:
+  cycling and typecycling price through the `ManaCost` overload, and crew / saddle — whose printed
+  cost is only "tap creatures with total power N" — gain the mana outright ("{2}, tap creatures …"),
+  paid after the creatures are tapped so a crewing mana creature can't also pay it. Anointed
+  Peacekeeper: "Activated abilities of sources with the chosen name cost {2} more to activate unless
+  they're mana abilities" →
+  `IncreaseActivatedAbilityCost(GroupFilter(GameObjectFilter.Any.namedFromChosenComponent()), DynamicAmounts.fixed(2), excludeManaAbilities = true)`.
 - `ManaAbilitiesCostAdditionalLife(amount = 1, filter = GroupFilter.source())` — **mana** abilities of
   permanents matching `filter` cost `amount` additional life to activate. Thran Portal: "Mana abilities of this
   land cost an additional 1 life to activate" → `ManaAbilitiesCostAdditionalLife(1)`. Lowered to a Layer 6
@@ -10967,6 +10974,15 @@ enumerated as legal actions today, each by its own `ActionEnumerator`:
   of Misery, Urban Retreat's return-a-creature put-onto-battlefield, etc. Pair `activateFromZone =
   Zone.HAND` with a `Costs.Composite(Costs.Mana(…), Costs.DiscardSelf)` (or a `ReturnToHand` cost)
   — `Costs.DiscardSelf` is always payable because the source card is the object being discarded.
+  **Hand mana abilities** — Simian Spirit Guide's "Exile this card from your hand: Add {R}." is
+  `activatedAbility { cost = Costs.ExileSelf; effect = Effects.AddMana(Color.RED); manaAbility = true;
+  activateFromZone = Zone.HAND }` (CR 605.1a: still a mana ability). It resolves immediately like any
+  mana ability, is offered inside an open mana-payment window (`LegalActionEnumerator.enumerateManaAbilities`,
+  CR 605.3a), and counts toward affordability (`ManaSolver.calculateExplicitActivationBonusMana`) — but
+  auto-pay never spends it: a cast or activation auto-pay alone can't cover opens the payment window
+  (`ManaPaymentWindow.hasManualOnlyMana`) so the player exiles the card themselves. Every battlefield
+  mana reader (`ManaSolver`, `ManaAbilityEnumerator`, `ManaAbilityPresence`) skips abilities whose
+  `activateFromZone` isn't `BATTLEFIELD`, so the card on the battlefield has no usable mana ability.
 - `Zone.COMMAND` — `CommandZoneAbilityEnumerator` (Momir Basic avatar).
 
 `ActivateAbilityHandler` accepts any non-battlefield `activateFromZone` generically (it just checks

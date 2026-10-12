@@ -121,14 +121,14 @@ data class GatedEffect(
     override val description: String = descriptionOverride ?: when (val g = gate) {
         is Gate.MayDecide -> g.prompt ?: buildString {
             append("You may ${then.description.replaceFirstChar { it.lowercase() }}")
-            if (otherwise != null) {
+            if (otherwise != null && otherwise.description.isNotBlank()) {
                 append(". Otherwise, ${otherwise.description.replaceFirstChar { it.lowercase() }}")
             }
         }
         is Gate.MayPay -> buildString {
             append("You may ${g.cost.description.replaceFirstChar { it.lowercase() }}. ")
             append("If you do, ${then.description.replaceFirstChar { it.lowercase() }}")
-            if (otherwise != null) {
+            if (otherwise != null && otherwise.description.isNotBlank()) {
                 append(". Otherwise, ${otherwise.description.replaceFirstChar { it.lowercase() }}")
             }
         }
@@ -136,7 +136,7 @@ data class GatedEffect(
             append(g.condition.description.replaceFirstChar { it.uppercase() })
             append(", ")
             append(then.description.replaceFirstChar { it.lowercase() })
-            if (otherwise != null) {
+            if (otherwise != null && otherwise.description.isNotBlank()) {
                 append(". Otherwise, ${otherwise.description.replaceFirstChar { it.lowercase() }}")
             }
         }
@@ -144,19 +144,19 @@ data class GatedEffect(
             append(g.action.description.replaceFirstChar { it.uppercase() })
             append(". If you do, ")
             append(then.description.replaceFirstChar { it.lowercase() })
-            if (otherwise != null) {
+            if (otherwise != null && otherwise.description.isNotBlank()) {
                 append(". If you don't, ${otherwise.description.replaceFirstChar { it.lowercase() }}")
             }
         }
         is Gate.MayPayX -> buildString {
             append("You may pay {X}. If you do, ${then.description.replaceFirstChar { it.lowercase() }}")
-            if (otherwise != null) {
+            if (otherwise != null && otherwise.description.isNotBlank()) {
                 append(". Otherwise, ${otherwise.description.replaceFirstChar { it.lowercase() }}")
             }
         }
         is Gate.MayPayAnyAmountOfLife -> buildString {
             append("You may pay any amount of life. If you do, ${then.description.replaceFirstChar { it.lowercase() }}")
-            if (otherwise != null) {
+            if (otherwise != null && otherwise.description.isNotBlank()) {
                 append(". Otherwise, ${otherwise.description.replaceFirstChar { it.lowercase() }}")
             }
         }

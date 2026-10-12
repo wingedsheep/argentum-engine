@@ -192,6 +192,7 @@ class LegalActionEnumerator(
             predicateEvaluator, conditionEvaluator, turnManager, mode,
         )
         return ManaAbilityEnumerator(predicateEvaluator = predicateEvaluator).enumerate(context) +
+            ZoneActivatedAbilityEnumerator(Zone.HAND, predicateEvaluator, manaOnly = true).enumerate(context) +
             PlayerActionEnumerator(manaOnly = true).enumerate(context)
     }
 

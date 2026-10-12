@@ -2,6 +2,7 @@ package com.wingedsheep.engine.legalactions.enumerators
 
 import com.wingedsheep.engine.core.CrewVehicle
 import com.wingedsheep.engine.handlers.actions.ability.CrewSaddleContributionEvaluator
+import com.wingedsheep.engine.handlers.actions.ability.TapForPowerActivationTax
 import com.wingedsheep.engine.legalactions.ActionEnumerator
 import com.wingedsheep.engine.legalactions.TapForPowerCreatureData
 import com.wingedsheep.engine.legalactions.EnumerationContext
@@ -92,13 +93,18 @@ class CrewEnumerator : ActionEnumerator {
                 totalAvailablePower += power
             }
 
-            val canAfford = totalAvailablePower >= crewAbility.n
+            // A cost-modifying static can add mana to crew/saddle; the handler charges it after
+            // tapping the creatures, so it's priced here the same way.
+            val tax = TapForPowerActivationTax.of(context.castPermissionUtils, state, entityId, playerId)
+            val canAfford = totalAvailablePower >= crewAbility.n &&
+                (tax.isEmpty() || context.manaSolver.canPay(state, playerId, tax))
             result.add(
                 LegalAction(
                     actionType = "CrewVehicle",
                     description = "Crew ${cardComponent.name}",
                     action = CrewVehicle(playerId, entityId, emptyList()),
                     affordable = canAfford,
+                    manaCostString = tax.takeUnless { it.isEmpty() }?.toString(),
                     tapForPower = true,
                     tapForPowerRequired = crewAbility.n,
                     tapForPowerCreatures = validCrewCreatures

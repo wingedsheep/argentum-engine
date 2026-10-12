@@ -181,7 +181,7 @@ class ActivateAbilityHandler(
         val paymentContext =
             buildAbilityPaymentContext(activation.cardComponent, state.projectedState, action.sourceId, activation.ability)
         if (lockedCost == null && action.paymentStrategy is com.wingedsheep.engine.core.PaymentStrategy.AutoPay &&
-            state.playerActionPermissions.any { it.playerId == action.playerId && it.action.timing == com.wingedsheep.sdk.scripting.effects.PlayerActionTiming.ManaAbility }) {
+            com.wingedsheep.engine.mechanics.mana.ManaPaymentWindow.hasManualOnlyMana(state, action.playerId, cardRegistry)) {
             var previewMana = activation.effectiveCost.extractManaCost()
             val alternative = action.alternativePayment
             if (previewMana != null && alternative != null && !alternative.isEmpty) {
