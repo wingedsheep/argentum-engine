@@ -8,6 +8,7 @@ import com.wingedsheep.engine.state.ComponentContainer
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.ClassLevelComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.identity.EmblemOwnedActivatedAbilityComponent
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.EntityId
@@ -54,6 +55,9 @@ internal sealed interface ActivatedAbilityLookup {
 
     data class EmblemGranted(override val ability: ActivatedAbility) : ActivatedAbilityLookup
 
+    /** The emblem's own ability (CR 114.4) — the emblem is the source; no definition owns it. */
+    data class EmblemOwned(override val ability: ActivatedAbility) : ActivatedAbilityLookup
+
     data class Intrinsic(override val ability: ActivatedAbility) : ActivatedAbilityLookup
 
     val staticGranterId: EntityId?
@@ -63,7 +67,7 @@ internal sealed interface ActivatedAbilityLookup {
         get() = when (this) {
             is DirectDefinition -> identity
             is DefinitionDerivedClass -> identity
-            is CopyException, is RuntimeGranted, is StaticGranted, is EmblemGranted, is Intrinsic -> null
+            is CopyException, is RuntimeGranted, is StaticGranted, is EmblemGranted, is EmblemOwned, is Intrinsic -> null
         }
 }
 
@@ -104,6 +108,7 @@ internal class ActivatedAbilityResolver(
             is ActivatedAbilityLookup.RuntimeGranted -> found.copy(ability = taxed)
             is ActivatedAbilityLookup.StaticGranted -> found.copy(ability = taxed)
             is ActivatedAbilityLookup.EmblemGranted -> found.copy(ability = taxed)
+            is ActivatedAbilityLookup.EmblemOwned -> found.copy(ability = taxed)
             is ActivatedAbilityLookup.Intrinsic -> found.copy(ability = taxed)
         }
     }
@@ -134,6 +139,10 @@ internal class ActivatedAbilityResolver(
                     AbilityIdentity(cardDefinitionId, it.id),
                 )
             }
+
+        container.get<EmblemOwnedActivatedAbilityComponent>()?.abilities
+            ?.firstOrNull { it.id == abilityId }
+            ?.let { return ActivatedAbilityLookup.EmblemOwned(it) }
 
         container.get<CardComponent>()?.copyActivatedAbilities
             ?.firstOrNull { it.id == abilityId }

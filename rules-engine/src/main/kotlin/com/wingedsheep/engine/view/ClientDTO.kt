@@ -1021,7 +1021,13 @@ data class ClientPlayerEffect(
      */
     val progress: ClientEffectProgress? = null,
     /** When the effect ends, e.g. "until end of turn"; `null` when no end is stated. */
-    val duration: String? = null
+    val duration: String? = null,
+    /**
+     * The emblem entity behind this badge, when the emblem has activated abilities of its own
+     * (Karn, Living Legacy's). The client matches it against legal actions' `sourceId` so the
+     * badge is where the player activates them; `null` for every other effect.
+     */
+    val sourceId: EntityId? = null
 )
 
 /**
@@ -1050,7 +1056,13 @@ data class ClientCardEffect(
     /** Optional icon identifier for UI rendering */
     val icon: String? = null,
     /** When the effect ends, e.g. "until end of turn"; `null` when no end is stated. */
-    val duration: String? = null
+    val duration: String? = null,
+    /**
+     * The emblem entity behind this badge, when the emblem has activated abilities of its own
+     * (Karn, Living Legacy's). The client matches it against legal actions' `sourceId` so the
+     * badge is where the player activates them; `null` for every other effect.
+     */
+    val sourceId: EntityId? = null
 )
 
 /**

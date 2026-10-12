@@ -1022,12 +1022,23 @@ data class GrantSpellsCantBeCounteredEffect(
  * emblem entity then reads as a source of those statics exactly as a battlefield permanent printing
  * them would, so no separate "player permission" concept is needed.
  *
+ * An emblem with an activated ability of its own ("Tap an untapped artifact you control: This
+ * emblem deals 1 damage to any target." — Karn, Living Legacy's −7) carries it in
+ * [ownedActivatedAbilities]. Its controller activates it from the command zone (CR 114.4), the
+ * emblem is the ability's source (so "this emblem deals damage" names the emblem), and nothing
+ * that strips a permanent's abilities reaches it. Contrast [grantedActivatedAbilities], which the
+ * emblem hands to each permanent in [groupFilter] (Arlinn Kord's "Creatures you control have
+ * '{T}: …'") — the permanent is that ability's source.
+ *
  * @property groupFilter Which permanents the emblem affects. Unused — and so left at its default —
  *   by an emblem that carries no group modification at all, only [ownedStaticAbilities].
  * @property powerBonus Power modification applied to each affected creature.
  * @property toughnessBonus Toughness modification applied to each affected creature.
  * @property grantedKeywords Keywords granted to each affected creature.
+ * @property grantedActivatedAbilities Activated abilities granted to each permanent in [groupFilter].
  * @property ownedStaticAbilities Static abilities the *emblem itself* has, as though printed on it.
+ * @property ownedActivatedAbilities Activated abilities the *emblem itself* has; the emblem is their
+ *   source and its controller activates them.
  * @property emblemDescription Human-readable description of the emblem (without the "You get an emblem with" prefix).
  */
 @SerialName("CreatePermanentEmblem")
@@ -1039,6 +1050,7 @@ data class CreatePermanentEmblemEffect(
     val grantedKeywords: List<String> = emptyList(),
     val grantedActivatedAbilities: List<com.wingedsheep.sdk.scripting.ActivatedAbility> = emptyList(),
     val ownedStaticAbilities: List<com.wingedsheep.sdk.scripting.StaticAbility> = emptyList(),
+    val ownedActivatedAbilities: List<com.wingedsheep.sdk.scripting.ActivatedAbility> = emptyList(),
     val emblemDescription: String
 ) : Effect {
     override val description: String = "You get an emblem with \"$emblemDescription\""

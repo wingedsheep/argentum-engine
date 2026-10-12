@@ -839,7 +839,10 @@ internal class PlayerActiveEffectsProjector(
                     effectId = "emblem_static_${emblemId.value}",
                     name = "${emblem.sourceName} Emblem",
                     description = emblem.description,
-                    icon = "emblem"
+                    icon = "emblem",
+                    sourceId = emblemId.takeIf {
+                        emblemContainer.has<EmblemOwnedActivatedAbilityComponent>()
+                    }
                 )
             )
         }

@@ -809,6 +809,11 @@ export interface ClientPlayerEffect {
    * (e.g. The Ring's four temptations). Rendered as filled/empty pips.
    */
   readonly progress?: ClientEffectProgress
+  /**
+   * The emblem entity behind this badge, when the emblem has activated abilities of its own
+   * (Karn, Living Legacy's). Legal actions whose `sourceId` matches are activated from the badge.
+   */
+  readonly sourceId?: EntityId
   /** When the effect ends, e.g. "until end of turn"; absent when no end is stated. */
   readonly duration?: string | null
 }

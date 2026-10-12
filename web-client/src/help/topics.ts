@@ -974,7 +974,7 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
         'XP n — experience counters, which some commanders give you and then count.',
         'HAND — the maximum hand size, only when it is not 7.',
         '⚔ commander damage — taken from each commander, against the 21 (or preset) threshold; it turns red within 5 of lethal.',
-        'Chips for active effects on that player — hover one to see what it does. The City’s Blessing, the Ring’s temptation and Speed have their own badges.',
+        'Chips for active effects on that player — hover one to see what it does. The City’s Blessing, the Ring’s temptation and Speed have their own badges. An emblem with an ability you can activate right now glows green; click it to activate.',
         '👑 The Monarch — the crown chip marks the monarch. They draw an extra card at the beginning of their end step, and a creature that deals them combat damage takes the crown for its controller.',
         '🗝️ The Initiative — marks the player who has the initiative. It sits beside the crown when one player holds both; see “Dungeons and the initiative”.',
       ] },

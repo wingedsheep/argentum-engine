@@ -35,6 +35,7 @@ import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
 import com.wingedsheep.engine.state.components.battlefield.ClassLevelComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.identity.EmblemOwnedActivatedAbilityComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.identity.OwnerComponent
@@ -178,6 +179,22 @@ internal class ActivationValidator(
         cardComponent: CardComponent,
         ability: ActivatedAbility,
     ): String? {
+        // An emblem's own ability functions in the command zone (CR 114.4), and only the player
+        // who got the emblem controls it (CR 114.2). An emblem is not a permanent (CR 114.5), so
+        // nothing that stops a permanent's abilities reaches it; only a player-wide prohibition
+        // (Yuriko, Blade of the Mighty) does.
+        if (container.has<EmblemOwnedActivatedAbilityComponent>()) {
+            if (container.get<ControllerComponent>()?.playerId != action.playerId) {
+                return "You don't control this emblem"
+            }
+            if (castPermissionUtils.isActivationForbidden(
+                    state, action.sourceId, action.playerId, abilityIsManaAbility = ability.isManaAbility
+                )
+            ) {
+                return "An effect prevents you from activating that ability right now"
+            }
+            return null
+        }
         if (ability.activateFromZone != Zone.BATTLEFIELD) {
             val ownerId = container.get<OwnerComponent>()?.playerId ?: return "Card has no owner"
             val inZone = state.getZone(ownerId, ability.activateFromZone).contains(action.sourceId)

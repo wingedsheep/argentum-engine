@@ -3252,6 +3252,142 @@
     "colorIdentityOverride": []
 }
 
+// Karn, Living Legacy
+{
+    "name": "Karn, Living Legacy",
+    "manaCost": "{4}",
+    "typeLine": "Legendary Planeswalker — Karn",
+    "oracleText": "+1: Create a tapped Powerstone token. (It's an artifact with \"{T}: Add {C}. This mana can't be spent to cast a nonartifact spell.\")\n−1: Pay any amount of mana. Look at that many cards from the top of your library, then put one of those cards into your hand and the rest on the bottom of your library in a random order.\n−7: You get an emblem with \"Tap an untapped artifact you control: This emblem deals 1 damage to any target.\"",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Karn, Living Legacy:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Powerstone",
+                    "tapped": true
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Karn, Living Legacy:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -1
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayPayX",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "TopOfLibrary",
+                                    "count": "XValue"
+                                },
+                                "storeAs": "looked"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "looked",
+                                "selection": {
+                                    "type": "ChooseExactly",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "kept",
+                                "storeRemainder": "rest",
+                                "selectedLabel": "Put in hand",
+                                "remainderLabel": "Put on bottom"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "kept",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Hand"
+                                }
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "rest",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Library",
+                                    "placement": "Bottom"
+                                },
+                                "order": "Random"
+                            }
+                        ]
+                    }
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Karn, Living Legacy:4",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -7
+                },
+                "effect": {
+                    "type": "CreatePermanentEmblem",
+                    "ownedActivatedAbilities": [
+                        {
+                            "id": "Karn, Living Legacy:1",
+                            "cost": {
+                                "type": "CostAtomWrapper",
+                                "atom": {
+                                    "type": "AtomTapPermanents",
+                                    "filter": "artifact"
+                                }
+                            },
+                            "effect": {
+                                "type": "DealDamage",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "AnyTarget",
+                                    "id": "t0"
+                                }
+                            ],
+                            "descriptionOverride": "Tap an untapped artifact you control: This emblem deals 1 damage to any target."
+                        }
+                    ],
+                    "emblemDescription": "Tap an untapped artifact you control: This emblem deals 1 damage to any target."
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "1",
+        "rarity": "MYTHIC",
+        "artist": "Chris Rahn",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/8/e83b1b87-01d5-4624-8a2b-4b771e13e59c.jpg?1783921372"
+    },
+    "startingLoyalty": 4,
+    "colorIdentityOverride": []
+}
+
 // Leaf-Crowned Visionary
 {
     "name": "Leaf-Crowned Visionary",

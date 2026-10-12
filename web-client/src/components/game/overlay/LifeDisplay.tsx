@@ -10,6 +10,8 @@ import { isLoneTargetRequirement } from '@/utils/targeting.ts'
 import { EmoteBubble } from '../../tableTalk/EmoteBubble'
 import { EmotePicker } from '../../tableTalk/EmotePicker'
 import { AvatarArt, hasAvatarArt } from '../../profile/AvatarArt'
+import { useInteraction } from '@/hooks/useInteraction.ts'
+import type { LegalActionInfo } from '@/types'
 
 /**
  * Life total display - interactive when in targeting mode or when a pending decision requires player targeting.
@@ -689,6 +691,15 @@ export function ActiveEffectsBadges({ effects }: { effects: readonly ClientPlaye
   const responsive = useResponsiveContext()
   const [hoveredEffect, setHoveredEffect] = React.useState<string | null>(null)
   const [hoverPos, setHoverPos] = React.useState<{ x: number; y: number } | null>(null)
+  // An emblem with abilities of its own (Karn, Living Legacy's) is activated from its badge: the
+  // server's legal actions name the emblem as their source.
+  const legalActions = useGameStore((state) => state.legalActions)
+  const { executeAction } = useInteraction()
+  const [menuFor, setMenuFor] = React.useState<string | null>(null)
+  const actionsFor = (effect: ClientPlayerEffect): LegalActionInfo[] =>
+    effect.sourceId
+      ? legalActions.filter((a) => a.action.type === 'ActivateAbility' && a.action.sourceId === effect.sourceId)
+      : []
 
   if (!effects || effects.length === 0) return null
 
@@ -703,14 +714,26 @@ export function ActiveEffectsBadges({ effects }: { effects: readonly ClientPlaye
         // The Ring (CR 701.54) gets a dedicated gilded badge instead of the generic chip.
         effect.effectId === 'the_ring' ? (
           <TheRingBadge key={effect.effectId} effect={effect} />
-        ) : (
+        ) : (() => {
+        const actions = actionsFor(effect)
+        const activatable = actions.length > 0
+        return (
         <div
           key={effect.effectId}
           style={{
             ...styles.effectBadge,
             padding: responsive.isMobile ? '2px 6px' : '4px 8px',
             fontSize: responsive.fontSize.small,
+            ...(activatable ? styles.effectBadgeActivatable : {}),
           }}
+          {...(activatable ? {
+            role: 'button',
+            title: actions.length === 1 ? actions[0]!.description : 'Activate an ability',
+            onClick: () => {
+              if (actions.length === 1) executeAction(actions[0]!)
+              else setMenuFor(menuFor === effect.effectId ? null : effect.effectId)
+            },
+          } : {})}
           onMouseEnter={(e) => {
             setHoveredEffect(effect.effectId)
             setHoverPos({ x: e.clientX, y: e.clientY })
@@ -725,13 +748,31 @@ export function ActiveEffectsBadges({ effects }: { effects: readonly ClientPlaye
         >
           {effect.icon && <span style={styles.effectBadgeIcon}>{getEffectIcon(effect.icon)}</span>}
           <span style={styles.effectBadgeName}>{effect.name}</span>
-          {hoveredEffect === effect.effectId && effect.description && !effect.imageUri && (
+          {hoveredEffect === effect.effectId && effect.description && !effect.imageUri && menuFor !== effect.effectId && (
             <div style={styles.effectTooltip}>
               <AbilityText text={effect.description} size={13} />
             </div>
           )}
+          {menuFor === effect.effectId && activatable && (
+            <div style={styles.effectAbilityMenu}>
+              {actions.map((actionInfo, i) => (
+                <button
+                  key={i}
+                  style={styles.effectAbilityMenuButton}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setMenuFor(null)
+                    executeAction(actionInfo)
+                  }}
+                >
+                  <AbilityText text={actionInfo.description} size={13} />
+                </button>
+              ))}
+            </div>
+          )}
         </div>
         )
+        })()
       ))}
       {showCardPreview && (
         <HoverCardPreview

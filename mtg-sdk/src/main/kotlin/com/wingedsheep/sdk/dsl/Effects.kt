@@ -1326,6 +1326,7 @@ object Effects {
         grantedKeywords: List<String> = emptyList(),
         grantedActivatedAbilities: List<com.wingedsheep.sdk.scripting.ActivatedAbility> = emptyList(),
         ownedStaticAbilities: List<com.wingedsheep.sdk.scripting.StaticAbility> = emptyList(),
+        ownedActivatedAbilities: List<com.wingedsheep.sdk.scripting.ActivatedAbility> = emptyList(),
         emblemDescription: String
     ): Effect = com.wingedsheep.sdk.scripting.effects.CreatePermanentEmblemEffect(
         groupFilter = groupFilter,
@@ -1334,6 +1335,7 @@ object Effects {
         grantedKeywords = grantedKeywords,
         grantedActivatedAbilities = grantedActivatedAbilities,
         ownedStaticAbilities = ownedStaticAbilities,
+        ownedActivatedAbilities = ownedActivatedAbilities,
         emblemDescription = emblemDescription
     )
 
