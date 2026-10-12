@@ -100,7 +100,8 @@ class EffectAndTriggerContinuationResumer(
                         maxTargets = if (next.unlimited) legal.size else next.count,
                     )),
                     legalTargets = mapOf(0 to legal),
-                    effectHint = continuation.description,
+                    effectHint = com.wingedsheep.engine.event.TriggerTargetHint
+                        .withoutTriggerClause(continuation.description),
                     answer = continuation.copy(sequentialTargets = chosen),
                 )
             }

@@ -12,6 +12,7 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.string.shouldNotContain
 import io.kotest.matchers.string.shouldNotStartWith
 
 /**
@@ -154,6 +155,54 @@ class StepTextDescriptionTest : DescribeSpec({
             GameObjectFilter.Creature.tapped().description shouldBe "tapped creature"
             GameObjectFilter.Creature.enteredThisTurn().description shouldBe
                 "creature that entered the battlefield this turn"
+        }
+    }
+
+    describe("an empty else branch adds no dangling \"Otherwise,\"") {
+
+        it("a collection test whose else is Effects.Nothing (Diregraf Scavenger)") {
+            ConditionalOnCollectionEffect(
+                collection = "exiled",
+                ifNotEmpty = Effects.GainLife(2),
+                ifEmpty = Effects.Nothing,
+                filter = GameObjectFilter.Creature
+            ).description shouldBe "If those cards include a creature card, you gain 2 life"
+        }
+
+        it("a collection test still names a real else branch") {
+            ConditionalOnCollectionEffect(
+                collection = "exiled",
+                ifNotEmpty = Effects.GainLife(2),
+                ifEmpty = Effects.DrawCards(1)
+            ).description shouldNotContain "Otherwise, ."
+        }
+
+        it("a gate whose otherwise is Effects.Nothing") {
+            Effects.If(
+                condition = com.wingedsheep.sdk.dsl.Conditions.OpponentControlsMoreLands,
+                then = Effects.GainLife(2),
+                otherwise = Effects.Nothing
+            ).description shouldNotContain "Otherwise"
+        }
+    }
+
+    describe("a library end with a counted phrase reads as Oracle does") {
+
+        it("a fixed count stays between top and cards") {
+            CardSource.TopOfLibrary(3, Player.You).description shouldBe "the top 3 cards of your library"
+            CardSource.TopOfLibrary(DynamicAmount.XValue, Player.You).description shouldBe
+                "the top X cards of your library"
+        }
+
+        it("a phrase count moves after the library (Screaming Swarm)") {
+            LibraryPatterns.mill(
+                com.wingedsheep.sdk.dsl.DynamicAmounts.attackingCreaturesYouControl(),
+                EffectTarget.ContextTarget(0)
+            ).description shouldNotContain "top the number"
+            CardSource.BottomOfLibrary(
+                com.wingedsheep.sdk.dsl.DynamicAmounts.attackingCreaturesYouControl(), Player.You
+            ).description shouldBe "a number of cards from the bottom of your library equal to " +
+                com.wingedsheep.sdk.dsl.DynamicAmounts.attackingCreaturesYouControl().description
         }
     }
 
