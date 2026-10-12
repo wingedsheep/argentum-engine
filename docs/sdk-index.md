@@ -252,7 +252,7 @@ Families:
 - `CardPredicate.PowerAtMostEntity(reference: EffectTarget.SingleEntity)` — Power less than or equal to the projected power of a referenced entity.
 - `CardPredicate.PowerEquals(value: Int)`
 - `CardPredicate.PowerEqualsDynamic(amount: DynamicAmount)` — Power *exactly* equal to a DynamicAmount resolved when the predicate is checked — the dynamic counterpart of PowerEquals.
-- `CardPredicate.PowerGreaterThanBase` — Projected power strictly greater than the object's own base power — "a creature with power greater than its base power" (Kutzil, Malamet Exemplar; the Malamet cycle).
+- `CardPredicate.PowerGreaterThanBase` — Projected power strictly greater than the object's own base power — "a creature with power greater than its base power" (Kutzil, Malamet Exemplar; Baird, Argivian Recruiter).
 - `CardPredicate.PowerGreaterThanEntity(reference: EffectTarget.SingleEntity)` — Power strictly greater than the projected power of a referenced entity.
 - `CardPredicate.PowerLessThanEntity(reference: EffectTarget.SingleEntity)` — Power strictly less than the projected power of reference (e.g. "a creature with lesser power" than the source — Rangers of Ithilien).
 - `CardPredicate.PowerOrToughnessAtLeast(min: Int)` — Power or toughness is at least the given value (OR logic)
@@ -1086,8 +1086,8 @@ Families:
 ## EntityNumericProperty
 
 - `EntityNumericProperty.AttachmentCount(kind: AttachmentKind)` — The number of permanents attached to this entity, optionally narrowed to a single AttachmentKind.
-- `EntityNumericProperty.BasePower` — The entity's printed **base** power — its power before counters, Auras, Equipment, anthems, and any other continuous modification.
-- `EntityNumericProperty.BaseToughness` — The entity's printed **base** toughness — the toughness sibling of BasePower.
+- `EntityNumericProperty.BasePower` — The entity's **base** power — its power after copy effects, characteristic-defining abilities and effects that set power (layers 1–7b), before counters, Auras, Equipment, anthems and any other modi…
+- `EntityNumericProperty.BaseToughness` — The entity's **base** toughness — the toughness sibling of BasePower, read the same way.
 - `EntityNumericProperty.BlockerCount`
 - `EntityNumericProperty.ColorCount` — The number of distinct colors this entity has, read from projected state when available (so layer-5 color-changing effects are honored).
 - `EntityNumericProperty.ColoredManaSymbolCount(colors: List<Color>)` — The number of mana symbols of colors in **this one entity's** printed mana cost — `{1}{U}{U}` counts 2 blue, `{U/R}{R}` counts 1 blue.

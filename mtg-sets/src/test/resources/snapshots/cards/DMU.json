@@ -479,6 +479,63 @@
     "colorIdentityOverride": []
 }
 
+// Baird, Argivian Recruiter
+{
+    "name": "Baird, Argivian Recruiter",
+    "manaCost": "{R}{W}",
+    "typeLine": "Legendary Creature — Human Soldier",
+    "oracleText": "At the beginning of your end step, if you control a creature with power greater than its base power, create a 1/1 white Soldier creature token.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Baird, Argivian Recruiter:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Soldier"
+                    ]
+                },
+                "interveningIf": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            "PowerGreaterThanBase"
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "195",
+        "rarity": "UNCOMMON",
+        "artist": "Jarel Threat",
+        "flavorText": "\"Fear doesn't make you a coward; giving in to it does. Now take up your sword and fight!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/f/1f643d78-d8d8-4645-9357-a68ebd0d3517.jpg?1783921287"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
+    ]
+}
+
 // Balmor, Battlemage Captain
 {
     "name": "Balmor, Battlemage Captain",

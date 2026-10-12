@@ -935,8 +935,10 @@ class CostCalculator(
             projectedState.getPower(entityId) ?: baseCharacteristic(card.baseStats?.power)
         EntityNumericProperty.Toughness ->
             projectedState.getToughness(entityId) ?: baseCharacteristic(card.baseStats?.toughness)
-        EntityNumericProperty.BasePower -> baseCharacteristic(card.baseStats?.power)
-        EntityNumericProperty.BaseToughness -> baseCharacteristic(card.baseStats?.toughness)
+        EntityNumericProperty.BasePower ->
+            projectedState.getBasePower(entityId) ?: baseCharacteristic(card.baseStats?.power)
+        EntityNumericProperty.BaseToughness ->
+            projectedState.getBaseToughness(entityId) ?: baseCharacteristic(card.baseStats?.toughness)
         EntityNumericProperty.ManaValue -> card.manaValue
         else -> 0
     }

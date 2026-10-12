@@ -5946,10 +5946,12 @@ This is the player-arm prerequisite for the planned composable mixed `TargetUnio
   source's departure, like the activated-ability field), so a token source swept by CR 704.5d still
   answers. A noncreature reference reads as power 0.
 - `.powerGreaterThanBase()` — **self-relative**: the object's current (projected) power is strictly greater
-  than its **own** printed base power (`CardComponent.baseStats.basePower`). Any pump that raises power above
-  base qualifies — a +1/+1 counter, an anthem, a temporary boost; a shrunk or unmodified creature does not.
-  Off-battlefield objects (no projected power) and `*`/CDA-power creatures (no fixed printed base) never
-  match. Backs the Malamet "power greater than its base power" cycle — Kutzil, Malamet Exemplar ("Whenever
+  than its **own** base power — the same layer-7b base `.basePower(n)` reads below, so a CDA, a copy or a
+  "has base power N" effect sets the base, while a +1/+1 counter, an anthem or a temporary boost raises power
+  above it; a shrunk or unmodified creature does not. Off-battlefield objects (no projected power) never
+  match. Backs Baird, Argivian Recruiter ("At the beginning of your end step, if you control a creature with
+  power greater than its base power, …" — `Conditions.Exists(Player.You, Zone.BATTLEFIELD,
+  GameObjectFilter.Creature.powerGreaterThanBase())`) and the Malamet "power greater than its base power" cycle — Kutzil, Malamet Exemplar ("Whenever
   one or more creatures you control each with power greater than its base power deals combat damage to a
   player, draw a card"), pairing `GameObjectFilter.Creature.powerGreaterThanBase()` with the
   `OneOrMoreDealCombatDamageToPlayerEvent` batch trigger (§8).
@@ -5962,7 +5964,7 @@ This is the player-arm prerequisite for the planned composable mixed `TargetUnio
   just before the first 7c effect (so a 7c static counting "base power 1" creatures — Sword of the Squeak's
   `GrantDynamicStats` — sees it); elsewhere it reads the printed value. Rapid Augmenter ("another creature you
   control with base power 1 enters"), Sword of the Squeak ("for each creature you control with base power or
-  toughness 1"). Distinct from `.powerGreaterThanBase()` above, which compares against the *printed* base.
+  toughness 1"). `.powerGreaterThanBase()` above compares current power against this same base.
 - `.manaValueAtMostEntityManaSpent(ref)` — mana value ≤ the mana **actually spent** to cast a referenced
   entity. Reads the live `SpellOnStackComponent` buckets while the entity is still a spell, or the
   `CastRecordComponent` snapshot once it has resolved onto the battlefield (0 if it was never cast).
@@ -9790,7 +9792,7 @@ staticAbility {
   "the number of charge counters on this artifact" (`DynamicAmounts.countersOnSelf(...)`) need no new
   member here. The amount goes through the engine's ordinary `DynamicAmountEvaluator`, so `Power` /
   `Toughness` come from projected state (counters, Auras, and anthems on the source count),
-  `BasePower` / `BaseToughness` / `ManaValue` from the printed card, and counter counts from the
+  `BasePower` / `BaseToughness` from the layer-7b base snapshot, `ManaValue` from the card, and counter counts from the
   source's counters — a *fuller* read than the two group aggregates above, which resolve their
   `EntityNumericProperty` through the cost calculator's own smaller switch; the shared thing is the
   property type, not the evaluation. The evaluated value is floored at 0 per **CR 107.1b**, per
@@ -14387,9 +14389,9 @@ read is available to other snapshot-backed entity references once their captured
   the creature is still present mid-composite with its just-marked damage. Returns 0 off the battlefield or
   for a non-creature.
 - `EntityProperty(entity, EntityNumericProperty.BasePower)` / `EntityNumericProperty.BaseToughness` — the
-  entity's printed **base** power/toughness (its P/T before counters, Auras, Equipment, anthems, and any other
-  continuous modification): the Fixed `CardComponent.baseStats.basePower`/`baseToughness` the card was printed
-  with, `0` for `*`/CDA stats. Uses the *same* base as the `CardPredicate.PowerGreaterThanBase` filter, so
+  entity's **base** power/toughness: its P/T after copy effects, CDAs and effects that *set* P/T (layers 1–7b),
+  before counters, Auras, Equipment, anthems and any other modification. On the battlefield it reads the
+  `ProjectedState.getBasePower`/`getBaseToughness` snapshot; elsewhere the printed (or CDA-evaluated) stat. Uses the *same* base as the `CardPredicate.PowerGreaterThanBase` filter, so
   `Subtract(EntityProperty(e, Power), EntityProperty(e, BasePower))` gives exactly the "difference" (current
   power − base power) that filter's qualifying creatures have — the per-creature +1/+1 counter amount for
   **Sovereign Okinec Ahau** ("Whenever ~ attacks, for each creature you control with power greater than that

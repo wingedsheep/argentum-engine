@@ -1592,14 +1592,14 @@ class DynamicAmountEvaluator(
             is EntityNumericProperty.Toughness ->
                 resolvePowerOrToughness(state, entityId, isPower = false, context, useProjected, explicitProjected)
 
-            // Printed base power/toughness — never projected. Reads the Fixed base the card was
-            // printed with (0 for */CDA stats), matching the CardPredicate.PowerGreaterThanBase
-            // filter so "difference = power − base power" stays consistent (Sovereign Okinec Ahau).
+            // Effective base power/toughness — the layer-7b snapshot, the same reading the
+            // CardPredicate.PowerGreaterThanBase filter uses, so "difference = power − base power"
+            // stays consistent (Sovereign Okinec Ahau).
             is EntityNumericProperty.BasePower ->
-                state.getEntity(entityId)?.get<CardComponent>()?.baseStats?.basePower ?: 0
+                resolveBaseStat(state, entityId, isPower = true, useProjected, explicitProjected)
 
             is EntityNumericProperty.BaseToughness ->
-                state.getEntity(entityId)?.get<CardComponent>()?.baseStats?.baseToughness ?: 0
+                resolveBaseStat(state, entityId, isPower = false, useProjected, explicitProjected)
 
             is EntityNumericProperty.ManaValue ->
                 state.getEntity(entityId)?.get<CardComponent>()?.manaValue ?: 0
@@ -1785,6 +1785,27 @@ class DynamicAmountEvaluator(
             if (lastKnown != null) return lastKnown
         }
         // Fall back to base stats (entity not on battlefield or projection disabled)
+        return offBattlefieldStat(state, entityId, isPower, explicitProjected) ?: 0
+    }
+
+    /**
+     * An object's base power or toughness: its value after copy effects, characteristic-defining
+     * abilities and "base power is N" effects, before modifications and counters. On the battlefield
+     * that's the projection's layer-7b snapshot; elsewhere it's the printed (or CDA-evaluated) stat,
+     * since nothing else applies there.
+     */
+    private fun resolveBaseStat(
+        state: GameState,
+        entityId: EntityId,
+        isPower: Boolean,
+        useProjected: Boolean,
+        explicitProjected: ProjectedState?
+    ): Int {
+        if (useProjected) {
+            val projection = resolveProjection(state, explicitProjected)
+            val base = if (isPower) projection.getBasePower(entityId) else projection.getBaseToughness(entityId)
+            if (base != null) return base
+        }
         return offBattlefieldStat(state, entityId, isPower, explicitProjected) ?: 0
     }
 

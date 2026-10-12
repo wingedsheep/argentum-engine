@@ -1052,8 +1052,9 @@ internal class AffectsFilterResolver(
         is CardPredicate.PowerLessThanEntity -> false
         is CardPredicate.CompareNumericProperty -> false
         CardPredicate.PowerGreaterThanBase -> {
-            // Self-relative: projected power vs the object's own printed base power.
-            val basePower = card.baseStats?.basePower
+            // Self-relative: projected power vs the object's own effective base power — the
+            // layer-7b snapshot once layer 7 has run, the printed base before it.
+            val basePower = projected?.basePower ?: card.baseStats?.basePower
             val currentPower = projected?.power ?: basePower
             basePower != null && currentPower != null && currentPower > basePower
         }

@@ -867,12 +867,12 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
 
     /**
      * Projected power strictly greater than the object's own base power — "a creature with power
-     * greater than its base power" (Kutzil, Malamet Exemplar; the Malamet cycle). Self-relative:
-     * the comparison reads the object's current (projected) power against its printed base power
-     * ([com.wingedsheep.sdk.model.CardComponent.baseStats] `.basePower`), so any pump that raises
-     * power above base — a +1/+1 counter, an anthem, a temporary boost — qualifies, while a
-     * shrunk or unmodified creature does not. Off-battlefield objects (no projected power) never
-     * match; `*`/CDA power (no fixed printed base) never matches.
+     * greater than its base power" (Kutzil, Malamet Exemplar; Baird, Argivian Recruiter).
+     * Self-relative: the comparison reads the object's current (projected) power against its base
+     * power — the same layers 1–7b value [BasePowerEquals] reads, so a CDA, a copy or a "has base
+     * power N" effect sets the base, while a +1/+1 counter, an anthem or a temporary boost raises
+     * power above it. A shrunk or unmodified creature does not qualify; off-battlefield objects
+     * (no projected power) never match.
      */
     @SerialName("PowerGreaterThanBase")
     @Serializable
