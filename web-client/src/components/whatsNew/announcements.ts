@@ -30,6 +30,16 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: readonly Announcement[] = [
   {
+    id: 'set-blc',
+    date: '2026-10-12',
+    kind: 'set',
+    setCode: 'BLC',
+    title: 'Bloomburrow Commander is complete',
+    body:
+      'All four Bloomburrow Commander decks are playable: Bello animates an army of artifacts and enchantments, Zinnia gives your creature spells offspring, Ms. Bumbleflower hands out gifts to the whole table, and Hazel’s Squirrels go wide on Food and forage. Big multiplayer turns with a cozy woodland cast.',
+    tryIf: 'Commander precons, token swarms and table-wide politics',
+  },
+  {
     id: 'feature-cubes-page',
     date: '2026-10-11',
     kind: 'feature',
