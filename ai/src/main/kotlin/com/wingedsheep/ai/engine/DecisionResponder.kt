@@ -8,6 +8,7 @@ import com.wingedsheep.ai.engine.budget.LegacyBudgetPolicy
 import com.wingedsheep.ai.engine.evaluation.BoardEvaluator
 import com.wingedsheep.ai.engine.evaluation.BoardPresence
 import com.wingedsheep.ai.engine.knowledge.ExpiringGrantWindow
+import com.wingedsheep.ai.engine.knowledge.GraveyardSynergy
 import com.wingedsheep.ai.engine.knowledge.IntentCatalog
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.state.GameState
@@ -197,9 +198,16 @@ class DecisionResponder(
             // For optional targets (minTargets == 0), also consider picking no targets
             if (req.minTargets == 0) {
                 val skipResponse = TargetsResponse(decision.id, mapOf(req.index to emptyList()))
-                val bestScore = evaluateResult(state,simulator.simulateDecision(state, bestResponse), playerId)
+                val bestResult = simulator.simulateDecision(state, bestResponse)
+                val bestScore = evaluateResult(state, bestResult, playerId)
                 val skipScore = evaluateResult(state,simulator.simulateDecision(state, skipResponse), playerId)
-                if (skipScore >= bestScore) return skipResponse
+                // An even trade is still worth taking when it strips the opponent's graveyard (or
+                // mills them) — the part of the result the evaluator can't see.
+                val even = skipScore == bestScore ||
+                    kotlin.math.abs(skipScore - bestScore) <= TIE_EPSILON * maxOf(1.0, kotlin.math.abs(bestScore))
+                val evenButUseful = even && bestScore != Double.NEGATIVE_INFINITY &&
+                    libraryAndGraveyardPreference(state, bestResult.state, playerId) > 0.0
+                if (skipScore >= bestScore && !evenButUseful) return skipResponse
             }
 
             return bestResponse
@@ -1245,15 +1253,81 @@ class DecisionResponder(
         return dropOpen && !landInHand
     }
 
-    private fun <T> pickBestBySimulation(
+    /**
+     * The target whose simulated result scores best, with ties broken deliberately rather than by
+     * list order.
+     *
+     * Ties are common for effects the board evaluator can't see — it has no library or graveyard
+     * term, so "target player mills N" aimed at either player, or "exile target card from a
+     * graveyard" aimed at either graveyard, scores identically. Breaking that tie toward the first
+     * legal target is how a Screaming Swarm milled its own controller ten cards over four attacks
+     * (the 2026-10-12 VOW-vs-LRW engine log). Among tied candidates the pick goes to the best
+     * [libraryAndGraveyardPreference] of its result, then to [targetHeuristic], then to the earliest.
+     */
+    private fun pickBestBySimulation(
         state: GameState,
-        candidates: List<T>,
+        candidates: List<EntityId>,
         playerId: EntityId,
-        buildResponse: (T) -> DecisionResponse
-    ): T {
-        return candidates.maxByOrNull { candidate ->
-            evaluateResult(state,simulator.simulateDecision(state, buildResponse(candidate)), playerId)
-        } ?: candidates.first()
+        buildResponse: (EntityId) -> DecisionResponse
+    ): EntityId {
+        val scored = candidates.map { candidate ->
+            val result = simulator.simulateDecision(state, buildResponse(candidate))
+            Triple(candidate, result, evaluateResult(state, result, playerId))
+        }
+        val top = scored.maxOfOrNull { it.third } ?: return candidates.first()
+        if (top == Double.NEGATIVE_INFINITY) return candidates.first()
+        val tolerance = TIE_EPSILON * maxOf(1.0, kotlin.math.abs(top))
+        val tied = scored.filter { (_, _, score) -> score == top || top - score <= tolerance }
+        if (tied.size == 1) return tied.single().first
+        return tied.maxWith(
+            compareBy<Triple<EntityId, SimulationResult, Double>>(
+                { libraryAndGraveyardPreference(state, it.second.state, playerId) },
+                { targetHeuristic(state, it.first, playerId) },
+            )
+        ).first
+    }
+
+    /**
+     * What the library and graveyard changes between [root] and [result] are worth to [playerId] —
+     * the term the board evaluator lacks, used only to break ties between otherwise equal answers.
+     *
+     * Per player, it reads cards **milled** (moved from library to graveyard) and cards **removed
+     * from the graveyard** (exiled, shuffled away):
+     *
+     *  - Milling an opponent is mildly good, and strongly good once their library is near empty —
+     *    unless their deck feeds on its graveyard ([GraveyardSynergy]) and decking is still far off,
+     *    in which case it is a gift.
+     *  - Milling yourself is good only when your deck feeds on its graveyard *and* your library stays
+     *    above [SAFE_LIBRARY_SIZE]; otherwise it is lost cards. It outbids a routine opponent mill,
+     *    never one that threatens to deck them.
+     *  - Emptying an opponent's graveyard is good (more so against a graveyard deck); emptying your
+     *    own is a small loss, a large one when your deck uses it.
+     */
+    private fun libraryAndGraveyardPreference(root: GameState, result: GameState, playerId: EntityId): Double {
+        var value = 0.0
+        for (player in root.turnOrder) {
+            val libraryBefore = root.getZone(player, Zone.LIBRARY)
+            val libraryAfter = result.getZone(player, Zone.LIBRARY)
+            val graveyardBefore = root.getZone(player, Zone.GRAVEYARD)
+            val graveyardAfter = result.getZone(player, Zone.GRAVEYARD).toSet()
+            val milled = libraryBefore.count { it in graveyardAfter }
+            val removed = graveyardBefore.count { it !in graveyardAfter }
+            if (milled == 0 && removed == 0) continue
+            val synergy = GraveyardSynergy.benefitsFromGraveyard(root, player, simulator.cardRegistry)
+            val nearDecked = libraryAfter.size <= NEAR_DECKED_LIBRARY_SIZE
+            if (player == playerId) {
+                val millValue = if (synergy && libraryAfter.size >= SAFE_LIBRARY_SIZE) SELF_MILL_PAYOFF else -SELF_MILL_COST
+                value += milled * millValue - removed * (if (synergy) GRAVEYARD_LOSS_SYNERGY else GRAVEYARD_LOSS_PLAIN)
+            } else if (root.isOpponentTo(player, playerId)) {
+                val millValue = when {
+                    nearDecked -> OPPONENT_MILL_NEAR_DECKED
+                    synergy -> -SELF_MILL_PAYOFF
+                    else -> OPPONENT_MILL
+                }
+                value += milled * millValue + removed * (if (synergy) GRAVEYARD_LOSS_SYNERGY else GRAVEYARD_LOSS_PLAIN)
+            }
+        }
+        return value
     }
 
     /**
@@ -1295,6 +1369,28 @@ class DecisionResponder(
 
         /** Names or creature types simulated per side of an open-ended list. */
         const val OPEN_LIST_CANDIDATES_PER_SIDE = 3
+
+        /** A library this size or smaller after a mill is close enough to decking to aim for. */
+        const val NEAR_DECKED_LIBRARY_SIZE = 8
+
+        /** The smallest library a graveyard deck will mill itself down to. */
+        const val SAFE_LIBRARY_SIZE = 15
+
+        /** Per card: milling a graveyard deck's own library (outbids [OPPONENT_MILL]). */
+        const val SELF_MILL_PAYOFF = 0.5
+
+        /** Per card: milling your own library with no use for the graveyard. */
+        const val SELF_MILL_COST = 0.5
+
+        /** Per card: milling an opponent whose library is not yet in danger. */
+        const val OPPONENT_MILL = 0.25
+
+        /** Per card: milling an opponent close to decking. */
+        const val OPPONENT_MILL_NEAR_DECKED = 2.0
+
+        /** Per card leaving a graveyard: the owner uses its graveyard / does not. */
+        const val GRAVEYARD_LOSS_SYNERGY = 1.0
+        const val GRAVEYARD_LOSS_PLAIN = 0.25
 
         /** Relative score difference treated as a tie: identical boards, up to summation order. */
         const val TIE_EPSILON = 1e-9
