@@ -134,6 +134,7 @@ data class LifeChangedEvent(
 enum class LifeChangeReason {
     DAMAGE,
     LIFE_LOSS,
+    RADIATION,
     LIFE_GAIN,
     PAYMENT
 }

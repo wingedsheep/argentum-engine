@@ -2025,6 +2025,7 @@ export interface SpectatorPlayerState {
   readonly playerName: string
   readonly life: number
   readonly poisonCounters: number
+  readonly radCounters?: number
   readonly handSize: number
   readonly librarySize: number
   readonly battlefield: readonly SpectatorCardInfo[]

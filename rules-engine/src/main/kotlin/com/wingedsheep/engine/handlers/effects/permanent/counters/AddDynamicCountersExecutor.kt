@@ -28,7 +28,7 @@ class AddDynamicCountersExecutor(
         effect: AddDynamicCountersEffect,
         context: EffectContext
     ): EffectResult {
-        val targetId = context.resolveTarget(effect.target)
+        val targetId = context.resolveTarget(effect.target, state)
             ?: return EffectResult.error(state, "No valid target for counters")
 
         val evaluator = amountEvaluator
@@ -59,7 +59,8 @@ class AddDynamicCountersExecutor(
         }.let { DamageUtils.markCounterPlacedOnCreature(it, context.controllerId, targetId, counterType) }
             .let { ReplacementEffectUtils.recordCounterPlacementLock(it, targetId, counterType, modifiedCount, amountEvaluator.predicates) }
 
-        val entityName = state.getEntity(targetId)?.get<CardComponent>()?.name ?: ""
+        val entityName = state.getEntity(targetId)?.get<CardComponent>()?.name
+            ?: state.getEntity(targetId)?.get<com.wingedsheep.engine.state.components.identity.PlayerComponent>()?.name.orEmpty()
 
         return EffectResult.success(
             newState,

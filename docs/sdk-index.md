@@ -919,7 +919,7 @@ Families:
 - `LookAtTargetHandEffect(target: EffectTarget)` — Look at target player's hand.
 - `LoseAllCreatureTypesEffect(target: EffectTarget, duration: Duration)` — Remove all creature types from a target creature.
 - `LoseGameEffect(target: EffectTarget, message: String?)` — Target player loses the game.
-- `LoseLifeEffect(amount: DynamicAmount, target: EffectTarget)` — Lose life effect.
+- `LoseLifeEffect(amount: DynamicAmount, target: EffectTarget, origin: LifeLossOrigin)` — Lose life effect.
 - `LoseUnspentManaEffect(target: EffectTarget, transferTo: EffectTarget?)` — Lose every unit of unspent mana, including restricted and combat-duration mana.
 - `MakeNextSpellUncounterableEffect(spellFilter: GameObjectFilter)` — The next spell its controller casts this turn matching spellFilter can't be countered.
 - `MakePlottedEffect(from: String, ownerControls: Boolean)` — Make every card in a named collection *plotted* (CR 718, Outlaws of Thunder Junction).

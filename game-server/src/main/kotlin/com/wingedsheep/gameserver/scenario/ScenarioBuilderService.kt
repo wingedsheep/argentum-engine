@@ -95,6 +95,10 @@ class ScenarioBuilderService(
 
         fun checkPlayer(label: String, config: PlayerConfig?) {
             config ?: return
+            config.counters?.forEach { (kind, count) ->
+                if (kind.isBlank() || CounterType.of(kind) !in CounterType.KNOWN) errors += "Unknown player counter type '$kind' on $label."
+                if (count < 0) errors += "Player counter count must be nonnegative on $label."
+            }
             checkZone("$label hand", config.hand)
             checkZone("$label graveyard", config.graveyard)
             checkZone("$label library", config.library)
@@ -183,6 +187,7 @@ class ScenarioBuilderService(
     private fun applyPlayer(builder: ScenarioBuilder, n: Int, config: PlayerConfig?) {
         config ?: return
         config.lifeTotal?.let { builder.withLifeTotal(n, it) }
+        config.counters?.let { builder.withPlayerCounters(n, it) }
         config.commanders?.forEach { builder.withCommander(n, it) }
         config.hand?.forEach { builder.withCardInHand(n, it) }
         config.battlefield?.forEach { card ->
@@ -448,6 +453,14 @@ class ScenarioBuilderService(
             val format = com.wingedsheep.sdk.core.Format.Commander()
             state = state.copy(format = format)
             playerIds.forEach { state = state.withLifeTotal(it, format.startingLife) }
+            return this
+        }
+
+        fun withPlayerCounters(playerNumber: Int, counters: Map<String, Int>): ScenarioBuilder {
+            require(counters.values.all { it >= 0 }) { "Player counters must be nonnegative" }
+            state = state.updateEntity(playerFor(playerNumber)) { container ->
+                container.with(CountersComponent(counters.mapKeys { CounterType.of(it.key) }))
+            }
             return this
         }
 

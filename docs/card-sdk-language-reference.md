@@ -1530,7 +1530,9 @@ this path, with blocker filters evaluated against projected state.
   The dynamic, payer-parametric twin of the fixed `PayLifeEffect`; use it as the `cost` of an
   `Effects.MayPay` (`Gate.MayPay`) so the same amount can also feed the `then` effect. A
   non-positive evaluated amount pays nothing and still counts as paid (CR 119.4).
-- `LoseLife(amount, target)` — target loses life.
+- `LoseLife(amount, target)` — target loses life. The dynamic overload also accepts
+  `origin = LifeLossOrigin.RADIATION` to distinguish loss from the inherent radiation ability;
+  the default `EFFECT` preserves existing definitions and ordinary life-loss triggers.
 - `DrainLife(amount, from = EachOpponent, to = Controller)` — each player in `from` loses `amount`
   life, then `to` gains life equal to the total *actually* lost (each loss honors `ModifyLifeLoss`
   replacements) as a single life-gain event — "Each opponent loses X life. You gain life equal to
@@ -17610,3 +17612,18 @@ in result-set order. Luck Bobblehead creates tapped Treasures from `evens.amount
 emits public `DieRolledEvent`s and detects observers at the settle boundary, after resolution.
 No new die decision is needed; server results appear in the game log. Roll replacements, extra
 ignored dice, rerolls and result modifiers are not part of this primitive's current surface.
+
+### Radiation player counters
+
+`CounterType.RAD` uses the existing `Effects.AddCounters`, `Effects.RemoveCounters`,
+`Effects.AddDynamicCounters`, `Effects.RemoveAllCountersOfType`,
+`DynamicAmounts.playerCounterCount` and proliferate vocabulary. Counter addition/removal also resolves
+state-dependent player references such as `Player.TriggeringPlayer` through the shared resolver.
+The engine supplies the inherent sourceless precombat-main triggered ability (CR 728.1), controlled
+by each active player. It uses the stack, checks its intervening if again on resolution, and reads
+that player's current rad count then. Mill replacements apply; each identifiable nonland milled
+into a public zone causes 1 life loss from radiation and removal of one rad counter. Counter removal
+is independent of preventing life loss. Shared-team turns give each active player their own trigger.
+The client displays the public counter total on player orbs and opponent seats. Scenario JSON
+can stage player counters with `player1.counters` / `player2.counters` (for example `{"RAD": 4}`).
+Radiation-specific life-loss conversion remains a separate replacement capability.

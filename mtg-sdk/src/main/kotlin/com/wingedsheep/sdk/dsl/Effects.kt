@@ -1,5 +1,6 @@
 package com.wingedsheep.sdk.dsl
 
+import com.wingedsheep.sdk.scripting.effects.LifeLossOrigin
 import com.wingedsheep.sdk.core.AbilityFlag
 import com.wingedsheep.sdk.scripting.effects.CopyRecipient
 import com.wingedsheep.sdk.scripting.effects.ChainCopyEffect
@@ -473,8 +474,11 @@ object Effects {
     /**
      * Lose dynamic life amount. Default target is target opponent.
      */
-    fun LoseLife(amount: DynamicAmount, target: EffectTarget = EffectTarget.PlayerRef(Player.TargetOpponent)): Effect =
-        LoseLifeEffect(amount, target)
+    fun LoseLife(
+        amount: DynamicAmount,
+        target: EffectTarget = EffectTarget.PlayerRef(Player.TargetOpponent),
+        origin: LifeLossOrigin = LifeLossOrigin.EFFECT
+    ): Effect = LoseLifeEffect(amount, target, origin)
 
     /**
      * Life drain: each player in [from] loses [amount] life, then [to] gains life equal to

@@ -449,6 +449,9 @@ value class CounterType(val name: String) {
          */
         val ENERGY = CounterType("ENERGY")
 
+        /** Player counters whose inherent precombat-main trigger processes radiation. */
+        val RAD = CounterType("RAD")
+
         /**
          * Experience counter (Commander 2015 onward; Avatar: The Last Airbender Eternal). Like
          * [ENERGY] and [POISON] it is placed on a **player**, not a permanent (CR 122.1 — "a marker
@@ -816,6 +819,7 @@ value class CounterType(val name: String) {
             FILM,
             SKEWER,
             ENERGY,
+            RAD,
             EXPERIENCE,
             ICE,
             OMEN,

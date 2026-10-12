@@ -97,6 +97,7 @@ export const displayableKeywords = new Set([
 
 /** Maps engine CounterType to mana-font counter class suffixes */
 export const counterManaClass: Record<string, string> = {
+  RAD: 'counter-charge',
   PLUS_ONE_PLUS_ONE: 'counter-plus',
   MINUS_ONE_MINUS_ONE: 'counter-minus',
   PLUS_ONE_PLUS_ZERO: 'counter-plus',

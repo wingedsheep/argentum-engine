@@ -2,7 +2,7 @@
 
 **Set Size:** 336 cards
 **Release Date:** March 8, 2024
-**Implemented:** 130 / 336
+**Implemented:** 131 / 336
 | Section    | Total | Done |
 |------------|-------|------|
 | Extras     | 336   | 129  |
@@ -75,7 +75,7 @@
 - [x] Command Tower
 - [ ] Commander Sofia Daguerre
 - [ ] Contagion Clasp
-- [ ] Contaminated Drink
+- [x] Contaminated Drink
 - [ ] Corpsejack Menace
 - [ ] Craig Boone, Novac Guard
 - [ ] Crimson Caravaneer

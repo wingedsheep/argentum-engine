@@ -1,3 +1,59 @@
+// Contaminated Drink
+{
+    "name": "Contaminated Drink",
+    "manaCost": "{X}{U}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Draw X cards, then you get half X rad counters, rounded up.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DrawCards",
+                    "count": "XValue"
+                },
+                {
+                    "type": "AddDynamicCounters",
+                    "counterType": "RAD",
+                    "amount": {
+                        "type": "Divide",
+                        "numerator": "XValue",
+                        "denominator": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    },
+                    "target": "Controller"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "99",
+        "rarity": "UNCOMMON",
+        "artist": "Craig Elliott",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/d/bde9eb15-544a-462a-8ab8-86067840c083.jpg?1783912391",
+        "rulings": [
+            {
+                "date": "2024-03-08",
+                "text": "In a game using the shared team turns option, such as an Archenemy or Two-Headed Giant game, the inherent triggered ability associated with rad counters triggers once for each player on the active team that has rad counters. Each instance of that ability is controlled by one of those players."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "Any effects (such as proliferate) that interact with counters a player gets, has, or loses can interact with rad counters."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "The cards are milled all at once, which means abilities that trigger “whenever one or more nonland cards are milled” will trigger exactly once as long as at least one nonland card was milled."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "If a player has fewer cards remaining in their library than the number of rad counters they have when the triggered ability resolves, they’ll mill as many cards as they can."
+            }
+        ]
+    }
+}
+
 // Desolate Mire
 {
     "name": "Desolate Mire",

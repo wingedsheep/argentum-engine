@@ -896,6 +896,7 @@ data class ClientPlayer(
      * serializes it away and the field costs nothing.
      */
     val energyCounters: Int = 0,
+    val radCounters: Int = 0,
 
     /**
      * This player's current experience counter total (CR 122.1 — a counter on a player; Aang,

@@ -639,6 +639,10 @@ function BottomSeatRailChip({ seat, isViewerSeat }: { seat: ClientPlayer; isView
           </span>
         )}
 
+        {!tomb && (seat.radCounters ?? 0) > 0 && (
+          <span title="Radiation: at this player's precombat main phase, they mill this many cards. Each nonland costs 1 life and removes a rad counter."
+            style={{ fontSize: 11, fontWeight: 800, color: '#a3e635' }}>☢{seat.radCounters}</span>
+        )}
         {/* Energy (CR 107.14) */}
         {!tomb && (seat.energyCounters ?? 0) > 0 && (
           <span
@@ -1215,6 +1219,10 @@ function RailChip({
           </span>
         )}
 
+        {!tomb && (opponent.radCounters ?? 0) > 0 && (
+          <span title="Radiation: at this player's precombat main phase, they mill this many cards. Each nonland costs 1 life and removes a rad counter."
+            style={{ fontSize: 11, fontWeight: 800, color: '#a3e635' }}>☢{opponent.radCounters}</span>
+        )}
         {/* Energy (CR 107.14) */}
         {!tomb && (opponent.energyCounters ?? 0) > 0 && (
           <span
@@ -1469,6 +1477,7 @@ function chipTitle(opponent: ClientPlayer): string {
     lines.push(`Max hand size ${opponent.maxHandSize ?? '∞ (no maximum)'}`)
   }
   if (opponent.poisonCounters > 0) lines.push(`Poison ${opponent.poisonCounters}/10`)
+  if ((opponent.radCounters ?? 0) > 0) lines.push(`Rad ${opponent.radCounters}`)
   if ((opponent.energyCounters ?? 0) > 0) lines.push(`Energy ${opponent.energyCounters}`)
   if ((opponent.experienceCounters ?? 0) > 0) lines.push(`Experience ${opponent.experienceCounters}`)
   for (const e of opponent.commanderDamage ?? []) {
