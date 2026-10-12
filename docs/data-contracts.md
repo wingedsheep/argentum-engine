@@ -910,10 +910,13 @@ players and battlefield permanents only.
 A `ChooseTargetsDecision` — the "choose new targets" prompt for a copied spell or
 triggered ability — carries the same shape per `TargetRequirementInfo`:
 `legalTargetsByPrefix`, keyed by the first `prefixLength` slots' answers (default:
-every earlier slot). Each slot contributes its selected IDs comma-joined, a kept
+every earlier slot; the earlier slots are always single-target, so the join is
+unambiguous). Each slot contributes its selected IDs comma-joined, a kept
 copy target (an empty answer) contributes `""`, and slots are joined by commas, so
 "keep the opponent" keys the land slot as `""` and "change it to player B" as `B`.
 When present it replaces `legalTargets` for that slot (which then holds the union,
 for display), and the server validates each answer against the entry its earlier
-answers select. A kept target is never re-checked when chosen (CR 707.10c); it is
-checked against its changed neighbours on resolution.
+answers select. A kept target may stay even if it is already illegal (CR 707.10c),
+but a changed target must not make a kept one illegal (CR 115.7d): the server
+rejects that answer, and an earlier choice whose later slots then have no legal
+answer is left out of the table.

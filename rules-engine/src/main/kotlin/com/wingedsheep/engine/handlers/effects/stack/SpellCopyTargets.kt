@@ -75,6 +75,8 @@ internal object SpellCopyTargets {
      * target (The Fall of Kroog: "target land that player controls"). Every earlier slot is either
      * kept — its original target stays bound (CR 707.10c) — or changed to one of its own choices.
      * Every requirement before the last is a single slot here, so requirement and slot indices agree.
+     * A changed choice is offered only when the later slots can still be answered, kept or changed,
+     * without unseating a kept target (CR 115.7d) — no opponent without lands for The Fall of Kroog.
      */
     private fun dependentTables(
         preview: Preview,
@@ -83,12 +85,19 @@ internal object SpellCopyTargets {
         originals: List<ChosenTarget>,
     ): List<Map<String, List<EntityId>>> {
         val tables = aligned.map { linkedMapOf<String, List<EntityId>>() }
-        fun visit(index: Int, keys: List<String>, prefix: List<ChosenTarget>) {
+        fun keepable(index: Int, prefix: List<ChosenTarget>) =
+            !unseats(preview, finder, aligned, originals, index, prefix + originals.drop(prefix.size))
+        fun visit(index: Int, keys: List<String>, prefix: List<ChosenTarget>): Boolean {
             val legal = preview.legal(finder, aligned[index], prefix, EffectContext.buildNamedTargets(aligned.take(index), prefix))
-            tables[index][keys.joinToString(",")] = legal
-            if (index == aligned.lastIndex) return
-            visit(index + 1, keys + "", prefix + originals[index])
-            legal.forEach { visit(index + 1, keys + it.value, prefix + entityIdToChosenTarget(preview.state, it)) }
+            val key = keys.joinToString(",")
+            if (index == aligned.lastIndex) {
+                tables[index][key] = legal
+                return legal.isNotEmpty() || keepable(index, prefix)
+            }
+            val keptCompletes = visit(index + 1, keys + "", prefix + originals[index]) && keepable(index, prefix)
+            val completing = legal.filter { visit(index + 1, keys + it.value, prefix + entityIdToChosenTarget(preview.state, it)) }
+            tables[index][key] = completing
+            return keptCompletes || completing.isNotEmpty()
         }
         visit(0, emptyList(), emptyList())
         return tables
@@ -152,10 +161,43 @@ internal object SpellCopyTargets {
         val selection = selection(state, sourceId, response, ordinal)
         if (selection.retained.size == selection.targets.size) return null
         val preview = preview(state, sourceId, controller, exceptions) ?: return "Source spell missing"
-        return finder.validator.validateTargets(preview.state, selection.targets, alignedRequirements(requirements, selection.targets.size), controller,
+        val aligned = alignedRequirements(requirements, selection.targets.size)
+        return finder.validator.validateTargets(preview.state, selection.targets, aligned, controller,
             preview.card.colors, preview.subtypes, preview.copyId, preview.xValue,
             TargetingSourceType.SPELL, retainedTargetIndices = selection.retained)
+            ?: unseatedKeptTarget(preview, finder, aligned, originals(state, sourceId, ordinal), selection)
     }
+
+    /**
+     * New targets must not make an unchanged target illegal (CR 115.7d): keeping the land of
+     * "target land that player controls" while changing the opponent is only allowed when the land
+     * was already illegal, or still is legal under the new opponent.
+     */
+    private fun unseatedKeptTarget(preview: Preview, finder: TargetFinder, aligned: List<TargetRequirement>,
+                                   originals: List<ChosenTarget>, selection: Selection): String? {
+        val unseated = selection.retained.sorted().firstOrNull { slot ->
+            unseats(preview, finder, aligned, originals, slot, selection.targets)
+        } ?: return null
+        return "The new targets would make an unchanged target illegal: ${slotRequirement(aligned, unseated)?.description}"
+    }
+
+    /** Whether [bindings] make the original target in [slot] illegal when it was legal among the originals. */
+    private fun unseats(preview: Preview, finder: TargetFinder, aligned: List<TargetRequirement>,
+                        originals: List<ChosenTarget>, slot: Int, bindings: List<ChosenTarget>): Boolean {
+        val requirement = slotRequirement(aligned, slot) ?: return false
+        val original = originals.getOrNull(slot) ?: return false
+        fun legal(among: List<ChosenTarget>) = finder.validator.validateSingleTarget(
+            state = preview.state, target = original, requirement = requirement,
+            casterId = preview.controllerId, sourceColors = preview.card.colors, sourceSubtypes = preview.subtypes,
+            sourceId = preview.copyId, xValue = preview.xValue, allTargets = among,
+            targetingSourceType = TargetingSourceType.SPELL,
+            namedTargets = EffectContext.buildNamedTargets(aligned, among),
+        ) == null
+        return legal(originals) && !legal(bindings)
+    }
+
+    private fun slotRequirement(aligned: List<TargetRequirement>, slot: Int): TargetRequirement? =
+        aligned.flatMap { req -> List(req.count) { req } }.getOrNull(slot)
 
     // The last requirement owns the remaining targets, including an unbounded/X group.
     // Earlier groups use the recorded counts, as do stack resolution and named-target binding.

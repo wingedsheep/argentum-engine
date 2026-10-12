@@ -218,13 +218,22 @@ fun ChooseTargetsDecision.minimalSelection(): Map<Int, List<EntityId>> =
 
 /**
  * Re-pick, minimally, every slot after [index] whose answer the earlier slots no longer allow —
- * changing who "target opponent" names unseats "target land that player controls".
+ * changing who "target opponent" names unseats "target land that player controls". A kept copy
+ * target behind a changed one may be unseated too (CR 115.7d), so it is changed to a legal pick
+ * when there is one; with none, the engine offered the change only because keeping stays legal.
  */
 fun ChooseTargetsDecision.repairSlotsAfter(index: Int, chosen: Map<Int, List<EntityId>>): Map<Int, List<EntityId>> {
     if (targetRequirements.none { it.legalTargetsByPrefix != null }) return chosen
     return targetRequirements.filter { it.index > index }.fold(chosen) { acc, req ->
         val legal = legalTargetsFor(req.index, acc)
-        if (legal.containsAll(acc[req.index].orEmpty())) acc else acc + (req.index to legal.take(req.minTargets))
+        val answer = acc[req.index].orEmpty()
+        val keptBehindChange = answer.isEmpty() && req.legalTargetsByPrefix != null &&
+            (0 until (req.prefixLength ?: req.index)).any { acc[it].orEmpty().isNotEmpty() }
+        when {
+            keptBehindChange -> acc + (req.index to legal.take(maxOf(req.minTargets, 1)))
+            legal.containsAll(answer) -> acc
+            else -> acc + (req.index to legal.take(req.minTargets))
+        }
     }
 }
 

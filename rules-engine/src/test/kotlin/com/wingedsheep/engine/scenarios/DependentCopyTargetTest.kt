@@ -28,7 +28,8 @@ import io.kotest.matchers.types.shouldBeInstanceOf
 import kotlinx.serialization.json.Json
 
 /**
- * A copy may keep or change each target (CR 707.10c), and a changed target must be legal (CR 115.7).
+ * A copy may keep or change each target (CR 707.10c); a changed target must be legal and must not
+ * make a kept one illegal (CR 115.7d).
  * When a later target reads an earlier one — "Choose target opponent. Destroy target land that
  * player controls." (The Fall of Kroog) — which lands are legal depends on the opponent the copy
  * ends up with, kept or changed. The prompt carries that as a per-prefix table and the decision
@@ -51,9 +52,9 @@ class DependentCopyTargetTest : FunSpec({
     class Board(val d: GameTestDriver, val p1Land: EntityId, val p2Land: EntityId, val p2Other: EntityId, val source: EntityId)
 
     // Player 1 razes player 2's land; player 2 copies it and may choose new targets.
-    fun board(): Board {
+    fun board(p1HasLand: Boolean = true): Board {
         val d = driver()
-        val p1Land = d.putLandOnBattlefield(d.player1, "Forest")
+        val p1Land = if (p1HasLand) d.putLandOnBattlefield(d.player1, "Forest") else EntityId("none")
         val p2Land = d.putLandOnBattlefield(d.player2, "Forest")
         val p2Other = d.putLandOnBattlefield(d.player2, "Mountain")
         val id = d.putCardInHand(d.player1, raze.name)
@@ -105,13 +106,18 @@ class DependentCopyTargetTest : FunSpec({
         b.copyTargets() shouldBe listOf(ChosenTarget.Player(b.d.player2), ChosenTarget.Permanent(b.p2Other))
     }
 
-    test("a kept land may stay with a changed opponent and is checked again on resolution") {
+    test("a changed opponent can't leave the kept land behind (CR 115.7d)") {
         val b = board()
-        b.answer(mapOf(0 to listOf(b.d.player1), 1 to emptyList())).error shouldBe null
-        b.copyTargets() shouldBe listOf(ChosenTarget.Player(b.d.player1), ChosenTarget.Permanent(b.p2Land))
-        // The copy's land is no longer one "that player controls" (CR 608.2b): it isn't destroyed.
-        b.d.bothPass().error shouldBe null
-        b.d.state.getBattlefield().contains(b.p2Land) shouldBe true
+        val before = b.d.state
+        (b.answer(mapOf(0 to listOf(b.d.player1), 1 to emptyList())).error != null) shouldBe true
+        b.d.state shouldBe before
+    }
+
+    test("an opponent with no land to take is not offered for a change") {
+        val b = board(p1HasLand = false)
+        val q = b.decision()
+        q.legalTargets[0] shouldBe emptyList()
+        q.targetRequirements[1].legalTargetsByPrefix!![""] shouldBe listOf(b.p2Land, b.p2Other)
     }
 
     test("the prefix table survives serialization of the paused state") {
@@ -209,5 +215,8 @@ class DependentCopyTargetTest : FunSpec({
         q.minimalSelection() shouldBe mapOf(0 to listOf(a), 1 to listOf(la))
         q.repairSlotsAfter(0, mapOf(0 to listOf(b), 1 to listOf(la))) shouldBe mapOf(0 to listOf(b), 1 to listOf(lb))
         q.repairSlotsAfter(0, mapOf(0 to listOf(a), 1 to listOf(la))) shouldBe mapOf(0 to listOf(a), 1 to listOf(la))
+        // A kept land behind a changed player is changed too: keeping it may be illegal (CR 115.7d).
+        q.repairSlotsAfter(0, mapOf(0 to listOf(b), 1 to emptyList())) shouldBe mapOf(0 to listOf(b), 1 to listOf(lb))
+        q.repairSlotsAfter(0, mapOf(0 to emptyList(), 1 to emptyList())) shouldBe mapOf(0 to emptyList(), 1 to emptyList())
     }
 })

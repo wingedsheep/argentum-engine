@@ -208,6 +208,21 @@ describe('ChooseTargetsUI walk — per-requirement walking', () => {
     ])
   })
 
+  it('keys a dependent slot on only its prefixLength slots, ignoring later siblings', () => {
+    // The second sibling slot of a multi-target last requirement keys on the earlier requirement alone.
+    const dependent = decision(
+      [
+        req({ index: 0 }),
+        req({ index: 1, legalTargetsByPrefix: { p3: [bears.id, elves.id] }, prefixLength: 1 }),
+        req({ index: 2, legalTargetsByPrefix: { p3: [elves.id] }, prefixLength: 1 }),
+      ],
+      { 0: [entityId('p3')], 1: [bears.id, elves.id], 2: [bears.id, elves.id] },
+    )
+    const walk = run([confirm([entityId('p3')], 3), confirm([bears.id], 3)])
+
+    expect(chooseTargetsView(dependent, walk, cards).legalTargets).toEqual([elves.id])
+  })
+
   it('steps Back with the previous requirement pre-selected and its pool restored', () => {
     const bothBoard = decision([req({ index: 0 }), req({ index: 1 })], {
       0: [bears.id, elves.id],
