@@ -10412,6 +10412,13 @@ riders, matching how the engine already treats e.g. City of Brass's damage durin
   more to activate unless they're mana abilities" →
   `IncreaseActivatedAbilityCost(GroupFilter(GameObjectFilter.Any), DynamicAmount.Fixed(2), excludeManaAbilities = true)`.
   Without it, every land's `{T}: Add …` would be taxed too.
+  The tax reaches every activated ability of a matching source in any zone, keyword ones included:
+  cycling and typecycling price through the `ManaCost` overload, and crew / saddle — whose printed
+  cost is only "tap creatures with total power N" — gain the mana outright ("{2}, tap creatures …"),
+  paid after the creatures are tapped so a crewing mana creature can't also pay it. Anointed
+  Peacekeeper: "Activated abilities of sources with the chosen name cost {2} more to activate unless
+  they're mana abilities" →
+  `IncreaseActivatedAbilityCost(GroupFilter(GameObjectFilter.Any.namedFromChosenComponent()), DynamicAmounts.fixed(2), excludeManaAbilities = true)`.
 - `ManaAbilitiesCostAdditionalLife(amount = 1, filter = GroupFilter.source())` — **mana** abilities of
   permanents matching `filter` cost `amount` additional life to activate. Thran Portal: "Mana abilities of this
   land cost an additional 1 life to activate" → `ManaAbilitiesCostAdditionalLife(1)`. Lowered to a Layer 6

@@ -35,6 +35,8 @@ class CrewVehicleHandler(
     private val cardRegistry: CardRegistry,
     private val stackResolver: StackResolver,
     private val castPermissionUtils: com.wingedsheep.engine.legalactions.utils.CastPermissionUtils? = null,
+    private val manaSolver: com.wingedsheep.engine.mechanics.mana.ManaSolver? = null,
+    private val costPaymentService: com.wingedsheep.engine.mechanics.cost.CostPaymentService? = null,
 ) : ActionHandler<CrewVehicle> {
     override val actionType: KClass<CrewVehicle> = CrewVehicle::class
 
@@ -134,6 +136,12 @@ class CrewVehicleHandler(
             return "Total power ($totalPower) is less than crew requirement (${crewAbility.n})"
         }
 
+        // A cost-modifying static can add mana to the cost (Anointed Peacekeeper naming this card).
+        val tax = TapForPowerActivationTax.of(castPermissionUtils, state, action.vehicleId, action.playerId)
+        if (!TapForPowerActivationTax.canPay(manaSolver, state, action.playerId, tax, action.crewCreatures)) {
+            return "Not enough mana to pay the crew cost ($tax)"
+        }
+
         return null
     }
 
@@ -166,6 +174,14 @@ class CrewVehicleHandler(
                 )
             }
         }
+
+        // Any tax is paid after the creatures are tapped, so none of them is also tapped for mana.
+        val tax = TapForPowerActivationTax.of(castPermissionUtils, state, action.vehicleId, action.playerId)
+        val (paidState, paidEvents) = TapForPowerActivationTax.pay(
+            costPaymentService, currentState, state, action.playerId, action.vehicleId, tax
+        ) ?: return TapForPowerActivationTax.unaffordable(state, "crew")
+        currentState = paidState
+        events.addAll(paidEvents)
 
         // Record the crew so Vehicle payoffs can read "creatures that crewed it this turn"
         // (e.g. Luxurious Locomotive). Union across activations within the turn.
@@ -220,6 +236,8 @@ class CrewVehicleHandler(
                 services.cardRegistry,
                 services.stackResolver,
                 services.castPermissionUtils,
+                services.manaSolver,
+                services.costPaymentService,
             )
         }
     }

@@ -5,6 +5,7 @@ import com.wingedsheep.engine.legalactions.ActionEnumerator
 import com.wingedsheep.engine.legalactions.EnumerationContext
 import com.wingedsheep.engine.legalactions.LegalAction
 import com.wingedsheep.engine.handlers.actions.ability.CrewSaddleContributionEvaluator
+import com.wingedsheep.engine.handlers.actions.ability.TapForPowerActivationTax
 import com.wingedsheep.engine.legalactions.TapForPowerCreatureData
 import com.wingedsheep.engine.mechanics.combat.rules.AttackAvailability
 import com.wingedsheep.engine.state.components.battlefield.SaddledComponent
@@ -79,7 +80,11 @@ class SaddleEnumerator : ActionEnumerator {
                 totalAvailablePower += power
             }
 
-            val canAfford = totalAvailablePower >= saddleAbility.n
+            // A cost-modifying static can add mana to crew/saddle; the handler charges it after
+            // tapping the creatures, so it's priced here the same way.
+            val tax = TapForPowerActivationTax.of(context.castPermissionUtils, state, entityId, playerId)
+            val canAfford = totalAvailablePower >= saddleAbility.n &&
+                (tax.isEmpty() || context.manaSolver.canPay(state, playerId, tax))
             // Saddle has no once-each-turn clause (CR 702.171a), and re-activating it adds
             // saddlers that "creatures that saddled it this turn" payoffs count — so keep offering
             // it on an already-saddled Mount, but label it so the player doesn't spend creatures
@@ -95,6 +100,7 @@ class SaddleEnumerator : ActionEnumerator {
                     },
                     action = SaddleMount(playerId, entityId, emptyList()),
                     affordable = canAfford,
+                    manaCostString = tax.takeUnless { it.isEmpty() }?.toString(),
                     tapForPower = true,
                     tapForPowerRequired = saddleAbility.n,
                     tapForPowerCreatures = validSaddleCreatures
