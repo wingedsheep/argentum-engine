@@ -125,6 +125,13 @@ describe('isHighlightable', () => {
       { isManaAbility: true, manaCostString: '{U}' },
     ))).toBe(true)
   })
+
+  it('is highlightable for a mana ability activated from the hand (Simian Spirit Guide)', () => {
+    expect(isHighlightable(actionInfo(
+      { type: 'ActivateAbility', playerId: PLAYER, sourceId: SOURCE, abilityId: 'exile', targets: [] },
+      { isManaAbility: true, sourceZone: 'HAND' },
+    ))).toBe(true)
+  })
 })
 
 describe('turnQueueHintFor', () => {

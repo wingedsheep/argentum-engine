@@ -334,10 +334,11 @@ class CastSpellHandler(
             }
         }
 
-        // A life-funded mana action is intentionally never auto-paid. Surface the mana window
+        // Mana auto-pay never spends — a life-funded mana action, a hand mana ability — is produced
+        // by the player, so when auto-pay alone falls short surface the mana window
         // before any cost is committed, retaining both the announcement and its locked price.
         if (lockedCost == null && action.paymentStrategy is com.wingedsheep.engine.core.PaymentStrategy.AutoPay &&
-            announcedState.playerActionPermissions.any { it.playerId == action.playerId && it.action.timing == com.wingedsheep.sdk.scripting.effects.PlayerActionTiming.ManaAbility }) {
+            com.wingedsheep.engine.mechanics.mana.ManaPaymentWindow.hasManualOnlyMana(announcedState, action.playerId, cardRegistry)) {
             val computed = castCostTotaller.validationCost(announcedState, action, cardDef, cardComponent, playForFree,
                 zoneResolver.hasCommanderCastPermission(announcedState, action.playerId, action.cardId))
             if (computed != null) {

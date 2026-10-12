@@ -1344,7 +1344,7 @@ class ManaSolver private constructor(
             // …and by a resolved effect. Both kinds survive the source losing its own abilities.
             val staticGrantedManaAbilities = getStaticGrantedManaAbilities(entityId, state, manaStatics) +
                 runtimeGrants[entityId].orEmpty()
-            val rawManaAbilities = (allAbilities.filter { it.isManaAbility } + staticGrantedManaAbilities).let { all ->
+            val rawManaAbilities = (allAbilities.filter { it.isManaAbility && it.activateFromZone == Zone.BATTLEFIELD } + staticGrantedManaAbilities).let { all ->
                 // A borrowed permanent lends only its {T} mana abilities (CR 106.12).
                 if (entityId in borrowed) all.filter(BorrowedManaAbilities::isTapManaAbility) else all
             }
@@ -2409,7 +2409,7 @@ class ManaSolver private constructor(
         val container = state.getEntity(entityId) ?: return false
         val card = container.get<CardComponent>() ?: return false
         val cardDef = cardRegistry.getCard(card.cardDefinitionId)
-        val manaAbilities = cardDef?.script?.activatedAbilities?.filter { it.isManaAbility }.orEmpty()
+        val manaAbilities = cardDef?.script?.activatedAbilities?.filter { it.isManaAbility && it.activateFromZone == Zone.BATTLEFIELD }.orEmpty()
         if (manaAbilities.any { abilityCostHasTap(it.cost) }) return true
         // No printed mana ability: a land with a basic subtype still has the intrinsic tap ability.
         return manaAbilities.isEmpty() &&
@@ -2945,7 +2945,7 @@ class ManaSolver private constructor(
             if (projected.hasLostAllAbilities(entityId)) continue
 
             for (ability in cardDef.script.activatedAbilities) {
-                if (!ability.isManaAbility) continue
+                if (!ability.isManaAbility || ability.activateFromZone != Zone.BATTLEFIELD) continue
                 val tapCost = (ability.cost as? AbilityCost.Atom)?.atom as? CostAtom.TapPermanents ?: continue
                 // An untap cost produces no tapped-permanent mana; it stays an explicit activation.
                 if (tapCost.untaps) continue
@@ -3039,7 +3039,7 @@ class ManaSolver private constructor(
                 runtimeGrants[entityId].orEmpty()
 
             for (ability in abilities) {
-                if (!ability.isManaAbility) continue
+                if (!ability.isManaAbility || ability.activateFromZone != Zone.BATTLEFIELD) continue
                 val cost = ability.cost
                 if (manaAbilityIsAlreadyCounted(cost)) continue
                 // A mana sub-cost would recurse straight back into canPay, and its net production
@@ -3048,6 +3048,22 @@ class ManaSolver private constructor(
                 if (!legality.activationRestrictionsMet(state, playerId, entityId, ability)) continue
                 if (!nonManaAbilityCostIsPayable(state, playerId, entityId, cost)) continue
 
+                total += manaProducedByEffect(ability.effect)
+            }
+        }
+
+        // Mana abilities that function from the hand (CR 605.1a — Simian Spirit Guide's "Exile this
+        // card from your hand: Add {R}"). Never auto-paid: the cost spends a card, so the player
+        // activates it themselves, at priority or inside the payment window.
+        for (entityId in state.getZone(ZoneKey(playerId, Zone.HAND))) {
+            val card = state.getEntity(entityId)?.get<CardComponent>() ?: continue
+            val abilities = cardRegistry.getCard(card.cardDefinitionId)?.script?.activatedAbilities ?: continue
+            for (ability in abilities) {
+                if (!ability.isManaAbility || ability.activateFromZone != Zone.HAND) continue
+                val cost = ability.cost
+                if (costHasManaSubCost(cost)) continue
+                if (!legality.activationRestrictionsMet(state, playerId, entityId, ability)) continue
+                if (!nonManaAbilityCostIsPayable(state, playerId, entityId, cost)) continue
                 total += manaProducedByEffect(ability.effect)
             }
         }
@@ -3217,7 +3233,7 @@ class ManaSolver private constructor(
             ) continue
 
             for (ability in abilities) {
-                if (!ability.isManaAbility) continue
+                if (!ability.isManaAbility || ability.activateFromZone != Zone.BATTLEFIELD) continue
                 val composite = ability.cost as? AbilityCost.Composite ?: continue
                 val hasTap = composite.costs.any { it is AbilityCost.Tap }
                 val hasSacSelf = composite.costs.any { it is AbilityCost.SacrificeSelf }
@@ -3335,7 +3351,7 @@ class ManaSolver private constructor(
             ) continue
 
             for (ability in cardDef.script.activatedAbilities) {
-                if (!ability.isManaAbility) continue
+                if (!ability.isManaAbility || ability.activateFromZone != Zone.BATTLEFIELD) continue
                 val composite = ability.cost as? AbilityCost.Composite ?: continue
                 val hasTap = composite.costs.any { it is AbilityCost.Tap }
                 val tapPermanentsCost = composite.costs

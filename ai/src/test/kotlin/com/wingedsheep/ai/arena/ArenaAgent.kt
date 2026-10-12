@@ -129,6 +129,9 @@ object ArenaAgents {
         // gate, against what players face today.
         ArenaAgent("production-ambush", AiProfile.PRODUCTION_AMBUSH),
         ArenaAgent("production-candidate-ambush", AiProfile.PRODUCTION_CANDIDATE_AMBUSH),
+        // The same flag on the candidate LIVE builds on, where it ships:
+        // `just arena production-candidate-expiring production-candidate-expiring-ambush 300`.
+        ArenaAgent("production-candidate-expiring-ambush", AiProfile.PRODUCTION_CANDIDATE_EXPIRING_AMBUSH),
         // Activated abilities whose payoff expires at cleanup, held for a window that can spend it.
         // `just arena production production-expiring 300` prices the term on its own; `just arena
         // production-candidate-counterpatience production-candidate-expiring 300` is the promotion

@@ -12,7 +12,11 @@ import com.wingedsheep.engine.core.ReopenManaPaymentDecisionContinuation
 import com.wingedsheep.engine.core.SelectManaSourcesDecision
 import com.wingedsheep.engine.core.GameEvent
 import com.wingedsheep.engine.handlers.effects.ZoneTransitionService
+import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.ZoneKey
+import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 
 /**
@@ -53,6 +57,21 @@ object ManaPaymentWindow {
         val decision = state.pendingDecision as? SelectManaSourcesDecision ?: return null
         return decision.takeIf { state.actorFor(it.playerId) == actorId }
     }
+
+    /**
+     * Whether [playerId] can produce mana that auto-pay deliberately never spends: a life-funded
+     * mana action (Channel) or a mana ability that functions from the hand (Simian Spirit Guide,
+     * CR 605.1a — its cost spends a card). A cast or activation auto-pay can't cover then opens this
+     * window instead of failing, so the player produces that mana themselves (CR 605.3a).
+     */
+    fun hasManualOnlyMana(state: GameState, playerId: EntityId, cardRegistry: CardRegistry): Boolean =
+        state.playerActionPermissions.any {
+            it.playerId == playerId && it.action.timing == com.wingedsheep.sdk.scripting.effects.PlayerActionTiming.ManaAbility
+        } || state.getZone(ZoneKey(playerId, Zone.HAND)).any { cardId ->
+            val card = state.getEntity(cardId)?.get<CardComponent>() ?: return@any false
+            cardRegistry.getCard(card.cardDefinitionId)?.script?.activatedAbilities
+                ?.any { it.isManaAbility && it.activateFromZone == Zone.HAND } == true
+        }
 
     /**
      * Builds a mana-payment window for [cost] — the source menu, the auto-pay suggestion, and the

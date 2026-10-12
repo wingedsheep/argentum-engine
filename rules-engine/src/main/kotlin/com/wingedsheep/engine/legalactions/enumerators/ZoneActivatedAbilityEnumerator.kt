@@ -37,7 +37,16 @@ import com.wingedsheep.sdk.scripting.TimingRule
  * non-battlefield `activateFromZone` generically (owner + zone-membership check), so no handler
  * change is needed.
  */
-class ZoneActivatedAbilityEnumerator(private val zone: Zone, private val predicateEvaluator: PredicateEvaluator) : ActionEnumerator {
+class ZoneActivatedAbilityEnumerator(
+    private val zone: Zone,
+    private val predicateEvaluator: PredicateEvaluator,
+    /**
+     * Surface only mana abilities — the CR 605.3a payment-window surface
+     * ([com.wingedsheep.engine.legalactions.LegalActionEnumerator.enumerateManaAbilities]), where
+     * a hand mana ability (Simian Spirit Guide) is as activatable as a land.
+     */
+    private val manaOnly: Boolean = false,
+) : ActionEnumerator {
 
     override fun enumerate(context: EnumerationContext): List<LegalAction> {
         val result = mutableListOf<LegalAction>()
@@ -70,6 +79,8 @@ class ZoneActivatedAbilityEnumerator(private val zone: Zone, private val predica
             if (zoneAbilities.isEmpty()) continue
 
             for (ability in zoneAbilities) {
+                if (manaOnly && !ability.isManaAbility) continue
+
                 // "Activate only as a sorcery" — Renew and similar zone-activated abilities are
                 // gated to sorcery timing. Mirrors ActivatedAbilityEnumerator's battlefield check
                 // so the action is never offered at instant speed (where the handler would reject
@@ -266,7 +277,9 @@ class ZoneActivatedAbilityEnumerator(private val zone: Zone, private val predica
                                 hasXCost = abilityHasXCost,
                                 maxAffordableX = abilityMaxAffordableX,
                                 autoTapPreview = abilityAutoTapPreview,
-                                manaCostString = zoneManaCostString
+                                manaCostString = zoneManaCostString,
+                                isManaAbility = ability.isManaAbility,
+                                sourceZone = zone.name
                             )
                         )
                     } else {
@@ -290,7 +303,9 @@ class ZoneActivatedAbilityEnumerator(private val zone: Zone, private val predica
                                 hasXCost = abilityHasXCost,
                                 maxAffordableX = abilityMaxAffordableX,
                                 autoTapPreview = abilityAutoTapPreview,
-                                manaCostString = zoneManaCostString
+                                manaCostString = zoneManaCostString,
+                                isManaAbility = ability.isManaAbility,
+                                sourceZone = zone.name
                             )
                         )
                     }
@@ -304,7 +319,9 @@ class ZoneActivatedAbilityEnumerator(private val zone: Zone, private val predica
                             hasXCost = abilityHasXCost,
                             maxAffordableX = abilityMaxAffordableX,
                             autoTapPreview = abilityAutoTapPreview,
-                            manaCostString = zoneManaCostString
+                            manaCostString = zoneManaCostString,
+                            isManaAbility = ability.isManaAbility,
+                            sourceZone = zone.name
                         )
                     )
                 }
