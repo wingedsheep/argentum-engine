@@ -28,7 +28,7 @@ Format — newest first, one bullet each:
 
 ## Changes
 
-- AI keeps modal double-faced spells instead of playing them as lands it doesn't need, prices surplus lands in hand near zero, and won't bounce its own land into a hand that already holds the next land drops
+- #3114 AI keeps modal double-faced spells instead of playing them as lands it doesn't need, prices surplus lands in hand near zero, and won't bounce its own land into a hand that already holds the next land drops
 - #3079 AI divides multi-block combat damage to kill what it can
 - #3078 AI treats its own stack objects as never threats; block-only grants need a blocker
 - #3065 A draw or tutor while tapped out no longer forfeits the idle-land refund
