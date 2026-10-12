@@ -752,6 +752,98 @@
     ]
 }
 
+// Ashnod's Intervention
+{
+    "name": "Ashnod's Intervention",
+    "manaCost": "{B}",
+    "typeLine": "Instant",
+    "oracleText": "Until end of turn, target creature gets +2/+0 and gains \"When this creature dies or is put into exile from the battlefield, return it to its owner's hand.\"",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "GrantTriggeredAbility",
+                    "ability": {
+                        "id": "Ashnod's Intervention:1",
+                        "trigger": {
+                            "type": "ZoneChangeEvent",
+                            "from": "Battlefield",
+                            "to": "Graveyard"
+                        },
+                        "effect": {
+                            "type": "MoveToZone",
+                            "target": "Self",
+                            "destination": "Hand",
+                            "fromZone": "Graveyard"
+                        },
+                        "descriptionOverride": "When this creature dies, return it to its owner's hand."
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "GrantTriggeredAbility",
+                    "ability": {
+                        "id": "Ashnod's Intervention:2",
+                        "trigger": {
+                            "type": "ZoneChangeEvent",
+                            "from": "Battlefield",
+                            "to": "Exile"
+                        },
+                        "effect": {
+                            "type": "MoveToZone",
+                            "target": "Self",
+                            "destination": "Hand",
+                            "fromZone": "Exile"
+                        },
+                        "descriptionOverride": "When this creature is put into exile from the battlefield, return it to its owner's hand."
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "85",
+        "artist": "Miguel Mercado",
+        "flavorText": "\"Listen, Duck. Gix is everywhere, playing every side. Mishra won't listen . . . but perhaps Urza will.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/c/bcf491db-d12b-4c58-9c05-085cac34a73e.jpg?1783920094"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Ashnod, Flesh Mechanist
 {
     "name": "Ashnod, Flesh Mechanist",
@@ -987,6 +1079,66 @@
     "colorIdentityOverride": [
         "GREEN",
         "BLUE"
+    ]
+}
+
+// Battlefield Butcher
+{
+    "name": "Battlefield Butcher",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "{5}, {T}: Each opponent loses 2 life. This ability costs {1} less to activate for each creature card in your graveyard.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 4
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Battlefield Butcher:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{5}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "EachOpponent"
+                    }
+                },
+                "descriptionOverride": "{5}, {T}: Each opponent loses 2 life. This ability costs {1} less to activate for each creature card in your graveyard.",
+                "genericCostReduction": {
+                    "type": "Count",
+                    "player": "You",
+                    "zone": "Graveyard",
+                    "filter": "creature"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "86",
+        "rarity": "UNCOMMON",
+        "artist": "Lucas Graciano",
+        "flavorText": "\"Any more giant metal monsters want to try their luck? I'm just getting warmed up!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/0/90c47e31-d4f6-46f3-94b7-1726c4a4a8eb.jpg?1783920096"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -1494,6 +1646,83 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Carrion Locust
+{
+    "name": "Carrion Locust",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Insect Horror",
+    "oracleText": "Flying\nWhen this creature enters, exile target card from an opponent's graveyard. If it was a creature card, that player loses 1 life.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Carrion Locust:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "destination": "Exile"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": "TargetIsCreatureCard"
+                            },
+                            "then": {
+                                "type": "LoseLife",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "target": {
+                                    "type": "PlayerRef",
+                                    "player": {
+                                        "type": "OwnerOf",
+                                        "targetDescription": "target card"
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "own:opponent",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "87",
+        "artist": "Nino Is",
+        "flavorText": "No honor. No glory. No leftovers.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/7/6759acb8-82c0-479f-86f3-f22ca7a2006c.jpg?1783920095"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -2292,6 +2521,79 @@
     ]
 }
 
+// Disciples of Gix
+{
+    "name": "Disciples of Gix",
+    "manaCost": "{4}{B}{B}",
+    "typeLine": "Creature — Phyrexian Human",
+    "oracleText": "When this creature enters, search your library for up to three artifact cards, put them into your graveyard, then shuffle.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Disciples of Gix:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Library",
+                                "filter": "artifact"
+                            },
+                            "storeAs": "searchable",
+                            "search": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "searchable",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                }
+                            },
+                            "storeSelected": "found",
+                            "prompt": "Search your library for up to three artifact cards to put into your graveyard",
+                            "selectedLabel": "Put into your graveyard"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "found",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            }
+                        },
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
+                    ]
+                },
+                "descriptionOverride": "When this creature enters, search your library for up to three artifact cards, put them into your graveyard, then shuffle."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "90",
+        "rarity": "UNCOMMON",
+        "artist": "Peter Polach",
+        "flavorText": "\"Machines feel no fear, no sorrow, no hunger—only glorious purpose, true and pure.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/d/7d356456-865d-4c92-8923-ce7384e29a79.jpg?1783920094"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Drafna, Founder of Lat-Nam
 {
     "name": "Drafna, Founder of Lat-Nam",
@@ -2924,6 +3226,76 @@
     "colorIdentityOverride": [
         "WHITE",
         "RED"
+    ]
+}
+
+// Fateful Handoff
+{
+    "name": "Fateful Handoff",
+    "manaCost": "{3}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Draw cards equal to the mana value of target artifact or creature you control. An opponent gains control of that permanent.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "EntityProperty",
+                        "entity": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "numericProperty": "ManaValue"
+                    }
+                },
+                {
+                    "type": "ChooseOpponentForSource",
+                    "prompt": "Choose an opponent to gain control of that permanent"
+                },
+                {
+                    "type": "GiveControlToTargetPlayer",
+                    "permanent": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "newController": {
+                        "type": "PlayerRef",
+                        "player": "ChosenOpponent"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature|artifact ctrl:you"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "94",
+        "rarity": "RARE",
+        "artist": "Gaboleps",
+        "flavorText": "\"Get the sylex to Urza at any cost. Tell him to fill it with memories of the land.\"\n—Ashnod, to Tawnos",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/b/0bbed8f9-3615-428b-8d0d-18291c5a99be.jpg?1783920092",
+        "rulings": [
+            {
+                "date": "2022-10-14",
+                "text": "The mana value of an artifact creature that was cast as a prototype is based on the prototype mana cost rather than the card's usual mana cost."
+            },
+            {
+                "date": "2022-10-14",
+                "text": "If an artifact or creature on the battlefield has {X} in its mana cost, X is 0."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -3742,6 +4114,88 @@
     ]
 }
 
+// Gixian Puppeteer
+{
+    "name": "Gixian Puppeteer",
+    "manaCost": "{3}{B}",
+    "typeLine": "Creature — Phyrexian Warlock",
+    "oracleText": "Whenever you draw your second card each turn, each opponent loses 2 life and you gain 2 life.\nWhen this creature dies, return another target creature card with mana value 3 or less from your graveyard to the battlefield.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Gixian Puppeteer:1",
+                "trigger": {
+                    "type": "NthCardDrawnEvent",
+                    "nthCard": 2
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "EachOpponent"
+                            }
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "id": "Gixian Puppeteer:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Battlefield"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature mv<=3 own:you",
+                        "zone": "Graveyard",
+                        "excludeSelf": true
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "99",
+        "rarity": "RARE",
+        "artist": "Bastien L. Deharme",
+        "flavorText": "To some, desecration. To Gix, decoration.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/c/2cc86e18-ffbc-4c5f-a694-922332b146cc.jpg?1783920087"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Gixian Skullflayer
 {
     "name": "Gixian Skullflayer",
@@ -4138,6 +4592,88 @@
     ]
 }
 
+// Gurgling Anointer
+{
+    "name": "Gurgling Anointer",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Phyrexian Horror",
+    "oracleText": "Flying\nWhenever you draw your second card each turn, put a +1/+1 counter on this creature.\nWhen this creature dies, return another target creature card with mana value less than or equal to this creature's power from your graveyard to the battlefield.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Gurgling Anointer:1",
+                "trigger": {
+                    "type": "NthCardDrawnEvent",
+                    "nthCard": 2
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                },
+                "descriptionOverride": "Whenever you draw your second card each turn, put a +1/+1 counter on this creature."
+            },
+            {
+                "id": "Gurgling Anointer:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Battlefield"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                {
+                                    "type": "ManaValueAtMostDynamic",
+                                    "amount": {
+                                        "type": "EntityProperty",
+                                        "entity": "Self",
+                                        "numericProperty": "Power"
+                                    }
+                                }
+                            ],
+                            "controllerPredicate": "OwnedByYou"
+                        },
+                        "zone": "Graveyard",
+                        "excludeSelf": true
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this creature dies, return another target creature card with mana value less than or equal to this creature's power from your graveyard to the battlefield."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "104",
+        "rarity": "UNCOMMON",
+        "artist": "David Astruga",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/c/9ce0d139-2bea-48df-a007-cee7c8ce07bd.jpg?1783920086"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Haywire Mite
 {
     "name": "Haywire Mite",
@@ -4286,6 +4822,145 @@
     },
     "colorIdentityOverride": [
         "WHITE",
+        "BLACK"
+    ]
+}
+
+// Hostile Negotiations
+{
+    "name": "Hostile Negotiations",
+    "manaCost": "{3}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Exile the top three cards of your library in a face-down pile, then exile the top three cards of your library in another face-down pile. Look at the cards in each pile, then turn a pile of your choice face up. An opponent chooses one of those piles. Put that pile into your hand and the other into your graveyard. You lose 3 life.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "TopOfLibrary",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 3
+                        }
+                    },
+                    "storeAs": "gathered0",
+                    "lookAudience": "None"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "gathered0",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Exile"
+                    },
+                    "faceDown": "HIDDEN",
+                    "lookableInExile": true,
+                    "storeMovedAs": "moved1"
+                },
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "TopOfLibrary",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 3
+                        }
+                    },
+                    "storeAs": "gathered2",
+                    "lookAudience": "None"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "gathered2",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Exile"
+                    },
+                    "faceDown": "HIDDEN",
+                    "lookableInExile": true,
+                    "storeMovedAs": "moved3"
+                },
+                {
+                    "type": "ConditionalOnCollection",
+                    "collection": "moved1",
+                    "ifNotEmpty": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "ChoosePile",
+                                "pileA": "moved1",
+                                "pileB": "moved3",
+                                "pileALabel": "First pile",
+                                "pileBLabel": "Second pile",
+                                "storeChosenAs": "chosenPile5",
+                                "storeOtherAs": "otherPile5",
+                                "prompt": "Choose a pile to turn face up. Your opponent will then choose which pile goes to your hand; the other goes to your graveyard."
+                            },
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromVariable",
+                                    "variableName": "chosenPile5"
+                                },
+                                "storeAs": "gathered6",
+                                "revealed": true
+                            },
+                            {
+                                "type": "ChoosePile",
+                                "pileA": "gathered6",
+                                "pileB": "otherPile5",
+                                "pileALabel": "Face-up pile",
+                                "pileBLabel": "Face-down pile",
+                                "chooser": "Opponent",
+                                "storeChosenAs": "chosenPile7",
+                                "storeOtherAs": "otherPile7",
+                                "prompt": "Choose a pile. That pile goes to your opponent's hand; the other goes to their graveyard."
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "chosenPile7",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Hand"
+                                }
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "otherPile7",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                }
+                            }
+                        ]
+                    }
+                },
+                {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "target": "Controller"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "105",
+        "rarity": "RARE",
+        "artist": "David Auden Nash",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/8/f827a9a0-7b72-49e2-85fa-adcce1e8fdda.jpg?1783920085",
+        "rulings": [
+            {
+                "date": "2022-10-14",
+                "text": "If you have fewer than six cards in your library, the second pile will be smaller than the first. If you have fewer than four cards in your library, only the first pile will have cards in it at all, and the second pile will be empty. You may choose to turn the empty pile face up, but your opponent will probably choose to give you the empty pile regardless, unless they're feeling especially generous."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
         "BLACK"
     ]
 }
@@ -5218,6 +5893,52 @@
     ]
 }
 
+// Kill-Zone Acrobat
+{
+    "name": "Kill-Zone Acrobat",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "Whenever this creature attacks, you may sacrifice another creature or artifact. If you do, this creature gains flying until end of turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Kill-Zone Acrobat:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "Sacrifice",
+                            "filter": "creature|artifact",
+                            "excludeSource": true
+                        }
+                    },
+                    "then": {
+                        "type": "GrantKeyword",
+                        "keyword": "FLYING",
+                        "target": "Self"
+                    }
+                },
+                "descriptionOverride": "Whenever this creature attacks, you may sacrifice another creature or artifact. If you do, this creature gains flying until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "106",
+        "artist": "Justine Cruz",
+        "flavorText": "Her circus training proved surprisingly valuable on the battlefield.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/8/48f97974-bb65-46b0-a710-12fa4b9343ac.jpg?1783920086"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Koilos Roc
 {
     "name": "Koilos Roc",
@@ -5926,6 +6647,73 @@
     ]
 }
 
+// Misery's Shadow
+{
+    "name": "Misery's Shadow",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Shade",
+    "oracleText": "If a creature an opponent controls would die, exile it instead.\n{1}: This creature gets +1/+1 until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Misery's Shadow:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}"
+                    }
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": "Self"
+                },
+                "descriptionOverride": "{1}: This creature gets +1/+1 until end of turn."
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "RedirectZoneChange",
+                "newDestination": "Exile",
+                "appliesTo": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:opponent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "107",
+        "rarity": "RARE",
+        "artist": "Igor Kieryluk",
+        "flavorText": "In the ruins of Kroog, only anguish thrived.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/1/514c5e77-9ecc-41c9-b104-76343601fafb.jpg?1783920084",
+        "rulings": [
+            {
+                "date": "2022-10-14",
+                "text": "Because creatures controlled by opponents aren't being put into a graveyard, any \"when [this creature] dies\" triggered abilities those creatures have won't trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Mishra's Foundry
 {
     "name": "Mishra's Foundry",
@@ -6228,6 +7016,69 @@
     "colorIdentityOverride": [
         "BLACK",
         "RED"
+    ]
+}
+
+// Moment of Defiance
+{
+    "name": "Moment of Defiance",
+    "manaCost": "{2}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature gets +2/+1 and gains lifelink until end of turn.\nDraw a card.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "LIFELINK",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "108",
+        "artist": "Inkognit",
+        "flavorText": "\"Well? What are you waiting for? Let's not keep the buzzards waiting.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/e/0e99fb27-a1e9-491f-ab2a-3ccb493168cb.jpg?1783920083"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -6689,6 +7540,97 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Ravenous Gigamole
+{
+    "name": "Ravenous Gigamole",
+    "manaCost": "{3}{B}",
+    "typeLine": "Creature — Mole Horror",
+    "oracleText": "When this creature enters, mill three cards. You may put a creature card from among the cards milled this way into your hand. If you don't, put a +1/+1 counter on this creature. (To mill a card, put the top card of your library into your graveyard.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ravenous Gigamole:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            }
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "gathered0",
+                            "filter": "creature",
+                            "storeMatching": "matching2"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "matching2",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected3"
+                        },
+                        {
+                            "type": "ConditionalOnCollection",
+                            "collection": "selected3",
+                            "ifNotEmpty": {
+                                "type": "MoveCollection",
+                                "from": "selected3",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Hand"
+                                }
+                            },
+                            "ifEmpty": {
+                                "type": "AddCounters",
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "count": 1,
+                                "target": "Self"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "113",
+        "artist": "Milivoj Ćeran",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/f/2fee3328-75c2-4d13-86e1-bf3a40fbf538.jpg?1783920081"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 

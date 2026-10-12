@@ -144,6 +144,44 @@
     }
 }
 
+// Go for the Throat
+{
+    "name": "Go for the Throat",
+    "manaCost": "{1}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Destroy target nonartifact creature.",
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "destination": "Graveyard",
+            "byDestruction": true
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature nonartifact"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "43",
+        "rarity": "UNCOMMON",
+        "artist": "David Rapoza",
+        "flavorText": "Having flesh is increasingly a liability on Mirrodin.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/c/1c665cfc-7e9a-444b-96b5-e8e4ef57a98a.jpg?1783941384"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Green Sun's Zenith
 {
     "name": "Green Sun's Zenith",

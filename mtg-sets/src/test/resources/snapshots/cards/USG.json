@@ -1160,6 +1160,74 @@
     ]
 }
 
+// Corrupt
+{
+    "name": "Corrupt",
+    "manaCost": "{5}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Corrupt deals damage to any target equal to the number of Swamps you control. You gain life equal to the damage dealt this way.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "land Swamp"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "damageDealtVariable": "storedNumber0"
+                },
+                {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "VariableReference",
+                        "variableName": "storedNumber0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "AnyTarget",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "124",
+        "artist": "Vincent Evans",
+        "flavorText": "Yawgmoth brushed Urza's mind, and Urza's world convulsed.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/2/32e1c65c-ced6-484d-b3b4-db913c6bf84b.jpg?1783946347",
+        "rulings": [
+            {
+                "date": "2022-10-14",
+                "text": "Corrupt counts any land you control with the subtype Swamp, not just ones named Swamp."
+            },
+            {
+                "date": "2010-08-15",
+                "text": "The life you gain is equal to the damage dealt by Corrupt, not necessarily to the number of Swamps you control (if some or all of the damage is prevented, for example)."
+            },
+            {
+                "date": "2010-08-15",
+                "text": "The amount of damage dealt to a creature is not bounded by its toughness, and the amount of damage dealt to a player is not bounded by that player's life total. For example, if Corrupt deals 6 damage to a 2/2 creature, you'll gain 6 life."
+            },
+            {
+                "date": "2004-10-04",
+                "text": "The swamps are counted on resolution."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Crazed Skirge
 {
     "name": "Crazed Skirge",
