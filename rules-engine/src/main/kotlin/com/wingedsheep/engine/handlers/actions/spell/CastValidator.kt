@@ -736,7 +736,7 @@ internal class CastValidator(
             if (action.useAlternativeCost) {
                 return "Cannot combine 'without paying its mana cost' with another alternative cost"
             }
-            // Pass the spell's origin zone so a `fromExileOnly` source (Warped Space) validates an
+            // Pass the spell's origin zone so a zone-scoped `fromZones` source (Warped Space) validates an
             // exile cast while staying withheld from hand casts.
             if (!costCalculator.hasFreeCastPermission(state, action.playerId, cardDef, castCostTotaller.castSourceZone(state, action.cardId))) {
                 return "'Without paying its mana cost' is not available (gate closed or no source on the battlefield)"

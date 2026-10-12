@@ -995,42 +995,55 @@ data class MayCastWithoutPayingManaCost(
      */
     val oncePerTurn: Boolean = false,
     /**
-     * When true, the permission applies only to spells **cast from exile** — the free cast is
-     * offered on the cast-from-exile path and withheld from hand / graveyard / other casts. Warped
-     * Space (Charred Foyer // Warped Space): "Once each turn, you may pay {0} rather than pay the
-     * mana cost for a spell you cast from exile" → `MayCastWithoutPayingManaCost(controllerOnly =
-     * true, oncePerTurn = true, fromExileOnly = true)`. The engine gates this on the cast's source
-     * zone in `CostCalculator.hasFreeCastPermission` / `oncePerTurnFreeCastSourceToConsume`.
+     * The zones a spell may be **cast from** to use this permission — the zone the spell left when
+     * it was cast (CR 601.2a). Null = any zone. The free cast is offered on each listed zone's cast
+     * path and withheld from the rest, including on the client-supplied validation path.
+     *
+     *  - Warped Space (Charred Foyer // Warped Space): "Once each turn, you may pay {0} rather than
+     *    pay the mana cost for a spell you cast from exile" → `fromZones = setOf(Zone.EXILE)`.
+     *  - Omnipresence / Omniscience: "… from your hand without paying …" → `fromZones = setOf(Zone.HAND)`.
+     *  - One with the Multiverse: "Once during each of your turns, you may cast a spell from your
+     *    hand or the top of your library without paying its mana cost" → `fromZones =
+     *    setOf(Zone.HAND, Zone.LIBRARY)` with `oncePerTurn = true`. A library cast is only ever the
+     *    top card, offered when another permission lets the player cast from there.
+     *
+     * The engine gates this on the cast's source zone through [allowsCastFrom].
      */
-    val fromExileOnly: Boolean = false,
-    /**
-     * When true, the permission applies only to spells **cast from their caster's hand** — the
-     * "from your hand" wording. A cast from exile, a graveyard, the top of the library, or the
-     * command zone is withheld, including on the client-supplied validation path. Omnipresence:
-     * "You may cast spells with mana value less than or equal to the number of creatures you
-     * control from your hand without paying their mana costs." → `MayCastWithoutPayingManaCost(
-     * controllerOnly = true, fromHandOnly = true, spellFilter = GameObjectFilter.Any.manaValueAtMostDynamic(
-     * DynamicAmounts.creaturesYouControl()))`. The zone mirror of [fromExileOnly]; the two are
-     * mutually exclusive. The engine gates this on the cast's source zone in
-     * `CostCalculator.hasFreeCastPermission`.
-     */
-    val fromHandOnly: Boolean = false
+    val fromZones: Set<Zone>? = null
 ) : StaticAbility {
     init {
-        require(!(fromExileOnly && fromHandOnly)) { "fromExileOnly and fromHandOnly are mutually exclusive" }
+        require(fromZones == null || fromZones.isNotEmpty()) { "fromZones must be null (any zone) or non-empty" }
     }
+
+    /**
+     * Whether a spell cast from [zone] may use this permission. A null [zone] is the coarse
+     * "could any spell use a free cast?" probe, which is a hand-cast probe: a hand-including (or
+     * unrestricted) source counts, an exile-only one doesn't.
+     */
+    fun allowsCastFrom(zone: Zone?): Boolean =
+        fromZones == null || (zone ?: Zone.HAND) in fromZones
 
     override val description: String = buildString {
         val noun = if (spellFilter == GameObjectFilter.Any) "spells" else "${spellFilter.description} spells"
         val singular = if (spellFilter == GameObjectFilter.Any) "spell" else "${spellFilter.description} spell"
-        val fromExile = if (fromExileOnly) " from exile" else if (fromHandOnly) " from your hand" else ""
+        val fromZone = fromZones?.let { zones ->
+            " from " + zones.sortedBy { listOf(Zone.HAND, Zone.LIBRARY, Zone.GRAVEYARD, Zone.EXILE).indexOf(it).let { i -> if (i < 0) Int.MAX_VALUE else i } }.joinToString(" or ") {
+                when (it) {
+                    Zone.HAND -> "your hand"
+                    Zone.LIBRARY -> "the top of your library"
+                    Zone.GRAVEYARD -> "your graveyard"
+                    Zone.EXILE -> "exile"
+                    else -> it.name.lowercase()
+                }
+            }
+        } ?: ""
         if (oncePerTurn) {
-            append("Once during each of your turns, you may cast a $singular$fromExile without paying its mana cost")
+            append("Once during each of your turns, you may cast a $singular$fromZone without paying its mana cost")
         } else if (firstSpellOfTurnOnly) {
             if (controllerOnly) append("The first spell you cast each turn may be cast without paying its mana cost")
             else append("The first spell each player casts during each of their turns may be cast without paying its mana cost")
         } else {
-            if (controllerOnly) append("You may cast $noun$fromExile without paying their mana costs")
+            if (controllerOnly) append("You may cast $noun$fromZone without paying their mana costs")
             else append("Each player may cast $noun without paying their mana costs")
         }
     }

@@ -337,12 +337,65 @@ class CastFromZoneEnumerator(
                     val canAfford = (freeCastFromTop ||
                         context.manaSolver.canPay(state, playerId, topPayableCost, precomputedSources = cachedSources)) &&
                         lifeAffordable
-                    if (canAfford) {
-                        val targetReqs = buildList {
-                            addAll(topCardDef?.script?.targetRequirements ?: emptyList())
-                            topCardDef?.script?.castAuraTarget?.let { add(it) }
-                        }
+                    // A battlefield `MayCastWithoutPayingManaCost` source whose zones include the
+                    // library (One with the Multiverse) frees this cast. Offered as its own variant
+                    // (CR 118.9a) alongside the pay path; X is treated as 0 (CR 107.3b). Not stacked
+                    // on a top-of-library alternative cost, which is already the cast's alternative.
+                    val freeCastFromSource = topAltCost == null &&
+                        context.freeCastPermissionFor(topCardId, Zone.LIBRARY)
+                    val targetReqs = buildList {
+                        addAll(topCardDef?.script?.targetRequirements ?: emptyList())
+                        topCardDef?.script?.castAuraTarget?.let { add(it) }
+                    }
+                    val targetInfos = if (targetReqs.isNotEmpty() && (canAfford || freeCastFromSource)) {
+                        context.targetUtils.buildTargetInfos(state, playerId, targetReqs, targetingSourceType = TargetingSourceType.SPELL)
+                    } else emptyList()
+                    val targetsSatisfied = targetReqs.isEmpty() || context.targetUtils.allRequirementsSatisfied(targetInfos)
 
+                    fun castAction(free: Boolean, manaCostString: String, hasXCost: Boolean, maxAffordableX: Int?, autoTapPreview: List<EntityId>?): LegalAction {
+                        val action = CastSpell(playerId, topCardId, useWithoutPayingManaCost = free)
+                        val description = if (free) "Cast ${topCardComponent.name} (Free)" else "Cast ${topCardComponent.name}"
+                        val additionalCostInfo = if (free) null else topAltAdditionalCostInfo
+                        if (targetReqs.isEmpty()) {
+                            return LegalAction(
+                                actionType = "CastSpell",
+                                description = description,
+                                action = action,
+                                hasXCost = hasXCost,
+                                maxAffordableX = maxAffordableX,
+                                manaCostString = manaCostString,
+                                autoTapPreview = autoTapPreview,
+                                sourceZone = "LIBRARY",
+                                additionalCostInfo = additionalCostInfo
+                            )
+                        }
+                        val firstReq = targetReqs.first()
+                        val firstInfo = targetInfos.first()
+                        return LegalAction(
+                            actionType = "CastSpell",
+                            description = description,
+                            action = action,
+                            validTargets = firstInfo.validTargets,
+                            requiresTargets = true,
+                            targetCount = firstInfo.maxTargets,
+                            minTargets = firstReq.effectiveMinCount,
+                            targetDescription = firstReq.description,
+                            targetRequirements = targetInfos.surfacedRequirements(),
+                            xConstrainsTargetManaValue = firstInfo.xConstrainsManaValue,
+                            xConstrainsTargetManaValueExactly = firstInfo.xConstrainsManaValueExactly,
+                            xConstrainsTargetPower = firstInfo.xConstrainsPower,
+                            xConstrainsTargetCount = firstInfo.xConstrainsCount,
+                            xConstrainsTargetCountExactly = firstInfo.xConstrainsCountExactly,
+                            hasXCost = hasXCost,
+                            maxAffordableX = maxAffordableX,
+                            manaCostString = manaCostString,
+                            autoTapPreview = autoTapPreview,
+                            sourceZone = "LIBRARY",
+                            additionalCostInfo = additionalCostInfo
+                        )
+                    }
+
+                    if (canAfford && targetsSatisfied) {
                         val manaCostString = if (freeCastFromTop) "0" else topEffectiveCost.toString()
                         val hasXCost = topEffectiveCost.hasX
                         val maxAffordableX: Int? = if (hasXCost) {
@@ -355,53 +408,10 @@ class CastFromZoneEnumerator(
                             context.manaSolver.solve(state, playerId, topPayableCost, precomputedSources = cachedSources)
                                 ?.sources?.map { it.entityId }
                         }
-
-                        if (targetReqs.isNotEmpty()) {
-                            val targetInfos = context.targetUtils.buildTargetInfos(state, playerId, targetReqs, targetingSourceType = TargetingSourceType.SPELL)
-                            val allSatisfied = context.targetUtils.allRequirementsSatisfied(targetInfos)
-                            if (allSatisfied) {
-                                val firstReq = targetReqs.first()
-                                val firstInfo = targetInfos.first()
-                                result.add(
-                                    LegalAction(
-                                        actionType = "CastSpell",
-                                        description = "Cast ${topCardComponent.name}",
-                                        action = CastSpell(playerId, topCardId),
-                                        validTargets = firstInfo.validTargets,
-                                        requiresTargets = true,
-                                        targetCount = firstInfo.maxTargets,
-                                        minTargets = firstReq.effectiveMinCount,
-                                        targetDescription = firstReq.description,
-                                        targetRequirements = targetInfos.surfacedRequirements(),
-                                        xConstrainsTargetManaValue = firstInfo.xConstrainsManaValue,
-                                        xConstrainsTargetManaValueExactly = firstInfo.xConstrainsManaValueExactly,
-                                        xConstrainsTargetPower = firstInfo.xConstrainsPower,
-                                        xConstrainsTargetCount = firstInfo.xConstrainsCount,
-                                        xConstrainsTargetCountExactly = firstInfo.xConstrainsCountExactly,
-                                        hasXCost = hasXCost,
-                                        maxAffordableX = maxAffordableX,
-                                        manaCostString = manaCostString,
-                                        autoTapPreview = autoTapPreview,
-                                        sourceZone = "LIBRARY",
-                                        additionalCostInfo = topAltAdditionalCostInfo
-                                    )
-                                )
-                            }
-                        } else {
-                            result.add(
-                                LegalAction(
-                                    actionType = "CastSpell",
-                                    description = "Cast ${topCardComponent.name}",
-                                    action = CastSpell(playerId, topCardId),
-                                    hasXCost = hasXCost,
-                                    maxAffordableX = maxAffordableX,
-                                    manaCostString = manaCostString,
-                                    autoTapPreview = autoTapPreview,
-                                    sourceZone = "LIBRARY",
-                                    additionalCostInfo = topAltAdditionalCostInfo
-                                )
-                            )
-                        }
+                        result.add(castAction(free = false, manaCostString, hasXCost, maxAffordableX, autoTapPreview))
+                    }
+                    if (freeCastFromSource && targetsSatisfied) {
+                        result.add(castAction(free = true, "{0}", hasXCost = false, maxAffordableX = null, autoTapPreview = null))
                     }
                 }
             }
@@ -633,7 +643,7 @@ class CastFromZoneEnumerator(
                         blightCreatures.isNotEmpty() &&
                         !playForFree
 
-                    // A battlefield `MayCastWithoutPayingManaCost(fromExileOnly = true)` source
+                    // A battlefield `MayCastWithoutPayingManaCost(fromZones = setOf(EXILE))` source
                     // (Warped Space) lets this exile spell be cast for {0}. Offered as its own
                     // variant (CR 118.9a) alongside the pay path; X is treated as 0 (CR 107.3b).
                     // Excludes prepare-spell copies and cards already granted a free play.

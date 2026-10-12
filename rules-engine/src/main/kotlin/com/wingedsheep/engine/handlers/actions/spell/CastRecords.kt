@@ -246,7 +246,7 @@ internal class CastRecords(
      *   is a new object with a fresh allowance, and an unlimited matching source consumes nothing.
      * - A `MayCastWithoutPayingManaCost(oncePerTurn = true)` source (Zaffai and the Tempests) is
      *   consumed only when no unlimited free-cast source could have paid instead; the origin zone
-     *   decides whether a `fromExileOnly` source (Warped Space) applied at all.
+     *   decides whether a zone-scoped `fromZones` source (Warped Space: exile only) applied at all.
      * - A once-per-turn graveyard-cast grant (Gisa and Geralf) is burned only when no unlimited grant
      *   could have authorized the cast.
      */

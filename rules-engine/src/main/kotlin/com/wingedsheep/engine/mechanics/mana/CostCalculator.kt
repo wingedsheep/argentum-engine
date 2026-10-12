@@ -1828,13 +1828,10 @@ class CostCalculator(
             // Fold in unlocked Room-face statics (CR 709.5) so a face-level Warped Space is seen.
             for (ability in com.wingedsheep.engine.state.components.identity.RoomFaceStatics.activeStaticAbilities(container, permanentDef)) {
                 if (ability !is MayCastWithoutPayingManaCost) continue
-                // `fromExileOnly` (Warped Space) frees only spells cast from exile. When the cast
-                // zone is unknown (a coarse "any free-cast source?" probe), such a source doesn't
-                // count toward a hand cast — require an explicit EXILE zone.
-                if (ability.fromExileOnly && castFromZone != com.wingedsheep.sdk.core.Zone.EXILE) continue
-                // `fromHandOnly` (Omnipresence — "from your hand") frees only hand casts. The coarse
-                // probe (unknown zone) still counts it, since a matching card may be in hand.
-                if (ability.fromHandOnly && castFromZone != null && castFromZone != com.wingedsheep.sdk.core.Zone.HAND) continue
+                // `fromZones` scopes the cast zone: Warped Space frees only exile casts, Omnipresence
+                // only hand casts, One with the Multiverse hand or library-top casts. The coarse probe
+                // (unknown zone) is a hand probe, so an exile-only source doesn't count toward it.
+                if (!ability.allowsCastFrom(castFromZone)) continue
                 if (ability.controllerOnly) {
                     val controllerId = state.projectedState.getController(entityId) ?: continue
                     if (controllerId != casterId) continue
@@ -1931,8 +1928,7 @@ class CostCalculator(
             for (ability in statics.abilities) {
                 if (ability !is MayCastWithoutPayingManaCost) continue
                 if (ability.firstSpellOfTurnOnly || ability.oncePerTurn) continue
-                if (ability.fromExileOnly && castFromZone != com.wingedsheep.sdk.core.Zone.EXILE) continue
-                if (ability.fromHandOnly && castFromZone != null && castFromZone != com.wingedsheep.sdk.core.Zone.HAND) continue
+                if (!ability.allowsCastFrom(castFromZone)) continue
                 if (ability.controllerOnly && emblemController != casterId) continue
                 if (spellCardDef != null && ability.spellFilter != GameObjectFilter.Any &&
                     !matchesCardDefinition(spellCardDef, ability.spellFilter, entityId, state, state.projectedState)
@@ -1970,10 +1966,9 @@ class CostCalculator(
             // Fold in unlocked Room-face statics (CR 709.5) so a face-level Warped Space is seen.
             for (ability in com.wingedsheep.engine.state.components.identity.RoomFaceStatics.activeStaticAbilities(container, permanentDef)) {
                 if (ability !is MayCastWithoutPayingManaCost) continue
-                // A `fromExileOnly` source (Warped Space) is only a candidate for an exile cast, so
-                // it isn't burned by a free hand cast granted by a different source.
-                if (ability.fromExileOnly && castFromZone != com.wingedsheep.sdk.core.Zone.EXILE) continue
-                if (ability.fromHandOnly && castFromZone != null && castFromZone != com.wingedsheep.sdk.core.Zone.HAND) continue
+                // A zone-scoped source (Warped Space: exile only) is only a candidate for a cast from
+                // one of its zones, so it isn't burned by a free cast granted by a different source.
+                if (!ability.allowsCastFrom(castFromZone)) continue
                 if (ability.controllerOnly) {
                     val controllerId = state.projectedState.getController(entityId) ?: continue
                     if (controllerId != casterId) continue

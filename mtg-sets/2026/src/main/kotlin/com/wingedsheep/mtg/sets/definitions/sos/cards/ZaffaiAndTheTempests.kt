@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.sos.cards
 
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
@@ -14,7 +15,7 @@ import com.wingedsheep.sdk.scripting.MayCastWithoutPayingManaCost
  *
  * Modeled as [MayCastWithoutPayingManaCost] with the `oncePerTurn` gate (one free cast per your
  * turn, not necessarily your first spell) and `controllerOnly` (only you), filtered to instant and
- * sorcery spells, and `fromHandOnly` so the permission never reaches a card cast from another
+ * sorcery spells, and `fromZones = setOf(Zone.HAND)` so the permission never reaches a card cast from another
  * zone ("from your hand"). Each use marks the source until end of turn.
  */
 val ZaffaiAndTheTempests = card("Zaffai and the Tempests") {
@@ -31,7 +32,7 @@ val ZaffaiAndTheTempests = card("Zaffai and the Tempests") {
             controllerOnly = true,
             oncePerTurn = true,
             spellFilter = GameObjectFilter.InstantOrSorcery,
-            fromHandOnly = true,
+            fromZones = setOf(Zone.HAND),
         )
     }
 

@@ -18651,7 +18651,9 @@
                     ]
                 },
                 "oncePerTurn": true,
-                "fromHandOnly": true
+                "fromZones": [
+                    "Hand"
+                ]
             }
         ]
     },

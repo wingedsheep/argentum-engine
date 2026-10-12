@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.m13.cards
 
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.MayCastWithoutPayingManaCost
@@ -17,7 +18,7 @@ val Omniscience = card("Omniscience") {
     oracleText = "You may cast spells from your hand without paying their mana costs."
 
     staticAbility {
-        ability = MayCastWithoutPayingManaCost(controllerOnly = true, fromHandOnly = true)
+        ability = MayCastWithoutPayingManaCost(controllerOnly = true, fromZones = setOf(Zone.HAND))
     }
 
     metadata {

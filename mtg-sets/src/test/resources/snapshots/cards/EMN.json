@@ -5247,7 +5247,9 @@
                                 {
                                     "type": "MayCastWithoutPayingManaCost",
                                     "controllerOnly": true,
-                                    "fromHandOnly": true
+                                    "fromZones": [
+                                        "Hand"
+                                    ]
                                 }
                             ],
                             "emblemDescription": "You may cast spells from your hand without paying their mana costs."

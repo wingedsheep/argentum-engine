@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.emn.cards
 
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.core.AbilityFlag
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
@@ -96,7 +97,7 @@ val TamiyoFieldResearcher = card("Tamiyo, Field Researcher") {
     //     paying their mana costs."
     loyaltyAbility(-7) {
         effect = Effects.DrawCards(3) then Effects.CreatePermanentEmblem(
-            ownedStaticAbilities = listOf(MayCastWithoutPayingManaCost(controllerOnly = true, fromHandOnly = true)),
+            ownedStaticAbilities = listOf(MayCastWithoutPayingManaCost(controllerOnly = true, fromZones = setOf(Zone.HAND))),
             emblemDescription = "You may cast spells from your hand without paying their mana costs."
         )
     }

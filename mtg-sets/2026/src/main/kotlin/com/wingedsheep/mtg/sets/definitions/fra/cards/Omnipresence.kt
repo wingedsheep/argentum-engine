@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.fra.cards
 
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.DynamicAmounts
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
@@ -26,7 +27,7 @@ val Omnipresence = card("Omnipresence") {
     staticAbility {
         ability = MayCastWithoutPayingManaCost(
             controllerOnly = true,
-            fromHandOnly = true,
+            fromZones = setOf(Zone.HAND),
             spellFilter = GameObjectFilter.Any.manaValueAtMostDynamic(DynamicAmounts.creaturesYouControl()),
         )
     }

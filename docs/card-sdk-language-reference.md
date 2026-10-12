@@ -10835,7 +10835,7 @@ riders, matching how the engine already treats e.g. City of Brass's damage durin
   `GrantAlternativeCastingCost("{0}", listOf(Costs.additional.PayPlayerCounters(CounterType.ENERGY, 1)),
   spellFilter = GameObjectFilter.Creature.manaValueAtMost(3), asThoughFlash = true)`. Like every
   granted alternative cost it is offered for casts from hand only.
-- `MayCastWithoutPayingManaCost(controllerOnly = false, firstSpellOfTurnOnly = false, spellFilter = Any, oncePerTurn = false, fromExileOnly = false, fromHandOnly = false)` — a
+- `MayCastWithoutPayingManaCost(controllerOnly = false, firstSpellOfTurnOnly = false, spellFilter = Any, oncePerTurn = false, fromZones = null)` — a
   battlefield permission to cast a spell without paying its mana cost (CR 118.9). Composable
   gates: `controllerOnly = true` restricts the benefit to the source's controller ("you" wording);
   `firstSpellOfTurnOnly = true` requires the caster to be the active player and to have cast
@@ -10844,19 +10844,21 @@ riders, matching how the engine already treats e.g. City of Brass's damage durin
   `firstSpellOfTurnOnly`, the caster may cast other spells before using it; each source tracks its
   own use via `MayCastWithoutPayingCostUsedThisTurnComponent`, cleared at end of turn; `spellFilter`
   restricts *which* spells may be cast for free (card predicates, matched in any zone — default
-  `GameObjectFilter.Any` = every spell). `fromExileOnly = true` restricts the permission to spells
-  cast **from exile** (offered on the cast-from-exile path, withheld from hand/graveyard casts) —
-  Warped Space (Charred Foyer // Warped Space): "Once each turn, you may pay {0} rather than pay the
-  mana cost for a spell you cast from exile" → `MayCastWithoutPayingManaCost(controllerOnly = true,
-  oncePerTurn = true, fromExileOnly = true)`. `fromHandOnly = true` is the mirror for the "**from your
-  hand**" wording: it withholds the permission from every cast whose source zone isn't the hand —
-  including a client-supplied exile/graveyard cast on the validation path (mutually exclusive with
-  `fromExileOnly`). **Omnipresence** ("You may cast spells with mana value less than or equal to the
-  number of creatures you control from your hand without paying their mana costs") is
-  `MayCastWithoutPayingManaCost(controllerOnly = true, fromHandOnly = true, spellFilter =
-  GameObjectFilter.Any.manaValueAtMostDynamic(DynamicAmounts.creaturesYouControl()))`. The free-cast
-  permission is offered for cards in hand (default) and, when `fromExileOnly = true`, for cards being
-  cast from exile. Whatever the source, a free cast of an {X} spell has X = 0 (CR 107.3b): the
+  `GameObjectFilter.Any` = every spell). `fromZones` restricts the permission to spells cast **from** the listed zones (the zone the
+  spell left, CR 601.2a; `null` = any zone): the free cast is offered on each listed zone's cast path
+  and withheld from the rest, including a client-supplied cast on the validation path. Warped Space
+  (Charred Foyer // Warped Space): "Once each turn, you may pay {0} rather than pay the mana cost for
+  a spell you cast from exile" → `MayCastWithoutPayingManaCost(controllerOnly = true, oncePerTurn =
+  true, fromZones = setOf(Zone.EXILE))`. **Omnipresence** ("You may cast spells with mana value less
+  than or equal to the number of creatures you control from your hand without paying their mana
+  costs") is `MayCastWithoutPayingManaCost(controllerOnly = true, fromZones = setOf(Zone.HAND),
+  spellFilter = GameObjectFilter.Any.manaValueAtMostDynamic(DynamicAmounts.creaturesYouControl()))`.
+  **One with the Multiverse** ("Once during each of your turns, you may cast a spell from your hand or
+  the top of your library without paying its mana cost") is `MayCastWithoutPayingManaCost(
+  controllerOnly = true, oncePerTurn = true, fromZones = setOf(Zone.HAND, Zone.LIBRARY))`; the library
+  variant is offered on the top-of-library cast path, so it needs a play-from-top permission beside it
+  (`PlayLandsAndCastFilteredFromTopOfLibrary(spellFilter = GameObjectFilter.Any)`), and one use
+  covers both zones. The free variant is offered on the hand, exile and top-of-library cast paths. Whatever the source, a free cast of an {X} spell has X = 0 (CR 107.3b): the
   enumerator never asks for X on the free variant, and `CastValidator` rejects a free cast announcing
   X > 0. Weftwalking is
   `MayCastWithoutPayingManaCost(firstSpellOfTurnOnly = true)`; Zaffai and the

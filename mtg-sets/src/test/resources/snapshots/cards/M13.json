@@ -732,7 +732,9 @@
             {
                 "type": "MayCastWithoutPayingManaCost",
                 "controllerOnly": true,
-                "fromHandOnly": true
+                "fromZones": [
+                    "Hand"
+                ]
             }
         ]
     },

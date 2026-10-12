@@ -11484,7 +11484,9 @@
                         }
                     ]
                 },
-                "fromHandOnly": true
+                "fromZones": [
+                    "Hand"
+                ]
             }
         ]
     },

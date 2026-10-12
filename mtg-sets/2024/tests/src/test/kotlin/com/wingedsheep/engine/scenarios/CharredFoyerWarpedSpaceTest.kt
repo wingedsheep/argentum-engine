@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.scenarios
 
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.core.UnlockRoomDoor
 import com.wingedsheep.engine.state.components.battlefield.MayCastWithoutPayingCostUsedThisTurnComponent
@@ -22,7 +23,7 @@ import com.wingedsheep.engine.core.Outcome
  * Charred Foyer {3}{R} — "At the beginning of your upkeep, exile the top card of your library. You
  *   may play it this turn." — standard impulse draw.
  * Warped Space {4}{R}{R} — "Once each turn, you may pay {0} rather than pay the mana cost for a
- *   spell you cast from exile." — the `MayCastWithoutPayingManaCost(fromExileOnly = true,
+ *   spell you cast from exile." — the `MayCastWithoutPayingManaCost(fromZones = setOf(Zone.EXILE),
  *   oncePerTurn = true)` free-cast static.
  *
  * The deck is all Grizzly Bears so the impulse always exiles a castable creature; p1 is never given
@@ -76,7 +77,7 @@ class CharredFoyerWarpedSpaceTest : FunSpec({
         d.state.getEntity(roomId)?.get<MayCastWithoutPayingCostUsedThisTurnComponent>() shouldNotBe null
     }
 
-    test("Warped Space does not make a spell cast from hand free (fromExileOnly gate)") {
+    test("Warped Space does not make a spell cast from hand free (fromZones gate)") {
         val d = driver()
         val p1 = d.activePlayer!!
         d.passPriorityUntil(Step.PRECOMBAT_MAIN)

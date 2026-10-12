@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.scenarios
 
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.mechanics.mana.CostCalculator
 import com.wingedsheep.engine.state.components.identity.CardComponent
@@ -70,7 +71,7 @@ class OmniscienceScenarioTest : ScenarioTestBase() {
                 ability.controllerOnly shouldBe true
                 ability.firstSpellOfTurnOnly shouldBe false
                 ability.oncePerTurn shouldBe false
-                ability.fromExileOnly shouldBe false
+                ability.fromZones shouldBe setOf(Zone.HAND)
             }
         }
     }

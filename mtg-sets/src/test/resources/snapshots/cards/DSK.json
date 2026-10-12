@@ -2152,7 +2152,9 @@
                         "type": "MayCastWithoutPayingManaCost",
                         "controllerOnly": true,
                         "oncePerTurn": true,
-                        "fromExileOnly": true
+                        "fromZones": [
+                            "Exile"
+                        ]
                     }
                 ]
             }
