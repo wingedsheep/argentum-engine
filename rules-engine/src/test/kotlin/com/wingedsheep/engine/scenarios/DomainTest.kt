@@ -1,14 +1,17 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.ActivateAbility
+import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.dsl.DynamicAmounts
+import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.scripting.effects.DrawCardsEffect
+import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
@@ -47,6 +50,26 @@ class DomainTest : FunSpec({
         oracleText = "({T}: Add {W} or {U}.)"
     }
 
+    // "Target land loses all land types" — the shape of Ultima, Origin of Oblivion's blight. The
+    // land keeps its card type, so it still matches the domain filter but projects no subtypes.
+    val LandTypeEraser = card("Land Type Eraser") {
+        manaCost = "{0}"
+        typeLine = "Artifact"
+        oracleText = "{T}: Target land loses all land types."
+
+        activatedAbility {
+            cost = Costs.Tap
+            val land = target(TargetFilter.Land)
+            effect = Effects.BecomeArtifact(
+                target = land,
+                cardTypes = null,
+                subtypes = emptySet(),
+                colors = null,
+                loseAllAbilities = false
+            )
+        }
+    }
+
     val abilityId = DomainDrawer.activatedAbilities.first().id
 
     fun createDriver(): GameTestDriver {
@@ -54,6 +77,7 @@ class DomainTest : FunSpec({
         driver.registerCards(TestCards.all)
         driver.registerCard(DomainDrawer)
         driver.registerCard(PlainsIslandDual)
+        driver.registerCard(LandTypeEraser)
         return driver
     }
 
@@ -157,6 +181,28 @@ class DomainTest : FunSpec({
         driver.putLandOnBattlefield(opponent, "Island")
         driver.putLandOnBattlefield(opponent, "Swamp")
         driver.putLandOnBattlefield(activePlayer, "Forest")
+        activateAndCount(driver, activePlayer, drawer) shouldBe 1
+    }
+
+    test("a land that lost all land types contributes nothing") {
+        val driver = createDriver()
+        val (activePlayer, drawer) = setUpDrawer(driver)
+        val forest = driver.putLandOnBattlefield(activePlayer, "Forest")
+        driver.putLandOnBattlefield(activePlayer, "Island")
+        val eraser = driver.putPermanentOnBattlefield(activePlayer, "Land Type Eraser")
+        driver.submit(
+            ActivateAbility(
+                playerId = activePlayer,
+                sourceId = eraser,
+                abilityId = LandTypeEraser.activatedAbilities.first().id,
+                targets = listOf(ChosenTarget.Permanent(forest))
+            )
+        ).outcome shouldBe Outcome.Done
+        driver.bothPass()
+
+        driver.state.projectedState.hasType(forest, "LAND") shouldBe true
+        driver.state.projectedState.getSubtypes(forest) shouldBe emptySet()
+        // The printed Forest subtype must not leak back in through a base-state fallback.
         activateAndCount(driver, activePlayer, drawer) shouldBe 1
     }
 })
