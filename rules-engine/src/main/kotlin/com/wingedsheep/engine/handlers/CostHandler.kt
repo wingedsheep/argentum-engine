@@ -1,5 +1,7 @@
 package com.wingedsheep.engine.handlers
 
+import com.wingedsheep.engine.state.LifePaymentPurpose
+
 import com.wingedsheep.engine.mechanics.cost.SharedCreatureTypeTapCost
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.handlers.costs.CostAtomAmounts
@@ -89,6 +91,11 @@ class CostHandler(private val zones: ZoneTransitionService) {
          * defers the check to payment time, matching the Exile/Sacrifice granter costs.
          */
         granterId: EntityId? = null,
+        /**
+         * Which activation this pays for — a cost-scoped life prohibition (Karn's Sylex) reads it.
+         * Defaults to the restrictive non-mana reading; mana-ability callers pass theirs.
+         */
+        lifePurpose: LifePaymentPurpose = LifePaymentPurpose.ACTIVATE_ABILITY,
     ): Boolean {
         if (!PlayerCounterPayment.canAffordAbility(state, controllerId, cost)) return false
         return when (cost) {
@@ -99,9 +106,9 @@ class CostHandler(private val zones: ZoneTransitionService) {
             is AbilityCost.AttachedPermanentManaCost -> canPayAtom(
                 state,
                 (attachedManaCostAtom(state, sourceId)),
-                sourceId, controllerId, manaPool, abilityContext
+                sourceId, controllerId, manaPool, lifePurpose, abilityContext
             )
-            is AbilityCost.Atom -> canPayAtom(state, cost.atom, sourceId, controllerId, manaPool, abilityContext)
+            is AbilityCost.Atom -> canPayAtom(state, cost.atom, sourceId, controllerId, manaPool, lifePurpose, abilityContext)
             is AbilityCost.Tap -> {
                 !state.getEntity(sourceId)!!.has<TappedComponent>()
             }
@@ -230,7 +237,7 @@ class CostHandler(private val zones: ZoneTransitionService) {
                 true
             }
             is AbilityCost.Composite -> {
-                cost.costs.all { canPayAbilityCost(state, it, sourceId, controllerId, manaPool, abilityContext, granterId) }
+                cost.costs.all { canPayAbilityCost(state, it, sourceId, controllerId, manaPool, abilityContext, granterId, lifePurpose) }
             }
             AbilityCost.LoyaltyX -> true // X = 0 is always payable; the chosen X is checked at payment.
             is AbilityCost.Loyalty -> {
@@ -656,6 +663,7 @@ class CostHandler(private val zones: ZoneTransitionService) {
         sourceId: EntityId,
         controllerId: EntityId,
         manaPool: ManaPool,
+        lifePurpose: LifePaymentPurpose,
         abilityContext: SpellPaymentContext?,
     ): Boolean = when (atom) {
         is CostAtom.Mana -> canPayManaCost(manaPool, atom.cost, abilityContext)
@@ -668,8 +676,9 @@ class CostHandler(private val zones: ZoneTransitionService) {
             // CR 810.9a — affordability uses the team's shared total in Two-Headed Giant.
             // CR 119.4 — a player may pay life only if their life total is >= the payment.
             // Paying down to exactly 0 is legal; the state-based action checker handles the loss.
-            // CR 119.8 — a player who can't lose life can't pay it at all.
-            state.canPayLife(controllerId, atom.amount)
+            // CR 119.8 — a player who can't lose life can't pay it at all; nor can one a cost-scoped
+            // prohibition forbids (Karn's Sylex).
+            state.canPayLife(controllerId, atom.amount, lifePurpose)
         }
         is CostAtom.Sacrifice -> {
             val candidates = findMatchingPermanentsUnified(state, controllerId, atom.filter, sourceId)

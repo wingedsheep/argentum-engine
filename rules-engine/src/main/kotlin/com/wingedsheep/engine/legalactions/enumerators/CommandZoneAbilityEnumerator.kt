@@ -1,5 +1,7 @@
 package com.wingedsheep.engine.legalactions.enumerators
 
+import com.wingedsheep.engine.state.LifePaymentPurpose
+
 import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.legalactions.ActionEnumerator
 import com.wingedsheep.engine.legalactions.AdditionalCostData
@@ -132,7 +134,8 @@ class CommandZoneAbilityEnumerator : ActionEnumerator {
                         precomputedSources = context.availableManaSources,
                         // Same source scoping the battlefield enumerator passes: cost filters
                         // routinely resolve against the ability's own permanent.
-                        sourceId = entityId
+                        sourceId = entityId,
+                        lifePurpose = com.wingedsheep.engine.state.LifePaymentPurpose.activating(ability.isManaAbility)
                     )
                 } else null
 

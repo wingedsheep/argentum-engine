@@ -1,5 +1,7 @@
 package com.wingedsheep.engine.handlers.effects.composite
 
+import com.wingedsheep.engine.state.LifePaymentPurpose
+
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.PredicateContext
@@ -746,7 +748,7 @@ class GatedEffectExecutor(
                 ) >= amount
             }
             is PayLifeEffect -> {
-                state.canPayLife(playerId, cost.amount) // CR 810.9a / 119.8
+                state.canPayLife(playerId, cost.amount, LifePaymentPurpose.OTHER) // CR 810.9a / 119.8
             }
             is PayDynamicLifeEffect -> {
                 // Resolve the cost's own payer; a computed amount of <= 0 is free (CR 119.4).
@@ -754,7 +756,7 @@ class GatedEffectExecutor(
                 val payerId = TargetResolutionUtils
                     .resolvePlayerTarget(EffectTarget.PlayerRef(cost.payer), context, state)
                     ?: playerId
-                state.canPayLife(payerId, amount)
+                state.canPayLife(payerId, amount, LifePaymentPurpose.OTHER)
             }
             // "You may pay {1} up to three times" as a gate cost: the repeated payment's floor is
             // one repetition, so a payer who can't afford even that must not be offered the "yes"

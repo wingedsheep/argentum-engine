@@ -1,5 +1,7 @@
 package com.wingedsheep.engine.legalactions.utils
 
+import com.wingedsheep.engine.state.LifePaymentPurpose
+
 import com.wingedsheep.engine.mechanics.cost.PlayerCounterPayment
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
@@ -680,7 +682,9 @@ class CostEnumerationUtils(
          * "remove any number of +1/+1 counters from ~" cost filters with `sourceItself()`
          * (`StatePredicate.IsSource`), which can never match without this, capping X at 0.
          */
-        sourceId: EntityId? = null
+        sourceId: EntityId? = null,
+        /** Whose cost this is — a cost-scoped life prohibition (Karn's Sylex) caps "pay X life" at 0. */
+        lifePurpose: LifePaymentPurpose = LifePaymentPurpose.ACTIVATE_ABILITY
     ): Int {
         var maxX = if (manaCost != null && manaCost.hasX) {
             val availableSources = manaSolver.getAvailableManaCount(state, playerId, precomputedSources)
@@ -805,7 +809,8 @@ class CostEnumerationUtils(
             else -> false
         }
         if (hasPayXLife) {
-            val life = state.lifeTotal(playerId) // CR 810.9a — team's shared total
+            // CR 810.9a — team's shared total; CR 119.8 / Karn's Sylex — none payable at all.
+            val life = if (state.isLifePaymentBlocked(playerId, lifePurpose)) 0 else state.lifeTotal(playerId)
             maxX = minOf(maxX, life.coerceAtLeast(0))
         }
 

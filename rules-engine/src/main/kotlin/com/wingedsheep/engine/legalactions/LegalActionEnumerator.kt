@@ -1,5 +1,7 @@
 package com.wingedsheep.engine.legalactions
 
+import com.wingedsheep.engine.state.LifePaymentPurpose
+
 import com.wingedsheep.engine.core.EngineServices
 import com.wingedsheep.engine.core.TurnManager
 import com.wingedsheep.engine.handlers.ConditionEvaluator
@@ -132,7 +134,7 @@ class LegalActionEnumerator(
             (0..group.size).map { selected + group.take(it) }.filter { chosen ->
                 context.state.canPayLife(context.playerId, chosen.sumOf {
                     costCalculator.optionalModifier(context.state, it)?.optionalLifePayment ?: 0
-                })
+                }, LifePaymentPurpose.CAST_SPELL)
             }
         }
         return combinations.filter { it.isNotEmpty() }.flatMap { chosen ->

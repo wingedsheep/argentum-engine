@@ -1,5 +1,7 @@
 package com.wingedsheep.engine.mechanics.cost
 
+import com.wingedsheep.engine.state.LifePaymentPurpose
+
 import com.wingedsheep.engine.mechanics.mana.withSpendingColors
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.engine.core.suspendForDecision
@@ -789,19 +791,21 @@ class CostPaymentService(private val services: EngineServices) {
             cost: PayCost,
             sourceId: EntityId,
             manaSolver: ManaSolver,
-            predicateEvaluator: PredicateEvaluator
+            predicateEvaluator: PredicateEvaluator,
+            /** Why the life would be paid — a cost-scoped prohibition (Karn's Sylex) reads it. */
+            lifePurpose: LifePaymentPurpose = LifePaymentPurpose.OTHER
         ): Boolean {
             return when (val c = resolve(state, cost, sourceId)) {
                 // Only unresolvable own-mana-costs reach here (missing source/card component) — unpayable.
                 is PayCost.OwnManaCost -> false
                 // Unknowable without the resolving effect's context; see pay().
                 is PayCost.DynamicLife -> false
-                is PayCost.Choice -> c.options.any { canAfford(state, payerId, it, sourceId, manaSolver, predicateEvaluator = predicateEvaluator) }
+                is PayCost.Choice -> c.options.any { canAfford(state, payerId, it, sourceId, manaSolver, predicateEvaluator = predicateEvaluator, lifePurpose = lifePurpose) }
                 is PayCost.Atom -> when (val atom = c.atom) {
                     is CostAtom.Mana -> manaSolver.canPay(state, payerId, atom.cost)
                     // CR 119.4 — a player may pay life only if their life total is at least the amount; paying
                     // life that would reduce them to 0 or less is legal (they then lose as a state-based action).
-                    is CostAtom.PayLife -> state.canPayLife(payerId, atom.amount) // CR 119.8 too
+                    is CostAtom.PayLife -> state.canPayLife(payerId, atom.amount, lifePurpose) // CR 119.8 too
                     is CostAtom.Discard -> domain(state, payerId, c, sourceId, predicateEvaluator = predicateEvaluator).size >= atom.count
                     // CR 118.3 — an empty hand discards nothing, and a cost of nothing is payable.
                     is CostAtom.DiscardHand -> true

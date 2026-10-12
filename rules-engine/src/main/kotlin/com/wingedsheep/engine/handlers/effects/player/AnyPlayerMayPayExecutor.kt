@@ -1,5 +1,7 @@
 package com.wingedsheep.engine.handlers.effects.player
 
+import com.wingedsheep.engine.state.LifePaymentPurpose
+
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.DecisionHandler
@@ -128,7 +130,7 @@ class AnyPlayerMayPayExecutor(
             }
             // CR 119.4: a player may pay life only if their life total is at least the amount.
             is CostAtom.PayLife -> {
-                state.canPayLife(playerId, atom.amount) // CR 810.9a / 119.8
+                state.canPayLife(playerId, atom.amount, LifePaymentPurpose.OTHER) // CR 810.9a / 119.8
             }
             else -> false
         }

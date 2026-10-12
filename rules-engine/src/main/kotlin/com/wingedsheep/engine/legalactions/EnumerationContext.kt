@@ -1,5 +1,7 @@
 package com.wingedsheep.engine.legalactions
 
+import com.wingedsheep.engine.state.LifePaymentPurpose
+
 import com.wingedsheep.engine.legality.LegalityKernel
 import com.wingedsheep.engine.core.TurnManager
 import com.wingedsheep.engine.handlers.ConditionEvaluator
@@ -55,7 +57,8 @@ class EnumerationContext(
     val reservedLife: Int by lazy {
         costCalculator.optionalCostPayments.sumOf { costCalculator.optionalModifier(state, it)?.optionalLifePayment ?: 0 }
     }
-    fun canPayLife(amount: Int): Boolean = state.canPayLife(playerId, amount + reservedLife)
+    /** Whether the caster can pay [amount] more life toward a spell they are casting. */
+    fun canPayLife(amount: Int): Boolean = state.canPayLife(playerId, amount + reservedLife, LifePaymentPurpose.CAST_SPELL)
 
     val skipAutoTapPreview: Boolean get() = mode == EnumerationMode.ACTIONS_ONLY
     // Granted-keyword resolver (e.g., convoke granted by Eirdu via GrantKeywordToOwnSpells)

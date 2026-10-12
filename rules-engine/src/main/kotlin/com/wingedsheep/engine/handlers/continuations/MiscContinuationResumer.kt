@@ -1,5 +1,7 @@
 package com.wingedsheep.engine.handlers.continuations
 
+import com.wingedsheep.engine.state.LifePaymentPurpose
+
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.effects.mana.ManaProvenanceTracker
 import com.wingedsheep.engine.handlers.EffectContext
@@ -303,7 +305,7 @@ class MiscContinuationResumer(
             return ExecutionResult.error(state, "Life payment $chosen is outside 0..${continuation.maxX}")
         }
 
-        val paid = if (chosen > 0 && state.canPayLife(continuation.playerId, chosen)) {
+        val paid = if (chosen > 0 && state.canPayLife(continuation.playerId, chosen, LifePaymentPurpose.OTHER)) {
             LifePaymentService.pay(services.zones, state, continuation.playerId, chosen)
         } else null
 

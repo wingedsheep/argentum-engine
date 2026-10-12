@@ -10437,6 +10437,16 @@ riders, matching how the engine already treats e.g. City of Brass's damage durin
   (basic-land-type) and granted mana abilities alike and stops when the land loses its abilities. The manual
   activation sees it as a `PayLife` cost atom (unpayable below `amount` life, CR 119.4); auto-pay prices the source
   as a pain source (preferring untaxed sources) and charges the life when it taps it.
+- `PlayersCantPayLifeForCosts(excludeManaAbilities = false)` — no player can pay life **as a cost** of
+  casting a spell or activating an ability: life additional/alternative costs, "pay N life" / "pay X life"
+  activation costs (X capped at 0 — paying 0 is always allowed, CR 119.4b), and Phyrexian pips paid with life
+  (CR 107.4f; mana still pays them) all become unpayable, offered and submitted alike. Life paid while something
+  *resolves* (ward, `PayOrSuffer`, `Effects.PayLife`) and special actions are untouched. `excludeManaAbilities = true`
+  keeps a mana ability's life cost payable — even while it pays for a spell. Karn's Sylex: "Players can't pay life
+  to cast spells or to activate abilities that aren't mana abilities" →
+  `PlayersCantPayLifeForCosts(excludeManaAbilities = true)`. Stamped as a battlefield marker and read by
+  `GameState.canPayLife(player, amount, LifePaymentPurpose)` — every payment site names its purpose; stops when the
+  source loses its abilities. Unconditional only (not read behind a `ConditionalStaticAbility`).
 - `MayCastFromGraveyard(filter, lifeCost = 0, duringYourTurnOnly = false, entersWithCounter = null, addedSubtypeOnEntry = null, oncePerTurn = false, exileInsteadOfGraveyard = false, fromAnyGraveyard = false, additionalCost = null)`
   — cast spells matching `filter` from your graveyard following normal timing, optionally paying
   `lifeCost` life. Free for Yawgmoth's Agenda (`MayCastFromGraveyard(Nonland)`); `lifeCost = 1,

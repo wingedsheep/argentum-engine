@@ -1,5 +1,7 @@
 package com.wingedsheep.engine.handlers.effects.stack
 
+import com.wingedsheep.engine.state.LifePaymentPurpose
+
 import com.wingedsheep.engine.core.suspendForDecision
 import com.wingedsheep.engine.core.CounterUnlessCollectEvidenceContinuation
 import com.wingedsheep.engine.core.CounterUnlessDiscardContinuation
@@ -236,7 +238,7 @@ class WardCounterEffectExecutor(
                 state, zones, payingPlayerId, ManaCost.parse(cost.manaCost), cost.waterbend
             )
             // CR 119.4 — a player can pay only life they have.
-            is WardCost.Life -> state.canPayLife(payingPlayerId, cost.amount)
+            is WardCost.Life -> state.canPayLife(payingPlayerId, cost.amount, LifePaymentPurpose.OTHER)
             // Resolved to a fixed Life before it ever reaches here; treat as free defensively.
             is WardCost.DynamicLife -> true
             is WardCost.Discard ->

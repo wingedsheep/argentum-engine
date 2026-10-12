@@ -1105,10 +1105,35 @@ data class GameState(
     /**
      * Whether [playerId] can pay [amount] life: paying 0 always can (CR 119.4 / 118.3); otherwise
      * the (team's, CR 810.9a) life total must be at least the amount and the player must be able to
-     * lose life (CR 119.8 — "a cost that involves having that player pay life can't be paid").
+     * lose life (CR 119.8 — "a cost that involves having that player pay life can't be paid"), and no
+     * cost-scoped prohibition may forbid paying life for [purpose] (Karn's Sylex).
      */
-    fun canPayLife(playerId: EntityId, amount: Int): Boolean =
-        amount <= 0 || (lifeTotal(playerId) >= amount && !isLifeLossLocked(playerId))
+    fun canPayLife(playerId: EntityId, amount: Int, purpose: LifePaymentPurpose): Boolean =
+        amount <= 0 || (lifeTotal(playerId) >= amount && !isLifePaymentBlocked(playerId, purpose))
+
+    /**
+     * Whether [playerId] can't pay *any* life for [purpose]: they can't lose life (CR 119.8), or a
+     * [com.wingedsheep.sdk.scripting.PlayersCantPayLifeForCosts] on the battlefield forbids paying
+     * life in that context (Karn's Sylex). The "pay up to X life" paths read this to cap X at 0.
+     */
+    fun isLifePaymentBlocked(playerId: EntityId, purpose: LifePaymentPurpose): Boolean =
+        isLifeLossLocked(playerId) || isLifePaymentForbidden(purpose)
+
+    /**
+     * Whether a permanent's [com.wingedsheep.sdk.scripting.PlayersCantPayLifeForCosts] forbids
+     * paying life for [purpose]. It binds every player, so no player id is needed; a source that
+     * has lost its abilities forbids nothing.
+     */
+    private fun isLifePaymentForbidden(purpose: LifePaymentPurpose): Boolean {
+        if (purpose == LifePaymentPurpose.OTHER) return false
+        return getBattlefield().any { entityId ->
+            val marker = getEntity(entityId)
+                ?.get<com.wingedsheep.engine.state.components.battlefield.ForbidsLifePaymentForCostsComponent>()
+                ?: return@any false
+            if (purpose == LifePaymentPurpose.ACTIVATE_MANA_ABILITY && marker.excludeManaAbilities) return@any false
+            !projectedState.hasLostAllAbilities(entityId)
+        }
+    }
 
     /**
      * [playerId]'s **speed** (Aetherdrift, CR 702.179), 0–[com.wingedsheep.sdk.core.Speed.MAX].

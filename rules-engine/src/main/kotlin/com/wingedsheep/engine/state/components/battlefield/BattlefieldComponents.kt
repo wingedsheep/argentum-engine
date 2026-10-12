@@ -1,5 +1,7 @@
 package com.wingedsheep.engine.state.components.battlefield
 
+import com.wingedsheep.engine.state.LifePaymentPurpose
+
 import com.wingedsheep.engine.mechanics.layers.AffectsFilter
 import com.wingedsheep.engine.state.Component
 import com.wingedsheep.sdk.core.CounterType
@@ -1161,6 +1163,21 @@ data class GrantsOpponentsCantWinGameComponent(
 data class GrantsCantLoseGameFromLifeComponent(
     override val condition: Condition? = null
 ) : Component, ControllerGrantMarker
+
+/**
+ * Marks a permanent whose static ability forbids every player from paying life as a cost of casting
+ * a spell or activating an ability — [com.wingedsheep.sdk.scripting.PlayersCantPayLifeForCosts]
+ * (Karn's Sylex). Read through [com.wingedsheep.engine.state.GameState.canPayLife] with a
+ * [com.wingedsheep.engine.state.LifePaymentPurpose]; leaves with the permanent, and is ignored
+ * while the permanent has lost its abilities.
+ *
+ * Unconditional by construction: the reader sits on `GameState`, which can't evaluate a
+ * condition, so `StaticAbilityHandler` stamps only the bare ability.
+ */
+@Serializable
+data class ForbidsLifePaymentForCostsComponent(
+    val excludeManaAbilities: Boolean = false
+) : Component
 
 /**
  * Marks a permanent as granting the Station-using-toughness effect to creatures its

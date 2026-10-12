@@ -1296,3 +1296,36 @@ data class ManaAbilitiesCostAdditionalLife(
         return if (newFilter !== filter) copy(filter = newFilter) else this
     }
 }
+
+/**
+ * "Players can't pay life to cast spells or to activate abilities [that aren't mana abilities]" —
+ * Karn's Sylex. A prohibition on *paying life as a cost* of casting a spell or activating an
+ * ability (CR 119.4 / 118.3): life in an additional or alternative cost, a "pay N life" activation
+ * cost, and Phyrexian mana symbols paid with life (CR 107.4f) all become unpayable.
+ *
+ * Deliberately scoped to those two contexts. Damage and "lose N life" are untouched (that is
+ * [com.wingedsheep.sdk.scripting.effects.LockLifeLossEffect]'s lock, which also forbids paying
+ * life), and so is life paid while something *resolves* — ward's "pay N life", "unless that
+ * player pays N life" — since that payment is neither part of casting nor of activating.
+ *
+ * Neighbours: [ManaAbilitiesCostAdditionalLife] taxes life onto mana abilities rather than
+ * forbidding it; [PlayersCantActivateAbilities] forbids the activation itself, not one way of
+ * paying for it. Neither carries a "which payment" axis, so this is its own type.
+ *
+ * Applies to every player. Like any static ability it stops once its source loses its abilities.
+ *
+ * @property excludeManaAbilities true for "abilities that aren't mana abilities" (Karn's Sylex):
+ *   a mana ability's life cost — Mana Confluence, Thran Portal's tax — stays payable, even while
+ *   it pays for a spell. false (default) forbids life for every activated ability.
+ */
+@SerialName("PlayersCantPayLifeForCosts")
+@Serializable
+data class PlayersCantPayLifeForCosts(
+    val excludeManaAbilities: Boolean = false
+) : StaticAbility {
+    override val description: String =
+        "Players can't pay life to cast spells or to activate abilities" +
+            if (excludeManaAbilities) " that aren't mana abilities" else ""
+
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
+}

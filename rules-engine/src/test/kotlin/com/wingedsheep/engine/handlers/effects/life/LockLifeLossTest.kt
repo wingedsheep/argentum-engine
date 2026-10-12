@@ -1,5 +1,7 @@
 package com.wingedsheep.engine.handlers.effects.life
 
+import com.wingedsheep.engine.state.LifePaymentPurpose
+
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.sdk.core.Color
@@ -74,8 +76,8 @@ class LockLifeLossTest : FunSpec({
             driver.getLifeTotal(me) shouldBe 20
         }
         withClue("pay life as an additional cost (CR 119.8)") {
-            driver.state.canPayLife(me, 3) shouldBe false
-            driver.state.canPayLife(me, 0) shouldBe true
+            driver.state.canPayLife(me, 3, LifePaymentPurpose.OTHER) shouldBe false
+            driver.state.canPayLife(me, 0, LifePaymentPurpose.OTHER) shouldBe true
             cast(driver, me, "Pay Three Draw").error shouldNotBe null
             driver.getLifeTotal(me) shouldBe 20
         }
@@ -94,6 +96,6 @@ class LockLifeLossTest : FunSpec({
 
         driver.passPriorityUntil(Step.UPKEEP)
         driver.state.isLifeLossLocked(me) shouldBe false
-        driver.state.canPayLife(me, 3) shouldBe true
+        driver.state.canPayLife(me, 3, LifePaymentPurpose.OTHER) shouldBe true
     }
 })

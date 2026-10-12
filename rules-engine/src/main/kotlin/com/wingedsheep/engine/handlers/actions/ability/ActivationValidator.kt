@@ -1,5 +1,7 @@
 package com.wingedsheep.engine.handlers.actions.ability
 
+import com.wingedsheep.engine.state.LifePaymentPurpose
+
 import com.wingedsheep.engine.handlers.effects.AnnouncedDivision
 import com.wingedsheep.engine.mechanics.mana.withSpendingColors
 import com.wingedsheep.engine.mechanics.mana.BorrowedManaAbilities
@@ -117,6 +119,7 @@ internal class ActivationValidator(
             ?: checkExplicitPaymentSources(state, action)
             ?: checkAlternativePayment(state, action, ability)
             ?: checkCostPayable(state, action, cardComponent, abilityLookup, effectiveCost)
+            ?: checkLifeCostPayable(state, action, ability, effectiveCost)
             ?: checkTapSymbolSummoningSickness(state, action, container, effectiveCost)
             ?: checkActivationRestrictions(state, action, ability)
             ?: checkTargets(state, action, cardComponent, effectiveCost, effectiveTargetReqs)
@@ -487,7 +490,11 @@ internal class ActivationValidator(
         // checked against the *Equipment's* tap state rather than the host creature's.
         val validationGranterId = abilityLookup.staticGranterId
 
-        if (canPayAbilityCostWithSources(state, costAfterConvokeReduction, action.sourceId, action.playerId, abilityPaymentContext, validationGranterId)) {
+        if (canPayAbilityCostWithSources(
+                state, costAfterConvokeReduction, action.sourceId, action.playerId,
+                LifePaymentPurpose.activating(ability.isManaAbility), abilityPaymentContext, validationGranterId
+            )
+        ) {
             return null
         }
         return when (effectiveCost) {
@@ -641,11 +648,36 @@ internal class ActivationValidator(
      * Check if an ability cost can be paid, using ManaSolver for mana costs
      * to consider both floating mana and untapped mana sources.
      */
+    /**
+     * The life an activation's cost pays — every "pay N life" atom plus a "pay X life" at the
+     * chosen X — must be payable for this activation. Runs for every payment strategy, unlike
+     * [checkCostPayable]: an explicit payment would otherwise reach the life payment unchecked, and
+     * a cost-scoped prohibition (Karn's Sylex) has no backstop at payment time.
+     */
+    private fun checkLifeCostPayable(
+        state: GameState,
+        action: ActivateAbility,
+        ability: ActivatedAbility,
+        effectiveCost: AbilityCost,
+    ): String? {
+        val parts = (effectiveCost as? AbilityCost.Composite)?.costs ?: listOf(effectiveCost)
+        val life = parts.sumOf { part ->
+            when {
+                part is AbilityCost.PayXLife -> action.xValue ?: 0
+                part is AbilityCost.Atom && part.atom is CostAtom.PayLife -> (part.atom as CostAtom.PayLife).amount
+                else -> 0
+            }
+        }
+        return if (state.canPayLife(action.playerId, life, LifePaymentPurpose.activating(ability.isManaAbility))) null
+        else "Cannot pay $life life to activate this ability"
+    }
+
     private fun canPayAbilityCostWithSources(
         state: GameState,
         cost: AbilityCost,
         sourceId: EntityId,
         playerId: EntityId,
+        lifePurpose: LifePaymentPurpose,
         abilityContext: SpellPaymentContext? = null,
         granterId: EntityId? = null,
     ): Boolean {
@@ -665,7 +697,7 @@ internal class ActivationValidator(
             is AbilityCost.Atom -> {
                 val mana = cost.manaCostOrNull
                 if (mana != null) manaSolver.canPay(state, playerId, mana, spellContext = abilityContext)
-                else costHandler.canPayAbilityCost(state, cost, sourceId, playerId, manaPool, abilityContext, granterId)
+                else costHandler.canPayAbilityCost(state, cost, sourceId, playerId, manaPool, abilityContext, granterId, lifePurpose)
             }
             is AbilityCost.Composite -> {
                 // If composite cost includes Tap, the source itself can't also be used as a mana source
@@ -673,10 +705,10 @@ internal class ActivationValidator(
                 cost.costs.all { subCost ->
                     val subMana = subCost.manaCostOrNull
                     if (subMana != null) manaSolver.canPay(state, playerId, subMana, excludeSources = excludeSources, spellContext = abilityContext)
-                    else costHandler.canPayAbilityCost(state, subCost, sourceId, playerId, manaPool, abilityContext, granterId)
+                    else costHandler.canPayAbilityCost(state, subCost, sourceId, playerId, manaPool, abilityContext, granterId, lifePurpose)
                 }
             }
-            else -> costHandler.canPayAbilityCost(state, cost, sourceId, playerId, manaPool, abilityContext, granterId)
+            else -> costHandler.canPayAbilityCost(state, cost, sourceId, playerId, manaPool, abilityContext, granterId, lifePurpose)
         }
     }
 

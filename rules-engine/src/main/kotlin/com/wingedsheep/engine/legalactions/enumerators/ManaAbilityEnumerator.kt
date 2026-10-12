@@ -1,5 +1,7 @@
 package com.wingedsheep.engine.legalactions.enumerators
 
+import com.wingedsheep.engine.state.LifePaymentPurpose
+
 import com.wingedsheep.engine.mechanics.cost.SharedCreatureTypeTapCost
 import com.wingedsheep.engine.handlers.costs.CostAtomAmounts
 import com.wingedsheep.engine.mechanics.cost.PlayerCounterPayment
@@ -397,7 +399,8 @@ class ManaAbilityEnumerator(
                 val manaAbilityMaxX: Int? = if (hasNonManaX) {
                     context.costUtils.calculateMaxAffordableX(
                         state, playerId, effectiveCost, effectiveCost.manaCostOrNull,
-                        precomputedSources = context.availableManaSources, sourceId = entityId
+                        precomputedSources = context.availableManaSources, sourceId = entityId,
+                        lifePurpose = com.wingedsheep.engine.state.LifePaymentPurpose.ACTIVATE_MANA_ABILITY
                     )
                 } else null
 

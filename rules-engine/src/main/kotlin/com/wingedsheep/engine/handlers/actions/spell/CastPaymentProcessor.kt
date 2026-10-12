@@ -1,5 +1,7 @@
 package com.wingedsheep.engine.handlers.actions.spell
 
+import com.wingedsheep.engine.state.LifePaymentPurpose
+
 import com.wingedsheep.engine.mechanics.mana.allocateFloating
 import com.wingedsheep.engine.mechanics.mana.withSpendingColors
 import com.wingedsheep.engine.handlers.effects.mana.ManaProvenanceTracker
@@ -153,8 +155,9 @@ class CastPaymentProcessor(
             is PaymentStrategy.FromPool -> emptyList()
         }
         val lifeToPay = lifePayments.size * 2
-        val currentLife = state.lifeTotal(action.playerId)
-        if (lifeToPay > 0 && lifeToPay > currentLife) {
+        // CR 119.4 / 119.8, and a cost-scoped prohibition (Karn's Sylex) — a Phyrexian pip paid
+        // with life is life paid to cast the spell.
+        if (!state.canPayLife(action.playerId, lifeToPay, LifePaymentPurpose.CAST_SPELL)) {
             return PaymentResult(state, emptyList(), "Insufficient life for Phyrexian mana payment")
         }
         val manaCost = effectiveCost.withPhyrexianPaidByLife(lifePayments)

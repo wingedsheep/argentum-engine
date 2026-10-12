@@ -1,4 +1,6 @@
 package com.wingedsheep.engine.mechanics.mana
+
+import com.wingedsheep.engine.state.LifePaymentPurpose
 import com.wingedsheep.engine.core.ManaAbilitySourcesContinuation
 import com.wingedsheep.engine.core.ManaSpendingObligationsContinuation
 import com.wingedsheep.engine.mechanics.layers.ContinuousEffectSourceComponent
@@ -1612,7 +1614,7 @@ class ManaSolver private constructor(
                 // A mana ability whose life cost (printed "Pay N life" plus any Thran Portal tax)
                 // its controller can't pay can't be activated (CR 119.4), so auto-pay mustn't pick it.
                 if (abilityHasPainCost &&
-                    !state.canPayLife(playerId, ManaAbilityLifeCost.total(state, entityId, ability))
+                    !state.canPayLife(playerId, ManaAbilityLifeCost.total(state, entityId, ability), LifePaymentPurpose.ACTIVATE_MANA_ABILITY)
                 ) {
                     hadUnpayableLifeAbility = true
                     continue
@@ -2538,7 +2540,7 @@ class ManaSolver private constructor(
     private fun withLifeTax(state: GameState, playerId: EntityId, source: ManaSource): ManaSource? {
         val tax = ManaAbilityLifeCost.tax(state, source.entityId)
         if (tax <= 0) return source
-        if (!state.canPayLife(playerId, tax)) return null
+        if (!state.canPayLife(playerId, tax, LifePaymentPurpose.ACTIVATE_MANA_ABILITY)) return null
         return source.copy(
             hasPainCost = true,
             painAmount = source.painAmount + tax,
@@ -2608,8 +2610,10 @@ class ManaSolver private constructor(
     ): List<Color>? {
         val pipColors = cost.phyrexianSymbols.mapNotNull { it.phyrexianLifeColor }
         if (pipColors.isEmpty()) return emptyList()
-        // CR 119.8 — a player who can't lose life pays no Phyrexian pip with life.
-        val life = if (state.isLifeLossLocked(playerId)) 0 else (state.lifeTotal(playerId) - reservedLife).coerceAtLeast(0)
+        // CR 119.8 — a player who can't lose life pays no Phyrexian pip with life; nor does one
+        // forbidden to pay life for costs (Karn's Sylex). A Phyrexian pip only appears in a spell's
+        // or a non-mana ability's cost, and every such prohibition covers both alike.
+        val life = if (state.isLifePaymentBlocked(playerId, LifePaymentPurpose.ACTIVATE_ABILITY)) 0 else (state.lifeTotal(playerId) - reservedLife).coerceAtLeast(0)
         for (lifePips in 0..pipColors.size) {
             // A player can't pay more life than they have (CR 119.4).
             if (lifePips * 2 > life) return null
@@ -2663,8 +2667,10 @@ class ManaSolver private constructor(
         // A Phyrexian pip may be paid with 2 life instead of its color. Try each distinct pip
         // choice before the mana-only solver below; recursive calls see a strictly smaller cost.
         // Paying down to exactly 0 is legal, though state-based actions will make the player lose.
-        // CR 119.8 — a player who can't lose life pays no Phyrexian pip with life.
-        val life = if (state.isLifeLossLocked(playerId)) 0 else (state.lifeTotal(playerId) - reservedLife).coerceAtLeast(0)
+        // CR 119.8 — a player who can't lose life pays no Phyrexian pip with life; nor does one
+        // forbidden to pay life for costs (Karn's Sylex). A Phyrexian pip only appears in a spell's
+        // or a non-mana ability's cost, and every such prohibition covers both alike.
+        val life = if (state.isLifePaymentBlocked(playerId, LifePaymentPurpose.ACTIVATE_ABILITY)) 0 else (state.lifeTotal(playerId) - reservedLife).coerceAtLeast(0)
         if (phyrexianLifePipsCommitted > 0 && phyrexianLifePipsCommitted * 2 > life) return false
         if (allowPhyrexianLife && (phyrexianLifePipsCommitted + 1) * 2 <= life) {
             val triedColors = mutableSetOf<Color>()
@@ -3150,7 +3156,8 @@ class ManaSolver private constructor(
             // The source pays its own cost unless the atom's own `excludeSelf` says otherwise
             // (CR 601.2h); canAfford reads that flag itself.
             manaSolver = this,
-            predicateEvaluator = predicateEvaluator
+            predicateEvaluator = predicateEvaluator,
+            lifePurpose = LifePaymentPurpose.ACTIVATE_MANA_ABILITY
         )
         is AbilityCost.Composite -> cost.costs.all {
             nonManaAbilityCostIsPayable(state, playerId, sourceId, it)

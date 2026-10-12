@@ -1,5 +1,7 @@
 package com.wingedsheep.engine.handlers.continuations
 
+import com.wingedsheep.engine.state.LifePaymentPurpose
+
 import com.wingedsheep.engine.mechanics.cost.SharedCreatureTypeTapCost
 import com.wingedsheep.engine.mechanics.mana.withSpendingColors
 import com.wingedsheep.engine.core.*
@@ -994,7 +996,7 @@ class SacrificeAndPayContinuationResumer(
 
                 is CostAtom.PayLife -> {
                     // CR 810.9a — team's shared total; CR 119.8 — a life-loss lock forbids paying.
-                    if (state.canPayLife(nextPlayerId, atom.amount)) {
+                    if (state.canPayLife(nextPlayerId, atom.amount, LifePaymentPurpose.OTHER)) {
                         val prompt = "Pay ${atom.amount} life to prevent ${continuation.sourceName}'s effect?"
                         val question = { decisionId: String -> YesNoDecision(
                             id = decisionId,

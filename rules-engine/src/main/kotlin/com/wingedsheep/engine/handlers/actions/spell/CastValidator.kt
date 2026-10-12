@@ -1,5 +1,7 @@
 package com.wingedsheep.engine.handlers.actions.spell
 
+import com.wingedsheep.engine.state.LifePaymentPurpose
+
 import com.wingedsheep.engine.core.AdditionalCostSelectionKind
 import com.wingedsheep.engine.core.AlternativeCostType
 import com.wingedsheep.engine.core.CardsDiscardedEvent
@@ -237,7 +239,7 @@ internal class CastValidator(
                     action.targets.map { it.toEntityId() }, action.declaredCostSlot)) return "Optional cost is not available for this spell"
             }
             val life = action.optionalCostPayments.sumOf { costCalculator.optionalModifier(state, it)?.optionalLifePayment ?: 0 }
-            if (!state.canPayLife(action.playerId, life)) return "Cannot pay optional life cost"
+            if (!state.canPayLife(action.playerId, life, LifePaymentPurpose.CAST_SPELL)) return "Cannot pay optional life cost"
         }
         if (action.castFaceDown) return validateFaceDownCast(state, action, cardDef, duringResolution)
         if (!duringResolution) validateTiming(state, action, cardComponent, cardDef, source)?.let { return it }
@@ -248,8 +250,15 @@ internal class CastValidator(
         validateTotalCost(state, action, cardComponent, cardDef, source)?.let { return it }
         validateTargets(state, action, cardDef, source)?.let { return it }
         validateDamageDistribution(state, action, cardDef)?.let { return it }
+        validateGraveyardLifeCost(state, action)?.let { return it }
         return validateTargetLifeTaxes(state, action)
     }
+
+    /** The life a graveyard-cast permission charges (Festival of Embers) is life paid to cast. */
+    private fun validateGraveyardLifeCost(state: GameState, action: CastSpell): String? =
+        if (!state.canPayLife(action.playerId, action.graveyardLifeCost, LifePaymentPurpose.CAST_SPELL)) {
+            "Cannot pay ${action.graveyardLifeCost} life to cast this spell"
+        } else null
 
     /**
      * The route this card is being cast by (CR 601.2a), or null when none applies. A card outside
@@ -669,7 +678,7 @@ internal class CastValidator(
             action.additionalCostPayment, costHandler, action.additionalCostChoices)
         reduced.firstNotNullOfOrNull { SpellCosts.validate(check, it) }?.let { return it }
         val totalLife = reduced.sumOf { SpellCosts.lifeToPay(check, it) }
-        if (!state.canPayLife(action.playerId, totalLife)) return "Cannot pay combined additional life costs"
+        if (!state.canPayLife(action.playerId, totalLife, LifePaymentPurpose.CAST_SPELL)) return "Cannot pay combined additional life costs"
         return null
     }
 
@@ -948,7 +957,7 @@ internal class CastValidator(
     private fun validateTargetLifeTaxes(state: GameState, action: CastSpell): String? {
         if (action.targets.isEmpty()) return null
         val additionalLifeCost = costCalculator.calculateAdditionalLifeCost(state, action.playerId, action.targets)
-        if (!state.canPayLife(action.playerId, additionalLifeCost)) { // CR 810.9a — team's shared total
+        if (!state.canPayLife(action.playerId, additionalLifeCost, LifePaymentPurpose.CAST_SPELL)) { // CR 810.9a — team's shared total
             return "Not enough life to pay additional life cost ($additionalLifeCost life required)"
         }
         return null

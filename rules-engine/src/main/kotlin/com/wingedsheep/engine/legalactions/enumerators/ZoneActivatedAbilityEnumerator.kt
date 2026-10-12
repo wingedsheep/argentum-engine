@@ -1,5 +1,7 @@
 package com.wingedsheep.engine.legalactions.enumerators
 
+import com.wingedsheep.engine.state.LifePaymentPurpose
+
 import com.wingedsheep.engine.legalactions.surfacedRequirements
 import com.wingedsheep.engine.handlers.TargetingSourceType
 import com.wingedsheep.engine.handlers.PredicateEvaluator
@@ -244,7 +246,8 @@ class ZoneActivatedAbilityEnumerator(
                 val abilityHasXCost = abilityManaCost?.hasX == true || context.costUtils.hasPlayerChosenNonManaX(effectiveCost)
                 val abilityMaxAffordableX: Int? = if (abilityHasXCost) {
                     context.costUtils.calculateMaxAffordableX(state, playerId, effectiveCost, abilityManaCost,
-                        precomputedSources = context.availableManaSources, sourceId = entityId)
+                        precomputedSources = context.availableManaSources, sourceId = entityId,
+                        lifePurpose = com.wingedsheep.engine.state.LifePaymentPurpose.activating(ability.isManaAbility))
                 } else null
 
                 // Compute auto-tap preview for UI highlighting (skipped in ACTIONS_ONLY mode)

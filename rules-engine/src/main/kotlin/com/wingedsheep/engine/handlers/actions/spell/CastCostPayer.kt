@@ -1,5 +1,7 @@
 package com.wingedsheep.engine.handlers.actions.spell
 
+import com.wingedsheep.engine.state.LifePaymentPurpose
+
 import com.wingedsheep.engine.mechanics.mana.withSpendingColors
 import com.wingedsheep.engine.core.AlternativeCostType
 import com.wingedsheep.engine.core.CastSpell
@@ -204,7 +206,7 @@ internal class CastCostPayer(
         for (cost in costs) {
             val lifeToPay = SpellCosts.lifeToPay(SpellCostCheck(ledger.state, ledger.action, costHandler, predicateEvaluator), cost)
             if (lifeToPay == 0) continue
-            if (!ledger.state.canPayLife(ledger.playerId, lifeToPay)) return "Cannot pay additional life cost"
+            if (!ledger.state.canPayLife(ledger.playerId, lifeToPay, LifePaymentPurpose.CAST_SPELL)) return "Cannot pay additional life cost"
             val (afterPayment, paymentEvents) =
                 LifePaymentService.pay(zones, ledger.state, ledger.playerId, lifeToPay)
                     ?: return "Cannot pay additional life cost"

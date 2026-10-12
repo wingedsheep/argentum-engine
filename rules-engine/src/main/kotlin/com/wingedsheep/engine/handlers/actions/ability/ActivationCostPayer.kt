@@ -1,5 +1,7 @@
 package com.wingedsheep.engine.handlers.actions.ability
 
+import com.wingedsheep.engine.state.LifePaymentPurpose
+
 import com.wingedsheep.engine.mechanics.mana.SpentMana
 
 import com.wingedsheep.engine.mechanics.mana.allocateFloating
@@ -153,7 +155,7 @@ internal class ActivationCostPayer(
             ) ?: emptyList()
         }
         val phyrexianLife = phyrexianLifePayments.size * 2
-        if (!currentState.canPayLife(action.playerId, phyrexianLife)) {
+        if (!currentState.canPayLife(action.playerId, phyrexianLife, LifePaymentPurpose.activating(ability.isManaAbility))) {
             return ActivationPaymentOutcome.Failed("Insufficient life for Phyrexian mana payment")
         }
         val manaCost = if (reducedManaCost == null) null else reducedManaCost.withPhyrexianPaidByLife(phyrexianLifePayments)

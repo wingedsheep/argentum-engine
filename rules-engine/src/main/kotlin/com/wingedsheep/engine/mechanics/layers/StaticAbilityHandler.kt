@@ -341,6 +341,15 @@ class StaticAbilityHandler(
             result = result.with(CantBeTargetedByOpponentAbilitiesComponent(it.condition))
         }
 
+        // "Players can't pay life to cast spells or activate abilities" (Karn's Sylex) — read by
+        // GameState.canPayLife. Bare only: see ForbidsLifePaymentForCostsComponent.
+        allStaticAbilities.filterIsInstance<com.wingedsheep.sdk.scripting.PlayersCantPayLifeForCosts>()
+            .firstOrNull()?.let {
+                result = result.with(
+                    com.wingedsheep.engine.state.components.battlefield.ForbidsLifePaymentForCostsComponent(it.excludeManaAbilities)
+                )
+            }
+
         // Global Layer 3 color-word change (Swirl the Mists): read by TextChanges, which scans the
         // battlefield for this marker and reads the source's chosen color live.
         if (allStaticAbilities.any { it is com.wingedsheep.sdk.scripting.ChangeAllColorWordsToChosenColor }) {
@@ -1238,6 +1247,7 @@ class StaticAbilityHandler(
             is CantBeBlockedWhilePropertyAtMost,
             is com.wingedsheep.sdk.scripting.ChangeAllColorWordsToChosenColor,
             is GrantCantLoseGame,
+            is com.wingedsheep.sdk.scripting.PlayersCantPayLifeForCosts,
             is com.wingedsheep.sdk.scripting.GrantOpponentsCantWinGame,
             is com.wingedsheep.sdk.scripting.GrantCantLoseGameFromLife,
             is GrantHexproofToController,

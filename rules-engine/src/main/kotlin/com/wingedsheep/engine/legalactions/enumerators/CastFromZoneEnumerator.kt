@@ -1,5 +1,7 @@
 package com.wingedsheep.engine.legalactions.enumerators
 
+import com.wingedsheep.engine.state.LifePaymentPurpose
+
 import com.wingedsheep.engine.state.components.battlefield.liveStaticAbilities
 import com.wingedsheep.engine.handlers.actions.spell.chosenKickersLabel
 import com.wingedsheep.engine.handlers.actions.spell.optionalCostDeclarations
@@ -2907,7 +2909,7 @@ class CastFromZoneEnumerator(
                 }
                 else -> if (cost is AdditionalCost.PayLifeEqualToManaValueOfSpell) {
                     val amount = state.getEntity(cardId)?.get<CardComponent>()?.manaCost?.cmc ?: 0
-                    if (!state.canPayLife(playerId, amount + reservedLife)) return false
+                    if (!state.canPayLife(playerId, amount + reservedLife, LifePaymentPurpose.CAST_SPELL)) return false
                 }
             }
         }

@@ -1,5 +1,7 @@
 package com.wingedsheep.engine.legalactions.enumerators
 
+import com.wingedsheep.engine.state.LifePaymentPurpose
+
 import com.wingedsheep.engine.handlers.effects.AnnouncedDivision
 import com.wingedsheep.engine.mechanics.cost.SharedCreatureTypeTapCost
 import com.wingedsheep.engine.handlers.TargetingSourceType
@@ -374,11 +376,15 @@ class ActivatedAbilityEnumerator(
                                 .GraveyardTotalExileResolver.costInfo(state, playerId, atom, excludeCardId = entityId.takeIf { atom.excludeSelf }, predicateEvaluator = context.predicateEvaluator)
                                 ?: continue
                         }
-                        // Pay-life / reveal carry no enumeration-time selection or affordability gate
-                        // here (life payability is validated at payment time, matching the prior
-                        // fall-through behavior for these costs). Putting counters on the source
-                        // costs nothing the player must have, so it never gates enumeration either.
-                        is CostAtom.PayLife, is CostAtom.RevealFromHand, is CostAtom.PutCountersOnSelf,
+                        // Pay life gates on payability (CR 119.4 / 119.8, and a cost-scoped
+                        // prohibition such as Karn's Sylex) but takes no selection.
+                        is CostAtom.PayLife -> {
+                            if (!state.canPayLife(playerId, atom.amount, LifePaymentPurpose.ACTIVATE_ABILITY)) continue
+                        }
+                        // Reveal carries no enumeration-time gate here (validated at payment time).
+                        // Putting counters on the source costs nothing the player must have, so it
+                        // never gates enumeration either.
+                        is CostAtom.RevealFromHand, is CostAtom.PutCountersOnSelf,
                         // PayCost-only (Tourach's Chant); no activated ability pays it, so there is
                         // nothing to enumerate.
                         is CostAtom.PutCountersOnPermanent,
@@ -635,9 +641,15 @@ class ActivatedAbilityEnumerator(
                                             discardTargets = targets
                                         }
                                     }
-                                    // Pay-life / reveal / put-counters-on-self carry no enumeration-time
-                                    // gate here (matching the prior else fall-through for these sub-costs).
-                                    is CostAtom.PayLife, is CostAtom.RevealFromHand,
+                                    // See the top-level branch: life gates on payability.
+                                    is CostAtom.PayLife -> {
+                                        if (!state.canPayLife(playerId, atom.amount, LifePaymentPurpose.ACTIVATE_ABILITY)) {
+                                            costCanBePaid = false
+                                            break
+                                        }
+                                    }
+                                    // Reveal / put-counters-on-self carry no enumeration-time gate here.
+                                    is CostAtom.RevealFromHand,
                                     is CostAtom.PutCountersOnSelf,
                                     is CostAtom.PutCountersOnPermanent,
                                     // See the top-level branch: always payable, nothing to select.
