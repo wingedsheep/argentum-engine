@@ -104,7 +104,7 @@ object StateProgress {
      *
      * A hand-written list of the fields to *read* was the first shape of this, and it had the
      * failure direction backwards. `GameState` carries ~50 fields and gains more; several are
-     * turn-level riders an ability can set without touching a permanent — `spellCostReductions`,
+     * turn-level riders an ability can set without touching a permanent — `spellCostModifiers`,
      * `activeCounterPlacementModifiers`, `pendingUncounterableSpells`,
      * `damageCantBePreventedThisTurn`. A field missing from a read-list makes a real action look
      * inert, and [Strategist] then refuses it *forever*. Naming the exclusions instead means a field

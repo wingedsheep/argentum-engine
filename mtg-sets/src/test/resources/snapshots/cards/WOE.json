@@ -14386,7 +14386,7 @@
                 "id": "Rowan, Scion of War:1",
                 "cost": "CostTap",
                 "effect": {
-                    "type": "ReduceSpellCosts",
+                    "type": "ModifySpellCosts",
                     "spellFilter": {
                         "cardPredicates": [
                             {
@@ -21207,7 +21207,7 @@
                 "id": "Will, Scion of Peace:1",
                 "cost": "CostTap",
                 "effect": {
-                    "type": "ReduceSpellCosts",
+                    "type": "ModifySpellCosts",
                     "spellFilter": {
                         "cardPredicates": [
                             {

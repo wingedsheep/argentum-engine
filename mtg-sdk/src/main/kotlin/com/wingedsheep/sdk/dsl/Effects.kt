@@ -5442,7 +5442,25 @@ object Effects {
         spellFilter: GameObjectFilter,
         amount: DynamicAmount,
         duration: Duration = Duration.EndOfTurn,
-    ): Effect = com.wingedsheep.sdk.scripting.effects.ReduceSpellCostsEffect(spellFilter, amount, duration)
+    ): Effect = com.wingedsheep.sdk.scripting.effects.ModifySpellCostsEffect(spellFilter, amount, duration)
+
+    /**
+     * "Spells [player] casts this turn that match [spellFilter] cost {X} more to cast, where X is
+     * [amount]" — the tax mirror of [ReduceSpellCosts]. Academy Loremaster: "spells they cast this
+     * turn cost {2} more", with `player = Player.TriggeringPlayer`.
+     *
+     * [amount] and [player] are locked in when this effect resolves; the tax outlives its source
+     * and adds only generic mana. Only `EndOfTurn` and (for [Player.You]) `UntilYourNextTurn` are
+     * accepted.
+     */
+    fun IncreaseSpellCosts(
+        amount: DynamicAmount,
+        player: Player = Player.You,
+        spellFilter: GameObjectFilter = GameObjectFilter.Any,
+        duration: Duration = Duration.EndOfTurn,
+    ): Effect = com.wingedsheep.sdk.scripting.effects.ModifySpellCostsEffect(
+        spellFilter, amount, duration, player = player, increase = true,
+    )
 
     // =========================================================================
     // Sacrifice Effects

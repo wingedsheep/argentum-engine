@@ -934,6 +934,7 @@ Families:
 - `MayRevealCardFromHandEffect(filter: GameObjectFilter, otherwise: Effect?)` — Atomic "you may reveal a card matching filter from your hand" choice.
 - `MeldEffect(partner: GameObjectFilter, into: String, tappedAndAttacking: Boolean)` — Meld (CR 701.42) — "If you both own and control this and a partner, exile them, then meld them into into." The ability lives on one card of a meld pair (CR 712.4a); its source is always the meld ca…
 - `ModalEffect(modes: List<Mode>, chooseCount: Int, minChooseCount: Int, allowRepeat: Boolean, additionalManaCostPerExtraMode: String?, additionalCostPerExtraMode: CostAtom?, chooseAllIfBlightPaid: Boolean, dynamicChooseCount: DynamicAmount?, dynamicMinChooseCount: DynamicAmount?, excludePreviouslyChosenModes: Boolean, excludeModesChosenThisTurn: Boolean, countsAsModalSpell: Boolean)` — Modal spell effect - choose one or more of several modes.
+- `ModifySpellCostsEffect(spellFilter: GameObjectFilter, amount: DynamicAmount, duration: Duration, player: Player, increase: Boolean)` — "Spells player casts duration that match spellFilter cost {X} less — or, with increase, {X} more — to cast": a duration-bounded, player-scoped generic cost modifier installed when this effect resol…
 - `ModifyStatsEffect(powerModifier: DynamicAmount, toughnessModifier: DynamicAmount, target: EffectTarget, duration: Duration)` — Modify power/toughness effect.
 - `MoveAllCountersEffect(source: EffectTarget, destination: EffectTarget)` — Move every counter, of every kind, from a source permanent onto a destination permanent.
 - `MoveAllLastKnownCountersEffect(target: EffectTarget)` — Put all counters that were on the triggering source onto a target.
@@ -980,7 +981,6 @@ Families:
 - `RedirectNextDamageEffect(protectedTargets: List<EffectTarget>, redirectTo: EffectTarget, amount: Int?, scope: RedirectScope, creaturesOnly: Boolean, optional: Boolean)` — Redirect damage that would be dealt to the protected targets this turn.
 - `RedistributeLifeTotalsEffect` — "Redistribute any number of players' life totals." (Reverse the Sands).
 - `ReduceMaximumHandSizeEffect(amount: DynamicAmount, target: EffectTarget)` — Reduces the target player's maximum hand size by amount for the rest of the game ("your maximum hand size is reduced by three for the rest of the game" — Inspired Idea).
-- `ReduceSpellCostsEffect(spellFilter: GameObjectFilter, amount: DynamicAmount, duration: Duration)` — "Spells you cast duration that match spellFilter cost {X} less to cast" — a duration-bounded, controller-scoped generic cost reduction installed when this effect resolves.
 - `ReflectCombatDamageEffect(target: EffectTarget)` — Creates a delayed trigger for the rest of the turn that reflects combat damage.
 - `ReflexiveTriggerEffect(action: Effect, optional: Boolean, reflexiveEffect: Effect, reflexiveTargetRequirements: List<TargetRequirement>, hint: String?, descriptionOverride: String?)` — Reflexive trigger - "When you do, effect." Used for abilities that trigger from the resolution of another effect.
 - `RegenerateEffect(target: EffectTarget)` — Regenerate target creature.

@@ -22,7 +22,7 @@ import io.kotest.matchers.shouldBe
  *   {T}: Spells you cast this turn that are white and/or blue cost {X} less to cast, where X is
  *   the amount of life you gained this turn. Activate only as a sorcery.
  *
- * Covers the new [com.wingedsheep.sdk.scripting.effects.ReduceSpellCostsEffect]:
+ * Covers the new [com.wingedsheep.sdk.scripting.effects.ModifySpellCostsEffect]:
  * the discount lands on matching spells only, is fixed at resolution (life gained afterwards
  * doesn't raise it), survives Will leaving the battlefield, and expires with the turn.
  */
@@ -125,7 +125,7 @@ class WillScionOfPeaceScenarioTest : FunSpec({
         driver.submitSuccess(ActivateAbility(driver.player1, will, abilityId))
         driver.bothPass()
 
-        driver.state.spellCostReductions.isEmpty() shouldBe true
+        driver.state.spellCostModifiers.isEmpty() shouldBe true
         costOf(driver, "Serra Angel") shouldBe 5
     }
 
@@ -156,7 +156,7 @@ class WillScionOfPeaceScenarioTest : FunSpec({
 
         endTurn(driver)
 
-        driver.state.spellCostReductions.isEmpty() shouldBe true
+        driver.state.spellCostModifiers.isEmpty() shouldBe true
         costOf(driver, "Serra Angel") shouldBe 5
     }
 

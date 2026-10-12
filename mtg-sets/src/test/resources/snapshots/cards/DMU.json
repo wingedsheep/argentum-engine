@@ -1,3 +1,73 @@
+// Academy Loremaster
+{
+    "name": "Academy Loremaster",
+    "manaCost": "{U}{U}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "At the beginning of each player's draw step, that player may draw an additional card. If they do, spells they cast this turn cost {2} more to cast.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Academy Loremaster:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "DRAW",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "target": {
+                                    "type": "PlayerRef",
+                                    "player": "TriggeringPlayer"
+                                }
+                            },
+                            {
+                                "type": "ModifySpellCosts",
+                                "spellFilter": {},
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                },
+                                "player": "TriggeringPlayer",
+                                "increase": true
+                            }
+                        ]
+                    },
+                    "decisionMaker": {
+                        "type": "PlayerRef",
+                        "player": "TriggeringPlayer"
+                    },
+                    "descriptionOverride": "Draw an additional card? Spells you cast this turn will cost {2} more."
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "40",
+        "rarity": "RARE",
+        "artist": "Marcela Medeiros",
+        "flavorText": "As a young student, she dusted the shelves of Tolaria's great library. Now, she writes the books that line them.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/f/9fca4c4f-a77b-483e-9da4-574ba2e3d179.jpg?1783921356"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Aether Channeler
 {
     "name": "Aether Channeler",

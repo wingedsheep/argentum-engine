@@ -175,13 +175,14 @@ class CostCalculator(
         }
 
         // Duration-bounded "spells you cast this turn / until your next turn that match … cost {N}
-        // less" discounts (Will / Rowan, Scion of …; Ral, Leyline Prodigy). The amount was fixed when the granting ability resolved, so unlike
+        // less (or more)" modifiers (Will / Rowan, Scion of …; Ral, Leyline Prodigy; Academy
+        // Loremaster's tax). The amount was fixed when the granting ability resolved, so unlike
         // the affinity riders above nothing is recomputed here — and unlike them, a matching cast
         // does not consume the entry.
-        for (reduction in state.spellCostReductions) {
-            if (reduction.controllerId != casterId) continue
-            if (!matchesCardDefinition(cardDef, reduction.spellFilter, null, state, state.projectedState)) continue
-            totalReduction += reduction.amount
+        for (modifier in state.spellCostModifiers) {
+            if (modifier.controllerId != casterId) continue
+            if (!matchesCardDefinition(cardDef, modifier.spellFilter, null, state, state.projectedState)) continue
+            if (modifier.increase) totalIncrease += modifier.amount else totalReduction += modifier.amount
         }
 
         // ModifySpellCost abilities on battlefield permanents and emblems.
@@ -1649,7 +1650,16 @@ class CostCalculator(
             }
         }
 
-        return reduceGenericCost(baseMorphCost, totalReduction)
+        // Duration-bounded modifiers that cover every spell the caster casts ("spells they cast
+        // this turn cost {2} more" — Academy Loremaster). A face-down spell has no name, colour or
+        // mana cost of its own, so only an unfiltered modifier can be said to match it.
+        var totalIncrease = 0
+        for (modifier in state.spellCostModifiers) {
+            if (modifier.controllerId != casterId || modifier.spellFilter != GameObjectFilter.Any) continue
+            if (modifier.increase) totalIncrease += modifier.amount else totalReduction += modifier.amount
+        }
+
+        return reduceGenericCost(increaseGenericCost(baseMorphCost, totalIncrease), totalReduction)
     }
 
     /**

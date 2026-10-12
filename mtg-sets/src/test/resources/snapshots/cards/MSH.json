@@ -1049,7 +1049,7 @@
             {
                 "chapter": 2,
                 "effect": {
-                    "type": "ReduceSpellCosts",
+                    "type": "ModifySpellCosts",
                     "spellFilter": {
                         "cardPredicates": [
                             "IsArtifact"

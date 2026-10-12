@@ -12,7 +12,8 @@ import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.effects.ReduceSpellCostsEffect
+import com.wingedsheep.sdk.scripting.effects.ModifySpellCostsEffect
+import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.assertions.withClue
@@ -21,11 +22,12 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 
 /**
- * [ReduceSpellCostsEffect]'s `duration`: an end-of-turn discount ends at the turn boundary, an
+ * [ModifySpellCostsEffect]'s `duration`: an end-of-turn discount ends at the turn boundary, an
  * "until your next turn" discount keeps applying through the opponents' turns (instants cast
- * there) and ends once its controller's next turn begins.
+ * there) and ends once its controller's next turn begins. Also its `increase` and `player` axes:
+ * a tax adds generic mana, and lands on the resolved player rather than the controller.
  */
-class ReduceSpellCostsDurationTest : FunSpec({
+class ModifySpellCostsDurationTest : FunSpec({
 
     fun instant(name: String, cost: String, script: CardScript) =
         CardDefinition.instant(name = name, manaCost = ManaCost.parse(cost), oracleText = name, script = script)
@@ -40,12 +42,20 @@ class ReduceSpellCostsDurationTest : FunSpec({
         "Discount This Turn", "{W}",
         CardScript.spell(Effects.ReduceSpellCosts(GameObjectFilter.InstantOrSorcery, DynamicAmount.Fixed(1)))
     )
+    val taxOpponents = instant(
+        "Tax Opponents This Turn", "{W}",
+        CardScript.spell(Effects.IncreaseSpellCosts(DynamicAmount.Fixed(1), player = Player.EachOpponent))
+    )
+    val taxMe = instant(
+        "Tax Me This Turn", "{W}",
+        CardScript.spell(Effects.IncreaseSpellCosts(DynamicAmount.Fixed(1)))
+    )
     val genericInstant = instant("One And White", "{1}{W}", CardScript.spell(Effects.GainLife(1)))
     val coloredInstant = instant("Double White", "{W}{W}", CardScript.spell(Effects.GainLife(1)))
 
     fun newDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(untilNextTurn, thisTurn, genericInstant, coloredInstant))
+        driver.registerCards(TestCards.all + listOf(untilNextTurn, thisTurn, taxOpponents, taxMe, genericInstant, coloredInstant))
         driver.initMirrorMatch(deck = Deck.of("Plains" to 40), skipMulligans = true, startingPlayer = 0)
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
         return driver
@@ -82,7 +92,7 @@ class ReduceSpellCostsDurationTest : FunSpec({
 
         toOpponentUpkeepWithPriority(driver, me)
         withClue("the discount survives the turn boundary into the opponent's turn") {
-            driver.state.spellCostReductions.size shouldBe 1
+            driver.state.spellCostModifiers.size shouldBe 1
             castWithOneWhite(driver, me, "One And White") shouldBe true
         }
 
@@ -90,7 +100,7 @@ class ReduceSpellCostsDurationTest : FunSpec({
         driver.passPriorityUntil(Step.UPKEEP)
         driver.activePlayer shouldBe me
         withClue("gone once your next turn begins") {
-            driver.state.spellCostReductions shouldBe emptyList()
+            driver.state.spellCostModifiers shouldBe emptyList()
             castWithOneWhite(driver, me, "One And White") shouldBe false
         }
     }
@@ -101,7 +111,7 @@ class ReduceSpellCostsDurationTest : FunSpec({
         castWithOneWhite(driver, me, "Discount Until Next Turn") shouldBe true
         driver.passPriorityUntil(Step.UPKEEP)
         driver.activePlayer shouldNotBe me
-        driver.state.spellCostReductions.single().controllerId shouldBe me
+        driver.state.spellCostModifiers.single().controllerId shouldBe me
     }
 
     test("an end-of-turn discount ends at the turn boundary") {
@@ -111,7 +121,7 @@ class ReduceSpellCostsDurationTest : FunSpec({
         castWithOneWhite(driver, me, "One And White") shouldBe true
 
         toOpponentUpkeepWithPriority(driver, me)
-        driver.state.spellCostReductions shouldBe emptyList()
+        driver.state.spellCostModifiers shouldBe emptyList()
         castWithOneWhite(driver, me, "One And White") shouldBe false
     }
 
@@ -125,9 +135,43 @@ class ReduceSpellCostsDurationTest : FunSpec({
         castWithOneWhite(driver, opponent, "One And White") shouldBe false
     }
 
+    test("a tax adds generic mana to its player's spells this turn") {
+        val driver = newDriver()
+        val me = driver.player1
+        castWithOneWhite(driver, me, "Tax Me This Turn") shouldBe true
+        withClue("{W} now costs {1}{W}") {
+            castWithOneWhite(driver, me, "Discount This Turn") shouldBe false
+        }
+        val card = driver.putCardInHand(me, "Double White")
+        driver.giveMana(me, Color.WHITE, 3)
+        withClue("{W}{W} + {1} is payable with three white") {
+            driver.castSpell(me, card).error shouldBe null
+        }
+    }
+
+    test("a tax resolved for each opponent lands on them, not on its controller") {
+        val driver = newDriver()
+        val me = driver.player1
+        castWithOneWhite(driver, me, "Tax Opponents This Turn") shouldBe true
+        val opponent = driver.player2
+        driver.state.spellCostModifiers.single().controllerId shouldBe opponent
+        driver.state.spellCostModifiers.single().increase shouldBe true
+        withClue("the controller's own spells are untaxed") {
+            castWithOneWhite(driver, me, "Discount This Turn") shouldBe true
+        }
+    }
+
     test("durations other than end of turn and until your next turn are rejected") {
         shouldThrow<IllegalArgumentException> {
-            ReduceSpellCostsEffect(GameObjectFilter.InstantOrSorcery, DynamicAmount.Fixed(1), Duration.Permanent)
+            ModifySpellCostsEffect(GameObjectFilter.InstantOrSorcery, DynamicAmount.Fixed(1), Duration.Permanent)
+        }
+    }
+
+    test("until your next turn is rejected for anyone but you") {
+        shouldThrow<IllegalArgumentException> {
+            ModifySpellCostsEffect(
+                GameObjectFilter.Any, DynamicAmount.Fixed(1), Duration.UntilYourNextTurn, player = Player.EachOpponent,
+            )
         }
     }
 })
