@@ -160,6 +160,137 @@
     ]
 }
 
+// Airlift Chaplain
+{
+    "name": "Airlift Chaplain",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Human Cleric",
+    "oracleText": "Flying\nWhen this creature enters, mill three cards. You may put a Plains card or a creature card with mana value 3 or less from among the cards milled this way into your hand. If you don't, put a +1/+1 counter on this creature. (To mill a card, put the top card of your library into your graveyard.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Airlift Chaplain:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                },
+                                "isMill": true
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            }
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "filter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "Or",
+                                        "predicates": [
+                                            {
+                                                "type": "And",
+                                                "predicates": [
+                                                    "IsLand",
+                                                    {
+                                                        "type": "HasSubtype",
+                                                        "subtype": "Plains"
+                                                    }
+                                                ]
+                                            },
+                                            {
+                                                "type": "And",
+                                                "predicates": [
+                                                    "IsCreature",
+                                                    {
+                                                        "type": "ManaValueAtMost",
+                                                        "max": 3
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                ]
+                            },
+                            "storeSelected": "selected2",
+                            "prompt": "You may put a Plains card or a creature card with mana value 3 or less milled this way into your hand",
+                            "selectedLabel": "Put in hand",
+                            "remainderLabel": "Leave in graveyard",
+                            "showAllCards": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected2",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Not",
+                                    "condition": {
+                                        "type": "CollectionContainsMatch",
+                                        "collection": "selected2"
+                                    }
+                                }
+                            },
+                            "then": {
+                                "type": "AddCounters",
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "count": 1,
+                                "target": "Self"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "2",
+        "artist": "Caroline Gariba",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/a/7ad55575-6053-43b1-9496-bcb1ea25e2a1.jpg?1783920134"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Ambush Paratrooper
 {
     "name": "Ambush Paratrooper",
@@ -332,6 +463,94 @@
         "RED",
         "GREEN"
     ]
+}
+
+// Argivian Avenger
+{
+    "name": "Argivian Avenger",
+    "manaCost": "{6}",
+    "typeLine": "Artifact Creature — Shapeshifter",
+    "oracleText": "{1}: Until end of turn, this creature gets -1/-1 and gains your choice of flying, vigilance, deathtouch, or haste.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Argivian Avenger:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": -1
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": -1
+                            },
+                            "target": "Self"
+                        },
+                        {
+                            "type": "ChooseAction",
+                            "choices": [
+                                {
+                                    "label": "Flying",
+                                    "effect": {
+                                        "type": "GrantKeyword",
+                                        "keyword": "FLYING",
+                                        "target": "Self"
+                                    }
+                                },
+                                {
+                                    "label": "Vigilance",
+                                    "effect": {
+                                        "type": "GrantKeyword",
+                                        "keyword": "VIGILANCE",
+                                        "target": "Self"
+                                    }
+                                },
+                                {
+                                    "label": "Deathtouch",
+                                    "effect": {
+                                        "type": "GrantKeyword",
+                                        "keyword": "DEATHTOUCH",
+                                        "target": "Self"
+                                    }
+                                },
+                                {
+                                    "label": "Haste",
+                                    "effect": {
+                                        "type": "GrantKeyword",
+                                        "keyword": "HASTE",
+                                        "target": "Self"
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "descriptionOverride": "{1}: Until end of turn, this creature gets -1/-1 and gains your choice of flying, vigilance, deathtouch, or haste."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "232",
+        "rarity": "UNCOMMON",
+        "artist": "Milivoj Ćeran",
+        "flavorText": "Unable to settle on just one versatile being, Urza decided to create myriad adaptable machines.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/8/28e3bf5a-0a90-46d3-bcfe-9a47df41b72b.jpg?1783920022"
+    }
 }
 
 // Argoth, Sanctum of Nature
@@ -1520,6 +1739,131 @@
         "artist": "Artur Nakhodkin",
         "imageUri": "https://cards.scryfall.io/normal/front/e/2/e24567f8-d195-4547-bba4-7a8131dc7889.jpg?1783920100"
     }
+}
+
+// Combat Courier
+{
+    "name": "Combat Courier",
+    "manaCost": "{1}",
+    "typeLine": "Artifact Creature — Construct",
+    "oracleText": "{2}, Sacrifice this creature: Draw a card.\nUnearth {U} ({U}: Return this card from your graveyard to the battlefield. It gains haste. Exile it at the beginning of the next end step or if it would leave the battlefield. Unearth only as a sorcery.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "UNEARTH"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Combat Courier:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}"
+                            }
+                        },
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "descriptionOverride": "{2}, Sacrifice this creature: Draw a card."
+            },
+            {
+                "id": "unearth_{U}",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{U}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": "Self",
+                            "destination": "Battlefield",
+                            "fromZone": "Graveyard"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "SourceInZone",
+                                    "zones": [
+                                        "Battlefield"
+                                    ]
+                                }
+                            },
+                            "then": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GrantKeyword",
+                                        "keyword": "HASTE",
+                                        "target": "Self",
+                                        "duration": "Permanent"
+                                    },
+                                    {
+                                        "type": "CreateDelayedTrigger",
+                                        "step": "END",
+                                        "effect": {
+                                            "type": "MoveTrackedBattlefieldObject",
+                                            "target": "Self",
+                                            "destination": "Exile"
+                                        }
+                                    },
+                                    {
+                                        "type": "GrantExileOnLeave",
+                                        "target": "Self"
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "activateFromZone": "Graveyard",
+                "descriptionOverride": "Unearth {U} ({U}: Return this card from your graveyard to the battlefield. It gains haste. Exile it at the beginning of the next end step or if it would leave the battlefield. Unearth only as a sorcery.)"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "77",
+        "artist": "Alix Branwyn",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/7/171edf80-ffc1-4894-9be5-c3e93a96f734.jpg?1783920099",
+        "rulings": [
+            {
+                "date": "2022-10-14",
+                "text": "If you activate a card's unearth ability but that card is removed from your graveyard before the ability resolves, that unearth ability will do nothing as it resolves."
+            },
+            {
+                "date": "2022-10-14",
+                "text": "Unearth grants haste to the permanent that's returned to the battlefield (even if it's not a creature card). However, neither of the \"exile\" abilities is granted to that permanent. If that permanent loses all its abilities, it will still be exiled at the beginning of the next end step, and if it would leave the battlefield, it is still exiled instead."
+            },
+            {
+                "date": "2022-10-14",
+                "text": "If a permanent returned to the battlefield with unearth would leave the battlefield for any reason, it's exiled instead—unless the spell or ability that's causing the permanent to leave the battlefield is actually trying to exile it!"
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
 }
 
 // Conscripted Infantry
@@ -3742,6 +4086,96 @@
     ]
 }
 
+// In the Trenches
+{
+    "name": "In the Trenches",
+    "manaCost": "{1}{W}{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "Creatures you control get +1/+1.\n{5}{W}: Exile target nonland permanent you don't control until this enchantment leaves the battlefield. Activate only as a sorcery and only once.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "In the Trenches:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{5}{W}"
+                    }
+                },
+                "effect": {
+                    "type": "MoveUntilSourceLeaves",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Exile"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsNonland",
+                                    "IsPermanent"
+                                ],
+                                "controllerPredicate": {
+                                    "type": "ControllerNot",
+                                    "predicate": "ControlledByYou"
+                                }
+                            }
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "restrictions": [
+                    "Once"
+                ]
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1,
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "8",
+        "rarity": "MYTHIC",
+        "artist": "Daarken",
+        "flavorText": "The battlefield became so pockmarked with craters and trenches that casualties were regularly attributed to \"fell in a hole.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/1/71ff86e9-1ce6-43cc-8135-f2adb1b6c5a7.jpg?1783920131",
+        "rulings": [
+            {
+                "date": "2022-10-14",
+                "text": "If In the Trenches leaves the battlefield before its activated ability resolves, the target permanent won't be exiled."
+            },
+            {
+                "date": "2022-10-14",
+                "text": "If a token is exiled, it ceases to exist. It won't be returned to the battlefield."
+            },
+            {
+                "date": "2022-10-14",
+                "text": "The activated ability can only be activated once per game. If the ability is countered or otherwise fails to resolve after being activated, it can't be activated again."
+            },
+            {
+                "date": "2022-10-14",
+                "text": "If In the Trenches leaves the battlefield and later returns to the battlefield, it is a new object on the battlefield with no memory of the last time it was there. Its ability may be activated, even if it was activated a previous time it was on the battlefield."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Junkyard Genius
 {
     "name": "Junkyard Genius",
@@ -3840,6 +4274,223 @@
     "colorIdentityOverride": [
         "BLACK",
         "RED"
+    ]
+}
+
+// Kayla's Command
+{
+    "name": "Kayla's Command",
+    "manaCost": "{1}{W}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Choose two —\n• Create a 2/2 colorless Construct artifact creature token.\n• Put a +1/+1 counter on a creature you control. It gains double strike until end of turn.\n• Search your library for a basic Plains card, reveal it, put it into your hand, then shuffle.\n• You gain 2 life and scry 2.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "CreateToken",
+                        "power": 2,
+                        "toughness": 2,
+                        "colors": [],
+                        "creatureTypes": [
+                            "Construct"
+                        ],
+                        "imageUri": "https://cards.scryfall.io/normal/front/0/8/087ab398-474f-4455-bef4-ea42c6913486.jpg?1783919909",
+                        "artifactToken": true
+                    },
+                    "description": "Create a 2/2 colorless Construct artifact creature token"
+                },
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "SelectTarget",
+                                "requirement": {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": "creature ctrl:you"
+                                    }
+                                },
+                                "storeAs": "target0",
+                                "nonTargeting": true,
+                                "prompt": "Choose a creature you control to get a +1/+1 counter and double strike"
+                            },
+                            {
+                                "type": "AddCounters",
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "count": 1,
+                                "target": {
+                                    "type": "PipelineTarget",
+                                    "collectionName": "target0"
+                                }
+                            },
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "DOUBLE_STRIKE",
+                                "target": {
+                                    "type": "PipelineTarget",
+                                    "collectionName": "target0"
+                                }
+                            }
+                        ]
+                    },
+                    "description": "Put a +1/+1 counter on a creature you control. It gains double strike until end of turn"
+                },
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Library",
+                                    "filter": "basicland Plains"
+                                },
+                                "storeAs": "searchable",
+                                "search": true
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "searchable",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "found",
+                                "prompt": "Search your library for a basic Plains card to put into your hand",
+                                "selectedLabel": "Put into your hand"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "found",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Hand"
+                                },
+                                "revealed": true
+                            },
+                            "ShuffleLibrary",
+                            "EmitLibrarySearchedEvent"
+                        ]
+                    },
+                    "description": "Search your library for a basic Plains card, reveal it, put it into your hand, then shuffle"
+                },
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GainLife",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
+                            },
+                            {
+                                "type": "Scry",
+                                "count": 2
+                            }
+                        ]
+                    },
+                    "description": "You gain 2 life and scry 2"
+                }
+            ],
+            "chooseCount": 2
+        }
+    },
+    "metadata": {
+        "collectorNumber": "9",
+        "rarity": "RARE",
+        "artist": "Dominik Mayer",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/7/0737dbec-1646-41a0-adbf-706c9bd4fc7a.jpg?1783920132",
+        "rulings": [
+            {
+                "date": "2022-10-14",
+                "text": "None of the modes have any targets. Notably, this means that you don't have to choose a creature for the second mode until the spell resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Kayla's Reconstruction
+{
+    "name": "Kayla's Reconstruction",
+    "manaCost": "{X}{W}{W}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Look at the top seven cards of your library. Put up to X artifact and/or creature cards with mana value 3 or less from among them onto the battlefield. Put the rest on the bottom of your library in a random order.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "TopOfLibrary",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 7
+                        }
+                    },
+                    "storeAs": "looked"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "looked",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": "XValue"
+                    },
+                    "filter": "creature|artifact mv<=3",
+                    "storeSelected": "kept",
+                    "storeRemainder": "rest",
+                    "prompt": "Put up to X artifact and/or creature cards with mana value 3 or less onto the battlefield",
+                    "showAllCards": true
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "kept",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Battlefield"
+                    }
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "rest",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Library",
+                        "placement": "Bottom"
+                    },
+                    "order": "Random"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "10",
+        "rarity": "RARE",
+        "artist": "Nicholas Elias",
+        "flavorText": "Anyone can destroy a continent. Few have the vision to rebuild one.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/b/2bb84e72-0231-461a-a230-d8afa6e54289.jpg?1783920129",
+        "rulings": [
+            {
+                "date": "2022-10-14",
+                "text": "Each of the cards needs to have mana value 3 or less. It's not the total mana value of the cards."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -4197,6 +4848,64 @@
     ]
 }
 
+// Loran, Disciple of History
+{
+    "name": "Loran, Disciple of History",
+    "manaCost": "{3}{W}",
+    "typeLine": "Legendary Creature — Human Artificer",
+    "oracleText": "Whenever Loran or another legendary creature you control enters, return target artifact card from your graveyard to your hand.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Loran, Disciple of History:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            "IsLegendary"
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    },
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Hand"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "artifact own:you",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Whenever Loran or another legendary creature you control enters, return target artifact card from your graveyard to your hand."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "13",
+        "rarity": "UNCOMMON",
+        "artist": "Cristi Balanescu",
+        "flavorText": "Urza and Mishra may have been Tocasia's most famous students, but Loran was the true heir to her legacy.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/9/9998f898-1f08-481b-8505-b890f0fec5e0.jpg?1783920129"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Machine Over Matter
 {
     "name": "Machine Over Matter",
@@ -4280,6 +4989,100 @@
         "artist": "Rémi Jacquot",
         "flavorText": "\"I need an army, not a masterpiece. Accelerate output, whatever it takes.\"\n—Urza, notes to his engineers",
         "imageUri": "https://cards.scryfall.io/normal/front/6/4/640a08b7-dd30-446e-a8a7-2e084bbb9586.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Meticulous Excavation
+{
+    "name": "Meticulous Excavation",
+    "manaCost": "{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "{2}{W}: Return target permanent you control to its owner's hand. If it has unearth, instead exile it, then return that card to its owner's hand. Activate only during your turn.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Meticulous Excavation:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{W}"
+                    }
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "filter": "permanent kw:unearth"
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "MoveToZone",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "destination": "Exile"
+                            },
+                            {
+                                "type": "MoveToZone",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "destination": "Hand"
+                            }
+                        ]
+                    },
+                    "otherwise": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "destination": "Hand"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "permanent ctrl:you"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "restrictions": [
+                    "OnlyDuringYourTurn"
+                ],
+                "descriptionOverride": "{2}{W}: Return target permanent you control to its owner's hand. If it has unearth, instead exile it, then return that card to its owner's hand. Activate only during your turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "16",
+        "rarity": "UNCOMMON",
+        "artist": "Lucas Graciano",
+        "flavorText": "\"Remember, students, if it's glowing, humming, or whirring, don't touch it!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/8/e811461a-6a90-416f-940c-c9579659ae0c.jpg?1783920127",
+        "rulings": [
+            {
+                "date": "2022-10-14",
+                "text": "If the target permanent has unearth and was put onto the battlefield using its unearth ability, this effect can still exile it and return it to its owner's hand."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "WHITE"
@@ -4639,6 +5442,84 @@
     ]
 }
 
+// Myrel, Shield of Argive
+{
+    "name": "Myrel, Shield of Argive",
+    "manaCost": "{3}{W}",
+    "typeLine": "Legendary Creature — Human Soldier",
+    "oracleText": "During your turn, your opponents can't cast spells or activate abilities of artifacts, creatures, or enchantments.\nWhenever Myrel attacks, create X 1/1 colorless Soldier artifact creature tokens, where X is the number of Soldiers you control.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Myrel, Shield of Argive:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "permanent Soldier"
+                    },
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [],
+                    "creatureTypes": [
+                        "Soldier"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/3/7/37da5b54-ec55-46e3-9f0b-565cbbe1ac7a.jpg?1783919907",
+                    "artifactToken": true
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "PlayersCantCastSpells",
+                "condition": "IsYourTurn"
+            },
+            {
+                "type": "PlayersCantActivateAbilities",
+                "permanentFilter": {
+                    "cardPredicates": [
+                        {
+                            "type": "Or",
+                            "predicates": [
+                                {
+                                    "type": "Or",
+                                    "predicates": [
+                                        "IsArtifact",
+                                        "IsCreature"
+                                    ]
+                                },
+                                "IsEnchantment"
+                            ]
+                        }
+                    ]
+                },
+                "condition": "IsYourTurn"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "18",
+        "rarity": "MYTHIC",
+        "artist": "Ryan Pancoast",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/6/e632ed57-bb00-4493-adef-7b4805edd7ea.jpg?1783920129",
+        "rulings": [
+            {
+                "date": "2022-10-14",
+                "text": "Myrel, Shield of Argive's first ability prevents opponents from activating abilities of permanents on the battlefield that are artifacts, creatures, and/or enchantments. It doesn't prevent activated abilities from cards in any zone other than the battlefield. Notably, this means that your opponents may still activate abilities of cards in their graveyard (such as unearth)."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Obliterating Bolt
 {
     "name": "Obliterating Bolt",
@@ -4922,6 +5803,71 @@
     ]
 }
 
+// Prison Sentence
+{
+    "name": "Prison Sentence",
+    "manaCost": "{2}{W}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nWhen this Aura enters, scry 2.\nEnchanted creature can't attack or block, and its activated abilities can't be activated.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Prison Sentence:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Scry",
+                    "count": 2
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "CantAttack",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            },
+            {
+                "type": "CantBlock",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            },
+            {
+                "type": "PreventActivatedAbilities",
+                "filter": {
+                    "cardPredicates": [
+                        "IsPermanent"
+                    ],
+                    "statePredicates": [
+                        "IsAttachedToBySource"
+                    ]
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "21",
+        "artist": "Valera Lutfullina",
+        "flavorText": "War prisoners were ineffective political pawns, as neither brother cared enough to trade for them.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/6/76832ca8-95b2-4bc8-a191-9e2f50b77626.jpg?1783920126"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Recommission
 {
     "name": "Recommission",
@@ -5102,6 +6048,96 @@
         "artist": "Ben Wootten",
         "flavorText": "\"Throw the bodies out. They'll just weigh down the frame.\"\n—Rolf, Argivian mechanic",
         "imageUri": "https://cards.scryfall.io/normal/front/0/4/04ff4a4b-4e86-41d1-a6b6-312aac0d3e1a.jpg?1783920124"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Rescue Retriever
+{
+    "name": "Rescue Retriever",
+    "manaCost": "{3}{W}{W}",
+    "typeLine": "Creature — Dog Soldier",
+    "oracleText": "Flash\nWhen this creature enters, put a +1/+1 counter on each other Soldier you control.\nPrevent all damage that would be dealt to other attacking Soldiers you control.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Rescue Retriever:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "permanent Soldier ctrl:you",
+                            "excludeSelf": true
+                        }
+                    },
+                    "body": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": "IterationEntity"
+                    }
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "PreventDamage",
+                "appliesTo": {
+                    "type": "DamageEvent",
+                    "recipient": {
+                        "type": "RecipientObject",
+                        "filter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                {
+                                    "type": "HasSubtype",
+                                    "subtype": "Soldier"
+                                }
+                            ],
+                            "statePredicates": [
+                                "IsAttacking",
+                                {
+                                    "type": "StateNot",
+                                    "predicate": "IsSource"
+                                }
+                            ],
+                            "controllerPredicate": "ControlledByYou"
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "288",
+        "rarity": "RARE",
+        "artist": "Jesper Ejsing",
+        "flavorText": "It brings the two things weary soldiers need most: medicine and morale.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/9/598def2c-003c-4aa4-ac7c-44ffd9639fdc.jpg?1783919996",
+        "rulings": [
+            {
+                "date": "2022-10-14",
+                "text": "Rescue Retriever prevents damage to other attacking Soldiers even if it isn't also attacking."
+            },
+            {
+                "date": "2022-10-14",
+                "text": "If Rescue Retriever leaves the battlefield before combat damage is dealt to your other attacking Soldiers, they will take damage as normal. Notably, this means it is usually a bad idea to attack with Rescue Retriever if your opponent could block it with a creature that has first strike and enough power to kill it."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "WHITE"
@@ -6002,6 +7038,103 @@
         "rarity": "UNCOMMON",
         "artist": "Josh Hass",
         "imageUri": "https://cards.scryfall.io/normal/front/5/a/5ab5cb30-3ced-4450-a3c4-b519f3762620.jpg?1783920121"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Steel Seraph
+{
+    "name": "Steel Seraph",
+    "manaCost": "{6}",
+    "typeLine": "Artifact Creature — Angel",
+    "oracleText": "Prototype {1}{W}{W} — 3/3 (You may cast this spell with different mana cost, color, and size. It keeps its abilities and types.)\nFlying\nAt the beginning of combat on your turn, target creature you control gains your choice of flying, vigilance, or lifelink until end of turn.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING",
+        "PROTOTYPE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Prototype",
+            "cost": "{1}{W}{W}",
+            "power": 3,
+            "toughness": 3
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Steel Seraph:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "BEGIN_COMBAT"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ChooseAction",
+                    "choices": [
+                        {
+                            "label": "Flying",
+                            "effect": {
+                                "type": "GrantKeyword",
+                                "keyword": "FLYING",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        },
+                        {
+                            "label": "Vigilance",
+                            "effect": {
+                                "type": "GrantKeyword",
+                                "keyword": "VIGILANCE",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        },
+                        {
+                            "label": "Lifelink",
+                            "effect": {
+                                "type": "GrantKeyword",
+                                "keyword": "LIFELINK",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "At the beginning of combat on your turn, target creature you control gains your choice of flying, vigilance, or lifelink until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "38",
+        "rarity": "RARE",
+        "artist": "Denys Tsiperko",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/b/1b6ef5f5-4058-4f89-a573-9e2da87a9f2e.jpg?1783920118",
+        "rulings": [
+            {
+                "date": "2022-10-14",
+                "text": "You choose the target creature as you put Steel Seraph's triggered ability on the stack. You choose which ability that creature gains as the ability resolves."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "WHITE"
@@ -7414,6 +8547,44 @@
     }
 }
 
+// Tocasia's Welcome
+{
+    "name": "Tocasia's Welcome",
+    "manaCost": "{2}{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "Whenever one or more creatures you control with mana value 3 or less enter, draw a card. This ability triggers only once each turn.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Tocasia's Welcome:1",
+                "trigger": {
+                    "type": "PermanentsEnteredEvent",
+                    "filter": "creature mv<=3 ctrl:you"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "oncePerTurn": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "30",
+        "rarity": "RARE",
+        "artist": "Johan Grenier",
+        "flavorText": "\"Your father was a dear friend to whom I owe much. He wanted me to look after you, to care for you should something happen to him.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/6/56cd89f1-f9f4-4cb5-a573-79809d0b6dfd.jpg?1783920123"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Tomakul Honor Guard
 {
     "name": "Tomakul Honor Guard",
@@ -8061,6 +9232,39 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Warlord's Elite
+{
+    "name": "Warlord's Elite",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "As an additional cost to cast this spell, tap two untapped artifacts, creatures, and/or lands you control.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "additionalCosts": [
+            {
+                "type": "AdditionalAtom",
+                "atom": {
+                    "type": "AtomTapPermanents",
+                    "count": 2,
+                    "filter": "artifact|creature|land"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "32",
+        "artist": "Joshua Raphael",
+        "flavorText": "\"The Warlord thinks we've gone soft, does he? The Fist of Progress will prove him wrong!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/8/1873cc9e-30b6-498e-b008-9d11a8bbf9b9.jpg?1783920122"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
