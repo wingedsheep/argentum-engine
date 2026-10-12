@@ -87,7 +87,9 @@ internal class PlayerProjector(
             // non-team game, so both fields serialize away by default.
             teamIndex = container?.get<TeamComponent>()?.teamIndex,
             teamSharedLife = state.format.sharesTeamLife,
-            teamSharedTurns = state.format.sharesTeamTurns
+            teamSharedTurns = state.format.sharesTeamTurns,
+            // CR 103.2b — a revealed companion is public while it waits outside the game.
+            companionId = state.companionOutsideGame(playerId)
         )
     }
 

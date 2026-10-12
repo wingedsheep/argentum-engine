@@ -51,7 +51,15 @@ class ConstructedDeckGenerator(
      * @throws IllegalArgumentException if [format] is commander-shaped (use [CommanderDeckGenerator]
      *         for those), or if the legal pool is too thin to build from.
      */
-    fun generate(setCodes: List<String>, format: DeckFormat): Map<String, Int> {
+    fun generate(setCodes: List<String>, format: DeckFormat): Map<String, Int> =
+        generateDeck(setCodes, format).deckList
+
+    /**
+     * [generate], plus a fifteen-card [Wishboard] drawn from the same legal pool — the cards the
+     * deck owns outside the game (CR 100.4a), so a generated deck that rolls Learn or a wish has
+     * something to fetch. The wishboard never repeats a card the maindeck already plays.
+     */
+    fun generateDeck(setCodes: List<String>, format: DeckFormat): GeneratedDeck {
         require(!format.isCommanderShape) {
             "Commander-shape formats need a designated commander and singleton rules; " +
                 "ConstructedDeckGenerator only builds the 60-card constructed shape. " +
@@ -73,22 +81,24 @@ class ConstructedDeckGenerator(
             if (setCodes.isEmpty()) "all sets" else setCodes.joinToString(", "),
         )
 
-        val draftsim = draftsimBuild(pool)
-        if (draftsim != null) {
+        val deckList = draftsimBuild(pool)
             // Pin the basics to the set's art, exactly as a human's submitted deck is.
-            return BoosterGenerator.withBasicLandArt(draftsim, basics.associateBy { it.name })
-        }
-        logger.warn(
-            "Draftsim produced no {} build from {} legal cards; falling back to the random builder",
-            format.displayName,
-            pool.size,
-        )
-        return RandomDeckGenerator(
-            cardPool = pool,
-            basicLandVariants = basics,
-            setCodes = setCodes,
-            random = random,
-        ).generate()
+            ?.let { BoosterGenerator.withBasicLandArt(it, basics.associateBy { basic -> basic.name }) }
+            ?: run {
+                logger.warn(
+                    "Draftsim produced no {} build from {} legal cards; falling back to the random builder",
+                    format.displayName,
+                    pool.size,
+                )
+                RandomDeckGenerator(
+                    cardPool = pool,
+                    basicLandVariants = basics,
+                    setCodes = setCodes,
+                    random = random,
+                ).generate()
+            }
+        val played = deckList.keys.mapTo(HashSet()) { it.substringBefore('#') }
+        return GeneratedDeck(deckList, sideboard = Wishboard.build(pool, random, exclude = played))
     }
 
     /** Convenience overload: build from the whole format-legal card base. */

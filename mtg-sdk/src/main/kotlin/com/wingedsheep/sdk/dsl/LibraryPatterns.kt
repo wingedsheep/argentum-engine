@@ -416,7 +416,7 @@ object LibraryPatterns {
     private fun scryPlayer(target: EffectTarget): Player = when (target) {
         EffectTarget.Controller -> Player.You
         is EffectTarget.ContextTarget -> Player.ContextPlayer(target.index)
-        is EffectTarget.BoundVariable -> Player.BoundVariable(target.name)
+        is EffectTarget.BoundVariable -> Player.BoundVariable(target.name, target.description)
         is EffectTarget.PlayerRef -> target.player
         else -> Player.You
     }

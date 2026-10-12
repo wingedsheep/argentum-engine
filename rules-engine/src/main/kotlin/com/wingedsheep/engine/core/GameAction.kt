@@ -530,6 +530,26 @@ data class ForetellCard(
 ) : GameAction
 
 /**
+ * Player pays {3} to put their revealed companion from outside the game into their hand
+ * (CR 702.139a, 116.2g).
+ *
+ * A special action: it doesn't use the stack and can't be responded to. Legal any time the player
+ * has priority during a main phase of their own turn while the stack is empty, and only once per
+ * game. The companion is tracked on the player by
+ * [com.wingedsheep.engine.state.components.player.CompanionComponent].
+ *
+ * @property playerId The player taking the action
+ * @property cardId The revealed companion card, waiting in the player's sideboard
+ */
+@Serializable
+@SerialName("PutCompanionIntoHand")
+data class PutCompanionIntoHand(
+    override val playerId: EntityId,
+    val cardId: EntityId,
+    val paymentStrategy: PaymentStrategy = PaymentStrategy.AutoPay
+) : GameAction
+
+/**
  * Player suspends a card from their hand (CR 702.62, Time Spiral).
  *
  * Suspend is a special action (CR 116.2f) — unlike [ForetellCard]/[PlotCard], it isn't just

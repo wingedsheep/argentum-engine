@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.token
 
+import com.wingedsheep.engine.state.components.identity.copiableContainer
 import com.wingedsheep.engine.state.components.identity.copiableCardComponent
 import com.wingedsheep.engine.state.components.identity.copiableDoubleFacedComponent
 import com.wingedsheep.engine.handlers.TargetFinder
@@ -180,10 +181,11 @@ class CreateTokenCopyOfTargetExecutor(
             return departedPermanentTarget(state, effect, context, id, entity) ?: entity
         }
         if (effect.target != EffectTarget.TriggeringEntity) return null
+        // The departure snapshot belongs to the captured object, even after a blink or a
+        // second zone change has erased the card's temporary last-known component.
+        context.triggerContext?.triggeringLastKnownSnapshot?.copiableContainer()?.let { return it }
         val departed = context.triggeringEntityId?.let { state.getEntity(it) } ?: return null
-        val lastKnownCard = departed.get<LastKnownPermanentComponent>()?.snapshot?.copiableCard
-            ?: return null
-        return departed.with(lastKnownCard)
+        return departed.get<LastKnownPermanentComponent>()?.snapshot?.copiableContainer()
     }
 
     /**
@@ -209,8 +211,7 @@ class CreateTokenCopyOfTargetExecutor(
         }
         if (chosen !is ChosenTarget.Permanent) return null
         if (id in state.getBattlefield()) return null
-        val lastKnownCard = entity.get<LastKnownPermanentComponent>()?.snapshot?.copiableCard ?: return null
-        return entity.with(lastKnownCard)
+        return entity.get<LastKnownPermanentComponent>()?.snapshot?.copiableContainer()
     }
 
     /**

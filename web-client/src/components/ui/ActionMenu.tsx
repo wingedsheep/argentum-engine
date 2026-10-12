@@ -433,6 +433,8 @@ function ActionButton({
         return styles.fallbackCycle
       case 'PlotCard':
         return styles.fallbackCycle
+      case 'PutCompanionIntoHand':
+        return styles.fallbackCast
       case 'SuspendCardFromHand':
         return styles.fallbackCycle
       case 'ActivateAbility':

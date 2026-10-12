@@ -9946,7 +9946,7 @@
                         }
                     ]
                 },
-                "descriptionOverride": "Opus — Whenever you cast an instant or sorcery spell, put 1 +1/+1 counter on this creature. If five or more mana was spent to cast that spell, add {R} for each this creature's power."
+                "descriptionOverride": "Opus — Whenever you cast an instant or sorcery spell, put a +1/+1 counter on this creature. If five or more mana was spent to cast that spell, add {R} for each this creature's power."
             }
         ]
     },

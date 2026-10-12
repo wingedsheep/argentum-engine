@@ -14,9 +14,16 @@ just set-loop ecl gpt-6-astra     # Explicit model ID also works
 just set-loop ecl codex:gpt-6-sol # Any Codex model ID
 just set-loop lea codex:gpt-6.1-sol # GPT-6.1 Sol
 MODEL=astra just set-loop ecl    # Environment alternative
+just set-loop pip codex:gpt-6.1-sol backlog/sets/fallout/hail-caesar.txt
 ```
 
 Replace `ecl` with a scaffolded set code or quoted set name. A positional model overrides `MODEL`.
+An optional third argument is a readable card-name list, one name per line. The launcher captures it
+in every fresh session's prompt. It completes that deck's Assay-ready cards, engine gaps and remaining
+cards before advancing through the rest of the set; existing gap ledgers are re-ranked accordingly.
+Reprint rows and basics are included in deck completion. A blocked priority deck stops with its blockers.
+The Fallout list follows the [official Hail, Caesar decklist](https://magic.wizards.com/en/news/announcements/magic-the-gathering-fallout-commander-decklists),
+with current Scryfall names for Vault 75: Middle School and Vault 11: Voter's Dilemma.
 GPT model IDs are normalized to lowercase (for example, `codex:GPT-6.1-Sol` becomes
 `codex:gpt-6.1-sol`); other custom Codex IDs pass through unchanged.
 `sonnet` and `opus` are passed to Claude as aliases; the session resolves its actual model ID for

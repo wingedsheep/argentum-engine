@@ -369,6 +369,24 @@ sealed interface ClientEvent {
         override val description: String = "$permanentName was solved"
     ) : ClientEvent
 
+    /**
+     * A player paid {3} to put their revealed companion into their hand (CR 702.139a). The
+     * companion was public while outside the game, so every viewer is told which card it was.
+     */
+    @Serializable
+    @SerialName("companionPutIntoHand")
+    data class CompanionPutIntoHand(
+        val playerId: EntityId,
+        val cardId: EntityId,
+        val cardName: String,
+        val isYours: Boolean? = null,
+        override val description: String = when (isYours) {
+            true -> "You paid {3} to put your companion $cardName into your hand"
+            false -> "Opponent paid {3} to put their companion $cardName into their hand"
+            null -> "A player paid {3} to put their companion $cardName into their hand"
+        }
+    ) : ClientEvent
+
     /** A creature became renowned (CR 702.112b) — its renown payoffs are now switched on. */
     @Serializable
     @SerialName("permanentRenowned")
@@ -1223,6 +1241,13 @@ object ClientEventTransformer {
             is BecameSaddledEvent -> ClientEvent.PermanentSaddled(
                 permanentId = event.entityId,
                 permanentName = event.entityName
+            )
+
+            is CompanionPutIntoHandEvent -> ClientEvent.CompanionPutIntoHand(
+                playerId = event.playerId,
+                cardId = event.cardId,
+                cardName = event.cardName,
+                isYours = event.playerId == viewingPlayerId
             )
 
             is CaseSolvedEvent -> ClientEvent.CaseSolved(

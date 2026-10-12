@@ -739,6 +739,12 @@ export interface ClientPlayer {
    * there, which is why it can't be folded into `teamSharedLife` or into "has a `teamIndex`".
    */
   readonly teamSharedTurns?: boolean
+  /**
+   * This player's revealed companion while it waits outside the game (CR 103.2b, 702.139a); absent
+   * once it is put into hand, or when there is none. Public: the card itself is in `cards` for
+   * every viewer. Shown beside the command zone.
+   */
+  readonly companionId?: EntityId | null
 }
 
 /**

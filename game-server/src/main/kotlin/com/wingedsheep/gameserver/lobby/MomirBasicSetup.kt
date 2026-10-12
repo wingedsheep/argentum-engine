@@ -1,8 +1,10 @@
 package com.wingedsheep.gameserver.lobby
 
+import com.wingedsheep.ai.engine.deck.Wishboard
 import com.wingedsheep.mtg.sets.MtgSetCatalog
 import com.wingedsheep.sdk.core.Format
 import com.wingedsheep.sdk.model.CardDefinition
+import kotlin.random.Random
 
 /**
  * Server-side setup helpers for the Momir Basic Vanguard format ([Format.MomirBasic]).
@@ -61,6 +63,19 @@ object MomirBasicSetup {
      * Momir Basic flips creatures from the entire card base, not a per-lobby set scope.
      */
     fun allCreaturePool(): List<String> = creaturePool(MtgSetCatalog.all.map { it.code })
+
+    /**
+     * The table's shared *wishboard*: fifteen cards from the whole card base that every seat owns
+     * outside the game (CR 400.11a) — what a Learn creature or a wish the avatar rolls reaches for.
+     *
+     * Momir Basic has no deckbuilding, so it has no sideboard of its own, and without one every
+     * Learn creature the avatar flips (Eyetwitch, Pillardrop Rescuer, …) learns nothing. The
+     * wishboard leans on Lessons for exactly that reason (see [Wishboard]), and it is rolled
+     * **once per game and shared** by every seat: Momir's randomness belongs in the avatar's
+     * flips, not in one player starting with a better menu than the other.
+     */
+    fun wishboard(random: Random = Random.Default): Map<String, Int> =
+        Wishboard.build(MtgSetCatalog.all.flatMap { it.cards }, random)
 
     /** Build a [Format.MomirBasic] whose pool is every creature across all sets. */
     fun format(): Format.MomirBasic =

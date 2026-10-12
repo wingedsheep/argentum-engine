@@ -38,6 +38,8 @@ object AttackRequirementRepair {
         plan: Map<EntityId, EntityId>,
         validAttackers: List<EntityId>,
         mandatory: Set<EntityId> = emptySet(),
+        /** Whether the engine lets this attacker attack this player (per-defender restrictions). */
+        canAttack: (EntityId, EntityId) -> Boolean = { _, _ -> true },
     ): Map<EntityId, EntityId> {
         val required = requiredPlayers(state, cardRegistry, playerId)
         if (required.isEmpty()) return plan
@@ -47,10 +49,10 @@ object AttackRequirementRepair {
             if (repaired.values.any { OpponentsMustAttackYouRequirement.isAttackOn(state, projected, it, player) }) {
                 continue
             }
-            val spare = candidateOrder(state, validAttackers.filter { it !in repaired })
+            val spare = candidateOrder(state, validAttackers.filter { it !in repaired && canAttack(it, player) })
             // Never redirect an attacker that is already what satisfies another required player.
             val redirectable = candidateOrder(state, repaired.filter { (attacker, defender) ->
-                attacker !in mandatory &&
+                attacker !in mandatory && canAttack(attacker, player) &&
                     required.none { OpponentsMustAttackYouRequirement.isAttackOn(state, projected, defender, it) }
             }.keys)
             val pick = spare.firstOrNull() ?: redirectable.firstOrNull() ?: continue

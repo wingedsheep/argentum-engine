@@ -1594,6 +1594,173 @@
     ]
 }
 
+// Kaheera, the Orphanguard
+{
+    "name": "Kaheera, the Orphanguard",
+    "manaCost": "{1}{G/W}{G/W}",
+    "typeLine": "Legendary Creature — Cat Beast",
+    "oracleText": "Companion — Each creature card in your starting deck is a Cat, Elemental, Nightmare, Dinosaur, or Beast card. (If this card is your chosen companion, you may put it into your hand from outside the game for {3} as a sorcery.)\nVigilance\nEach other creature you control that's a Cat, Elemental, Nightmare, Dinosaur, or Beast gets +1/+1 and has vigilance.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Companion",
+            "condition": {
+                "type": "EachCard",
+                "filter": {
+                    "cardPredicates": [
+                        {
+                            "type": "Or",
+                            "predicates": [
+                                "IsNoncreature",
+                                {
+                                    "type": "HasAnyOfSubtypes",
+                                    "subtypes": [
+                                        "Cat",
+                                        "Elemental",
+                                        "Nightmare",
+                                        "Dinosaur",
+                                        "Beast"
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            }
+        }
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1,
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "HasAnyOfSubtypes",
+                                "subtypes": [
+                                    "Cat",
+                                    "Elemental",
+                                    "Nightmare",
+                                    "Dinosaur",
+                                    "Beast"
+                                ]
+                            }
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    },
+                    "excludeSelf": true
+                }
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "VIGILANCE",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "HasAnyOfSubtypes",
+                                "subtypes": [
+                                    "Cat",
+                                    "Elemental",
+                                    "Nightmare",
+                                    "Dinosaur",
+                                    "Beast"
+                                ]
+                            }
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    },
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "224",
+        "rarity": "RARE",
+        "artist": "Ryan Pancoast",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/4/d4ebed0b-8060-4a7b-a060-5cfcd2172b16.jpg?1783931013",
+        "rulings": [
+            {
+                "date": "2020-04-17",
+                "text": "Creature cards in your deck may be a mix of the five creature types that Kaheera cares about. They may also have additional types, as long as each creature card is at least one of those five. Noncreature cards may have any subtypes."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "A creature that's more than one of the five types gets +1/+1 only once from Kaheera's last ability."
+            }
+        ]
+    }
+}
+
+// Keruga, the Macrosage
+{
+    "name": "Keruga, the Macrosage",
+    "manaCost": "{3}{G/U}{G/U}",
+    "typeLine": "Legendary Creature — Dinosaur Hippo",
+    "oracleText": "Companion — Your starting deck contains only cards with mana value 3 or greater and land cards. (If this card is your chosen companion, you may put it into your hand from outside the game for {3} as a sorcery.)\nWhen Keruga enters, draw a card for each other permanent you control with mana value 3 or greater.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 4
+    },
+    "keywordAbilities": [
+        {
+            "type": "Companion",
+            "condition": {
+                "type": "EachCard",
+                "filter": "land|mv>=3"
+            }
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Keruga, the Macrosage:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "permanent mv>=3",
+                        "excludeSelf": true
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "225",
+        "rarity": "RARE",
+        "artist": "Dan Murayama Scott",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/9/a90ee952-de7a-420f-993c-a38db89bc8ac.jpg?1783931011",
+        "rulings": [
+            {
+                "date": "2020-04-17",
+                "text": "If a card in a player's deck or a permanent on the battlefield has {X} in its mana cost, X is considered to be 0."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "The mana value of a token that isn't a copy of another object is 0. A token that is a copy of another object has the same mana cost as that object."
+            }
+        ]
+    }
+}
+
 // Ketria Crystal
 {
     "name": "Ketria Crystal",
@@ -4029,6 +4196,28 @@
         "power": 3,
         "toughness": 3
     },
+    "keywordAbilities": [
+        {
+            "type": "Companion",
+            "condition": {
+                "type": "EachCard",
+                "filter": {
+                    "cardPredicates": [
+                        {
+                            "type": "Or",
+                            "predicates": [
+                                {
+                                    "type": "Not",
+                                    "predicate": "IsPermanent"
+                                },
+                                "HasActivatedAbility"
+                            ]
+                        }
+                    ]
+                }
+            }
+        }
+    ],
     "script": {
         "activatedAbilities": [
             {

@@ -1638,6 +1638,62 @@
   line-height: 1.3;
 }
 
+/* "Your wishes / Learn cards fetch from here" — the reason a sideboard matters in a game. */
+.sideboardReach {
+  margin: 0;
+  font-size: 0.74rem;
+  line-height: 1.35;
+  color: #c4b5fd;
+  background: rgba(124, 58, 237, 0.1);
+  border: 1px solid rgba(167, 139, 250, 0.3);
+  border-radius: 6px;
+  padding: 6px 8px;
+}
+
+.sideboardReachWarn {
+  color: #fcd34d;
+  background: rgba(245, 158, 11, 0.1);
+  border-color: rgba(245, 158, 11, 0.35);
+}
+
+.sideboardOverCap {
+  color: #fca5a5;
+}
+
+/* The companion picker (CR 702.139): one toggle per sideboard card with a companion ability. */
+.companionStrip {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.companionToggle {
+  align-self: flex-start;
+  background: transparent;
+  border: 1px solid rgba(158, 201, 232, 0.4);
+  border-radius: 4px;
+  color: #9ec9e8;
+  font-size: 0.74rem;
+  padding: 2px 8px;
+  cursor: pointer;
+}
+
+.companionToggle:hover {
+  background: rgba(158, 201, 232, 0.1);
+}
+
+.companionToggleOn {
+  background: rgba(158, 201, 232, 0.18);
+  border-color: #9ec9e8;
+  font-weight: 600;
+}
+
+.companionIssue {
+  font-size: 0.72rem;
+  color: #ff8a80;
+  line-height: 1.3;
+}
+
 .sideboardEmpty {
   margin: 0;
   font-size: 0.76rem;

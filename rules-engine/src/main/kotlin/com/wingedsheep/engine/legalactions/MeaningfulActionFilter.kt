@@ -197,7 +197,7 @@ object MeaningfulActionFilter {
         if (action.actionType in SPELL_CAST_ACTION_TYPES ||
             action.actionType == "CycleCard" || action.actionType == "TypecycleCard" ||
             action.actionType == "PlotCard" || action.actionType == "ForetellCard" ||
-            action.actionType == "CrewVehicle"
+            action.actionType == "PutCompanionIntoHand" || action.actionType == "CrewVehicle"
         ) {
             return action.isAffordableAction
         }

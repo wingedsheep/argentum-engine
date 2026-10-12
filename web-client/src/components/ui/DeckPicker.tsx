@@ -68,6 +68,8 @@ export interface DeckPickerProps {
     commander?: string | null,
     sideboard?: Record<string, number>,
     secondCommander?: string | null,
+    /** The deck's companion (CR 702.139) — a card on `sideboard` — or null. */
+    companion?: string | null,
   ) => void
   onValidityChange?: (isValid: boolean) => void
   /** Set selection for quick-game Random decks. Empty means the server chooses a set. */
@@ -452,6 +454,15 @@ export function DeckPicker({
     return {}
   }, [tab, decks, selectedSavedId, parsedPaste])
 
+  // The companion (CR 702.139): a saved deck's marked one, or a pasted list's `Companion` section —
+  // kept only while it is still on the sideboard it rides on.
+  const currentCompanion: string | null = useMemo(() => {
+    const named = tab === 'saved'
+      ? decks.find((d) => d.id === selectedSavedId)?.companion
+      : tab === 'paste' ? parsedPaste.companion : undefined
+    return named && (currentSideboard[named] ?? 0) > 0 ? named : null
+  }, [tab, decks, selectedSavedId, parsedPaste, currentSideboard])
+
   // Strip the commander out of `currentDeck` before crossing the network boundary. `currentDeck`
   // keeps the commander baked in so the totalCards display reads "100 cards" for a Commander
   // deck, but the server's `Deck.cards` is documented as the library only (CR 903.6a) — the
@@ -469,8 +480,11 @@ export function DeckPicker({
   // On the Random tab `{}` *is* the chosen deck (server generates a random pool), so emit it.
   useEffect(() => {
     if (tab !== 'random' && Object.keys(currentDeck).length === 0) return
-    onDeckChange(deckListForServer, currentCommander, currentSideboard, currentSecondCommander)
-  }, [tab, currentDeck, deckListForServer, currentCommander, currentSecondCommander, currentSideboard, onDeckChange])
+    onDeckChange(deckListForServer, currentCommander, currentSideboard, currentSecondCommander, currentCompanion)
+  }, [
+    tab, currentDeck, deckListForServer, currentCommander, currentSecondCommander, currentSideboard, currentCompanion,
+    onDeckChange,
+  ])
 
   // Server-side validation when the deck is non-empty.
   useEffect(() => {
@@ -490,6 +504,8 @@ export function DeckPicker({
         ...(format ? { format } : {}),
         ...(currentCommander ? { commander: currentCommander } : {}),
         ...(currentCommander && currentSecondCommander ? { secondCommander: currentSecondCommander } : {}),
+        // A companion is checked against the deck on the same pass (CR 702.139).
+        ...(currentCompanion ? { companion: currentCompanion, sideboard: currentSideboard } : {}),
       }),
       signal: ctrl.signal,
     })
@@ -509,7 +525,10 @@ export function DeckPicker({
     return () => {
       ctrl.abort()
     }
-  }, [currentDeck, deckListForServer, currentCommander, currentSecondCommander, onValidityChange, format])
+  }, [
+    currentDeck, deckListForServer, currentCommander, currentSecondCommander, currentCompanion, currentSideboard,
+    onValidityChange, format,
+  ])
 
   const stats = useMemo(() => computeDeckStats(currentDeck, cards), [currentDeck, cards])
   const totalCards = Object.values(currentDeck).reduce((a, b) => a + b, 0)
@@ -535,6 +554,7 @@ export function DeckPicker({
       name: pendingName.trim(),
       cards: currentDeck,
       ...(Object.keys(currentSideboard).length > 0 ? { sideboard: currentSideboard } : {}),
+      ...(currentCompanion ? { companion: currentCompanion } : {}),
       ...pendingDetails,
     })
     reloadDecks()
@@ -610,7 +630,7 @@ export function DeckPicker({
               // which is stored separately on `SavedDeck` but should appear in the
               // text the user can edit.
               setPasteText(
-                formatDeckText(mergeCommanderIntoCards(d.cards, ...commandersOf(d)), d.sideboard),
+                formatDeckText(mergeCommanderIntoCards(d.cards, ...commandersOf(d)), d.sideboard, d.companion),
               )
               setPendingName(d.name)
               setPendingDetails({

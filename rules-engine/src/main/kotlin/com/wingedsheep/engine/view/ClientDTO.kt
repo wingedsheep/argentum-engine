@@ -935,7 +935,15 @@ data class ClientPlayer(
      * (CR 808.4), so it leaves this false — which is exactly why it can't be folded into
      * [teamSharedLife] or into "has a team".
      */
-    val teamSharedTurns: Boolean = false
+    val teamSharedTurns: Boolean = false,
+
+    /**
+     * This player's revealed companion while it waits outside the game (CR 103.2b, 702.139a), or
+     * `null` when they have none or have already put it into their hand. Public: every viewer
+     * gets the card itself in [ClientGameState.cards], from its owner's sideboard zone, which is
+     * otherwise private. The client shows it beside the command zone.
+     */
+    val companionId: EntityId? = null
 )
 
 /**

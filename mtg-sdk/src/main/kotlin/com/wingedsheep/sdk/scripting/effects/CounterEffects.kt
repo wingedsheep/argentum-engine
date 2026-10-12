@@ -27,8 +27,13 @@ data class AddCountersEffect(
     val target: EffectTarget
 ) : Effect {
     override val description: String =
-        "Put $count ${counterType.printed} counter${if (count != 1) "s" else ""} on ${target.description}"
+        "Put ${if (count == 1) counterArticle(counterType.printed) else "$count"} ${counterType.printed} " +
+            "counter${if (count != 1) "s" else ""} on ${target.description}"
 }
+
+/** "a +1/+1 counter", "an oil counter" — Oracle's article for a single counter. */
+private fun counterArticle(printed: String): String =
+    if (printed.firstOrNull()?.lowercaseChar() in setOf('a', 'e', 'i', 'o', 'u')) "an" else "a"
 
 /**
  * Add counters with a dynamic amount.

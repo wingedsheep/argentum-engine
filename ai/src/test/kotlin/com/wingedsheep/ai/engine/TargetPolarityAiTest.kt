@@ -27,6 +27,12 @@ import com.wingedsheep.mtg.sets.definitions.ons.cards.GustcloakHarrier
 import com.wingedsheep.mtg.sets.definitions.ons.cards.Sandskin
 import com.wingedsheep.mtg.sets.definitions.usg.cards.GloriousAnthem
 import com.wingedsheep.mtg.sets.definitions.vow.cards.MischievousCatgeist
+import com.wingedsheep.mtg.sets.definitions.rav.cards.StrandsOfUndeath
+import com.wingedsheep.mtg.sets.definitions.woe.cards.DiminisherWitch
+import com.wingedsheep.mtg.sets.definitions.woe.cards.EmberethVeteran
+import com.wingedsheep.mtg.sets.tokens.PredefinedTokens
+import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
+import com.wingedsheep.engine.state.components.battlefield.AttachmentsComponent
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
@@ -47,7 +53,8 @@ class TargetPolarityAiTest : FunSpec({
     val cards = TestCards.all + listOf(
         Blossombind, ExplosiveProdigy, Prohibit, TolarianEmissary, TravelersCloak, TreefolkHealer,
         GiantGrowth, Unsummon, Pacifism, BlatantThievery, DaruHealer, GustcloakHarrier, Sandskin,
-        GloriousAnthem, MischievousCatgeist,
+        GloriousAnthem, MischievousCatgeist, EmberethVeteran, StrandsOfUndeath, DiminisherWitch,
+        PredefinedTokens.YoungHeroRole, PredefinedTokens.CursedRole,
     )
     val registry = CardRegistry().apply { register(cards) }
 
@@ -88,6 +95,23 @@ class TargetPolarityAiTest : FunSpec({
         test("stealing and pumping are one-sided") {
             TargetPolarityAnalyzer.forSpell(BlatantThievery) shouldBe listOf(TargetPolarity.HARMFUL)
             TargetPolarityAnalyzer.forSpell(GiantGrowth) shouldBe listOf(TargetPolarity.BENEFICIAL)
+        }
+        test("a Role token reads as what the Role does to the creature it enchants") {
+            val lookup: (String) -> com.wingedsheep.sdk.model.CardDefinition? = registry::getCard
+            // Young Hero Role's +1/+1-counter attack trigger is a gift.
+            val veteran = EmberethVeteran.script.activatedAbilities.single()
+            TargetPolarityAnalyzer.forAbility(EmberethVeteran, veteran, lookup) shouldBe
+                listOf(TargetPolarity.BENEFICIAL)
+            // Cursed Role's base 1/1 is a curse.
+            val witch = DiminisherWitch.script.triggeredAbilities.single()
+            TargetPolarityAnalyzer.forRequirements(witch.effect, listOfNotNull(witch.targetRequirement), lookup) shouldBe
+                listOf(TargetPolarity.HARMFUL)
+            // Without the token's definition the slot stays unread rather than guessed.
+            TargetPolarityAnalyzer.forRequirements(veteran.effect, veteran.targetRequirements) shouldBe
+                listOf(TargetPolarity.UNKNOWN)
+        }
+        test("an Aura whose own ability regenerates the enchanted creature is a gift") {
+            TargetPolarityAnalyzer.forSpell(StrandsOfUndeath) shouldBe listOf(TargetPolarity.BENEFICIAL)
         }
         test("either-way effects stay unknown") {
             // Bouncing our own creature in response to removal is a real play.
@@ -202,5 +226,74 @@ class TargetPolarityAiTest : FunSpec({
         val chosen = choose(fixed, d, choices).action
         chosen.shouldBeInstanceOf<CastSpell>()
         chosen.declaredCostSlot shouldBe null
+    }
+
+    // 4p log turn 24: Embereth Veteran sacrificed to put a Young Hero Role on the opponent's 7/5.
+    test("a beneficial Role goes on our own creature, not theirs") {
+        val d = driver()
+        val veteran = d.putCreatureOnBattlefield(d.player1, "Embereth Veteran")
+        val ours = d.putCreatureOnBattlefield(d.player1, "Grizzly Bears")
+        val theirs = d.putCreatureOnBattlefield(d.player2, "Gustcloak Harrier")
+        lands(d, d.player1, "Mountain" to 1)
+        val activation = d.legalActions(d.player1).single { (it.action as? ActivateAbility)?.sourceId == veteran }
+        val intents = IntentCatalog.of(registry)
+
+        fun aimedAt(polarity: Boolean): EntityId {
+            val filled = TargetSelection.fillHeuristically(
+                d.state, activation, d.player1, fillPartialRequirements = true,
+                intents = intents, polarityFromEffect = polarity,
+            ) as ActivateAbility
+            return (filled.targets.single() as ChosenTarget.Permanent).entityId
+        }
+
+        aimedAt(polarity = false) shouldBe theirs
+        aimedAt(polarity = true) shouldBe ours
+    }
+
+    // 4p log turn 14: Strands of Undeath went on the opponent's Goblin Rock Sled.
+    test("an Aura with a regenerate ability for its creature is cast on our own creature") {
+        val d = driver()
+        val ours = d.putCreatureOnBattlefield(d.player1, "Grizzly Bears")
+        val theirs = d.putCreatureOnBattlefield(d.player2, "Gustcloak Harrier")
+        lands(d, d.player1, "Swamp" to 4)
+        val strands = d.putCardInHand(d.player1, "Strands of Undeath")
+        val cast = d.legalActions(d.player1).single { (it.action as? CastSpell)?.cardId == strands }
+        val intents = IntentCatalog.of(registry)
+
+        fun aimedAt(polarity: Boolean): EntityId {
+            val filled = TargetSelection.fillHeuristically(
+                d.state, cast, d.player1, fillPartialRequirements = true,
+                intents = intents, polarityFromEffect = polarity,
+            ) as CastSpell
+            return (filled.targets.single() as ChosenTarget.Permanent).entityId
+        }
+
+        aimedAt(polarity = false) shouldBe theirs
+        aimedAt(polarity = true) shouldBe ours
+    }
+
+    // 4p log turn 22: {B} paid to regenerate the opponent's creature our Strands enchanted.
+    test("an Aura's regenerate ability is not activated for an opponent's creature") {
+        val d = driver()
+        lands(d, d.player1, "Swamp" to 1)
+        val intents = IntentCatalog.of(registry)
+
+        fun enchant(host: EntityId): LegalAction {
+            val aura = d.putPermanentOnBattlefield(d.player1, "Strands of Undeath")
+            d.replaceState(
+                d.state
+                    .updateEntity(aura) { it.with(AttachedToComponent(host)) }
+                    .updateEntity(host) { it.with(AttachmentsComponent(listOf(aura))) },
+            )
+            return d.legalActions(d.player1).single { (it.action as? ActivateAbility)?.sourceId == aura }
+        }
+
+        val onTheirs = enchant(d.putCreatureOnBattlefield(d.player2, "Gustcloak Harrier"))
+        TargetSelection.aimsOnlyAtTheWrongSide(d.state, onTheirs, d.player1, intents) shouldBe true
+        val pass = d.legalActions(d.player1).single { it.action is PassPriority }
+        choose(fixed, d, listOf(onTheirs, pass)).action.shouldBeInstanceOf<PassPriority>()
+
+        val onOurs = enchant(d.putCreatureOnBattlefield(d.player1, "Grizzly Bears"))
+        TargetSelection.aimsOnlyAtTheWrongSide(d.state, onOurs, d.player1, intents) shouldBe false
     }
 })

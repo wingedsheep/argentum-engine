@@ -1,5 +1,6 @@
 package com.wingedsheep.gameserver.lobby
 
+import com.wingedsheep.ai.engine.deck.Wishboard
 import com.wingedsheep.engine.limited.BoosterGenerator
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.gameserver.cube.ResolvedCube
@@ -18,7 +19,8 @@ import io.kotest.matchers.string.shouldContain
  * Cube Pool Play: no draft, everybody deckbuilds from the whole cube at once, copies unlimited up to
  * the 4-of cap. The invariants that separate it from ordinary cube Sealed are that nothing is dealt
  * (so capacity can't fail and pools are identical), copy counts aren't bounded by the pool, and the
- * sideboard is *not* derived from the pool — deriving it would seed the whole cube into SIDEBOARD.
+ * sideboard is *not* derived from the pool — deriving it would seed the whole cube into SIDEBOARD — but
+ * is a fifteen-card wishboard of cube cards the deck doesn't play.
  */
 class CubePoolPlayTest : FunSpec({
     val forest = CardDefinition.basicLand("Forest", Subtype.FOREST)
@@ -131,14 +133,19 @@ class CubePoolPlayTest : FunSpec({
         (result as TournamentLobby.DeckSubmissionResult.Error).message shouldBe "Card not in cube: Lightning Bolt"
     }
 
-    test("the sideboard is not derived from the pool") {
+    test("the sideboard is a wishboard of unplayed cube cards, not the whole pool") {
         val lobby = lobby()
         lobby.startDeckBuilding(EntityId("host")) shouldBe true
 
-        lobby.submitDeck(EntityId("host"), poolPlayDeck())
+        val deck = poolPlayDeck()
+        lobby.submitDeck(EntityId("host"), deck)
 
         // Ordinary Limited would derive pool − maindeck here, seeding the whole cube into SIDEBOARD.
-        lobby.players[EntityId("host")]!!.submittedSideboard shouldBe emptyMap()
+        val sideboard = lobby.players[EntityId("host")]!!.submittedSideboard
+        sideboard.size shouldBe minOf(Wishboard.SIZE, lobby.players[EntityId("host")]!!.cardPool
+            .filter { Wishboard.isEligible(it) && it.name !in deck }.distinctBy { it.name }.size)
+        sideboard.keys.none { it in deck } shouldBe true
+        sideboard.values.all { it == 1 } shouldBe true
     }
 
     test("ordinary cube Sealed still derives the sideboard and enforces pool copy counts") {

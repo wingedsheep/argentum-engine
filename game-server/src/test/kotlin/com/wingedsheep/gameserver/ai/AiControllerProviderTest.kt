@@ -3,6 +3,7 @@ package com.wingedsheep.gameserver.ai
 import com.wingedsheep.ai.ActionResponse
 import com.wingedsheep.ai.AiPlayerController
 import com.wingedsheep.ai.engine.SealedDeckGenerator
+import com.wingedsheep.ai.engine.deck.GeneratedDeck
 import com.wingedsheep.ai.llm.BottomCardsInfo
 import com.wingedsheep.ai.llm.CardSummary
 import com.wingedsheep.ai.llm.MulliganInfo
@@ -81,7 +82,8 @@ class AiControllerProviderTest : FunSpec({
             every { getAiRuntimeSnapshot() } returns expected
         }
         val deckGenerator = mockk<SealedDeckGenerator> {
-            every { generate() } returns mapOf("Mountain" to 40)
+            every { randomSetCode() } returns "TST"
+            every { generateDeck("TST") } returns GeneratedDeck(mapOf("Mountain" to 40))
         }
         val provider = CapturingProvider("search-teacher")
         val sessions = SessionRegistry()

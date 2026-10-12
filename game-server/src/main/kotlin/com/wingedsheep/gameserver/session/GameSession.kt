@@ -192,6 +192,11 @@ class GameSession(
      */
     private val commanderCardNames = mutableMapOf<EntityId, List<String>>()
     /**
+     * Per-player revealed companion (CR 702.139) — the name of one of that player's sideboard cards.
+     * Absent = no companion. Carried into [Deck.companion] at game start; the engine reveals it.
+     */
+    private val companions = mutableMapOf<EntityId, String>()
+    /**
      * Active spectators, keyed by player id. Keyed by *identity* rather than held as a set of
      * sessions because a reconnect (refresh, or leaving and coming back) arrives on a brand-new
      * [PlayerSession]: a set would then hold both the dead and the live socket and the same person
@@ -417,6 +422,7 @@ class GameSession(
         deckList: Map<String, Int>,
         commanderCardNames: List<String> = emptyList(),
         sideboard: Map<String, Int> = emptyMap(),
+        companion: String? = null,
     ): EntityId {
         require(!isFull) { "Game session is full" }
 
@@ -429,7 +435,13 @@ class GameSession(
             List(count) { cardName }
         }
         deckLists[playerId] = cards
-        sideboards[playerId] = sideboard.flatMap { (cardName, count) -> List(count) { cardName } }
+        // A companion is a sideboard card (CR 702.139a); a deck whose sideboard doesn't list it
+        // (Commander has no other sideboard) carries it there anyway.
+        val companionName = companion?.takeIf { it.isNotBlank() }
+        val effectiveSideboard = if (companionName == null || sideboard.keys.any { it.substringBeforeLast('#') == companionName }) sideboard
+        else sideboard + (companionName to 1)
+        sideboards[playerId] = effectiveSideboard.flatMap { (cardName, count) -> List(count) { cardName } }
+        if (companionName != null) companions[playerId] = companionName else companions.remove(playerId)
         if (commanderCardNames.isNotEmpty()) {
             this.commanderCardNames[playerId] = commanderCardNames
         } else {
@@ -456,6 +468,7 @@ class GameSession(
         if (!isStarted) {
             deckLists.remove(playerId)
             sideboards.remove(playerId)
+            companions.remove(playerId)
         }
     }
 
@@ -666,6 +679,7 @@ class GameSession(
                     cards = deckLists[playerId]!!,
                     cardEntries = deckLists[playerId]!!.map(::cardEntryFromIdentifier),
                     sideboard = sideboards[playerId].orEmpty().map(::cardEntryFromIdentifier),
+                    companion = companions[playerId],
                 ),
                 playerId = playerId,  // Pass existing player ID to the engine
                 commanderCardNames = commanderCardNames[playerId].orEmpty(),

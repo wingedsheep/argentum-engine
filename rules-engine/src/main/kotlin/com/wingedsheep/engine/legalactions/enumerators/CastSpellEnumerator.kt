@@ -16,6 +16,7 @@ import com.wingedsheep.engine.legalactions.TapForGenericPermanentData
 import com.wingedsheep.engine.legalactions.TapForPowerCreatureData
 import com.wingedsheep.engine.legalactions.TargetInfo
 import com.wingedsheep.engine.handlers.actions.spell.chosenKickersLabel
+import com.wingedsheep.engine.handlers.actions.spell.MAX_OPTIONAL_COST_REPEATS
 import com.wingedsheep.engine.handlers.actions.spell.optionalCostDeclarations
 import com.wingedsheep.engine.handlers.actions.spell.optionalCostsAdditionalPaid
 import com.wingedsheep.engine.handlers.actions.spell.optionalCostsManaPaid
@@ -86,12 +87,7 @@ class CastSpellEnumerator(
             "CastWithConspire",
         )
 
-        /**
-         * The most times a repeatable optional cost (replicate) is offered as a separate cast
-         * variant. Affordability ends the run first in any real game; this only bounds a free-mana
-         * board so the action list stays finite.
-         */
-        private const val MAX_OPTIONAL_COST_REPEATS = 10
+
     }
 
     override fun enumerate(context: EnumerationContext): List<LegalAction> {
@@ -2155,12 +2151,9 @@ class CastSpellEnumerator(
                             // since its pool is the whole graveyard), presented the way it would be alone.
                             else -> {
                                 val env = SpellCostEnumeration(context, cardId)
-                                val candidates = SpellCosts.candidates(env, kickerAdditionalCost)
-                                if (!SpellCosts.canPayFrom(env, kickerAdditionalCost, candidates)) {
-                                    canPayKickerAdditionalCost = false
-                                } else {
-                                    kickerCostInfo = SpellCosts.present(env, kickerAdditionalCost, candidates)?.second
-                                }
+                                val (payable, costInfo) = optionalAdditionalCostPresentation(env, kickerAdditionalCost)
+                                canPayKickerAdditionalCost = payable
+                                kickerCostInfo = costInfo
                             }
                         }
                     }
@@ -2184,6 +2177,7 @@ class CastSpellEnumerator(
                     val kickLabel = when {
                         declaredSlot == ChoiceSlot.BARGAINED -> "Bargained"
                         declaredSlot == ChoiceSlot.REPLICATED -> "Replicate"
+                        declaredSlot == ChoiceSlot.SQUAD -> "Squad"
                         // Collect evidence names the amount, because the amount is the whole choice —
                         // "Collect evidence 6" reads the way the card is printed, where a bare
                         // "Evidence" would not (CR 701.59).
@@ -3155,4 +3149,20 @@ class CastSpellEnumerator(
         )
         return true
     }
+}
+
+/** Every leaf of a combined optional cost has its own selection channel and affordability gate. */
+internal fun optionalAdditionalCostPresentation(
+    env: SpellCostEnumeration,
+    cost: AdditionalCost,
+): Pair<Boolean, AdditionalCostData?> {
+    val leaves = SpellCosts.flattenComposites(listOf(cost))
+    // Enumeration aggregates life and player-counter payments across the complete cost.
+    var payable = SpellCosts.enumerateAll(env, leaves, SpellCostOffer())
+    val selections = leaves.mapNotNull { leaf ->
+        val candidates = SpellCosts.candidates(env, leaf)
+        if (!SpellCosts.canPayFrom(env, leaf, candidates)) payable = false
+        SpellCosts.present(env, leaf, candidates)?.second
+    }
+    return payable to selections.firstOrNull()?.copy(alsoRequired = selections.drop(1))
 }

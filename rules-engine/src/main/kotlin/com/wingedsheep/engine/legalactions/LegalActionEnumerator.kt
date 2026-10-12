@@ -45,6 +45,7 @@ class LegalActionEnumerator(
         CyclingEnumerator(),
         PlotEnumerator(),
         ForetellEnumerator(),
+        CompanionEnumerator(),
         SuspendEnumerator(),
         CastFromZoneEnumerator(predicateEvaluator = predicateEvaluator),
         ManaAbilityEnumerator(predicateEvaluator = predicateEvaluator),

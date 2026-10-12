@@ -47,6 +47,7 @@ val engineSerializersModule = SerializersModule {
         subclass(CycleCard::class)
         subclass(PlotCard::class)
         subclass(ForetellCard::class)
+        subclass(PutCompanionIntoHand::class)
         subclass(SuspendCardFromHand::class)
         subclass(TurnFaceUp::class)
         subclass(TypecycleCard::class)
@@ -101,6 +102,7 @@ val engineSerializersModule = SerializersModule {
         subclass(ExertedEvent::class)
         subclass(BecameSaddledEvent::class)
         subclass(CaseSolvedEvent::class)
+        subclass(CompanionPutIntoHandEvent::class)
         subclass(BecameRenownedEvent::class)
         subclass(BecameMonstrousEvent::class)
         subclass(PermanentAttachedEvent::class)
@@ -681,6 +683,7 @@ val engineSerializersModule = SerializersModule {
 
         // Player components
         subclass(ManaPoolComponent::class)
+        subclass(CompanionComponent::class)
         subclass(LandDropsComponent::class)
         subclass(MulliganStateComponent::class)
         subclass(PlayerTurnsTakenComponent::class)

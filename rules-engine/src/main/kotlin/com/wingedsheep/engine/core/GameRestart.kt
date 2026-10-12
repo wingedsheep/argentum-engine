@@ -265,6 +265,12 @@ class GameRestarter(
         old.get<CommanderRegistryComponent>()?.let { registry ->
             container = container.with(CommanderRegistryComponent(registry.commanderIds.mapNotNull { idMap[it] }))
         }
+        // A companion still waiting outside the game stays there, revealed, under the same id —
+        // sideboard cards aren't part of the restart. One already put into hand is now just a card
+        // of the deck, so the new game has no companion.
+        old.get<com.wingedsheep.engine.state.components.player.CompanionComponent>()
+            ?.takeIf { !it.putIntoHand }
+            ?.let { container = container.with(it) }
         return container
     }
 

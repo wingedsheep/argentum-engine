@@ -3,6 +3,7 @@ package com.wingedsheep.ai.engine
 import com.wingedsheep.ai.engine.evaluation.BoardPresence
 import com.wingedsheep.ai.engine.knowledge.IntentCatalog
 import com.wingedsheep.ai.engine.knowledge.TargetPolarity
+import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.core.AlternativeCostType
@@ -181,6 +182,10 @@ object TargetSelection {
      *
      * An optional slot never vetoes: it can be left empty. A target whose side cannot be read (an
      * ownerless object) is never "wrong", so one of those anywhere keeps the action.
+     *
+     * An activated ability that acts on the permanent its source is attached to is aimed the same
+     * way, with no slot to fill: Strands of Undeath's "{B}: Regenerate enchanted creature" while it
+     * enchants an opponent's creature only ever spends our mana on their board.
      */
     fun aimsOnlyAtTheWrongSide(
         state: GameState,
@@ -188,6 +193,7 @@ object TargetSelection {
         playerId: EntityId,
         intents: IntentCatalog,
     ): Boolean {
+        if (actsOnTheWrongSideOfItsHost(state, action, playerId, intents)) return true
         val polarities = polarities(state, action, intents)
         if (polarities.isEmpty()) return false
         val infos = targetInfosFor(action) ?: return false
@@ -197,6 +203,24 @@ object TargetSelection {
                 TargetPolarity.BENEFICIAL -> info.validTargets.all { sideOf(state, it, playerId) == Side.THEIRS }
                 TargetPolarity.UNKNOWN -> false
             }
+        }
+    }
+
+    private fun actsOnTheWrongSideOfItsHost(
+        state: GameState,
+        action: LegalAction,
+        playerId: EntityId,
+        intents: IntentCatalog,
+    ): Boolean {
+        if (!intents.isEnabled) return false
+        val activation = action.action as? ActivateAbility ?: return false
+        val source = state.getEntity(activation.sourceId) ?: return false
+        val host = source.get<AttachedToComponent>()?.targetId ?: return false
+        val name = source.get<CardComponent>()?.name ?: return false
+        return when (intents.abilityHostPolarity(name, activation.abilityId)) {
+            TargetPolarity.HARMFUL -> sideOf(state, host, playerId) == Side.OURS
+            TargetPolarity.BENEFICIAL -> sideOf(state, host, playerId) == Side.THEIRS
+            TargetPolarity.UNKNOWN -> false
         }
     }
 

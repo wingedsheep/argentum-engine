@@ -82,6 +82,8 @@ export interface LobbySliceActions {
     sideboard?: Record<string, number>,
     /** The second commander of a partner pair; ignored without `commander`. */
     secondCommander?: string | null,
+    /** The deck's companion (CR 702.139), a sideboard card; null for none. */
+    companion?: string | null,
   ) => void
   /** Unsubmit (and re-edit) a previously submitted lobby deck. */
   unsubmitLobbyDeck: () => void
@@ -183,13 +185,15 @@ export const createLobbySlice: SliceCreator<LobbySlice> = (set, get) => ({
     set({ spectatingState: state })
   },
 
-  submitLobbyDeck: (deckList, commander, sideboard, secondCommander) => {
+  submitLobbyDeck: (deckList, commander, sideboard, secondCommander, companion) => {
     trackEvent('premade_deck_submitted', {
       deck_size: Object.values(deckList).reduce((a, b) => a + b, 0),
       has_commander: !!commander,
     })
     getWebSocket()?.send(
-      createSubmitSealedDeckMessage(deckList, commander, undefined, undefined, sideboard, secondCommander),
+      createSubmitSealedDeckMessage(
+        deckList, commander, undefined, undefined, sideboard, secondCommander, undefined, companion,
+      ),
     )
   },
 

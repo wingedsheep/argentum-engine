@@ -155,6 +155,20 @@ class SealedDeckGeneratorTest : FunSpec({
         }
     }
 
+    test("a generated deck's sideboard is the rest of its pool (CR 100.4b)") {
+        val boosters = BoosterGenerator(mapOf("FULL" to config("FULL", viablePool("FULL"), sealedSupported = true)))
+        val gen = SealedDeckGenerator(boosters)
+
+        val generated = gen.generateDeck("FULL")
+
+        // 8 boosters of a set with no basics: every opened card is in the deck or the sideboard.
+        val opened = 8 * boosters.generateBooster("FULL").size
+        val sideboardCards = generated.sideboard.values.sum()
+        val deckNonBasics = generated.deckList.filterKeys { it.startsWith("FULL") }.values.sum()
+        sideboardCards shouldBe opened - deckNonBasics
+        generated.sideboard.keys.forEach { it.startsWith("FULL") shouldBe true }
+    }
+
     test("falls back to all sets when none are fully implemented") {
         val gen = SealedDeckGenerator(
             BoosterGenerator(

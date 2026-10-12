@@ -19,6 +19,12 @@ data class GeneratedDeck(
     val deckList: Map<String, Int>,
     /** The designated commander, or null for an ordinary deck. */
     val commander: String? = null,
+    /**
+     * The cards this seat owns *outside the game* (CR 400.11a), name → count — what Learn and the
+     * wishes fetch from. A generated sealed deck carries the rest of its pool (CR 100.4b); a
+     * generated constructed deck carries a [Wishboard]. Empty for a commander deck.
+     */
+    val sideboard: Map<String, Int> = emptyMap(),
 ) {
     /** Total cards including the commander — the number Commander's exact-size rule counts. */
     val totalCards: Int get() = deckList.values.sum() + if (commander != null) 1 else 0

@@ -8,6 +8,7 @@ import com.wingedsheep.engine.legalactions.LegalAction
 import com.wingedsheep.engine.state.components.combat.AttackersDeclaredThisCombatComponent
 import com.wingedsheep.engine.state.components.combat.BlockersDeclaredThisCombatComponent
 import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.model.EntityId
 
 /**
  * Enumerates DeclareAttackers and DeclareBlockers actions.
@@ -69,14 +70,28 @@ class CombatEnumerator : ActionEnumerator {
                     }
                 }
                 val validAttackTargets = attackableOpponents.toList() + attackablePermanents
+                // CR 508.1b–c — each attacker picks its own defender, and per-defender
+                // restrictions (Goblin Rock Sled's "unless defending player controls a Mountain",
+                // Blazing Archon's "creatures can't attack you") rule out single defenders. Run the
+                // same rules the declaration enforces, per attacker, and publish only the narrowed
+                // ones. A creature left with no legal defender at all can't attack, even when no
+                // single rule restricts it from every defender (two restrictions, one per seat).
+                val narrowedTargets = mutableMapOf<EntityId, List<EntityId>>()
+                val attackers = validAttackers.filter { attackerId ->
+                    val legal = context.turnManager.legalDefendersFor(state, attackerId, playerId, validAttackTargets)
+                    if (legal.size < validAttackTargets.size) narrowedTargets[attackerId] = legal
+                    legal.isNotEmpty() || validAttackTargets.isEmpty()
+                }
+                narrowedTargets.keys.retainAll(attackers.toSet())
                 val mandatoryAttackers = context.turnManager.getMandatoryAttackers(state, playerId)
                 return listOf(LegalAction(
                     actionType = "DeclareAttackers",
                     description = "Declare attackers",
                     action = DeclareAttackers(playerId, emptyMap()),
-                    validAttackers = validAttackers,
+                    validAttackers = attackers,
                     mandatoryAttackers = mandatoryAttackers.ifEmpty { null },
-                    validAttackTargets = validAttackTargets.ifEmpty { null }
+                    validAttackTargets = validAttackTargets.ifEmpty { null },
+                    attackTargetsByAttacker = narrowedTargets.ifEmpty { null },
                 ))
             }
         }

@@ -207,6 +207,20 @@ class GameInitializer(
             }
         }
 
+        // A revealed companion (CR 103.2b) is one of the deck's own sideboard cards with a companion
+        // ability. Whether the starting deck meets its condition is deck construction's question
+        // (the server's deck validator asks CompanionEligibility); setup only refuses a companion
+        // it couldn't place.
+        for (playerConfig in config.players) {
+            val companion = playerConfig.deck.companion ?: continue
+            require(playerConfig.deck.sideboard.any { it.name == companion }) {
+                "Player '${playerConfig.name}' named $companion as their companion, but it isn't on their sideboard"
+            }
+            require(com.wingedsheep.sdk.model.CompanionEligibility.hasCompanion(cardRegistry.requireCard(companion))) {
+                "Player '${playerConfig.name}' named $companion as their companion, but it has no companion ability"
+            }
+        }
+
         // Momir Basic gives every player the same Vanguard avatar in the command zone; fail fast
         // if the registry can't resolve it rather than mid-init.
         if (config.format is Format.MomirBasic) {
@@ -416,6 +430,18 @@ class GameInitializer(
                 val cardContainer = createCardEntity(cardDef, playerId, cardEntry.printing)
                 state = state.withEntity(cardId, cardContainer)
                 state = state.addToZone(ZoneKey(playerId, zone), cardId)
+            }
+
+            // The revealed companion (CR 103.2b, 702.139a): the first sideboard copy of the named
+            // card. It stays outside the game — in the sideboard — but revealed, which the player's
+            // CompanionComponent records and Visibility honours.
+            playerConfig.deck.companion?.let { companionName ->
+                val companionId = state.getZone(ZoneKey(playerId, Zone.SIDEBOARD)).first { id ->
+                    state.getEntity(id)?.get<CardComponent>()?.name == companionName
+                }
+                state = state.updateEntity(playerId) { c ->
+                    c.with(com.wingedsheep.engine.state.components.player.CompanionComponent(companionId))
+                }
             }
 
             if (commanderEntityIds.isNotEmpty()) {

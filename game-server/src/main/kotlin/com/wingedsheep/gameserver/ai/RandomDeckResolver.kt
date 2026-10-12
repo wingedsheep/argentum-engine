@@ -31,6 +31,11 @@ import org.springframework.stereotype.Component
  * from under one. So the human's two rows are the AI's [AiDeckSpec.Auto] and [AiDeckSpec.Sets], and
  * a human on Random has the same reach over their own seat as the host has over the AI's.
  *
+ * Every non-commander path also hands back a sideboard — the cards the seat owns outside the game
+ * (CR 400.11a): the unplayed rest of a sealed pool (CR 100.4b), or a fifteen-card wishboard from a
+ * constructed deck's legal pool. A seat that never built a deck still has one for Learn and the
+ * wishes to reach into.
+ *
  * Every path returns a [GeneratedDeck] rather than a bare decklist, because a commander-shape lobby
  * has *two* answers to "what does this seat play" and they have to be decided together. Before
  * [CommanderDeckGenerator] existed there was only one, and commander shapes fell through to a
@@ -161,7 +166,7 @@ class RandomDeckResolver(
             // Constructed lobby: build to the format so both sides of the table play under the
             // same restriction. Falls back to the limited path if the legal pool is unusably thin
             // (a narrow format crossed with a narrow set selection).
-            val built = runCatching { constructedDeckGenerator.generate(setCodes, format) }
+            val built = runCatching { constructedDeckGenerator.generateDeck(setCodes, format) }
                 .onFailure { error ->
                     logger.warn(
                         "Constructed deck for {} ({}) failed; falling back to a sealed pool",
@@ -171,14 +176,13 @@ class RandomDeckResolver(
                     )
                 }
                 .getOrNull()
-            if (built != null) return GeneratedDeck(built)
+            if (built != null) return built
         }
 
-        val sealed = if (setCodes.isEmpty()) {
-            sealedDeckGenerator.generate(fallbackSetCode)
+        return if (setCodes.isEmpty()) {
+            sealedDeckGenerator.generateDeck(fallbackSetCode)
         } else {
-            sealedDeckGenerator.generate(setCodes)
+            sealedDeckGenerator.generateDeck(setCodes)
         }
-        return GeneratedDeck(sealed)
     }
 }

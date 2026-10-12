@@ -73,6 +73,12 @@ export interface SavedDeck {
    * server-side, CR 100.4b.)
    */
   sideboard?: Record<string, number>
+  /**
+   * Optional — the deck's companion (CR 702.139): the name of a `sideboard` card with a companion
+   * ability that the deck reveals before the game. Sent over the wire as `companion`; the server
+   * validates the condition and the engine puts it outside the game, revealed.
+   */
+  companion?: string
   /** Optional — a short line the owner writes about the deck ("aggro, weak to fliers"). */
   note?: string
   /**
@@ -334,6 +340,7 @@ export const useDeckLibrary = create<DeckLibraryState>((set, get) => ({
       ...(input.sideboard !== undefined && Object.keys(input.sideboard).length > 0
         ? { sideboard: input.sideboard }
         : {}),
+      ...(input.companion ? { companion: input.companion } : {}),
       ...(input.note?.trim() ? { note: input.note.trim().slice(0, DECK_NOTE_MAX_LENGTH) } : {}),
       ...(input.coverCard ? { coverCard: input.coverCard } : {}),
       ...(input.coverCard && input.coverImageUri ? { coverImageUri: input.coverImageUri } : {}),

@@ -803,12 +803,14 @@ class TournamentMatchHandler(
             sideboard = BoosterGenerator.withCardArt(
                 lobby.getSubmittedSideboard(match.player1Id), deckPrintings1,
             ),
+            companion = lobby.getSubmittedCompanion(match.player1Id),
         )
         gameSession.addPlayer(
             ps2, deck2, commanderCardNames = commanders2,
             sideboard = BoosterGenerator.withCardArt(
                 lobby.getSubmittedSideboard(match.player2Id), deckPrintings2,
             ),
+            companion = lobby.getSubmittedCompanion(match.player2Id),
         )
 
         // Carry isAi / aiModelOverride from each identity so a server restart can rehydrate and

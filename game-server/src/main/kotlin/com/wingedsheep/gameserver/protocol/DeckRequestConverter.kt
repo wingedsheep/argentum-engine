@@ -18,6 +18,10 @@ import com.wingedsheep.sdk.model.PrintingRef
  * [commanderPrinting] optionally pins its printing; a partner pair (CR 702.124) adds
  * `secondCommander` / `secondCommanderPrinting`. The commanders do not appear in the
  * library entries — engine `GameInitializer` puts them in the command zone separately.
+ *
+ * A [companion] (CR 702.139) names a sideboard card the deck reveals before the game. It is a card
+ * outside the game, so it rides on the sideboard: when the submitted sideboard doesn't list it
+ * (a Commander deck has no other sideboard, CR 903.5e) one copy is added.
  */
 object DeckRequestConverter {
 
@@ -29,10 +33,14 @@ object DeckRequestConverter {
         sideboard: Map<String, Int> = emptyMap(),
         secondCommander: String? = null,
         secondCommanderPrinting: PrintingRef? = null,
+        companion: String? = null,
     ): Deck {
         // Sideboard cards ("outside the game", CR 100.4) are name-only here — wish fetches don't
         // depend on printing, and the engine seeds the SIDEBOARD zone from these names.
-        val sideboardEntries = sideboard.flatMap { (name, count) -> List(count) { CardEntry(name) } }
+        val companionName = companion?.takeIf { it.isNotBlank() }
+        val withCompanion = if (companionName == null || (sideboard[companionName] ?: 0) > 0) sideboard
+        else sideboard + (companionName to 1)
+        val sideboardEntries = withCompanion.flatMap { (name, count) -> List(count) { CardEntry(name) } }
         val rich = cardEntries.takeUnless { it.isNullOrEmpty() }
         val second = secondCommander.takeIf { commander != null }
         return if (rich != null) {
@@ -43,6 +51,7 @@ object DeckRequestConverter {
                 sideboard = sideboardEntries,
                 secondCommander = second,
                 secondCommanderPrinting = secondCommanderPrinting.takeIf { second != null },
+                companion = companionName,
             )
         } else {
             val cards = deckList.flatMap { (name, count) -> List(count) { name } }
@@ -53,6 +62,7 @@ object DeckRequestConverter {
                 sideboard = sideboardEntries,
                 secondCommander = second,
                 secondCommanderPrinting = secondCommanderPrinting.takeIf { second != null },
+                companion = companionName,
             )
         }
     }
@@ -72,6 +82,7 @@ object DeckRequestConverter {
         secondCommander: String? = null,
         secondCommanderPrinting: PrintingRef? = null,
         sideboard: Map<String, Int> = emptyMap(),
+        companion: String? = null,
     ): Deck {
         val commanders = listOfNotNull(commander, secondCommander)
         val printings = mapOf(commander to commanderPrinting, secondCommander to secondCommanderPrinting)
@@ -89,6 +100,7 @@ object DeckRequestConverter {
             sideboard = sideboard,
             secondCommander = secondCommander,
             secondCommanderPrinting = secondCommanderPrinting,
+            companion = companion,
         )
     }
 

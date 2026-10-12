@@ -11,6 +11,7 @@ import com.wingedsheep.search.SearchService
 import com.wingedsheep.search.Span
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CommanderEligibility
+import com.wingedsheep.sdk.model.CompanionEligibility
 import com.wingedsheep.sdk.model.PrintingRef
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
@@ -161,6 +162,12 @@ class CardsController(
          * beside it; whether a given pair is legal is the deck validator's call.
          */
         val partnerAbilities: List<String> = emptyList(),
+        /**
+         * The card's companion condition (CR 702.139) as it reads after "Companion — ", or null when
+         * it has none. Non-null means the deckbuilder may offer to make it the deck's companion;
+         * whether the deck meets the condition is the deck validator's call.
+         */
+        val companionCondition: String? = null,
     ) : SearchCard {
         @get:JsonIgnore
         override val printedNames: List<String> get() = printedNamePrintings.map { it.name }
@@ -215,6 +222,7 @@ class CardsController(
             },
             canBeCommander = CommanderEligibility.isLegalCommander(this),
             partnerAbilities = CommanderEligibility.partnerKinds(this).map { it.description },
+            companionCondition = CompanionEligibility.conditionText(this),
         )
     }
 

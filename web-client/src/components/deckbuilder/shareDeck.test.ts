@@ -57,6 +57,18 @@ describe('shareDeck codec', () => {
     expect(await roundTrip(deck)).toEqual(deck)
   })
 
+  it('carries the companion, which comes back on the sideboard (CR 702.139)', async () => {
+    const decoded = await roundTrip({
+      name: 'Odd Burn',
+      cards: { 'Lightning Bolt': 4, Mountain: 20 },
+      sideboard: { 'Obosh, the Preypiercer': 1, 'Goblin Guide': 2 },
+      companion: 'Obosh, the Preypiercer',
+    })
+    expect(decoded?.companion).toBe('Obosh, the Preypiercer')
+    // The rest of the sideboard isn't in the share code; the companion is.
+    expect(decoded?.sideboard).toEqual({ 'Obosh, the Preypiercer': 1 })
+  })
+
   it('preserves Unicode, split-card (DFC), and non-integer-collector names', async () => {
     const deck: SharedDeck = {
       name: 'Æther — déjà vu',

@@ -190,4 +190,6 @@ data class QuickGameLobbyPlayer(
      * constructed sideboard.
      */
     var sideboard: Map<String, Int> = emptyMap(),
+    /** The revealed companion (CR 702.139) submitted with [deckList], or null. A sideboard card. */
+    var companion: String? = null,
 )

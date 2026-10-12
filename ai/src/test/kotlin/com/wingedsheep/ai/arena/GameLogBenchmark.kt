@@ -29,9 +29,17 @@ import kotlin.random.Random
  * Plays AI-vs-AI games with sealed decks from *random sets* (a different set per seat) and writes a
  * human-readable log per game, for reading where the AI misplays. Off unless `-DgameLog=true`.
  *
- * `-DgameLogSeats=N` (default 2) seats N players. With more than two it is a Free-for-All game the
- * way the FFA lobby starts one without commanders: [com.wingedsheep.sdk.core.Format.Standard] with
- * [AttackMode.MULTIPLE] (CR 802), every opponent a defending player.
+ * `-DgameLogSeats=N` (default 2) seats N players. With more than two it is a Free-for-All game in
+ * [com.wingedsheep.sdk.core.Format.Standard].
+ *
+ * `-DgameLogAttackMode=MODE` picks the multiplayer attack rule, case-insensitive:
+ * - `LEFT` (default) — attack left (CR 803.1a): each creature may attack only the opponent seated to
+ *   its controller's left. This is what the FFA lobby starts a non-Commander game with
+ *   (`TournamentLobby`; only Commander pods default to attacking multiple players).
+ * - `RIGHT` — attack right (CR 803.1b).
+ * - `MULTIPLE`, or its alias `ALL` — attack multiple players (CR 802): every opponent is a defending
+ *   player and each attacker picks which one it attacks.
+ * Two-player games ignore it — the sole opponent is the only defender either way.
  *
  * The agent defaults to `live` ([com.wingedsheep.ai.engine.AiProfile.LIVE]) — the profile real
  * players face, carrying every shipped misplay fix — so the logs don't resurface problems an older
@@ -53,6 +61,7 @@ class GameLogBenchmark : FunSpec({
         val seats = (System.getProperty("gameLogSeats")?.toIntOrNull() ?: 2).also {
             require(it >= 2) { "gameLogSeats must be at least 2, was $it" }
         }
+        val attackMode = parseAttackMode(System.getProperty("gameLogAttackMode"))
         val outDir = File(System.getProperty("gameLogDir") ?: "build/game-logs").apply { mkdirs() }
 
         val eligible = MtgSetCatalog.all.filter { set ->
@@ -70,13 +79,13 @@ class GameLogBenchmark : FunSpec({
                 val decks = sets.map { buildSeededSealedDeck(it.cards, rng) }
                 val log = StringBuilder()
                 log.appendLine("GAME $g  seed=${seed * 1000 + g}  agent=${agent.name}  seats=$seats" +
-                    if (seats > 2) "  (free-for-all, attack MULTIPLE)" else "")
+                    if (seats > 2) "  (free-for-all, attack $attackMode)" else "")
                 sets.forEachIndexed { i, s ->
                     log.appendLine("Seat$i deck (${s.code} ${s.displayName}): " +
                         decks[i].cards.groupingBy { it }.eachCount().entries.joinToString(", ") { "${it.value}x ${it.key}" })
                 }
                 val summary = try {
-                    playLogged(registry, agent, decks, seed * 1000 + g, log)
+                    playLogged(registry, agent, decks, seed * 1000 + g, log, attackMode)
                 } catch (e: Throwable) {
                     "EXCEPTION ${e::class.simpleName}: ${e.message}".also { log.appendLine(it) }
                 }
@@ -90,12 +99,24 @@ class GameLogBenchmark : FunSpec({
     }
 })
 
+/**
+ * `-DgameLogAttackMode`: `LEFT` when unset (the FFA lobby's non-Commander default), `ALL` as an
+ * alias for [AttackMode.MULTIPLE], case-insensitive. Anything else fails loudly.
+ */
+internal fun parseAttackMode(raw: String?): AttackMode {
+    val value = raw?.trim()?.uppercase()?.takeIf { it.isNotEmpty() } ?: return AttackMode.LEFT
+    if (value == "ALL") return AttackMode.MULTIPLE
+    return AttackMode.entries.firstOrNull { it.name == value }
+        ?: error("gameLogAttackMode must be one of LEFT, RIGHT, MULTIPLE, ALL; was $raw")
+}
+
 private fun playLogged(
     registry: CardRegistry,
     agent: ArenaAgent,
     decks: List<com.wingedsheep.sdk.model.Deck>,
     seed: Long,
     log: StringBuilder,
+    attackMode: AttackMode,
 ): String {
     val processor = ActionProcessor(registry)
     val enumerator = LegalActionEnumerator.create(registry)
@@ -105,8 +126,8 @@ private fun playLogged(
             skipMulligans = true,
             startingPlayerIndex = 0,
             seed = seed,
-            // CR 802 — in a multiplayer (FFA) game each attacker picks which opponent it attacks.
-            attackMode = AttackMode.MULTIPLE,
+            // CR 802 / 803 — which opponents an attacker may pick; see `-DgameLogAttackMode`.
+            attackMode = attackMode,
         )
     )
     val seatIds = init.state.turnOrder

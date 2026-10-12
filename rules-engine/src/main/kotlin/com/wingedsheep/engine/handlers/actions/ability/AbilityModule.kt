@@ -11,6 +11,7 @@ import com.wingedsheep.engine.handlers.actions.ActionHandlerModule
  * - ActivateAbility: Activate an ability on a permanent
  * - CycleCard: Cycle a card from hand
  * - PlotCard: Plot a card from hand (CR 718)
+ * - PutCompanionIntoHand: the companion special action (CR 702.139a)
  */
 class AbilityModule(private val services: EngineServices) : ActionHandlerModule {
     override fun handlers(): List<ActionHandler<*>> = listOf(
@@ -18,6 +19,7 @@ class AbilityModule(private val services: EngineServices) : ActionHandlerModule 
         CycleCardHandler.create(services),
         PlotCardHandler.create(services),
         ForetellCardHandler.create(services),
+        PutCompanionIntoHandHandler.create(services),
         SuspendCardFromHandHandler.create(services),
         TypecycleCardHandler.create(services),
         CrewVehicleHandler.create(services),

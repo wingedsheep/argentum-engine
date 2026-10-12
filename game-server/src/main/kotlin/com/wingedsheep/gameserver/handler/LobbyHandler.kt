@@ -540,6 +540,7 @@ class LobbyHandler(
                 message.sideboard,
                 message.secondCommander,
                 message.secondCommanderPrinting,
+                message.companion,
             )
             return
         }
@@ -617,6 +618,7 @@ class LobbyHandler(
                 playerState.session.playerName, deckWithLandArt, gameProperties.easterEggs.enabled
             )
             gameSession.addPlayer(playerState.session, deck, sideboard = playerState.submittedSideboard)
+            // The legacy two-player sealed flow has no companion field; companions ride the lobby path.
 
             // Store player info for persistence
             val token = sessionRegistry.getTokenByWsId(playerState.session.webSocketSession.id)
@@ -1728,7 +1730,7 @@ class LobbyHandler(
             // Submitted in wire form — commander counted in, as `LobbyPlayerState.commander` documents
             // and as the match handlers' strip-at-start expects.
             val submitted = if (commander != null) generated.submissionList else generated.deckList
-            when (val result = lobby.submitDeck(aiPlayerId, submitted, commander = commander)) {
+            when (val result = lobby.submitDeck(aiPlayerId, submitted, commander = commander, sideboard = generated.sideboard)) {
                 is TournamentLobby.DeckSubmissionResult.Success -> {
                     logger.info(
                         "AI {} brought a generated {} deck ({} cards{}) to premade lobby {}",
@@ -2800,6 +2802,7 @@ class LobbyHandler(
         sideboard: Map<String, Int> = emptyMap(),
         secondCommander: String? = null,
         secondCommanderPrinting: com.wingedsheep.sdk.model.PrintingRef? = null,
+        companion: String? = null,
     ) {
         val lobby = lobbyRepository.findLobbyById(lobbyId)
         if (lobby == null) {
@@ -2817,6 +2820,9 @@ class LobbyHandler(
         // The other half of a partner pair (CR 702.124) rides along only beside a first commander.
         val effectiveSecondCommander = effectiveCommander?.let { secondCommander?.takeIf { it.isNotBlank() } }
         val effectiveSecondCommanderPrinting = effectiveSecondCommander?.let { secondCommanderPrinting }
+        // A revealed companion (CR 702.139) — any format. In a pool lobby it is a pool card on the
+        // derived sideboard; in a constructed one, a sideboard card (added to it if missing).
+        val effectiveCompanion = companion?.takeIf { it.isNotBlank() }
 
         // A pool-built lobby validates the commander deck against the player's *pool* (its legality
         // universe) rather than against Scryfall legality — so the branch is "Commander rules over a
@@ -2827,6 +2833,7 @@ class LobbyHandler(
             val deck = commanderDeck(
                 deckList, cardEntries, effectiveCommander, effectiveCommanderPrinting,
                 effectiveSecondCommander, effectiveSecondCommanderPrinting,
+                companion = effectiveCompanion,
             )
             val validation = deckValidator.validateCommanderLimited(
                 deck = deck,
@@ -2853,8 +2860,17 @@ class LobbyHandler(
                 val deck = commanderDeck(
                     deckList, cardEntries, effectiveCommander, effectiveCommanderPrinting,
                     effectiveSecondCommander, effectiveSecondCommanderPrinting,
+                    sideboard = sideboard, companion = effectiveCompanion,
                 )
                 deckValidator.validate(deck, lobby.deckFormat)
+            } else if (effectiveCompanion != null) {
+                // The structured path is the one that reads a companion and its sideboard.
+                deckValidator.validate(
+                    com.wingedsheep.gameserver.protocol.DeckRequestConverter.toDeck(
+                        deckList, cardEntries, sideboard = sideboard, companion = effectiveCompanion,
+                    ),
+                    lobby.deckFormat,
+                )
             } else {
                 deckValidator.validate(
                     deckList = deckList,
@@ -2865,6 +2881,28 @@ class LobbyHandler(
             if (!validation.valid) {
                 val msg = validation.errors.firstOrNull()?.message ?: "Invalid deck"
                 sender.sendError(session, ErrorCode.INVALID_DECK, msg)
+                return
+            }
+        }
+
+        // A Limited (pool) lobby without Commander rules: the deck itself was built from the pool,
+        // but its companion must still come from the pool and fit the starting deck (40-card
+        // minimum, CR 100.2b / Yorion's ruling).
+        if (effectiveCompanion != null && !commanderShape && lobby.format != TournamentFormat.PREMADE_DECKS) {
+            val pool = lobby.players[identity.playerId]?.cardPool.orEmpty().map { it.name }
+            val inPool = pool.count { it == effectiveCompanion }
+            val inDeck = deckList[effectiveCompanion] ?: 0
+            val issue = if (inPool <= inDeck) {
+                "Your companion $effectiveCompanion has to be a card from your pool that isn't in your deck"
+            } else {
+                deckValidator.companionIssues(
+                    com.wingedsheep.gameserver.protocol.DeckRequestConverter.toDeck(deckList, cardEntries, companion = effectiveCompanion),
+                    format = null,
+                    minimumDeckSize = lobby.deckSizeMin,
+                ).firstOrNull()?.message
+            }
+            if (issue != null) {
+                sender.sendError(session, ErrorCode.INVALID_DECK, issue)
                 return
             }
         }
@@ -2885,6 +2923,7 @@ class LobbyHandler(
         // lobbies TournamentLobby.submitDeck ignores it and derives pool − maindeck (CR 100.4b).
         val result = lobby.submitDeck(
             identity.playerId, deckList, effectiveCommander, sanitizedSideboard, effectiveSecondCommander,
+            companion = effectiveCompanion,
         )
         when (result) {
             is TournamentLobby.DeckSubmissionResult.Success -> {
@@ -2967,12 +3006,17 @@ class LobbyHandler(
         commanderPrinting: com.wingedsheep.sdk.model.PrintingRef?,
         secondCommander: String?,
         secondCommanderPrinting: com.wingedsheep.sdk.model.PrintingRef?,
+        sideboard: Map<String, Int> = emptyMap(),
+        companion: String? = null,
     ): com.wingedsheep.sdk.model.Deck =
         if (commander == null) {
-            com.wingedsheep.gameserver.protocol.DeckRequestConverter.toDeck(deckList, cardEntries)
+            com.wingedsheep.gameserver.protocol.DeckRequestConverter.toDeck(
+                deckList, cardEntries, sideboard = sideboard, companion = companion,
+            )
         } else {
             com.wingedsheep.gameserver.protocol.DeckRequestConverter.toCommanderDeck(
                 deckList, cardEntries, commander, commanderPrinting, secondCommander, secondCommanderPrinting,
+                sideboard = sideboard, companion = companion,
             )
         }
 }

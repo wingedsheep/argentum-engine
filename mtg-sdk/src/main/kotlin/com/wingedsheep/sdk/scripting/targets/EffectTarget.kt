@@ -174,7 +174,7 @@ sealed interface EffectTarget {
          * This target read as a player, for the slots typed as [Player] — "the cards in *that
          * player's* hand" (`CardSource.FromZone(Zone.HAND, opponent.asPlayer)`).
          */
-        val asPlayer: Player get() = Player.BoundVariable(name)
+        val asPlayer: Player get() = Player.BoundVariable(name, description)
     }
 
     /**

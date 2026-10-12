@@ -239,6 +239,8 @@ data class GameObjectFilter(
         val Kindred = GameObjectFilter(cardPredicates = listOf(CardPredicate.IsKindred))
         val Permanent = GameObjectFilter(cardPredicates = listOf(CardPredicate.IsPermanent))
         val Nonland = GameObjectFilter(cardPredicates = listOf(CardPredicate.IsNonland))
+        /** An instant, a sorcery or any other card that isn't a permanent card (CR 110.4a's complement). */
+        val Nonpermanent = GameObjectFilter(cardPredicates = listOf(CardPredicate.Not(CardPredicate.IsPermanent)))
         val NonlandPermanent = GameObjectFilter(
             cardPredicates = listOf(CardPredicate.IsNonland, CardPredicate.IsPermanent)
         )

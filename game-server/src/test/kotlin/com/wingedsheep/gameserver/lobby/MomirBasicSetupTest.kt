@@ -15,6 +15,19 @@ import io.kotest.matchers.shouldBe
  */
 class MomirBasicSetupTest : FunSpec({
 
+    test("the wishboard is fifteen real cards with Lessons for the creatures that learn") {
+        val byName = MtgSetCatalog.all.flatMap { it.cards }.associateBy { it.name }
+        repeat(5) { seed ->
+            val board = MomirBasicSetup.wishboard(kotlin.random.Random(seed))
+
+            board.size shouldBe 15
+            board.values.toSet() shouldBe setOf(1)
+            val cards = board.keys.map { byName.getValue(it) }
+            cards.count { it.typeLine.hasSubtype(com.wingedsheep.sdk.core.Subtype.LESSON) } shouldBeGreaterThan 2
+            cards.none { it.typeLine.isBasicLand } shouldBe true
+        }
+    }
+
     test("fixed deck is 60 cards: 12 of each of the five basics") {
         MomirBasicSetup.fixedBasicDeck shouldBe mapOf(
             "Plains" to 12, "Island" to 12, "Swamp" to 12, "Mountain" to 12, "Forest" to 12,

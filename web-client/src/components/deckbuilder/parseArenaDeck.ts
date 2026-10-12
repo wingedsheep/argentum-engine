@@ -53,7 +53,7 @@ export interface ParseResult {
   commander: ParsedEntry[]
   /**
    * Cards under a `Companion` header. A companion starts the game outside it (CR 702.139a), so the
-   * import keeps it on the sideboard; the companion rules themselves aren't enforced yet.
+   * import keeps it on the sideboard, and the deck builder makes the first one the deck's companion.
    */
   companion: ParsedEntry[]
   /**

@@ -155,7 +155,24 @@ sealed interface Player {
     @SerialName("BoundVariable")
     @Serializable
     data class BoundVariable(val name: String) : Player {
-        override val description: String = "that player"
+        /**
+         * The player requirement's own words ("target player", "target opponent"), so a step over
+         * this handle reads "exile all cards from target player's graveyard" rather than "that
+         * player's graveyard" with no player named before it. Display only, exactly like
+         * [com.wingedsheep.sdk.scripting.targets.EffectTarget.BoundVariable.requirementDescription]:
+         * not part of equality or serialization. Only a *player* requirement is carried — a
+         * handle on an object read as a player keeps "that player".
+         */
+        @kotlinx.serialization.Transient
+        var requirementDescription: String? = null
+            private set
+
+        constructor(name: String, requirementDescription: String?) : this(name) {
+            this.requirementDescription =
+                requirementDescription?.takeIf { it.endsWith(" player") || it.endsWith(" opponent") }
+        }
+
+        override val description: String get() = requirementDescription ?: "that player"
     }
 
     /**
@@ -403,7 +420,7 @@ sealed interface Player {
             EachOpponent -> "each opponent's"
             Any -> "a player's"
             is ContextPlayer -> "that player's"
-            is BoundVariable -> "that player's"
+            is BoundVariable -> "$description's"
             Candidate -> "that player's"
             TriggeringPlayer -> "that player's"
             ChosenOpponent -> "the chosen player's"

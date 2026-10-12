@@ -1383,6 +1383,20 @@ data class CaseSolvedEvent(
 ) : GameEvent
 
 /**
+ * A player took the companion special action (CR 702.139a, 116.2g): paid {3} and put their revealed
+ * companion from outside the game into their hand. The card's own move is a separate
+ * [ZoneChangeEvent] (sideboard → hand); this one carries what the log announces, since a move
+ * between two hidden zones names no card — but a revealed companion is public.
+ */
+@Serializable
+@SerialName("CompanionPutIntoHandEvent")
+data class CompanionPutIntoHandEvent(
+    val playerId: EntityId,
+    val cardId: EntityId,
+    val cardName: String,
+) : GameEvent
+
+/**
  * A creature became renowned (CR 702.112b) — its renown trigger resolved with the intervening-`if`
  * still holding.
  *

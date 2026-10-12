@@ -574,6 +574,7 @@ class QuickGameLobbyHandler(
         }
         // Empty deck = "random pool" — skip validation. The commander field, if any, is meaningless
         // without an accompanying deck list and gets dropped at the lobby layer below.
+        val companion = message.companion?.takeIf { it.isNotBlank() && message.deckList.isNotEmpty() }
         if (message.deckList.isNotEmpty()) {
             // Commander-aware path: the wire format `deckList` represents the *full* deck (matches
             // the saved-deck "merged" view the picker emits), but `Deck.cards` follows the server
@@ -588,8 +589,19 @@ class QuickGameLobbyHandler(
                     commanderPrinting = message.commanderPrinting,
                     secondCommander = message.secondCommander,
                     secondCommanderPrinting = message.secondCommanderPrinting,
+                    sideboard = message.sideboard.orEmpty(),
+                    companion = companion,
                 )
                 deckValidator.validate(deck, lobby.format)
+            } else if (companion != null) {
+                // The structured path is the one that reads a companion and its sideboard.
+                deckValidator.validate(
+                    DeckRequestConverter.toDeck(
+                        message.deckList, message.cardEntries,
+                        sideboard = message.sideboard.orEmpty(), companion = companion,
+                    ),
+                    lobby.format,
+                )
             } else {
                 deckValidator.validate(
                     deckList = message.deckList,
@@ -634,7 +646,8 @@ class QuickGameLobbyHandler(
             if (player.deckList == message.deckList &&
                 player.commander == message.commander &&
                 player.secondCommander == secondCommander &&
-                player.sideboard == sanitizedSideboard
+                player.sideboard == sanitizedSideboard &&
+                player.companion == companion
             ) {
                 return@withLock
             }
@@ -644,6 +657,7 @@ class QuickGameLobbyHandler(
             // commander from a prior submission doesn't leak into the game start.
             player.commander = if (message.deckList.isNotEmpty()) message.commander else null
             player.secondCommander = if (message.deckList.isNotEmpty()) secondCommander else null
+            player.companion = companion
             // Submitting a *new* deck un-readies the player so they have to confirm again.
             player.ready = false
             broadcastState(current)
@@ -748,6 +762,9 @@ class QuickGameLobbyHandler(
         // Momir Basic: both seats play the fixed 60-basic deck and the avatar flips creatures from
         // the whole card base (every set). The engine reads `eligibleCreatureNames` from this format
         // at game init and when the avatar's "{X}, Discard a card" ability resolves.
+        // Momir Basic has no deckbuilding and so no sideboard; every seat shares one generated
+        // wishboard instead, so a Learn creature or wish the avatar flips has something to fetch.
+        val momirWishboard = if (lobby.momirBasic) MomirBasicSetup.wishboard() else emptyMap()
         if (lobby.momirBasic) {
             val pool = MomirBasicSetup.allCreaturePool()
             gameSession.engineFormat = com.wingedsheep.sdk.core.Format.MomirBasic(eligibleCreatureNames = pool)
@@ -766,7 +783,7 @@ class QuickGameLobbyHandler(
         // commander.
         val humanDecks = humanPlayers.associate { lobbyPlayer ->
             // Momir Basic has no deckbuilding: the fixed 60 basics are substituted at seating time.
-            if (lobby.momirBasic) return@associate lobbyPlayer.playerId to GeneratedDeck(emptyMap())
+            if (lobby.momirBasic) return@associate lobbyPlayer.playerId to GeneratedDeck(emptyMap(), sideboard = momirWishboard)
             // A seat that pinned its own sets keeps them; one on "Any set" draws from the shared set.
             val resolved = resolveDeck(lobbyPlayer, sharedRandomSet, lobby.format, lobby.usesCommanderRules)
             lobbyPlayer.playerId to resolved.copy(
@@ -782,7 +799,7 @@ class QuickGameLobbyHandler(
         }
         val aiDeck = when {
             !lobby.vsAi -> null
-            lobby.momirBasic -> GeneratedDeck(MomirBasicSetup.fixedBasicDeck)
+            lobby.momirBasic -> GeneratedDeck(MomirBasicSetup.fixedBasicDeck, sideboard = momirWishboard)
             else -> randomDeckResolver.resolve(lobby.aiDeckSpec, lobby.format, sharedRandomSet, lobby.usesCommanderRules)
         }
 
@@ -838,14 +855,15 @@ class QuickGameLobbyHandler(
                 lobby.momirBasic -> MomirBasicSetup.fixedBasicDeck
                 else -> DeckRequestConverter.stripCommanders(deckList, commanders)
             }
-            // Momir Basic substitutes a fixed deck and has no sideboard; every other seat brings
-            // whatever it submitted (empty for a random pool).
-            val sideboard = if (lobby.momirBasic) emptyMap() else lobbyPlayer.sideboard
+            // The seat's cards outside the game: its submitted sideboard, the rest of a random
+            // sealed pool, a random constructed deck's wishboard, or Momir's shared wishboard.
             gameSession.addPlayer(
                 playerSession,
                 engineDeckList,
                 commanderCardNames = commanders,
-                sideboard = sideboard,
+                sideboard = humanDecks.getValue(lobbyPlayer.playerId).sideboard,
+                // A companion comes only with a submitted deck — and Momir Basic plays a fixed one.
+                companion = if (lobby.momirBasic) null else lobbyPlayer.companion?.takeIf { lobbyPlayer.deckList?.isNotEmpty() == true },
             )
             // Persistence info so a mid-game reconnect can find the player by token.
             val token = sessionRegistry.getTokenByWsId(playerSession.webSocketSession.id)
@@ -870,6 +888,7 @@ class QuickGameLobbyHandler(
                 onMulliganTake = { id -> gamePlayHandler.handleAiMulliganTake(gameSession, id) },
                 onBottomCards = { id, cardIds -> gamePlayHandler.handleAiBottomCards(gameSession, id, cardIds) },
                 deckOverride = aiDeck.deckList,
+                sideboard = aiDeck.sideboard,
                 // Cleared outside Commander rules so a commander on a host-picked deck can't route
                 // into a Standard game.
                 commanderCardName = aiDeck.commander?.takeIf { lobby.usesCommanderRules },
@@ -935,7 +954,7 @@ class QuickGameLobbyHandler(
             // (shared by every "Any set" seat and the AI, so the whole table plays one set).
             return randomDeckResolver.randomDeck(format, player.setCodes, randomFallbackSet, commanderRules)
         }
-        return GeneratedDeck(submitted)
+        return GeneratedDeck(submitted, sideboard = player.sideboard)
     }
 
     private fun broadcastState(lobby: QuickGameLobby) {

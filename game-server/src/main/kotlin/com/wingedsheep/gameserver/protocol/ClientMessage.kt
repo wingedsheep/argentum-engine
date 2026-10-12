@@ -48,6 +48,12 @@ sealed interface ClientMessage {
          * in-game only by wish effects (Burning Wish, …). Empty for almost every deck.
          */
         val sideboard: Map<String, Int> = emptyMap(),
+        /**
+         * Optional companion (CR 702.139): a card from outside the game this deck reveals, which
+         * may be put into hand for {3} once per game. A sideboard card; added to [sideboard] when
+         * it isn't listed there. The deck validator checks its condition.
+         */
+        val companion: String? = null,
     ) : ClientMessage
 
     /**
@@ -62,6 +68,12 @@ sealed interface ClientMessage {
         val cardEntries: List<DeckEntryDTO>? = null,
         /** Constructed sideboard, card name → count. See [CreateGame.sideboard]. */
         val sideboard: Map<String, Int> = emptyMap(),
+        /**
+         * Optional companion (CR 702.139): a card from outside the game this deck reveals, which
+         * may be put into hand for {3} once per game. A sideboard card; added to [sideboard] when
+         * it isn't listed there. The deck validator checks its condition.
+         */
+        val companion: String? = null,
     ) : ClientMessage
 
     /**
@@ -159,6 +171,12 @@ sealed interface ClientMessage {
          * pool − maindeck server-side (CR 100.4b).
          */
         val sideboard: Map<String, Int> = emptyMap(),
+        /**
+         * Optional companion (CR 702.139): a card from outside the game this deck reveals, which
+         * may be put into hand for {3} once per game. A sideboard card; added to [sideboard] when
+         * it isn't listed there. The deck validator checks its condition.
+         */
+        val companion: String? = null,
     ) : ClientMessage
 
     // =========================================================================
@@ -653,6 +671,12 @@ sealed interface ClientMessage {
          * Names the card registry doesn't know are dropped on arrival — see `SideboardSanitizer`.
          */
         val sideboard: Map<String, Int>? = null,
+        /**
+         * Optional companion (CR 702.139): a card from outside the game this deck reveals, which
+         * may be put into hand for {3} once per game. A sideboard card; added to [sideboard] when
+         * it isn't listed there. The deck validator checks its condition.
+         */
+        val companion: String? = null,
     ) : ClientMessage
 
     /** Toggle this player's ready flag. The server starts the game when both players are ready. */

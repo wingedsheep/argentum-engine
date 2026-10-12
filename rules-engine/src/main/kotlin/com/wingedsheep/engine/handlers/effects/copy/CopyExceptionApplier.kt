@@ -2,6 +2,7 @@ package com.wingedsheep.engine.handlers.effects.copy
 
 import com.wingedsheep.engine.core.CardEntityFactory
 import com.wingedsheep.engine.state.ComponentContainer
+import com.wingedsheep.engine.state.components.identity.copiableNumericKeywords
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.NumericKeywordValuesComponent
 import com.wingedsheep.engine.state.components.identity.ToxicComponent
@@ -137,22 +138,7 @@ object CopyExceptionApplier {
         exceptions: CopyExceptions,
         registry: com.wingedsheep.engine.registry.CardRegistry? = null,
     ): ComponentContainer {
-        val numeric = buildList {
-            if (!source.has<com.wingedsheep.engine.state.components.identity.FaceDownComponent>()) {
-                val upright = source.get<com.wingedsheep.engine.state.components.identity.FlippedComponent>()?.unflippedCard
-                if (upright != null) {
-                    addAll(registry?.getCard(upright.cardDefinitionId)?.keywordAbilities
-                        ?.filterIsInstance<KeywordAbility.Numeric>().orEmpty())
-                    addAll(upright.copyNumericKeywords)
-                } else {
-                    source.get<ToxicComponent>()?.let { add(KeywordAbility.Numeric(Keyword.TOXIC, it.amount)) }
-                    source.get<NumericKeywordValuesComponent>()?.values?.forEach { (keyword, n) ->
-                        add(KeywordAbility.Numeric(keyword, n))
-                    }
-                }
-            }
-            addAll(exceptions.addedNumericKeywords)
-        }
+        val numeric = source.copiableNumericKeywords(registry) + exceptions.addedNumericKeywords
         return CardEntityFactory.applyNumericKeywords(
             copy.without<ToxicComponent>().without<NumericKeywordValuesComponent>(),
             numeric,

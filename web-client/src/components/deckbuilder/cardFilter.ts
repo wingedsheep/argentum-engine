@@ -91,6 +91,11 @@ export interface CardSummary {
    * "Partner with <name>", "Choose a Background", "Doctor's companion". Empty or absent when none.
    */
   partnerAbilities?: string[]
+  /**
+   * The card's companion condition (CR 702.139) as printed after "Companion —"; absent when it has
+   * no companion ability. Its presence lets the sideboard offer to make it the deck's companion.
+   */
+  companionCondition?: string
 }
 
 export type { CardPredicate, ParseResult, ParseError } from './query'

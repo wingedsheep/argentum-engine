@@ -1,7 +1,7 @@
 package com.wingedsheep.gameserver.sealed
 
 import com.wingedsheep.engine.limited.BoosterGenerator
-import com.wingedsheep.gameserver.deck.SideboardDerivation
+import com.wingedsheep.engine.limited.SideboardDerivation
 import com.wingedsheep.gameserver.session.PlayerSession
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.EntityId

@@ -376,6 +376,10 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
     title: 'Cards: Random pool',
     summary:
       'The server picks a deck for you. The fastest route from a cold start to actually playing — no deckbuilding, no pool to sort.',
+    body: [
+      { kind: 'p', text: 'Without a format, the server opens eight boosters and builds the deck from them; the cards it left out are your sideboard, as in Sealed. Under a constructed format you get a 60-card deck and a fifteen-card wishboard from the same legal pool, so a wish or Learn card it rolls has something to fetch.' },
+    ],
+    related: ['outside-the-game'],
   },
   {
     id: 'cards-momir',
@@ -385,7 +389,9 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
       'No deckbuilding at all. Everyone runs 60 basic lands; discard a card and pay {X} to put a random creature with mana value X onto the battlefield.',
     body: [
       { kind: 'p', text: 'The Momir Vig avatar sits in the command zone. Creatures are rolled from every implemented set, so games look nothing alike.' },
+      { kind: 'p', text: 'Every game also rolls one shared wishboard: fifteen cards both players own outside the game, at least a few of them Lessons. When the avatar hands you a creature that learns, or one that wishes, this is where it looks — open your deck (D) and pick the Outside the game tab to see it.' },
     ],
+    related: ['outside-the-game'],
   },
   {
     id: 'cards-jump-in',
@@ -469,12 +475,12 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
         'Up to 4 copies of any card, exactly like constructed. Basic lands stay unlimited.',
         'Minimum deck size is still 40.',
         'No capacity constraint — nothing is dealt, so a 100-card cube works fine for 8 players.',
-        'No sideboard. In limited your sideboard is everything you didn’t play, but here that would be the whole cube, so Pool Play decks have none — which also means cards that fetch from outside the game have nothing to find.',
+        'A fifteen-card sideboard. In limited your sideboard is everything you didn’t play, but here that would be the whole cube, so instead you get fifteen random cube cards your deck doesn’t play — something for wishes and Learn to fetch.',
         'Pack size and pack count are ignored, and the controls for them are hidden.',
       ] },
       { kind: 'p', text: 'Set it on a cube Sealed lobby with the Card pool control: “Sealed packs” deals pools from the cube as usual, “Pool Play” gives everyone all of it.' },
     ],
-    related: ['cards-cube', 'cube-building', 'cards-sealed', 'limited-deckbuilding'],
+    related: ['cards-cube', 'cube-building', 'cards-sealed', 'limited-deckbuilding', 'outside-the-game'],
   },
   {
     id: 'rules-standard',
@@ -883,7 +889,7 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
       { kind: 'p', text: 'The cards you leave out become your sideboard — the “outside the game” cards that wish-style effects can fetch. There is no sideboarding between games: the deck you submit plays every round.' },
       { kind: 'p', text: 'Save Deck on the standings screen keeps the deck in My Decks, with the exact printings you opened or drafted.' },
     ],
-    related: ['cards-sealed', 'cards-draft', 'draft-assist', 'cube-pool-play'],
+    related: ['cards-sealed', 'cards-draft', 'draft-assist', 'cube-pool-play', 'outside-the-game'],
   },
   {
     id: 'tournament-flow',
@@ -1156,6 +1162,7 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
       'Drag a card from your hand onto the battlefield to cast it, drag an attacker onto a defender to attack, and drag a blocker onto an attacker to block. Clicking works everywhere dragging does.',
     body: [
       { kind: 'p', text: 'Clicking a card with more than one way to play opens its action menu — Cast, Play, Turn Face-Up, an activated ability, or View card. A permanent’s abilities are in the same menu.' },
+      { kind: 'p', text: 'Repeatable additional costs such as Squad appear as separate cast options: Squad ×1, Squad ×2, and so on. Choose the number of payments in the card’s action menu, then select any cards the cost asks you to discard or exile.' },
       { kind: 'p', text: 'Some spells ask for targets in sequence. Choose the player or permanent first, then Confirm to see the valid next targets. Back lets you change an earlier choice and updates the later choices.' },
       { kind: 'p', text: 'Attacking: Attack All sends every creature that can attack, Skip Attacking declares none, and after choosing some the button reads Attack with N. In multiplayer each attacker needs a defender; the banner says who you are allowed to attack.' },
       { kind: 'p', text: 'Enlist: after confirming attackers, each enlisting creature asks you to click an eligible creature on the battlefield to tap. Choose Select None to skip it. The power bonus appears on the stack after the attack is declared, so players can respond before it resolves.' },
@@ -1172,9 +1179,30 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
     summary:
       'Click a graveyard, exile or library pile to open a full browser of its contents. Press D to open the deck browser, which tracks what is left in your library.',
     body: [
-      { kind: 'p', text: 'The deck browser has two views: Deck list (everything still in your library) and Library order, which shows cards whose position you know — after a scry, for instance — with the top card marked “Next draw”.' },
+      { kind: 'p', text: 'The deck browser has two views: Deck list (everything still in your library) and Library order, which shows cards whose position you know — after a scry, for instance — with the top card marked “Next draw”. When you own cards outside the game, a third view, Outside the game, shows them.' },
     ],
+    related: ['outside-the-game'],
     shortcuts: ['deck-browser', 'escape'],
+  },
+  {
+    id: 'outside-the-game',
+    section: 'playing',
+    title: 'Cards from outside the game',
+    summary:
+      'Learn, the wishes (Burning Wish, Living Wish…) and a few others bring in a card you own from outside the game — your sideboard. Every mode gives you one; press D and open Outside the game to see yours.',
+    body: [
+      { kind: 'p', text: 'Only these effects can touch your sideboard, and nobody else can see it. When one resolves you choose from the cards that match — a sorcery for Burning Wish, a Lesson for Learn — or choose nothing.' },
+      { kind: 'h', text: 'Where your sideboard comes from' },
+      { kind: 'table', head: ['Mode', 'Outside the game'], rows: [
+        ['Sealed, Draft, cube Sealed', 'Every card in your pool you didn’t put in your deck.'],
+        ['Your own or a premade deck', 'The sideboard you saved with it — up to 15 cards. A deck with wishes or Learn and an empty sideboard is warned about in the deckbuilder.'],
+        ['Random deck', 'The rest of the boosters it was built from; under a constructed format, a fifteen-card wishboard from the legal pool.'],
+        ['Momir Basic', 'One wishboard rolled for the game and shared by both players: fifteen cards from every set, with Lessons for the creatures that learn.'],
+        ['Cube Pool Play', 'Fifteen random cube cards your deck doesn’t play.'],
+      ] },
+      { kind: 'p', text: 'A wishboard is a menu, not a pile: every card in it is different, and it always covers the kinds of card the wishes ask for — Lessons, instants, sorceries, creatures, a land, an artifact and an enchantment — when the pool has them.' },
+    ],
+    related: ['zone-browsers', 'cards-momir', 'cards-random', 'limited-deckbuilding', 'deckbuilder'],
   },
   {
     id: 'card-badges',
@@ -1261,7 +1289,7 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
       { kind: 'h', text: 'Your deck' },
       { kind: 'ul', items: [
         'The Deck pane shows the card count, colour pips and mana curve.',
-        'The sideboard drop zone holds cards kept alongside the deck. Most decks leave it empty.',
+        'The sideboard drop zone holds up to 15 cards you own outside the game. A deck with wishes or Learn cards needs one — the panel says so, and counts your Lessons.',
         'Suggest basic lands fills your land base from your colours and curve.',
         'Pick a format to restrict the catalogue to legal cards and check the deck live.',
       ] },
@@ -1321,7 +1349,26 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
       { kind: 'p', text: 'Once a commander is crowned in a Commander, Brawl or Standard Brawl deck, the card search shows only cards inside the commander’s colour identity (both commanders’ combined for a pair). The ♛ Identity chip beside the search box turns that off when you want to browse everything; crowning a different commander turns it back on.' },
       { kind: 'p', text: 'Imported lists get their commander set automatically — from a `Commander` section, an Archidekt `Commander` category or a `*CMDR*` marker, and both of them when two are listed. MTGO and Moxfield exports that put the commander on the sideboard (or in a last block after a blank line) work too: in a 100-card list, a one- or two-card sideboard of cards that can lead the deck together is read as the commanders, and the import preview says so. Importing a deck with a commander switches the deckbuilder to the Commander format. A Commander deck shows up in the Commander mode’s deck picker and can be handed to an AI seat.' },
     ],
-    related: ['rules-commander', 'deck-legality', 'deckbuilder', 'deck-import-export'],
+    related: ['rules-commander', 'deck-legality', 'deckbuilder', 'deck-import-export', 'companions'],
+  },
+  {
+    id: 'companions',
+    section: 'decks',
+    title: 'Companions',
+    summary:
+      'A card with Companion — Lurrus, Kaheera, Zirda and the rest — can wait outside your deck as its companion. Put it on your sideboard and click “☆ Make companion” beside it; in the game it sits face up next to your command zone, and once per game you can pay {3} to put it into your hand.',
+    body: [
+      { kind: 'p', text: 'Each companion has a condition your deck has to meet, printed after “Companion —”. The deckbuilder checks it as you build and lists what breaks it — a deck with an even-cost card can’t take an odd-only companion, for example. The companion itself doesn’t count toward the condition; only the deck does.' },
+      { kind: 'ul', items: [
+        'Any format: a constructed deck keeps the companion on its sideboard, and it counts toward the four-copy limit with the copies in your deck.',
+        'Commander: the companion isn’t one of your 100 cards. Your commander counts toward the condition, the companion has to fit the commander’s colour identity, and it can’t share a name with a card in your deck.',
+        'Only one card can be your companion.',
+      ] },
+      { kind: 'h', text: 'In the game' },
+      { kind: 'p', text: 'Both players see each other’s companion, labelled “Companion” beside the command zone. On your turn, in a main phase with nothing on the stack, click it to pay {3} and put it into your hand. That doesn’t use the stack, so you can cast it straight away if you have the mana. You can only do this once per game; after that the card is an ordinary card — if it dies, it goes to your graveyard.' },
+      { kind: 'p', text: 'An imported list with a `Companion` section sets the deck’s companion for you, and the lobby’s paste box reads it the same way.' },
+    ],
+    related: ['commander-decks', 'deck-import-export', 'deck-legality', 'deckbuilder'],
   },
   {
     id: 'search-syntax',
@@ -1363,11 +1410,11 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
         '`SB: 2 Counterspell` — the MTGO sideboard prefix.',
       ] },
       { kind: 'p', text: 'Section headers are case-insensitive and may end in `:` or a card count, or sit behind `//`: `Deck` / `Mainboard` / `Main Deck` / `Maindeck`, `Sideboard` / `Side` / `SB`, `Commander` / `Commanders` / `EDH`, `Companion`, `Maybeboard` / `Considering`, and `About`. The main deck, the sideboard and the commander are all imported; the maybeboard is listed in the preview but left out. Blank lines and other lines starting with `//` or `#` are ignored.' },
-      { kind: 'p', text: 'A `Companion` is kept on your sideboard and the preview points it out — companion rules themselves (the deck-building condition, paying to put it into your hand) are not supported yet, so it plays as an ordinary sideboard card.' },
+      { kind: 'p', text: 'A `Companion` section makes its card the deck’s companion: it is kept on your sideboard, and the deckbuilder checks the companion’s condition against the deck. See Companions.' },
       { kind: 'p', text: 'MTGO and Moxfield’s MTGO or plain-text exports do not label the commander: it sits on the sideboard or in a last block after a blank line. When the deck has no commander marked, and that block is one or two cards that can lead the deck together, they become the commander(s) — but only in the Commander format or a 100-card list, so a 60-card deck with a real sideboard is never touched. The preview says when it did this.' },
       { kind: 'p', text: 'A line the parser cannot read is listed in the preview as skipped, and a card it reads but cannot match is reported and imported as a placeholder, so an import never silently loses cards. Export writes the plain `4 Lightning Bolt` shape, which every one of the above tools reads.' },
     ],
-    related: ['deckbuilder', 'deck-sharing', 'commander-decks'],
+    related: ['deckbuilder', 'deck-sharing', 'commander-decks', 'companions'],
   },
   {
     id: 'deck-sharing',

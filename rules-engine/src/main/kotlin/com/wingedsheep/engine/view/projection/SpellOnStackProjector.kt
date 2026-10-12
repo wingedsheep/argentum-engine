@@ -137,6 +137,10 @@ internal class SpellOnStackProjector(
                 ?.filterIsInstance<KeywordAbility.OptionalAdditionalCost>()
                 ?.firstOrNull { it.declaredSlot == slot }
             when {
+                declared?.multi == true -> {
+                    val count = spellOnStack.additionalCostChoices[slot] ?: 1
+                    "${declared.displayPrefix} ×$count"
+                }
                 declared?.keyword == Keyword.OFFSPRING -> "Offspring"
                 slot == ChoiceSlot.BARGAINED -> "Bargained"
                 slot == ChoiceSlot.KICKED -> {

@@ -21,7 +21,8 @@ internal class JevActions(
         if (action is DeclareAttackers) {
             val assignments = linkedMapOf<EntityId, EntityId>()
             for (attacker in info.validAttackers.orEmpty()) {
-                val defenders: List<EntityId?> = info.validAttackTargets.orEmpty() +
+                val legal = info.attackTargetsByAttacker?.get(attacker) ?: info.validAttackTargets.orEmpty()
+                val defenders: List<EntityId?> = legal +
                     if (attacker in info.mandatoryAttackers.orEmpty()) emptyList() else listOf(null)
                 val defender = q.pick("Attack with ${label(attacker)}?", defenders) {
                     if (it == null) "Do not attack" else "Attack ${label(it)}"

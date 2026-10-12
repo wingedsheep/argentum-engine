@@ -95,6 +95,12 @@ export interface SharedDeck {
    */
   sideboard?: Record<string, number>
   /**
+   * Optional companion (CR 702.139) — the sideboard card the deck reveals. Unlike the rest of the
+   * sideboard the share code does carry it (a fourth field on the header record, which older
+   * decoders ignore); a decoded companion comes back with one copy on `sideboard`.
+   */
+  companion?: string
+  /**
    * Optional owner's note and chosen cover art. Carried by the account save (stored verbatim);
    * the share-link codec has no field for them and drops them — a shared deck is the list.
    */
@@ -261,7 +267,12 @@ export async function encodeSharedDeck(
     : ''
 
   const records = [
-    [V2_TAG, sanitize(deck.name), sanitize(deck.format ?? '')].join(US),
+    [
+      V2_TAG,
+      sanitize(deck.name),
+      sanitize(deck.format ?? ''),
+      ...(deck.companion ? [sanitize(deck.companion)] : []),
+    ].join(US),
     commanderRec,
     groups.join(GS),
     ...overflow,
@@ -369,6 +380,10 @@ function decodeV2(text: string, resolveName: ResolveName): SharedDeck | null {
   const out: SharedDeck = { name: meta[1] ?? '', cards }
   if (Object.keys(printings).length > 0) out.printings = printings
   if (meta[2]) out.format = meta[2]
+  if (meta[3]) {
+    out.companion = meta[3]
+    out.sideboard = { [meta[3]]: 1 }
+  }
 
   // rec 1: commander(s) — name verbatim, optional pinned printing; a partner pair is GS-split.
   const [first, second] = (records[1] ?? '').split(GS)

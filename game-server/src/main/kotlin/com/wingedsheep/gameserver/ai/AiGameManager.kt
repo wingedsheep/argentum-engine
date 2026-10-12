@@ -7,6 +7,7 @@ import com.wingedsheep.ai.llm.LlmAiPlayerController
 import com.wingedsheep.ai.llm.LlmClient
 import com.wingedsheep.gameserver.config.GameProperties
 import com.wingedsheep.ai.engine.SealedDeckGenerator
+import com.wingedsheep.ai.engine.deck.GeneratedDeck
 import com.wingedsheep.gameserver.session.GameSession
 import com.wingedsheep.gameserver.session.PlayerIdentity
 import com.wingedsheep.gameserver.session.PlayerSession
@@ -348,6 +349,12 @@ class AiGameManager(
         deckOverride: Map<String, Int>? = null,
         /** Commander to place in the command zone when [deckOverride] is a commander deck. */
         commanderCardName: String? = null,
+        /**
+         * The AI's cards outside the game (CR 400.11a) to go with [deckOverride] — a generated
+         * deck's leftover pool or wishboard, Momir's shared wishboard. Ignored without an override:
+         * a deck generated here brings the rest of its own sealed pool.
+         */
+        sideboard: Map<String, Int> = emptyMap(),
     ): PlayerSession {
         require(isEnabled) { "AI is not enabled. Set game.ai.enabled=true." }
 
@@ -371,9 +378,15 @@ class AiGameManager(
 
         // Deckless formats (Momir Basic) supply a fixed deck; otherwise quick games generate a
         // sealed deck, using the same set as the human player when one was provided.
-        val aiDeck = deckOverride
-            ?: if (setCode != null) deckGenerator.generate(setCode) else deckGenerator.generate()
-        gameSession.addPlayer(playerSession, aiDeck, commanderCardNames = listOfNotNull(commanderCardName))
+        val generated = deckOverride?.let { GeneratedDeck(it, sideboard = sideboard) }
+            ?: deckGenerator.generateDeck(setCode ?: deckGenerator.randomSetCode())
+        val aiDeck = generated.deckList
+        gameSession.addPlayer(
+            playerSession,
+            aiDeck,
+            commanderCardNames = listOfNotNull(commanderCardName),
+            sideboard = generated.sideboard,
+        )
 
         // Give the AI knowledge of its deck composition
         controller.setDeckList(aiDeck)

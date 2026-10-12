@@ -12,6 +12,7 @@ import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.targets.TargetRequirement
 import com.wingedsheep.sdk.scripting.text.TextReplacer
+import com.wingedsheep.sdk.scripting.util.numberToWord
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -1206,10 +1207,33 @@ data class SelectFromCollectionEffect(
      */
     val alwaysPrompt: Boolean = false
 ) : Effect {
+    /**
+     * "Choose two of those cards" / "An opponent chooses one of those cards" — Oracle's wording,
+     * naming the chooser when it isn't you (never "Choose exactly 2", and never an imperative that
+     * reads as though the controller picks when another player does).
+     */
     override val description: String = buildString {
-        if (chooser == Chooser.Opponent) append("An opponent ")
-        append(selection.description.replaceFirstChar { it.uppercase() })
-        append(" of those cards")
+        val subject = when (chooser) {
+            Chooser.Controller, Chooser.SourceController -> null
+            Chooser.Opponent -> "An opponent"
+            Chooser.ChosenOpponent -> "The chosen player"
+            Chooser.TargetPlayer, Chooser.TriggeringPlayer -> "That player"
+            Chooser.ControllerOfSelection -> "Their controller"
+            Chooser.ControllerOfTarget -> "Its controller"
+            Chooser.DefendingPlayer -> "Defending player"
+        }
+        fun amount(count: DynamicAmount): String =
+            (count as? DynamicAmount.Fixed)?.amount?.let { if (it in 1..10) numberToWord(it) else "$it" }
+                ?: count.description
+        val what = when (val s = selection) {
+            is SelectionMode.ChooseExactly -> "${amount(s.count)} of those cards"
+            is SelectionMode.ChooseUpTo -> "up to ${amount(s.count)} of those cards"
+            is SelectionMode.Random -> "${amount(s.count)} of those cards at random"
+            SelectionMode.ChooseAnyNumber -> "any number of those cards"
+            SelectionMode.All -> "all of those cards"
+            SelectionMode.ChooseSpell -> "up to one spell"
+        }
+        append(if (subject == null) "Choose $what" else "$subject chooses $what")
     }
 
     override fun applyTextReplacement(replacer: TextReplacer): Effect {
@@ -1361,6 +1385,14 @@ data class MoveCollectionEffect(
     val attachTo: EffectTarget? = null
 ) : Effect {
     override val description: String = buildString {
+        val discardingPlayer = (destination as? CardDestination.ToZone)
+            ?.takeIf { moveType == MoveType.Discard && it.zone == Zone.GRAVEYARD && !revealed }?.player
+        if (discardingPlayer != null) {
+            // A discard is the hand's owner discarding, never "Put those cards into a graveyard".
+            if (discardingPlayer == Player.You) append("Discard those cards")
+            else append("${discardingPlayer.description.replaceFirstChar { it.uppercase() }} discards those cards")
+            return@buildString
+        }
         if (revealed) append("Reveal and put ") else append("Put ")
         append("those cards ")
         // `from` is an internal pipeline-collection key — never surface it to players.

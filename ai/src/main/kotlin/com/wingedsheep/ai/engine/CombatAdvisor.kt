@@ -146,10 +146,19 @@ class CombatAdvisor(
             },
         )
         val opponentId = seed.defenderId ?: return DeclareAttackers(playerId, emptyMap())
+        // Which defender each attacker may legally take (CR 508.1b–c) — the engine lists it per
+        // attacker, and every plan below is built from and checked against that list.
+        val canAttack = { attacker: EntityId, defender: EntityId -> defender in legalAction.attackTargetsFor(attacker) }
         if (seed.lethal) {
             return DeclareAttackers(
                 playerId,
-                AttackRequirementRepair.repair(state, cardRegistry, playerId, seed.attackers, validAttackers, mandatory.toSet()),
+                CombatSeed.legalize(
+                    state, legalAction,
+                    AttackRequirementRepair.repair(
+                        state, cardRegistry, playerId, seed.attackers, validAttackers, mandatory.toSet(), canAttack,
+                    ),
+                    opponentId,
+                ),
             )
         }
 
@@ -166,21 +175,28 @@ class CombatAdvisor(
         }
         if (state.step == Step.DECLARE_ATTACKERS && enemyControlsCreature) {
             improveAttackViaLocalSearch(
-                state, playerId, opponentId, validAttackers, mandatory.toSet(), seedMap, budget, trace
+                state, playerId, opponentId, validAttackers, mandatory.toSet(), seedMap, budget, trace,
+                defenderFor = { attacker -> CombatSeed.defenderFor(state, legalAction, attacker, opponentId) },
             )
         }
 
         // Local search may have added attackers back on top of an already-trimmed seed, so the tax
         // is re-priced against the plan we are about to submit. See [CombatTaxBudget].
         // The tax trim can drop the creature an attack requirement needs, so repair last.
+        // Legalize last: no attacker may go at a defender the engine doesn't list for it, or the
+        // whole declaration is rejected and the seat attacks with nothing.
         return DeclareAttackers(
             playerId,
-            AttackRequirementRepair.repair(
-                state, cardRegistry, playerId,
-                CombatTaxBudget.affordableAttack(
-                    state, projected, playerId, cardRegistry, seedMap, mandatory.toSet()
+            CombatSeed.legalize(
+                state, legalAction,
+                AttackRequirementRepair.repair(
+                    state, cardRegistry, playerId,
+                    CombatTaxBudget.affordableAttack(
+                        state, projected, playerId, cardRegistry, seedMap, mandatory.toSet()
+                    ),
+                    validAttackers, mandatory.toSet(), canAttack,
                 ),
-                validAttackers, mandatory.toSet(),
+                opponentId,
             ),
         )
     }
@@ -1065,20 +1081,22 @@ class CombatAdvisor(
 
         // Drive through combat: pass priority, handle blockers, resolve damage.
         var iterations = 0
-        var needsBlockerCheck = true
+        // In a pod a plan can attack several seats (CR 508.1b): each one attacked declares its
+        // own blocks, so the heuristic blocker answers for whichever defending player is asked.
+        val blocked = mutableSetOf<EntityId>()
         while (iterations < 50 && !current.gameOver && current.pendingDecision == null) {
             iterations++
             val priorityPlayer = current.priorityPlayerId ?: break
 
-            if (needsBlockerCheck && priorityPlayer == opponentId) {
-                val legalActions = simulator.getLegalActions(current, opponentId)
+            if (priorityPlayer != playerId && priorityPlayer !in blocked && current.step == Step.DECLARE_BLOCKERS) {
+                val legalActions = simulator.getLegalActions(current, priorityPlayer)
                 val blockAction = legalActions.find { it.actionType == "DeclareBlockers" }
                 if (blockAction != null) {
-                    val blockerAction = chooseBlockers(current, blockAction, opponentId, useSimulation = false)
+                    val blockerAction = chooseBlockers(current, blockAction, priorityPlayer, useSimulation = false)
                     val transition = simulator.simulate(current, blockerAction)
                     if (transition is SimulationResult.StoppedAtLimit) return null
                     current = transition.state
-                    needsBlockerCheck = false
+                    blocked += priorityPlayer
                     continue
                 }
             }
@@ -1160,6 +1178,8 @@ class CombatAdvisor(
         attackerMap: MutableMap<EntityId, EntityId>,
         budget: DecisionBudget,
         trace: CombatPlanTrace? = null,
+        /** The defender an attacker takes when the search adds it; null when it can attack nobody. */
+        defenderFor: (EntityId) -> EntityId? = { opponentId },
     ) {
         val deadline = budget.combatDeadlineNanos
         // Baseline: use current board evaluation. Attack plans must beat this.
@@ -1190,7 +1210,7 @@ class CombatAdvisor(
                 if (System.nanoTime() > deadline) break
                 if (attacker in attackerMap) continue
                 val mutation = attackerMap.toMutableMap()
-                mutation[attacker] = opponentId
+                mutation[attacker] = defenderFor(attacker) ?: continue
                 val score = evaluateAttackPlan(state, playerId, opponentId, mutation) ?: continue
                 trace?.recordAttack(mutation, score)
                 if (score > bestScore) {

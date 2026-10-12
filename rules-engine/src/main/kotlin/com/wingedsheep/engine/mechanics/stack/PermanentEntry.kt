@@ -365,7 +365,9 @@ internal class PermanentEntry(
         spellComponent.declaredCostSlot?.let { slot ->
             bag = bag.withChoice(
                 slot,
-                com.wingedsheep.engine.state.components.battlefield.ChoiceValue.Flag
+                spellComponent.additionalCostChoices[slot]?.let {
+                    com.wingedsheep.engine.state.components.battlefield.ChoiceValue.NumberChoice(it)
+                } ?: com.wingedsheep.engine.state.components.battlefield.ChoiceValue.Flag
             )
         }
         // Sneak (CR 702.190): durably mark the permanent so Conditions.SneakCostWasPaid

@@ -2,7 +2,9 @@ package com.wingedsheep.ai.engine
 
 import com.wingedsheep.ai.assist.DeckBuildRequest
 import com.wingedsheep.ai.assist.DraftsimDeckBuildAdvisor
+import com.wingedsheep.ai.engine.deck.GeneratedDeck
 import com.wingedsheep.engine.limited.BoosterGenerator
+import com.wingedsheep.engine.limited.SideboardDerivation
 import com.wingedsheep.sdk.model.CardDefinition
 import org.slf4j.LoggerFactory
 
@@ -57,14 +59,24 @@ class SealedDeckGenerator(
      * @param setCode The set to generate boosters from
      * @return A map of card name (or "Name#SetCode-CollectorNumber" for lands) to count
      */
-    fun generate(setCode: String): Map<String, Int> {
+    fun generate(setCode: String): Map<String, Int> = generateDeck(setCode).deckList
+
+    /**
+     * [generate], plus the sideboard the pool leaves behind: every opened card the build didn't
+     * run (CR 100.4b), exactly as a human's sealed sideboard is derived. That is what makes Learn
+     * and the wishes work in a random-deck game — without it they'd reach into an empty sideboard.
+     */
+    fun generateDeck(setCode: String): GeneratedDeck {
         requireNotNull(boosterGenerator.availableSets[setCode]) { "Unknown set code: $setCode" }
 
         val pool = boosterGenerator.generateSealedPool(setCode, boosterCount = 8)
         val deck = buildSealedDeck(pool, setCode)
 
         // Pin the basics to the set's standard art, exactly as a human's submitted deck is.
-        return BoosterGenerator.withBasicLandArt(deck, boosterGenerator.getBasicLands(setCode))
+        return GeneratedDeck(
+            deckList = BoosterGenerator.withBasicLandArt(deck, boosterGenerator.getBasicLands(setCode)),
+            sideboard = SideboardDerivation.fromPool(pool, deck),
+        )
     }
 
     /**
@@ -79,15 +91,21 @@ class SealedDeckGenerator(
      *        [generate].
      * @return A map of card name (or "Name#SetCode-CollectorNumber" for lands) to count
      */
-    fun generate(setCodes: List<String>): Map<String, Int> {
+    fun generate(setCodes: List<String>): Map<String, Int> = generateDeck(setCodes).deckList
+
+    /** [generate] across several sets, with the leftover pool as the sideboard (see [generateDeck]). */
+    fun generateDeck(setCodes: List<String>): GeneratedDeck {
         require(setCodes.isNotEmpty()) { "At least one set code is required" }
-        if (setCodes.size == 1) return generate(setCodes.first())
+        if (setCodes.size == 1) return generateDeck(setCodes.first())
         setCodes.forEach { requireNotNull(boosterGenerator.availableSets[it]) { "Unknown set code: $it" } }
 
         val pool = boosterGenerator.generateSealedPool(setCodes, boosterCount = 8)
         val deck = buildSealedDeck(pool, setCodes.first())
 
-        return BoosterGenerator.withBasicLandArt(deck, boosterGenerator.getBasicLands(setCodes))
+        return GeneratedDeck(
+            deckList = BoosterGenerator.withBasicLandArt(deck, boosterGenerator.getBasicLands(setCodes)),
+            sideboard = SideboardDerivation.fromPool(pool, deck),
+        )
     }
 
     /**

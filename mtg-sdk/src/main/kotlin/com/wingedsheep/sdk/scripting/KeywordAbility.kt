@@ -308,7 +308,7 @@ sealed interface KeywordAbility {
 
     /**
      * **Optional additional cost paid at cast time.** Generalises Kicker, Multikicker,
-     * Offspring, Bargain, and the pre-kicker "pay {N} more to cast as though it had flash"
+     * Offspring, Squad, Bargain, and the pre-kicker "pay {N} more to cast as though it had flash"
      * pattern (Ghitu Fire et al.). The card script gates effect variations on the durable
      * fact recorded in [declaredSlot] — read via [WasKicked] / `Conditions.WasBargained`,
      * or `wasKicked` in trigger filters — when [branchesEffect] is `true`.
@@ -388,7 +388,7 @@ sealed interface KeywordAbility {
             }
             require(!multi || additionalCost == null || additionalCostPaid(2) != null) {
                 "A repeatable optional cost's non-mana half must be an amount that scales " +
-                    "(pay life, pay player counters); got ${additionalCost?.description}"
+                    "(pay life, pay player counters, discard, exile); got ${additionalCost?.description}"
             }
         }
 
@@ -401,22 +401,47 @@ sealed interface KeywordAbility {
 
         /**
          * The non-mana half of this cost paid [times] times over, as one cost whose amount is
-         * multiplied — "pay {E}{E}{E}" twice is "pay six energy". Only amount-shaped atoms scale;
+         * multiplied — "pay {E}{E}{E}" twice is "pay six energy". Amount-shaped atoms and composites of them scale;
          * anything else returns null for [times] > 1, which is why a [multi] cost is restricted to
          * them at construction.
          */
         fun additionalCostPaid(times: Int): AdditionalCost? {
             val cost = additionalCost ?: return null
             if (times == 1) return cost
-            val atom = (cost as? AdditionalCost.Atom)?.atom ?: return null
-            return when {
-                atom is CostAtom.PayLife ->
-                    AdditionalCost.Atom(atom.copy(amount = atom.amount * times))
-                atom is CostAtom.PayPlayerCounters &&
-                    atom.amount is DynamicAmount.Fixed ->
-                    AdditionalCost.Atom(atom.copy(amount = DynamicAmount.Fixed((atom.amount as DynamicAmount.Fixed).amount * times)))
+            return scaleAdditionalCost(cost, times)
+        }
+
+        private fun scaleAdditionalCost(cost: AdditionalCost, times: Int): AdditionalCost? = when (cost) {
+            is AdditionalCost.Composite -> {
+                val scaled = cost.steps.map { scaleAdditionalCost(it, times) }
+                val selections = scaled.filterNotNull().flatMap { selectionChannels(it) }
+                // Each selection channel carries one chosen set, not independent per-step picks.
+                if (scaled.any { it == null } || selections.distinct().size != selections.size) null
+                else AdditionalCost.Composite(scaled.filterNotNull())
+            }
+            is AdditionalCost.Atom -> when (val atom = cost.atom) {
+                is CostAtom.PayLife -> AdditionalCost.Atom(atom.copy(amount = atom.amount * times))
+                is CostAtom.PayPlayerCounters -> (atom.amount as? DynamicAmount.Fixed)?.let {
+                    AdditionalCost.Atom(atom.copy(amount = DynamicAmount.Fixed(it.amount * times)))
+                }
+                is CostAtom.Discard -> AdditionalCost.Atom(atom.copy(count = atom.count * times))
+                is CostAtom.ExileFrom -> if (atom.singleZone) null
+                    else AdditionalCost.Atom(atom.copy(count = atom.count * times))
                 else -> null
             }
+            else -> null
+        }
+
+        private fun selectionChannels(cost: AdditionalCost): List<String> = when (cost) {
+            is AdditionalCost.Composite -> cost.steps.flatMap { selectionChannels(it) }
+            is AdditionalCost.Atom -> listOfNotNull(
+                when (cost.atom) {
+                    is CostAtom.Discard -> "discard"
+                    is CostAtom.ExileFrom -> "exile"
+                    else -> null
+                }
+            )
+            else -> emptyList()
         }
 
         override val description: String = when {
@@ -864,6 +889,32 @@ sealed interface KeywordAbility {
     @Serializable
     data class Partner(val kind: PartnerKind = PartnerKind.Plain) : KeywordAbility {
         override val description: String = kind.description
+    }
+
+    // =========================================================================
+    // Companion
+    // =========================================================================
+
+    /**
+     * Companion—[condition] (CR 702.139) — a keyword ability that functions **outside the game**.
+     * Before the game, a player may reveal one card they own from outside the game whose companion
+     * condition their starting deck fulfils (CR 103.2b); once during the game, any time they have
+     * priority during a main phase of their turn with the stack empty, they may pay {3} to put it
+     * into their hand — a special action (CR 116.2g, 702.139a).
+     *
+     * Declaring this keyword is the whole implementation: the server's deck validator checks
+     * [condition] against the starting deck through
+     * [com.wingedsheep.sdk.model.CompanionEligibility], game setup reveals the designated card in
+     * its owner's sideboard, and the engine offers the {3} special action. The ability does
+     * nothing in any other zone — a companion card in the starting deck is just a card (ruling).
+     *
+     * Named `CompanionAbility` because a nested `Companion` would collide with this interface's
+     * companion object; it serializes as `"Companion"`.
+     */
+    @SerialName("Companion")
+    @Serializable
+    data class CompanionAbility(val condition: CompanionCondition) : KeywordAbility {
+        override val description: String = "Companion — ${condition.description}"
     }
 
     // =========================================================================
@@ -1632,6 +1683,9 @@ sealed interface KeywordAbility {
 
         /** "Doctor's companion" (CR 702.124m) — pairs with a legendary Time Lord Doctor creature. */
         fun doctorsCompanion(): KeywordAbility = Partner(PartnerKind.DoctorsCompanion)
+
+        /** "Companion—[condition]" (CR 702.139) — see [CompanionAbility] and [CompanionCondition]. */
+        fun companion(condition: CompanionCondition): KeywordAbility = CompanionAbility(condition)
 
         /**
          * Create Casualty N keyword ability.

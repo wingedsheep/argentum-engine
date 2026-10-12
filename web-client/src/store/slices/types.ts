@@ -200,6 +200,11 @@ export interface CombatState {
   attackerTargets: Readonly<Record<EntityId, EntityId>>
   /** Planeswalker IDs that can be attacked */
   validAttackTargets: readonly EntityId[]
+  /**
+   * Server-sent per-attacker narrowing of `validAttackTargets` (sparse): an attacker listed here
+   * may attack only these targets. Read it through `attackTargetsFor`.
+   */
+  attackTargetsByAttacker: Readonly<Record<EntityId, readonly EntityId[]>>
   /** Blocker assignments: blocker ID -> attacker IDs (supports blocking multiple attackers) */
   blockerAssignments: Record<EntityId, EntityId[]>
   /** Valid creatures that can participate (attackers or blockers depending on mode) */
@@ -1037,6 +1042,8 @@ export type GameStore = {
     sideboard?: Record<string, number>,
     /** The second commander of a partner pair; ignored without `commander`. */
     secondCommander?: string | null,
+    /** The deck's companion (CR 702.139), a sideboard card; null for none. */
+    companion?: string | null,
   ) => void
   unsubmitLobbyDeck: () => void
 
@@ -1053,6 +1060,8 @@ export type GameStore = {
     sideboard?: Record<string, number>,
     /** The second commander of a partner pair; ignored without `commander`. */
     secondCommander?: string | null,
+    /** The deck's companion (CR 702.139), a sideboard card; null for none. */
+    companion?: string | null,
   ) => void
   setQuickGameLobbyReady: (ready: boolean) => void
   setQuickGameLobbySetCode: (setCodes: readonly string[]) => void

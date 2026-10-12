@@ -1,6 +1,7 @@
 package com.wingedsheep.gameserver.lobby
 
-import com.wingedsheep.gameserver.deck.SideboardDerivation
+import com.wingedsheep.ai.engine.deck.Wishboard
+import com.wingedsheep.engine.limited.SideboardDerivation
 import com.wingedsheep.gameserver.cube.CubeSetConfig
 import com.wingedsheep.gameserver.cube.ResolvedCube
 import com.wingedsheep.gameserver.protocol.ServerMessage
@@ -227,6 +228,11 @@ data class LobbyPlayerState(
      * like it, the card is counted inside [submittedDeck].
      */
     var secondCommander: String? = null,
+    /**
+     * The revealed companion (CR 702.139), or null — a card outside the game, carried on
+     * [submittedSideboard] (the game session adds it there when the derived sideboard lacks it).
+     */
+    var companion: String? = null,
     /**
      * For an AI seat: what the host chose for it to play — the same [AiDeckSpec] vocabulary the
      * quick lobby's single AI seat uses, held per seat because a pod has several and there is no
@@ -1769,6 +1775,7 @@ class TournamentLobby(
         commander: String? = null,
         sideboard: Map<String, Int> = emptyMap(),
         secondCommander: String? = null,
+        companion: String? = null,
     ): DeckSubmissionResult {
         val isPremade = format == TournamentFormat.PREMADE_DECKS
         // PREMADE_DECKS: players pick their deck while WAITING_FOR_PLAYERS, before the host starts.
@@ -1815,10 +1822,11 @@ class TournamentLobby(
         // *derived* as pool − maindeck (CR 100.4b) and any client-sent value is ignored. In
         // PREMADE_DECKS (constructed) there is no pool, so the explicit client sideboard is kept.
         // Pool Play's "pool" is the whole cube, so deriving would seed a 300+ card SIDEBOARD zone
-        // (and hand wish effects the entire cube) — it gets no sideboard at all.
+        // (and hand wish effects the entire cube) — it gets a fifteen-card wishboard of cube cards
+        // the deck doesn't play instead, the constructed-sized sideboard of CR 100.4a.
         val effectiveSideboard = when {
             isPremade -> sideboard
-            isCubePoolPlay -> emptyMap()
+            isCubePoolPlay -> Wishboard.build(playerState.cardPool, exclude = deckList.keys)
             else -> SideboardDerivation.fromPool(playerState.cardPool, deckList)
         }
 
@@ -1829,6 +1837,7 @@ class TournamentLobby(
             // (LobbyHandler is responsible for clearing it for non-commander submissions).
             commander = commander,
             secondCommander = secondCommander.takeIf { commander != null },
+            companion = companion,
         )
 
         return DeckSubmissionResult.Success(allReady = allDecksSubmitted())
@@ -1872,6 +1881,7 @@ class TournamentLobby(
             submittedSideboard = emptyMap(),
             commander = null,
             secondCommander = null,
+            companion = null,
         )
         playersReadyForNextRound.remove(playerId)
     }
@@ -1943,6 +1953,9 @@ class TournamentLobby(
      * pool − maindeck in Limited, or the explicit constructed sideboard in PREMADE_DECKS. Empty
      * when the player has no sideboard.
      */
+    /** The companion [playerId] revealed with their submitted deck, if any (CR 702.139). */
+    fun getSubmittedCompanion(playerId: EntityId): String? = players[playerId]?.companion
+
     fun getSubmittedSideboard(playerId: EntityId): Map<String, Int> {
         return players[playerId]?.submittedSideboard ?: emptyMap()
     }

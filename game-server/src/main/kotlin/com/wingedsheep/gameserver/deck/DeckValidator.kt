@@ -7,6 +7,7 @@ import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.DeckFormat
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CommanderEligibility
+import com.wingedsheep.sdk.model.CompanionEligibility
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.PrintingRef
 import org.springframework.beans.factory.annotation.Autowired
@@ -92,7 +93,33 @@ class DeckValidator @Autowired constructor(
             commanderPrintings = commanders
                 .mapNotNull { name -> deck.commanderPrintingOf(name)?.let { name to it } }
                 .toMap(),
+            companion = deck.companion,
+            sideboard = deck.sideboard.map { it.name },
         )
+    }
+
+    /**
+     * Only the companion rules (CR 702.139) for [deck] — for a Limited submission, whose deck
+     * shape is validated elsewhere (against its pool) but whose companion still has to fit.
+     * [minimumDeckSize] defaults to the format's. Empty when the deck names no companion.
+     */
+    fun companionIssues(deck: Deck, format: DeckFormat?, minimumDeckSize: Int? = null): List<DeckValidationIssue> {
+        val companion = deck.companion ?: return emptyList()
+        val profile = profileFor(format)
+        val counts = deck.cards.mapNotNull { cardRegistry.getCard(it)?.name }.groupingBy { it }.eachCount().toMutableMap()
+        for (commander in deck.commanders) counts.merge(commander, 1, Int::plus)
+        val errors = mutableListOf<DeckValidationIssue>()
+        validateCompanion(
+            companion = companion,
+            sideboard = deck.sideboard.map { it.name },
+            countsByBaseName = counts,
+            commanders = deck.commanders,
+            commanderShape = format?.isCommanderShape == true || deck.commanders.isNotEmpty(),
+            minimumDeckSize = minimumDeckSize ?: (profile.exactSize ?: profile.minSize),
+            profile = profile,
+            errors = errors,
+        )
+        return errors
     }
 
     /**
@@ -108,6 +135,8 @@ class DeckValidator @Autowired constructor(
         commanderAware: Boolean,
         cardEntries: List<DeckEntryDTO>? = null,
         commanderPrintings: Map<String, PrintingRef> = emptyMap(),
+        companion: String? = null,
+        sideboard: List<String> = emptyList(),
     ): DeckValidationResult {
         val errors = mutableListOf<DeckValidationIssue>()
         val warnings = mutableListOf<DeckValidationIssue>()
@@ -214,6 +243,19 @@ class DeckValidator @Autowired constructor(
             validateCommanderRules(commanders, countsByBaseName, format.displayName, errors)
         }
 
+        if (companion != null) {
+            validateCompanion(
+                companion = companion,
+                sideboard = sideboard,
+                countsByBaseName = countsByBaseName,
+                commanders = commanders,
+                commanderShape = format?.isCommanderShape == true,
+                minimumDeckSize = profile.exactSize ?: profile.minSize,
+                profile = profile,
+                errors = errors,
+            )
+        }
+
         return DeckValidationResult(
             valid = errors.isEmpty(),
             totalCards = totalCards,
@@ -303,6 +345,93 @@ class DeckValidator @Autowired constructor(
                     code = "COLOR_IDENTITY_VIOLATION",
                     message = colorIdentityMessage(cardName, violating, commanderLabel, allowed),
                     cardName = cardName,
+                )
+            }
+        }
+    }
+
+    /**
+     * The companion rules (CR 702.139, 103.2b) for a deck that names one:
+     *  - it is a card with a companion ability, revealed from the deck's sideboard (outside the game);
+     *  - the **starting deck** fulfils its condition — in Commander that includes the commanders,
+     *    which are set aside only after (CR 702.139b);
+     *  - in Commander it may not share a name with a card in the starting deck, and its colour
+     *    identity must fit the commanders' (CR 903.11a — cards brought in from outside the game);
+     *  - elsewhere it is one of the sideboard cards, so the copy limit counts it together with the
+     *    deck's copies (CR 100.4a).
+     */
+    private fun validateCompanion(
+        companion: String,
+        sideboard: List<String>,
+        countsByBaseName: Map<String, Int>,
+        commanders: List<String>,
+        commanderShape: Boolean,
+        minimumDeckSize: Int,
+        profile: FormatProfile,
+        errors: MutableList<DeckValidationIssue>,
+    ) {
+        val card = cardRegistry.getCard(companion)
+        if (card == null) {
+            errors += DeckValidationIssue("UNKNOWN_CARD", "Unknown companion: \"$companion\"", companion)
+            return
+        }
+        if (!CompanionEligibility.hasCompanion(card)) {
+            errors += DeckValidationIssue(
+                code = "INVALID_COMPANION",
+                message = "${card.name} has no companion ability, so it can't be your companion",
+                cardName = card.name,
+            )
+            return
+        }
+        if (sideboard.none { it == companion || cardRegistry.getCard(it)?.name == card.name }) {
+            errors += DeckValidationIssue(
+                code = "COMPANION_NOT_IN_SIDEBOARD",
+                message = "Your companion ${card.name} must be on your sideboard — it starts the game outside it",
+                cardName = card.name,
+            )
+        }
+        // The starting deck: the library plus, in Commander, the commanders (CR 702.139b).
+        // countsByBaseName already merges the commanders in on the Deck path.
+        val startingDeck = countsByBaseName.flatMap { (name, count) ->
+            val definition = cardRegistry.getCard(name) ?: return@flatMap emptyList()
+            List(count) { definition }
+        }
+        CompanionEligibility.conditionError(card, startingDeck, minimumDeckSize)?.let { why ->
+            errors += DeckValidationIssue("COMPANION_CONDITION_NOT_MET", why, card.name)
+        }
+        if (commanderShape) {
+            if (card.name in countsByBaseName) {
+                errors += DeckValidationIssue(
+                    code = "COMPANION_DUPLICATE_NAME",
+                    message = "${card.name} is already in your deck, so it can't also be your companion",
+                    cardName = card.name,
+                )
+            }
+            val commanderCards = commanders.mapNotNull { cardRegistry.getCard(it) }
+            if (commanderCards.isNotEmpty()) {
+                val allowed = CommanderEligibility.identityOf(commanderCards)
+                val violating = card.colorIdentity - allowed
+                if (violating.isNotEmpty()) {
+                    errors += DeckValidationIssue(
+                        code = "COMPANION_COLOR_IDENTITY",
+                        message = "Companion " + colorIdentityMessage(
+                            card.name, violating, commanderCards.joinToString(" and ") { it.name }, allowed,
+                        ),
+                        cardName = card.name,
+                    )
+                }
+            }
+        } else {
+            val limit = copyLimitFor(card, profile)
+            val inDeck = countsByBaseName[card.name] ?: 0
+            val onSideboard = sideboard.count { it == companion || cardRegistry.getCard(it)?.name == card.name }
+                .coerceAtLeast(1)
+            if (limit != null && inDeck + onSideboard > limit) {
+                errors += DeckValidationIssue(
+                    code = "TOO_MANY_COPIES",
+                    message = "${inDeck + onSideboard} copies of ${card.name} counting your companion — " +
+                        "the limit of $limit applies to deck and sideboard together",
+                    cardName = card.name,
                 )
             }
         }
@@ -458,6 +587,26 @@ class DeckValidator @Autowired constructor(
             formatLabel = "Commander Draft",
             errors = errors,
         )
+
+        deck.companion?.let { companion ->
+            if (companion !in poolCounts) {
+                errors += DeckValidationIssue(
+                    code = "NOT_IN_POOL",
+                    message = "Your companion $companion isn't in your pool",
+                    cardName = companion,
+                )
+            }
+            validateCompanion(
+                companion = companion,
+                sideboard = deck.sideboard.map { it.name },
+                countsByBaseName = allCounts,
+                commanders = commanders,
+                commanderShape = true,
+                minimumDeckSize = minDeckSize,
+                profile = singletonProfile,
+                errors = errors,
+            )
+        }
 
         return DeckValidationResult(
             valid = errors.isEmpty(),

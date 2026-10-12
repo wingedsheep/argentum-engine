@@ -153,6 +153,7 @@ class FreeForAllHandler(
                 sideboard = BoosterGenerator.withCardArt(
                     lobby.getSubmittedSideboard(identity.playerId), poolPrintings,
                 ),
+                companion = lobby.getSubmittedCompanion(identity.playerId),
             )
             gameSession.setPlayerPersistenceInfo(
                 playerSession.playerId, playerSession.playerName, identity.token,

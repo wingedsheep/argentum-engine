@@ -6,11 +6,14 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.ActivatedAbilityReach
+import com.wingedsheep.sdk.scripting.CompanionCondition
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.ReduceActivatedAbilityCost
 import com.wingedsheep.sdk.scripting.TimingRule
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
+import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 
 /**
  * Zirda, the Dawnwaker — Ikoria: Lair of Behemoths #233
@@ -21,8 +24,9 @@ import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
  * reduce the mana in that cost to less than one mana.
  * {1}, {T}: Target creature can't block this turn. Activate only as a sorcery.
  *
- * Companion is a deckbuilding condition checked outside the game; per its ruling it has no effect
- * once the card is in the starting deck (a Commander 99 slot), so it is printed text only.
+ * Companion (CR 702.139): every permanent card in the starting deck has an activated ability —
+ * a basic land's intrinsic mana ability and cycling count (rulings). The deck validator checks it;
+ * in the starting deck the ability does nothing (ruling).
  *
  * The reduction is [ActivatedAbilityReach.ACTIVATED_BY_YOU]: every ability its controller
  * activates, from any zone (the ruling names cycling), generic mana only and never below one mana.
@@ -38,6 +42,14 @@ val ZirdaTheDawnwaker = card("Zirda, the Dawnwaker") {
         "Abilities you activate that aren't mana abilities cost {2} less to activate. This effect " +
         "can't reduce the mana in that cost to less than one mana.\n" +
         "{1}, {T}: Target creature can't block this turn. Activate only as a sorcery."
+
+    keywordAbility(
+        KeywordAbility.companion(
+            CompanionCondition.EachCard(
+                GameObjectFilter.Nonpermanent or GameObjectFilter.Any.withCardPredicate(CardPredicate.HasActivatedAbility)
+            )
+        )
+    )
 
     staticAbility {
         ability = ReduceActivatedAbilityCost(

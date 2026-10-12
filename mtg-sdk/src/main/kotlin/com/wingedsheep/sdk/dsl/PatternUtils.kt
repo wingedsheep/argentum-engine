@@ -20,7 +20,7 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
 internal fun effectTargetToPlayer(target: EffectTarget): Player = when (target) {
     EffectTarget.Controller -> Player.You
     is EffectTarget.ContextTarget -> Player.ContextPlayer(target.index)
-    is EffectTarget.BoundVariable -> Player.BoundVariable(target.name)
+    is EffectTarget.BoundVariable -> Player.BoundVariable(target.name, target.description)
     is EffectTarget.PlayerRef -> target.player
     EffectTarget.ControllerOfTriggeringEntity -> Player.ControllerOfTriggeringEntity
     else -> error(

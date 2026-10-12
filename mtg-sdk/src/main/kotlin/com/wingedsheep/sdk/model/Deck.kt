@@ -87,6 +87,17 @@ data class Deck(
     val secondCommander: String? = null,
     /** Optional printing reference for [secondCommander]. */
     val secondCommanderPrinting: PrintingRef? = null,
+    /**
+     * Optional companion (CR 702.139): the name of one [sideboard] card with a companion ability
+     * that this deck reveals before the game (CR 103.2b). The card stays in [sideboard] — it is a
+     * card outside the game, and where sideboards exist it is one of them — and game setup marks
+     * that sideboard copy as revealed. In Commander, which has no sideboard (CR 903.5e), the
+     * sideboard holds just the companion: it isn't one of the 100 cards (ruling).
+     *
+     * Whether the deck fulfils the companion's condition is
+     * [CompanionEligibility.conditionError]'s question, asked by the server's deck validator.
+     */
+    val companion: String? = null,
 ) {
     /**
      * The deck's designated commanders, in designation order: none, [commander] alone, or
@@ -170,6 +181,7 @@ data class Deck(
             sideboard: List<CardEntry> = emptyList(),
             secondCommander: String? = null,
             secondCommanderPrinting: PrintingRef? = null,
+            companion: String? = null,
         ): Deck = Deck(
             cards = entries.map { it.name },
             commander = commander,
@@ -178,6 +190,7 @@ data class Deck(
             sideboard = sideboard,
             secondCommander = secondCommander,
             secondCommanderPrinting = secondCommanderPrinting,
+            companion = companion,
         )
 
         /**

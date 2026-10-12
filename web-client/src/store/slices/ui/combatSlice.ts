@@ -14,6 +14,7 @@ import {
 import type { ClientGameState } from '@/types'
 import { Keyword } from '@/types/enums'
 import { bandIsLegal, mergedBand } from '@/utils/combatBands'
+import { attackTargetsFor, canAttackTarget } from '@/utils/attackTargets'
 import { getWebSocket } from '../shared'
 
 /**
@@ -142,7 +143,13 @@ export const createCombatSlice: SliceCreator<CombatSlice> = (set, get) => ({
       const newTargets = { ...state.combatState.attackerTargets }
       if (isSelected) {
         delete newTargets[creatureId]
-      } else if (state.combatState.stickyDefenderId && !newTargets[creatureId]) {
+      } else if (
+        state.combatState.stickyDefenderId &&
+        !newTargets[creatureId] &&
+        // A creature that can't attack the sticky defender (Goblin Rock Sled vs a seat with no
+        // Mountain) stays unassigned, so the defender pick asks about it instead.
+        canAttackTarget(state.combatState, creatureId, state.combatState.stickyDefenderId)
+      ) {
         newTargets[creatureId] = state.combatState.stickyDefenderId
       }
 
@@ -173,6 +180,8 @@ export const createCombatSlice: SliceCreator<CombatSlice> = (set, get) => ({
         return state
       }
 
+      // The server lists which defenders each attacker may pick; ignore any other.
+      if (!canAttackTarget(state.combatState, attackerId, targetId)) return state
       const newTargets = {
         ...state.combatState.attackerTargets,
         [attackerId]: targetId,
@@ -197,8 +206,12 @@ export const createCombatSlice: SliceCreator<CombatSlice> = (set, get) => ({
       if (!state.combatState || state.combatState.mode !== 'declareAttackers') {
         return state
       }
+      // Only attackers the server lets attack this defender move to it. One that can't (Goblin
+      // Rock Sled vs a seat with no Mountain) keeps its current defender, or stays unassigned so
+      // the defender pick asks about it again.
       const newTargets = { ...state.combatState.attackerTargets }
       for (const attackerId of state.combatState.selectedAttackers) {
+        if (!canAttackTarget(state.combatState, attackerId, defenderId)) continue
         newTargets[attackerId] = defenderId
       }
       getWebSocket()?.send(createUpdateAttackerTargetsMessage(
@@ -331,8 +344,12 @@ export const createCombatSlice: SliceCreator<CombatSlice> = (set, get) => ({
 
       const attackers: Record<EntityId, EntityId> = {}
       for (const attackerId of combatState.selectedAttackers) {
-        // Use per-attacker target if set, otherwise default to the defender above
-        attackers[attackerId] = combatState.attackerTargets[attackerId] ?? defaultDefender
+        // Use per-attacker target if set, otherwise default to the defender above — or, when the
+        // server says this attacker can't attack that one, the first target it lists for it.
+        attackers[attackerId] = combatState.attackerTargets[attackerId] ??
+          (canAttackTarget(combatState, attackerId, defaultDefender)
+            ? defaultDefender
+            : attackTargetsFor(combatState, attackerId)[0] ?? defaultDefender)
       }
 
       // Drop bands that no longer satisfy CR 702.22 (after attacker deselection /
@@ -385,7 +402,9 @@ export const createCombatSlice: SliceCreator<CombatSlice> = (set, get) => ({
     const newTargets = { ...combatState.attackerTargets }
     if (combatState.stickyDefenderId) {
       for (const id of newAttackers) {
-        if (!newTargets[id]) newTargets[id] = combatState.stickyDefenderId
+        if (!newTargets[id] && canAttackTarget(combatState, id, combatState.stickyDefenderId)) {
+          newTargets[id] = combatState.stickyDefenderId
+        }
       }
     }
     getWebSocket()?.send(createUpdateAttackerTargetsMessage(newAttackers, newTargets))

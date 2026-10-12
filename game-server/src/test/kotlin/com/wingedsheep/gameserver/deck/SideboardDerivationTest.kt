@@ -1,5 +1,6 @@
 package com.wingedsheep.gameserver.deck
 
+import com.wingedsheep.engine.limited.SideboardDerivation
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.model.CardDefinition
 import io.kotest.core.spec.style.FunSpec

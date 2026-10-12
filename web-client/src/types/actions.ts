@@ -15,6 +15,7 @@ export type GameAction =
   | CycleCardAction
   | TypecycleCardAction
   | PlotCardAction
+  | PutCompanionIntoHandAction
   | SuspendCardFromHandAction
   | CrewVehicleAction
   | SaddleMountAction
@@ -275,6 +276,17 @@ export interface PlotCardAction {
 }
 
 /**
+ * Pay {3} to put your revealed companion from outside the game into your hand (CR 702.139a).
+ * Special action at sorcery timing, once per game; the server offers it while the companion waits.
+ */
+export interface PutCompanionIntoHandAction {
+  readonly type: 'PutCompanionIntoHand'
+  readonly playerId: EntityId
+  readonly cardId: EntityId
+  readonly paymentStrategy?: PaymentStrategy
+}
+
+/**
  * Suspend a card from hand (CR 702.62, Time Spiral).
  * Special action — pays the printed suspend cost and exiles the card with time counters.
  * It counts down at the owner's upkeep and is cast for free when the last is removed.
@@ -469,6 +481,8 @@ export function getActionSubject(action: GameAction): EntityId | null {
     case 'TypecycleCard':
       return action.cardId
     case 'PlotCard':
+      return action.cardId
+    case 'PutCompanionIntoHand':
       return action.cardId
     case 'SuspendCardFromHand':
       return action.cardId

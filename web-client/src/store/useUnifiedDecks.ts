@@ -56,6 +56,7 @@ function detailToUnified(detail: DeckDetail): UnifiedDeck {
       : {}),
     ...(entries ? { entries } : {}),
     ...(d.sideboard && Object.keys(d.sideboard).length > 0 ? { sideboard: d.sideboard } : {}),
+    ...(d.companion ? { companion: d.companion } : {}),
     ...(d.note ? { note: d.note } : {}),
     ...(d.coverCard ? { coverCard: d.coverCard } : {}),
     ...(d.coverCard && d.coverImageUri ? { coverImageUri: d.coverImageUri } : {}),

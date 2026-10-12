@@ -176,7 +176,7 @@ class IntentCatalog private constructor(private val registry: CardRegistry?) {
     fun spellTargetPolarities(cardName: String, transformed: Boolean = false): List<TargetPolarity> {
         val printed = registry?.getCard(cardName) ?: return emptyList()
         val definition = if (transformed) printed.backFace ?: return emptyList() else printed
-        return TargetPolarityAnalyzer.forSpell(definition)
+        return TargetPolarityAnalyzer.forSpell(definition, ::tokenDefinition)
     }
 
     /**
@@ -186,8 +186,23 @@ class IntentCatalog private constructor(private val registry: CardRegistry?) {
     fun abilityTargetPolarities(cardName: String, abilityId: AbilityId): List<TargetPolarity> {
         val definition = registry?.getCard(cardName) ?: return emptyList()
         val ability = activatedAbility(cardName, abilityId) ?: return emptyList()
-        return TargetPolarityAnalyzer.forAbility(definition, ability)
+        return TargetPolarityAnalyzer.forAbility(definition, ability, ::tokenDefinition)
     }
+
+    /**
+     * What the printed activated ability [abilityId] on the card called [cardName] does to the
+     * permanent that card is attached to — Strands of Undeath's "{B}: Regenerate enchanted
+     * creature" is [TargetPolarity.BENEFICIAL] to whoever controls the creature it enchants.
+     * [TargetPolarity.UNKNOWN] when the catalog is off, the ability cannot be found, or it does
+     * nothing readable to the host.
+     */
+    fun abilityHostPolarity(cardName: String, abilityId: AbilityId): TargetPolarity {
+        val ability = activatedAbility(cardName, abilityId) ?: return TargetPolarity.UNKNOWN
+        return TargetPolarityAnalyzer.forAttachedHost(ability.effect, ::tokenDefinition)
+    }
+
+    /** A definition the polarity reader needs by name — a Role token a card creates. */
+    private fun tokenDefinition(name: String): CardDefinition? = registry?.getCard(name)
 
     /**
      * The intent of one ability's [effect] — what a triggered or activated ability sitting on the

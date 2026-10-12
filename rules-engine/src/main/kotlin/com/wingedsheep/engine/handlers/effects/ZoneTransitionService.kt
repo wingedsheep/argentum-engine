@@ -1,5 +1,7 @@
 package com.wingedsheep.engine.handlers.effects
 
+import com.wingedsheep.engine.state.components.identity.copiableDoubleFacedComponent
+import com.wingedsheep.engine.state.components.identity.copiableNumericKeywords
 import com.wingedsheep.engine.state.components.identity.copiableCardComponent
 import com.wingedsheep.engine.state.components.identity.TextChanges
 import com.wingedsheep.engine.state.components.identity.TextReplacementComponent
@@ -499,6 +501,8 @@ class ZoneTransitionService(
                 typeLine = lastKnownTypeLine,
                 cardDefinitionId = cardComponent.cardDefinitionId,
                 copiableCard = container.copiableCardComponent(),
+                copiableNumericKeywords = container.copiableNumericKeywords(cardRegistry),
+                copiableDoubleFaced = container.copiableDoubleFacedComponent { it },
                 textChanges = TextChanges.of(state, entityId),
                 attachedTo = lastKnownAttachedTo,
                 wasEquipped = lastKnownWasEquipped,

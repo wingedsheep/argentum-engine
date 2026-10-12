@@ -8,26 +8,33 @@
  * - **Library order** — the actual library, top to bottom. Cards revealed to the viewer (Scry,
  *   Surveil, look-at-top-N) show face up in position; everything else is a card back.
  *
- * The server only ever sends `deck` for the viewing player (never for spectators, never describing
- * an opponent), so an opponent's Deck pile falls through to the Library-order view alone with no
- * tab strip. That masking is the server's call — this component just renders what it was given.
+ * - **Outside the game** — the viewer's sideboard (CR 400.11a): the cards Learn, the wishes and
+ *   friends can bring into the game. In Sealed and Draft it is the rest of the pool, in a premade
+ *   deck its sideboard, and in a random deck or Momir a generated fifteen-card wishboard. Only
+ *   shown when there is something in it.
+ *
+ * The server only ever sends `deck` and the sideboard for the viewing player (never for
+ * spectators, never describing an opponent), so an opponent's Deck pile falls through to the
+ * Library-order view alone with no tab strip. That masking is the server's call — this component
+ * just renders what it was given.
  */
 import { useEffect, useState } from 'react'
 import type React from 'react'
 import { useGameStore } from '@/store/gameStore.ts'
 import { selectGameState } from '@/store/selectors.ts'
-import type { ClientDeckCard, EntityId } from '@/types'
+import type { ClientCard, ClientDeckCard, EntityId } from '@/types'
 import { CARD_BACK_IMAGE_URL, getCardImageUrl } from '@/utils/cardImages.ts'
 import { DeckCardBody, type DeckViewCard } from '@/components/deck/GameDeckView'
 import { useResponsiveContext, handleImageError } from './shared'
 import { styles } from './styles'
 
-type Tab = 'deck' | 'order'
+type Tab = 'deck' | 'order' | 'outside'
 
 export function DeckBrowser({
   ownerLabel,
   slots,
   deck,
+  outsideCards = [],
   onClose,
 }: {
   /** Title prefix, e.g. "Your" / "Alice's". */
@@ -36,6 +43,8 @@ export function DeckBrowser({
   slots: readonly (EntityId | null)[]
   /** The viewer's own decklist. Empty when this isn't their pile — hides the deck-list tab. */
   deck: readonly ClientDeckCard[]
+  /** The viewer's own sideboard — cards outside the game. Empty hides the tab. */
+  outsideCards?: readonly ClientCard[]
   onClose: () => void
 }) {
   const responsive = useResponsiveContext()
@@ -63,7 +72,8 @@ export function DeckBrowser({
     )
   }
 
-  const showTabs = deck.length > 0
+  const hasOutside = outsideCards.length > 0
+  const showTabs = deck.length > 0 || hasOutside
 
   return (
     <div style={styles.libraryOverlay} onClick={onClose}>
@@ -79,6 +89,11 @@ export function DeckBrowser({
                 <TabButton active={tab === 'order'} onClick={() => setTab('order')}>
                   Library order ({slots.length})
                 </TabButton>
+                {hasOutside && (
+                  <TabButton active={tab === 'outside'} onClick={() => setTab('outside')}>
+                    Outside the game ({outsideCards.length})
+                  </TabButton>
+                )}
               </div>
             )}
           </div>
@@ -89,6 +104,8 @@ export function DeckBrowser({
 
         {tab === 'deck' ? (
           <DeckListTab deck={deck} librarySize={slots.length} />
+        ) : tab === 'outside' && hasOutside ? (
+          <OutsideTheGameTab cards={outsideCards} />
         ) : (
           <LibraryOrderTab slots={slots} />
         )}
@@ -235,6 +252,99 @@ function LibraryOrderTab({ slots }: { slots: readonly (EntityId | null)[] }) {
             </div>
           )
         })}
+      </div>
+    </>
+  )
+}
+
+// The order a sideboard reads in: the types a wish names, Lessons first because Learn is the most
+// common way in. A card is filed under the first that matches.
+const OUTSIDE_TYPE_ORDER = ['LESSON', 'CREATURE', 'PLANESWALKER', 'INSTANT', 'SORCERY', 'ARTIFACT', 'ENCHANTMENT', 'LAND']
+
+function outsideSortKey(card: ClientCard): number {
+  const index = OUTSIDE_TYPE_ORDER.findIndex((t) =>
+    t === 'LESSON' ? card.subtypes.includes('Lesson') : card.cardTypes.includes(t),
+  )
+  return index === -1 ? OUTSIDE_TYPE_ORDER.length : index
+}
+
+/**
+ * The viewer's sideboard as a wall of card art, one tile per distinct card with a copy count —
+ * it's a menu to read before casting a wish, so the art matters more than a curve. Grouped like
+ * the wish cycle asks for them (Lessons, then by type), cheapest first within a type.
+ */
+function OutsideTheGameTab({ cards }: { cards: readonly ClientCard[] }) {
+  const hoverCard = useGameStore((state) => state.hoverCard)
+  const responsive = useResponsiveContext()
+
+  const cardWidth = responsive.isMobile ? 120 : 160
+  const cardHeight = Math.round(cardWidth * 1.4)
+
+  const distinct = new Map<string, { card: ClientCard; copies: number }>()
+  for (const card of cards) {
+    const entry = distinct.get(card.name)
+    if (entry) entry.copies += 1
+    else distinct.set(card.name, { card, copies: 1 })
+  }
+  const tiles = [...distinct.values()].sort(
+    (a, b) =>
+      outsideSortKey(a.card) - outsideSortKey(b.card) ||
+      a.card.manaValue - b.card.manaValue ||
+      a.card.name.localeCompare(b.card.name),
+  )
+  const lessons = cards.filter((c) => c.subtypes.includes('Lesson')).length
+
+  return (
+    <>
+      <span style={{ color: '#94a3b8', fontSize: 12, maxWidth: 560, textAlign: 'center', lineHeight: 1.5 }}>
+        Your sideboard — cards you own outside the game. Learn, wishes and similar effects can bring
+        one of these into the game; nothing else can touch them.
+        {lessons > 0 ? ` ${lessons} Lesson${lessons === 1 ? '' : 's'} for Learn.` : ''}
+      </span>
+      <div style={styles.libraryCardGrid}>
+        {tiles.map(({ card, copies }) => (
+          <div
+            key={card.name}
+            data-outside-card={card.name}
+            style={{
+              width: cardWidth,
+              height: cardHeight,
+              borderRadius: 6,
+              overflow: 'hidden',
+              flexShrink: 0,
+              position: 'relative',
+              boxShadow: '0 0 0 1px rgba(167, 139, 250, 0.45), 0 0 12px rgba(167, 139, 250, 0.18)',
+            }}
+            onMouseEnter={(e) => hoverCard(card.id, { x: e.clientX, y: e.clientY })}
+            onMouseLeave={() => hoverCard(null)}
+          >
+            <img
+              src={getCardImageUrl(card.name, card.imageUri, 'normal')}
+              alt={card.name}
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              onError={(e) => handleImageError(e, card.name, 'normal')}
+            />
+            {copies > 1 && (
+              <div
+                style={{
+                  position: 'absolute',
+                  top: 4,
+                  right: 4,
+                  fontSize: 11,
+                  fontWeight: 700,
+                  color: '#ede9fe',
+                  backgroundColor: 'rgba(46, 16, 101, 0.85)',
+                  border: '1px solid rgba(167, 139, 250, 0.6)',
+                  padding: '1px 6px',
+                  borderRadius: 4,
+                  pointerEvents: 'none',
+                }}
+              >
+                ×{copies}
+              </div>
+            )}
+          </div>
+        ))}
       </div>
     </>
   )

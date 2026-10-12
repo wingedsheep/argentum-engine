@@ -40,6 +40,7 @@ export {
   library,
   hand,
   graveyard,
+  sideboard,
   zoneIdEquals,
   zoneIdToString,
   parseZoneId,

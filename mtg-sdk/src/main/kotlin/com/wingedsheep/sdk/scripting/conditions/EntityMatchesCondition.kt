@@ -75,7 +75,15 @@ data class EntityMatches(
             "if the revealed card is ${filter.description}"
         is EffectTarget.LinkedExiledCard ->
             "as long as the exiled card is ${filter.description}"
-        else -> "if ${entity.description} matches ${filter.description}"
+        // "if that creature is a Bear creature" — Oracle's "is a", not "matches".
+        else -> filter.description.takeIf { it.isNotBlank() }?.let { f ->
+            val article = when {
+                f.startsWith("a ") || f.startsWith("an ") -> ""
+                f.first().lowercaseChar() in "aeiou" -> "an "
+                else -> "a "
+            }
+            "if ${entity.description} is $article$f"
+        } ?: "if ${entity.description} matches"
     }
 
     override fun applyTextReplacement(replacer: TextReplacer): Condition {

@@ -135,7 +135,7 @@ data class GatedEffect(
         is Gate.WhenCondition -> buildString {
             append(g.condition.description.replaceFirstChar { it.uppercase() })
             append(", ")
-            append(then.description.replaceFirstChar { it.lowercase() })
+            append(pronounForTestedTarget(g.condition, then.description).replaceFirstChar { it.lowercase() })
             if (otherwise != null && otherwise.description.isNotBlank()) {
                 append(". Otherwise, ${otherwise.description.replaceFirstChar { it.lowercase() }}")
             }
@@ -397,4 +397,17 @@ val Gate.isConsentGate: Boolean
 fun Effect.ownsConsentGate(): Boolean {
     val gated = this as? GatedEffect ?: return false
     return gated.gate.isConsentGate || (gated.gate is Gate.OnceEachTurn && gated.then.ownsConsentGate())
+}
+
+/**
+ * "If that creature is a Bear, put a +1/+1 counter on *it*" — once a condition has named the
+ * target it tests, the branch it gates calls that target "it" instead of repeating the whole
+ * target phrase, which would read as a second target.
+ */
+private fun pronounForTestedTarget(condition: Condition, then: String): String {
+    val entity = (condition as? com.wingedsheep.sdk.scripting.conditions.EntityMatches)?.entity ?: return then
+    if (entity !is EffectTarget.BoundVariable && entity !is EffectTarget.ContextTarget) return then
+    val phrase = entity.description
+    if (targetNoun(phrase) == null) return then
+    return then.replace(phrase, "it")
 }

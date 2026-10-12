@@ -113,6 +113,14 @@ data class EntitySnapshot(
      * information (CR 608.2h). Null outside a battlefield exit.
      */
     val copiableCard: com.wingedsheep.engine.state.components.identity.CardComponent? = null,
+    /** Numeric abilities carried outside CardComponent, normalized to the copiable upright face. */
+    @OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
+    @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
+    val copiableNumericKeywords: List<com.wingedsheep.sdk.scripting.KeywordAbility.Numeric> = emptyList(),
+    /** Both copiable faces and the active face, independent of any later visit to the battlefield. */
+    @OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
+    @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
+    val copiableDoubleFaced: com.wingedsheep.engine.state.components.identity.DoubleFacedComponent? = null,
     /** Effective text at departure, before zone movement ends the object's text changes. */
     @OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
     @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)

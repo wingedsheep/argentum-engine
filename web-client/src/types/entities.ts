@@ -90,6 +90,14 @@ export function graveyard(playerId: EntityId): ZoneId {
 }
 
 /**
+ * Create a sideboard zone for a player — the cards they own outside the game (CR 400.11a). Only
+ * its owner ever receives its contents.
+ */
+export function sideboard(playerId: EntityId): ZoneId {
+  return { zoneType: ZoneType.SIDEBOARD, ownerId: playerId }
+}
+
+/**
  * Check if two zone IDs are equal.
  */
 export function zoneIdEquals(a: ZoneId, b: ZoneId): boolean {

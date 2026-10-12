@@ -67,6 +67,8 @@ export interface QuickGameLobbySliceActions {
     sideboard?: Record<string, number>,
     /** The second commander of a partner pair; ignored without `commander`. */
     secondCommander?: string | null,
+    /** The deck's companion (CR 702.139), a sideboard card; null for none. */
+    companion?: string | null,
   ) => void
   setQuickGameLobbyReady: (ready: boolean) => void
   setQuickGameLobbySetCode: (setCodes: readonly string[]) => void
@@ -106,10 +108,10 @@ export const createQuickGameLobbySlice: SliceCreator<QuickGameLobbySlice> = (set
     set({ quickGameLobbyState: null })
   },
 
-  submitQuickGameLobbyDeck: (deckList, commander, sideboard, secondCommander) => {
+  submitQuickGameLobbyDeck: (deckList, commander, sideboard, secondCommander, companion) => {
     getWebSocket()?.send(
       createSubmitQuickGameLobbyDeckMessage(
-        deckList, commander, undefined, undefined, sideboard, secondCommander,
+        deckList, commander, undefined, undefined, sideboard, secondCommander, undefined, companion,
       ),
     )
   },

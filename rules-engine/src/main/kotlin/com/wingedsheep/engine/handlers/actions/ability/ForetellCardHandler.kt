@@ -1,28 +1,22 @@
 package com.wingedsheep.engine.handlers.actions.ability
 
-import com.wingedsheep.engine.mechanics.mana.withSpendingColors
 import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.engine.core.GameEvent
-import com.wingedsheep.engine.core.ManaSpentEvent
 import com.wingedsheep.engine.core.ForetellCard
 import com.wingedsheep.engine.core.PaymentStrategy
 import com.wingedsheep.engine.core.ZoneChangeEvent
 import com.wingedsheep.engine.core.EngineServices
 import com.wingedsheep.engine.handlers.actions.ActionHandler
-import com.wingedsheep.engine.mechanics.mana.ManaPool
 import com.wingedsheep.engine.mechanics.mana.ManaSolver
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
-import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.identity.ForetoldComponent
 import com.wingedsheep.engine.state.components.identity.PlayWithFixedAlternativeManaCostComponent
-import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.engine.state.permissions.MayPlayPermission
 import com.wingedsheep.engine.state.permissions.addMayPlayPermission
-import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.KeywordAbility
@@ -55,9 +49,11 @@ import kotlin.reflect.KClass
 class ForetellCardHandler(
     private val cardRegistry: CardRegistry,
     private val manaSolver: ManaSolver,
-    private val manaAbilitySideEffectExecutor: com.wingedsheep.engine.mechanics.mana.ManaAbilitySideEffectExecutor,
+    manaAbilitySideEffectExecutor: com.wingedsheep.engine.mechanics.mana.ManaAbilitySideEffectExecutor,
 ) : ActionHandler<ForetellCard> {
     override val actionType: KClass<ForetellCard> = ForetellCard::class
+
+    private val payment = SpecialActionManaPayment(manaSolver, manaAbilitySideEffectExecutor)
 
     /** The fixed setup cost to foretell a card, per CR 702.143a. */
     private val setupCost: ManaCost = ManaCost.parse("{2}")
@@ -83,16 +79,8 @@ class ForetellCardHandler(
             return "This card does not have foretell"
         }
 
-        if (action.paymentStrategy is PaymentStrategy.Explicit) {
-            for (sourceId in action.paymentStrategy.manaAbilitiesToActivate) {
-                val sourceContainer = state.getEntity(sourceId)
-                    ?: return "Mana source not found: $sourceId"
-                if (sourceContainer.has<TappedComponent>()) {
-                    return "Mana source is already tapped: $sourceId"
-                }
-            }
-        } else if (!manaSolver.canPay(state, action.playerId, setupCost)) {
-            return "Not enough mana to foretell this card"
+        payment.validate(state, action.playerId, setupCost, action.paymentStrategy)?.let {
+            return if (action.paymentStrategy is PaymentStrategy.Explicit) it else "Not enough mana to foretell this card"
         }
         return null
     }
@@ -110,87 +98,11 @@ class ForetellCardHandler(
         val ownerId = cardComponent.ownerId ?: action.playerId
 
         // Pay the fixed {2} setup cost — drain mana pool first, then tap lands for the remainder.
-        val poolComponent = currentState.getEntity(action.playerId)?.get<ManaPoolComponent>()
-            ?: ManaPoolComponent()
-        val pool = ManaPool(
-            white = poolComponent.white,
-            blue = poolComponent.blue,
-            black = poolComponent.black,
-            red = poolComponent.red,
-            green = poolComponent.green,
-            colorless = poolComponent.colorless,
-            restrictedMana = poolComponent.restrictedMana,
-            snowMana = poolComponent.snowMana,
-            snowColorless = poolComponent.snowColorless
-        ).withSpendingColors(currentState, action.playerId)
-        val partialResult = pool.payPartial(setupCost)
-        val poolAfterPayment = partialResult.newPool
-        val remainingCost = partialResult.remainingCost
-        val manaSpentFromPool = partialResult.manaSpent
-
-        var whiteSpent = manaSpentFromPool.white
-        var blueSpent = manaSpentFromPool.blue
-        var blackSpent = manaSpentFromPool.black
-        var redSpent = manaSpentFromPool.red
-        var greenSpent = manaSpentFromPool.green
-        var colorlessSpent = manaSpentFromPool.colorless
-
-        currentState = currentState.updateEntity(action.playerId) { c ->
-            c.with(
-                ManaPoolComponent(
-                    white = poolAfterPayment.white,
-                    blue = poolAfterPayment.blue,
-                    black = poolAfterPayment.black,
-                    red = poolAfterPayment.red,
-                    green = poolAfterPayment.green,
-                    colorless = poolAfterPayment.colorless,
-                    restrictedMana = poolAfterPayment.restrictedMana,
-                    snowMana = poolAfterPayment.snowMana,
-                    snowColorless = poolAfterPayment.snowColorless
-                )
-            )
-        }
-
-        if (!remainingCost.isEmpty()) {
-            if (action.paymentStrategy is PaymentStrategy.Explicit) {
-                for (sourceId in action.paymentStrategy.manaAbilitiesToActivate) {
-                    val (tappedState, tapEvents) = manaAbilitySideEffectExecutor.tapForManaPayingLife(currentState, sourceId, action.playerId)
-                    currentState = tappedState
-                    events.addAll(tapEvents)
-                }
-            } else {
-                val solution = manaSolver.solve(currentState, action.playerId, remainingCost, 0)
-                    ?: return ExecutionResult.error(state, "Not enough mana to foretell")
-                val (stateAfterTaps, tapEvents) = manaAbilitySideEffectExecutor
-                    .tapSourcesWithSideEffects(currentState, solution, action.playerId)
-                currentState = stateAfterTaps
-                events.addAll(tapEvents)
-
-                for ((_, production) in solution.manaProduced) {
-                    when (production.color) {
-                        Color.WHITE -> whiteSpent++
-                        Color.BLUE -> blueSpent++
-                        Color.BLACK -> blackSpent++
-                        Color.RED -> redSpent++
-                        Color.GREEN -> greenSpent++
-                        null -> colorlessSpent += production.colorless
-                    }
-                }
-            }
-        }
-
-        events.add(
-            ManaSpentEvent(
-                playerId = action.playerId,
-                reason = "Foretell ${cardComponent.name}",
-                white = whiteSpent,
-                blue = blueSpent,
-                black = blackSpent,
-                red = redSpent,
-                green = greenSpent,
-                colorless = colorlessSpent
-            )
-        )
+        val (paidState, paymentEvents) = payment.pay(
+            currentState, action.playerId, setupCost, action.paymentStrategy, "Foretell ${cardComponent.name}"
+        ) ?: return ExecutionResult.error(state, "Not enough mana to foretell")
+        currentState = paidState
+        events.addAll(paymentEvents)
 
         // Move the card from hand → owner's exile, face down (CR 708 — hidden from opponents,
         // visible to its owner). Hand is keyed under the acting player (its owner).

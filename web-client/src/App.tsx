@@ -295,6 +295,9 @@ export default function App() {
           ? Object.fromEntries(mandatoryAttackers.map((id) => [id, soleDefenderId]))
           : {},
         validAttackTargets,
+        // Per-attacker narrowing (Goblin Rock Sled, Blazing Archon) — the server's word on which
+        // defender each attacker may pick; the combat slice only reads it.
+        attackTargetsByAttacker: attackersAction?.attackTargetsByAttacker ?? {},
         blockerAssignments: {},
         validCreatures,
         mandatoryAttackers,
@@ -360,6 +363,7 @@ export default function App() {
         selectedAttackers: [],
         attackerTargets: {},
         validAttackTargets: [],
+        attackTargetsByAttacker: {},
         blockerAssignments,
         validCreatures,
         mandatoryAttackers: [],

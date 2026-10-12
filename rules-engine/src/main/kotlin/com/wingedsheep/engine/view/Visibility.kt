@@ -16,6 +16,7 @@ import com.wingedsheep.engine.state.components.identity.ForetoldComponent
 import com.wingedsheep.engine.state.components.identity.OwnerComponent
 import com.wingedsheep.engine.state.components.identity.MayLookAtInExileComponent
 import com.wingedsheep.engine.state.components.identity.RevealedToComponent
+import com.wingedsheep.engine.state.components.player.isRevealedCompanion
 import com.wingedsheep.engine.state.components.stack.SpellOnStackComponent
 import com.wingedsheep.engine.state.permissions.hasMayPlayFor
 import com.wingedsheep.sdk.core.Zone
@@ -199,6 +200,9 @@ class Visibility(
         viewingPlayerId: EntityId,
         isSpectator: Boolean = false,
     ): Boolean {
+        // A revealed companion waits outside the game, in its owner's otherwise private sideboard,
+        // and stays revealed to everyone — spectators included (CR 103.2b, 702.139a).
+        if (zoneKey.zoneType == Zone.SIDEBOARD && state.isRevealedCompanion(zoneKey.ownerId, entityId)) return true
         if (isCardIdentityVisibleToBaseline(state, zoneKey, entityId, viewingPlayerId, isSpectator)) return true
         if (isSpectator || zoneKey.zoneType == Zone.SIDEBOARD) return false
         // Player control shares every in-game permission, including private library looks and

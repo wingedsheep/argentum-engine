@@ -2,7 +2,7 @@ import React, { useState, useEffect, useLayoutEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { useGameStore } from '@/store/gameStore.ts'
 import { useZoneCards, useStackCards, useZone, useCard, selectGameState, librarySlots } from '@/store/selectors.ts'
-import { graveyard, exile, library } from '@/types'
+import { graveyard, exile, library, sideboard } from '@/types'
 import type { ClientCard, ClientDeckCard, ClientPlayer } from '@/types'
 import { CARD_BACK_IMAGE_URL } from '@/utils/cardImages.ts'
 import { getCardImageUrl } from '@/utils/cardImages.ts'
@@ -28,9 +28,15 @@ const MIN_PILE_WIDTH = 24
  * Native tooltip for the Deck pile. When the top card is face up, lead with its name — that's
  * the reason the pile looks different, and it doubles as the accessible label for the image.
  */
-function deckPileTitle(canBrowseDeck: boolean, isOwnDeck: boolean, topCard: ClientCard | null): string | undefined {
+function deckPileTitle(
+  canBrowseDeck: boolean,
+  isOwnDeck: boolean,
+  topCard: ClientCard | null,
+  outsideCount: number,
+): string | undefined {
   if (!canBrowseDeck) return topCard ? `Top card: ${topCard.name}` : undefined
-  const browse = isOwnDeck ? 'Your deck list and library (D)' : 'Library'
+  const outside = outsideCount > 0 ? `, ${outsideCount} outside the game` : ''
+  const browse = isOwnDeck ? `Your deck list, library${outside} (D)` : 'Library'
   return topCard ? `Top card: ${topCard.name} · ${browse}` : browse
 }
 
@@ -81,6 +87,10 @@ export function ZonePile({
     if (!gameState || gameState.viewingPlayerId !== player.playerId) return EMPTY_DECK
     return gameState.deck ?? EMPTY_DECK
   })
+  // The cards this player owns outside the game (CR 400.11a) — what Learn and the wishes reach
+  // for. The server only sends a sideboard's contents to its owner, so this is empty on every
+  // other seat's pile.
+  const outsideCards = useZoneCards(sideboard(player.playerId))
   const hoverCard = useGameStore((state) => state.hoverCard)
   const responsive = useResponsiveContext()
   const [browsingGraveyard, setBrowsingGraveyard] = useState(false)
@@ -227,7 +237,7 @@ export function ZonePile({
         <div
           data-zone={isOpponent ? 'opponent-library' : 'player-library'}
           data-zone-owner={player.playerId}
-          title={deckPileTitle(canBrowseDeck, isOwnDeck, showsTopLibraryCard ? topLibraryCard : null)}
+          title={deckPileTitle(canBrowseDeck, isOwnDeck, showsTopLibraryCard ? topLibraryCard : null, outsideCards.length)}
           style={{
             ...styles.deckPile,
             ...pileStyle,
@@ -516,6 +526,7 @@ export function ZonePile({
           ownerLabel={isOpponent ? `${player.name}'s` : 'Your'}
           slots={librarySlotIds}
           deck={ownDeck}
+          outsideCards={outsideCards}
           onClose={() => setBrowsingLibrary(false)}
         />,
         document.body,

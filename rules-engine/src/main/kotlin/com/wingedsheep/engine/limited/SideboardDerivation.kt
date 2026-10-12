@@ -1,4 +1,4 @@
-package com.wingedsheep.gameserver.deck
+package com.wingedsheep.engine.limited
 
 import com.wingedsheep.sdk.model.CardDefinition
 

@@ -491,6 +491,7 @@ function GameCardImpl({
            (action.type === 'CycleCard' && action.cardId === card.id) ||
            (action.type === 'TypecycleCard' && action.cardId === card.id) ||
            (action.type === 'PlotCard' && action.cardId === card.id) ||
+           (action.type === 'PutCompanionIntoHand' && action.cardId === card.id) ||
            (action.type === 'SuspendCardFromHand' && action.cardId === card.id)
   }), [legalActions, card.id])
   const playableAction = playableActions[0]

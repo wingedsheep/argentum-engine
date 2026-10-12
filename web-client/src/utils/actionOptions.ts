@@ -40,7 +40,7 @@ export interface ActionOption {
   /** The legal action info if available */
   action: LegalActionInfo | null
   /** Action type for coloring */
-  actionType: 'cast' | 'castFaceDown' | 'castWithKicker' | 'cycle' | 'plot' | 'suspend' | 'playLand' | 'activate' | 'turnFaceUp'
+  actionType: 'cast' | 'castFaceDown' | 'castWithKicker' | 'cycle' | 'plot' | 'suspend' | 'companion' | 'playLand' | 'activate' | 'turnFaceUp'
   /**
    * Signed loyalty change for planeswalker loyalty abilities (+1, -2, -8, 0).
    * When present, the button renders a mana-font loyalty icon instead of a text prefix.
@@ -560,6 +560,19 @@ export function buildActionOptions(
       isAvailable: suspendAction.isAffordable !== false,
       action: suspendAction,
       actionType: 'suspend',
+    })
+  }
+
+  // 4e. Companion (CR 702.139a) — the {3} special action on a companion waiting outside the game.
+  const companionAction = legalActions.find((a) => a.action.type === 'PutCompanionIntoHand')
+  if (companionAction) {
+    options.push({
+      key: 'companion',
+      label: 'Put into your hand',
+      manaCost: companionAction.manaCostString || null,
+      isAvailable: companionAction.isAffordable !== false,
+      action: companionAction,
+      actionType: 'companion',
     })
   }
 

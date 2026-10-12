@@ -65,6 +65,9 @@ export function useInteraction() {
             return a.cardId === cardId
           case 'TypecycleCard':
             return a.cardId === cardId
+          // The companion waiting outside the game: clicking it offers the {3} special action.
+          case 'PutCompanionIntoHand':
+            return a.cardId === cardId
           case 'ActivateAbility':
             return a.sourceId === cardId
           case 'TurnFaceUp':

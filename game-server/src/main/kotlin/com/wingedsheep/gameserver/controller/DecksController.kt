@@ -175,6 +175,14 @@ class DecksController(
          */
         val secondCommander: String? = null,
         val secondCommanderPrinting: PrintingRef? = null,
+        /** The constructed sideboard, card name → count — read when a [companion] is named. */
+        val sideboard: Map<String, Int>? = null,
+        /**
+         * The deck's revealed companion (CR 702.139), a sideboard card (added to [sideboard] when
+         * missing). When present the structured path runs, checking its condition, its colour
+         * identity in Commander, and its copy count with the deck's.
+         */
+        val companion: String? = null,
     )
 
     @GetMapping("/examples")
@@ -208,7 +216,7 @@ class DecksController(
         // an absent field means the (legacy) Map-based validation path, which doesn't enforce
         // commander rules. When [cardEntries] is also present, [DeckRequestConverter] folds
         // the rich entries into the Deck so pinned printings are validated.
-        if (request.commander != null) {
+        if (request.commander != null || !request.companion.isNullOrBlank()) {
             val deck = DeckRequestConverter.toDeck(
                 deckList = request.deckList,
                 cardEntries = request.cardEntries,
@@ -216,6 +224,8 @@ class DecksController(
                 commanderPrinting = request.commanderPrinting,
                 secondCommander = request.secondCommander,
                 secondCommanderPrinting = request.secondCommanderPrinting,
+                sideboard = request.sideboard.orEmpty(),
+                companion = request.companion,
             )
             return deckValidator.validate(deck, request.format)
         }

@@ -30,6 +30,14 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: readonly Announcement[] = [
   {
+    id: 'feature-companions',
+    date: '2026-10-12',
+    kind: 'feature',
+    title: 'Companions',
+    body:
+      'Companions work in every format, Commander included. Put a card with Companion — Zirda, Kaheera, Keruga — on your sideboard and mark it as your companion; the deckbuilder checks its condition against your deck. In the game it waits face up beside your command zone, and once per game, at sorcery speed, you can pay {3} to put it into your hand. Imported lists with a Companion section set it for you.',
+  },
+  {
     id: 'feature-partner-commanders',
     date: '2026-10-12',
     kind: 'feature',
