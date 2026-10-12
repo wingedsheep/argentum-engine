@@ -33,5 +33,9 @@ object FalloutCommanderSet : MtgSet {
         CardDiscovery.findPrintingsIn(CARDS_PACKAGE)
     }
 
+    override val basicLands by lazy {
+        CardDiscovery.findBasicLandsIn(CARDS_PACKAGE, code)
+    }
+
     private const val CARDS_PACKAGE = "com.wingedsheep.mtg.sets.definitions.pip.cards"
 }
