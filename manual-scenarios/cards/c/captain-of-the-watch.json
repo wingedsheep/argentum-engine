@@ -1,0 +1,106 @@
+{
+  "player1Name": "Tester",
+  "player2Name": "Opponent",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": [
+      "Captain of the Watch"
+    ],
+    "battlefield": [
+      {
+        "name": "Plains",
+        "tapped": false,
+        "summoningSickness": false
+      },
+      {
+        "name": "Plains",
+        "tapped": false,
+        "summoningSickness": false
+      },
+      {
+        "name": "Plains",
+        "tapped": false,
+        "summoningSickness": false
+      },
+      {
+        "name": "Plains",
+        "tapped": false,
+        "summoningSickness": false
+      },
+      {
+        "name": "Plains",
+        "tapped": false,
+        "summoningSickness": false
+      },
+      {
+        "name": "Plains",
+        "tapped": false,
+        "summoningSickness": false
+      },
+      {
+        "name": "Elite Vanguard",
+        "tapped": false,
+        "summoningSickness": false
+      },
+      {
+        "name": "Grizzly Bears",
+        "tapped": false,
+        "summoningSickness": false
+      }
+    ],
+    "graveyard": [],
+    "library": [
+      "Plains",
+      "Plains",
+      "Plains"
+    ]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [
+      "Doom Blade"
+    ],
+    "battlefield": [
+      {
+        "name": "Swamp",
+        "tapped": false,
+        "summoningSickness": false
+      },
+      {
+        "name": "Swamp",
+        "tapped": false,
+        "summoningSickness": false
+      },
+      {
+        "name": "Elite Vanguard",
+        "tapped": false,
+        "summoningSickness": false
+      },
+      {
+        "name": "Hill Giant",
+        "tapped": false,
+        "summoningSickness": false
+      }
+    ],
+    "graveyard": [],
+    "library": [
+      "Plains",
+      "Plains",
+      "Plains"
+    ]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "step": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [
+    "BEGIN_COMBAT",
+    "DECLARE_ATTACKERS"
+  ],
+  "player2StopAtSteps": [
+    "BEGIN_COMBAT",
+    "DECLARE_ATTACKERS"
+  ],
+  "player1OpponentStopAtSteps": [],
+  "player2OpponentStopAtSteps": []
+}
