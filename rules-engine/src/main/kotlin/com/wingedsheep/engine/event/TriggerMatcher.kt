@@ -1582,26 +1582,37 @@ class TriggerMatcher(
     }
 
     /**
-     * Check if a trigger event matches a death trigger pattern (ZoneChangeEvent from battlefield to graveyard).
+     * The battlefield-exit atoms of [trigger]: the trigger itself when it is a
+     * [EventPattern.ZoneChangeEvent] from the battlefield, or every such member of an
+     * [EventPattern.AnyOf] (`Triggers.or(self.transforms(), self.dies())`). The look-back detectors
+     * classify a departed permanent's abilities by these, so a disjunction that names a dies / leaves
+     * atom is seen exactly like the bare atom would be.
      */
-    fun isDeathTrigger(trigger: EventPattern): Boolean {
-        return trigger is EventPattern.ZoneChangeEvent &&
-            trigger.from == Zone.BATTLEFIELD &&
-            trigger.to == Zone.GRAVEYARD
+    fun battlefieldExitAtoms(trigger: EventPattern): List<EventPattern.ZoneChangeEvent> = when (trigger) {
+        is EventPattern.ZoneChangeEvent ->
+            if (trigger.from == Zone.BATTLEFIELD) listOf(trigger) else emptyList()
+        is EventPattern.AnyOf -> trigger.events.flatMap(::battlefieldExitAtoms)
+        else -> emptyList()
     }
 
     /**
-     * Check if a trigger event matches a leaves-battlefield pattern (ZoneChangeEvent from battlefield, to=null).
+     * Check if a trigger is a death trigger (ZoneChangeEvent from battlefield to graveyard), or a
+     * disjunction with such an atom.
      */
-    fun isLeavesBattlefieldTrigger(trigger: EventPattern): Boolean {
-        return trigger is EventPattern.ZoneChangeEvent &&
-            trigger.from == Zone.BATTLEFIELD &&
-            trigger.to == null
-    }
+    fun isDeathTrigger(trigger: EventPattern): Boolean =
+        battlefieldExitAtoms(trigger).any { it.to == Zone.GRAVEYARD }
+
+    /**
+     * Check if a trigger matches a leaves-battlefield pattern (ZoneChangeEvent from battlefield,
+     * to=null), or is a disjunction with such an atom.
+     */
+    fun isLeavesBattlefieldTrigger(trigger: EventPattern): Boolean =
+        battlefieldExitAtoms(trigger).any { it.to == null }
 
     /**
      * Check if a trigger fires for a specific battlefield-exit destination
-     * (e.g., "When this is exiled from the battlefield" → trigger.to = EXILE).
+     * (e.g., "When this is exiled from the battlefield" → trigger.to = EXILE), directly or through
+     * a disjunction member.
      *
      * Excludes [Zone.GRAVEYARD] — death triggers are handled by [isDeathTrigger]
      * and [DeathAndLeaveTriggerDetector.detectDeathTriggers], so matching here
@@ -1610,9 +1621,7 @@ class TriggerMatcher(
      */
     fun isLeavesBattlefieldToZoneTrigger(trigger: EventPattern, eventToZone: Zone): Boolean {
         if (eventToZone == Zone.GRAVEYARD) return false
-        return trigger is EventPattern.ZoneChangeEvent &&
-            trigger.from == Zone.BATTLEFIELD &&
-            trigger.to == eventToZone
+        return battlefieldExitAtoms(trigger).any { it.to == eventToZone }
     }
 
     /**

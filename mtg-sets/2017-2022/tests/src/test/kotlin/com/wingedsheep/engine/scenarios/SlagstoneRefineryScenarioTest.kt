@@ -37,6 +37,24 @@ class SlagstoneRefineryScenarioTest : ScenarioTestBase() {
             game.state.projectedState.getController(powerstones.single()) shouldBe game.player1Id
         }
 
+        test("another nontoken artifact you control being exiled creates a Powerstone") {
+            val game = scenario()
+                .withPlayers("Player1", "Player2")
+                .withCardOnBattlefield(1, "Slagstone Refinery")
+                .withCardOnBattlefield(1, "Ornithopter")
+                .withCardInHand(1, "Revoke Existence")
+                .withLandsOnBattlefield(1, "Plains", 2)
+                .withActivePlayer(1)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+
+            game.castSpell(1, "Revoke Existence", game.findPermanent("Ornithopter")!!).error shouldBe null
+            game.resolveStack()
+
+            game.isInExile(1, "Ornithopter") shouldBe true
+            game.findAllPermanents("Powerstone") shouldHaveSize 1
+        }
+
         test("the Refinery itself being exiled creates a Powerstone") {
             val game = scenario()
                 .withPlayers("Player1", "Player2")

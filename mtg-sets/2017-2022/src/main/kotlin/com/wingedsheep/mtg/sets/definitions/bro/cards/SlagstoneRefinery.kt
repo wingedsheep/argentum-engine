@@ -24,28 +24,17 @@ val SlagstoneRefinery = card("Slagstone Refinery") {
     typeLine = "Artifact"
     oracleText = "Whenever this artifact or another nontoken artifact you control is put into a graveyard from the battlefield or is put into exile from the battlefield, create a tapped Powerstone token. (It's an artifact with \"{T}: Add {C}. This mana can't be spent to cast a nonartifact spell.\")"
 
-    // One printed ability, four trigger shapes: "this artifact" vs "another nontoken artifact you
-    // control" (a token copy of the Refinery still sees itself), each for graveyard or exile. Kept as
-    // separate abilities because a `Triggers.or` of self leave events misses the look-back path.
-    // Any one event matches at most one of them.
     val otherNontokenArtifact = GameObjectFilter.Artifact.nontoken().youControl()
     triggeredAbility {
-        trigger = Triggers.self.dies()
+        trigger = Triggers.or(Triggers.self.dies(), Triggers.self.leaves(to = Zone.EXILE))
         effect = Effects.CreatePowerstone(1, tapped = true)
     }
 
     triggeredAbility {
-        trigger = Triggers.self.leaves(to = Zone.EXILE)
-        effect = Effects.CreatePowerstone(1, tapped = true)
-    }
-
-    triggeredAbility {
-        trigger = Triggers.another(otherNontokenArtifact).dies()
-        effect = Effects.CreatePowerstone(1, tapped = true)
-    }
-
-    triggeredAbility {
-        trigger = Triggers.another(otherNontokenArtifact).leaves(to = Zone.EXILE)
+        trigger = Triggers.or(
+            Triggers.another(otherNontokenArtifact).dies(),
+            Triggers.another(otherNontokenArtifact).leaves(to = Zone.EXILE)
+        )
         effect = Effects.CreatePowerstone(1, tapped = true)
     }
 

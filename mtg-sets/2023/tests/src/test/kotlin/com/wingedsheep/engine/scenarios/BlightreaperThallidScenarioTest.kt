@@ -41,6 +41,29 @@ class BlightreaperThallidScenarioTest : ScenarioTestBase() {
                 game.state.projectedState.getToughness(id) shouldBe 3
                 game.findPermanents("Phyrexian Saproling Token").size shouldBe 1
             }
+
+            test("Blightsower Thallid dying creates another Phyrexian Saproling") {
+                val game = scenario()
+                    .withPlayers("Player1", "Player2")
+                    .withCardOnBattlefield(1, "Blightreaper Thallid")
+                    .withLandsOnBattlefield(1, "Forest", 4)
+                    .withLandsOnBattlefield(1, "Mountain", 1)
+                    .withCardInHand(1, "Lightning Bolt")
+                    .withCardInLibrary(1, "Forest")
+                    .withCardInLibrary(2, "Forest")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                transform(game)
+                game.findPermanents("Phyrexian Saproling Token").size shouldBe 1
+
+                game.castSpell(1, "Lightning Bolt", game.findPermanent("Blightsower Thallid")!!).error shouldBe null
+                game.resolveStack()
+
+                game.findPermanent("Blightsower Thallid") shouldBe null
+                game.findPermanents("Phyrexian Saproling Token").size shouldBe 2
+            }
         }
     }
 }

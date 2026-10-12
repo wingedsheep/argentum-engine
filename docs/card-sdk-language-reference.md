@@ -7973,7 +7973,10 @@ Triggers.you.casts(GameObjectFilter.Noncreature or
 - `or(first, second, vararg others)` — composes two or more trigger atoms with the same binding into a
   single disjunctive trigger. Nested disjunctions are flattened. Example: the Aetherdrift Pilot wording
   uses `Triggers.or(Triggers.self.saddles(), Triggers.self.crews())` plus
-  `triggerRestriction = Conditions.IsYourMainPhase`.
+  `triggerRestriction = Conditions.IsYourMainPhase`. A disjunction holding a dies / leaves atom
+  fires on the departed permanent's look-back exactly like the bare atom, once per departure:
+  `Triggers.or(Triggers.self.dies(), Triggers.self.leaves(to = Zone.EXILE))` (Slagstone Refinery),
+  `Triggers.or(Triggers.self.transforms(true), Triggers.self.dies())` (Blightsower Thallid).
 - `Triggers.<subject>.becomesAttached(to, controller)`
   — "whenever an Aura/Equipment becomes attached to a permanent" (CR 603.2f). Fires from
   `PermanentAttachedEvent`, emitted at every attach site (aura ETB onto its enchant target, equip

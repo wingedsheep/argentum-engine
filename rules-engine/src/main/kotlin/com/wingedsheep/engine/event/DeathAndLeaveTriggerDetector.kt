@@ -638,6 +638,10 @@ class DeathAndLeaveTriggerDetector(
             val isSpecificZoneLeave =
                 matcher.isLeavesBattlefieldToZoneTrigger(ability.trigger, event.toZone)
             if (!isGenericLeave && !isSpecificZoneLeave) continue
+            // A disjunction naming both a dies atom and a generic leaves atom
+            // (`Triggers.or(self.dies(), self.leaves())`) is owned by [detectDeathTriggers] when the
+            // permanent went to the graveyard; firing it here too would trigger it twice for one event.
+            if (event.toZone == Zone.GRAVEYARD && matcher.isDeathTrigger(ability.trigger)) continue
 
             when (ability.binding) {
                 TriggerBinding.SELF -> {
@@ -645,12 +649,10 @@ class DeathAndLeaveTriggerDetector(
                     // qualifiers on the pattern (e.g. `requireCraftMaterial` — "while you're
                     // activating a craft ability", Market Gnome) still gate it, so an unrelated
                     // exile doesn't fire it. Verify those against the event.
-                    val trig = ability.trigger
-                    if (trig is EventPattern.ZoneChangeEvent && trig.requireCraftMaterial &&
-                        !event.craftMaterial
-                    ) {
-                        continue
-                    }
+                    // Under a disjunction, only the atoms this departure can satisfy count.
+                    val satisfiable = matcher.battlefieldExitAtoms(ability.trigger)
+                        .filter { it.to == null || it.to == event.toZone }
+                    if (satisfiable.all { it.requireCraftMaterial } && !event.craftMaterial) continue
                     triggers.add(
                         PendingTrigger(
                             ability = ability,

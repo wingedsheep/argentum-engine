@@ -5704,9 +5704,19 @@
             {
                 "id": "Slagstone Refinery:1",
                 "trigger": {
-                    "type": "ZoneChangeEvent",
-                    "from": "Battlefield",
-                    "to": "Graveyard"
+                    "type": "AnyOfEvents",
+                    "events": [
+                        {
+                            "type": "ZoneChangeEvent",
+                            "from": "Battlefield",
+                            "to": "Graveyard"
+                        },
+                        {
+                            "type": "ZoneChangeEvent",
+                            "from": "Battlefield",
+                            "to": "Exile"
+                        }
+                    ]
                 },
                 "effect": {
                     "type": "CreatePredefinedToken",
@@ -5717,38 +5727,21 @@
             {
                 "id": "Slagstone Refinery:2",
                 "trigger": {
-                    "type": "ZoneChangeEvent",
-                    "from": "Battlefield",
-                    "to": "Exile"
-                },
-                "effect": {
-                    "type": "CreatePredefinedToken",
-                    "tokenType": "Powerstone",
-                    "tapped": true
-                }
-            },
-            {
-                "id": "Slagstone Refinery:3",
-                "trigger": {
-                    "type": "ZoneChangeEvent",
-                    "filter": "artifact nontoken ctrl:you",
-                    "from": "Battlefield",
-                    "to": "Graveyard"
-                },
-                "binding": "OTHER",
-                "effect": {
-                    "type": "CreatePredefinedToken",
-                    "tokenType": "Powerstone",
-                    "tapped": true
-                }
-            },
-            {
-                "id": "Slagstone Refinery:4",
-                "trigger": {
-                    "type": "ZoneChangeEvent",
-                    "filter": "artifact nontoken ctrl:you",
-                    "from": "Battlefield",
-                    "to": "Exile"
+                    "type": "AnyOfEvents",
+                    "events": [
+                        {
+                            "type": "ZoneChangeEvent",
+                            "filter": "artifact nontoken ctrl:you",
+                            "from": "Battlefield",
+                            "to": "Graveyard"
+                        },
+                        {
+                            "type": "ZoneChangeEvent",
+                            "filter": "artifact nontoken ctrl:you",
+                            "from": "Battlefield",
+                            "to": "Exile"
+                        }
+                    ]
                 },
                 "binding": "OTHER",
                 "effect": {

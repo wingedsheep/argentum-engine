@@ -1845,7 +1845,7 @@ class TriggerDetector(
                         // including abilities restored when it leaves the battlefield.
                         if (event is ZoneChangeEvent && event.isBattlefieldDeparture &&
                             event.entityId == entityId &&
-                            (ability.trigger as? EventPattern.ZoneChangeEvent)?.from == Zone.BATTLEFIELD
+                            matcher.battlefieldExitAtoms(ability.trigger).isNotEmpty()
                         ) continue
                         if (isGraveyardToHandSelfTrigger(ability, event, entityId)) continue
                         val ownerId = cardComponent.ownerId
