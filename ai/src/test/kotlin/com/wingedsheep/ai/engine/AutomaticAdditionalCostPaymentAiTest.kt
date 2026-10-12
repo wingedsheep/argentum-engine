@@ -36,6 +36,8 @@ class AutomaticAdditionalCostPaymentAiTest : FunSpec({
 
         choose(AdditionalCostData("behold", "Behold", validBeholdTargets = candidates, beholdCount = 2))
             .additionalCostPayment?.beheldCards shouldBe candidates.take(2)
+        choose(AdditionalCostData("reveal", "RevealCard", validRevealTargets = candidates, revealCount = 2))
+            .additionalCostPayment?.revealedCards shouldBe candidates.take(2)
         choose(AdditionalCostData("tap", "TapPermanents", validTapTargets = candidates, tapCount = 2))
             .additionalCostPayment?.tappedPermanents shouldBe candidates.take(2)
         choose(AdditionalCostData("discard", "DiscardCard", validDiscardTargets = candidates, discardCount = 2))

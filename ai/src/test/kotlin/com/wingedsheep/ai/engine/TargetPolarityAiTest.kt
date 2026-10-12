@@ -4,6 +4,7 @@ import com.wingedsheep.ai.engine.knowledge.IntentCatalog
 import com.wingedsheep.ai.engine.knowledge.TargetPolarity
 import com.wingedsheep.ai.engine.knowledge.TargetPolarityAnalyzer
 import com.wingedsheep.engine.core.ActivateAbility
+import com.wingedsheep.engine.core.AlternativeCostType
 import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.core.PassPriority
 import com.wingedsheep.engine.legalactions.LegalAction
@@ -25,6 +26,7 @@ import com.wingedsheep.mtg.sets.definitions.ons.cards.DaruHealer
 import com.wingedsheep.mtg.sets.definitions.ons.cards.GustcloakHarrier
 import com.wingedsheep.mtg.sets.definitions.ons.cards.Sandskin
 import com.wingedsheep.mtg.sets.definitions.usg.cards.GloriousAnthem
+import com.wingedsheep.mtg.sets.definitions.vow.cards.MischievousCatgeist
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
@@ -45,7 +47,7 @@ class TargetPolarityAiTest : FunSpec({
     val cards = TestCards.all + listOf(
         Blossombind, ExplosiveProdigy, Prohibit, TolarianEmissary, TravelersCloak, TreefolkHealer,
         GiantGrowth, Unsummon, Pacifism, BlatantThievery, DaruHealer, GustcloakHarrier, Sandskin,
-        GloriousAnthem,
+        GloriousAnthem, MischievousCatgeist,
     )
     val registry = CardRegistry().apply { register(cards) }
 
@@ -77,6 +79,11 @@ class TargetPolarityAiTest : FunSpec({
             TargetPolarityAnalyzer.forSpell(Blossombind) shouldBe listOf(TargetPolarity.HARMFUL)
             TargetPolarityAnalyzer.forSpell(Pacifism) shouldBe listOf(TargetPolarity.HARMFUL)
             TargetPolarityAnalyzer.forSpell(TravelersCloak) shouldBe listOf(TargetPolarity.BENEFICIAL)
+        }
+        test("an Aura granting a card-draw trigger is a gift, and its self-exile is no veto") {
+            // Catlike Curiosity: "Enchanted creature has 'whenever this creature deals combat damage
+            // to a player, draw a card'" plus disturb's exile-instead redirect on the Aura itself.
+            TargetPolarityAnalyzer.forSpell(MischievousCatgeist.backFace!!) shouldBe listOf(TargetPolarity.BENEFICIAL)
         }
         test("stealing and pumping are one-sided") {
             TargetPolarityAnalyzer.forSpell(BlatantThievery) shouldBe listOf(TargetPolarity.HARMFUL)
@@ -116,6 +123,35 @@ class TargetPolarityAiTest : FunSpec({
         // Ourselves or one of our creatures — anything on our side of the table.
         val shielded = aimedAt(polarity = true)
         (shielded == d.player1 || d.state.projectedState.getController(shielded) == d.player1) shouldBe true
+    }
+
+    // Engine-vs-engine VOW game: Mischievous Catgeist disturbed as Catlike Curiosity onto the
+    // opponent's Shriekmaw, which then drew them two cards. A disturb cast puts the *back* face on
+    // the stack, so its slot must be read off the back face, not the creature front with no targets.
+    test("a disturbed card-draw Aura goes on our own creature, not theirs") {
+        val d = driver()
+        val ours = d.putCreatureOnBattlefield(d.player1, "Gustcloak Harrier")
+        val theirs = d.putCreatureOnBattlefield(d.player2, "Grizzly Bears")
+        lands(d, d.player1, "Island" to 3)
+        val catgeist = d.putCardInGraveyard(d.player1, "Mischievous Catgeist")
+        val disturb = d.legalActions(d.player1).single {
+            val cast = it.action as? CastSpell
+            cast?.cardId == catgeist && cast.alternativeCostType == AlternativeCostType.DISTURB
+        }
+        val intents = IntentCatalog.of(registry)
+
+        TargetSelection.polarities(d.state, disturb, intents) shouldBe listOf(TargetPolarity.BENEFICIAL)
+
+        fun aimedAt(polarity: Boolean): EntityId {
+            val filled = TargetSelection.fillHeuristically(
+                d.state, disturb, d.player1, fillPartialRequirements = true,
+                intents = intents, polarityFromEffect = polarity,
+            ) as CastSpell
+            return (filled.targets.single() as ChosenTarget.Permanent).entityId
+        }
+
+        aimedAt(polarity = false) shouldBe theirs
+        aimedAt(polarity = true) shouldBe ours
     }
 
     // Game 15 turn 12: Blossombind on our own Explosive Prodigy because they had no creatures.

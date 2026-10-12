@@ -12,6 +12,15 @@ import com.wingedsheep.sdk.scripting.EntersWithChoice
 import com.wingedsheep.sdk.scripting.GrantKeyword
 import com.wingedsheep.sdk.scripting.GrantLandwalkOfChosenType
 import com.wingedsheep.sdk.scripting.ModifyStats
+import com.wingedsheep.sdk.scripting.GrantTriggeredAbility
+import com.wingedsheep.sdk.scripting.RedirectZoneChange
+import com.wingedsheep.sdk.scripting.RedirectZoneChangeWith
+import com.wingedsheep.sdk.scripting.ReplacementEffect
+import com.wingedsheep.sdk.scripting.TriggeredAbility
+import com.wingedsheep.sdk.scripting.effects.DrawCardsEffect
+import com.wingedsheep.sdk.scripting.effects.GainLifeEffect
+import com.wingedsheep.sdk.scripting.effects.LoseLifeEffect
+import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.StaticAbility
 import com.wingedsheep.sdk.scripting.effects.AdaptAsThoughNoCountersEffect
 import com.wingedsheep.sdk.scripting.effects.AdaptEffect
@@ -264,8 +273,52 @@ object TargetPolarityAnalyzer {
         // enchanted creature") is read nowhere above, and is often the whole card. Without it the
         // statics alone could call an either-way Aura one-sided, so its presence is a veto — except
         // for an entry choice (Traveler's Cloak's land type), which only parameterises a static.
-        if (card.script.replacementEffects.any { it !is EntersWithChoice }) readings += TargetPolarity.UNKNOWN
+        // A self-only zone redirect (disturb's "if this would be put into a graveyard, exile it
+        // instead") moves the Aura itself and never touches the creature, so it is no veto either.
+        if (card.script.replacementEffects.any { !it.affectsOnlyTheAuraItself() }) readings += TargetPolarity.UNKNOWN
         return combine(readings)
+    }
+
+    private fun ReplacementEffect.affectsOnlyTheAuraItself(): Boolean = when (this) {
+        is EntersWithChoice -> true
+        is RedirectZoneChange -> selfOnly
+        is RedirectZoneChangeWith -> selfOnly
+        else -> false
+    }
+
+    /**
+     * What a triggered ability granted to the enchanted creature does for that creature's
+     * controller, who controls the granted ability: its leaves aimed at the creature itself
+     * ([EffectTarget.Self] inside the quotes) read like any other slot, and a card draw or life
+     * gain for its controller is a benefit. A granted ability with no readable leaf, or with any
+     * leaf this cannot call, reads [TargetPolarity.UNKNOWN] — "enchanted creature has '…'" can be a
+     * curse as easily as a gift.
+     */
+    private fun grantedTriggerPolarity(ability: TriggeredAbility): TargetPolarity {
+        val readings = mutableListOf<TargetPolarity>()
+        for (leaf in EffectWalker.leaves(ability.effect)) {
+            val classified = classify(leaf)
+            val reading = when {
+                classified.isNotEmpty() -> classified.map { (target, polarity) ->
+                    if (target == EffectTarget.Self) polarity else TargetPolarity.UNKNOWN
+                }
+                else -> listOf(controllerPolarity(leaf) ?: TargetPolarity.UNKNOWN)
+            }
+            readings += reading
+        }
+        return combine(readings)
+    }
+
+    /** A player-facing leaf's polarity for the ability's controller, when it is aimed at them. */
+    private fun controllerPolarity(leaf: Effect): TargetPolarity? {
+        fun isController(target: EffectTarget) =
+            target == EffectTarget.Controller || target == EffectTarget.PlayerRef(Player.You)
+        return when (leaf) {
+            is DrawCardsEffect -> if (isController(leaf.target)) TargetPolarity.BENEFICIAL else null
+            is GainLifeEffect -> if (isController(leaf.target)) TargetPolarity.BENEFICIAL else null
+            is LoseLifeEffect -> if (isController(leaf.target)) TargetPolarity.HARMFUL else null
+            else -> null
+        }
     }
 
     private fun staticPolarity(static: StaticAbility): TargetPolarity? = when (static) {
@@ -275,6 +328,7 @@ object TargetPolarityAnalyzer {
         is GrantLandwalkOfChosenType -> if (static.filter.scope != Scope.AttachedTo) null else TargetPolarity.BENEFICIAL
         is CantAttack -> if (static.filter.scope != Scope.AttachedTo) null else TargetPolarity.HARMFUL
         is CantBlock -> if (static.filter.scope != Scope.AttachedTo) null else TargetPolarity.HARMFUL
+        is GrantTriggeredAbility -> if (static.filter.scope != Scope.AttachedTo) null else grantedTriggerPolarity(static.ability)
         else -> null
     }
 

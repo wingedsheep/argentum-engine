@@ -5,6 +5,7 @@ import com.wingedsheep.ai.engine.knowledge.IntentCatalog
 import com.wingedsheep.ai.engine.knowledge.TargetPolarity
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.core.ActivateAbility
+import com.wingedsheep.engine.core.AlternativeCostType
 import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.core.GameAction
 import com.wingedsheep.engine.legalactions.LegalAction
@@ -144,7 +145,7 @@ object TargetSelection {
         val read = when (val base = action.action) {
             is CastSpell -> if (base.castFaceDown) emptyList()
                 else state.getEntity(base.cardId)?.get<CardComponent>()?.name
-                    ?.let(intents::spellTargetPolarities).orEmpty()
+                    ?.let { intents.spellTargetPolarities(it, castsTransformed(state, base)) }.orEmpty()
             is ActivateAbility -> state.getEntity(base.sourceId)?.get<CardComponent>()?.name
                 ?.let { intents.abilityTargetPolarities(it, base.abilityId) }.orEmpty()
             else -> emptyList()
@@ -152,6 +153,21 @@ object TargetSelection {
         val slots = targetInfosFor(action)?.size ?: return emptyList()
         return if (read.size == slots) read else emptyList()
     }
+
+    /**
+     * Whether [cast] puts its card on the stack **back face up**, so the spell's targets and
+     * abilities are the back face's: a disturb cast (Mischievous Catgeist as Catlike Curiosity), a
+     * modal DFC's back face, or a "cast it transformed" permission. Mirrors the engine's own
+     * transformed-face routing in `CastSpellHandler`.
+     */
+    private fun castsTransformed(state: GameState, cast: CastSpell): Boolean {
+        if (cast.useAlternativeCost && cast.alternativeCostType in TRANSFORMED_ALT_COSTS) return true
+        return state.mayPlayPermissions.any {
+            it.castTransformed && it.controllerId == cast.playerId && cast.cardId in it.cardIds
+        }
+    }
+
+    private val TRANSFORMED_ALT_COSTS = setOf(AlternativeCostType.DISTURB, AlternativeCostType.MODAL_BACK_FACE)
 
     /**
      * Whether [action] has a mandatory target slot whose **every** legal target is on the wrong side
