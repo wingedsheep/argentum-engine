@@ -54,6 +54,41 @@ class SlagstoneRefineryScenarioTest : ScenarioTestBase() {
             game.findAllPermanents("Powerstone") shouldHaveSize 1
         }
 
+        test("the Refinery itself being destroyed creates a Powerstone") {
+            val game = scenario()
+                .withPlayers("Player1", "Player2")
+                .withCardOnBattlefield(1, "Slagstone Refinery")
+                .withCardInHand(1, "Shatter")
+                .withLandsOnBattlefield(1, "Mountain", 2)
+                .withActivePlayer(1)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+
+            game.castSpell(1, "Shatter", game.findPermanent("Slagstone Refinery")!!).error shouldBe null
+            game.resolveStack()
+
+            game.isInGraveyard(1, "Slagstone Refinery") shouldBe true
+            game.findAllPermanents("Powerstone") shouldHaveSize 1
+        }
+
+        test("an artifact token you control being destroyed does not trigger") {
+            val game = scenario()
+                .withPlayers("Player1", "Player2")
+                .withCardOnBattlefield(1, "Slagstone Refinery")
+                .withCardOnBattlefield(1, "Ornithopter", isToken = true)
+                .withCardInHand(1, "Shatter")
+                .withLandsOnBattlefield(1, "Mountain", 2)
+                .withActivePlayer(1)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+
+            game.castSpell(1, "Shatter", game.findPermanent("Ornithopter")!!).error shouldBe null
+            game.resolveStack()
+
+            game.findPermanent("Ornithopter") shouldBe null
+            game.findAllPermanents("Powerstone").shouldBeEmpty()
+        }
+
         test("an opponent's artifact being destroyed does not trigger") {
             val game = scenario()
                 .withPlayers("Player1", "Player2")
