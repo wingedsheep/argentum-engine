@@ -474,10 +474,11 @@ data class ActivatedAbilityOnStackComponent(
     val objectReferences: com.wingedsheep.engine.handlers.ObjectReferenceEnvironment =
         com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(),
     /**
-     * Division chosen at activation for a `DividedDamageEffect` ability (target -> damage), locked
-     * onto the stack object so responding removal can't make the controller re-divide (CR 601.2d).
-     * Mirrors [SpellOnStackComponent.damageDistribution]. Null for every other ability, and for a
-     * divided-damage ability whose controller left the division to resolution time.
+     * Division chosen at activation (CR 601.2d) — damage for a `DividedDamageEffect` ability, counters
+     * for a `DistributeCountersAmongTargetsEffect` one (target -> amount) — locked onto the stack
+     * object so responding removal can't make the controller re-divide. Mirrors
+     * [SpellOnStackComponent.damageDistribution]. Null for every other ability, and for a divided
+     * ability whose controller left the division to resolution time.
      */
     val damageDistribution: Map<EntityId, Int>? = null
 ) : Component {

@@ -4,13 +4,12 @@ import com.wingedsheep.engine.handlers.effects.composite.asMayDecide
 
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.DependentTargetSelection
+import com.wingedsheep.engine.handlers.effects.AnnouncedDivision
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComponent
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
-import com.wingedsheep.sdk.scripting.effects.DistributeCountersAmongTargetsEffect
-import com.wingedsheep.sdk.scripting.effects.DividedDamageEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.effects.Gate
 import com.wingedsheep.sdk.scripting.effects.GatedEffect
@@ -167,30 +166,19 @@ class EffectAndTriggerContinuationResumer(
         // on the stack (CR 603.3d applies CR 601.2d to triggered abilities). A dynamic total (Ureni —
         // "X = lands you control") is evaluated here so the player divides the correct amount.
         if (selectedTargets.size > 1) {
-            val division = announcedDivision(continuation.effect)
+            val division = AnnouncedDivision.of(continuation.effect)
             if (division != null) {
                 val amountContext = com.wingedsheep.engine.handlers.EffectContext(
                     sourceId = continuation.sourceId,
                     objectReferences = continuation.objectReferences,
                     controllerId = continuation.controllerId,
                 )
-                val (total, prompt, minPerTarget) = when (division) {
-                    is DividedDamageEffect -> {
-                        val total = division.dynamicTotal?.let { amountEvaluator.evaluate(state, it, amountContext) }
-                            ?: division.totalDamage
-                        Triple(total, "Divide $total damage among ${selectedTargets.size} targets", 1)
-                    }
-                    is DistributeCountersAmongTargetsEffect -> {
-                        val total = amountEvaluator.evaluate(state, division.totalCounters, amountContext)
-                        Triple(
-                            total,
-                            "Distribute $total ${division.counterType.printed} " +
-                                "counter${if (total != 1) "s" else ""} among ${selectedTargets.size} targets",
-                            division.minPerTarget
-                        )
-                    }
-                    else -> error("announcedDivision returned ${division::class.simpleName}")
+                val total = AnnouncedDivision.total(state, division, amountContext, amountEvaluator)
+                val prompt = when (val unit = AnnouncedDivision.counterUnit(division)) {
+                    null -> "Divide $total damage among ${selectedTargets.size} targets"
+                    else -> "Distribute $total $unit${if (total != 1) "s" else ""} among ${selectedTargets.size} targets"
                 }
+                val minPerTarget = AnnouncedDivision.minPerTarget(division)
                 return createTriggerDistributionDecision(
                     state, continuation, selectedTargets, alignedRequirements, total, prompt, minPerTarget
                 )
@@ -226,25 +214,6 @@ class EffectAndTriggerContinuationResumer(
         }
 
         return checkForMore(stackResult.newState, stackResult.events.toList())
-    }
-
-    /**
-     * The effect whose division a triggered ability announces as it goes on the stack: the ability's
-     * whole effect, or the one divided step of a sequence ("distribute three +1/+1 counters …, then
-     * you gain life …"), or the divided payoff of a gate ("you may sacrifice an artifact. If you do,
-     * … deals 4 damage divided as you choose among any number of targets" — Kuldotha Flamefiend). The
-     * targets were chosen now, so their division is announced now too, whether or not the gate later
-     * opens. Null when there is none, or more than one to tell apart — those divide at resolution
-     * instead.
-     */
-    private fun announcedDivision(effect: Effect): Effect? {
-        fun divisions(e: Effect): List<Effect> = when (e) {
-            is DividedDamageEffect, is DistributeCountersAmongTargetsEffect -> listOf(e)
-            is CompositeEffect -> e.effects.flatMap(::divisions)
-            is GatedEffect -> divisions(e.then) + (e.otherwise?.let(::divisions) ?: emptyList())
-            else -> emptyList()
-        }
-        return divisions(effect).singleOrNull()
     }
 
     /**

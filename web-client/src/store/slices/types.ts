@@ -348,6 +348,8 @@ export interface DamageDistributionState {
   totalDamage: number
   /** Minimum damage per target (usually 1 per MTG rules) */
   minPerTarget: number
+  /** What is divided when it isn't damage — "+1/+1 counter". Absent means damage. */
+  unit?: string
   /** Current distribution (targetId -> damage amount) */
   distribution: Record<EntityId, number>
 }

@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.legalactions.enumerators
 
+import com.wingedsheep.engine.handlers.effects.AnnouncedDivision
 import com.wingedsheep.engine.mechanics.cost.SharedCreatureTypeTapCost
 import com.wingedsheep.engine.handlers.TargetingSourceType
 import com.wingedsheep.engine.handlers.costs.CostAtomAmounts
@@ -1105,11 +1106,11 @@ class ActivatedAbilityEnumerator(
                         // work to do (e.g. the trigger we wanted to copy isn't on top yet).
                         val holdPriorityForTopOfStack = ability.holdPriority &&
                             state.stack.lastOrNull()?.let { it in firstReqInfo.validTargets } == true
-                        // "N damage divided as you choose among …" — the division is part of
-                        // activating the ability (CR 601.2d), so flag it here and let the client
-                        // collect it after targeting, exactly as the cast path does for spells
-                        // (Chandra, Flameshaper's −4).
-                        val dividedDamage = ability.effect as? DividedDamageEffect
+                        // "N damage divided as you choose among …" / "distribute N counters among …"
+                        // — the division is part of activating the ability (CR 601.2d), so flag it
+                        // here and let the client collect it after targeting, exactly as the cast
+                        // path does for spells (Chandra, Flameshaper's −4; Ajani, Sleeper Agent's −3).
+                        val division = AnnouncedDivision.of(ability.effect)
                         result.add(LegalAction(
                             actionType = "ActivateAbility",
                             description = displayDescription,
@@ -1137,11 +1138,12 @@ class ActivatedAbilityEnumerator(
                             tapForGenericPermanents = abilityWaterbendPermanents,
                             tapForGenericLabel = TapForGeneric.WATERBEND.label.takeIf { ability.hasWaterbend },
                             holdPriority = holdPriorityForTopOfStack,
-                            requiresDamageDistribution = dividedDamage != null,
-                            totalDamageToDistribute = dividedDamage?.let {
-                                context.castPermissionUtils.dividedDamageTotalAtActivation(state, it, ability, entityId, playerId)
+                            requiresDamageDistribution = division != null,
+                            totalDamageToDistribute = division?.let {
+                                context.castPermissionUtils.divisionTotalAtActivation(state, it, ability, entityId, playerId)
                             },
-                            minDamagePerTarget = if (dividedDamage != null) 1 else null
+                            minDamagePerTarget = division?.let(AnnouncedDivision::minPerTarget),
+                            distributionUnit = division?.let(AnnouncedDivision::counterUnit)
                         ))
                     }
                 } else {

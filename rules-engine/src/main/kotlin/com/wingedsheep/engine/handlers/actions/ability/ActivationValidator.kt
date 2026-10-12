@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.handlers.actions.ability
 
+import com.wingedsheep.engine.handlers.effects.AnnouncedDivision
 import com.wingedsheep.engine.mechanics.mana.withSpendingColors
 import com.wingedsheep.engine.mechanics.mana.BorrowedManaAbilities
 import com.wingedsheep.engine.handlers.PredicateEvaluator
@@ -45,7 +46,6 @@ import com.wingedsheep.sdk.scripting.ActivatedAbility
 import com.wingedsheep.sdk.scripting.TimingRule
 import com.wingedsheep.sdk.scripting.costs.CostAtom
 import com.wingedsheep.sdk.scripting.costs.manaCostOrNull
-import com.wingedsheep.sdk.scripting.effects.DividedDamageEffect
 import com.wingedsheep.sdk.scripting.targets.TargetChooser
 import com.wingedsheep.sdk.scripting.targets.TargetRequirement
 
@@ -605,31 +605,34 @@ internal class ActivationValidator(
     }
 
     /**
-     * Validate a client-supplied divided-damage division (Chandra, Flameshaper's −4). The
-     * division is chosen as the ability is activated (CR 601.2d), so it arrives on the action
-     * rather than being asked for at resolution. Absence is legal — the executor then raises a
-     * resolution-time DistributeDecision, which is how non-interactive controllers divide — but
-     * anything present must be a well-formed division of exactly the total as activated — the
-     * printed number, or a dynamic total evaluated now (Lukka, Bound to Ruin's defined X).
+     * Validate a client-supplied division — damage (Chandra, Flameshaper's −4) or counters (Ajani,
+     * Sleeper Agent's −3). The division is chosen as the ability is activated (CR 601.2d), so it
+     * arrives on the action rather than being asked for at resolution. Absence is legal — the
+     * executor then raises a resolution-time DistributeDecision, which is how non-interactive
+     * controllers divide — but anything present must be a well-formed division of exactly the total
+     * as activated — the printed number, or a dynamic total evaluated now (Lukka, Bound to Ruin's
+     * defined X).
      */
     private fun checkDamageDistribution(state: GameState, action: ActivateAbility, ability: ActivatedAbility): String? {
         val distribution = action.damageDistribution ?: return null
-        val dividedDamage = ability.effect as? DividedDamageEffect
-            ?: return "This ability does not divide damage among its targets"
+        val division = AnnouncedDivision.of(ability.effect)
+            ?: return "This ability does not divide anything among its targets"
         val chosenTargetIds = action.targets.map { it.toEntityId() }.toSet()
         if (distribution.keys != chosenTargetIds) {
-            return "Damage distribution targets must match chosen targets"
+            return "Distribution targets must match chosen targets"
         }
-        val total = castPermissionUtils.dividedDamageTotalAtActivation(
-            state, dividedDamage, ability, action.sourceId, action.playerId, chosenX = action.xValue
+        val total = castPermissionUtils.divisionTotalAtActivation(
+            state, division, ability, action.sourceId, action.playerId, chosenX = action.xValue
         )
         val totalDistributed = distribution.values.sum()
         if (totalDistributed != total) {
-            return "Total distributed damage ($totalDistributed) must equal $total"
+            return "Total distributed ($totalDistributed) must equal $total"
         }
-        // CR 601.2d: each target in the division must be assigned at least 1 damage.
-        if (distribution.values.any { it < 1 }) {
-            return "Each target must receive at least 1 damage"
+        // CR 601.2d: each target in a damage division is assigned at least 1; a counter division
+        // carries its own floor.
+        val minPerTarget = AnnouncedDivision.minPerTarget(division)
+        if (distribution.values.any { it < minPerTarget }) {
+            return "Each target must receive at least $minPerTarget"
         }
         return null
     }

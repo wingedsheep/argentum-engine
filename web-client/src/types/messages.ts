@@ -1048,6 +1048,8 @@ export interface LegalActionInfo {
   readonly totalDamageToDistribute?: number
   /** Minimum damage per target (usually 1 per MTG rules) */
   readonly minDamagePerTarget?: number
+  /** What the division divides when it isn't damage — "+1/+1 counter" (Ajani, Sleeper Agent's −3). Absent means damage. */
+  readonly distributionUnit?: string
   /** Preview of which lands/sources would be auto-tapped if this spell is cast (for UI highlighting) */
   readonly autoTapPreview?: readonly EntityId[]
   /** Available mana sources for pre-cast selection */
