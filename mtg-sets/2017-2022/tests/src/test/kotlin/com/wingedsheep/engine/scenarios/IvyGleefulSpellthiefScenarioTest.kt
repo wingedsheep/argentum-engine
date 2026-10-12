@@ -108,5 +108,24 @@ class IvyGleefulSpellthiefScenarioTest : ScenarioTestBase() {
             game.hasPendingDecision() shouldBe false
             game.getLifeTotal(2) shouldBe 17
         }
+
+        test("no copy when Ivy isn't a legal target for the spell") {
+            val game = scenario()
+                .withPlayers()
+                .withCardOnBattlefield(1, "Ivy, Gleeful Spellthief")
+                .withCardOnBattlefield(2, "Grizzly Bears", tapped = true)
+                .withCardInHand(1, "Vengeance")
+                .withLandsOnBattlefield(1, "Plains", 4)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+
+            game.castSpell(1, "Vengeance", game.findPermanent("Grizzly Bears")!!).error shouldBe null
+            game.resolveStack()
+            if (game.hasPendingDecision()) game.answerYesNo(true)
+            game.resolveStack()
+
+            game.isInGraveyard(2, "Grizzly Bears") shouldBe true
+            game.isOnBattlefield("Ivy, Gleeful Spellthief") shouldBe true
+        }
     }
 }

@@ -1706,7 +1706,7 @@ class TriggerMatcher(
         // the stack object went on with, so several slots all pointed here still match.
         if (trigger.targetsOnlyIt) {
             val chosen = state.getEntity(event.sourceEntityId)
-                ?.get<com.wingedsheep.engine.state.components.stack.TargetsComponent>()
+                ?.get<TargetsComponent>()
                 ?.targets
                 ?: return false
             if (chosen.isEmpty() || chosen.any { it.entityId() != event.targetEntityId }) return false
@@ -2060,7 +2060,7 @@ class TriggerMatcher(
         // both this creature and a player targets more than only this creature.
         SpellCastPredicate.TargetsOnlySource -> {
             val chosen = state.getEntity(event.spellEntityId)
-                ?.get<com.wingedsheep.engine.state.components.stack.TargetsComponent>()
+                ?.get<TargetsComponent>()
                 ?.targets
                 ?: emptyList()
             chosen.isNotEmpty() && chosen.all {
@@ -2104,7 +2104,7 @@ class TriggerMatcher(
         }
         SpellCastPredicate.TargetsOpponent ->
             state.getEntity(event.spellEntityId)
-                ?.get<com.wingedsheep.engine.state.components.stack.TargetsComponent>()
+                ?.get<TargetsComponent>()
                 ?.targets
                 .orEmpty()
                 .any {
@@ -2187,7 +2187,7 @@ class TriggerMatcher(
      */
     private fun targetsSingleObject(event: SpellCastEvent, state: GameState): Boolean {
         val chosen = state.getEntity(event.spellEntityId)
-            ?.get<com.wingedsheep.engine.state.components.stack.TargetsComponent>()
+            ?.get<TargetsComponent>()
             ?.targets
             .orEmpty()
         val objects = castTargetEntities(event, state)
@@ -2200,7 +2200,7 @@ class TriggerMatcher(
         state: GameState
     ): List<com.wingedsheep.sdk.model.EntityId> {
         val targets = state.getEntity(event.spellEntityId)
-            ?.get<com.wingedsheep.engine.state.components.stack.TargetsComponent>()
+            ?.get<TargetsComponent>()
             ?.targets ?: return emptyList()
         return targets.mapNotNull { t ->
             when (t) {
