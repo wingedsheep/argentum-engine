@@ -16,6 +16,7 @@ import com.wingedsheep.engine.state.components.battlefield.DamageComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.mtg.sets.MtgSetCatalog
+import com.wingedsheep.sdk.core.AttackMode
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.model.Rarity
@@ -28,14 +29,18 @@ import kotlin.random.Random
  * Plays AI-vs-AI games with sealed decks from *random sets* (a different set per seat) and writes a
  * human-readable log per game, for reading where the AI misplays. Off unless `-DgameLog=true`.
  *
+ * `-DgameLogSeats=N` (default 2) seats N players. With more than two it is a Free-for-All game the
+ * way the FFA lobby starts one without commanders: [com.wingedsheep.sdk.core.Format.Standard] with
+ * [AttackMode.MULTIPLE] (CR 802), every opponent a defending player.
+ *
  * The agent defaults to `live` ([com.wingedsheep.ai.engine.AiProfile.LIVE]) — the profile real
  * players face, carrying every shipped misplay fix — so the logs don't resurface problems an older
  * candidate profile still has but the live AI no longer does.
  *
  * ```
- * just ai-game-logs 24            # or, by hand:
+ * just ai-game-logs 24                     # or a 4-player FFA: just ai-game-logs 1 20261013 live 4
  * scripts/gradle-locked :ai:test --tests "*.GameLogBenchmark" -DgameLog=true \
- *     -DgameLogGames=20 -DgameLogAgent=live -DgameLogDir=/tmp/logs
+ *     -DgameLogGames=20 -DgameLogAgent=live -DgameLogSeats=2 -DgameLogDir=/tmp/logs
  * ```
  */
 class GameLogBenchmark : FunSpec({
@@ -45,6 +50,9 @@ class GameLogBenchmark : FunSpec({
         val games = System.getProperty("gameLogGames")?.toIntOrNull() ?: 20
         val seed = System.getProperty("gameLogSeed")?.toLongOrNull() ?: 20261009L
         val agent = ArenaAgents.resolve(System.getProperty("gameLogAgent") ?: "live")
+        val seats = (System.getProperty("gameLogSeats")?.toIntOrNull() ?: 2).also {
+            require(it >= 2) { "gameLogSeats must be at least 2, was $it" }
+        }
         val outDir = File(System.getProperty("gameLogDir") ?: "build/game-logs").apply { mkdirs() }
 
         val eligible = MtgSetCatalog.all.filter { set ->
@@ -58,10 +66,11 @@ class GameLogBenchmark : FunSpec({
         val futures = (1..games).map { g ->
             pool.submit<String> {
                 val rng = Random(seed * 1000 + g)
-                val sets = List(2) { eligible[rng.nextInt(eligible.size)] }
+                val sets = List(seats) { eligible[rng.nextInt(eligible.size)] }
                 val decks = sets.map { buildSeededSealedDeck(it.cards, rng) }
                 val log = StringBuilder()
-                log.appendLine("GAME $g  seed=${seed * 1000 + g}  agent=${agent.name}")
+                log.appendLine("GAME $g  seed=${seed * 1000 + g}  agent=${agent.name}  seats=$seats" +
+                    if (seats > 2) "  (free-for-all, attack MULTIPLE)" else "")
                 sets.forEachIndexed { i, s ->
                     log.appendLine("Seat$i deck (${s.code} ${s.displayName}): " +
                         decks[i].cards.groupingBy { it }.eachCount().entries.joinToString(", ") { "${it.value}x ${it.key}" })
@@ -72,7 +81,7 @@ class GameLogBenchmark : FunSpec({
                     "EXCEPTION ${e::class.simpleName}: ${e.message}".also { log.appendLine(it) }
                 }
                 File(outDir, "game-%02d.log".format(g)).writeText(log.toString())
-                "game $g ${sets[0].code} vs ${sets[1].code}: $summary"
+                "game $g ${sets.joinToString(" vs ") { it.code }}: $summary"
             }
         }
         futures.forEach { println(it.get()) }
@@ -96,6 +105,8 @@ private fun playLogged(
             skipMulligans = true,
             startingPlayerIndex = 0,
             seed = seed,
+            // CR 802 — in a multiplayer (FFA) game each attacker picks which opponent it attacks.
+            attackMode = AttackMode.MULTIPLE,
         )
     )
     val seatIds = init.state.turnOrder
@@ -149,7 +160,11 @@ private fun playLogged(
     var lastTurn = -1
     var actions = 0
     var illegal = 0
-    while (!state.gameOver && state.turnNumber < 60 && actions < 6000) {
+    // The caps are per seat: a turn number counts every player's turn, so a pod needs proportionally
+    // more of them to reach the same round (30 rounds; 60 turns heads-up, as before).
+    val maxTurns = 30 * decks.size
+    val maxActions = 3000 * decks.size
+    while (!state.gameOver && state.turnNumber < maxTurns && actions < maxActions) {
         if (state.turnNumber != lastTurn) {
             lastTurn = state.turnNumber
             log.appendLine("\n=== TURN ${state.turnNumber} — active Seat${seatOf[state.activePlayerId]} ===")

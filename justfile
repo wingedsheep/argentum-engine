@@ -5,15 +5,15 @@
 default:
     @just --list
 
-# Build the entire project
+# Build the project, excluding deprecated mtgish tests (explicit coverage commands still run them)
 [group: 'build']
 build:
-    scripts/gradle-locked build
+    scripts/gradle-locked build -x :mtgish-tooling:test
 
-# Run all tesats
+# Run all tests except deprecated mtgish tests
 [group: 'build']
 test:
-    scripts/gradle-locked test
+    scripts/gradle-locked test -x :mtgish-tooling:test
 
 # Card scenarios now live in the per-era `:mtg-sets:<era>:tests` modules, which `:mtg-sets:scenarioTest`
 # fans out to, so both are run here — same coverage as before the split.
@@ -138,11 +138,12 @@ arena-report DIR:
 # readable log per game — board, hand, every action, and what was on offer when the AI passed.
 # For reading where the AI misplays; logs land in ai/build/game-logs/. AGENT defaults to `live`
 # (AiProfile.LIVE, what real players face), so the logs don't resurface misplays it already fixes.
+# SEATS > 2 plays a Free-for-All game (attack MULTIPLE), e.g. `just ai-game-logs 1 20261013 live 4`.
 [group: 'ai']
-ai-game-logs GAMES="24" SEED="20261009" AGENT="live":
+ai-game-logs GAMES="24" SEED="20261009" AGENT="live" SEATS="2":
     rm -rf ai/build/game-logs
     scripts/gradle-locked :ai:test --tests "*.GameLogBenchmark" -Dbenchmark=true -DgameLog=true \
-        -DgameLogGames={{GAMES}} -DgameLogSeed={{SEED}} -DgameLogAgent={{AGENT}} \
+        -DgameLogGames={{GAMES}} -DgameLogSeed={{SEED}} -DgameLogAgent={{AGENT}} -DgameLogSeats={{SEATS}} \
         -DgameLogDir={{justfile_directory()}}/ai/build/game-logs
 
 # ECL apprentice promotion ladder. Artifacts are installed outside the repository and selected with
@@ -249,10 +250,10 @@ prune-worktrees DAYS="7" *ARGS:
 kill-daemons MIN_AGE="60" *ARGS:
     scripts/kill-stale-daemons.sh --min-age {{MIN_AGE}} {{ARGS}}
 
-# Format and check code
+# Format and check code, excluding deprecated mtgish tests
 [group: 'build']
 check:
-    ./gradlew check
+    scripts/gradle-locked check -x :mtgish-tooling:test
 
 # What every agent loop is doing now, its last result, and its open PR (--all for older loops)
 [group: 'ai']
