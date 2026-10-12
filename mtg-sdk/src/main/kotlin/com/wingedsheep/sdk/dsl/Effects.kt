@@ -5867,6 +5867,14 @@ object Effects {
     fun GrantCastCreaturesFromGraveyardWithForage(duration: Duration = Duration.EndOfTurn): Effect =
         com.wingedsheep.sdk.scripting.effects.GrantCastCreaturesFromGraveyardWithForageEffect(duration)
 
+    /** Roll dice and publish named counts of matching results from this batch. */
+    fun RollDice(
+        count: DynamicAmount = DynamicAmount.Fixed(1),
+        sides: Int = 6,
+        player: EffectTarget = EffectTarget.Controller,
+        resultCounts: Map<String, Set<Int>> = emptyMap(),
+    ): Effect = com.wingedsheep.sdk.scripting.effects.RollDiceEffect(count, sides, player, resultCounts)
+
     /**
      * Flip [count] coins and store the number that came up heads under [storeHeadsAs] in the
      * pipeline, so a later sub-effect in the same composite can scale off it via

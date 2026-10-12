@@ -1262,6 +1262,7 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
     summary: 'A running record of everything that happened, in rules order. Useful when an interaction resolved differently than you expected.',
     body: [
       { kind: 'p', text: 'Open it with the Log (N) toggle; N counts the entries. For a complete look back after the game, the replay steps through every action.' },
+      { kind: 'p', text: 'Dice are rolled automatically when an ability resolves. The log shows each die’s size and result beside the card that rolled it; all players see the same results.' },
     ],
     related: ['replays'],
   },

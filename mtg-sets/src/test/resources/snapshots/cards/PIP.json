@@ -208,6 +208,110 @@
     }
 }
 
+// Luck Bobblehead
+{
+    "name": "Luck Bobblehead",
+    "manaCost": "{3}",
+    "typeLine": "Artifact — Bobblehead",
+    "oracleText": "{T}: Add one mana of any color.\n{1}, {T}: Roll X six-sided dice, where X is the number of Bobbleheads you control. Create a tapped Treasure token for each even result. If you rolled 6 exactly seven times, you win the game.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Luck Bobblehead:1",
+                "cost": "CostTap",
+                "effect": "AddManaOfChoice",
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Luck Bobblehead:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "RollDice",
+                            "count": {
+                                "type": "AggregateBattlefield",
+                                "player": "You",
+                                "filter": "Bobblehead"
+                            },
+                            "resultCounts": {
+                                "diceCount0": [
+                                    2,
+                                    4,
+                                    6
+                                ],
+                                "diceCount1": [
+                                    6
+                                ]
+                            }
+                        },
+                        {
+                            "type": "CreatePredefinedToken",
+                            "tokenType": "Treasure",
+                            "tapped": true,
+                            "dynamicCount": {
+                                "type": "VariableReference",
+                                "variableName": "diceCount0"
+                            },
+                            "imageUri": "https://cards.scryfall.io/normal/front/1/d/1d74d012-66ca-4a0c-9e90-e31e96730d4d.jpg?1783912040"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "VariableReference",
+                                        "variableName": "diceCount1"
+                                    },
+                                    "operator": "EQ",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 7
+                                    }
+                                }
+                            },
+                            "then": "WinGame"
+                        }
+                    ]
+                },
+                "descriptionOverride": "Roll a six-sided die for each Bobblehead you control. Create a tapped Treasure for each even result. Exactly seven sixes wins the game."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "135",
+        "rarity": "UNCOMMON",
+        "artist": "Ørjan Ruttenborg Svendsen",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/3/13281945-47ff-464d-96ef-9b26ef6783fa.jpg?1783912379",
+        "rulings": [
+            {
+                "date": "2024-03-08",
+                "text": "The value of X is determined only once, as Luck Bobblehead’s last ability resolves."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "You win the game only if you rolled 6 exactly seven times while resolving a single instance of Luck Bobblehead’s last ability. Results of previous die rolls, whether they’re from previous resolutions of Luck Bobblehead’s last ability or from other effects that instruct you to roll dice, don’t matter for the purposes of this effect."
+            }
+        ]
+    }
+}
+
 // Overflowing Basin
 {
     "name": "Overflowing Basin",

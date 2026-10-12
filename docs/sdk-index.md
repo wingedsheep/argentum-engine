@@ -1013,6 +1013,7 @@ Families:
 - `RevealCollectionEffect(from: String, revealToSelf: Boolean, fromZone: Zone?, toZone: Zone?)` — Emit a com.wingedsheep.engine.core.CardsRevealedEvent for all cards in the named stored collection.
 - `RevealFaceDownPermanentEffect(target: EffectTarget)` — Reveal a face-down permanent: make the identity of the card under a face-down permanent public (CR 708 — a face-down permanent's hidden card characteristics are shown to all players).
 - `RevealHandEffect(target: EffectTarget)` — Reveal a player's hand (publicly visible to all players).
+- `RollDiceEffect(count: DynamicAmount, sides: Int, player: EffectTarget, resultCounts: Map<String, Set<Int>>)` — Roll count independent sides-sided dice for player.
 - `SacrificeEffect(filter: GameObjectFilter, count: Int, any: Boolean, excludeSource: Boolean)` — Sacrifice permanents effect.
 - `SacrificeSelfEffect` — Sacrifice the source permanent (self).
 - `SacrificeTargetEffect(target: EffectTarget, sacrificedByItsController: Boolean)` — Sacrifice a specific permanent identified by target.
@@ -1161,6 +1162,7 @@ Families:
 - `EventPattern.DamageReceivedEvent(source: GameObjectFilter?, recipient: GameObjectFilter?)` — When a permanent is dealt damage.
 - `EventPattern.DealsDamageEvent(damageType: DamageType, recipient: Recipient, sourceFilter: GameObjectFilter?, requires: Set<DamagePredicate>, requireExcess: Boolean, batch: Boolean)` — When a source deals damage.
 - `EventPattern.DesignationTakenEvent(designation: PlayerDesignation, player: Player)` — Whenever a player takes a single-holder designation — "when you take the initiative", "whenever you become the monarch".
+- `EventPattern.DieRolledEvent(player: Player, minimumResult: Int?, maximumResult: Int?)` — Each individual numerical die roll; scopes on its roller and final result.
 - `EventPattern.DiscardEvent(player: Player, cardFilter: GameObjectFilter?, batch: Boolean)` — When a player would discard a card.
 - `EventPattern.DiscoveredEvent(player: Player)` — Whenever player discovers (CR 701.57).
 - `EventPattern.DoorUnlockedEvent(player: Player)` — A door of a Room becomes unlocked (CR 709.5h).

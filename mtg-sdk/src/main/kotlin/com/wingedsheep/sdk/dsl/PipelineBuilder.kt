@@ -1229,6 +1229,21 @@ class PipelineBuilder private constructor(private val shared: Shared) {
         return slot
     }
 
+    /**
+     * Roll one batch and return a numeric handle for each matching result set, in input order.
+     * All slots are fresh, so separate rolls cannot accidentally share a tally.
+     */
+    fun rollDice(
+        count: DynamicAmount = DynamicAmount.Fixed(1),
+        sides: Int = 6,
+        player: EffectTarget = EffectTarget.Controller,
+        resultSets: List<Set<Int>> = emptyList(),
+    ): List<NumberSlot> {
+        val slots = resultSets.map { NumberSlot(slotKey("diceCount", nextIndex(), null)) }
+        steps += Effects.RollDice(count, sides, player, slots.zip(resultSets).associate { (slot, results) -> slot.key to results })
+        return slots
+    }
+
     /** Like [runStoringCollection], for an effect that records a number (`storeHeadsAs = it`). */
     fun runStoringNumber(effect: (key: String) -> Effect): NumberSlot {
         val slot = NumberSlot(slotKey("storedNumber", nextIndex(), null))

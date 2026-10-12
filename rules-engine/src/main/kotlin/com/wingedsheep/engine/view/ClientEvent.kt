@@ -710,6 +710,18 @@ sealed interface ClientEvent {
     // =========================================================================
 
     @Serializable
+    @SerialName("dieRolled")
+    data class DieRolled(
+        val playerId: EntityId,
+        val sides: Int,
+        val result: Int,
+        val sourceId: EntityId?,
+        val sourceName: String,
+        val isYours: Boolean? = null,
+        override val description: String = "${if (isYours == true) "You" else if (isYours == false) "Opponent" else "A player"} rolled a d$sides ($sourceName): $result",
+    ) : ClientEvent
+
+    @Serializable
     @SerialName("coinFlipped")
     data class CoinFlipped(
         val playerId: EntityId,
@@ -1488,6 +1500,8 @@ object ClientEventTransformer {
                 counterType = CounterType.LOYALTY.printed,
                 count = event.change
             )
+
+            is DieRolledEvent -> ClientEvent.DieRolled(event.playerId, event.sides, event.result, event.sourceId, event.sourceName, event.playerId == viewingPlayerId)
 
             is CoinFlipEvent -> ClientEvent.CoinFlipped(
                 playerId = event.playerId,

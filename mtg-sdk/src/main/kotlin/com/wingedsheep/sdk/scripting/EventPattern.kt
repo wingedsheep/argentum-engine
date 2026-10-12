@@ -3110,6 +3110,28 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
         }
     }
 
+    /** Each individual numerical die roll; scopes on its roller and final result.
+     * Unlike TrainedEvent (a creature action) and ScriedEvent (a library action), this
+     * observes a player's random numerical outcome, with an optional result interval.
+     */
+    @SerialName("DieRolledEvent")
+    @Serializable
+    data class DieRolledEvent(
+        val player: Player = Player.Any,
+        val minimumResult: Int? = null,
+        val maximumResult: Int? = null,
+    ) : EventPattern {
+        init {
+            require(player in setOf(Player.You, Player.EachOpponent, Player.Each, Player.Any)) {
+                "Die-roll triggers require you, an opponent, or any player"
+            }
+            require(minimumResult == null || maximumResult == null || minimumResult <= maximumResult) {
+                "A die-result interval must not be inverted"
+            }
+        }
+        override val description: String = "${player.description} rolls a die"
+    }
+
     /**
      * When a creature trains (CR 702.149c) — "'When this creature trains' means 'When a resolving
      * training ability puts one or more +1/+1 counters on this creature.'" The training payoff of

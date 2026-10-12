@@ -2,8 +2,7 @@
 
 **Set Size:** 336 cards
 **Release Date:** March 8, 2024
-**Implemented:** 129 / 336
-
+**Implemented:** 130 / 336
 | Section    | Total | Done |
 |------------|-------|------|
 | Extras     | 336   | 129  |
@@ -164,7 +163,7 @@
 - [ ] Lily Bowen, Raging Grandma
 - [x] Lord of the Undead
 - [ ] Loyal Apprentice
-- [ ] Luck Bobblehead
+- [x] Luck Bobblehead
 - [ ] Lumbering Megasloth
 - [ ] MacCready, Lamplight Mayor
 - [ ] Mantle of the Ancients

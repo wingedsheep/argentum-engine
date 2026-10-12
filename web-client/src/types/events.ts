@@ -45,6 +45,7 @@ export type ClientEvent =
   | CardsRevealedEvent
   | TurnedFaceUpEvent
   | TransformedEvent
+  | DieRolledEvent
   | CoinFlippedEvent
   | TurnChangedEvent
   | GameRestartedEvent
@@ -595,5 +596,17 @@ export interface CreatureEnlistedEvent {
 export interface AttackCancelledEvent {
   readonly type: 'attackCancelled'
   readonly playerId: string
+  readonly description: string
+}
+
+/** Public numerical dice, fully resolved by the server. */
+export interface DieRolledEvent {
+  readonly type: 'dieRolled'
+  readonly playerId: EntityId
+  readonly sides: number
+  readonly result: number
+  readonly sourceId: EntityId | null
+  readonly sourceName: string
+  readonly isYours?: boolean
   readonly description: string
 }

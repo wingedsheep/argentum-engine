@@ -776,6 +776,12 @@ class TriggerMatcher(
                 if (trigger.requireNontokenExploited && event.sacrificedWasToken) return false
                 true
             }
+            is EventPattern.DieRolledEvent -> {
+                event is com.wingedsheep.engine.core.DieRolledEvent &&
+                    matchesPlayer(state, trigger.player, event.playerId, controllerId) &&
+                    (trigger.minimumResult?.let { event.result >= it } ?: true) &&
+                    (trigger.maximumResult?.let { event.result <= it } ?: true)
+            }
             is EventPattern.TrainedEvent -> {
                 if (event !is com.wingedsheep.engine.core.TrainedEvent) return false
                 // "When THIS creature trains" (Savior of Ollenbock): SELF binding restricts to the

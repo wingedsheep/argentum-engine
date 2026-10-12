@@ -17586,3 +17586,21 @@ forgets flipped status (CR 710.4). Saved identities without frozen halves recove
 registered definition when copying or flipping; already-frozen values are preserved.
 Existing characteristic-change markers and state projection expose recopy/expiry to the client; flipping
 uses its existing flip event and rotation. No additional player decision or client rule calculation is needed.
+
+### Numerical dice
+
+`Effects.RollDice(count: DynamicAmount = Fixed(1), sides = 6, player = Controller,
+resultCounts = emptyMap())` rolls equally likely outcomes from 1 through `sides`, advancing the
+immutable game RNG. Count is evaluated once at resolution. `resultCounts` maps numeric pipeline
+keys to sets of matching results; every key is written (including zero), scoped to this batch.
+Cards use `Effects.Pipeline { val (evens, sixes) = rollDice(count, sides = 6,
+resultSets = listOf(setOf(2, 4, 6), setOf(6))); ... }`: `rollDice` returns fresh `NumberSlot`s
+in result-set order. Luck Bobblehead creates tapped Treasures from `evens.amount` and tests
+`sixes.amount == 7`, without spelling pipeline keys.
+
+`Triggers.you.rollsDie(minimumResult = null, maximumResult = null)` (also `anOpponent` and
+`anyPlayer`) observes each individual numerical roll with inclusive result bounds. The roller is
+`TriggeringPlayer`; `ContextProperty(TRIGGER_DIE_RESULT)` reads its captured result. The engine
+emits public `DieRolledEvent`s and detects observers at the settle boundary, after resolution.
+No new die decision is needed; server results appear in the game log. Roll replacements, extra
+ignored dice, rerolls and result modifiers are not part of this primitive's current surface.

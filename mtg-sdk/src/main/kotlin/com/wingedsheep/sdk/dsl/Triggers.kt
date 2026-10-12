@@ -751,6 +751,11 @@ class BatchTriggerSubject internal constructor(
  * `Player.TriggeringPlayer`.
  */
 class PlayerTriggerSubject internal constructor(private val player: Player) {
+    /** Each die is a separate trigger, optionally restricted to an inclusive result interval. */
+    fun rollsDie(minimumResult: Int? = null, maximumResult: Int? = null): TriggerSpec {
+        only("rollsDie", Player.You, Player.EachOpponent, Player.Each, Player.Any)
+        return spec(EventPattern.DieRolledEvent(player, minimumResult, maximumResult))
+    }
 
     private fun spec(event: EventPattern, binding: TriggerBinding = TriggerBinding.ANY) =
         TriggerSpec(event = event, binding = binding)

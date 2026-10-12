@@ -2558,3 +2558,14 @@ data class EnlistedEvent(
 @Serializable
 @SerialName("AttackDeclarationCancelledEvent")
 data class AttackDeclarationCancelledEvent(val playerId: EntityId) : GameEvent
+
+/** One final numerical die roll. Results are public; the immutable RNG advances once per die. */
+@Serializable
+@SerialName("DieRolledEvent")
+data class DieRolledEvent(
+    val playerId: EntityId,
+    val sides: Int,
+    val result: Int,
+    val sourceId: EntityId? = null,
+    val sourceName: String = "Ability",
+) : GameEvent

@@ -55,6 +55,8 @@ data class TriggerContext(
     val triggeringBattlefieldTimestamp: Long? = null,
     val triggeringPlayerId: EntityId? = null,
     val damageAmount: Int? = null,
+    /** Final result captured for a die-roll observer, independent of later rolls. */
+    val dieResult: Int? = null,
     val step: Step? = null,
     val xValue: Int? = null,
     /**
@@ -555,6 +557,10 @@ data class TriggerContext(
                 is AbilityTriggeredEvent -> TriggerContext(
                     triggeringEntityId = event.abilityEntityId,
                     triggeringPlayerId = event.controllerId
+                )
+                is com.wingedsheep.engine.core.DieRolledEvent -> TriggerContext(
+                    triggeringPlayerId = event.playerId,
+                    dieResult = event.result,
                 )
                 else -> TriggerContext()
             }

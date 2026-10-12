@@ -42,6 +42,7 @@ function getEventPlayerId(event: { type: string; playerId?: string; casterId?: s
     case 'cardsRevealed': return event.revealingPlayerId as EntityId
     case 'turnedFaceUp': return event.controllerId as EntityId
     case 'transformed': return event.controllerId as EntityId
+    case 'dieRolled':
     case 'coinFlipped': return event.playerId as EntityId
     case 'turnChanged': return event.activePlayerId as EntityId
     case 'gameRestarted': return event.startingPlayerId as EntityId

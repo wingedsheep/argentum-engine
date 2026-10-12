@@ -421,6 +421,8 @@ enum class TurnTracker {
  */
 @Serializable
 enum class ContextPropertyKey(val description: String) {
+    /** The final result of the individual die roll that caused this trigger. */
+    TRIGGER_DIE_RESULT("the die roll's result"),
     /** The amount of damage in the current trigger payload (Tephraderm, Wall of Hope, …). */
     TRIGGER_DAMAGE_AMOUNT("the damage dealt"),
     /**

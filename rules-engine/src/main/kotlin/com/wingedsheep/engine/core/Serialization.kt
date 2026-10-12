@@ -141,6 +141,7 @@ val engineSerializersModule = SerializersModule {
         subclass(CardsRevealedEvent::class)
         subclass(ClassLevelChangedEvent::class)
         subclass(CoinFlipEvent::class)
+        subclass(DieRolledEvent::class)
         subclass(ControlChangedEvent::class)
         subclass(CreatureTypeChangedEvent::class)
         subclass(CreatureTypeChosenEvent::class)

@@ -37,7 +37,7 @@ val GameEvent.revealsInformation: Boolean get() = when (this) {
     is CardsDrawnEvent, is CardRevealedFromDrawEvent,
     is CardsRevealedEvent, is LookedAtCardsEvent,
     is HandLookedAtEvent, is HandRevealedEvent,
-    is CoinFlipEvent, is LibraryReorderedEvent -> true
+    is CoinFlipEvent, is DieRolledEvent, is LibraryReorderedEvent -> true
     else -> false
 }
 
