@@ -402,20 +402,10 @@ class TargetEnumerationUtils(
         sourceId: EntityId?,
         sourceType: TargetingSourceType,
     ): List<TargetInfo> {
-        val tables = requirements.map { linkedMapOf<String, List<EntityId>>() }
-        val finder = com.wingedsheep.engine.handlers.TargetFinder(predicateEvaluator)
-        val context = PredicateContext(controllerId = playerId, sourceId = sourceId)
-        fun visit(prefix: List<List<EntityId>>) {
-            val index = prefix.size
-            val legal = com.wingedsheep.engine.handlers.DependentTargetSelection.legalNext(
-                state, requirements, prefix, context, finder, sourceType,
-            )
-            tables[index][prefix.flatten().joinToString(",")] = legal
-            if (index < requirements.lastIndex) {
-                legal.forEach { visit(prefix + listOf(listOf(it))) }
-            }
-        }
-        visit(emptyList())
+        val tables = com.wingedsheep.engine.handlers.DependentTargetSelection.prefixTables(
+            state, requirements, PredicateContext(controllerId = playerId, sourceId = sourceId),
+            com.wingedsheep.engine.handlers.TargetFinder(predicateEvaluator), sourceType,
+        )
         return requirements.mapIndexed { index, req ->
             val legal = tables[index].values.flatten().distinct()
             TargetInfo(

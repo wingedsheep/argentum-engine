@@ -13,6 +13,7 @@ import com.wingedsheep.engine.core.ChooseNumberDecision
 import com.wingedsheep.engine.core.ChooseOptionDecision
 import com.wingedsheep.engine.core.ChooseReplacementDecision
 import com.wingedsheep.engine.core.ChooseTargetsDecision
+import com.wingedsheep.engine.core.legalTargetsFor
 import com.wingedsheep.engine.core.ReplacementChosenResponse
 import com.wingedsheep.engine.core.ColorChosenResponse
 import com.wingedsheep.engine.core.CombatResolutionDecision
@@ -168,7 +169,8 @@ object DecisionValidators {
             if (decision.targetRequirements.none { it.index == reqIndex }) {
                 return "Unknown target requirement $reqIndex"
             }
-            val legalForReq = decision.legalTargets[reqIndex] ?: emptyList()
+            // A slot that reads an earlier target is checked against the picks actually made for it.
+            val legalForReq = decision.legalTargetsFor(reqIndex, response.selectedTargets)
             for (id in selectedIds) {
                 if (id !in legalForReq) {
                     return "Invalid target: $id is not a legal choice for requirement $reqIndex"

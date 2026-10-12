@@ -187,6 +187,27 @@ describe('ChooseTargetsUI walk — per-requirement walking', () => {
     expect(chooseTargetsView(another, walk, cards).legalTargets).toEqual([elves.id])
   })
 
+  it("reads a dependent slot's pool from the earlier slots' answers, a kept slot keying as empty", () => {
+    // A copy of "target opponent … target land that player controls": keeping the opponent and
+    // changing it offer different lands.
+    const dependent = decision(
+      [
+        req({ index: 0 }),
+        req({
+          index: 1,
+          legalTargetsByPrefix: { '': [bears.id], p3: [elves.id] },
+          prefixLength: 1,
+        }),
+      ],
+      { 0: [entityId('p3')], 1: [bears.id, elves.id] },
+    )
+
+    expect(chooseTargetsView(dependent, run([confirm([], 2)]), cards).legalTargets).toEqual([bears.id])
+    expect(chooseTargetsView(dependent, run([confirm([entityId('p3')], 2)]), cards).legalTargets).toEqual([
+      elves.id,
+    ])
+  })
+
   it('steps Back with the previous requirement pre-selected and its pool restored', () => {
     const bothBoard = decision([req({ index: 0 }), req({ index: 1 })], {
       0: [bears.id, elves.id],

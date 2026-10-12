@@ -5614,7 +5614,10 @@ This is the player-arm prerequisite for the planned composable mixed `TargetUnio
   their earlier choices, and direct submissions are validated with those named bindings.
   First choices that cannot complete the required targets are excluded. As with triggered
   selection below, earlier slots are single targets and only the last may take several;
-  optional slots must form a trailing suffix. No new SDK type is needed.
+  optional slots must form a trailing suffix. No new SDK type is needed. A **copy** of such a
+  spell or triggered ability offers its new targets the same way — each slot per earlier slot's
+  answer, a kept target binding as itself — and a fixed redirect ("change the target to this
+  creature") judges the new target against the spell's other targets as they stand.
   On a **triggered ability's** target slot bound to an earlier target of the same ability
   (`targetPlayerControls(player)` after `val player = target(Targets.Player)`), the trigger chooses
   its targets one slot at a time, offering each slot only what the earlier choices allow

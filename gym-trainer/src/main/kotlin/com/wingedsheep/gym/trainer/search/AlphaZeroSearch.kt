@@ -9,6 +9,7 @@ import com.wingedsheep.engine.core.ChooseNumberDecision
 import com.wingedsheep.engine.core.ChooseOptionDecision
 import com.wingedsheep.engine.core.ChooseReplacementDecision
 import com.wingedsheep.engine.core.ChooseTargetsDecision
+import com.wingedsheep.engine.core.legalTargetsFor
 import com.wingedsheep.engine.core.ColorChosenResponse
 import com.wingedsheep.engine.core.CombatResolutionDecision
 import com.wingedsheep.engine.core.DecisionResponse
@@ -520,12 +521,13 @@ class RandomStructuredResolver(
      */
     private fun draw(decision: PendingDecision): DecisionResponse = when (decision) {
         is ChooseTargetsDecision -> {
-            val picked = decision.targetRequirements.associate { req ->
-                val legal = decision.legalTargets[req.index].orEmpty()
+            val picked = decision.targetRequirements.fold(emptyMap<Int, List<EntityId>>()) { chosen, req ->
+                // In slot order, so a slot that reads an earlier target draws from its table.
+                val legal = decision.legalTargetsFor(req.index, chosen)
                 // `take` clamps on its own; a requirement asking for more targets than are legal is
                 // unsatisfiable, and an under-count that fails validation says so louder than a
                 // silently shrunk selection would.
-                req.index to legal.shuffled(rng).take(req.minTargets)
+                chosen + (req.index to legal.shuffled(rng).take(req.minTargets))
             }
             com.wingedsheep.engine.core.TargetsResponse(decision.id, picked)
         }

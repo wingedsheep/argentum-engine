@@ -106,4 +106,25 @@ object DependentTargetSelection {
         }
         return candidates(chosen).filter { canComplete(chosen + listOf(listOf(it))) }
     }
+
+    /**
+     * Every slot's [legalNext] choices for every prefix the earlier slots can produce, keyed by the
+     * comma-joined earlier picks — the table a client walks slot by slot without a round trip.
+     */
+    fun prefixTables(
+        state: GameState,
+        requirements: List<TargetRequirement>,
+        context: PredicateContext,
+        targetFinder: TargetFinder,
+        targetingSourceType: TargetingSourceType = TargetingSourceType.TRIGGERED_ABILITY
+    ): List<Map<String, List<EntityId>>> {
+        val tables = requirements.map { linkedMapOf<String, List<EntityId>>() }
+        fun visit(prefix: List<List<EntityId>>) {
+            val legal = legalNext(state, requirements, prefix, context, targetFinder, targetingSourceType)
+            tables[prefix.size][prefix.flatten().joinToString(",")] = legal
+            if (prefix.size < requirements.lastIndex) legal.forEach { visit(prefix + listOf(listOf(it))) }
+        }
+        visit(emptyList())
+        return tables
+    }
 }

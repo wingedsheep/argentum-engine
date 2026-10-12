@@ -3,6 +3,9 @@ package com.wingedsheep.engine.handlers.effects.stack
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.state.components.stack.*
 import com.wingedsheep.engine.handlers.continuations.entityIdToChosenTarget
+import com.wingedsheep.engine.handlers.DependentTargetSelection
+import com.wingedsheep.engine.handlers.EffectContext
+import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.TargetFinder
 import com.wingedsheep.engine.handlers.TargetingSourceType
 import com.wingedsheep.engine.handlers.effects.copy.CopyExceptionApplier
@@ -42,22 +45,90 @@ internal object SpellCopyTargets {
     fun prompt(state: GameState, finder: TargetFinder, sourceId: EntityId, controllerId: EntityId,
                requirements: List<TargetRequirement>, exceptions: CopyExceptions, ordinal: Int? = null): Prompt {
         val originals = originals(state, sourceId, ordinal)
-        val byRequirement = legalTargets(state, finder, sourceId, controllerId, requirements, exceptions)
+        val aligned = alignedRequirements(requirements, originals.size)
+        val tables = if (DependentTargetSelection.isRequired(requirements) && aligned.dropLast(1).all { it.count == 1 }) {
+            preview(state, sourceId, controllerId, exceptions)?.let { dependentTables(it, finder, aligned, originals) }
+        } else null
+        val byRequirement = if (tables == null) legalTargets(state, finder, sourceId, controllerId, requirements, exceptions)
+            else tables.mapIndexed { index, table -> index to table.values.flatten().distinct() }.toMap()
         val distribution = state.getEntity(sourceId)?.get<SpellOnStackComponent>()?.damageDistribution.orEmpty()
         val infos = mutableListOf<TargetRequirementInfo>()
         val legal = mutableMapOf<Int, List<EntityId>>()
         var slot = 0
-        for ((index, req) in alignedRequirements(requirements, originals.size).withIndex()) {
+        for ((index, req) in aligned.withIndex()) {
             repeat(req.count) {
                 val amount = distribution[originals[slot].entityId()]
                 infos += TargetRequirementInfo(index = slot, minTargets = 0, maxTargets = 1,
                     description = "${req.description} — target ${slot + 1}" +
-                        (amount?.let { ": $it to this target" } ?: ""), emptyChoiceLabel = "Keep original target")
+                        (amount?.let { ": $it to this target" } ?: ""), emptyChoiceLabel = "Keep original target",
+                    legalTargetsByPrefix = tables?.get(index)?.takeIf { index > 0 },
+                    prefixLength = index.takeIf { tables != null && index > 0 })
                 legal[slot] = byRequirement[index].orEmpty()
                 slot++
             }
         }
         return Prompt(infos, legal)
+    }
+
+    /**
+     * Choices per requirement keyed by the earlier slots' answers, when a filter reads an earlier
+     * target (The Fall of Kroog: "target land that player controls"). Every earlier slot is either
+     * kept — its original target stays bound (CR 707.10c) — or changed to one of its own choices.
+     * Every requirement before the last is a single slot here, so requirement and slot indices agree.
+     */
+    private fun dependentTables(
+        preview: Preview,
+        finder: TargetFinder,
+        aligned: List<TargetRequirement>,
+        originals: List<ChosenTarget>,
+    ): List<Map<String, List<EntityId>>> {
+        val tables = aligned.map { linkedMapOf<String, List<EntityId>>() }
+        fun visit(index: Int, keys: List<String>, prefix: List<ChosenTarget>) {
+            val legal = preview.legal(finder, aligned[index], prefix, EffectContext.buildNamedTargets(aligned.take(index), prefix))
+            tables[index][keys.joinToString(",")] = legal
+            if (index == aligned.lastIndex) return
+            visit(index + 1, keys + "", prefix + originals[index])
+            legal.forEach { visit(index + 1, keys + it.value, prefix + entityIdToChosenTarget(preview.state, it)) }
+        }
+        visit(0, emptyList(), emptyList())
+        return tables
+    }
+
+    /** The prospective copy, on a scratch state, so legality reads its colors and controller. */
+    private class Preview(val state: GameState, val copyId: EntityId, val card: CardComponent,
+                          val controllerId: EntityId, val xValue: Int?) {
+        val subtypes: Set<String> = card.typeLine.subtypes.mapTo(mutableSetOf()) { it.value }
+
+        fun legal(finder: TargetFinder, requirement: TargetRequirement, prefix: List<ChosenTarget> = emptyList(),
+                  named: Map<String, ChosenTarget> = emptyMap()): List<EntityId> =
+            finder.findLegalTargets(state, requirement, controllerId, copyId, targetingSourceType = TargetingSourceType.SPELL,
+                pipelineContext = if (prefix.isEmpty()) null else PredicateContext(controllerId = controllerId,
+                    sourceId = copyId, xValue = xValue, targets = prefix, namedTargets = named),
+            ).filter { candidate ->
+                finder.validator.validateSingleTarget(
+                    state = state,
+                    target = entityIdToChosenTarget(state, candidate),
+                    requirement = requirement,
+                    casterId = controllerId,
+                    sourceColors = card.colors,
+                    sourceSubtypes = subtypes,
+                    sourceId = copyId,
+                    xValue = xValue,
+                    allTargets = prefix,
+                    targetingSourceType = TargetingSourceType.SPELL,
+                    namedTargets = named,
+                ) == null
+            }
+    }
+
+    private fun preview(state: GameState, sourceId: EntityId, controllerId: EntityId, exceptions: CopyExceptions): Preview? {
+        val source = state.getEntity(sourceId) ?: return null
+        val card = source.get<CardComponent>() ?: return null
+        val spell = source.get<SpellOnStackComponent>() ?: return null
+        val (copyId, scratch) = state.newEntity()
+        val copied = CopyExceptionApplier.apply(card, exceptions).copy(ownerId = controllerId)
+        return Preview(scratch.withEntity(copyId, ComponentContainer.of(copied, spell.copy(casterId = controllerId))),
+            copyId, copied, controllerId, spell.xValue)
     }
 
     fun validate(state: GameState, finder: TargetFinder, answer: AnswerContinuation, response: TargetsResponse): String? {
@@ -80,14 +151,9 @@ internal object SpellCopyTargets {
         }
         val selection = selection(state, sourceId, response, ordinal)
         if (selection.retained.size == selection.targets.size) return null
-        val source = state.getEntity(sourceId) ?: return "Source spell missing"
-        val card = source.get<CardComponent>() ?: return "Source card missing"
-        val spell = source.get<SpellOnStackComponent>() ?: return "Source spell missing"
-        val (id, scratch) = state.newEntity()
-        val copied = CopyExceptionApplier.apply(card, exceptions).copy(ownerId = controller)
-        val preview = scratch.withEntity(id, ComponentContainer.of(copied, spell.copy(casterId = controller)))
-        return finder.validator.validateTargets(preview, selection.targets, alignedRequirements(requirements, selection.targets.size), controller,
-            copied.colors, copied.typeLine.subtypes.mapTo(mutableSetOf()) { it.value }, id, spell.xValue,
+        val preview = preview(state, sourceId, controller, exceptions) ?: return "Source spell missing"
+        return finder.validator.validateTargets(preview.state, selection.targets, alignedRequirements(requirements, selection.targets.size), controller,
+            preview.card.colors, preview.subtypes, preview.copyId, preview.xValue,
             TargetingSourceType.SPELL, retainedTargetIndices = selection.retained)
     }
 
@@ -117,32 +183,7 @@ internal object SpellCopyTargets {
         requirements: List<TargetRequirement>,
         exceptions: CopyExceptions,
     ): Map<Int, List<EntityId>> {
-        val source = state.getEntity(sourceId)
-        val card = source?.get<CardComponent>() ?: return emptyMap()
-        val spell = source.get<SpellOnStackComponent>() ?: return emptyMap()
-        val (copyId, scratch) = state.newEntity()
-        val copiedCard = CopyExceptionApplier.apply(card, exceptions).copy(ownerId = controllerId)
-        val preview = scratch.withEntity(copyId, ComponentContainer.of(
-            copiedCard,
-            spell.copy(casterId = controllerId),
-        ))
-        val sourceSubtypes = copiedCard.typeLine.subtypes.mapTo(mutableSetOf()) { it.value }
-        return requirements.mapIndexed { index, requirement ->
-            index to finder.findLegalTargets(
-                preview, requirement, controllerId, copyId, targetingSourceType = TargetingSourceType.SPELL
-            ).filter { candidate ->
-                finder.validator.validateSingleTarget(
-                    state = preview,
-                    target = com.wingedsheep.engine.handlers.continuations.entityIdToChosenTarget(preview, candidate),
-                    requirement = requirement,
-                    casterId = controllerId,
-                    sourceColors = copiedCard.colors,
-                    sourceSubtypes = sourceSubtypes,
-                    sourceId = copyId,
-                    xValue = spell.xValue,
-                    targetingSourceType = TargetingSourceType.SPELL,
-                ) == null
-            }
-        }.toMap()
+        val preview = preview(state, sourceId, controllerId, exceptions) ?: return emptyMap()
+        return requirements.mapIndexed { index, requirement -> index to preview.legal(finder, requirement) }.toMap()
     }
 }

@@ -3,6 +3,7 @@ package com.wingedsheep.ai.llm.decision.handlers
 import com.wingedsheep.engine.core.ChooseTargetsDecision
 import com.wingedsheep.engine.core.DecisionResponse
 import com.wingedsheep.engine.core.TargetsResponse
+import com.wingedsheep.engine.core.legalTargetsFor
 import com.wingedsheep.ai.llm.AiResponseParser
 import com.wingedsheep.ai.llm.GameStateFormatter
 import com.wingedsheep.ai.llm.decision.AiDecisionHandler
@@ -79,6 +80,7 @@ class ChooseTargetsHandler : AiDecisionHandler<ChooseTargetsDecision> {
                     if (idx >= validTargets.size) return null
                     req.index to listOf(validTargets[idx])
                 }
+                if (!consistent(decision, result)) return null
                 TargetsResponse(decisionId = decision.id, selectedTargets = result)
             } else {
                 // Fallback: try single letter for all requirements
@@ -95,11 +97,22 @@ class ChooseTargetsHandler : AiDecisionHandler<ChooseTargetsDecision> {
                 // left out, and the controller only falls back to the engine AI when parsing
                 // returns null — so a partial answer would be submitted, rejected, and never
                 // retried, wedging the game on a decision no one answers.
-                if (result.size == decision.targetRequirements.size) {
+                if (result.size == decision.targetRequirements.size && consistent(decision, result)) {
                     TargetsResponse(decisionId = decision.id, selectedTargets = result)
                 } else null
             }
         }
     }
 
+
+    /**
+     * Letters index each slot's union; a slot that reads an earlier target ("target land that
+     * player controls") only allows the picks its earlier slots' table names. An inconsistent
+     * answer would be rejected and never retried, so it isn't a parse — the engine AI answers.
+     */
+    private fun consistent(decision: ChooseTargetsDecision, result: Map<Int, List<EntityId>>): Boolean =
+        decision.targetRequirements.all { req ->
+            req.legalTargetsByPrefix == null ||
+                decision.legalTargetsFor(req.index, result).containsAll(result[req.index].orEmpty())
+        }
 }

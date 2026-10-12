@@ -121,7 +121,16 @@ export function chooseTargetsView(
   const earlierPicks = Object.entries(walk.collected)
     .filter(([index]) => Number(index) < walk.requirementIndex)
     .flatMap(([, ids]) => ids)
-  const pool = decision.legalTargets[walk.requirementIndex] ?? []
+  // A slot that reads an earlier target is offered against the earlier slots' answers; a kept copy
+  // target answers with nothing, and keys as an empty slot.
+  const prefixTable = requirement?.legalTargetsByPrefix
+  const pool = prefixTable
+    ? prefixTable[
+        Array.from({ length: requirement.prefixLength ?? walk.requirementIndex }, (_, slot) =>
+          (walk.collected[slot] ?? []).join(','),
+        ).join(',')
+      ] ?? []
+    : decision.legalTargets[walk.requirementIndex] ?? []
   const legalTargets = requirement?.mustDifferFromEarlier
     ? pool.filter((id) => !earlierPicks.includes(id))
     : pool

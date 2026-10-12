@@ -17,6 +17,7 @@ import com.wingedsheep.engine.core.ChooseNumberDecision
 import com.wingedsheep.engine.core.ChooseOptionDecision
 import com.wingedsheep.engine.core.ChooseReplacementDecision
 import com.wingedsheep.engine.core.ChooseTargetsDecision
+import com.wingedsheep.engine.core.legalTargetsFor
 import com.wingedsheep.engine.core.ColorChosenResponse
 import com.wingedsheep.engine.core.CombatResolutionDecision
 import com.wingedsheep.engine.core.DamageAssignmentResponse
@@ -77,16 +78,17 @@ class FastDecisionResponder(private val intents: IntentCatalog = IntentCatalog.N
             // Rank by the same heuristic the Strategist's cheap path uses. Not "first legal": a
             // playout that aims every removal spell at the nearest 1/1 systematically undervalues
             // removal, which is a bias in the leaf the whole phase exists to improve.
+            // In slot order: a slot that reads an earlier target draws from the earlier picks' table.
             is ChooseTargetsDecision -> TargetsResponse(
                 decision.id,
-                decision.targetRequirements.associate { req ->
-                    val legal = decision.legalTargets[req.index] ?: emptyList()
+                decision.targetRequirements.fold(emptyMap()) { chosen, req ->
+                    val legal = decision.legalTargetsFor(req.index, chosen)
                     val count = req.maxTargets.coerceAtMost(legal.size).coerceAtLeast(
                         req.minTargets.coerceAtMost(legal.size)
                     )
-                    req.index to legal
+                    chosen + (req.index to legal
                         .sortedByDescending { TargetSelection.rank(state, it, playerId, intents) }
-                        .take(count)
+                        .take(count))
                 }
             )
 

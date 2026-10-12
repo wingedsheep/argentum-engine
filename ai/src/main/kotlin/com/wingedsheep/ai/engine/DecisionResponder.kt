@@ -214,26 +214,30 @@ class DecisionResponder(
         // complete baseline for the others keeps the comparison meaningful. Carry each selected
         // answer into the next probe: independently legal replacements can conflict when combined
         // (two copy slots choosing the same object for one target requirement).
-        val selected = minimalCompleteSelection(decision).toMutableMap()
+        // A slot that reads an earlier target draws from the earlier picks' table, and every probe
+        // re-picks the later slots that probe would unseat, so no probe is illegal for that reason.
+        var selected = minimalCompleteSelection(decision)
+        fun probe(index: Int, picks: List<EntityId>) =
+            TargetsResponse(decision.id, decision.repairSlotsAfter(index, selected + (index to picks)))
         for (req in decision.targetRequirements) {
-            val targets = decision.legalTargets[req.index] ?: emptyList()
-            selected[req.index] = if (targets.isEmpty()) {
+            val targets = decision.legalTargetsFor(req.index, selected)
+            val answer = if (targets.isEmpty()) {
                 emptyList()
             } else {
                 val best = pickBestBySimulation(state, targets.take(maxCandidates), playerId) { target ->
-                    TargetsResponse(decision.id, selected + (req.index to listOf(target)))
+                    probe(req.index, listOf(target))
                 }
                 val picks = if (fillUpToMaxTargets) {
                     growTargets(state, playerId, req, best, targets.take(maxCandidates), targets) { picked ->
-                        TargetsResponse(decision.id, selected + (req.index to picked))
+                        probe(req.index, picked)
                     }
                 } else {
                     listOf(best)
                 }
                 // For optional targets, compare best pick against skipping
                 if (req.minTargets == 0) {
-                    val pickResponse = TargetsResponse(decision.id, selected + (req.index to picks))
-                    val skipResponse = TargetsResponse(decision.id, selected + (req.index to emptyList()))
+                    val pickResponse = probe(req.index, picks)
+                    val skipResponse = probe(req.index, emptyList())
                     val pickScore = evaluateResult(state,simulator.simulateDecision(state, pickResponse), playerId)
                     val skipScore = evaluateResult(state,simulator.simulateDecision(state, skipResponse), playerId)
                     if (skipScore >= pickScore) emptyList()
@@ -242,8 +246,9 @@ class DecisionResponder(
                     picks
                 }
             }
+            selected = decision.repairSlotsAfter(req.index, selected + (req.index to answer))
         }
-        return TargetsResponse(decision.id, selected.toMap())
+        return TargetsResponse(decision.id, selected)
     }
 
     /**
@@ -1265,9 +1270,7 @@ class DecisionResponder(
      * is why this doubles as the fixed background a per-requirement probe varies one slot against.
      */
     internal fun minimalCompleteSelection(decision: ChooseTargetsDecision): Map<Int, List<EntityId>> =
-        decision.targetRequirements.associate { req ->
-            req.index to (decision.legalTargets[req.index] ?: emptyList()).take(req.minTargets)
-        }
+        decision.minimalSelection()
 
     private fun cancelOrFirst(decision: ChooseTargetsDecision): DecisionResponse {
         if (decision.canCancel) return CancelDecisionResponse(decision.id)

@@ -20,8 +20,8 @@ internal class JevDecisions(private val q: JevChoices, private val label: (Entit
             q.select(d.prompt, d.modes.filter { it.available }, d.minModes, d.maxModes) { it.text }.map { it.index })
         is SelectCardsDecision -> CardsSelectedResponse(d.id, cards(d.prompt, d.options, d.minSelections, d.maxSelections))
         is SearchLibraryDecision -> CardsSelectedResponse(d.id, cards(d.prompt, d.options, d.minSelections, d.maxSelections))
-        is ChooseTargetsDecision -> TargetsResponse(d.id, d.targetRequirements.associate { r ->
-            r.index to cards("${d.prompt}: ${r.description}", d.legalTargets[r.index].orEmpty(), r.minTargets, r.maxTargets)
+        is ChooseTargetsDecision -> TargetsResponse(d.id, d.targetRequirements.fold(emptyMap()) { chosen, r ->
+            chosen + (r.index to cards("${d.prompt}: ${r.description}", d.legalTargetsFor(r.index, chosen), r.minTargets, r.maxTargets))
         })
         is OrderObjectsDecision -> OrderedResponse(d.id, cards("${d.prompt}: choose next in order", d.objects, d.objects.size, d.objects.size))
         is ReorderLibraryDecision -> OrderedResponse(d.id, cards("${d.prompt}: top first", d.cards, d.cards.size, d.cards.size))

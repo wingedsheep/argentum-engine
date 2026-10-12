@@ -465,6 +465,13 @@ export interface ChooseTargetsDecision extends PendingDecisionBase {
 
 export interface TargetRequirementInfo {
   readonly emptyChoiceLabel?: string | null
+  /**
+   * Server-computed choices for a slot whose filter reads an earlier target, keyed by the first
+   * `prefixLength` (default: every earlier) slots' picks — each slot's ids comma-joined, an empty
+   * (kept) slot as "", slots joined by commas. Replaces `legalTargets` for this slot when set.
+   */
+  readonly legalTargetsByPrefix?: Readonly<Record<string, readonly EntityId[]>> | null
+  readonly prefixLength?: number | null
   readonly index: number
   readonly minTargets: number
   readonly maxTargets: number

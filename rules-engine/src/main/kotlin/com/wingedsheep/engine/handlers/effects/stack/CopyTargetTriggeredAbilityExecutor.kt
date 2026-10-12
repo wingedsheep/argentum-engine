@@ -1,7 +1,9 @@
 package com.wingedsheep.engine.handlers.effects.stack
 
 import com.wingedsheep.engine.core.*
+import com.wingedsheep.engine.handlers.DependentTargetSelection
 import com.wingedsheep.engine.handlers.EffectContext
+import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.TargetFinder
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.mechanics.stack.StackPlacement
@@ -65,12 +67,16 @@ class CopyTargetTriggeredAbilityExecutor(
         abilityEntityId: EntityId,
         targetRequirements: List<com.wingedsheep.sdk.scripting.targets.TargetRequirement>
     ): EffectResult {
+        // A slot that reads an earlier target ("target land that player controls") is offered per
+        // earlier pick, as when the original was put on the stack.
+        val prefixTables = if (DependentTargetSelection.isRequired(targetRequirements)) {
+            DependentTargetSelection.prefixTables(state, targetRequirements,
+                PredicateContext(controllerId = context.controllerId, sourceId = context.sourceId), targetFinder)
+        } else null
         val legalTargetsMap = mutableMapOf<Int, List<EntityId>>()
         for ((index, requirement) in targetRequirements.withIndex()) {
-            val legalTargets = targetFinder.findLegalTargets(
-                state, requirement, context.controllerId, context.sourceId
-            )
-            legalTargetsMap[index] = legalTargets
+            legalTargetsMap[index] = prefixTables?.get(index)?.values?.flatten()?.distinct()
+                ?: targetFinder.findLegalTargets(state, requirement, context.controllerId, context.sourceId)
         }
 
         // If no legal targets for any requirement, skip copy (no-op).
@@ -88,7 +94,8 @@ class CopyTargetTriggeredAbilityExecutor(
         )
 
         val targetReqInfos = targetRequirements.mapIndexed { index, req ->
-            TargetRequirementInfo(index = index, description = req.description)
+            TargetRequirementInfo(index = index, description = req.description,
+                legalTargetsByPrefix = prefixTables?.get(index)?.takeIf { index > 0 })
         }
 
         val decision = { decisionId: String -> ChooseTargetsDecision(

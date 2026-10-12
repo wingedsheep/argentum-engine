@@ -3,6 +3,7 @@ package com.wingedsheep.engine.handlers.effects.stack
 import com.wingedsheep.engine.core.ChangeSpellTargetContinuation
 import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.DecisionHandler
+import com.wingedsheep.engine.handlers.DependentTargetSelection
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
@@ -159,6 +160,12 @@ class ChangeTargetExecutor(
         val aligned = SpellCopyTargets.alignedRequirements(targetRequirements, targets.size)
         val groupOfSlot = aligned.flatMapIndexed { group, requirement -> List(requirement.count) { group } }
         val legalByGroup = HashMap<Int, Boolean>()
+        // A requirement that reads an earlier target ("target land that player controls") is judged
+        // against the spell's other targets as they stand.
+        val boundTargets = if (DependentTargetSelection.isRequired(targetRequirements)) {
+            PredicateContext(controllerId = spellController, sourceId = spellEntityId, targets = targets,
+                namedTargets = EffectContext.buildNamedTargets(aligned, targets))
+        } else null
         val candidateSlots = targets.indices.filter { slot ->
             val group = groupOfSlot.getOrNull(slot) ?: return@filter false
             val currentId = getTargetEntityId(targets[slot])
@@ -170,7 +177,8 @@ class ChangeTargetExecutor(
                 } &&
                 legalByGroup.getOrPut(group) {
                     newTargetId in targetFinder.findLegalTargets(
-                        state, targetRequirements[group], spellController, spellEntityId
+                        state, targetRequirements[group], spellController, spellEntityId,
+                        pipelineContext = boundTargets
                     )
                 }
         }
