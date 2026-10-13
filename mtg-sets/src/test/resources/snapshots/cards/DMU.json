@@ -762,6 +762,54 @@
     }
 }
 
+// Artillery Blast
+{
+    "name": "Artillery Blast",
+    "manaCost": "{1}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Domain — Artillery Blast deals X damage to target tapped creature, where X is 1 plus the number of basic land types among lands you control.",
+    "script": {
+        "spellEffect": {
+            "type": "DealDamage",
+            "amount": {
+                "type": "Add",
+                "left": {
+                    "type": "AggregateBattlefield",
+                    "player": "You",
+                    "filter": "land",
+                    "aggregation": "DISTINCT_BASIC_LAND_SUBTYPES"
+                },
+                "right": {
+                    "type": "Fixed",
+                    "amount": 1
+                }
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature tapped"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "6",
+        "artist": "Julian Kok Joon Wen",
+        "flavorText": "To conserve ammunition, Jhoira modified ancient Thran artillery cannons to fire gouts of pure Shivan lava.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/d/0d4d7293-657f-48ac-931b-fb6a44128e6d.jpg?1783921370"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Astor, Bearer of Blades
 {
     "name": "Astor, Bearer of Blades",
@@ -3031,6 +3079,83 @@
     ]
 }
 
+// Drag to the Bottom
+{
+    "name": "Drag to the Bottom",
+    "manaCost": "{2}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Domain — Each creature gets -X/-X until end of turn, where X is 1 plus the number of basic land types among lands you control.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": {
+                "type": "IterationSpace.Group",
+                "filter": {
+                    "baseFilter": "creature"
+                }
+            },
+            "body": {
+                "type": "ModifyStats",
+                "powerModifier": {
+                    "type": "Multiply",
+                    "amount": {
+                        "type": "Add",
+                        "left": {
+                            "type": "AggregateBattlefield",
+                            "player": "You",
+                            "filter": "land",
+                            "aggregation": "DISTINCT_BASIC_LAND_SUBTYPES"
+                        },
+                        "right": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "multiplier": -1
+                },
+                "toughnessModifier": {
+                    "type": "Multiply",
+                    "amount": {
+                        "type": "Add",
+                        "left": {
+                            "type": "AggregateBattlefield",
+                            "player": "You",
+                            "filter": "land",
+                            "aggregation": "DISTINCT_BASIC_LAND_SUBTYPES"
+                        },
+                        "right": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "multiplier": -1
+                },
+                "target": "IterationEntity"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "91",
+        "rarity": "RARE",
+        "artist": "Nino Is",
+        "flavorText": "Windgrace's gladehunters hibernate in the quagmires of Urborg until the scent of Phyrexian technology awakens their hunger.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/d/9d243099-94b1-4571-96af-4c5a34241911.jpg?1783921333",
+        "rulings": [
+            {
+                "date": "2022-09-09",
+                "text": "Domain abilities count the number of basic land types among lands you control, not how many lands you control or how many of any type."
+            },
+            {
+                "date": "2022-09-09",
+                "text": "The basic land types are Plains, Island, Swamp, Mountain, and Forest. Land types other than basic land types (such as Desert) don't contribute to domain abilities."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Elas il-Kor, Sadistic Pilgrim
 {
     "name": "Elas il-Kor, Sadistic Pilgrim",
@@ -4367,6 +4492,109 @@
     ]
 }
 
+// Herd Migration
+{
+    "name": "Herd Migration",
+    "manaCost": "{6}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Domain — Create a 3/3 green Beast creature token for each basic land type among lands you control.\n{1}{G}, Discard this card: Search your library for a basic land card, reveal it, put it into your hand, then shuffle. You gain 3 life.",
+    "script": {
+        "spellEffect": {
+            "type": "CreateToken",
+            "count": {
+                "type": "AggregateBattlefield",
+                "player": "You",
+                "filter": "land",
+                "aggregation": "DISTINCT_BASIC_LAND_SUBTYPES"
+            },
+            "power": 3,
+            "toughness": 3,
+            "colors": [
+                "GREEN"
+            ],
+            "creatureTypes": [
+                "Beast"
+            ],
+            "imageUri": "https://cards.scryfall.io/normal/front/5/9/591cb5b2-6394-4c1a-b227-5c32e633b493.jpg?1783921126"
+        },
+        "activatedAbilities": [
+            {
+                "id": "Herd Migration:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{G}"
+                            }
+                        },
+                        "CostDiscardSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Library",
+                                "filter": "basicland"
+                            },
+                            "storeAs": "searchable",
+                            "search": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "searchable",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "found",
+                            "prompt": "Search your library for a basic land card to put into your hand",
+                            "selectedLabel": "Put into your hand"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "found",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            },
+                            "revealed": true
+                        },
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent",
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 3
+                            }
+                        }
+                    ]
+                },
+                "activateFromZone": "Hand"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "165",
+        "rarity": "RARE",
+        "artist": "Eric Deschamps",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/0/b0244a1f-e696-4223-9c14-22c2ca3cb738.jpg?1783921301"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Heroic Charge
 {
     "name": "Heroic Charge",
@@ -4770,6 +4998,66 @@
     "colorIdentityOverride": [
         "RED"
     ]
+}
+
+// Jodah's Codex
+{
+    "name": "Jodah's Codex",
+    "manaCost": "{5}",
+    "typeLine": "Artifact — Book",
+    "oracleText": "Domain — {5}, {T}: Draw a card. This ability costs {1} less to activate for each basic land type among lands you control.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Jodah's Codex:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{5}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "descriptionOverride": "Domain — {5}, {T}: Draw a card. This ability costs {1} less to activate for each basic land type among lands you control.",
+                "genericCostReduction": {
+                    "type": "AggregateBattlefield",
+                    "player": "You",
+                    "filter": "land",
+                    "aggregation": "DISTINCT_BASIC_LAND_SUBTYPES"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "233",
+        "rarity": "UNCOMMON",
+        "artist": "Aaron Miller",
+        "flavorText": "\"If you remember nothing else of our world's history, remember this: Phyrexians can be defeated.\"\n—Jodah",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/6/d636da1e-4cc6-40a1-bd83-cc0dd761b1cc.jpg?1783921267",
+        "rulings": [
+            {
+                "date": "2022-09-09",
+                "text": "Domain abilities count the number of basic land types among lands you control, not how many lands you control or how many of any type."
+            },
+            {
+                "date": "2022-09-09",
+                "text": "The basic land types are Plains, Island, Swamp, Mountain, and Forest. Land types other than basic land types (such as Desert) don't contribute to domain abilities."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
 }
 
 // Joint Exploration
@@ -5460,6 +5748,81 @@
     ]
 }
 
+// Leyline Binding
+{
+    "name": "Leyline Binding",
+    "manaCost": "{5}{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "Flash\nDomain — This spell costs {1} less to cast for each basic land type among lands you control.\nWhen this enchantment enters, exile target nonland permanent an opponent controls until this enchantment leaves the battlefield.",
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Leyline Binding:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "MoveUntilSourceLeaves",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Exile"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "nonland permanent ctrl:opponent"
+                    },
+                    "id": "t0"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "ReduceGenericBy",
+                    "source": {
+                        "type": "Dynamic",
+                        "amount": {
+                            "type": "AggregateBattlefield",
+                            "player": "You",
+                            "filter": "land",
+                            "aggregation": "DISTINCT_BASIC_LAND_SUBTYPES"
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "24",
+        "rarity": "RARE",
+        "artist": "Cristi Balanescu",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/c/3c3ac3dd-35db-447f-8674-37b4680a1ef7.jpg?1783921363",
+        "rulings": [
+            {
+                "date": "2024-04-12",
+                "text": "Leyline Binding's domain ability doesn't change its mana value, which is always 6."
+            },
+            {
+                "date": "2022-09-09",
+                "text": "If Leyline Binding leaves the battlefield before its enters-the-battlefield ability resolves, the target permanent won't be exiled."
+            },
+            {
+                "date": "2022-09-09",
+                "text": "If a token is exiled, it ceases to exist. It won't be returned to the battlefield."
+            }
+        ]
+    }
+}
+
 // Linebreaker Baloth
 {
     "name": "Linebreaker Baloth",
@@ -5499,6 +5862,87 @@
             }
         ]
     }
+}
+
+// Llanowar Greenwidow
+{
+    "name": "Llanowar Greenwidow",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Spider",
+    "oracleText": "Reach, trample\nDomain — {7}{G}: Return this card from your graveyard to the battlefield tapped. It gains \"If this permanent would leave the battlefield, exile it instead of putting it anywhere else.\" This ability costs {1} less to activate for each basic land type among lands you control.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "keywords": [
+        "REACH",
+        "TRAMPLE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Llanowar Greenwidow:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{7}{G}"
+                    }
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "SourceInZone",
+                            "zones": [
+                                "Graveyard"
+                            ]
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "MoveToZone",
+                                "target": "Self",
+                                "destination": "Battlefield",
+                                "placement": "Tapped",
+                                "fromZone": "Graveyard"
+                            },
+                            {
+                                "type": "GrantExileOnLeave",
+                                "target": "Self"
+                            }
+                        ]
+                    }
+                },
+                "activateFromZone": "Graveyard",
+                "descriptionOverride": "Domain — {7}{G}: Return this card from your graveyard to the battlefield tapped. It gains \"If this permanent would leave the battlefield, exile it instead of putting it anywhere else.\" This ability costs {1} less to activate for each basic land type among lands you control.",
+                "genericCostReduction": {
+                    "type": "AggregateBattlefield",
+                    "player": "You",
+                    "filter": "land",
+                    "aggregation": "DISTINCT_BASIC_LAND_SUBTYPES"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "169",
+        "rarity": "RARE",
+        "artist": "Jokubas Uogintas",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/1/81f90e4d-f60f-4175-830f-c2ce04c5a945.jpg?1783921300",
+        "rulings": [
+            {
+                "date": "2022-09-09",
+                "text": "Domain abilities count the number of basic land types among lands you control, not how many lands you control or how many of any type."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
 }
 
 // Llanowar Loamspeaker
@@ -5998,6 +6442,127 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Nael, Avizoa Aeronaut
+{
+    "name": "Nael, Avizoa Aeronaut",
+    "manaCost": "{2}{G}{U}",
+    "typeLine": "Legendary Creature — Elf Scout",
+    "oracleText": "Flying\nDomain — Whenever Nael deals combat damage to a player, look at the top X cards of your library, where X is the number of basic land types among lands you control. Put up to one of them on top of your library and the rest on the bottom in a random order. Then if there are five basic land types among lands you control, draw a card.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Nael, Avizoa Aeronaut:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "AggregateBattlefield",
+                                    "player": "You",
+                                    "filter": "land",
+                                    "aggregation": "DISTINCT_BASIC_LAND_SUBTYPES"
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected1",
+                            "storeRemainder": "remainder1",
+                            "prompt": "Put up to one card on top of your library",
+                            "selectedLabel": "Put on top of library",
+                            "remainderLabel": "Put on the bottom in a random order"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Top"
+                            },
+                            "order": "ControllerChooses"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "remainder1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Bottom"
+                            },
+                            "order": "Random"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "AggregateBattlefield",
+                                        "player": "You",
+                                        "filter": "land",
+                                        "aggregation": "DISTINCT_BASIC_LAND_SUBTYPES"
+                                    },
+                                    "operator": "GTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 5
+                                    }
+                                }
+                            },
+                            "then": {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "207",
+        "rarity": "UNCOMMON",
+        "artist": "Miguel Mercado",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/d/5da59e8f-cbe5-4c14-a5a9-28d56048dc23.jpg?1783921281"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
     ]
 }
 
@@ -6585,6 +7150,150 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Radha's Firebrand
+{
+    "name": "Radha's Firebrand",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Human Warrior",
+    "oracleText": "Whenever this creature attacks, target creature defending player controls with power less than this creature's power can't block this turn.\nDomain — {5}{R}: This creature gets +2/+2 until end of turn. This ability costs {1} less to activate for each basic land type among lands you control. Activate only once each turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Radha's Firebrand:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "CantBlockTargetCreatures",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                {
+                                    "type": "PowerLessThanEntity",
+                                    "reference": "Self"
+                                }
+                            ],
+                            "controllerPredicate": "ControlledByDefendingPlayer"
+                        }
+                    },
+                    "id": "t0"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Radha's Firebrand:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{5}{R}"
+                    }
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": "Self"
+                },
+                "restrictions": [
+                    "OncePerTurn"
+                ],
+                "descriptionOverride": "Domain — {5}{R}: This creature gets +2/+2 until end of turn. This ability costs {1} less to activate for each basic land type among lands you control. Activate only once each turn.",
+                "genericCostReduction": {
+                    "type": "AggregateBattlefield",
+                    "player": "You",
+                    "filter": "land",
+                    "aggregation": "DISTINCT_BASIC_LAND_SUBTYPES"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "141",
+        "rarity": "RARE",
+        "artist": "Ângelo Bortolini",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/e/ae8a90c4-4a79-49e7-9fab-076b35d28adb.jpg?1783921311"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Radha, Coalition Warlord
+{
+    "name": "Radha, Coalition Warlord",
+    "manaCost": "{2}{R}{G}",
+    "typeLine": "Legendary Creature — Elf Warrior",
+    "oracleText": "Domain — Whenever Radha becomes tapped, another target creature you control gets +X/+X until end of turn, where X is the number of basic land types among lands you control.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Radha, Coalition Warlord:1",
+                "trigger": "TapEvent",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "land",
+                        "aggregation": "DISTINCT_BASIC_LAND_SUBTYPES"
+                    },
+                    "toughnessModifier": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "land",
+                        "aggregation": "DISTINCT_BASIC_LAND_SUBTYPES"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you",
+                        "excludeSelf": true
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "211",
+        "rarity": "UNCOMMON",
+        "artist": "Randy Vargas",
+        "flavorText": "\"Enough warm-up. I'm coming for you, Sheoldred!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/c/2cec235e-7ce0-4947-b221-a555b2c865bd.jpg?1783921278"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN"
     ]
 }
 
@@ -7207,6 +7916,82 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Shadow Prophecy
+{
+    "name": "Shadow Prophecy",
+    "manaCost": "{2}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Domain — Look at the top X cards of your library, where X is the number of basic land types among lands you control. Put up to two of them into your hand and the rest into your graveyard. You lose 2 life.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "TopOfLibrary",
+                        "count": {
+                            "type": "AggregateBattlefield",
+                            "player": "You",
+                            "filter": "land",
+                            "aggregation": "DISTINCT_BASIC_LAND_SUBTYPES"
+                        }
+                    },
+                    "storeAs": "looked"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "looked",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    },
+                    "storeSelected": "kept",
+                    "storeRemainder": "rest",
+                    "prompt": "Put up to two of them into your hand",
+                    "showAllCards": true
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "kept",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    }
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "rest",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard"
+                    }
+                },
+                {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": "Controller"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "105",
+        "artist": "Rovina Cai",
+        "flavorText": "\"Lord Windgrace, grant me wisdom.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/b/bb078448-9e9f-4994-8aff-7e7c4fb62efc.jpg?1783921327"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -7858,6 +8643,60 @@
     },
     "colorIdentityOverride": [
         "WHITE",
+        "GREEN"
+    ]
+}
+
+// Sunbathing Rootwalla
+{
+    "name": "Sunbathing Rootwalla",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Lizard",
+    "oracleText": "Domain — {3}{G}: Until end of turn, this creature gets +1/+1 for each basic land type among lands you control. Activate only once each turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Sunbathing Rootwalla:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}{G}"
+                    }
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "land",
+                        "aggregation": "DISTINCT_BASIC_LAND_SUBTYPES"
+                    },
+                    "toughnessModifier": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "land",
+                        "aggregation": "DISTINCT_BASIC_LAND_SUBTYPES"
+                    },
+                    "target": "Self"
+                },
+                "restrictions": [
+                    "OncePerTurn"
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "181",
+        "artist": "Campbell White",
+        "flavorText": "A rootwalla's prey includes anything or anyone that wanders into view.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/a/7ae6f015-2ad6-4b8e-8590-c2c2d01b6d98.jpg?1783921295"
+    },
+    "colorIdentityOverride": [
         "GREEN"
     ]
 }
@@ -9570,6 +10409,91 @@
     ]
 }
 
+// Voda Sea Scavenger
+{
+    "name": "Voda Sea Scavenger",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Merfolk Rogue",
+    "oracleText": "Domain — When this creature enters, look at the top X cards of your library, where X is the number of basic land types among lands you control. You may put one of those cards on top of your library. Put the rest on the bottom of your library in a random order.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Voda Sea Scavenger:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "AggregateBattlefield",
+                                    "player": "You",
+                                    "filter": "land",
+                                    "aggregation": "DISTINCT_BASIC_LAND_SUBTYPES"
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected1",
+                            "storeRemainder": "remainder1",
+                            "prompt": "You may put one card on top of your library",
+                            "selectedLabel": "Put on top of library",
+                            "remainderLabel": "Put on the bottom in a random order"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Top"
+                            },
+                            "order": "ControllerChooses"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "remainder1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Bottom"
+                            },
+                            "order": "Random"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "74",
+        "artist": "Uriah Voth",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/a/2a3cc789-cbb8-4dae-a749-af169832dd7b.jpg?1783921340"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Vodalian Hexcatcher
 {
     "name": "Vodalian Hexcatcher",
@@ -9842,6 +10766,47 @@
     ]
 }
 
+// Yavimaya Sojourner
+{
+    "name": "Yavimaya Sojourner",
+    "manaCost": "{7}{G}",
+    "typeLine": "Creature — Treefolk",
+    "oracleText": "Domain — This spell costs {1} less to cast for each basic land type among lands you control.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 6
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "ReduceGenericBy",
+                    "source": {
+                        "type": "Dynamic",
+                        "amount": {
+                            "type": "AggregateBattlefield",
+                            "player": "You",
+                            "filter": "land",
+                            "aggregation": "DISTINCT_BASIC_LAND_SUBTYPES"
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "191",
+        "artist": "Brian Valeza",
+        "flavorText": "To the long-lived treefolk, the Phyrexians invading again after only three centuries was as though they never left.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/7/c7fdb424-4d2c-437e-b2a2-8bc56c028338.jpg?1783921290"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Yavimaya Steelcrusher
 {
     "name": "Yavimaya Steelcrusher",
@@ -9898,4 +10863,66 @@
         "artist": "Gabor Szikszai",
         "imageUri": "https://cards.scryfall.io/normal/front/2/5/25175622-7b68-4916-adf2-3bf2d82e8356.jpg?1783921307"
     }
+}
+
+// Zar Ojanen, Scion of Efrava
+{
+    "name": "Zar Ojanen, Scion of Efrava",
+    "manaCost": "{3}{G}{W}",
+    "typeLine": "Legendary Creature — Cat Warrior",
+    "oracleText": "Domain — Whenever Zar Ojanen becomes tapped, put a +1/+1 counter on each creature you control with toughness less than the number of basic land types among lands you control.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Zar Ojanen, Scion of Efrava:1",
+                "trigger": "TapEvent",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature",
+                                    {
+                                        "type": "CompareNumericProperty",
+                                        "property": "TOUGHNESS",
+                                        "operator": "LT",
+                                        "amount": {
+                                            "type": "AggregateBattlefield",
+                                            "player": "You",
+                                            "filter": "land",
+                                            "aggregation": "DISTINCT_BASIC_LAND_SUBTYPES"
+                                        }
+                                    }
+                                ],
+                                "controllerPredicate": "ControlledByYou"
+                            }
+                        }
+                    },
+                    "body": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": "IterationEntity"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "227",
+        "rarity": "UNCOMMON",
+        "artist": "Justine Cruz",
+        "flavorText": "\"I carry my home in my heart.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/5/65c903e3-d622-415e-9144-a5b2f3f7b9ed.jpg?1783921273"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE"
+    ]
 }
