@@ -386,11 +386,9 @@ internal fun processPreTargetedEffectQueue(
     if (result.outcome is Outcome.Paused) {
         return EffectResult.propagatePause(result.state, nextEvents)
     }
-    if (result.outcome is Outcome.Rejected) {
-        return EffectResult(state = result.state, events = nextEvents, outcome = result.outcome)
-    }
-
-    // Success — pop the pre-pushed tail continuation and drain the rest synchronously.
+    // An unavailable target can reject a single instruction. As in CompositeEffectExecutor,
+    // continue with later instructions rather than abandoning the remaining chosen modes.
+    // Pop the pre-pushed tail continuation and drain the rest synchronously.
     val nextState = if (tail.isNotEmpty()) {
         val (_, afterPop) = result.state.popContinuation()
         afterPop
