@@ -80,8 +80,13 @@ class UrzasSylexScenarioTest : ScenarioTestBase() {
                     game.isInExile(1, "Urza's Sylex") shouldBe true
                 }
 
+                var guard = 0
+                while (game.state.pendingDecision == null && guard++ < 10) game.passPriority()
+                withClue("the exile trigger resolves above the ability: its may-pay comes before any land keep") {
+                    (game.state.pendingDecision is YesNoDecision) shouldBe true
+                }
+
                 game.drive(pay = true) { options -> options }
-                // The search resolved before the wipe, so Jace was in hand by the time lands were chosen.
                 withClue("the planeswalker was searched into hand") {
                     game.isInHand(1, "Jace Beleren") shouldBe true
                 }
