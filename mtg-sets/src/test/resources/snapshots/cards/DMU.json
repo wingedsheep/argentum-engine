@@ -10862,11 +10862,60 @@
                 "id": "Rundvelt Hordemaster:1",
                 "trigger": {
                     "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "gathered0",
+                            "filter": "creature Goblin",
+                            "storeMatching": "matching2"
+                        },
+                        {
+                            "type": "GrantMayPlayFromExile",
+                            "from": "matching2",
+                            "expiry": {
+                                "type": "UntilControllerStep",
+                                "step": "CLEANUP",
+                                "includeCurrentTurn": false
+                            },
+                            "nonLandOnly": true
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever this creature or another Goblin you control dies, exile the top card of your library. If it's a Goblin creature card, you may cast that card until the end of your next turn."
+            },
+            {
+                "id": "Rundvelt Hordemaster:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
                     "filter": "permanent Goblin ctrl:you",
                     "from": "Battlefield",
                     "to": "Graveyard"
                 },
-                "binding": "ANY",
+                "binding": "OTHER",
                 "effect": {
                     "type": "Composite",
                     "effects": [
