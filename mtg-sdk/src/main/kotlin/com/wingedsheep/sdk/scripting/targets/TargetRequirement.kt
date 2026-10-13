@@ -455,6 +455,10 @@ data class TargetObject(
      * a no-op for single-target requirements and for non-card targets. Defaults to false.
      */
     val sameOwner: Boolean = false,
+    /** One target (or up to one) per owner represented by cards matching [filter]. */
+    @OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
+    @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
+    val ownerDistribution: OwnerDistribution? = null,
     /**
      * All targets in this requirement must have equal values of this property, both when chosen
      * and when resolving. Battlefield characteristics use projected state; other zones use the
@@ -566,6 +570,7 @@ data class TargetObject(
             dynamicMaxCount == DynamicAmount.PlayerCount(com.wingedsheep.sdk.scripting.references.Player.EachOpponent)
         val target = if (other) "other target" else "target"
         val base = when {
+            ownerDistribution != null -> "${if (ownerDistribution == OwnerDistribution.UP_TO_ONE) "up to one" else "one"} $target $noun per eligible owner"
             onePerCardType -> "up to one $target $noun of each card type"
             unlimited -> "any number of $target $plural"
             // "for each opponent, up to one target creature that player controls"

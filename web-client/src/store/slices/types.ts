@@ -86,6 +86,7 @@ export interface TargetingState {
   selectionPool?: readonly EntityId[]
   /** Server-approved pools whose members may be selected together. */
   selectionGroups?: readonly (readonly EntityId[])[] | null
+  exclusiveGroups?: readonly (readonly EntityId[])[] | null
   action: GameAction
   validTargets: readonly EntityId[]
   selectedTargets: readonly EntityId[]
@@ -254,6 +255,7 @@ export interface DecisionSelectionState {
   selectionPool?: readonly EntityId[]
   /** Server-approved pools whose members may be selected together. */
   selectionGroups?: readonly (readonly EntityId[])[] | null
+  exclusiveGroups?: readonly (readonly EntityId[])[] | null
   /** The pending decision this selection is for */
   decisionId: string
   /** Valid card IDs that can be selected */

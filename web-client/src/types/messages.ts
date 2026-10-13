@@ -466,6 +466,7 @@ export interface ChooseTargetsDecision extends PendingDecisionBase {
 export interface TargetRequirementInfo {
   /** Server-approved pools whose members may be selected together. */
   selectionGroups?: readonly (readonly EntityId[])[] | null
+  exclusiveGroups?: readonly (readonly EntityId[])[] | null
   readonly emptyChoiceLabel?: string | null
   /**
    * Server-computed choices for a slot whose filter reads an earlier target, keyed by the first
@@ -867,6 +868,7 @@ export type PendingDecision =
 export interface LegalActionTargetInfo {
   /** Server-approved pools whose members may be selected together. */
   selectionGroups?: readonly (readonly EntityId[])[] | null
+  exclusiveGroups?: readonly (readonly EntityId[])[] | null
   /** Server-computed choices for the comma-joined earlier target IDs. */
   readonly validTargetsByPrefix?: Readonly<Record<string, readonly EntityId[]>> | null
   readonly index: number

@@ -520,7 +520,7 @@ class TriggerProcessor(
                 differentControllers =
                     (req as? com.wingedsheep.sdk.scripting.targets.TargetObject)?.differentControllers == true,
                 onePerCardType = (req as? com.wingedsheep.sdk.scripting.targets.TargetObject)?.onePerCardType == true
-            )
+            ).withNumericEquality(state, req, allLegalTargets[index].orEmpty())
         }
 
         // Create the target selection decision. The hint banner tells the player *what*
@@ -1239,7 +1239,12 @@ class TriggerProcessor(
         requirement: TargetRequirement
     ): TargetRequirement = when (requirement) {
         is TargetObject -> {
-            if (requirement.dynamicMaxCount == null) {
+            if (requirement.ownerDistribution != null) {
+                val candidates = targetFinder.findLegalTargets(state, requirement, trigger.controllerId, trigger.sourceId,
+                    triggeringEntityId = trigger.triggerContext.triggeringEntityId)
+                val bounds = com.wingedsheep.engine.mechanics.targeting.OwnerTargetDistribution.bounds(state, requirement, candidates)!!
+                requirement.copy(count = bounds.max ?: 0, minCount = bounds.min, optional = bounds.min == 0, unlimited = false)
+            } else if (requirement.dynamicMaxCount == null) {
                 requirement
             } else {
                 val context = EffectContext(

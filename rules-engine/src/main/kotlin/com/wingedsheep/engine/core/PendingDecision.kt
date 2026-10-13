@@ -144,6 +144,8 @@ data class TargetRequirementInfo(
     val sameNumericProperty: com.wingedsheep.sdk.scripting.values.CardNumericProperty? = null,
     /** Server-computed pools whose members may be selected together. */
     val selectionGroups: List<List<EntityId>>? = null,
+    /** Server-computed disjoint groups; at most one target may be picked from each. */
+    val exclusiveGroups: List<List<EntityId>>? = null,
     /**
      * When non-null, the combined mana value of the chosen card targets for this requirement may
      * not exceed this cap — "any number of target creature cards with total mana value X or less"
@@ -217,7 +219,8 @@ fun ChooseTargetsDecision.legalTargetsFor(index: Int, chosen: Map<Int, List<Enti
 fun ChooseTargetsDecision.minimalSelection(): Map<Int, List<EntityId>> =
     targetRequirements.fold(emptyMap()) { chosen, req ->
         val pool = legalTargetsFor(req.index, chosen)
-        val compatible = req.selectionGroups?.firstOrNull { group -> group.count { it in pool } >= req.minTargets }
+        val compatible = req.exclusiveGroups?.mapNotNull { group -> group.firstOrNull { it in pool } }
+            ?: req.selectionGroups?.firstOrNull { group -> group.count { it in pool } >= req.minTargets }
             ?.filter { it in pool } ?: if (req.selectionGroups == null) pool else emptyList()
         chosen + (req.index to compatible.take(req.minTargets))
     }

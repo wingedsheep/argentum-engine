@@ -1230,6 +1230,7 @@ export function enterPhase(
           validTargets: applyXFilters(firstReq.validTargets, firstReq.xConstrainsManaValue, firstReq.xConstrainsPower, firstReq.xConstrainsManaValueExactly),
           selectedTargets: [],
           selectionGroups: firstReq.selectionGroups ?? null,
+          exclusiveGroups: firstReq.exclusiveGroups ?? null,
           minTargets: resolveMinByX(firstReq.minTargets, maxTargets, firstReq.xConstrainsCountExactly),
           maxTargets,
           currentRequirementIndex: 0,

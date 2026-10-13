@@ -325,6 +325,8 @@ data class TargetInfo(
     val validTargets: List<EntityId>,
     /** Server-computed choices keyed by the comma-joined earlier target IDs, in slot order. */
     val selectionGroups: List<List<EntityId>>? = null,
+    /** Server-computed disjoint groups; at most one target may be picked from each. */
+    val exclusiveGroups: List<List<EntityId>>? = null,
     val validTargetsByPrefix: Map<String, List<EntityId>>? = null,
     val targetZone: String? = null,
     /** A target in this slot must differ from every target chosen for an earlier slot. */
@@ -374,7 +376,7 @@ data class TargetInfo(
  * ([TargetInfo.differentControllers]) the flattened fields can't express.
  */
 fun List<TargetInfo>.surfacedRequirements(): List<TargetInfo>? =
-    takeIf { size > 1 || any { it.differentControllers || it.selectionGroups != null } }
+    takeIf { size > 1 || any { it.differentControllers || it.selectionGroups != null || it.exclusiveGroups != null } }
 
 /**
  * Information about a creature that can be tapped for Convoke.

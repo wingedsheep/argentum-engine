@@ -905,6 +905,14 @@ are Archaeology, Goblins, and Unicorns. Other themes unlock automatically as car
 
 ### Dependent target choices
 
+Target requirement metadata may also carry `exclusiveGroups`: disjoint, server-computed card-ID
+lists from which the player may select at most one card each. `minTargets` / `maxTargets` specify
+whether every group is required. The client uses the lists to disable incompatible picks and retains
+selections across graveyard tabs; it does not calculate card ownership or group membership. Both legal
+action slots and `ChooseTargetsDecision.targetRequirements` carry the same constraint. The server
+validates the submitted picks against the groups as well as the target count and legal candidates.
+This differs from `selectionGroups`, where *all* selected cards must belong to one compatible pool.
+
 A legal action's per-slot `targetRequirements` may carry `validTargetsByPrefix`.
 This maps the comma-joined entity IDs selected for earlier slots, in order, to the
 legal choices for this slot. IDs are UUIDs. A missing key means no legal choices;

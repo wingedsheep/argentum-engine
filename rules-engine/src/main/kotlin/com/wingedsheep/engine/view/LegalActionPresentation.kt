@@ -24,6 +24,7 @@ data class LegalActionTargetInfo(
     val validTargets: List<EntityId>,
     /** Server-computed choices keyed by the comma-joined earlier target IDs, in slot order. */
     val selectionGroups: List<List<EntityId>>? = null,
+    val exclusiveGroups: List<List<EntityId>>? = null,
     val validTargetsByPrefix: Map<String, List<EntityId>>? = null,
     val targetZone: String? = null,
     /**

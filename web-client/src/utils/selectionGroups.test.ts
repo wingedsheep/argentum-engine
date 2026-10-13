@@ -12,3 +12,9 @@ describe('server-approved selection groups', () => {
     expect(compatibleSelectionPool(pool, groups, ids(['a', 'c']))).toEqual([])
   })
 })
+
+  it('excludes the other cards in every selected owner group, and restores them after deselection', () => {
+    const a = 'a' as EntityId, b = 'b' as EntityId, c = 'c' as EntityId
+    expect(compatibleSelectionPool([a, b, c], null, [a], [[a, b], [c]])).toEqual([c])
+    expect(compatibleSelectionPool([a, b, c], null, [], [[a, b], [c]])).toEqual([a, b, c])
+  })

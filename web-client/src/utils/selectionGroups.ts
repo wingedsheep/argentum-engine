@@ -5,8 +5,12 @@ export function compatibleSelectionPool(
   pool: readonly EntityId[],
   groups: readonly (readonly EntityId[])[] | null | undefined,
   selected: readonly EntityId[],
+  exclusiveGroups?: readonly (readonly EntityId[])[] | null,
 ): readonly EntityId[] {
-  if (!groups || selected.length === 0) return pool
+  const eligible = exclusiveGroups
+    ? pool.filter((id) => !exclusiveGroups.some((group) => group.includes(id) && selected.some((pick) => group.includes(pick))))
+    : pool
+  if (!groups || selected.length === 0) return eligible
   const group = groups.find((ids) => selected.every((id) => ids.includes(id)))
-  return pool.filter((id) => group?.includes(id))
+  return eligible.filter((id) => group?.includes(id))
 }

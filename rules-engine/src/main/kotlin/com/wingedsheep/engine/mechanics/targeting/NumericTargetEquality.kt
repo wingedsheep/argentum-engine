@@ -47,8 +47,9 @@ fun com.wingedsheep.engine.core.TargetRequirementInfo.withNumericEquality(
     requirement: com.wingedsheep.sdk.scripting.targets.TargetRequirement,
     candidates: List<EntityId>,
 ): com.wingedsheep.engine.core.TargetRequirementInfo {
-    val property = (requirement as? com.wingedsheep.sdk.scripting.targets.TargetObject)?.sameNumericProperty ?: return this
+    val distributed = withOwnerDistribution(state, requirement, candidates)
+    val property = (requirement as? com.wingedsheep.sdk.scripting.targets.TargetObject)?.sameNumericProperty ?: return distributed
     val groups = NumericTargetEquality.groups(state, candidates, property).filter { it.size >= minTargets }
-    return copy(sameNumericProperty = property, selectionGroups = groups,
+    return distributed.copy(sameNumericProperty = property, selectionGroups = groups,
         maxTargets = minOf(maxTargets, groups.maxOfOrNull { it.size } ?: 0))
 }

@@ -181,6 +181,12 @@ class TargetValidator(
         retainedTargetIndices: Set<Int>?
     ): CountBounds {
         if (retainedTargetIndices != null) return CountBounds(req.effectiveMinCount, req.count)
+        if (DynamicTargetCount.objectOf(req)?.ownerDistribution != null) {
+            val candidates = com.wingedsheep.engine.handlers.TargetFinder(predicateEvaluator).findLegalTargets(
+                state, req, casterId, sourceId)
+            val distributed = OwnerTargetDistribution.bounds(state, req, candidates)!!
+            return CountBounds(distributed.min, distributed.max ?: 0)
+        }
         val unboundedFallback = if (req.unlimited) Int.MAX_VALUE else req.count
         val bounds = DynamicTargetCount.bounds(req, xValue) { amount ->
             amountEvaluator.evaluate(state, amount, EffectContext(sourceId = sourceId, controllerId = casterId, xValue = xValue))
@@ -261,6 +267,10 @@ class TargetValidator(
                 }
             }
 
+            if (DynamicTargetCount.objectOf(requirement)?.ownerDistribution != null &&
+                !OwnerTargetDistribution.isSatisfied(state, targetsForReq.map { it.toEntityId() })) {
+                return "Targets must come from different owner groups"
+            }
             val numericProperty = (requirement as? TargetObject)?.sameNumericProperty
             if (numericProperty != null) {
                 val ids = targetsForReq.map { it.toEntityId() }

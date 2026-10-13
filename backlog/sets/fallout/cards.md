@@ -2,7 +2,7 @@
 
 **Set Size:** 336 cards
 **Release Date:** March 8, 2024
-**Implemented:** 138 / 336
+**Implemented:** 139 / 336
 | Section    | Total | Done |
 |------------|-------|------|
 | Extras     | 336   | 129  |
@@ -186,7 +186,7 @@
 - [x] Mr. House, President and CEO
 - [ ] Mutational Advantage
 - [x] Myriad Landscape
-- [ ] Mysterious Stranger
+- [x] Mysterious Stranger
 - [ ] Mystic Forge
 - [x] Mystic Monastery
 - [ ] Nerd Rage

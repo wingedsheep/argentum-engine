@@ -469,6 +469,9 @@ object TargetSelection {
         available: List<EntityId>,
         rankTarget: (EntityId) -> Double,
     ): List<EntityId> {
+        if (info.exclusiveGroups != null) return info.exclusiveGroups.orEmpty().mapNotNull { group ->
+            group.filter { it in available }.maxByOrNull(rankTarget)
+        }
         val needed = maxOf(1, info.minTargets)
         val picks = mutableListOf<EntityId>()
         val controllers = mutableSetOf<EntityId>()

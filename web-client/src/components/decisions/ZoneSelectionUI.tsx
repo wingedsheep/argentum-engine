@@ -34,6 +34,7 @@ interface ZoneSelectionUIProps {
   /** Cards to pre-select on mount (e.g. picks restored by stepping Back into a target requirement) */
   initialSelection?: readonly EntityId[]
   selectionGroups?: readonly (readonly EntityId[])[] | null
+  exclusiveGroups?: readonly (readonly EntityId[])[] | null
   /** Responsive sizing info */
   responsive: ResponsiveSizes
   /** Called when selection is confirmed */
@@ -79,6 +80,7 @@ interface ZoneSelectionUIProps {
  */
 export function ZoneSelectionUI({
   selectionGroups,
+  exclusiveGroups,
   title,
   prompt,
   helperText,
@@ -166,7 +168,7 @@ export function ZoneSelectionUI({
       if (prev.includes(cardId)) {
         return prev.filter((id) => id !== cardId)
       }
-      if (maxSelections > 1 && !compatibleSelectionPool(cards.map((c) => c.id), selectionGroups, prev).includes(cardId)) return prev
+      if (maxSelections > 1 && !compatibleSelectionPool(cards.map((c) => c.id), selectionGroups, prev, exclusiveGroups).includes(cardId)) return prev
       if (prev.length >= maxSelections) {
         // Single-select at its cap: clicking a different card replaces the pick rather than being
         // ignored — the same rule the board path uses (toggleDecisionSelection), and the only way a

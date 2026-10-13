@@ -83,7 +83,10 @@ class FastDecisionResponder(private val intents: IntentCatalog = IntentCatalog.N
                 decision.id,
                 decision.targetRequirements.fold(emptyMap()) { chosen, req ->
                     val pool = decision.legalTargetsFor(req.index, chosen)
-                    val legal = req.selectionGroups?.map { group -> group.filter { it in pool } }
+                    val ownerPicks = req.exclusiveGroups?.mapNotNull { group ->
+                        group.filter { it in pool }.maxByOrNull { TargetSelection.rank(state, it, playerId, intents) }
+                    }
+                    val legal = ownerPicks ?: req.selectionGroups?.map { group -> group.filter { it in pool } }
                         ?.filter { it.size >= req.minTargets }
                         ?.maxByOrNull { group -> group.sortedByDescending { TargetSelection.rank(state, it, playerId, intents) }
                             .take(req.maxTargets).sumOf { TargetSelection.rank(state, it, playerId, intents) } }

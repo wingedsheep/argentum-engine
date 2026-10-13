@@ -1191,6 +1191,7 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
     summary:
       'Drag a card from your hand onto the battlefield to cast it, drag an attacker onto a defender to attack, and drag a blocker onto an attacker to block. Clicking works everywhere dragging does.',
     body: [
+      { kind: 'p', text: 'Some abilities require one card from each eligible graveyard. The target prompt shows the total required; after you select a card, the other cards from that graveyard cannot be selected. Deselect it to choose a different card there, then confirm once every required graveyard is covered.' },
       { kind: 'p', text: 'Clicking a card with more than one way to play opens its action menu — Cast, Play, Turn Face-Up, an activated ability, or View card. A permanent’s abilities are in the same menu.' },
       { kind: 'p', text: 'A split card lists each half in its action menu. When a card with Fuse is in your hand, the fused option casts both halves together. Choose and confirm the targets for the left half, then for the right half; the stack shows one spell and players can respond normally.' },
       { kind: 'p', text: 'Repeatable additional costs such as Squad appear as separate cast options: Squad ×1, Squad ×2, and so on. Choose the number of payments in the card’s action menu, then select any cards the cost asks you to discard or exile.' },

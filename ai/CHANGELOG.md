@@ -28,6 +28,8 @@ Format — newest first, one bullet each:
 
 ## Changes
 
+- The AI spreads required graveyard targets across owners instead of selecting several cards from one graveyard.
+
 - #3182 AI puts shield counters, pumps and protection from triggered abilities and from modal or tiered spells (Proud Pack-Rhino, Restoration Magic) on its own permanents instead of an opponent's
 - #3180 Chooses targets for the face being cast — a split half, both fused halves, an Adventure, Room or prepare face — avoiding beneficial enemy targets and harmful friendly targets.
 

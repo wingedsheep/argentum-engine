@@ -1191,7 +1191,13 @@ class CastSpellHandler(
         xValue: Int?
     ): DynamicTargetCount.Bounds {
         val unboundedFallback = if (requirement.unlimited) Int.MAX_VALUE else requirement.count
-        val bounds = DynamicTargetCount.bounds(requirement, xValue) { amount ->
+        val distributed = if (DynamicTargetCount.objectOf(requirement)?.ownerDistribution != null) {
+            com.wingedsheep.engine.mechanics.targeting.OwnerTargetDistribution.bounds(state, requirement,
+                targetFinder.findLegalTargets(state, requirement, casterId, cardId,
+                    targetingSourceType = TargetingSourceType.SPELL,
+                    pipelineContext = PredicateContext(controllerId = casterId, sourceId = cardId, xValue = xValue)))
+        } else null
+        val bounds = distributed ?: DynamicTargetCount.bounds(requirement, xValue) { amount ->
             conditionEvaluator.amounts.evaluate(
                 state, amount, EffectContext(sourceId = cardId, controllerId = casterId, xValue = xValue)
             )

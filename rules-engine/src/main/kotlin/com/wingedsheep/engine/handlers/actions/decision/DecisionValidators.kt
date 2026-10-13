@@ -216,6 +216,9 @@ object DecisionValidators {
             if (req.selectionGroups != null && selectedIds.isNotEmpty() &&
                 req.selectionGroups.none { group -> selectedIds.all { it in group } }
             ) return "Targets for requirement $reqIndex must be selected from one compatible group"
+            if (req.exclusiveGroups != null && selectedIds.any { id ->
+                req.exclusiveGroups.any { group -> id in group && selectedIds.count { it in group } > 1 }
+            }) return "Targets for requirement $reqIndex must come from different owner groups"
             // "... from a single graveyard" — every chosen card target must share an owner.
             if (req.sameOwner && selectedIds.size > 1 && state != null) {
                 val owners = selectedIds.mapNotNull { id ->

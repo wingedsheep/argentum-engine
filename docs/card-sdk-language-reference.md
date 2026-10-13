@@ -5428,6 +5428,14 @@ Every `TargetRequirement` carries count semantics (defaults shown):
   controlled by the same player**"). Enforced cross-target by `TargetValidator` at cast time using
   projected control; a no-op for single-target requirements. E.g.
   `TargetObject(filter = TargetFilter.Creature, count = 2, sameController = true)` (Barrin's Spite).
+- `ownerDistribution: OwnerDistribution? = null` — `EXACTLY_ONE` requires one target per owner
+  represented by cards matching the filter; `UP_TO_ONE` permits skipping owners. The engine computes
+  the count at announcement, sends disjoint `exclusiveGroups` to the picker, and validates both
+  the total and at most one pick per owner. The count is fixed on the stack; targets are rechecked
+  individually at resolution. Defaults preserve existing targeting. Use
+  `targets(TargetFilter(GameObjectFilter.InstantOrSorcery, Zone.GRAVEYARD),
+  ownerDistribution = OwnerDistribution.EXACTLY_ONE)` for Mysterious Stranger; then gather the chosen
+  targets, track cards actually exiled, and gate its random-copy offer on at least two actual moves.
 - `sameOwner = false` — on `TargetObject`; when `true` and the requirement picks more than one target,
   every chosen **card** target must share an owner ("**exile up to two target cards from a single
   graveyard**"). Enforced cross-target both at cast time (`TargetValidator`) and on triggered-ability

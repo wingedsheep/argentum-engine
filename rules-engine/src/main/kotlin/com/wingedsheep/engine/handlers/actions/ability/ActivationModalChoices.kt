@@ -38,7 +38,10 @@ internal class ActivationModalChoices(
 
     private fun counts(state: GameState, action: ActivateAbility, req: TargetRequirement): DynamicTargetCount.Bounds {
         val ctx = EffectContext(sourceId = action.sourceId, controllerId = action.playerId, xValue = action.xValue)
-        val bounds = DynamicTargetCount.bounds(req, action.xValue) { conditions.amounts.evaluate(state, it, ctx) }
+        val distributed = if (DynamicTargetCount.objectOf(req)?.ownerDistribution != null) {
+            com.wingedsheep.engine.mechanics.targeting.OwnerTargetDistribution.bounds(state, req, legal(state, action, req))
+        } else null
+        val bounds = distributed ?: DynamicTargetCount.bounds(req, action.xValue) { conditions.amounts.evaluate(state, it, ctx) }
         return bounds.copy(max = bounds.max ?: if (req.unlimited) Int.MAX_VALUE else req.count)
     }
 
