@@ -94,8 +94,32 @@ class ModalActivatedAbilityAnnouncementTest : ScenarioTestBase() {
             )
         }
     }
+    private val outerGroups = card("Outer Modal Target Groups") {
+        typeLine = "Artifact"
+        activatedAbility {
+            cost = Costs.Tap
+            val first = target(TargetFilter.Creature, optional = true)
+            val second = target(TargetFilter.Creature, optional = true)
+            effect = ModalEffect.chooseOne(Mode.noTarget(
+                Effects.AddCounters(com.wingedsheep.sdk.core.CounterType.CHARGE, 1, first) then
+                    Effects.AddCounters(com.wingedsheep.sdk.core.CounterType.CHARGE, 2, second),
+                "Add counters to the announced creatures"
+            ))
+        }
+    }
+    private val modalMana = card("Modal Mana Test Artifact") {
+        typeLine = "Artifact"
+        activatedAbility {
+            cost = Costs.PayLife(1)
+            manaAbility = true
+            effect = ModalEffect.chooseOne(
+                Mode.noTarget(Effects.AddMana(com.wingedsheep.sdk.core.Color.GREEN), "Add green"),
+                Mode.noTarget(Effects.AddMana(com.wingedsheep.sdk.core.Color.RED), "Add red")
+            )
+        }
+    }
     init {
-        cardRegistry.register(listOf(modalCard, multiCard, repeatCard, zeroCard, twoTargetCard, wardCard, optionalGroups))
+        cardRegistry.register(listOf(modalCard, multiCard, repeatCard, zeroCard, twoTargetCard, wardCard, optionalGroups, outerGroups, modalMana))
         fun game(name: String = modalCard.name, creature: Boolean = true): TestGame {
             val b = scenario().withPlayers().withCardOnBattlefield(1, name)
                 .withCardInLibrary(1, "Forest").withCardInLibrary(1, "Forest").withCardInLibrary(2, "Forest")
@@ -105,6 +129,40 @@ class ModalActivatedAbilityAnnouncementTest : ScenarioTestBase() {
         fun TestGame.action(name: String = modalCard.name) = ActivateAbility(player1Id, findPermanent(name)!!,
             cardRegistry.getCard(name)!!.activatedAbilities.single().id)
         fun TestGame.pick(index: Int) = submitDecision(OptionChosenResponse(getPendingDecision()!!.id, index))
+
+        for (cancel in listOf(false, true)) {
+            test("modal mana choice restores the enclosing payment window when ${if (cancel) "cancelled" else "completed"}") {
+                val g = scenario().withPlayers().withCardOnBattlefield(1, modalCard.name)
+                    .withCardOnBattlefield(1, modalMana.name).withCardOnBattlefield(2, wardCard.name)
+                    .withLandsOnBattlefield(1, "Forest", 2)
+                    .withCardInLibrary(1, "Forest").withCardInLibrary(2, "Forest").build()
+                g.execute(g.action()); g.pick(0); g.selectTargets(listOf(g.findPermanent(wardCard.name)!!))
+                g.resolveStack()
+                val payment = g.getPendingDecision() as SelectManaSourcesDecision
+                g.execute(g.action(modalMana.name)).error shouldBe null
+                if (cancel) g.submitDecision(CancelDecisionResponse(g.getPendingDecision()!!.id)).error shouldBe null
+                else g.pick(0).error shouldBe null
+                (g.getPendingDecision() as SelectManaSourcesDecision).id shouldBe payment.id
+                g.state.continuationStack.filterIsInstance<ReopenManaPaymentDecisionContinuation>() shouldBe emptyList()
+                g.getLifeTotal(1) shouldBe if (cancel) 20 else 19
+                (g.state.getEntity(g.player1Id)!!.get<com.wingedsheep.engine.state.components.player.ManaPoolComponent>()?.green ?: 0) shouldBe if (cancel) 0 else 1
+                g.submitManaSourcesDecision().error shouldBe null
+                g.resolveStack(); g.hasPendingDecision() shouldBe false
+            }
+        }
+        test("modal stack placement preserves an omitted outer target group") {
+            val g = game(outerGroups.name); val bear = g.findPermanent("Grizzly Bears")!!
+            g.execute(g.action(outerGroups.name).copy(
+                targets = listOf(ChosenTarget.Permanent(bear)), targetGroupCounts = listOf(0, 1),
+                chosenModes = listOf(0), modeTargetsOrdered = listOf(emptyList())
+            )).error shouldBe null
+            val requirements = g.state.getEntity(g.state.stack.single())!!
+                .get<com.wingedsheep.engine.state.components.stack.TargetsComponent>()!!.targetRequirements
+            requirements.map { it.count } shouldBe listOf(0, 1)
+            g.resolveStack()
+            g.state.getEntity(bear)!!.get<com.wingedsheep.engine.state.components.battlefield.CountersComponent>()!!
+                .getCount(com.wingedsheep.sdk.core.CounterType.CHARGE) shouldBe 2
+        }
 
         test("mandatory-target modes disappear when they have no legal targets") {
             val g = game(creature = false)

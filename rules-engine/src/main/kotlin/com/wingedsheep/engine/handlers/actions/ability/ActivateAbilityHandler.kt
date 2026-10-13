@@ -560,7 +560,8 @@ class ActivateAbilityHandler(
             val binding = targetValidator.bindTargetGroups(stateBeforeActivation, action.targets.take(outerCount), outer,
                 action.playerId, sourceColors = modalChoices.sourceColors(stateBeforeActivation, action), sourceId = action.sourceId,
                 sourceSubtypes = modalChoices.sourceSubtypes(stateBeforeActivation, action),
-                xValue = activation.effectiveXValue, targetingSourceType = TargetingSourceType.ACTIVATED_ABILITY)
+                xValue = activation.effectiveXValue, targetingSourceType = TargetingSourceType.ACTIVATED_ABILITY,
+                explicitCounts = action.targetGroupCounts.takeIf { it?.size == outer.size })
             outer.mapIndexed { i, req -> req.withCount(binding.counts[i]) } + orderedModeRequirements.flatten()
         } else boundTargetRequirements(stateBeforeActivation, activation)
 
