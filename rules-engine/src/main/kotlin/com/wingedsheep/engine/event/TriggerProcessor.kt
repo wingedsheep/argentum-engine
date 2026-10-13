@@ -354,7 +354,7 @@ class TriggerProcessor(
         val ability = trigger.ability
         // Snapshot dynamicMaxCount on each requirement now (when the trigger is going on
         // the stack) so the resolved cap is what the player sees and the validator
-        // enforces. CR 603.3c: X / target counts on triggered abilities are locked when
+        // enforces. CR 603.3d (applying 601.2c): X / target counts on triggered abilities are locked when
         // the ability triggers. Only TargetObject carries dynamicMaxCount today.
         val allRequirements = ability.allTargetRequirements.map { snapshotDynamicCount(state, trigger, it) }
 
@@ -427,8 +427,12 @@ class TriggerProcessor(
         }
 
         // A dynamic count that resolved to zero ("tap X target creatures" with X = 0) leaves nothing
-        // to choose: the ability goes on the stack with no targets rather than asking for none.
-        if (allRequirements.all { !it.unlimited && it.count == 0 }) {
+        // to choose: the ability goes on the stack with no targets rather than asking for none. An
+        // "any number of" requirement counts too once its dynamic cap is zero (Quirion Beastcaller
+        // dying with no counters).
+        if (allRequirements.all {
+                it.count == 0 && (!it.unlimited || DynamicTargetCount.objectOf(it)?.dynamicMaxCount != null)
+            }) {
             return putTriggerOnStack(state, trigger, emptyList())
         }
 
@@ -490,8 +494,8 @@ class TriggerProcessor(
                 // A dynamic cap outranks `unlimited`, as in TargetValidator: "any number of target
                 // creatures" with X counters to distribute still can't take more than X targets.
                 // snapshotDynamicCount already baked the cap into `count`.
-                req.unlimited && com.wingedsheep.engine.mechanics.targeting.DynamicTargetCount
-                    .objectOf(req)?.dynamicMaxCount != null -> minOf(req.count, legalCount)
+                req.unlimited && DynamicTargetCount.objectOf(req)?.dynamicMaxCount != null ->
+                    minOf(req.count, legalCount)
                 req.unlimited -> legalCount
                 else -> req.count
             }

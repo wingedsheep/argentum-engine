@@ -75,6 +75,18 @@ class QuirionBeastcallerScenarioTest : ScenarioTestBase() {
                 }
             }
 
+            test("dying with no counters asks for no targets") {
+                val game = board()
+                val caller = game.findPermanent("Quirion Beastcaller")!!
+                val bears = game.findPermanent("Grizzly Bears")!!
+
+                game.castSpell(1, "Terror", caller).error shouldBe null
+                game.resolveStack()
+
+                game.getPendingDecision() shouldBe null
+                game.plusOnes(bears) shouldBe 0
+            }
+
             test("the target count is capped at X") {
                 val game = board()
                 val caller = game.findPermanent("Quirion Beastcaller")!!

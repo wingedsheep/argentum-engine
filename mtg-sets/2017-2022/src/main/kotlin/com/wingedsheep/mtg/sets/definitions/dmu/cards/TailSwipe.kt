@@ -19,6 +19,7 @@ import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
  * "If you cast this spell during your main phase" is checked at resolution with
  * [Conditions.IsYourMainPhase]: a spell can't leave the phase it was cast in before it resolves
  * (a phase only ends with an empty stack), so the resolution-time phase is the cast-time phase.
+ * A copy isn't cast, so strictly it shouldn't get the bonus; this reading grants it anyway.
  */
 val TailSwipe = card("Tail Swipe") {
     manaCost = "{G}"
