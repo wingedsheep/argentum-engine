@@ -1155,6 +1155,7 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
         'Options — longer lists (a card name, a creature type) come with a search box.',
       ] },
       { kind: 'p', text: 'A strip above each prompt names the cards involved — the source, its target, what triggered it — so a long chain of triggers stays readable.' },
+      { kind: 'p', text: 'Secret choices stay private until everyone has confirmed. Pick a number in the prompt, or click a highlighted creature to vote for it; Select None submits an optional ballot without a vote. The game log reveals everyone’s choices together after the last answer.' },
     ],
     related: ['targeting-and-combat', 'yields', 'mana-payment'],
   },

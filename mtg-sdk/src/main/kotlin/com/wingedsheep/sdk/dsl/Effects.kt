@@ -4511,15 +4511,46 @@ object Effects {
         mixedEffect: Effect? = null
     ): Effect = com.wingedsheep.sdk.scripting.effects.FlipTwoCoinsEffect(bothHeadsEffect, bothTailsEffect, mixedEffect)
 
+    /** Collect private choices, reveal together, then execute the chosen outcomes. */
+    fun SecretChoice(
+        choice: com.wingedsheep.sdk.scripting.effects.SecretChoice,
+        participants: List<Player> = listOf(Player.Each),
+        then: Effect? = null,
+    ): Effect = com.wingedsheep.sdk.scripting.effects.SecretChoiceEffect(participants, choice, then)
+
     /**
-     * Each player secretly bids an amount of life; the highest / lowest / tied bidders get their
-     * effect, with the bid readable as `DynamicAmount.XValue` (Menacing Ogre).
+     * Secret ballots over a typed candidate collection. Pair with PipelineBuilder.runStoringCollection
+     * to allocate the winning collection without exposing pipeline keys at the card boundary.
      */
-    fun SecretBid(
-        highestBidderEffect: Effect? = null,
-        lowestBidderEffect: Effect? = null,
-        tiedBidderEffect: Effect? = null
-    ): Effect = com.wingedsheep.sdk.scripting.effects.SecretBidEffect(highestBidderEffect, lowestBidderEffect, tiedBidderEffect)
+    fun SecretEntities(
+        from: CollectionSlot,
+        storeMostChosen: String,
+        optional: Boolean = true,
+        participants: List<Player> = listOf(Player.Each),
+        then: Effect? = null,
+    ): Effect = SecretChoice(
+        com.wingedsheep.sdk.scripting.effects.SecretChoice.Entity(from.key, optional, storeMostChosen),
+        participants, then,
+    )
+
+    /** Numeric secret choices; ranked outcomes rebind controller and X to each matching chooser. */
+    fun SecretNumbers(
+        highestEffect: Effect? = null,
+        lowestEffect: Effect? = null,
+        tiedEffect: Effect? = null,
+        minValue: Int = 0,
+        maxValue: DynamicAmount = DynamicAmount.Fixed(99),
+        outcomeMinValue: Int = 1,
+        matchedEffect: Effect? = null,
+        unmatchedEffect: Effect? = null,
+        participants: List<Player> = listOf(Player.Each),
+        then: Effect? = null,
+    ): Effect = SecretChoice(
+        com.wingedsheep.sdk.scripting.effects.SecretChoice.Number(
+            minValue, maxValue, outcomeMinValue, highestEffect, lowestEffect, tiedEffect,
+            matchedEffect, unmatchedEffect,
+        ), participants, then,
+    )
 
     /**
      * Compose an inline Gather → Select → Move pipeline with typed slot handles —

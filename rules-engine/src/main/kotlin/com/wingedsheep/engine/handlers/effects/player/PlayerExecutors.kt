@@ -88,7 +88,7 @@ class PlayerExecutors(
         payOrSufferExecutor,
         PlayAdditionalLandsExecutor(),
         PreventLandPlaysThisTurnExecutor(),
-        SecretBidExecutor(decisionHandler),
+        SecretChoiceExecutor(decisionHandler, zones.predicateEvaluator.amounts, effectExecutor),
         SetDayNightExecutor(cardRegistry),
         SkipCombatPhasesExecutor(),
         SkipStepOrPhaseExecutor(),

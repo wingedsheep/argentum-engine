@@ -28,6 +28,8 @@ Format — newest first, one bullet each:
 
 ## Changes
 
+- Keeps ranked secret bids at their floor, chooses matching numbers independently, and casts creature ballots from the visible board without reading unrevealed answers.
+
 - #3137 AI plays its land before a cheaper spell when the land makes a bigger spell castable — hard-casting Shriekmaw instead of casting a 2-drop and then evoking it
 - #3135 AI seats on a random deck now own the rest of their sealed pool (or a fifteen-card wishboard) outside the game, so their Learn and wish cards fetch a card instead of whiffing
 - #3132 AI puts helpful Role tokens and Auras like Strands of Undeath on its own creatures, and no longer pays to regenerate an opponent's creature

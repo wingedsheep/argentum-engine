@@ -727,8 +727,15 @@ class ConditionEvaluator(
 
             is PlayerIs -> {
                 val subject = resolvePlayer(state, condition.subject, ctx)
-                val expected = resolvePlayer(state, condition.player, ctx)
-                subject != null && expected != null && subject == expected
+                when (val expected = condition.player) {
+                    is Player.InCollection -> ifResolution { context ->
+                        subject != null && subject in context.pipeline.storedCollections[expected.collection].orEmpty()
+                    }
+                    else -> {
+                        val expectedId = resolvePlayer(state, expected, ctx)
+                        subject != null && expectedId != null && subject == expectedId
+                    }
+                }
             }
 
             is PlayerHasMostLife -> {

@@ -108,6 +108,163 @@
     ]
 }
 
+// Expert-Level Safe
+{
+    "name": "Expert-Level Safe",
+    "manaCost": "{2}",
+    "typeLine": "Artifact",
+    "oracleText": "When this artifact enters, exile the top two cards of your library face down.\n{1}, {T}: You and target opponent each secretly choose 1, 2, or 3. Then those choices are revealed. If they match, sacrifice this artifact and put all cards exiled with it into their owners' hands. Otherwise, exile the top card of your library face down.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Expert-Level Safe:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            },
+                            "linkToSource": true,
+                            "faceDown": "HIDDEN"
+                        }
+                    ]
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Expert-Level Safe:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "SecretChoice",
+                    "participants": [
+                        "You",
+                        {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    ],
+                    "choice": {
+                        "type": "SecretNumberChoice",
+                        "minValue": 1,
+                        "maxValue": {
+                            "type": "Fixed",
+                            "amount": 3
+                        },
+                        "matchedEffect": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": "FromLinkedExile",
+                                    "storeAs": "gathered0"
+                                },
+                                {
+                                    "type": "SacrificeTarget",
+                                    "target": "Self"
+                                },
+                                {
+                                    "type": "ForEach",
+                                    "space": {
+                                        "type": "IterationSpace.Collection",
+                                        "collection": "gathered0"
+                                    },
+                                    "body": {
+                                        "type": "MoveToZone",
+                                        "target": "IterationEntity",
+                                        "destination": "Hand"
+                                    }
+                                }
+                            ]
+                        },
+                        "unmatchedEffect": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "TopOfLibrary",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeAs": "gathered0"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "gathered0",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Exile"
+                                    },
+                                    "linkToSource": true,
+                                    "faceDown": "HIDDEN"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetOpponent",
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "Secretly choose 1, 2, or 3 with target opponent."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "133",
+        "rarity": "UNCOMMON",
+        "artist": "Victor Harmatiuk",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/9/499f4bdc-8b6a-4e87-92fd-8368537a6ced.jpg?1783912379",
+        "rulings": [
+            {
+                "date": "2024-03-08",
+                "text": "You don’t get to look at the cards exiled by Expert-Level Safe’s abilities."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "To secretly choose the numbers, you and the target opponent should each write down your choice of 1, 2, or 3 without showing them to anyone else. Keep those choices secret until they’re simultaneously revealed."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Ferrous Lake
 {
     "name": "Ferrous Lake",
@@ -647,6 +804,159 @@
         "artist": "Valera Lutfullina",
         "imageUri": "https://cards.scryfall.io/normal/front/a/2/a2f30a39-aad3-45da-8f03-50b1d1806b00.jpg?1783912375"
     }
+}
+
+// Vault 11: Voter's Dilemma
+{
+    "name": "Vault 11: Voter's Dilemma",
+    "manaCost": "{2}{W}{B}",
+    "typeLine": "Enchantment — Saga",
+    "oracleText": "(As this Saga enters and after your draw step, add a lore counter. Sacrifice after III.)\nI — For each opponent, you create a 1/1 white Human Soldier creature token.\nII, III — Each player secretly votes for up to one creature, then those votes are revealed. If no creature got votes, each player draws a card. Otherwise, destroy each creature with the most votes or tied for most votes.",
+    "script": {
+        "sagaChapters": [
+            {
+                "chapter": 1,
+                "effect": {
+                    "type": "CreateToken",
+                    "count": "PlayerCount",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Human",
+                        "Soldier"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/7/3/737741e7-b2b2-4c41-ab7c-4eeaf9f37b71.jpg?1783912046"
+                }
+            },
+            {
+                "chapter": 2,
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "BattlefieldMatching",
+                                "filter": "creature"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SecretChoice",
+                            "choice": {
+                                "type": "SecretEntityChoice",
+                                "from": "gathered0",
+                                "storeMostChosen": "stored1"
+                            }
+                        },
+                        {
+                            "type": "ConditionalOnCollection",
+                            "collection": "stored1",
+                            "ifNotEmpty": {
+                                "type": "MoveCollection",
+                                "from": "stored1",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                },
+                                "moveType": "Destroy"
+                            },
+                            "ifEmpty": {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "target": {
+                                    "type": "PlayerRef",
+                                    "player": "Each"
+                                }
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "chapter": 3,
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "BattlefieldMatching",
+                                "filter": "creature"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SecretChoice",
+                            "choice": {
+                                "type": "SecretEntityChoice",
+                                "from": "gathered0",
+                                "storeMostChosen": "stored1"
+                            }
+                        },
+                        {
+                            "type": "ConditionalOnCollection",
+                            "collection": "stored1",
+                            "ifNotEmpty": {
+                                "type": "MoveCollection",
+                                "from": "stored1",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                },
+                                "moveType": "Destroy"
+                            },
+                            "ifEmpty": {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "target": {
+                                    "type": "PlayerRef",
+                                    "player": "Each"
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "121",
+        "rarity": "RARE",
+        "artist": "Kieran Yanner",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/b/4bafcd4e-5693-4c23-be79-75653fcd214c.jpg?1783912383",
+        "rulings": [
+            {
+                "date": "2024-03-08",
+                "text": "To secretly vote, each player writes down their chosen option without showing it to anyone else. Each player then keeps their vote secret until all players simultaneously reveal their votes."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "Before secret votes are revealed, players may announce how they intend to vote, but they can't reveal what they actually wrote down until all votes are simultaneously revealed. Players can lie about how they intend to vote before the votes are revealed."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "Abilities that trigger \"whenever players finish voting\" trigger once all players have voted or once all secret votes are revealed, but they won't go on the stack until the current spell or ability finishes resolving."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "No player votes until Vault 11's last ability resolves. Any responses to the ability must be made without knowing the outcome of the vote."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "WHITE"
+    ]
 }
 
 // Viridescent Bog

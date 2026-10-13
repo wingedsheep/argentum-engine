@@ -65,6 +65,7 @@ Families:
 - [ReplacementEffect](#replacementeffect)
 - [RetargetChooser](#retargetchooser)
 - [Scope](#scope)
+- [SecretChoice](#secretchoice)
 - [SelectionMode](#selectionmode)
 - [SelectionRestriction](#selectionrestriction)
 - [SpellCastPredicate](#spellcastpredicate)
@@ -1018,7 +1019,7 @@ Families:
 - `SacrificeSelfEffect` — Sacrifice the source permanent (self).
 - `SacrificeTargetEffect(target: EffectTarget, sacrificedByItsController: Boolean)` — Sacrifice a specific permanent identified by target.
 - `ScryEffect(count: Int)` — "Scry count" (CR 701.22) as a single compact node.
-- `SecretBidEffect(highestBidderEffect: Effect?, lowestBidderEffect: Effect?, tiedBidderEffect: Effect?)` — Each player secretly chooses a number.
+- `SecretChoiceEffect(participants: List<Player>, choice: SecretChoice, then: Effect?)` — Collect private choices in APNAP order, reveal them simultaneously, then execute outcomes.
 - `SelectFromCollectionEffect(from: String, selection: SelectionMode, chooser: Chooser, filter: GameObjectFilter, storeSelected: String, storeRemainder: String?, matchChosenCreatureType: Boolean, prompt: String?, selectedLabel: String?, remainderLabel: String?, useTargetingUI: Boolean, showAllCards: Boolean, restrictions: List<SelectionRestriction>, alwaysPrompt: Boolean)` — Select cards from a named collection, splitting into selected and remainder.
 - `SelectTargetEffect(requirement: TargetRequirement, storeAs: String, nonTargeting: Boolean, prompt: String?, excluding: List<String>)` — Select a target during effect resolution (mid-pipeline targeting).
 - `SetBaseStatsEffect(target: EffectTarget, power: DynamicAmount?, toughness: DynamicAmount?, duration: Duration, reevaluateContinuously: Boolean)` — Set a creature's base power and/or toughness via a floating continuous effect at Layer.POWER_TOUGHNESS, Sublayer.SET_VALUES (CR 613.4b, layer 7b).
@@ -1535,6 +1536,11 @@ Families:
 - `Scope.Self`
 - `Scope.SoulbondPair` — The source **and** the creature it is soulbond-paired with (CR 702.95b) — the "both creatures" / "each of those creatures" of a soulbond payoff (Lightning Mauler's "as long as this creature is pair…
 - `Scope.Specific(entityId: EntityId)`
+
+## SecretChoice
+
+- `SecretChoice.Entity(from: String, optional: Boolean, storeMostChosen: String)` — Each participant chooses one entity from from, or abstains when optional is true.
+- `SecretChoice.Number(minValue: Int, maxValue: DynamicAmount, outcomeMinValue: Int, highestEffect: Effect?, lowestEffect: Effect?, tiedEffect: Effect?, matchedEffect: Effect?, unmatchedEffect: Effect?)` — A bounded integer choice.
 
 ## SelectionMode
 

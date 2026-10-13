@@ -2,7 +2,7 @@
 
 **Set Size:** 336 cards
 **Release Date:** March 8, 2024
-**Implemented:** 132 / 336
+**Implemented:** 134 / 336
 | Section    | Total | Done |
 |------------|-------|------|
 | Extras     | 336   | 129  |
@@ -103,7 +103,7 @@
 - [ ] Everflowing Chalice
 - [x] Evolving Wilds
 - [x] Exotic Orchard
-- [ ] Expert-Level Safe
+- [x] Expert-Level Safe
 - [x] Explorer's Scope
 - [ ] Farewell
 - [x] Farseek
@@ -323,7 +323,7 @@
 - [x] Vandalblast
 - [ ] Vault 101: Birthday Party
 - [ ] Vault 112: Sadistic Simulation
-- [ ] Vault 11: Voter's Dilemma
+- [x] Vault 11: Voter's Dilemma
 - [ ] Vault 12: The Necropolis
 - [ ] Vault 13: Dweller's Journey
 - [ ] Vault 21: House Gambit

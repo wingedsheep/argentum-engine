@@ -681,6 +681,7 @@ object CardLinter {
         put("EmitScriedEvent" to "gatherCollection", read(Space.COLLECTION))
         put("EmitScriedEvent" to "bottomCollection", read(Space.COLLECTION))
         // --- Writers -------------------------------------------------------------------------
+        put("SecretEntityChoice" to "storeMostChosen", write(Space.COLLECTION))
         put("GatherCards" to "storeAs", write(Space.COLLECTION))
         put("CaptureControllers" to "storeAs", write(Space.COLLECTION))
         put("StorePlayer" to "storeAs", write(Space.COLLECTION))
@@ -734,7 +735,7 @@ object CardLinter {
 
         // --- Readers -------------------------------------------------------------------------
         for (type in listOf(
-            "CaptureControllers", "GatherSubtypes", "RevealCollection", "SelectFromCollection",
+            "SecretEntityChoice", "CaptureControllers", "GatherSubtypes", "RevealCollection", "SelectFromCollection",
             "ChoosePile", "MoveCollection", "GrantMayPlayFromExile", "GrantPlayWithoutPayingCost",
             "MakePlotted",
             "GrantPlayWithAdditionalCost", "GrantPlayWithCostIncrease", "FilterCollection",

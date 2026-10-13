@@ -29,6 +29,8 @@ import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.Duration
+import com.wingedsheep.sdk.scripting.effects.SecretChoice
+import kotlin.random.Random
 
 /**
  * Handles all [PendingDecision] types by evaluating possible responses
@@ -103,12 +105,34 @@ class DecisionResponder(
      * drops ([strandsALand]). Off is the historical evaluator-only comparison.
      */
     private val surplusAwareLands: Boolean = false,
+    /** Secret commitments are chosen independently of other players' unrevealed answers. */
+    private val secretChoiceRandom: Random = Random.Default,
 ) {
     private val priors: ChoicePriors? = if (informedChoices) ChoicePriors(simulator.cardRegistry) else null
 
     var forcedPlayPicker: (GameState, EntityId) -> GameAction = simulator::completeForcedPlay
 
     fun respond(state: GameState, decision: PendingDecision, playerId: EntityId): DecisionResponse {
+        // Secret commitments must bypass both simulation and advisors: either can inspect the
+        // saved private answers and let the last chooser respond to information they cannot see.
+        val secret = (state.peekContinuation() as? Suspension)?.takeIf {
+            it.question.id == decision.id
+        }?.answer as? SecretChoiceContinuation
+        if (secret != null) {
+            when (decision) {
+                is ChooseNumberDecision -> {
+                    val numeric = secret.effect.choice as? SecretChoice.Number
+                    // Ranked bids can cost the chosen amount of life. Stay at the allowed floor
+                    // rather than risking a lethal bid or consulting opponents' hidden numbers.
+                    val ranked = numeric != null && (numeric.highestEffect != null ||
+                        numeric.lowestEffect != null || numeric.tiedEffect != null)
+                    return NumberChosenResponse(decision.id, if (ranked) decision.minValue else
+                        secretChoiceRandom.nextLong(decision.minValue.toLong(), decision.maxValue.toLong() + 1).toInt())
+                }
+                is SelectCardsDecision -> return respondSecretEntity(state, decision, playerId)
+                else -> {}
+            }
+        }
         // Try card-specific advisor first
         val sourceName = decision.context.sourceName
         if (sourceName != null) {
@@ -151,6 +175,25 @@ class DecisionResponder(
             is ReorderLibraryDecision -> respondReorderLibrary(state, decision, playerId)
             is SelectManaSourcesDecision -> respondManaSelection(decision)
         }
+    }
+
+    /** Ballot desirability uses only the visible board, never earlier private votes. */
+    private fun respondSecretEntity(
+        state: GameState,
+        decision: SelectCardsDecision,
+        playerId: EntityId,
+    ): CardsSelectedResponse {
+        val projected = state.projectedState
+        fun publicValue(id: EntityId): Int =
+            (projected.getPower(id) ?: 0).coerceAtLeast(0) + (projected.getToughness(id) ?: 0).coerceAtLeast(0)
+        val candidates = decision.options.filter {
+            projected.isCreature(it) &&
+                projected.getController(it)?.let { controller -> state.isOpponentOf(controller, playerId) } == true &&
+                !projected.hasKeyword(it, Keyword.INDESTRUCTIBLE)
+        }
+        val best = candidates.maxByOrNull(::publicValue)
+            ?: if (decision.minSelections > 0) decision.options.minByOrNull(::publicValue) else null
+        return CardsSelectedResponse(decision.id, listOfNotNull(best))
     }
 
     // ── Text-change replacement (Crystal Spray, Artificial Evolution) ────

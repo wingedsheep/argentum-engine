@@ -42,7 +42,8 @@ class SubmitDecisionHandler(
         val submittedEvent = DecisionSubmittedEvent(
             pending.id,
             action.playerId,
-            description = buildDecisionDescription(state, pending, action.response)
+            description = if ((state.peekContinuation() as? Suspension)?.answer is SecretChoiceContinuation) null
+                else buildDecisionDescription(state, pending, action.response)
         )
 
         // ContinuationHandler consumes the question and answer together by popping its suspension,

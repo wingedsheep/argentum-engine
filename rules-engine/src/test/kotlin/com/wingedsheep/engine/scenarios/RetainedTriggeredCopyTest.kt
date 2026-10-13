@@ -234,7 +234,7 @@ class RetainedTriggeredCopyTest : FunSpec({
             power = 1; toughness = 1
             triggeredAbility {
                 trigger = Triggers.you.beginningOf(Step.UPKEEP)
-                effect = Effects.SecretBid(highestBidderEffect = retainSelf)
+                effect = Effects.SecretNumbers(highestEffect = retainSelf)
             }
         }
         val d = driver()

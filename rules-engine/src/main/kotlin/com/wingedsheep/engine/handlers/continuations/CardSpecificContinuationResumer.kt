@@ -13,7 +13,7 @@ class CardSpecificContinuationResumer(
 ) : ContinuationResumerModule {
 
     override fun resumers(): List<ContinuationResumer<*>> = listOf(
-        resumer(SecretBidContinuation::class, ::resumeSecretBid),
+        resumer(SecretChoiceContinuation::class, ::resumeSecretChoice),
         resumer(OpenLifeBidContinuation::class, ::resumeOpenLifeBid),
         resumer(ContestedRetargetContinuation::class, ::resumeContestedRetarget)
     )
@@ -114,137 +114,16 @@ class CardSpecificContinuationResumer(
         }
     }
 
-    fun resumeSecretBid(
+    fun resumeSecretChoice(
         state: GameState,
-        continuation: SecretBidContinuation,
+        continuation: SecretChoiceContinuation,
         response: DecisionResponse,
         checkForMore: CheckForMore
     ): ExecutionResult {
-        if (response !is NumberChosenResponse) {
-            return ExecutionResult.error(state, "Expected number chosen response")
-        }
-
-        val chosenNumber = response.number
-        val currentPlayerId = continuation.currentPlayerId
-
-        val newChosenNumbers = continuation.chosenNumbers + (currentPlayerId to chosenNumber)
-
-        // Check if there are more players
-        if (continuation.remainingPlayers.isNotEmpty()) {
-            val nextPlayer = continuation.remainingPlayers.first()
-            val nextRemainingPlayers = continuation.remainingPlayers.drop(1)
-
-            val prompt = "Secretly choose a number (you will lose that much life if you have the highest bid)"
-
-            val decisionHandler = DecisionHandler()
-            val newContinuation = continuation.copy(
-                currentPlayerId = nextPlayer,
-                remainingPlayers = nextRemainingPlayers,
-                chosenNumbers = newChosenNumbers
-            )
-
-            val decisionResult = decisionHandler.createNumberDecision(
-                state = state,
-                playerId = nextPlayer,
-                sourceId = continuation.sourceId,
-                sourceName = continuation.sourceName,
-                prompt = prompt,
-                minValue = 0,
-                maxValue = 99,
-                phase = DecisionPhase.RESOLUTION,
-                answer = newContinuation,
-            )
-
-            return ExecutionResult.propagatePause(
-                decisionResult.state,
-                decisionResult.events
-            )
-        }
-
-        // All players have chosen - resolve the bid
-        return resolveSecretBid(state, continuation, newChosenNumbers, checkForMore)
-    }
-
-    /**
-     * Resolve the secret bid: determine outcome groups and execute effects per matching bidder.
-     * Each bidder's context is the resolving effect's own context (targets, pipeline values)
-     * with controllerId = that bidder and xValue = bid amount, so effects can use
-     * EffectTarget.Controller and DynamicAmount.XValue respectively.
-     *
-     * Every branch is queued as an [EffectContinuation] frame up front (first branch on top) and
-     * popped just before it runs, so the branches still to run always sit beneath whatever the
-     * running branch leaves on the stack. A branch that pauses for a decision returns that pause;
-     * once the decision is answered, the continuation stack drains the remaining branches.
-     */
-    private fun resolveSecretBid(
-        state: GameState,
-        continuation: SecretBidContinuation,
-        chosenNumbers: Map<EntityId, Int>,
-        checkForMore: CheckForMore
-    ): ExecutionResult {
-        val branches = secretBidBranches(continuation, chosenNumbers)
-
-        var currentState = branches.asReversed().fold(state) { s, branch -> s.pushContinuation(branch) }
-        val allEvents = mutableListOf<GameEvent>()
-
-        for (branch in branches) {
-            val (popped, stateWithoutBranch) = currentState.popContinuation()
-            check(popped == branch) { "Secret bid branch frame is not on top of the continuation stack" }
-            val result = services.effectExecutorRegistry
-                .execute(stateWithoutBranch, branch.remainingEffects.single(), branch.effectContext)
-                .toExecutionResult()
-            if (result.error != null) return result
-            if (result.pendingDecision != null) {
-                return ExecutionResult.propagatePause(result.state, allEvents + result.events)
-            }
-            currentState = result.state
-            allEvents.addAll(result.events)
-        }
-
-        return checkForMore(currentState, allEvents)
-    }
-
-    /** The per-bidder branches in execution order: highest, then lowest, then tied bidders. */
-    private fun secretBidBranches(
-        continuation: SecretBidContinuation,
-        chosenNumbers: Map<EntityId, Int>
-    ): List<EffectContinuation> {
-        val nonZeroBids = chosenNumbers.filter { it.value > 0 }
-        if (nonZeroBids.isEmpty()) return emptyList()
-        val highestBid = nonZeroBids.values.max()
-        val lowestBid = nonZeroBids.values.min()
-
-        val groups = listOfNotNull(
-            continuation.highestBidderEffect?.let { it to nonZeroBids.filter { bid -> bid.value == highestBid } },
-            continuation.lowestBidderEffect?.let { it to nonZeroBids.filter { bid -> bid.value == lowestBid } },
-            continuation.tiedBidderEffect?.takeIf { highestBid == lowestBid }?.let { it to nonZeroBids }
+        val result = com.wingedsheep.engine.handlers.effects.player.SecretChoiceLogic.resume(
+            state, continuation, response, services.predicateEvaluator.amounts
         )
-        return groups.flatMap { (effect, bidders) ->
-            bidders.map { (playerId, amount) ->
-                EffectContinuation(
-                    remainingEffects = listOf(effect),
-                    effectContext = bidderContext(continuation, playerId, amount)
-                )
-            }
-        }
+        return if (result.error != null || result.pendingDecision != null) result
+        else checkForMore(result.state, result.events)
     }
-
-    private fun bidderContext(
-        continuation: SecretBidContinuation,
-        playerId: EntityId,
-        bidAmount: Int
-    ): EffectContext {
-        val base = continuation.effectContext ?: EffectContext(
-            resolvingTriggeredAbility = continuation.resolvingTriggeredAbility,
-            sourceId = continuation.sourceId,
-            controllerId = continuation.controllerId
-        )
-        return base.copy(
-            objectReferences = continuation.objectReferences,
-            effectControllerId = base.effectControllerId ?: base.controllerId,
-            controllerId = playerId,
-            xValue = bidAmount
-        )
-    }
-
 }

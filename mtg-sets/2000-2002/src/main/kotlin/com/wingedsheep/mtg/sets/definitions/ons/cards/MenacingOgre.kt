@@ -2,12 +2,13 @@ package com.wingedsheep.mtg.sets.definitions.ons.cards
 
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Keyword
+import com.wingedsheep.sdk.dsl.Conditions
 import com.wingedsheep.sdk.dsl.DynamicAmounts
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.conditions.YouControlSource
+import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 /**
@@ -26,28 +27,31 @@ val MenacingOgre = card("Menacing Ogre") {
     typeLine = "Creature — Ogre"
     power = 3
     toughness = 3
-    oracleText = "Trample, haste\nWhen Menacing Ogre enters, each player secretly chooses a number. Then those numbers are revealed. Each player with the highest number loses that much life. If you are one of those players, put two +1/+1 counters on Menacing Ogre."
+    oracleText = "Trample, haste\nWhen this creature enters, each player secretly chooses a number. Then those numbers are revealed. Each player with the highest number loses that much life. If you are one of those players, put two +1/+1 counters on this creature."
 
     keywords(Keyword.TRAMPLE, Keyword.HASTE)
 
     triggeredAbility {
         trigger = Triggers.self.enters()
-        effect = Effects.SecretBid(
-            // Each highest bidder loses life equal to their bid
-            highestBidderEffect = Effects.LoseLife(DynamicAmounts.xValue(), EffectTarget.Controller) then
-                // If the controller is among them, put counters on this creature
-                Effects.If(
-                    condition = YouControlSource,
-                    then = Effects.AddCounters(CounterType.PLUS_ONE_PLUS_ONE, 2, EffectTarget.Self)
-                )
-        )
+        effect = Effects.Pipeline {
+            val originalController = storePlayer()
+            run(Effects.SecretNumbers(
+                // Zero is still a highest number when every player chooses zero.
+                outcomeMinValue = 0,
+                maxValue = DynamicAmounts.fixed(Int.MAX_VALUE),
+                highestEffect = Effects.LoseLife(DynamicAmounts.xValue(), EffectTarget.Controller) then
+                    Effects.If(
+                        condition = Conditions.PlayerIs(Player.You, originalController.asPlayers),
+                        then = Effects.AddCounters(CounterType.PLUS_ONE_PLUS_ONE, 2, EffectTarget.Self)
+                    )
+            ))
+        }
     }
 
     metadata {
         rarity = Rarity.RARE
         collectorNumber = "219"
-        artist = "Pete Venters"
-        flavorText = "The Skirk Ridge goblins had never seen an ogre before. They would never see one again."
-        imageUri = "https://cards.scryfall.io/normal/front/5/3/5360a871-6932-45b2-bc94-1bd414e38906.jpg?1562914555"
+        artist = "Ron Spencer"
+        imageUri = "https://cards.scryfall.io/normal/front/5/3/5360a871-6932-45b2-bc94-1bd414e38906.jpg?1783945051"
     }
 }

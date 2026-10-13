@@ -850,7 +850,6 @@ SacrificeEffect — Effect
 SacrificeSelfEffect — Effect
 SacrificeTargetEffect — Effect
 ScryEffect — Effect
-SecretBidEffect — Effect
 SelectFromCollectionEffect — Effect
 SelectTargetEffect — Effect
 SetBaseStatsEffect — Effect
@@ -1665,6 +1664,9 @@ ProtectionScope.RingBearers — ProtectionScope — Lord of the Nazgûl — Prot
 RestrictCardsDrawnPerTurn — StaticAbility — Narset, Parter of Veils — RestrictSpellsCastPerTurn, PlayersCantPlayLands — RestrictSpellsCastPerTurn caps casts, read at cast legality off the turn's cast records with a spell filter; a draw is a different event, enforced inside the draw loop before replacements. PlayersCantPlayLands forbids an action outright rather than counting it per turn
 RollDiceEffect — Effect — Luck Bobblehead — FlipCoinsEffect, StoreNumberEffect — coin flips have binary win events rather than numerical dice outcomes; StoreNumber reads existing state and cannot produce random events
 Scope.ChosenCreature — Scope — Tyrannical Pitlord — Scope.Specific, Scope.SoulbondPair — Specific holds a literal entity fixed at authoring time, so it can't name an object chosen as the source entered; SoulbondPair is the other source-relative scope but reads the pairing, not the entry choice
+SecretChoice.Entity — SecretChoice — Vault 11: Voter's Dilemma — SecretChoice.Number, SelectFromCollectionEffect — the entity-valued axis of the widened secret-choice interaction; Number carries bounded integers rather than collection members and SelectFromCollection has one chooser without private ballot aggregation
+SecretChoice.Number — SecretChoice — Expert-Level Safe — SecretChoice.Entity, ChooseNumberThenEffect — the numeric axis of widened SecretBidEffect; Entity selects collection members without numeric ranking and ChooseNumberThen chooses a single public value
+SecretChoiceEffect — Effect — Vault 11: Voter's Dilemma — SecretBidEffect, ChooseNumberThenEffect — renames and widens SecretBidEffect into secret numeric or collection choices with participants and result axes; ChooseNumberThen selects one public number and cannot aggregate private commitments
 SkipStepOrPhase — StaticAbility — Stasis — SkipStepOrPhaseEffect, UntapLimitPerStep — replaces SkipUntapStep/SkipDrawStep with a TurnPart axis; the effect is a one-shot resolution-time marker while this is a standing static read every turn, and UntapLimitPerStep limits what untaps in a step that still happens
 SkipStepOrPhaseEffect — Effect — Fasting — SkipCombatPhasesEffect, SkipNextTurnEffect — replaces SkipNextDrawStep/SkipNextUntapStep/SkipStepOrPhaseThisTurn with a TurnPart axis and a SkipDuration (next instance / rest of this turn); SkipCombatPhases skips the combat phases of the player's *next turn*, a turn-scoped marker no TurnPart duration says, and SkipNextTurn skips a whole turn
 StatePredicate.IsAttackingPlayer — StatePredicate — Echoing Assault — StatePredicate.IsAttackingDefenderOf, StatePredicate.IsAttackingEnchantedPlayer — IsAttackingDefenderOf matches the reference's whole defending side (planeswalkers, protected battles, teammates), but "attacking that player" is the player alone (CR 508.3e); IsAttackingEnchantedPlayer resolves its player from the source's attachment during projection, where a trigger-bound player reference (TriggeringPlayer) has no context to resolve

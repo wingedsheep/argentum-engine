@@ -34,8 +34,8 @@ class SecretBidBranchPauseTest : FunSpec({
         power = 1; toughness = 1
         triggeredAbility {
             trigger = Triggers.you.beginningOf(Step.UPKEEP)
-            effect = Effects.SecretBid(
-                highestBidderEffect = CompositeEffect(listOf(
+            effect = Effects.SecretNumbers(
+                highestEffect = CompositeEffect(listOf(
                     Effects.Sacrifice(GameObjectFilter.Creature, count = 1, target = EffectTarget.Controller),
                     Effects.LoseLife(1, EffectTarget.Controller)
                 ))
@@ -50,8 +50,8 @@ class SecretBidBranchPauseTest : FunSpec({
         triggeredAbility {
             trigger = Triggers.you.beginningOf(Step.UPKEEP)
             val t = target(TargetFilter.Creature)
-            effect = Effects.SecretBid(
-                highestBidderEffect = Effects.AddCounters(CounterType.PLUS_ONE_PLUS_ONE, 1, t)
+            effect = Effects.SecretNumbers(
+                highestEffect = Effects.AddCounters(CounterType.PLUS_ONE_PLUS_ONE, 1, t)
             )
         }
     }

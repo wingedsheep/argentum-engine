@@ -10115,7 +10115,7 @@
     "name": "Menacing Ogre",
     "manaCost": "{3}{R}{R}",
     "typeLine": "Creature — Ogre",
-    "oracleText": "Trample, haste\nWhen Menacing Ogre enters, each player secretly chooses a number. Then those numbers are revealed. Each player with the highest number loses that much life. If you are one of those players, put two +1/+1 counters on Menacing Ogre.",
+    "oracleText": "Trample, haste\nWhen this creature enters, each player secretly chooses a number. Then those numbers are revealed. Each player with the highest number loses that much life. If you are one of those players, put two +1/+1 counters on this creature.",
     "creatureStats": {
         "power": 3,
         "toughness": 3
@@ -10133,30 +10133,54 @@
                     "to": "Battlefield"
                 },
                 "effect": {
-                    "type": "SecretBid",
-                    "highestBidderEffect": {
-                        "type": "Composite",
-                        "effects": [
-                            {
-                                "type": "LoseLife",
-                                "amount": "XValue",
-                                "target": "Controller"
-                            },
-                            {
-                                "type": "Gated",
-                                "gate": {
-                                    "type": "Gate.WhenCondition",
-                                    "condition": "YouControlSource"
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "StorePlayer",
+                            "storeAs": "players0"
+                        },
+                        {
+                            "type": "SecretChoice",
+                            "choice": {
+                                "type": "SecretNumberChoice",
+                                "maxValue": {
+                                    "type": "Fixed",
+                                    "amount": 2147483647
                                 },
-                                "then": {
-                                    "type": "AddCounters",
-                                    "counterType": "PLUS_ONE_PLUS_ONE",
-                                    "count": 2,
-                                    "target": "Self"
+                                "outcomeMinValue": 0,
+                                "highestEffect": {
+                                    "type": "Composite",
+                                    "effects": [
+                                        {
+                                            "type": "LoseLife",
+                                            "amount": "XValue",
+                                            "target": "Controller"
+                                        },
+                                        {
+                                            "type": "Gated",
+                                            "gate": {
+                                                "type": "Gate.WhenCondition",
+                                                "condition": {
+                                                    "type": "PlayerIs",
+                                                    "subject": "You",
+                                                    "player": {
+                                                        "type": "InCollection",
+                                                        "collection": "players0"
+                                                    }
+                                                }
+                                            },
+                                            "then": {
+                                                "type": "AddCounters",
+                                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                                "count": 2,
+                                                "target": "Self"
+                                            }
+                                        }
+                                    ]
                                 }
                             }
-                        ]
-                    }
+                        }
+                    ]
                 }
             }
         ]
@@ -10164,9 +10188,8 @@
     "metadata": {
         "collectorNumber": "219",
         "rarity": "RARE",
-        "artist": "Pete Venters",
-        "flavorText": "The Skirk Ridge goblins had never seen an ogre before. They would never see one again.",
-        "imageUri": "https://cards.scryfall.io/normal/front/5/3/5360a871-6932-45b2-bc94-1bd414e38906.jpg?1562914555"
+        "artist": "Ron Spencer",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/3/5360a871-6932-45b2-bc94-1bd414e38906.jpg?1783945051"
     },
     "colorIdentityOverride": [
         "RED"

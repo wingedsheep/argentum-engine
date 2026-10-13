@@ -1348,7 +1348,7 @@ serialized shape; the facade for each is:
 | `RevealHandEffect` | `Effects.RevealHand(target)` |
 | `SacrificeEffect` | `Effects.SacrificeOwn(filter, count, excludeSource)` / `Effects.SacrificeAnyNumber(filter)` |
 | `SacrificeTargetEffect` | `Effects.SacrificeTarget` |
-| `SecretBidEffect` | `Effects.SecretBid` |
+| `SecretChoiceEffect` | `Effects.SecretChoice(choice, participants, then)` / `Effects.SecretNumbers` |
 | `SetGroupCreatureSubtypesEffect` | `Effects.SetGroupCreatureSubtypes` |
 | `SetLifeTotalEffect` | `Effects.SetLifeTotal` |
 | `ShuffleLibraryEffect` | `Effects.ShuffleLibrary` |
@@ -13127,7 +13127,10 @@ answer it and would silently return `false`.
   `EffectTarget.ContextTarget(index)` to make that same player the subject of the follow-up.
 - `PlayerIs(subject = Player.TriggeringPlayer, player)` (facades `Conditions.TriggeringPlayerIs(player)`
   and `Conditions.PlayerIs(subject, player)`) — two resolved `Player` references name the same player;
-  false when either side doesn't resolve. With the default subject it narrows a broad "whenever a
+  false when either side doesn't resolve. When the expected `player` is `Player.InCollection(name)`,
+  it instead tests membership of the resolved subject in that stored player collection during
+  resolution; missing/empty collections and projection evaluate to false. Other selectors retain
+  their single-player equality semantics. With the default subject it narrows a broad "whenever a
   player …" trigger to one player without a bespoke event filter — Shinryu, Transcendent Rival gates
   "When the chosen player loses the game, you win the game" with
   `triggerRestriction = TriggeringPlayerIs(Player.ChosenOpponent)` on `Triggers.anyPlayer.losesGame()`.
@@ -17690,3 +17693,38 @@ is independent of preventing life loss. Shared-team turns give each active playe
 The client displays the public counter total on player orbs and opponent seats. Scenario JSON
 can stage player counters with `player1.counters` / `player2.counters` (for example `{"RAD": 4}`).
 Radiation-specific life-loss conversion remains a separate replacement capability.
+
+### Secret simultaneous choices
+
+`Effects.SecretChoice(choice, participants = listOf(Player.Each), then = null)` collects private
+choices in APNAP order, then reveals all commitments together. Participant references are unioned
+and deduplicated; `listOf(Player.You, opponent.asPlayer)` expresses a controller and named opponent.
+Earlier commitments stay private while later players choose. Original targets, object references,
+and pipeline values survive every pause and outcome.
+
+- `SecretChoice.Number(minValue = 0, maxValue = Fixed(99), outcomeMinValue = 1, highestEffect,
+  lowestEffect, tiedEffect, matchedEffect, unmatchedEffect)` chooses an integer in the inclusive
+  bounds. Ranking includes values at least `outcomeMinValue`; the default preserves former
+  `SecretBidEffect` behavior, excluding zero. Highest and lowest include all ties; `tiedEffect`
+  runs for every ranked chooser when all ranked values are equal. Ranked effects run per chooser
+  with controller rebound to that player and X to their number. Matched/unmatched compare all
+  choices, including zero, and execute once with the original controller. An empty participant
+  group executes neither comparison branch. `Effects.SecretNumbers` supplies the same parameters
+  as a convenience facade. Bounds of 1–3 and matched/unmatched outcomes express Expert-Level Safe.
+- `SecretChoice.Entity(from, optional = true, storeMostChosen)` takes a named collection as the
+  candidate pool. Each player chooses one entity or abstains; this is not targeting. The result
+  collection contains every distinct object tied for the greatest positive ballot count, or is
+  empty when everyone abstains. The outer `then` runs with the original controller and the result
+  collection available. At the card boundary, use `runStoringCollection { key ->
+  Effects.SecretEntities(from = candidates, storeMostChosen = key) }` with a typed
+  `CollectionSlot` candidate pool; the facade hides its underlying key. Vault 11 composes
+  `ConditionalOnCollection` with simultaneous
+  `MoveCollection(..., MoveType.Destroy)`, or drawing for each player when the collection is empty.
+
+`SecretChoiceEffect` replaces the narrower `SecretBidEffect`; Menacing Ogre retains its ranked
+number outcomes through `Effects.SecretNumbers(maxValue = fixed(Int.MAX_VALUE), outcomeMinValue = 0)`, including the controller's
++1/+1 counters when every player chooses zero. Its pipeline captures the original trigger
+controller with `storePlayer()` and compares each ranked bidder using
+`Conditions.PlayerIs(Player.You, originalController.asPlayers)`, so a later control change does
+not change which player earns the counters. `ChooseNumberThen` remains the public, single
+chooser combinator, and `SelectFromCollection` remains ordinary collection selection.

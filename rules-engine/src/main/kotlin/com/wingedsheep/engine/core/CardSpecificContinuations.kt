@@ -25,41 +25,6 @@ data class PutFromHandContinuation(
 ) : AnswerContinuation
 
 /**
- * Resume after a player chooses a number for secret bidding effects (Menacing Ogre).
- *
- * Each player secretly chooses a number. After all players have chosen,
- * execute outcome effects per matching bidder (xValue = bid, controllerId = bidder).
- *
- * @property sourceId The creature that entered the battlefield
- * @property sourceName Name of the source for display
- * @property controllerId The controller of the source creature
- * @property currentPlayerId The player whose choice we are waiting for
- * @property remainingPlayers Players who still need to choose (APNAP order)
- * @property chosenNumbers Numbers chosen so far by each player
- * @property highestBidderEffect Effect executed per highest bidder
- * @property lowestBidderEffect Effect executed per lowest non-zero bidder
- * @property tiedBidderEffect Effect executed per bidder when all non-zero bids are equal
- * @property effectContext The resolving effect's full context (targets, pipeline values, cost
- *   facts). Each bidder's branch runs under a copy of it with `controllerId` = bidder and
- *   `xValue` = bid, so a branch can still read the original targets and stored values.
- */
-@Serializable
-data class SecretBidContinuation(
-    val sourceId: EntityId?,
-    val sourceName: String?,
-    val controllerId: EntityId,
-    val currentPlayerId: EntityId,
-    val remainingPlayers: List<EntityId>,
-    val chosenNumbers: Map<EntityId, Int>,
-    val highestBidderEffect: Effect?,
-    val lowestBidderEffect: Effect?,
-    val tiedBidderEffect: Effect?,
-    val objectReferences: com.wingedsheep.engine.handlers.ObjectReferenceEnvironment = com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(),
-    val resolvingTriggeredAbility: com.wingedsheep.sdk.scripting.TriggeredAbility? = null,
-    val effectContext: com.wingedsheep.engine.handlers.EffectContext? = null,
-) : AnswerContinuation
-
-/**
  * Which step of the [OpenLifeBidContinuation] the pending decision belongs to.
  */
 @Serializable
