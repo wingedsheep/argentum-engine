@@ -861,6 +861,8 @@ export const PASSIVE_COUNTER_TYPES: readonly CounterType[] = [
   CounterType.BRICK,
   // Living Artifact's vitality store is spent one at a time to gain life.
   CounterType.VITALITY,
+  // Weatherlight Compleated's phyresis tally: a Phyrexian creature at four, card draw at seven.
+  CounterType.PHYRESIS,
   CounterType.PLUS_ONE_PLUS_TWO,
   CounterType.PLUS_TWO_PLUS_TWO,
   CounterType.MINUS_TWO_MINUS_TWO,

@@ -16667,50 +16667,6 @@
     ]
 }
 
-// Serra Redeemer
-{
-    "name": "Serra Redeemer",
-    "manaCost": "{3}{W}{W}",
-    "typeLine": "Creature — Angel Soldier",
-    "oracleText": "Flying\nWhenever another creature you control with power 2 or less enters, put two +1/+1 counters on that creature.",
-    "creatureStats": {
-        "power": 2,
-        "toughness": 4
-    },
-    "keywords": [
-        "FLYING"
-    ],
-    "script": {
-        "triggeredAbilities": [
-            {
-                "id": "Serra Redeemer:1",
-                "trigger": {
-                    "type": "ZoneChangeEvent",
-                    "filter": "creature pow<=2 ctrl:you",
-                    "to": "Battlefield"
-                },
-                "binding": "OTHER",
-                "effect": {
-                    "type": "AddCounters",
-                    "counterType": "PLUS_ONE_PLUS_ONE",
-                    "count": 2,
-                    "target": "TriggeringEntity"
-                }
-            }
-        ]
-    },
-    "metadata": {
-        "collectorNumber": "387",
-        "rarity": "RARE",
-        "artist": "Joshua Raphael",
-        "imageUri": "https://cards.scryfall.io/normal/front/2/3/230b9aef-bd9c-4332-ace4-b5b065bac6d8.jpg?1721428078",
-        "inBooster": false
-    },
-    "colorIdentityOverride": [
-        "WHITE"
-    ]
-}
-
 // Shore Up
 {
     "name": "Shore Up",

@@ -336,6 +336,30 @@ class CardLinterTest : DescribeSpec({
                 .message shouldContain "KICKED"
         }
 
+        it("reads a chosen-card-type predicate from its explicit slot") {
+            val card = card("Mode-Typed Reducer") {
+                manaCost = "{W}{U}"
+                typeLine = "Creature — Human Wizard"
+                power = 2
+                toughness = 2
+                replacementEffect(
+                    com.wingedsheep.sdk.scripting.EntersWithChoice(
+                        choiceType = com.wingedsheep.sdk.scripting.ChoiceType.MODE,
+                        modeOptions = listOf(com.wingedsheep.sdk.scripting.ModeOption(id = "Sorcery", label = "Sorcery")),
+                    )
+                )
+                staticAbility {
+                    ability = com.wingedsheep.sdk.scripting.ModifySpellCost(
+                        target = com.wingedsheep.sdk.scripting.SpellCostTarget.YouCast(
+                            GameObjectFilter.Any.ofChosenCardTypeComponent(ChoiceSlot.MODE)
+                        ),
+                        modification = com.wingedsheep.sdk.scripting.CostModification.ReduceGeneric(1),
+                    )
+                }
+            }
+            CardLinter.lint(card).shouldBeEmpty()
+        }
+
         it("accepts a KICKED read when a kicker effect is declared") {
             val card = instant(
                 "Kicked",

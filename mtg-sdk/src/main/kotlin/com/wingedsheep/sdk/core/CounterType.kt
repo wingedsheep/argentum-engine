@@ -727,6 +727,13 @@ value class CounterType(val name: String) {
          */
         val VITALITY = CounterType("VITALITY")
 
+        /**
+         * Phyresis counter (DMU — Weatherlight Compleated). A passive tally with no inherent rule:
+         * the card reads it as "four or more" (it's a Phyrexian creature) and "seven or more"
+         * (draw instead of scry).
+         */
+        val PHYRESIS = CounterType("PHYRESIS")
+
         /** Every counter kind the SDK names, in declaration order. */
         val KNOWN: List<CounterType> = listOf(
             PLUS_ONE_PLUS_ONE,
@@ -855,6 +862,7 @@ value class CounterType(val name: String) {
             CORPSE,
             BRICK,
             VITALITY,
+            PHYRESIS,
         )
 
         /**

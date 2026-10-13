@@ -990,7 +990,12 @@ object CardLinter {
                             ?.let { slots.declaredModeIds.add(it) }
                     }
                 }
-                slotReaders[type]?.let { slots.reads.add(it to type.orEmpty()) }
+                // A reader with an explicit `slot` field (the default is omitted from the JSON) reads
+                // that slot instead — Stenn's CardTypeEqualsChosenComponent(MODE).
+                slotReaders[type]?.let {
+                    val slot = (element["slot"] as? JsonPrimitive)?.contentOrNull ?: it
+                    slots.reads.add(slot to type.orEmpty())
+                }
                 if (type in slotFieldReaders) {
                     (element["slot"] as? JsonPrimitive)?.contentOrNull
                         ?.let { slots.reads.add(it to type.orEmpty()) }
