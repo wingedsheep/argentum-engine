@@ -63,6 +63,22 @@ class SacrificeAndPayContinuationResumer(
         val playerId = continuation.playerId
         val selectedPermanents = response.selectedCards
 
+        // An edict (ForceSacrifice) holds every player's choice until the last one has chosen,
+        // then sacrifices them all at once (CR 101.4).
+        if (continuation.filter != null) {
+            val executor = ForceSacrificeExecutor(services.zones, dynamicAmountEvaluator = services.dynamicAmountEvaluator)
+            val result = executor.processPlayers(
+                state, continuation.remainingPlayers, continuation.filter,
+                continuation.count, continuation.sourceId,
+                chosen = continuation.chosen + SacrificeChoice(playerId, selectedPermanents)
+            )
+            if (result.outcome is Outcome.Paused) {
+                return ExecutionResult.propagatePause(result.state, result.events.toList())
+            }
+            val withSnapshots = withSacrificeSnapshots(result.state, result.updatedSacrificedPermanents)
+            return finishSacrificeInstruction(withSnapshots, result.events.toList(), checkForMore)
+        }
+
         // Move selected permanents from battlefield to owner's graveyard
         var newState = state
         val events = mutableListOf<GameEvent>()
@@ -97,24 +113,6 @@ class SacrificeAndPayContinuationResumer(
         }
 
         newState = withSacrificeSnapshots(newState, snapshots)
-
-        // If there are remaining players (from "each opponent" effects), process them
-        if (continuation.remainingPlayers.isNotEmpty() && continuation.filter != null) {
-            val executor = ForceSacrificeExecutor(services.zones, dynamicAmountEvaluator = services.dynamicAmountEvaluator)
-            val result = executor.processPlayers(
-                newState, continuation.remainingPlayers, continuation.filter,
-                continuation.count, continuation.sourceId
-            )
-            val resultStateWithSnaps =
-                withSacrificeSnapshots(result.state, result.updatedSacrificedPermanents)
-            val allEvents = events + result.events
-            return if (result.outcome is Outcome.Paused) {
-                // Another player needs a decision — return paused with combined events
-                ExecutionResult.propagatePause(resultStateWithSnaps, allEvents)
-            } else {
-                finishSacrificeInstruction(resultStateWithSnaps, allEvents, checkForMore)
-            }
-        }
 
         return finishSacrificeInstruction(newState, events, checkForMore)
     }

@@ -3179,7 +3179,9 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   overload / `ForceSacrificeEffect.dynamicCount`) for "sacrifices half the creatures they control,
   rounded up" (Rush of Dread): `Divide(AggregateBattlefield(Player.ContextPlayer(0), Creature), Fixed(2),
   roundUp = true)`. The amount is evaluated at resolution against the resolving context, so a per-target
-  player reference counts the chosen player's permanents.
+  player reference counts the chosen player's permanents. With a multi-player target (`Player.Each`,
+  `Player.EachOpponent`) every player chooses in APNAP order and all the chosen permanents are
+  sacrificed together once the last player has chosen (CR 101.4) — Benalish Sleeper, Plaguecrafter.
 - `Effects.SacrificeOwn(filter, count?)` (= `SacrificeEffect(filter, count)`) — the bare imperative,
   "Sacrifice a creature.": the **ability's controller** sacrifices and no player is named. Distinct
   from `Effects.Sacrifice`, which is the edict and names the player who must sacrifice — writing the
