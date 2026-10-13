@@ -6,6 +6,7 @@ import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.mtg.sets.definitions.pip.cards.CraigBooneNovacGuard
+import com.wingedsheep.mtg.sets.definitions.rav.cards.DoublingSeason
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Zone
@@ -18,7 +19,7 @@ import io.kotest.matchers.types.shouldBeInstanceOf
 
 class CraigBooneNovacGuardScenarioTest : FunSpec({
     fun setup() = GameTestDriver().apply {
-        registerCards(TestCards.all + CraigBooneNovacGuard)
+        registerCards(TestCards.all + CraigBooneNovacGuard + DoublingSeason)
         initMirrorMatch(deck = Deck.of("Plains" to 40), skipMulligans = true, startingPlayer = 0)
         passPriorityUntil(Step.PRECOMBAT_MAIN)
     }
@@ -97,6 +98,25 @@ class CraigBooneNovacGuardScenarioTest : FunSpec({
         d.pendingDecision.shouldBeNull()
         d.getLifeTotal(d.player2) shouldBe 20
         d.getLifeTotal(d.player1) shouldBe 20
+    }
+
+    test("with Doubling Season the four counters placed make the reflexive trigger fire twice (2024-06-07 ruling)") {
+        val d = setup()
+        d.putPermanentOnBattlefield(d.player1, DoublingSeason.name)
+        val giant = d.putCreatureOnBattlefield(d.player2, "Hill Giant")
+        val craig = attackWithTwo(d)
+        quest(d, craig) shouldBe 4
+        d.pendingDecision.shouldBeInstanceOf<ChooseTargetsDecision>()
+        d.submitTargetSelection(d.player1, emptyList()).error shouldBe null
+        resolve(d)
+        d.pendingDecision.shouldBeInstanceOf<ChooseTargetsDecision>()
+        d.submitTargetSelection(d.player1, listOf(giant)).error shouldBe null
+        resolve(d)
+        d.submitYesNo(d.player2, false).error shouldBe null
+        resolve(d)
+        d.pendingDecision.shouldBeNull()
+        // Four damage — the quest counters on Craig Boone — kills the 3/3.
+        (giant in d.state.getZone(d.player2, Zone.GRAVEYARD)) shouldBe true
     }
 
     test("attacking with a single creature doesn't trigger") {
