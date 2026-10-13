@@ -225,13 +225,11 @@ data class PlayerAttackedWithCreaturesThisTurn(
 }
 
 /**
- * Condition: "If [attacker] attacked [defender] this turn" (CR 508.6) — i.e. [attacker]
- * declared one or more creatures as attackers whose defending player was [defender] (the
- * player itself, or the controller of a planeswalker / protector of a battle the creature
- * attacked). Reads [attacker]'s per-turn attacked-players record.
+ * Condition: "If [attacker] attacked [defender] this turn" — the attacker declared one or
+ * more creatures attacking that player directly. Attacking a planeswalker or battle does
+ * not attack its controller or protector. Reads the attacker's per-turn attacked-player record.
  *
- * Negate via `Conditions.Not(...)` for "didn't attack you that turn" (Faramir, Prince of
- * Ithilien: "you draw a card if they didn't attack you that turn").
+ * Negate via `Conditions.Not(...)` for "didn't attack you that turn" (Faramir, Prince of Ithilien).
  */
 @SerialName("PlayerAttackedPlayerThisTurn")
 @Serializable

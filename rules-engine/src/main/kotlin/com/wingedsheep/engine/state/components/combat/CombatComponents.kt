@@ -304,20 +304,14 @@ data class PlayerAttackersLastTurnComponent(
 ) : Component
 
 /**
- * Records which players this player has "attacked" this turn (CR 508.6): the set of
- * defending players against whom they declared one or more attackers. A creature's
- * defending player is the player it's attacking, or the controller of the planeswalker /
- * protector of the battle it's attacking (CR 508.5), so attacking an opponent's
- * planeswalker counts as having attacked that opponent.
- *
- * Stamped on the attacking player in [com.wingedsheep.engine.mechanics.combat.AttackPhaseManager]
- * at declare-attackers time (union across all combat phases this turn). Cleared at end of
- * turn during cleanup. Read by the `PlayerAttackedPlayerThisTurn` condition (Faramir, Prince
- * of Ithilien: "you draw a card if they didn't attack you that turn").
+ * Players directly attacked by this player's declared creatures this turn. Attacking a
+ * planeswalker or battle does not attack its controller or protector. Unioned across combats
+ * at declaration and retained even if creatures or opponents leave; cleared during cleanup.
+ * Read by `PlayerAttackedPlayerThisTurn` and `TurnTracker.OPPONENTS_ATTACKED`.
  */
 @Serializable
 data class PlayerAttackedPlayersThisTurnComponent(
-    val defendingPlayerIds: Set<EntityId>
+    val attackedPlayerIds: Set<EntityId>
 ) : Component
 
 /**

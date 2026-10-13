@@ -704,6 +704,96 @@
     ]
 }
 
+// Rose, Cutthroat Raider
+{
+    "name": "Rose, Cutthroat Raider",
+    "manaCost": "{2}{R}{R}",
+    "typeLine": "Legendary Artifact Creature — Robot",
+    "oracleText": "First strike\nRaid — At end of combat on your turn, if you attacked this turn, create a Junk token for each opponent you attacked. (It's an artifact with \"{T}, Sacrifice this token: Exile the top card of your library. You may play that card this turn. Activate only as a sorcery.\")\nWhenever you sacrifice a Junk, add {R}.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "FIRST_STRIKE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Rose, Cutthroat Raider:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END_COMBAT"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Junk",
+                    "dynamicCount": {
+                        "type": "TurnTracking",
+                        "player": "You",
+                        "tracker": "OPPONENTS_ATTACKED"
+                    }
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "TurnTracking",
+                        "player": "You",
+                        "tracker": "PLAYER_ATTACKED"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            },
+            {
+                "id": "Rose, Cutthroat Raider:2",
+                "trigger": {
+                    "type": "PermanentsSacrificedEvent",
+                    "filter": "Junk",
+                    "perPermanent": true
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "RED"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "66",
+        "rarity": "RARE",
+        "artist": "Zezhou Chen",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/8/f803a510-99fe-467a-be3b-9301497ec7ec.jpg?1783912401",
+        "rulings": [
+            {
+                "date": "2024-11-08",
+                "text": "Raid abilities care only that you attacked with a creature. It doesn't matter how many creatures you attacked with or which player, planeswalker, or battle those creatures attacked."
+            },
+            {
+                "date": "2024-11-08",
+                "text": "Raid abilities evaluate the entire turn to see if you attacked with a creature. That creature doesn't have to still be on the battlefield. Similarly, the player, planeswalker, or battle it attacked doesn't have to still be in the game or on the battlefield."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "Rose's last ability triggers when you sacrifice a Junk for any reason, not just to activate a Junk's activated ability."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "You can't sacrifice a Junk token to pay multiple costs. For example, you can't sacrifice a Junk token to activate its own ability and also to activate the second ability of Junk Jet."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "You pay all costs and follow all normal timing rules for the card played from exile with a Junk token's ability. For example, if the exiled card is a land card, you may play it only during your main phase while the stack is empty."
+            }
+        ]
+    }
+}
+
 // Ruthless Radrat
 {
     "name": "Ruthless Radrat",

@@ -39,6 +39,7 @@ object FalloutCommanderSet : MtgSet {
     }
 
     override val tokenArt = listOf(
+        TokenPrinting(name = "Junk", imageUri = "https://cards.scryfall.io/normal/front/6/2/62c4a6f6-6425-4c0c-b35a-880fcab42aad.jpg?1783912041"),
         TokenPrinting(name = "Food", imageUri = "https://cards.scryfall.io/normal/front/e/5/e5d0801a-9565-419f-bb0b-23547c9dd59d.jpg?1783912042"),
     )
 

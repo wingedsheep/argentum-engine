@@ -1,0 +1,67 @@
+{
+  "player1Name": "Raider",
+  "player2Name": "Defender",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": [
+      "Rose, Cutthroat Raider"
+    ],
+    "battlefield": [
+      {
+        "name": "Rose, Cutthroat Raider",
+        "summoningSickness": false
+      },
+      {
+        "name": "Grizzly Bears",
+        "summoningSickness": false
+      },
+      {
+        "name": "Mountain"
+      },
+      {
+        "name": "Mountain"
+      },
+      {
+        "name": "Mountain"
+      },
+      {
+        "name": "Mountain"
+      }
+    ],
+    "graveyard": [],
+    "library": [
+      "Mountain",
+      "Grizzly Bears",
+      "Mountain"
+    ]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {
+        "name": "Grizzly Bears",
+        "summoningSickness": false
+      }
+    ],
+    "graveyard": [],
+    "library": [
+      "Forest",
+      "Forest",
+      "Forest"
+    ]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [
+    "DECLARE_ATTACKERS",
+    "END_COMBAT",
+    "POSTCOMBAT_MAIN"
+  ],
+  "player2StopAtSteps": [
+    "DECLARE_BLOCKERS"
+  ],
+  "player1OpponentStopAtSteps": [],
+  "player2OpponentStopAtSteps": []
+}

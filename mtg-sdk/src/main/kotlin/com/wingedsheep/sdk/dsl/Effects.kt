@@ -3484,6 +3484,14 @@ object Effects {
     fun CreateForestDryad(count: DynamicAmount, tapped: Boolean = false, controller: EffectTarget? = null): Effect =
         CreatePredefinedTokenEffect("Forest Dryad", controller = controller, tapped = tapped, dynamicCount = count)
 
+    /** Create colorless Junk artifacts with the sorcery-speed sacrifice-to-impulse ability. */
+    fun CreateJunk(count: Int = 1, controller: EffectTarget? = null): Effect =
+        CreatePredefinedTokenEffect("Junk", count, controller)
+
+    /** Dynamic-count variant of [CreateJunk]. */
+    fun CreateJunk(count: DynamicAmount, controller: EffectTarget? = null): Effect =
+        CreatePredefinedTokenEffect("Junk", controller = controller, dynamicCount = count)
+
     /**
      * Create N Powerstone tokens — The Brothers' War's colorless artifact with "{T}: Add {C}. This
      * mana can't be spent to cast a nonartifact spell." (`PredefinedTokens.Powerstone`). Almost

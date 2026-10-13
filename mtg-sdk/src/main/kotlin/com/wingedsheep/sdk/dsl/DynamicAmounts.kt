@@ -809,6 +809,10 @@ object DynamicAmounts {
     fun permanentsPutIntoGraveyardFromBattlefieldThisTurn(player: Player = Player.Each): DynamicAmount =
         DynamicAmount.TurnTracking(player, TurnTracker.PERMANENTS_PUT_INTO_GRAVEYARD_FROM_BATTLEFIELD)
 
+    /** Counts directly attacked opponents once each, including opponents who subsequently left. */
+    fun opponentsAttackedThisTurn(player: Player = Player.You): DynamicAmount =
+        DynamicAmount.TurnTracking(player, TurnTracker.OPPONENTS_ATTACKED)
+
     fun opponentsWhoLostLifeThisTurn(): DynamicAmount =
         DynamicAmount.TurnTracking(Player.You, TurnTracker.OPPONENTS_WHO_LOST_LIFE)
 

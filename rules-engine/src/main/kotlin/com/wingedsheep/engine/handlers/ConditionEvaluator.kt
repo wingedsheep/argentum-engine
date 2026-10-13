@@ -1566,7 +1566,7 @@ class ConditionEvaluator(
         val defenderId = resolvePlayer(state, condition.defender, ctx) ?: return false
         val attackedPlayers = state.getEntity(attackerId)
             ?.get<com.wingedsheep.engine.state.components.combat.PlayerAttackedPlayersThisTurnComponent>()
-            ?.defendingPlayerIds
+            ?.attackedPlayerIds
             ?: emptySet()
         return defenderId in attackedPlayers
     }

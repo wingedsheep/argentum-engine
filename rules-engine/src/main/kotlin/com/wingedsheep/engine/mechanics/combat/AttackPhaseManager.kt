@@ -373,12 +373,8 @@ internal class AttackPhaseManager(
             newState = AttackedPermanents.markAttacked(newState, defenderId)
         }
 
-        // Resolve each attacker's defending player (CR 508.5/508.6): the defender entity is
-        // either a player directly, or a planeswalker/battle whose controller is the defending
-        // player. Record the set so "did player X attack player Y this turn?" can be answered
-        // after combat (Faramir, Prince of Ithilien).
-        val defendingPlayers: Set<EntityId> =
-            attackers.values.mapTo(mutableSetOf()) { CombatDefenders.defendingPlayerOf(state, it) }
+        // Keep directly attacked player identities after combat and across extra combats.
+        val attackedPlayers = attackers.values.filterTo(mutableSetOf()) { it in state.turnOrder }
 
         // Attackers seen earlier this turn (across prior combat phases) — read before the per-turn
         // set is unioned below so we can flag which of these attackers are attacking for the *first
@@ -419,13 +415,13 @@ internal class AttackPhaseManager(
                             battleAttackerIds = (previous?.battleAttackerIds ?: emptySet()) + attackersAgainstBattle
                         )
                     )
-                    if (defendingPlayers.isNotEmpty()) {
-                        val previousDefenders = container
+                    if (attackedPlayers.isNotEmpty()) {
+                        val previousAttackedPlayers = container
                             .get<com.wingedsheep.engine.state.components.combat.PlayerAttackedPlayersThisTurnComponent>()
-                            ?.defendingPlayerIds ?: emptySet()
+                            ?.attackedPlayerIds ?: emptySet()
                         updated = updated.with(
                             com.wingedsheep.engine.state.components.combat.PlayerAttackedPlayersThisTurnComponent(
-                                previousDefenders + defendingPlayers
+                                previousAttackedPlayers + attackedPlayers
                             )
                         )
                     }

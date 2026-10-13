@@ -1172,7 +1172,22 @@ object PredefinedTokens {
      * All predefined token definitions.
      * Register these in the CardRegistry so token abilities are resolved.
      */
+    val Junk = card("Junk") {
+        typeLine = "Artifact — Junk"
+        activatedAbility {
+            description = "Exile the top card of your library. You may play it this turn."
+            cost = Costs.Composite(Costs.Tap, Costs.SacrificeSelf)
+            effect = Patterns.Exile.impulse()
+            timing = TimingRule.SorcerySpeed
+        }
+        metadata {
+            imageUri = "https://cards.scryfall.io/normal/front/6/2/62c4a6f6-6425-4c0c-b35a-880fcab42aad.jpg?1783912041"
+            artist = "Justine Cruz"
+        }
+    }
+
     val allTokens: List<CardDefinition> = listOf(
+        Junk,
         EldraziSpawn,
         Treasure,
         Meteorite,

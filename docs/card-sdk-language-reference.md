@@ -1373,6 +1373,13 @@ blocked. The source and controller remain the attachment; the triggering entity 
 `by`, or the attached creature without it. Both declared blocks and later blocking relationships use
 this path, with blocker filters evaluated against projected state.
 
+### Junk token creation
+
+`Effects.CreateJunk(count = 1, controller = null)` accepts an integer or a `DynamicAmount`.
+It creates colorless Junk artifacts with “{T}, Sacrifice this token: Exile the top card of your
+library. You may play that card this turn. Activate only as a sorcery.” The predefined token
+uses `Patterns.Exile.impulse()`; playing the card follows ordinary costs and timing.
+
 ### Damage
 
 - `DealDamage(amount, target, damageSource = null, cantBePrevented = false, excessDamageVariable = null, damageDealtVariable = null)`
@@ -13608,9 +13615,8 @@ default to "you" so card authors don't need to pass it explicitly.
   `YouAttackedWithCreaturesThisTurn`. The record is keyed to the player who *declared* the attacker,
   so a creature whose controller changed after attacking still counts.
 - `PlayerAttackedPlayerThisTurn(attacker, defender = Player.You)` — whether `attacker` "attacked"
-  `defender` this turn (CR 508.6): they declared one or more attackers whose defending player was
-  `defender` (the player directly, or the controller of a planeswalker / protector of a battle the
-  attacker was attacking, CR 508.5). Reads the attacker's per-turn `PlayerAttackedPlayersThisTurnComponent`
+  `defender` this turn: they declared one or more creatures attacking that player directly.
+  Attacks against planeswalkers and battles do not count. Reads the attacker's per-turn `PlayerAttackedPlayersThisTurnComponent`
   (stamped at declare-attackers, cleared at end of turn). Negate with `Not(...)` for "didn't attack you
   that turn" (Faramir, Prince of Ithilien: at the chosen opponent's next end step, draw if they didn't
   attack you, else make three Human Soldier tokens). `attacker` is typically `Player.TriggeringPlayer`
@@ -15081,7 +15087,11 @@ of `AddMana` and `AddColorlessMana`. The engine empties pools as each step and p
 - `LIFE_LOST_LAST_TURN` — `LIFE_LOST` one turn back: the previous turn in the game, whoever's it was,
   snapshotted onto `GameState.playersWhoLostLifeLastTurn` by `CleanupPhaseManager.cleanupEndOfTurn`.
   Facade `Conditions.OpponentLostLifeLastTurn` (Feast on the Fallen).
-- `PLAYER_ATTACKED` — whether/how many times you attacked.
+- `PLAYER_ATTACKED` — 0 or 1: whether you declared any attackers this turn, including against planeswalkers or battles.
+- `OPPONENTS_ATTACKED` — distinct opponents directly attacked by declared creatures this turn.
+  `DynamicAmounts.opponentsAttackedThisTurn(player = Player.You)` exposes the count. Multiple
+  creatures and repeated combats count each opponent once; planeswalker/battle attacks and
+  creatures entering attacking do not count. History survives departures and resets at cleanup.
 - `DEALT_COMBAT_DAMAGE` — combat damage dealt.
 - `DEALT_COMBAT_DAMAGE_BY_LEGENDARY_CREATURE` — indicator (0/1) that the player was dealt combat
   damage by a legendary creature this turn (recorded in `CombatDamageManager`, cleared at end of
@@ -16823,8 +16833,8 @@ Counter effects live in §4 (`AddCounters`, `RemoveCounters`, `Proliferate`, `Mo
 - `LifeLostThisTurnComponent` — marker that you've lost life this turn.
 - `PlayerAttackedThisTurnComponent` — marker that you've attacked this turn.
 - `PlayerAttackersThisTurnComponent` — list of attackers declared this turn.
-- `PlayerAttackedPlayersThisTurnComponent` — set of defending players you "attacked" this turn (CR
-  508.6); read by `PlayerAttackedPlayerThisTurn`.
+- `PlayerAttackedPlayersThisTurnComponent` — set of players directly attacked by your declared
+  creatures this turn; read by `PlayerAttackedPlayerThisTurn` and `TurnTracker.OPPONENTS_ATTACKED`.
 - `LandDropsComponent` — lands played this turn.
 - `FoodSacrificeThisTurnComponent` — marker that you sacrificed a Food this turn.
 - `SpellsCastThisTurnByPlayer` — count of spells you cast this turn.

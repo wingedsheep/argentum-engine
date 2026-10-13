@@ -2,7 +2,7 @@
 
 **Set Size:** 336 cards
 **Release Date:** March 8, 2024
-**Implemented:** 136 / 336
+**Implemented:** 137 / 336
 | Section    | Total | Done |
 |------------|-------|------|
 | Extras     | 336   | 129  |
@@ -235,7 +235,7 @@
 - [ ] Robobrain War Mind
 - [x] Rogue's Passage
 - [x] Rootbound Crag
-- [ ] Rose, Cutthroat Raider
+- [x] Rose, Cutthroat Raider
 - [ ] Ruinous Ultimatum
 - [x] Rustvale Bridge
 - [ ] Ruthless Radrat
