@@ -3,10 +3,12 @@ package com.wingedsheep.gameserver.config
 import com.wingedsheep.gameserver.coverage.SetCoverageService
 import com.wingedsheep.sdk.limited.EchoedPairsPlayBooster
 import com.wingedsheep.sdk.limited.LandSlotBooster
+import com.wingedsheep.sdk.limited.StandardBooster
 import com.wingedsheep.sdk.model.Rarity
 import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldContain
+import io.kotest.matchers.doubles.plusOrMinus
 import io.kotest.matchers.ints.shouldBeGreaterThan
 import io.kotest.matchers.maps.shouldContainKey
 import io.kotest.matchers.nulls.shouldNotBeNull
@@ -23,6 +25,33 @@ class GameBeansConfigBoosterPoolTest : FunSpec({
     val cardRegistry = config.cardRegistry()
     val setCoverageService = SetCoverageService()
     val boosterGenerator = config.boosterGenerator(cardRegistry, setCoverageService)
+
+    test("The Brothers' War draft pack is 10 commons, 3 uncommons and one rare or mythic from its booster pool") {
+        val bro = boosterGenerator.availableSets["BRO"].shouldNotBeNull()
+        bro.fullyImplemented shouldBe true
+        bro.boosterStrategy shouldBe StandardBooster(commons = 10)
+        val eligible = bro.cards.filter { it.metadata.inBooster && !it.typeLine.isBasicLand && !it.meldResult }
+        // Scryfall booster pool minus the three meld backs, which never open on their own.
+        eligible.groupingBy { it.metadata.rarity }.eachCount() shouldBe mapOf(
+            Rarity.COMMON to 101, Rarity.UNCOMMON to 80, Rarity.RARE to 63, Rarity.MYTHIC to 23,
+        )
+        val eligibleNames = eligible.map { it.name }.toSet()
+        var mythics = 0
+        val packs = 2000
+        repeat(packs) {
+            val pack = boosterGenerator.generateBooster("BRO")
+            pack.size shouldBe 14
+            pack.map { it.name }.toSet().size shouldBe 14
+            withClue("pack ${pack.map { it.name }} holds an off-sheet card") {
+                pack.all { it.name in eligibleNames } shouldBe true
+            }
+            pack.count { it.metadata.rarity == Rarity.COMMON } shouldBe 10
+            pack.count { it.metadata.rarity == Rarity.UNCOMMON } shouldBe 3
+            mythics += pack.count { it.metadata.rarity == Rarity.MYTHIC }
+        }
+        // 1 in 8 rare slots upgrades to a mythic.
+        (mythics.toDouble() / packs) shouldBe (0.125 plusOrMinus 0.03)
+    }
 
     test("Reality Fracture is selectable as a complete set and generates a nonempty pack") {
         val fra = boosterGenerator.availableSets["FRA"].shouldNotBeNull()

@@ -1646,6 +1646,73 @@ const SET_SYNERGIES: Record<string, SetSynergies> = {
       },
     ],
   },
+  BRO: {
+    setCode: 'BRO',
+    setName: "The Brothers' War",
+    archetypes: [
+      {
+        name: 'Soldiers',
+        colors: ['W', 'U'],
+        keyCard: 'Yotian Tactician',
+        description: "Build a board of Soldiers and Soldier tokens, then pump them with lords and fly over stalled boards. A go-wide tempo deck that turns cheap bodies into a sturdy, evasive army.",
+        creatureTypes: ['Soldier'],
+      },
+      {
+        name: 'Card Draw',
+        colors: ['U', 'B'],
+        keyCard: 'Evangel of Synthesis',
+        description: "Draw two or more cards each turn to switch on payoffs that grow and grant menace, while removal handles the opponent's threats. A grindy control deck that wins on card advantage.",
+      },
+      {
+        name: 'Artifact Sacrifice',
+        colors: ['B', 'R'],
+        keyCard: 'Junkyard Genius',
+        description: "Make Powerstones and cheap artifacts, then sacrifice them and spare creatures for damage, cards and a hasty, menacing alpha strike. An aggressive attrition deck that cashes in every expendable permanent.",
+      },
+      {
+        name: 'Powerstone Ramp',
+        colors: ['R', 'G'],
+        keyCard: 'Arbalest Engineers',
+        description: "Ramp with Powerstone tokens into huge artifact creatures and prototype threats, using flexible enters-the-battlefield effects along the way. A big midrange deck that outsizes the board.",
+      },
+      {
+        name: 'Artifact Counters',
+        colors: ['G', 'W'],
+        keyCard: 'Yotian Dissident',
+        description: "Play a steady stream of artifacts and spread +1/+1 counters over your team each time one enters. A go-wide midrange deck whose creatures keep getting bigger.",
+      },
+      {
+        name: 'Small Recursion',
+        colors: ['W', 'B'],
+        keyCard: 'Hero of the Dunes',
+        description: "Curve out with cheap artifacts and creatures, then return the ones that die from your graveyard and pump everything with mana value 3 or less. An aggressive value deck that never runs out of bodies.",
+      },
+      {
+        name: 'Noncreature Spells',
+        colors: ['U', 'R'],
+        keyCard: 'Third Path Iconoclast',
+        description: "Chain instants, sorceries and noncreature artifacts, making a Soldier token with each one. A spells deck that builds a board while it interacts.",
+      },
+      {
+        name: 'Creatures Die',
+        colors: ['B', 'G'],
+        keyCard: 'Skyfisher Spider',
+        description: "Sacrifice and trade creatures for value, fill the graveyard and cash it in with reach blockers and removal. A grindy midrange deck that wins long games of attrition.",
+      },
+      {
+        name: 'Go-Wide Aggro',
+        colors: ['R', 'W'],
+        keyCard: 'Fallaji Vanguard',
+        description: "Flood the board with first strikers and tokens, and boost an attacker every time a creature enters. A fast aggro deck that punishes slow starts.",
+      },
+      {
+        name: 'Big Artifacts',
+        colors: ['G', 'U'],
+        keyCard: 'Battery Bearer',
+        description: "Turn your creatures into artifact-mana sources and ramp into expensive artifacts that draw cards as they're cast. A ramp deck that wins with the biggest machines in the set.",
+      },
+    ],
+  },
   MOM: {
     setCode: 'MOM',
     setName: 'March of the Machine',

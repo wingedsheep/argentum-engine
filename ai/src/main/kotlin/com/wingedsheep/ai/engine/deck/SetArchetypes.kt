@@ -734,6 +734,33 @@ object SetArchetypes {
                     "Hit every land drop and play the modal double-faced spell lands as either half, rewarding landfall and lands entering with card advantage. A flexible value deck that never misses a beat."),
             )
         ),
+        "BRO" to SetSynergies(
+            setCode = "BRO",
+            setName = "The Brothers' War",
+            archetypes = listOf(
+                Archetype("Soldiers", listOf(Color.WHITE, Color.BLUE),
+                    "Build a board of Soldiers and Soldier tokens, then pump them with lords and fly over stalled boards. A go-wide tempo deck that turns cheap bodies into a sturdy, evasive army.",
+                    creatureTypes = listOf("Soldier")),
+                Archetype("Card Draw", listOf(Color.BLUE, Color.BLACK),
+                    "Draw two or more cards each turn to switch on payoffs that grow and grant menace, while removal handles the opponent's threats. A grindy control deck that wins on card advantage."),
+                Archetype("Artifact Sacrifice", listOf(Color.BLACK, Color.RED),
+                    "Make Powerstones and cheap artifacts, then sacrifice them and spare creatures for damage, cards and a hasty, menacing alpha strike. An aggressive attrition deck that cashes in every expendable permanent."),
+                Archetype("Powerstone Ramp", listOf(Color.RED, Color.GREEN),
+                    "Ramp with Powerstone tokens into huge artifact creatures and prototype threats, using flexible enters-the-battlefield effects along the way. A big midrange deck that outsizes the board."),
+                Archetype("Artifact Counters", listOf(Color.GREEN, Color.WHITE),
+                    "Play a steady stream of artifacts and spread +1/+1 counters over your team each time one enters. A go-wide midrange deck whose creatures keep getting bigger."),
+                Archetype("Small Recursion", listOf(Color.WHITE, Color.BLACK),
+                    "Curve out with cheap artifacts and creatures, then return the ones that die from your graveyard and pump everything with mana value 3 or less. An aggressive value deck that never runs out of bodies."),
+                Archetype("Noncreature Spells", listOf(Color.BLUE, Color.RED),
+                    "Chain instants, sorceries and noncreature artifacts, making a Soldier token with each one. A spells deck that builds a board while it interacts."),
+                Archetype("Creatures Die", listOf(Color.BLACK, Color.GREEN),
+                    "Sacrifice and trade creatures for value, fill the graveyard and cash it in with reach blockers and removal. A grindy midrange deck that wins long games of attrition."),
+                Archetype("Go-Wide Aggro", listOf(Color.RED, Color.WHITE),
+                    "Flood the board with first strikers and tokens, and boost an attacker every time a creature enters. A fast aggro deck that punishes slow starts."),
+                Archetype("Big Artifacts", listOf(Color.GREEN, Color.BLUE),
+                    "Turn your creatures into artifact-mana sources and ramp into expensive artifacts that draw cards as they're cast. A ramp deck that wins with the biggest machines in the set."),
+            )
+        ),
         "MOM" to SetSynergies(
             setCode = "MOM",
             setName = "March of the Machine",

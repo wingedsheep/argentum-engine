@@ -26,6 +26,26 @@ class SetArchetypesTest : StringSpec({
         synergies.archetypes.map { it.colors.toSet() } shouldContainExactly ALL_COLOR_PAIRS.toList()
     }
 
+    "The Brothers' War exposes all ten limited color-pair archetypes" {
+        val synergies = requireNotNull(SetArchetypes.getForSet("bro"))
+
+        synergies.setName shouldBe "The Brothers' War"
+        synergies.archetypes.map { it.name } shouldContainExactly listOf(
+            "Soldiers",
+            "Card Draw",
+            "Artifact Sacrifice",
+            "Powerstone Ramp",
+            "Artifact Counters",
+            "Small Recursion",
+            "Noncreature Spells",
+            "Creatures Die",
+            "Go-Wide Aggro",
+            "Big Artifacts",
+        )
+        synergies.archetypes.map { it.colors.toSet() }.toSet() shouldBe ALL_COLOR_PAIRS
+        synergies.archetypes.single { it.name == "Soldiers" }.creatureTypes shouldContainExactly listOf("Soldier")
+    }
+
     "Wilds of Eldraine exposes all ten limited color-pair archetypes" {
         val woe = SetArchetypes.getForSet("woe")
 
