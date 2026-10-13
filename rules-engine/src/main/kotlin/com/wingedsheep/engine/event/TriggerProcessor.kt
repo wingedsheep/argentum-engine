@@ -487,6 +487,11 @@ class TriggerProcessor(
                         allLegalTargets[index].orEmpty()
                             .map { com.wingedsheep.engine.mechanics.targeting.OnePerCardType.cardTypesOf(state, it) }
                     )
+                // A dynamic cap outranks `unlimited`, as in TargetValidator: "any number of target
+                // creatures" with X counters to distribute still can't take more than X targets.
+                // snapshotDynamicCount already baked the cap into `count`.
+                req.unlimited && com.wingedsheep.engine.mechanics.targeting.DynamicTargetCount
+                    .objectOf(req)?.dynamicMaxCount != null -> minOf(req.count, legalCount)
                 req.unlimited -> legalCount
                 else -> req.count
             }

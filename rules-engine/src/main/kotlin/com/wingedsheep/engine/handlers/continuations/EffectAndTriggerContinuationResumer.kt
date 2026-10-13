@@ -181,6 +181,9 @@ class EffectAndTriggerContinuationResumer(
                     sourceId = continuation.sourceId,
                     objectReferences = continuation.objectReferences,
                     controllerId = continuation.controllerId,
+                    // A last-known total (Quirion Beastcaller's counters) reads the trigger context.
+                    triggerContext = continuation.triggerContext,
+                    xValue = continuation.triggerContext?.xValue,
                 )
                 val total = AnnouncedDivision.total(state, division, amountContext, amountEvaluator)
                 val prompt = when (val unit = AnnouncedDivision.counterUnit(division)) {
