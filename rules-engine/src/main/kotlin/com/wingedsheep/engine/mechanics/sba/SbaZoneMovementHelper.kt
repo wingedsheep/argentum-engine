@@ -192,7 +192,8 @@ object SbaZoneMovementHelper {
             val (updatedState, extraEvents) = ZoneMovementUtils.applyReplacementAdditionalEffect(
                 zones,
                 newState, redirectResult.additionalEffect, redirectResult.effectControllerId, entityId,
-                sourceId = redirectResult.effectSourceId
+                sourceId = redirectResult.effectSourceId,
+                riderTiming = redirectResult.riderTiming
             )
             newState = updatedState
             events.addAll(extraEvents)

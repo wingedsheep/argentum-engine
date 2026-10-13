@@ -102,6 +102,33 @@ class HeadOfTheHuntScenarioTest : ScenarioTestBase() {
             }
 
 
+            test("the Wolf is a reflexive trigger on the stack, not part of the replacement") {
+                // CR 603.12: "When you do" triggers off the replacement; the token arrives only
+                // when that trigger resolves, after a priority window.
+                val game = scenario()
+                    .withPlayers("Player", "Opponent")
+                    .withCardOnBattlefield(1, "Head of the Hunt", summoningSickness = false)
+                    .withCardOnBattlefield(2, "Grizzly Bears")
+                    .withLandsOnBattlefield(1, "Mountain", 1)
+                    .withCardInHand(1, "Lightning Bolt")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                val bears = game.findPermanent("Grizzly Bears")!!
+                game.castSpell(1, "Lightning Bolt", targetId = bears).error shouldBe null
+                game.passPriority()
+                game.passPriority()
+
+                game.state.getExile(game.player2Id) shouldContain bears
+                withClue("No Wolf yet — its trigger waits on the stack") {
+                    game.findAllPermanents("Wolf Token").size shouldBe 0
+                    game.state.stack.size shouldBe 1
+                }
+                game.resolveStack()
+                game.findAllPermanents("Wolf Token").size shouldBe 1
+            }
+
             test("every creature dying alongside it is exiled — two blockers, two Wolves") {
                 // The reported bug was three creatures dying at once to one shield. With a single
                 // blocker a fix that repaired only the first redirect in a batch would still pass.

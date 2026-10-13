@@ -9,6 +9,7 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.RedirectZoneChangeWith
+import com.wingedsheep.sdk.scripting.ReplacementRiderTiming
 
 /**
  * Head of the Hunt — The Hobbit #75
@@ -21,8 +22,9 @@ import com.wingedsheep.sdk.scripting.RedirectZoneChangeWith
  * Wolf creature token.
  *
  * The whole clause is one replacement effect with a rider ([RedirectZoneChangeWith], The
- * Darkness Crystal) rather than a redirect plus a separate trigger: "when you do" is reflexive on
- * the replacement, so the Wolf is minted once per creature actually redirected. A standalone dies
+ * Darkness Crystal) rather than a redirect plus a separate trigger: "when you do" is a reflexive
+ * trigger of the replacement ([ReplacementRiderTiming.WHEN_YOU_DO], CR 603.12), so one Wolf trigger
+ * goes on the stack per creature actually redirected. A standalone dies
  * trigger would never fire — the redirect means those creatures never die at all, and neither do
  * anyone else's dies triggers (CR 614.1c).
  *
@@ -50,6 +52,7 @@ val HeadOfTheHunt = card("Head of the Hunt") {
                 colors = setOf(Color.GREEN),
                 creatureTypes = setOf("Wolf"),
             ),
+            riderTiming = ReplacementRiderTiming.WHEN_YOU_DO,
             appliesTo = EventPattern.ZoneChangeEvent(
                 filter = GameObjectFilter.Creature.opponentControls(),
                 from = Zone.BATTLEFIELD,

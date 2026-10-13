@@ -5,6 +5,7 @@ import com.wingedsheep.engine.core.CountersAddedEvent
 import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.core.consumeShieldCounter
 import com.wingedsheep.engine.core.tap
+import com.wingedsheep.engine.core.ReflexiveAbilityTriggeredEvent
 import com.wingedsheep.engine.core.ZoneChangeEvent
 import com.wingedsheep.engine.core.PermanentsSacrificedEvent
 import com.wingedsheep.engine.core.GameEvent as EngineGameEvent
@@ -68,6 +69,7 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.RedirectZoneChange
 import com.wingedsheep.sdk.scripting.RedirectZoneChangeWith
 import com.wingedsheep.sdk.scripting.ZoneChangeCause
+import com.wingedsheep.sdk.scripting.ReplacementRiderTiming
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
 import com.wingedsheep.sdk.scripting.predicates.evaluateWith
@@ -80,10 +82,9 @@ import com.wingedsheep.sdk.scripting.predicates.evaluateWith
  *        (e.g., TakeExtraTurnEffect from Ugin's Nexus)
  * @param effectControllerId The controller of the replacement effect source
  * @param effectSourceId The permanent that hosts the replacement effect. Passed to
- *        [ZoneMovementUtils.applyReplacementAdditionalEffect] as the rider's source so a created
- *        token resolves the minting set's art (Head of the Hunt's Wolf), exactly as it would if
- *        the rider had resolved as an ability. May already be off the battlefield by then — the
- *        replacement applied while it was still there (CR 704.3).
+ *        [ZoneMovementUtils.applyReplacementAdditionalEffect] as the rider's source — a "when you
+ *        do" rider's reflexive trigger is sourced from it. May already be off the battlefield by
+ *        then — the replacement applied while it was still there (CR 704.3).
  * @param linkSourceId When non-null (and [destinationZone] is [Zone.EXILE]), the redirected
  *        card should be linked to this source permanent's `LinkedExileComponent` after the move
  *        — set by a [RedirectZoneChange] with `linkToSource = true` (Valgavoth, Terror Eater).
@@ -93,6 +94,8 @@ import com.wingedsheep.sdk.scripting.predicates.evaluateWith
  *        Progenitus. Movers translate this into [LibraryPlacement.Shuffled].
  * @param reveal When true, the card is revealed as it is redirected (informational — the shuffle
  *        destination is otherwise hidden). Darksteel Colossus / Progenitus.
+ * @param riderTiming Whether [additionalEffect] runs inline as part of the replacement or as a
+ *        "when you do" reflexive trigger ([ReplacementRiderTiming]).
  */
 data class ZoneChangeRedirectResult(
     val destinationZone: Zone,
@@ -101,7 +104,8 @@ data class ZoneChangeRedirectResult(
     val effectSourceId: EntityId? = null,
     val linkSourceId: EntityId? = null,
     val shuffleIntoLibrary: Boolean = false,
-    val reveal: Boolean = false
+    val reveal: Boolean = false,
+    val riderTiming: ReplacementRiderTiming = ReplacementRiderTiming.WITH_REPLACEMENT
 )
 
 /**
@@ -915,7 +919,8 @@ object ZoneMovementUtils {
                             effect.additionalEffect,
                             sourceControllerId,
                             effectSourceId = permanentId,
-                            linkSourceId = linkSource
+                            linkSourceId = linkSource,
+                            riderTiming = effect.riderTiming
                         )
                     }
                     else -> continue
@@ -1027,26 +1032,24 @@ object ZoneMovementUtils {
     }
 
     /**
-     * Apply the additional effect from a RedirectZoneChangeWith replacement.
-     * Supports TakeExtraTurnEffect (Ugin's Nexus), AddCountersEffect (Darigaaz Reincarnated),
-     * and GainLifeEffect (The Darkness Crystal — "instead exile it and you gain 2 life").
+     * Execute the rider a [RedirectZoneChangeWith] carries.
      *
-     * Returns the updated state plus any events the effect emitted (e.g. LifeGainedEvent, so
-     * "whenever you gain life" triggers see the rider). Callers must fold the events into their
-     * own event stream.
+     * [ReplacementRiderTiming.WITH_REPLACEMENT] riders run inline, as part of the replacement, from
+     * a small whitelist: TakeExtraTurnEffect (Ugin's Nexus), AddCountersEffect on the redirected card
+     * (Darigaaz Reincarnated) and a fixed GainLifeEffect (The Darkness Crystal).
+     * [ReplacementRiderTiming.WHEN_YOU_DO] riders ("…exile it instead. When you do, create a 2/2
+     * green Wolf creature token") run nothing here: they emit a [ReflexiveAbilityTriggeredEvent]
+     * the settle boundary puts on the stack (CR 603.12).
      *
-     * @param entityId The entity that was redirected (for effects that target it, like adding counters)
-     */
-    /**
-     * Execute the rider a zone-change replacement carries — the "When you do, …" half of
-     * "…exile it instead. When you do, create a 2/2 green Wolf creature token".
+     * Returns the updated state plus any events the rider emitted. Callers must fold the events
+     * into their own event stream — that is how life-gain triggers see the rider and how the
+     * reflexive trigger reaches the trigger detector.
      *
      * @param controllerId Controller of the replacement's source; the rider's "you".
      * @param entityId The card that was redirected, for riders that act on it (Darigaaz's egg
-     *   counters).
-     * @param sourceId The permanent hosting the replacement, used as the rider's source. Only
-     *   token art reads it today; it may already have left the battlefield (CR 704.3), which is
-     *   fine — nothing here requires the source to still be there.
+     *   counters); a reflexive rider sees it as its triggering entity.
+     * @param sourceId The permanent hosting the replacement; the reflexive trigger's source. It may
+     *   already have left the battlefield (CR 704.3) — nothing here requires it to still be there.
      */
     fun applyReplacementAdditionalEffect(
         zones: ZoneTransitionService,
@@ -1054,8 +1057,25 @@ object ZoneMovementUtils {
         effect: com.wingedsheep.sdk.scripting.effects.Effect,
         controllerId: EntityId?,
         entityId: EntityId? = null,
-        sourceId: EntityId? = null
+        sourceId: EntityId? = null,
+        riderTiming: ReplacementRiderTiming = ReplacementRiderTiming.WITH_REPLACEMENT
     ): Pair<GameState, List<EngineGameEvent>> {
+        if (riderTiming == ReplacementRiderTiming.WHEN_YOU_DO) {
+            // "When you do, …" is a reflexive triggered ability (CR 603.12), not part of the
+            // replacement: emit the event the settle boundary turns into a PendingTrigger, so the
+            // rider goes on the stack and can be responded to. Any effect may ride this way.
+            val cid = controllerId ?: return state to emptyList()
+            val sid = sourceId ?: return state to emptyList()
+            return state to listOf(
+                ReflexiveAbilityTriggeredEvent(
+                    sourceId = sid,
+                    sourceName = state.getEntity(sid)?.get<CardComponent>()?.name ?: "",
+                    controllerId = cid,
+                    reflexiveEffect = effect,
+                    carriedTriggerContext = com.wingedsheep.engine.event.TriggerContext(triggeringEntityId = entityId)
+                )
+            )
+        }
         if (effect is com.wingedsheep.sdk.scripting.effects.TakeExtraTurnEffect) {
             // Check if extra turns are prevented by any permanent on the battlefield
             if (ReplacementEffectUtils.isExtraTurnPrevented(state)) return state to emptyList()
@@ -1086,21 +1106,6 @@ object ZoneMovementUtils {
                 ?: return state to emptyList()
             val (newState, event) = DamageUtils.gainLife(state, cid, amount, predicateEvaluator = zones.predicateEvaluator)
             return newState to listOfNotNull(event)
-        }
-        if (effect is com.wingedsheep.sdk.scripting.effects.CreateTokenEffect) {
-            // Head of the Hunt. Delegated to the real executor rather than open-coded: that is
-            // what gives the token the minting set's art, its keywords and static abilities, and
-            // the enters-the-battlefield events that ETB triggers read. Its controller is the
-            // replacement's controller — the rider's "you" — so a token minted while an opponent's
-            // creature is redirected still lands on the shield controller's side.
-            val cid = controllerId ?: return state to emptyList()
-            val result = zones.riderTokenExecutor.execute(
-                state,
-                effect,
-                com.wingedsheep.engine.handlers.EffectContext(sourceId = sourceId, controllerId = cid)
-            )
-            if (result.error != null) return state to emptyList()
-            return result.state to result.events
         }
         return state to emptyList()
     }

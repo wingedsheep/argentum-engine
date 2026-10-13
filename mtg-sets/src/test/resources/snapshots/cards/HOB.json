@@ -6581,6 +6581,7 @@
                         "Wolf"
                     ]
                 },
+                "riderTiming": "WHEN_YOU_DO",
                 "appliesTo": {
                     "type": "ZoneChangeEvent",
                     "filter": "creature ctrl:opponent",

@@ -2597,6 +2597,9 @@ data class PreventExtraTurns(
  *        "if a creature an opponent controls would die, instead exile it and ...; {cost}: return a
  *        creature card exiled with ~" recursion (The Darkness Crystal). Ignored for non-exile
  *        destinations.
+ * @param riderTiming Whether [additionalEffect] is part of the replacement itself ("instead exile
+ *        it and you gain 2 life") or a reflexive triggered ability that goes on the stack after it
+ *        ("exile it instead. When you do, create a 1/1 green Saproling creature token" — CR 603.12).
  * @param appliesTo The zone change event this replacement intercepts
  */
 @SerialName("RedirectZoneChangeWithEffect")
@@ -2606,10 +2609,16 @@ data class RedirectZoneChangeWith(
     val additionalEffect: Effect,
     val selfOnly: Boolean = false,
     val linkToSource: Boolean = false,
+    val riderTiming: ReplacementRiderTiming = ReplacementRiderTiming.WITH_REPLACEMENT,
     override val appliesTo: EventPattern
 ) : ReplacementEffect {
-    override val description: String =
-        "If ${appliesTo.description}, instead put it into ${newDestination.displayName} and ${additionalEffect.description}"
+    override val description: String = when (riderTiming) {
+        ReplacementRiderTiming.WITH_REPLACEMENT ->
+            "If ${appliesTo.description}, instead put it into ${newDestination.displayName} and ${additionalEffect.description}"
+        ReplacementRiderTiming.WHEN_YOU_DO ->
+            "If ${appliesTo.description}, instead put it into ${newDestination.displayName}. " +
+                "When you do, ${additionalEffect.description.replaceFirstChar { it.lowercase() }}"
+    }
 
     override fun applyTextReplacement(replacer: TextReplacer): ReplacementEffect {
         val newAppliesTo = appliesTo.applyTextReplacement(replacer)
@@ -2618,6 +2627,26 @@ data class RedirectZoneChangeWith(
             copy(appliesTo = newAppliesTo, additionalEffect = newAdditionalEffect)
         else this
     }
+}
+
+/**
+ * When the rider of a [RedirectZoneChangeWith] happens relative to the replaced zone change.
+ */
+@Serializable
+enum class ReplacementRiderTiming {
+    /**
+     * The rider is part of the replacement: it happens immediately, with no stack and no priority
+     * between the move and the rider (CR 614.1). Ugin's Nexus, Darigaaz Reincarnated, The Darkness
+     * Crystal. Only a small executor whitelist can run here.
+     */
+    WITH_REPLACEMENT,
+
+    /**
+     * "When you do, …" — a reflexive triggered ability (CR 603.12) that triggers each time the
+     * replacement applies and goes on the stack the next time a player would receive priority.
+     * Any effect can be the rider; it may be responded to. Head of the Hunt, Nemata, Primeval Warden.
+     */
+    WHEN_YOU_DO,
 }
 
 // =============================================================================

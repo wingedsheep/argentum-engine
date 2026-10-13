@@ -4168,6 +4168,123 @@
     ]
 }
 
+// Nemata, Primeval Warden
+{
+    "name": "Nemata, Primeval Warden",
+    "manaCost": "{2}{B}{G}",
+    "typeLine": "Legendary Creature — Treefolk",
+    "oracleText": "Reach\nIf a creature an opponent controls would die, exile it instead. When you do, create a 1/1 green Saproling creature token.\n{G}, Sacrifice a Saproling: Nemata gets +2/+2 until end of turn.\n{1}{B}, Sacrifice two Saprolings: Draw a card.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "keywords": [
+        "REACH"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Nemata, Primeval Warden:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{G}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "permanent Saproling"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": "Self"
+                }
+            },
+            {
+                "id": "Nemata, Primeval Warden:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{B}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "permanent Saproling",
+                                "count": 2
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "RedirectZoneChangeWithEffect",
+                "newDestination": "Exile",
+                "additionalEffect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Saproling"
+                    ]
+                },
+                "riderTiming": "WHEN_YOU_DO",
+                "appliesTo": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:opponent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "209",
+        "rarity": "RARE",
+        "artist": "Andrew Mar",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/d/adcd556d-351f-4faf-9456-0e47def69a69.jpg?1783921281"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
+    ]
+}
+
 // Nishoba Brawler
 {
     "name": "Nishoba Brawler",

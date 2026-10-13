@@ -2,6 +2,7 @@ package com.wingedsheep.engine.state
 
 import com.wingedsheep.engine.handlers.TargetFinder
 import com.wingedsheep.engine.handlers.PredicateEvaluator
+import com.wingedsheep.engine.core.ReflexiveAbilityTriggeredEvent
 import com.wingedsheep.engine.core.ZoneChangeEvent
 import com.wingedsheep.engine.core.ZoneTransitionCause
 import com.wingedsheep.engine.core.engineSerializersModule
@@ -28,6 +29,7 @@ import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.RedirectZoneChange
 import com.wingedsheep.sdk.scripting.RedirectZoneChangeWith
+import com.wingedsheep.sdk.scripting.ReplacementRiderTiming
 import com.wingedsheep.sdk.scripting.effects.CreateTokenEffect
 import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
@@ -215,24 +217,23 @@ class ObjectIdentityTest : FunSpec({
         result.events.filterIsInstance<ZoneChangeEvent>() shouldBe emptyList()
     }
 
-    test("replacement additional token creation is separately attributed") {
+    test("a when-you-do replacement rider mints no object inline and triggers reflexively") {
         val replacementId = EntityId.generate()
         val initial = inZone(Zone.BATTLEFIELD).withEntity(replacementId,
             card().with(ReplacementEffectSourceComponent(listOf(RedirectZoneChangeWith(
                 newDestination = Zone.EXILE,
                 appliesTo = EventPattern.ZoneChangeEvent(from = Zone.BATTLEFIELD, to = Zone.GRAVEYARD),
                 additionalEffect = CreateTokenEffect(power = 1, toughness = 1,
-                    colors = setOf(Color.GREEN), creatureTypes = setOf("Saproling"))
+                    colors = setOf(Color.GREEN), creatureTypes = setOf("Saproling")),
+                riderTiming = ReplacementRiderTiming.WHEN_YOU_DO
             ))))).addToZone(ZoneKey(owner, Zone.BATTLEFIELD), replacementId)
         val result = zones.moveToZone(initial, cardId, Zone.GRAVEYARD)
-        result.transitions.count { it.cause == ZoneTransitionCause.PRIMARY } shouldBe 1
-        result.transitions.single { it.cause == ZoneTransitionCause.PRIMARY }.newObject shouldBe
-            result.state.objectRef(cardId)
-        val token = result.transitions.single { it.cause == ZoneTransitionCause.REPLACEMENT_ADDITIONAL }
-        token.oldObject shouldBe null
-        token.newObject shouldNotBe null
-        result.events.filterIsInstance<ZoneChangeEvent>().single { it.entityId != cardId }
-            .transitionCause shouldBe ZoneTransitionCause.REPLACEMENT_ADDITIONAL
+        result.transitions.single().cause shouldBe ZoneTransitionCause.PRIMARY
+        result.transitions.single().newObject shouldBe result.state.objectRef(cardId)
+        result.events.filterIsInstance<ZoneChangeEvent>().single().entityId shouldBe cardId
+        val reflexive = result.events.filterIsInstance<ReflexiveAbilityTriggeredEvent>().single()
+        reflexive.sourceId shouldBe replacementId
+        reflexive.carriedTriggerContext?.triggeringEntityId shouldBe cardId
     }
 
     test("prevented destruction allocates no destination object") {

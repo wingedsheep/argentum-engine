@@ -71,7 +71,7 @@ class EngineServices(
      * it is threaded through the graph rather than parked in a global — two engines in one JVM
      * (server plus gym, parallel tests) each keep their own.
      */
-    val zones = ZoneTransitionService(cardRegistry, predicateEvaluator, tokenArtRegistry)
+    val zones = ZoneTransitionService(cardRegistry, predicateEvaluator)
 
     /**
      * The one replacement-effect processor for this game. Declared before anything that
