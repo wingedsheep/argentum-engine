@@ -198,6 +198,12 @@ object ManaPaymentWindow {
                     source.producesColorless -> produced.addColorless(source.manaAmount)
                     else -> produced
                 }.let { if (actual.isSnow && restriction == null) it.markSnow(color, source.manaAmount) else it }
+                // A composite tap ("{T}: Add {W}{U}{B}{R}{G}") adds its extra fixed colors too.
+                for ((extraColor, amount) in actual.compositeBonusMana) {
+                    val extraRestriction = actual.colorRestrictions[extraColor] ?: actual.restriction
+                    produced = if (extraRestriction != null) produced.addRestricted(extraColor, amount, extraRestriction)
+                        else produced.add(extraColor, amount)
+                }
             }
         }
 
