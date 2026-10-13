@@ -35,6 +35,7 @@ class KeldonFlamesageScenarioTest : FunSpec({
     }
     test("looks at the top X cards, exiles an instant or sorcery with mana value X or less, and casts it free") {
         val d = setup(); val p = d.activePlayer!!
+        val rest = d.state.getLibrary(p).first()
         val spell = d.putCardOnTopOfLibrary(p, two.name)
         d.state.stack.size shouldBe 0
         d.attack()
@@ -46,6 +47,8 @@ class KeldonFlamesageScenarioTest : FunSpec({
         choice.nonSelectableOptions.size shouldBe 1
         d.submitCardSelection(p, listOf(spell)).error shouldBe null
         d.getExile(p) shouldContain spell
+        // The other looked-at card goes to the bottom of the library.
+        d.state.getLibrary(p).last() shouldBe rest
         d.pendingDecision.shouldBeInstanceOf<YesNoDecision>()
         d.submitYesNo(p, true).error shouldBe null
         repeat(3) { if (d.pendingDecision == null && d.state.stack.isNotEmpty()) d.bothPass() }

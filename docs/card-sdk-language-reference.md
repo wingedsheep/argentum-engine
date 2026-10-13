@@ -8480,7 +8480,7 @@ Dominant back faces that "stay" instead self-exile on their final chapter, dodgi
 - `EventPattern.EnlistedEvent` (facade: `Triggers.self.enlists()`, SELF only) — fires once
   per paid enlist instance, binding the enlisted creature as `EffectTarget.TriggeringEntity`.
   This is distinct from an ordinary tap and from the keyword's separately generated linked boost.
-  Supports Guardian of New Benalia and Keldon Flamesage's enlist payoffs.
+  Supports Guardian of New Benalia's enlist payoff.
 - `EventPattern.ExertedAsItAttacksEvent` (facade: `Triggers.self.exertedAsItAttacks()`, SELF only) — the
   "When you do" after "you may exert this creature as it attacks" (CR 701.43d), linked to the
   `ExertAsItAttacks` static (CR 607.2h). Matches an `ExertedEvent` for the source with `asItAttacks`
