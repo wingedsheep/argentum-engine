@@ -642,7 +642,8 @@ internal class NonPermanentSpellResolver(
             val (updatedState, extraEvents) = com.wingedsheep.engine.handlers.effects.ZoneMovementUtils.applyReplacementAdditionalEffect(
                 zones,
                 newState, extra, redirect.effectControllerId, spellId,
-                sourceId = redirect.effectSourceId
+                sourceId = redirect.effectSourceId,
+                riderTiming = redirect.riderTiming
             )
             newState = updatedState
             events.addAll(extraEvents)

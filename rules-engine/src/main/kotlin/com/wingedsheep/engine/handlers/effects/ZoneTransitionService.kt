@@ -17,8 +17,6 @@ import com.wingedsheep.engine.mechanics.layers.SerializableModification
 import com.wingedsheep.engine.mechanics.layers.StaticAbilityHandler
 import com.wingedsheep.engine.mechanics.daynight.DayNightService
 import com.wingedsheep.engine.registry.CardRegistry
-import com.wingedsheep.engine.registry.TokenArtRegistry
-import com.wingedsheep.engine.handlers.effects.token.CreateTokenExecutor
 import com.wingedsheep.engine.handlers.effects.zones.EntryLocks
 import com.wingedsheep.engine.state.ComponentContainer
 import com.wingedsheep.engine.state.GameState
@@ -206,9 +204,7 @@ class ZoneTransitionService(
      * Carried here, beside the registry, for the replacement and entry checks a zone move runs —
      * and for the zone, replacement and damage helpers that are handed this service.
      */
-    val predicateEvaluator: PredicateEvaluator,
-    /** Per-set token art, so a zone-change rider's token shows its minting set's art. */
-    tokenArtRegistry: TokenArtRegistry? = null
+    val predicateEvaluator: PredicateEvaluator
 ) {
 
     /**
@@ -218,18 +214,6 @@ class ZoneTransitionService(
      * [GameState.addToZone] directly, not [moveToZone], so it owns its own call to the handler.
      */
     private val staticAbilityHandler = StaticAbilityHandler(cardRegistry)
-
-    /**
-     * Mints the token of a zone-change replacement's "…instead. When you do, create a token"
-     * rider (Head of the Hunt) through the same executor an ability would, so the token gets the
-     * minting set's art and its static abilities rather than the bare generic fallback.
-     */
-    internal val riderTokenExecutor = CreateTokenExecutor(
-        staticAbilityHandler = staticAbilityHandler,
-        cardRegistry = cardRegistry,
-        tokenArtRegistry = tokenArtRegistry,
-        amountEvaluator = predicateEvaluator.amounts
-    )
 
     /** Evaluates the `unless` clause of an entering card's own [EntersTapped]. */
     private val conditionEvaluator = predicateEvaluator.conditions
@@ -440,7 +424,7 @@ class ZoneTransitionService(
             if (extra != null) {
                 val (afterExtra, extraEvents) = ZoneMovementUtils.applyReplacementAdditionalEffect(
                     this, retained, extra, redirectResult.effectControllerId, entityId,
-                    sourceId = redirectResult.effectSourceId
+                    sourceId = redirectResult.effectSourceId, riderTiming = redirectResult.riderTiming
                 )
                 retained = afterExtra
                 retainedEvents.addAll(extraEvents.map { event ->
@@ -1335,7 +1319,8 @@ class ZoneTransitionService(
         if (redirectResult.additionalEffect != null) {
             val (updatedState, extraEvents) = ZoneMovementUtils.applyReplacementAdditionalEffect(
                 this, newState, redirectResult.additionalEffect, redirectResult.effectControllerId, entityId,
-                sourceId = redirectResult.effectSourceId
+                sourceId = redirectResult.effectSourceId,
+                riderTiming = redirectResult.riderTiming
             )
             newState = updatedState
             events.addAll(extraEvents.map { event ->
