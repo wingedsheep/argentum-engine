@@ -1027,6 +1027,7 @@ class ZoneTransitionService(
                 entityId = entityId,
                 entityName = cardComponent.name,
                 fromZone = fromZone,
+                fromFaceDownExile = fromZone == Zone.EXILE && container.has<FaceDownComponent>(),
                 toZone = actualDestZone,
                 ownerId = ownerId,
                 // The former ~16 lastKnown* scalars are now the snapshot's fields; the counter

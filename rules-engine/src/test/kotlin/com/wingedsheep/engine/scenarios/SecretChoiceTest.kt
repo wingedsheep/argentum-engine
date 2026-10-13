@@ -127,6 +127,29 @@ class SecretChoiceTest : FunSpec({
         d.pendingDecision!!.playerId shouldBe d.player1; number(d, 3)
         d.pendingDecision shouldBe null
     }
+    test("collected participants choose in APNAP order without duplicate or eliminated seats") {
+        val d = driver()
+        val lost = EntityId.generate()
+        d.replaceState(d.state.copy(
+            entities = d.state.entities + (lost to d.state.getEntity(d.player1)!!
+                .with(PlayerLostComponent(LossReason.CONCESSION))),
+            turnOrder = listOf(d.player1, d.player2, lost),
+            activePlayerId = d.player2,
+        ))
+        start(d, SecretChoiceEffect(
+            participants = listOf(Player.InCollection("participants"), Player.You),
+            choice = SecretChoice.Number(matchedEffect = Effects.GainLife(2, EffectTarget.Controller)),
+        ), EffectContext(null, d.player1, pipeline = PipelineState(storedCollections = mapOf(
+            "participants" to listOf(d.player1, lost, d.player2, d.player2),
+        ))))
+        d.pendingDecision!!.playerId shouldBe d.player2
+        number(d, 4)
+        d.pendingDecision!!.playerId shouldBe d.player1
+        number(d, 4)
+        d.pendingDecision shouldBe null
+        d.getLifeTotal(d.player1) shouldBe 22
+        d.getLifeTotal(d.player2) shouldBe 20
+    }
     test("entity tie stores all positive leaders and an enclosing sibling sees the winners") {
         val d = driver()
         val a = d.putPermanentOnBattlefield(d.player1, "Grizzly Bears")

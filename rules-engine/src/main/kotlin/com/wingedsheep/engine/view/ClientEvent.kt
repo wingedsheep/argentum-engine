@@ -1220,7 +1220,8 @@ object ClientEventTransformer {
                 // within a library) is identified only to an owner who held the card in hand at
                 // one end. Anything else learns that a card moved, not which one: a reveal that
                 // makes it public arrives as its own event.
-                val hiddenMove = event.fromZone in HIDDEN_ZONES && event.toZone in HIDDEN_ZONES
+                val hiddenOrigin = event.fromZone in HIDDEN_ZONES || event.fromFaceDownExile
+                val hiddenMove = hiddenOrigin && event.toZone in HIDDEN_ZONES
                 val identified = !hiddenMove ||
                     (isYours && (event.fromZone == Zone.HAND || event.toZone == Zone.HAND))
                 // A card that landed face down (manifested, foretold, exiled face down) keeps its

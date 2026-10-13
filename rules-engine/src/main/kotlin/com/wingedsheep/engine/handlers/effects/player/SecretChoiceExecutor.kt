@@ -14,6 +14,7 @@ import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.effects.SecretChoice
 import com.wingedsheep.sdk.scripting.effects.SecretChoiceEffect
+import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import kotlin.reflect.KClass
 
@@ -26,7 +27,10 @@ class SecretChoiceExecutor(
 
     override fun execute(state: GameState, effect: SecretChoiceEffect, context: EffectContext): EffectResult {
         val participants = effect.participants.flatMap {
-            TargetResolutionUtils.resolvePlayerTargets(EffectTarget.PlayerRef(it), state, context)
+            when (it) {
+                is Player.InCollection -> TargetResolutionUtils.playersInCollection(state, context, it.collection)
+                else -> TargetResolutionUtils.resolvePlayerTargets(EffectTarget.PlayerRef(it), state, context)
+            }
         }.toSet()
         val players = state.apnapOrder.filter { it in participants }
         val choice = effect.choice

@@ -21,6 +21,7 @@ import com.wingedsheep.engine.handlers.effects.ZoneTransitionService
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
+import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.OwnerComponent
 import com.wingedsheep.sdk.core.Zone
@@ -225,6 +226,7 @@ class MoveToZoneEffectExecutor(
         extraEvents.addAll(
             autoRevealForReturn(
                 fromZone = currentZone.zoneType,
+                wasFaceDown = container.has<FaceDownComponent>(),
                 toZone = effect.destination,
                 targetId = targetId,
                 cardName = cardComponent.name,
@@ -338,6 +340,7 @@ class MoveToZoneEffectExecutor(
 
     private fun autoRevealForReturn(
         fromZone: Zone,
+        wasFaceDown: Boolean,
         toZone: Zone,
         targetId: com.wingedsheep.sdk.model.EntityId,
         cardName: String,
@@ -346,7 +349,8 @@ class MoveToZoneEffectExecutor(
         sourceId: com.wingedsheep.sdk.model.EntityId?,
         state: GameState
     ): List<com.wingedsheep.engine.core.GameEvent> {
-        val isFromPublic = fromZone == Zone.GRAVEYARD || fromZone == Zone.EXILE
+        // Exile identities must be read before the move clears the face-down marker.
+        val isFromPublic = fromZone == Zone.GRAVEYARD || (fromZone == Zone.EXILE && !wasFaceDown)
         val isToReturnDestination =
             toZone == Zone.HAND || toZone == Zone.LIBRARY || toZone == Zone.BATTLEFIELD
         if (!isFromPublic || !isToReturnDestination) return emptyList()

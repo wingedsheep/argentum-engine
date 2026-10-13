@@ -17699,6 +17699,7 @@ Radiation-specific life-loss conversion remains a separate replacement capabilit
 `Effects.SecretChoice(choice, participants = listOf(Player.Each), then = null)` collects private
 choices in APNAP order, then reveals all commitments together. Participant references are unioned
 and deduplicated; `listOf(Player.You, opponent.asPlayer)` expresses a controller and named opponent.
+`Player.InCollection(name)` includes the active players stored in that collection, in APNAP order.
 Earlier commitments stay private while later players choose. Original targets, object references,
 and pipeline values survive every pause and outcome.
 

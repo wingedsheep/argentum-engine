@@ -99,7 +99,9 @@ data class ZoneChangeEvent(
     @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
     val graveyardOrderFinalized: Boolean = false,
     /** The one departed melded permanent represented by this additional card arrival. */
-    val meldedPermanent: com.wingedsheep.engine.state.ObjectRef? = null
+    val meldedPermanent: com.wingedsheep.engine.state.ObjectRef? = null,
+    /** Captured before movement clears the marker; exile-to-hidden-zone logs must stay private. */
+    val fromFaceDownExile: Boolean = false,
 ) : GameEvent {
     /** A meld partner arrives as a card; it is not another permanent leaving (CR 712.21). */
     val isBattlefieldDeparture: Boolean get() = fromZone == Zone.BATTLEFIELD && meldedPermanent == null

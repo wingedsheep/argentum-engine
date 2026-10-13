@@ -1,5 +1,8 @@
 package com.wingedsheep.engine.scenarios
 
+import com.wingedsheep.engine.core.CardsRevealedEvent
+import com.wingedsheep.engine.view.ClientEvent
+import com.wingedsheep.engine.view.ClientEventTransformer
 import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.core.ChooseNumberDecision
 import com.wingedsheep.engine.core.NumberChosenResponse
@@ -74,7 +77,23 @@ class ExpertLevelSafeScenarioTest : FunSpec({
         d.activate(safe)
         d.choose(2)
         d.getPermanents(me).contains(safe) shouldBe true
+        val beforeReturn = d.events.size
         d.choose(2)
+        val returnEvents = d.events.drop(beforeReturn)
+        returnEvents.filterIsInstance<CardsRevealedEvent>() shouldBe emptyList()
+        val opponent = if (me == d.player1) d.player2 else d.player1
+        val opponentEvents = ClientEventTransformer.transform(returnEvents, opponent, d.state)
+        opponentEvents.filterIsInstance<ClientEvent.CardsRevealed>() shouldBe emptyList()
+        val hiddenReturns = opponentEvents.filterIsInstance<ClientEvent.PermanentLeft>()
+            .filter { it.destination == "hand" }
+        hiddenReturns.size shouldBe 2
+        hiddenReturns.forEach {
+            it.cardName shouldBe "card"
+            it.cardId shouldBe null
+        }
+        val ownerReturns = ClientEventTransformer.transform(returnEvents, me, d.state)
+            .filterIsInstance<ClientEvent.PermanentLeft>().filter { it.destination == "hand" }
+        ownerReturns.map { it.cardName } shouldBe listOf("Plains", "Plains")
         d.getGraveyard(me).contains(safe) shouldBe true
         d.getHandSize(me) shouldBe hand + 2
         linked.forEach { d.getHand(me).contains(it) shouldBe true }
@@ -120,7 +139,9 @@ class ExpertLevelSafeScenarioTest : FunSpec({
         d.replaceState(d.state.updateEntity(safe) { it.with(LinkedExileComponent(listOf(mine, theirs))) })
         d.activate(safe)
         d.choose(3)
+        val beforeReturn = d.events.size
         d.choose(3)
+        d.events.drop(beforeReturn).filterIsInstance<CardsRevealedEvent>().size shouldBe 2
         d.getHand(me).contains(mine) shouldBe true
         d.getHand(opponent).contains(theirs) shouldBe true
         d.getHand(me).contains(theirs) shouldBe false
