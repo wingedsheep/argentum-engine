@@ -67,8 +67,12 @@ class CastAdditionalCosts(
                 add(com.wingedsheep.sdk.dsl.Costs.additional.PayLife(it))
             }
         }
-        if (cardDef != null) addAll(additionalCostsForModes(cardDef, action))
-        declaredSlotCost(state, action, cardDef)?.let { add(it) }
+        val costDefinition = if (action.alternativeCostType == AlternativeCostType.ESCAPE) {
+            action.faceIndex?.let { cardDef?.cardFaces?.getOrNull(it) }
+                ?.let { face -> cardDef?.let { costCalculator.faceCharacteristics(it, face) } } ?: cardDef
+        } else cardDef
+        if (costDefinition != null) addAll(additionalCostsForModes(costDefinition, action))
+        declaredSlotCost(state, action, costDefinition)?.let { add(it) }
         if (action.useAlternativeCost && cardDef != null) {
             // Each bundled additional cost is gated by the chosen alternative-cost type so a
             // collision (e.g. granted warp on a card also being evoked) doesn't drag in the
@@ -102,7 +106,7 @@ class CastAdditionalCosts(
             if (action.altAllows(AlternativeCostType.ESCAPE) &&
                 zoneResolver.hasEscapePermission(state, action.playerId, action.cardId)
             ) {
-                EscapeCasts.effectiveEscape(state, action.cardId, cardDef, action.playerId, cardRegistry, predicateEvaluator)
+                EscapeCasts.effectiveEscape(state, action.cardId, cardDef, action.playerId, cardRegistry, predicateEvaluator, action.escapeAbility)
                     ?.additionalCost
                     ?.let { add(it) }
             }

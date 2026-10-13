@@ -138,7 +138,7 @@ internal class SpellCaster(
         // Remove from current zone (typically hand). The spell is a new object (CR 400.7): a grant
         // left on the card by an earlier stack life that never resolved (a countered spell whose
         // cast trigger gave it an ability) must not follow it back onto the stack.
-        var newState = removeFromCurrentZone(state, cardId, casterId).withoutObjectGrants(cardId)
+        var newState = removeFromCurrentZone(state, cardId, casterId).withoutObjectGrants(cardId).withoutEscapeGrants(cardId)
         if (castFaceDown) {
             newState = clearRevealedMorphsInHand(newState, casterId)
         }

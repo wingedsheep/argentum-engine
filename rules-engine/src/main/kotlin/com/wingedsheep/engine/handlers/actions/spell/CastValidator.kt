@@ -232,6 +232,12 @@ internal class CastValidator(
             cardRegistry.getCard(cardComponent.cardDefinitionId), action
         )
 
+        action.escapeAbility?.let { selected ->
+            if (!action.useAlternativeCost || action.alternativeCostType != AlternativeCostType.ESCAPE ||
+                com.wingedsheep.engine.mechanics.EscapeCasts.effectiveEscape(
+                    state, action.cardId, cardDef, action.playerId, cardRegistry, predicateEvaluator, selected
+                ) == null) return "This escape cost is not available"
+        }
         validateAuthority(state, action, cardComponent, cardDef, source)?.let { return it }
         if (action.optionalCostPayments.isNotEmpty()) {
             if (action.optionalCostPayments.distinct().size != action.optionalCostPayments.size) return "An optional cost can only be paid once"
@@ -506,7 +512,8 @@ internal class CastValidator(
         // grants none to a sorcery-speed back. `transformedFace` is null for an ordinary cast, which
         // leaves this reading the card's own keywords. A *granted* flash below is a property of the
         // card object, not of a face, so it is unaffected.
-        val faceKeywords = transformedFace?.keywords ?: cardDef?.keywords ?: emptySet()
+        val faceKeywords = action.faceIndex?.let { cardDef?.cardFaces?.getOrNull(it)?.keywords }
+            ?: transformedFace?.keywords ?: cardDef?.keywords ?: emptySet()
         val grantedFlash = faceKeywords.contains(Keyword.FLASH) || zoneResolver.hasGrantedFlash(state, action.cardId, action.playerId, action.xValue)
         // A from-exile may-play permission with an "as though it had flash" rider (Azula, Cunning
         // Usurper) lets a non-instant exiled card be cast at instant speed (CR 702.8).

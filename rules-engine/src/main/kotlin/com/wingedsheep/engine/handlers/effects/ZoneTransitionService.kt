@@ -511,7 +511,7 @@ class ZoneTransitionService(
             )
         } else null
 
-        var newState = state
+        var newState = state.withoutEscapeGrants(entityId)
         val events = mutableListOf<EngineGameEvent>()
 
         // 4. EXIT CLEANUP if leaving battlefield

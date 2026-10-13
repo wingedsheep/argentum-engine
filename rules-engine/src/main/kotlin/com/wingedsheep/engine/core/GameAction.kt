@@ -224,6 +224,8 @@ data class CastSpell(
      * out as its own flag for the same reason (CR 118.9a — only one alternative cost per cast).
      */
     val alternativeCostType: AlternativeCostType? = null,
+    /** The selected escape cost, echoed from a legal action and checked against current abilities. */
+    val escapeAbility: com.wingedsheep.sdk.scripting.KeywordAbility.Escape? = null,
     /**
      * How many of [targets] each of the spell's target requirements owns, in requirement order —
      * the boundaries between its instances of the word "target" (CR 601.2c), which a flat list loses

@@ -209,7 +209,7 @@ class GraveyardCardsHaveEscapeTest : FunSpec({
         driver.state.getEntity(perm)?.get<CastChoicesComponent>()?.chosen?.containsKey(ChoiceSlot.ESCAPED) shouldBe true
     }
 
-    test("a printed escape wins over the grant") {
+    test("printed and graveyard-wide escape abilities offer both costs") {
         val driver = createDriver()
         val you = driver.activePlayer!!
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
@@ -218,7 +218,9 @@ class GraveyardCardsHaveEscapeTest : FunSpec({
         fillGraveyard(driver, you, 1)
         driver.giveMana(you, Color.RED, 1)
 
-        val offer = escapeOffers(driver, you, card).single()
+        val offers = escapeOffers(driver, you, card)
+        offers.size shouldBe 2
+        val offer = offers.single { it.manaCostString == "{R}" }
         offer.affordable.shouldBeTrue()
         offer.manaCostString shouldBe "{R}"
     }

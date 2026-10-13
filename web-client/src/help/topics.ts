@@ -1204,7 +1204,7 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
       { kind: 'p', text: 'Crowded combat: hover any attacker or blocker (long-press on a phone) to pick out its block. Everything tied to it lights up — its blockers or the attackers it blocks, their other blockers, and the rest of its band — the rest of the board dims, and a caption on the card names who it is blocking or blocked by.' },
       { kind: 'p', text: 'Dragging one attacker onto another bands them (CR 702.22). On a phone, swipe left and right on the opponent strip to move between boards.' },
     ],
-    related: ['pass-button', 'decisions', 'multiplayer-camera'],
+    related: ['pass-button', 'decisions', 'multiplayer-camera', 'zone-browsers'],
   },
   {
     id: 'zone-browsers',
@@ -1213,10 +1213,11 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
     summary:
       'Click a graveyard, exile or library pile to open a full browser of its contents. Press D to open the deck browser, which tracks what is left in your library.',
     body: [
+      { kind: 'p', text: 'When a graveyard card can escape, click it in the zone browser and choose its Escape action. The action shows the mana cost and prompts you for any cards to exile. If more than one escape cost is available, choose the one you want. Temporary escape grants expire at the end of the turn.' },
       { kind: 'p', text: 'Junk tokens have an action in their card menu during your main phase while the stack is empty. Activate it to sacrifice the token and exile your top card; the exiled card appears translucent beside your hand. Click it to play it before the turn ends, paying its normal cost and following normal timing and land-play limits.' },
       { kind: 'p', text: 'The deck browser has two views: Deck list (everything still in your library) and Library order, which shows cards whose position you know — after a scry, for instance — with the top card marked “Next draw”. When you own cards outside the game, a third view, Outside the game, shows them.' },
     ],
-    related: ['outside-the-game'],
+    related: ['outside-the-game', 'targeting-and-combat'],
     shortcuts: ['deck-browser', 'escape'],
   },
   {

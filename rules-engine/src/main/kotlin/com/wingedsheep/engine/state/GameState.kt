@@ -1284,6 +1284,13 @@ data class GameState(
             grantedActivatedAbilities = grantedActivatedAbilities.filter { it.entityId != entityId }
         )
 
+    /** A zone change ends the individual escape grant even though the physical card keeps its id. */
+    fun withoutEscapeGrants(entityId: EntityId): GameState =
+        if (grantedKeywordAbilities.none { it.entityId == entityId && it.ability is com.wingedsheep.sdk.scripting.KeywordAbility.Escape }) this
+        else copy(grantedKeywordAbilities = grantedKeywordAbilities.filterNot {
+            it.entityId == entityId && it.ability is com.wingedsheep.sdk.scripting.KeywordAbility.Escape
+        })
+
     // =========================================================================
     // Convenience Zone Accessors
     // =========================================================================

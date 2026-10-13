@@ -878,6 +878,7 @@ Families:
 - `GrantCounterPlacementModifierEffect(modifier: Int, duration: Duration, counterType: CounterType, recipient: Recipient)` — Install a temporary, duration-scoped counter-placement-*modifier* replacement effect, controlled by the resolving ability's controller.
 - `GrantDamageBonusEffect(bonusAmount: Int, sourceFilter: GameObjectFilter, target: EffectTarget, duration: Duration)` — Grant a flat damage bonus to a player's sources for the specified duration.
 - `GrantEmbalmEffect(target: EffectTarget, cost: ManaCost?, duration: Duration)` — Grant Embalm (CR 702.128) to a target creature card in a graveyard.
+- `GrantEscapeEffect(target: EffectTarget, cost: ManaCost?, additionalCost: AdditionalCost?, duration: Duration)` — Grant Escape (CR 702.138) to a target card in a graveyard.
 - `GrantEvasionKeywordEffect(keyword: Keyword, target: EffectTarget, duration: Duration)` — Grant a protection-style evasion keyword (shroud or hexproof) to a target entity for the specified duration.
 - `GrantExileOnLeaveEffect(target: EffectTarget)` — Mark a permanent so that if it would leave the battlefield, it is exiled instead.
 - `GrantFlashToSpellsEffect(target: EffectTarget, spellFilter: GameObjectFilter, duration: Duration)` — target may cast spells matching spellFilter as though they had flash, for duration.

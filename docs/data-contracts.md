@@ -142,6 +142,11 @@ Sent when the user interacts with the UI.
 }
 ```
 
+For an escape cast, the legal action includes `alternativeCostType: "ESCAPE"` and
+`escapeAbility`, the selected ability's mana cost and additional payment. Echo this payload
+unchanged when submitting the action: two escape abilities on the same card can carry different
+costs. The engine checks that the selected ability is currently available.
+
 ### B2. Persistent Yields (Client -> Server)
 
 MTGO-style per-ability yields (backlog §C). Keyed by the ability's **AbilityIdentity**

@@ -85,7 +85,7 @@
 - [ ] Curie, Emergent Intelligence
 - [x] Darkwater Catacombs
 - [x] Deadly Dispute
-- [ ] Desdemona, Freedom's Edge
+- [x] Desdemona, Freedom's Edge
 - [ ] Desolate Mire
 - [ ] Diamond City
 - [ ] Dispatch
