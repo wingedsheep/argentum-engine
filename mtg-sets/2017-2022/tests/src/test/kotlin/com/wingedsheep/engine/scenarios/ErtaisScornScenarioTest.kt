@@ -103,5 +103,9 @@ class ErtaisScornScenarioTest : FunSpec({
         val scorn = driver.putCardInHand(you, "Ertai's Scorn")
         giveDiscountedMana(driver, you)
         driver.castSpellWithTargets(you, scorn, listOf(ChosenTarget.Spell(spells.last()))).error shouldNotBe null
+
+        // The full {1}{U}{U} still casts it, so the refusal above was the missing discount.
+        driver.giveMana(you, Color.BLUE, 1)
+        driver.castSpellWithTargets(you, scorn, listOf(ChosenTarget.Spell(spells.last()))).error shouldBe null
     }
 })
