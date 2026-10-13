@@ -13,6 +13,7 @@ import com.wingedsheep.sdk.scripting.effects.ManaExpiry
 import com.wingedsheep.sdk.scripting.effects.ManaRestriction
 import com.wingedsheep.sdk.scripting.effects.ManaSpellRider
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.engine.mechanics.mana.consume
 import kotlinx.serialization.Serializable
 
 /**
@@ -58,6 +59,8 @@ data class ManaPoolComponent(
      * [com.wingedsheep.engine.mechanics.mana.ManaPool.snowMana] for the invariant and spend order.
      */
     val snowMana: Map<Color, Int> = emptyMap(),
+    /** Exact source snapshots, grouped with each unrestricted unit’s actual color. */
+    val manaUnits: List<com.wingedsheep.engine.mechanics.mana.ManaUnit> = emptyList(),
     val snowColorless: Int = 0
 ) : Component {
     /**
@@ -104,15 +107,21 @@ data class ManaPoolComponent(
         // Non-snow units go first, so the snow mark only shrinks once no plain unit is left.
         val snow = snowMana[color] ?: 0
         val left = current - amount
-        return if (snow <= left) spent
-        else spent.copy(snowMana = if (left > 0) snowMana + (color to left) else snowMana - color)
+        val snowSpent = (snow - left).coerceAtLeast(0)
+        val tagged = spent.copy(manaUnits = manaUnits.consume(color, amount - snowSpent, snowSpent))
+        return if (snowSpent == 0) tagged
+        else tagged.copy(snowMana = if (left > 0) snowMana + (color to left) else snowMana - color)
     }
 
     /**
      * Spend colorless mana.
      */
     fun spendColorless(amount: Int): ManaPoolComponent? =
-        if (colorless >= amount) copy(colorless = colorless - amount, snowColorless = minOf(snowColorless, colorless - amount)) else null
+        if (colorless >= amount) copy(colorless = colorless - amount,
+            snowColorless = minOf(snowColorless, colorless - amount),
+            manaUnits = manaUnits.consume(null,
+                amount - (snowColorless - (colorless - amount)).coerceAtLeast(0),
+                (snowColorless - (colorless - amount)).coerceAtLeast(0))) else null
 
     /** Floating units that came from a snow source. */
     val snowTotal: Int get() = snowColorless + snowMana.values.sum()
@@ -166,7 +175,7 @@ data class ManaPoolComponent(
      * Check if pool is empty. Includes the provenance tags so a stale tag without backing mana
      * still triggers the end-of-step pool reset.
      */
-    val isEmpty: Boolean get() = total == 0 && manaBySubtype.isEmpty() && manaBySource.isEmpty() && manaByCardType.isEmpty()
+    val isEmpty: Boolean get() = total == 0 && manaBySubtype.isEmpty() && manaBySource.isEmpty() && manaByCardType.isEmpty() && manaUnits.isEmpty()
 
     /**
      * Add restricted mana to the pool.
@@ -214,7 +223,11 @@ data class ManaPoolComponent(
     private fun withConverted(entries: List<RestrictedManaEntry>, color: Color): ManaPoolComponent {
         val (plain, restricted) = entries.partition { it.restriction == ManaRestriction.AnySpend && it.riders.isEmpty() }
         val recoloured = restricted.map { it.copy(color = color, expiry = ManaExpiry.END_OF_TURN) }
-        return copy(restrictedMana = restrictedMana + recoloured).let { if (plain.isNotEmpty()) it.add(color, plain.size) else it }
+        return copy(restrictedMana = restrictedMana + recoloured,
+            manaUnits = manaUnits + plain.mapNotNull { entry -> entry.source?.let {
+                com.wingedsheep.engine.mechanics.mana.ManaUnit(color, it)
+            } }).let { if (plain.isNotEmpty()) it.add(color, plain.size).markSnow(color,
+                plain.count { entry -> entry.source?.isSnow == true }) else it }
     }
 
     /**
@@ -251,6 +264,7 @@ data class ManaPoolComponent(
         manaBySource = sumCounts(manaBySource, other.manaBySource),
         manaByCardType = sumCounts(manaByCardType, other.manaByCardType),
         snowMana = sumCounts(snowMana, other.snowMana),
+        manaUnits = manaUnits + other.manaUnits,
         snowColorless = snowColorless + other.snowColorless
     )
 
@@ -287,9 +301,10 @@ data class ManaPoolComponent(
                 // Provenance tags are markers on already-counted colour mana, not extra mana; the
                 // pool-level tags don't carry over a mana-loss boundary.
                 val lostPlain = white + blue + black + red + green + colorless
-                ManaPoolComponent(restrictedMana = preserved)
+                ManaPoolComponent(restrictedMana = preserved,
+                    manaUnits = manaUnits.map { it.copy(color = convertTo) })
                     .withConverted(lostRestricted, convertTo)
-                    .let { if (lostPlain > 0) it.add(convertTo, lostPlain) else it }
+                    .let { if (lostPlain > 0) it.add(convertTo, lostPlain).markSnow(convertTo, snowTotal) else it }
             }
             retain.isNotEmpty() -> ManaPoolComponent(
                 white = if (Color.WHITE in retain) white else 0,
@@ -301,6 +316,7 @@ data class ManaPoolComponent(
                 restrictedMana = preserved + lostRestricted.filter { it.color != null && it.color in retain },
                 // Provenance tags do not survive a mana-loss boundary, but snow is a property of
                 // the retained mana itself (it came from a snow source), so it stays.
+                manaUnits = manaUnits.filter { it.color in retain },
                 snowMana = snowMana.filterKeys { it in retain }
             )
             else -> ManaPoolComponent(restrictedMana = preserved)

@@ -22,6 +22,33 @@ import kotlinx.serialization.Serializable
 // =============================================================================
 
 /**
+ * Create mixed token groups as one token-creation event, under one controller.
+ * CreateTokenEffect describes one creature template; CreatePredefinedTokenEffect describes one
+ * registered template. Neither can carry several templates without conflating their characteristics.
+ * CompositeEffect sequences separate events and therefore cannot share event-scoped replacements.
+ * Each group retains its own art, abilities, counters and entry riders.
+ */
+@SerialName("CreateTokenBatch")
+@Serializable
+data class CreateTokenBatchEffect(
+    val groups: List<Effect>,
+    val controller: EffectTarget? = null,
+) : Effect {
+    init {
+        require(groups.all {
+            when (it) {
+                is CreateTokenEffect -> it.controller == null
+                is CreatePredefinedTokenEffect -> it.controller == null
+                else -> false
+            }
+        }) { "Token batches accept creature/predefined groups; specify their shared controller on the batch" }
+    }
+    override val description: String = groups.joinToString(" and ") { it.description }
+    override fun applyTextReplacement(replacer: TextReplacer): Effect =
+        copy(groups = groups.map { it.applyTextReplacement(replacer) })
+}
+
+/**
  * Create token effect.
  * "Create a 1/1 white Soldier creature token" or "Create X 1/1 green Insect creature tokens"
  *

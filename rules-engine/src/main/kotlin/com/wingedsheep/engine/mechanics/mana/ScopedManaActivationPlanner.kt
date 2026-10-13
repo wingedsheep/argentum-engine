@@ -63,7 +63,7 @@ class ScopedManaActivationPlanner(private val services: EngineServices, private 
             val component = current.getEntity(player)?.get<ManaPoolComponent>() ?: return false
             val pool = ManaPool(component.white, component.blue, component.black, component.red,
                 component.green, component.colorless, restrictedMana = component.restrictedMana,
-                snowMana = component.snowMana, snowColorless = component.snowColorless)
+                snowMana = component.snowMana, manaUnits = component.manaUnits, snowColorless = component.snowColorless)
                 .withSpendingColors(current, player)
             val allocation = pool.allocateFloating(cost, context, xAmount, xColors) ?: return false
             val required = current.continuationStack.filterIsInstance<ManaSpendingObligationsContinuation>()
@@ -97,7 +97,7 @@ class ScopedManaActivationPlanner(private val services: EngineServices, private 
             val component = initial.getEntity(player)?.get<ManaPoolComponent>() ?: ManaPoolComponent()
             val partial = ManaPool(component.white, component.blue, component.black, component.red,
                 component.green, component.colorless, restrictedMana = component.restrictedMana,
-                snowMana = component.snowMana, snowColorless = component.snowColorless)
+                snowMana = component.snowMana, manaUnits = component.manaUnits, snowColorless = component.snowColorless)
                 .withSpendingColors(initial, player).payPartial(cost, context)
             val xRemaining = (xAmount - partial.newPool.xCoverage(xAmount, xColors, context)).coerceAtLeast(0)
             val solution = services.manaSolver.solve(initial, player, partial.remainingCost, xRemaining,

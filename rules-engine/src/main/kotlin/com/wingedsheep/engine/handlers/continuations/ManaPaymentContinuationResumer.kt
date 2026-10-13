@@ -165,6 +165,7 @@ class ManaPaymentContinuationResumer(
                 manaPoolComponent.red, manaPoolComponent.green, manaPoolComponent.colorless,
                 restrictedMana = manaPoolComponent.restrictedMana,
                 snowMana = manaPoolComponent.snowMana,
+                manaUnits = manaPoolComponent.manaUnits,
                 snowColorless = manaPoolComponent.snowColorless
             ).withSpendingColors(state, playerId)
             val partialResult = manaPool.payPartial(continuation.manaCost)
@@ -180,6 +181,7 @@ class ManaPaymentContinuationResumer(
                             red = newPool.red, green = newPool.green, colorless = newPool.colorless,
                             restrictedMana = newPool.restrictedMana,
                             snowMana = newPool.snowMana,
+                            manaUnits = newPool.manaUnits,
                             snowColorless = newPool.snowColorless
                         )
                     )
@@ -733,6 +735,7 @@ class ManaPaymentContinuationResumer(
             manaPoolComponent.red, manaPoolComponent.green, manaPoolComponent.colorless,
             restrictedMana = manaPoolComponent.restrictedMana,
             snowMana = manaPoolComponent.snowMana,
+            manaUnits = manaPoolComponent.manaUnits,
             snowColorless = manaPoolComponent.snowColorless
         ).withSpendingColors(currentState, playerId)
 
@@ -788,6 +791,7 @@ class ManaPaymentContinuationResumer(
                                 red = currentPool.red, green = currentPool.green, colorless = currentPool.colorless,
                                 restrictedMana = currentPool.restrictedMana,
                                 snowMana = currentPool.snowMana,
+                                manaUnits = currentPool.manaUnits,
                                 snowColorless = currentPool.snowColorless
                             )
                         )
@@ -828,6 +832,7 @@ class ManaPaymentContinuationResumer(
                     red = newPool.red, green = newPool.green, colorless = newPool.colorless,
                     restrictedMana = newPool.restrictedMana,
                     snowMana = newPool.snowMana,
+                    manaUnits = newPool.manaUnits,
                     snowColorless = newPool.snowColorless
                 )
             )
@@ -1024,6 +1029,7 @@ class ManaPaymentContinuationResumer(
             manaPoolComponent.red, manaPoolComponent.green, manaPoolComponent.colorless,
             restrictedMana = manaPoolComponent.restrictedMana,
             snowMana = manaPoolComponent.snowMana,
+            manaUnits = manaPoolComponent.manaUnits,
             snowColorless = manaPoolComponent.snowColorless
         ).withSpendingColors(state, playerId)
         val partialResult = manaPool.payPartial(continuation.manaCost)
@@ -1039,6 +1045,7 @@ class ManaPaymentContinuationResumer(
                         red = newPool.red, green = newPool.green, colorless = newPool.colorless,
                         restrictedMana = newPool.restrictedMana,
                         snowMana = newPool.snowMana,
+                        manaUnits = newPool.manaUnits,
                         snowColorless = newPool.snowColorless
                     )
                 )
@@ -1161,6 +1168,7 @@ class ManaPaymentContinuationResumer(
             manaPoolComponent.red, manaPoolComponent.green, manaPoolComponent.colorless,
             restrictedMana = manaPoolComponent.restrictedMana,
             snowMana = manaPoolComponent.snowMana,
+            manaUnits = manaPoolComponent.manaUnits,
             snowColorless = manaPoolComponent.snowColorless
         ).withSpendingColors(currentState, playerId)
 
@@ -1210,6 +1218,7 @@ class ManaPaymentContinuationResumer(
                     red = newPool.red, green = newPool.green, colorless = newPool.colorless,
                     restrictedMana = newPool.restrictedMana,
                     snowMana = newPool.snowMana,
+                    manaUnits = newPool.manaUnits,
                     snowColorless = newPool.snowColorless
                 )
             )
@@ -1334,6 +1343,7 @@ class ManaPaymentContinuationResumer(
             manaPoolComponent.colorless,
             restrictedMana = manaPoolComponent.restrictedMana,
             snowMana = manaPoolComponent.snowMana,
+            manaUnits = manaPoolComponent.manaUnits,
             snowColorless = manaPoolComponent.snowColorless
         ).withSpendingColors(state, playerId)
 
@@ -1380,6 +1390,7 @@ class ManaPaymentContinuationResumer(
                     colorless = newPool.colorless,
                     restrictedMana = newPool.restrictedMana,
                     snowMana = newPool.snowMana,
+                    manaUnits = newPool.manaUnits,
                     snowColorless = newPool.snowColorless
                 )
             )
@@ -1431,6 +1442,7 @@ class ManaPaymentContinuationResumer(
             manaPoolComponent.colorless,
             restrictedMana = manaPoolComponent.restrictedMana,
             snowMana = manaPoolComponent.snowMana,
+            manaUnits = manaPoolComponent.manaUnits,
             snowColorless = manaPoolComponent.snowColorless
         ).withSpendingColors(state, playerId)
 
@@ -1490,6 +1502,7 @@ class ManaPaymentContinuationResumer(
                     colorless = newPool.colorless,
                     restrictedMana = newPool.restrictedMana,
                     snowMana = newPool.snowMana,
+                    manaUnits = newPool.manaUnits,
                     snowColorless = newPool.snowColorless
                 )
             )
@@ -1766,6 +1779,7 @@ class ManaPaymentContinuationResumer(
             poolComponent.red, poolComponent.green, poolComponent.colorless,
             restrictedMana = poolComponent.restrictedMana,
             snowMana = poolComponent.snowMana,
+            manaUnits = poolComponent.manaUnits,
             snowColorless = poolComponent.snowColorless
         ).withSpendingColors(currentState, continuation.payingPlayerId)
         pool = if (sourceOption.producesColors.isNotEmpty()) {
@@ -1783,6 +1797,7 @@ class ManaPaymentContinuationResumer(
                     red = pool.red, green = pool.green, colorless = pool.colorless,
                     restrictedMana = pool.restrictedMana,
                     snowMana = pool.snowMana,
+                    manaUnits = pool.manaUnits,
                     snowColorless = pool.snowColorless
                 )
             )
@@ -1825,6 +1840,7 @@ class ManaPaymentContinuationResumer(
                     red = newPool.red, green = newPool.green, colorless = newPool.colorless,
                     restrictedMana = newPool.restrictedMana,
                     snowMana = newPool.snowMana,
+                    manaUnits = newPool.manaUnits,
                     snowColorless = newPool.snowColorless
                 )
             )

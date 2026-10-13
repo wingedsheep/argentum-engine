@@ -153,9 +153,9 @@ class AddManaOfChoiceExecutor(
         }
 
         newState = if (effectiveRestriction == null) {
-            ManaProvenanceTracker.tagAddedMana(newState, recipientId, context.sourceId, amount)
+            ManaProvenanceTracker.tagAddedMana(newState, recipientId, context.sourceId, amount, color, context)
         } else {
-            ManaProvenanceTracker.tagAddedRestrictedMana(newState, recipientId, context.sourceId, amount)
+            ManaProvenanceTracker.tagAddedRestrictedMana(newState, recipientId, context.sourceId, amount, context)
         }
 
         val sourceName = context.sourceId?.let { newState.getEntity(it)?.get<CardComponent>()?.name }

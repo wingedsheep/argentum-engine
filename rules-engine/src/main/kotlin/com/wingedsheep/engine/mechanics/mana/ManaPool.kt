@@ -6,6 +6,7 @@ import com.wingedsheep.sdk.core.ManaSymbol
 import com.wingedsheep.sdk.scripting.effects.ManaRestriction
 import com.wingedsheep.sdk.scripting.effects.ManaSpellRider
 import com.wingedsheep.engine.state.components.player.RestrictedManaEntry
+import com.wingedsheep.engine.mechanics.mana.consume
 import kotlinx.serialization.Serializable
 
 /**
@@ -290,6 +291,8 @@ data class ManaPool(
      * any plain unit of its color could have been spent instead.
      */
     val snowMana: Map<Color, Int> = emptyMap(),
+    /** Exact source snapshots, grouped with each unrestricted unit’s actual color. */
+    val manaUnits: List<com.wingedsheep.engine.mechanics.mana.ManaUnit> = emptyList(),
     val snowColorless: Int = 0,
     /** Ephemeral payment configuration, never stored in the player's mana component. */
     val spendingColors: Map<Color, Set<Color>> = emptyMap(),
@@ -418,7 +421,9 @@ data class ManaPool(
             Color.GREEN -> copy(green = green - amount)
         }
         val snow = snowMana[color] ?: 0
-        return if (snow <= current - amount) spent else spent.copy(snowMana = snowMana.withCount(color, current - amount))
+        val snowSpent = (snow - (current - amount)).coerceAtLeast(0)
+        val tagged = spent.copy(manaUnits = manaUnits.consume(color, amount - snowSpent, snowSpent))
+        return if (snowSpent == 0) tagged else tagged.copy(snowMana = snowMana.withCount(color, current - amount))
     }
 
     /**
@@ -426,7 +431,9 @@ data class ManaPool(
      */
     fun spendColorless(amount: Int = 1): ManaPool? {
         if (colorless < amount) return null
-        return copy(colorless = colorless - amount, snowColorless = minOf(snowColorless, colorless - amount))
+        val snowSpent = (snowColorless - (colorless - amount)).coerceAtLeast(0)
+        return copy(colorless = colorless - amount, snowColorless = minOf(snowColorless, colorless - amount),
+            manaUnits = manaUnits.consume(null, amount - snowSpent, snowSpent))
     }
 
     /**
@@ -467,11 +474,13 @@ data class ManaPool(
                 dischargedObligations = dischargedObligations + entry.obligationIds) to entry.color
         }
         if (snowColorless > 0) {
-            return copy(colorless = colorless - 1, snowColorless = snowColorless - 1) to null
+            return copy(colorless = colorless - 1, snowColorless = snowColorless - 1,
+                manaUnits = manaUnits.consume(null, 0, 1)) to null
         }
         val color = Color.entries.firstOrNull { (snowMana[it] ?: 0) > 0 } ?: return null
         val unmarked = copy(snowMana = snowMana.withCount(color, snowMana.getValue(color) - 1))
-        return unmarked.spend(color)!! to color
+        val spent = unmarked.add(color, -1)
+        return spent.copy(manaUnits = manaUnits.consume(color, 0, 1)) to color
     }
 
     private fun Map<Color, Int>.withCount(color: Color, count: Int): Map<Color, Int> =

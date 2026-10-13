@@ -3,6 +3,7 @@ package com.wingedsheep.ai.engine.knowledge
 import com.wingedsheep.engine.handlers.effects.composite.asConditional
 import com.wingedsheep.engine.handlers.effects.composite.asMayDecide
 import com.wingedsheep.sdk.model.CardScript
+import com.wingedsheep.sdk.scripting.effects.CreateTokenBatchEffect
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.ConniveEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
@@ -64,6 +65,7 @@ object EffectWalker {
         }
         effect.asMayDecide()?.let { return f.may(fold(it.then, f)) }
         if (effect is CompositeEffect) return f.composite(effect.effects.map { fold(it, f) })
+        if (effect is CreateTokenBatchEffect) return f.composite(effect.groups.map { fold(it, f) })
         if (effect is ConniveEffect) return fold(effect.body, f)
         return f.leaf(effect)
     }

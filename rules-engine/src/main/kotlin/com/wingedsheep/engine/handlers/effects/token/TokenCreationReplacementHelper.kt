@@ -108,7 +108,17 @@ object TokenCreationReplacementHelper {
         baseCount: Int,
         predicateEvaluator: PredicateEvaluator
     ): Int {
-        if (baseCount <= 0) return baseCount
+        return applyBatchCountReplacements(state, tokenControllerId, listOf(baseCount), predicateEvaluator).single()
+    }
+
+    /** Count modifiers affect one joint event; declaration order selects which templates change. */
+    fun applyBatchCountReplacements(
+        state: GameState,
+        tokenControllerId: EntityId,
+        baseCounts: List<Int>,
+        predicateEvaluator: PredicateEvaluator,
+    ): List<Int> {
+        if (baseCounts.none { it > 0 }) return baseCounts
 
         val factors = mutableListOf<Int>()
         var modifier = 0
@@ -135,10 +145,22 @@ object TokenCreationReplacementHelper {
         // multiplies geometrically, which would overflow `Int` to a negative count. Clamp instead
         // (GameLimits); CreateTokenExecutor applies the structural MAX_TOKENS_PER_EFFECT cap before
         // actually allocating entities.
-        var count = com.wingedsheep.engine.core.GameLimits.addClamped(baseCount, modifier)
-        if (count <= 0) return 0
-        for (factor in factors) count = com.wingedsheep.engine.core.GameLimits.mulClamped(count, factor)
-        return count
+        var remainingModifier = modifier
+        return baseCounts.map { original ->
+            val adjusted = when {
+                original <= 0 -> original
+                remainingModifier >= 0 -> com.wingedsheep.engine.core.GameLimits.addClamped(original, remainingModifier)
+                    .also { remainingModifier = 0 }
+                else -> {
+                    val remove = minOf(original.toLong(), -remainingModifier.toLong()).toInt()
+                    remainingModifier += remove
+                    original - remove
+                }
+            }
+            var count = adjusted
+            for (factor in factors) count = com.wingedsheep.engine.core.GameLimits.mulClamped(count, factor)
+            count
+        }
     }
 
     /**
@@ -176,12 +198,13 @@ object TokenCreationReplacementHelper {
         originalTapped: Boolean,
         cardRegistry: CardRegistry?,
         staticAbilityHandler: StaticAbilityHandler?,
-        predicateEvaluator: PredicateEvaluator
+        predicateEvaluator: PredicateEvaluator,
+        eligibleSources: Set<EntityId>? = null,
     ): Pair<GameState, List<com.wingedsheep.engine.core.GameEvent>> {
         if (createdTokenIds.isEmpty() || cardRegistry == null) return state to emptyList()
         val conditionEvaluator = predicateEvaluator.conditions
 
-        val riders = ActiveReplacements.all(state).filter { it.effect is CreateAdditionalToken }
+        val riders = ActiveReplacements.all(state).filter { it.effect is CreateAdditionalToken && (eligibleSources == null || it.sourceId in eligibleSources) }
         if (riders.isEmpty()) return state to emptyList()
         val bySource = riders.groupBy { it.sourceId }.values.sortedWith(
             compareBy(
@@ -339,10 +362,11 @@ object TokenCreationReplacementHelper {
         prospectiveCard: CardComponent,
         predicateEvaluator: PredicateEvaluator,
         conditionEvaluator: ConditionEvaluator = predicateEvaluator.conditions,
-        alreadyApplied: Set<ActiveReplacement> = emptySet()
+        alreadyApplied: Set<ActiveReplacement> = emptySet(),
+        eligibleSources: Set<EntityId>? = null
     ): TokenSubstitution? {
         val candidates = ActiveReplacements.all(state)
-            .filter { it.effect is ReplaceTokenCreationWithToken && it !in alreadyApplied }
+            .filter { it.effect is ReplaceTokenCreationWithToken && it !in alreadyApplied && (eligibleSources == null || it.sourceId in eligibleSources) }
         if (candidates.isEmpty()) return null
 
         val (probeId, withProbe) = state.newEntity()

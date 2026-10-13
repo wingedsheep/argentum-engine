@@ -46,6 +46,7 @@ fun payManaCostFromPool(
         manaPoolComponent.colorless,
         restrictedMana = manaPoolComponent.restrictedMana,
         snowMana = manaPoolComponent.snowMana,
+        manaUnits = manaPoolComponent.manaUnits,
         snowColorless = manaPoolComponent.snowColorless
     ).withSpendingColors(state, player)
 
@@ -96,6 +97,7 @@ fun payManaCostFromPool(
                 colorless = newPool.colorless,
                 restrictedMana = newPool.restrictedMana,
                 snowMana = newPool.snowMana,
+                manaUnits = newPool.manaUnits,
                 snowColorless = newPool.snowColorless
             )
         )
@@ -138,6 +140,7 @@ fun canAutoPayManaCost(
         manaPoolComponent.colorless,
         restrictedMana = manaPoolComponent.restrictedMana,
         snowMana = manaPoolComponent.snowMana,
+        manaUnits = manaPoolComponent.manaUnits,
         snowColorless = manaPoolComponent.snowColorless
     ).withSpendingColors(state, player)
 

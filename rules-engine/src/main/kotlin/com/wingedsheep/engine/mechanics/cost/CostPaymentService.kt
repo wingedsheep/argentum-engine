@@ -541,6 +541,7 @@ class CostPaymentService(private val services: EngineServices) {
             poolComponent.white, poolComponent.blue, poolComponent.black,
             poolComponent.red, poolComponent.green, poolComponent.colorless,
             snowMana = poolComponent.snowMana,
+            manaUnits = poolComponent.manaUnits,
             snowColorless = poolComponent.snowColorless
         ).withSpendingColors(state, payerId)
 
@@ -572,7 +573,7 @@ class CostPaymentService(private val services: EngineServices) {
 
         val newPool = combined.pay(manaCost) ?: return CostPaymentExecution(state, emptyList(), false)
         current = current.updateEntity(payerId) {
-            it.with(ManaPoolComponent(newPool.white, newPool.blue, newPool.black, newPool.red, newPool.green, newPool.colorless, snowMana = newPool.snowMana, snowColorless = newPool.snowColorless))
+            it.with(ManaPoolComponent(newPool.white, newPool.blue, newPool.black, newPool.red, newPool.green, newPool.colorless, snowMana = newPool.snowMana, manaUnits = newPool.manaUnits, snowColorless = newPool.snowColorless))
         }
 
         val sourceName = state.getEntity(sourceId)?.get<CardComponent>()?.name ?: "the source"

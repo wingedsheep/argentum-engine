@@ -111,6 +111,7 @@ class UnlockRoomDoorHandler(
                     colorless = poolComponent.colorless,
                     restrictedMana = poolComponent.restrictedMana,
                     snowMana = poolComponent.snowMana,
+                    manaUnits = poolComponent.manaUnits,
                     snowColorless = poolComponent.snowColorless
                 ).withSpendingColors(state, action.playerId)
                 if (!costHandler.canPayManaCost(pool, cost, unlockContext)) {
@@ -166,6 +167,7 @@ class UnlockRoomDoorHandler(
                     colorless = poolComponent.colorless,
                     restrictedMana = poolComponent.restrictedMana,
                     snowMana = poolComponent.snowMana,
+                    manaUnits = poolComponent.manaUnits,
                     snowColorless = poolComponent.snowColorless
                 ).withSpendingColors(currentState, action.playerId)
                 val newPool = costHandler.payManaCost(pool, cost, unlockContext)
@@ -181,6 +183,7 @@ class UnlockRoomDoorHandler(
                             colorless = newPool.colorless,
                             restrictedMana = newPool.restrictedMana,
                             snowMana = newPool.snowMana,
+                            manaUnits = newPool.manaUnits,
                             snowColorless = newPool.snowColorless
                         )
                     )
@@ -210,6 +213,7 @@ class UnlockRoomDoorHandler(
                     colorless = poolComponent.colorless,
                     restrictedMana = poolComponent.restrictedMana,
                     snowMana = poolComponent.snowMana,
+                    manaUnits = poolComponent.manaUnits,
                     snowColorless = poolComponent.snowColorless
                 ).withSpendingColors(currentState, action.playerId)
                 val partialResult = pool.payPartial(cost, unlockContext)
@@ -235,6 +239,7 @@ class UnlockRoomDoorHandler(
                             colorless = poolAfterPayment.colorless,
                             restrictedMana = poolAfterPayment.restrictedMana,
                             snowMana = poolAfterPayment.snowMana,
+                            manaUnits = poolAfterPayment.manaUnits,
                             snowColorless = poolAfterPayment.snowColorless
                         )
                     )

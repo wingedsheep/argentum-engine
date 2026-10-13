@@ -117,6 +117,9 @@ internal class ActivationAutoTapper(
             )?.let(events::add)
         }
 
+        val sourceTags = solution.sources.associate { it.entityId to
+            com.wingedsheep.engine.handlers.effects.mana.ManaProvenanceTracker.sourceTag(state, it.entityId) }
+
         // Add produced mana to floating pool so costHandler.payAbilityCost can consume it.
         // When the source's ability is restricted (e.g. Steelswarm Operator's
         // {T}: Add {U}{U} restricted to artifact-source ability activations), tag the
@@ -137,8 +140,16 @@ internal class ActivationAutoTapper(
             } else source.restriction
             currentPool = when {
                 color != null && restriction != null ->
-                    currentPool.addRestricted(color, production.amount, restriction)
-                else -> currentPool.addProduction(production)
+                    currentPool.addRestricted(color, production.amount, restriction).let { tagged ->
+                        tagged.copy(restrictedMana = tagged.restrictedMana.dropLast(production.amount) +
+                            tagged.restrictedMana.takeLast(production.amount).map { it.copy(source = sourceTags.getValue(source.entityId)) })
+                    }
+                else -> currentPool.addProduction(production).let { produced ->
+                    val tag = sourceTags.getValue(source.entityId)
+                    produced.copy(manaUnits = produced.manaUnits +
+                        List(if (color == null) 0 else production.amount) { com.wingedsheep.engine.mechanics.mana.ManaUnit(color, tag) } +
+                        List(production.colorless) { com.wingedsheep.engine.mechanics.mana.ManaUnit(null, tag) })
+                }
             }
         }
 
@@ -173,6 +184,7 @@ internal class ActivationAutoTapper(
                 manaBySource = currentPool.manaBySource,
                 manaByCardType = currentPool.manaByCardType,
                 snowMana = currentPool.snowMana,
+                manaUnits = currentPool.manaUnits,
                 snowColorless = currentPool.snowColorless
             ))
         }

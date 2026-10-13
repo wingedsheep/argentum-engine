@@ -25,6 +25,13 @@ import io.kotest.matchers.shouldBe
  */
 class EffectWalkerTest : FunSpec({
 
+    test("mixed token batches expose each token payoff to the card scorers") {
+        val creature = Effects.CreateToken(power = 3, toughness = 3, creatureTypes = setOf("Robot"))
+        val treasure = Effects.CreateTreasure()
+        EffectWalker.leaves(Effects.CreateTokensTogether(creature, treasure)) shouldBe
+            listOf(creature, treasure)
+    }
+
     test("a connive is walked as its pipeline, not as one opaque leaf") {
         val connive = Effects.Connive() as ConniveEffect
 

@@ -47,9 +47,9 @@ class AddColorlessManaExecutor(
         }
 
         newState = if (effect.restriction == null && effect.riders.isEmpty() && effect.expiry == ManaExpiry.END_OF_TURN) {
-            ManaProvenanceTracker.tagAddedMana(newState, context.controllerId, context.sourceId, amount)
+            ManaProvenanceTracker.tagAddedMana(newState, context.controllerId, context.sourceId, amount, null, context)
         } else {
-            ManaProvenanceTracker.tagAddedRestrictedMana(newState, context.controllerId, context.sourceId, amount)
+            ManaProvenanceTracker.tagAddedRestrictedMana(newState, context.controllerId, context.sourceId, amount, context)
         }
 
         return EffectResult.success(newState, listOf(ManaPoolChangedEvent(context.controllerId)))

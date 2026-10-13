@@ -146,6 +146,7 @@ class TurnFaceUpHandler(
                             colorless = poolComponent.colorless,
                             restrictedMana = poolComponent.restrictedMana,
                             snowMana = poolComponent.snowMana,
+                            manaUnits = poolComponent.manaUnits,
                             snowColorless = poolComponent.snowColorless
                         ).withSpendingColors(state, action.playerId)
                         if (!costHandler.canPayManaCost(pool, withXResolved(manaCost, xValue), faceUpContext)) {
@@ -231,6 +232,7 @@ class TurnFaceUpHandler(
                             colorless = poolComponent.colorless,
                             restrictedMana = poolComponent.restrictedMana,
                             snowMana = poolComponent.snowMana,
+                            manaUnits = poolComponent.manaUnits,
                             snowColorless = poolComponent.snowColorless
                         ).withSpendingColors(currentState, action.playerId)
 
@@ -248,6 +250,7 @@ class TurnFaceUpHandler(
                                     colorless = newPool.colorless,
                                     restrictedMana = newPool.restrictedMana,
                                     snowMana = newPool.snowMana,
+                                    manaUnits = newPool.manaUnits,
                                     snowColorless = newPool.snowColorless
                                 )
                             )
@@ -280,6 +283,7 @@ class TurnFaceUpHandler(
                             colorless = poolComponent.colorless,
                             restrictedMana = poolComponent.restrictedMana,
                             snowMana = poolComponent.snowMana,
+                            manaUnits = poolComponent.manaUnits,
                             snowColorless = poolComponent.snowColorless
                         ).withSpendingColors(currentState, action.playerId)
 
@@ -335,6 +339,7 @@ class TurnFaceUpHandler(
                                     colorless = poolAfterPayment.colorless,
                                     restrictedMana = poolAfterPayment.restrictedMana,
                                     snowMana = poolAfterPayment.snowMana,
+                                    manaUnits = poolAfterPayment.manaUnits,
                                     snowColorless = poolAfterPayment.snowColorless
                                 )
                             )

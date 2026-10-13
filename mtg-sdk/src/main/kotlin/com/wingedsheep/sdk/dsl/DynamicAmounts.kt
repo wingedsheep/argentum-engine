@@ -150,8 +150,11 @@ object DynamicAmounts {
      */
     fun manaOfColorSpent(color: Color): DynamicAmount = DynamicAmount.ManaOfColorSpent(color)
 
-    /** The amount of mana produced by a [subtype] source (a Cave) spent to cast this. */
-    fun manaSpentFromSubtype(subtype: Subtype): DynamicAmount = DynamicAmount.ManaSpentFromSubtype(subtype)
+    /** Mana from a [subtype] source spent on the named cast or activation payment. */
+    fun manaSpentFromSubtype(
+        subtype: Subtype,
+        payment: com.wingedsheep.sdk.scripting.values.ManaPayment = com.wingedsheep.sdk.scripting.values.ManaPayment.CAST,
+    ): DynamicAmount = DynamicAmount.ManaSpentFromSubtype(subtype, payment)
 
     /** The amount of mana from snow sources ("{S}") spent to cast this (CR 107.4h). */
     fun snowManaSpent(): DynamicAmount = DynamicAmount.SnowManaSpent
@@ -198,6 +201,9 @@ object DynamicAmounts {
 
     /** The number of cards discarded by the triggering event. */
     fun triggerDiscardCount(): DynamicAmount = DynamicAmount.ContextProperty(ContextPropertyKey.TRIGGER_DISCARD_COUNT)
+
+    /** The final result of the die roll that triggered this ability. */
+    fun triggerDieResult(): DynamicAmount = DynamicAmount.ContextProperty(ContextPropertyKey.TRIGGER_DIE_RESULT)
 
     /** The number the triggering scry looked at. */
     fun triggerScryCount(): DynamicAmount = DynamicAmount.ContextProperty(ContextPropertyKey.TRIGGER_SCRY_COUNT)

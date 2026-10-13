@@ -49,6 +49,7 @@ fun tagManaObligationProduction(
         colorless = added.colorless - colorless,
         // Those units now carry their exact snow/source metadata on the restricted entries.
         snowMana = old.snowMana,
+        manaUnits = old.manaUnits,
         snowColorless = old.snowColorless,
         restrictedMana = added.restrictedMana.mapIndexed { index, entry ->
             if (index >= untaggedCount) entry.copy(

@@ -310,8 +310,12 @@ class DynamicAmountEvaluator(
             is DynamicAmount.DistinctColorsManaSpent ->
                 context.sourceId?.let { ManaSpentReader.distinctColorsSpent(state, it) } ?: 0
 
-            is DynamicAmount.ManaSpentFromSubtype ->
-                context.sourceId?.let { ManaSpentReader.subtypeSpent(state, it, amount.subtype) } ?: 0
+            is DynamicAmount.ManaSpentFromSubtype -> when (amount.payment) {
+                com.wingedsheep.sdk.scripting.values.ManaPayment.CAST ->
+                    context.sourceId?.let { ManaSpentReader.subtypeSpent(state, it, amount.subtype) } ?: 0
+                com.wingedsheep.sdk.scripting.values.ManaPayment.ACTIVATION ->
+                    context.manaSpent?.provenance?.bySubtype?.get(amount.subtype) ?: 0
+            }
 
             // Same snapshot-then-entity read as SnowManaSpent: a cast trigger outlives the spell.
             is DynamicAmount.ManaOfColorSpent -> context.sourceId?.let { sourceId ->

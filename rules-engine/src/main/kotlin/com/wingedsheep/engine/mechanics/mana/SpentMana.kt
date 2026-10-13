@@ -6,7 +6,8 @@ import kotlinx.serialization.Serializable
 
 /**
  * The mana actually spent on a payment, by type: the five colors and colorless. Recorded for an
- * activated ability's cost so the resolving ability can ask what was spent on it — Illusionary
+ * activated ability's cost together with the exact producing-source snapshots, so the resolving
+ * ability can ask what was spent on it — Illusionary
  * Mask's "a creature card whose mana cost could be paid by some amount of, or all of, the mana you
  * spent on {X}" ([com.wingedsheep.sdk.scripting.predicates.CardPredicate.ManaCostPayableWithManaSpent]).
  */
@@ -18,12 +19,13 @@ data class SpentMana(
     val red: Int = 0,
     val green: Int = 0,
     val colorless: Int = 0,
+    val provenance: SpentManaProvenance = SpentManaProvenance(),
 ) {
     val total: Int get() = white + blue + black + red + green + colorless
 
     operator fun plus(other: SpentMana) = SpentMana(
         white + other.white, blue + other.blue, black + other.black,
-        red + other.red, green + other.green, colorless + other.colorless,
+        red + other.red, green + other.green, colorless + other.colorless, provenance + other.provenance,
     )
 
     fun plus(color: Color?, amount: Int): SpentMana = when (color) {
@@ -37,7 +39,7 @@ data class SpentMana(
 
     fun nonNegative() = SpentMana(
         white.coerceAtLeast(0), blue.coerceAtLeast(0), black.coerceAtLeast(0),
-        red.coerceAtLeast(0), green.coerceAtLeast(0), colorless.coerceAtLeast(0),
+        red.coerceAtLeast(0), green.coerceAtLeast(0), colorless.coerceAtLeast(0), provenance,
     )
 
     /**
@@ -63,7 +65,10 @@ data class SpentMana(
             for (entry in before.restrictedMana) {
                 if (!remaining.remove(entry)) spent = spent.plus(entry.color, 1)
             }
-            return spent
+            val remainingUnits = after.manaUnits.toMutableList()
+            val consumed = before.manaUnits.filter { !remainingUnits.remove(it) }
+            return spent.copy(provenance = SpentManaProvenance.ofUnits(consumed.map { it.source }) +
+                SpentManaProvenance.ofConsumedRestricted(before.restrictedMana, after.restrictedMana))
         }
     }
 }
