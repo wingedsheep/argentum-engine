@@ -239,6 +239,14 @@ data class TriggerContext(
      */
     val capturedEntityIds: List<EntityId>? = null,
     /**
+     * Copiable values (CR 707.2) of the permanents in [capturedEntityIds], frozen when the trigger
+     * fired. A "create a token that's a copy of that permanent" payoff falls back to them when the
+     * captured permanent has left before resolution and its own departure snapshot is gone — a
+     * token that ceased to exist (CR 704.5d) — so it is still copied as it last existed (CR 608.2h;
+     * Vesuvan Duplimancy). Null when the trigger captured nothing copyable.
+     */
+    val capturedEntitySnapshots: List<com.wingedsheep.engine.state.components.stack.EntitySnapshot>? = null,
+    /**
      * For [com.wingedsheep.engine.core.PermanentAttachedEvent] /
      * [com.wingedsheep.engine.core.PermanentUnattachedEvent] triggers — the permanent the triggering
      * attachment (Aura/Equipment) became attached to, or came off of. Resolved by

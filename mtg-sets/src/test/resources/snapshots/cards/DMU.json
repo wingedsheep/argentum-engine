@@ -7374,6 +7374,81 @@
     "colorIdentityOverride": []
 }
 
+// Vesuvan Duplimancy
+{
+    "name": "Vesuvan Duplimancy",
+    "manaCost": "{3}{U}",
+    "typeLine": "Enchantment",
+    "oracleText": "Whenever you cast a spell that targets only a single artifact or creature you control, create a token that's a copy of that artifact or creature, except it's not legendary.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Vesuvan Duplimancy:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "requires": [
+                        {
+                            "type": "SpellTargetsMatching",
+                            "filter": "artifact|creature ctrl:you",
+                            "only": true
+                        }
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Collection",
+                        "collection": "trigger.captured"
+                    },
+                    "body": {
+                        "type": "CreateTokenCopyOfTarget",
+                        "target": "IterationEntity",
+                        "removedSupertypes": [
+                            "LEGENDARY"
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "73",
+        "rarity": "MYTHIC",
+        "artist": "Wylie Beckert",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/a/9a2119bc-a377-4156-89d4-56e7b5b494a8.jpg?1783921342",
+        "rulings": [
+            {
+                "date": "2022-09-09",
+                "text": "The triggered ability of Vesuvan Duplimancy triggers only if you cast a spell that targets a single artifact or a single creature and nothing else. The ability will resolve before the spell that caused it to trigger, and a token will be created even if the spell you cast was countered or permanent it was targeting is now an illegal target."
+            },
+            {
+                "date": "2022-09-09",
+                "text": "If the target of the spell leaves the battlefield before the triggered ability resolves, use its characteristics as it last existed on the battlefield to determine the characteristics of the token created."
+            },
+            {
+                "date": "2022-09-09",
+                "text": "If the target of the spell is changed after the triggered ability is put on the stack, the token that is created is a copy of the spell's original target, not the new target."
+            },
+            {
+                "date": "2022-09-09",
+                "text": "The token isn't legendary, and this exception is copiable. If something else copies the token later, that copy also won't be legendary."
+            },
+            {
+                "date": "2022-09-09",
+                "text": "If the copied permanent is a token, the token that's created copies the original characteristics of that token as stated by the effect that created that token."
+            },
+            {
+                "date": "2022-09-09",
+                "text": "If the copied permanent is copying something else (for example, if the copied creature is a Clone), then the token enters the battlefield as whatever that permanent copied."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Viashino Branchrider
 {
     "name": "Viashino Branchrider",

@@ -2645,6 +2645,11 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   `LastKnownPermanentComponent`), so a creature that was itself a copy is copied as what it was copying. A token
   that left has ceased to exist and leaves nothing to copy; once the departed card changes zones again its
   snapshot is gone and so is the copy.
+  **A departed captured permanent.** `ForEachInCollection(CollectionSlot.TriggerCaptured,
+  CreateTokenCopyOfTarget(IterationEntity))` over a cast trigger's captured target ("a spell that targets only a
+  single artifact or creature you control, … a copy of that artifact or creature" — Vesuvan Duplimancy) copies a
+  target that left before the ability resolved as it last existed on the battlefield: its departure snapshot, or,
+  for a token that has ceased to exist, the copiable values frozen when the ability triggered.
   Like `CreateToken`, both `CreateTokenCopyOfTarget` and `CreateTokenCopyOfSource` publish their created token
   entity IDs to the `CREATED_TOKENS` pipeline collection, so a sibling effect in a `CompositeEffect` can address
   the new copy — e.g. Applied Geometry's "Create a token that's a copy … Put six +1/+1 counters on it" composes
@@ -7773,7 +7778,9 @@ matcher branch — `SpellCastEvent` does not grow a new field per axis.
   `only = true` is "a spell that targets **only a single** [filter]": every instance of "target" on
   the spell — players included — is one and the same object, and it matches `filter`. Several
   instances all aimed at one creature still count; a second object or any player target doesn't.
-  The trigger-time capture (`IterationSpace.TRIGGER_CAPTURED_COLLECTION`) is that one object.
+  The trigger-time capture (`IterationSpace.TRIGGER_CAPTURED_COLLECTION`) is that one object, with its
+  copiable values frozen alongside, so a token-copy payoff still copies it after it leaves (see
+  `CreateTokenCopyOfTarget`, "A departed captured permanent").
   **Ivy, Gleeful Spellthief** (`TargetsMatching(Creature.notSourceItself(), only = true)`), Vesuvan
   Duplimancy.
 - `SpellCastPredicate.IsCard` — the cast spell is a **card**, not a copy: "whenever a player casts an

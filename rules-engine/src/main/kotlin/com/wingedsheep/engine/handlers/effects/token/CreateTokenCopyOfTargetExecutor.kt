@@ -22,7 +22,9 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
 import com.wingedsheep.engine.state.components.battlefield.AttachmentsComponent
 import com.wingedsheep.engine.state.components.battlefield.EnteredThisTurnComponent
+import com.wingedsheep.engine.state.components.battlefield.BattlefieldEntryTimestampComponent
 import com.wingedsheep.engine.state.components.battlefield.LastKnownPermanentComponent
+import com.wingedsheep.engine.state.components.stack.snapshotFor
 import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.combat.AttackingComponent
@@ -176,6 +178,7 @@ class CreateTokenCopyOfTargetExecutor(
         effect: CreateTokenCopyOfTargetEffect,
         context: EffectContext,
     ): ComponentContainer? {
+        if (effect.target == EffectTarget.IterationEntity) departedCapturedEntity(state, context)?.let { return it }
         context.resolveTarget(effect.target, state)?.let { id ->
             val entity = state.getEntity(id) ?: return null
             return departedPermanentTarget(state, effect, context, id, entity) ?: entity
@@ -186,6 +189,28 @@ class CreateTokenCopyOfTargetExecutor(
         context.triggerContext?.triggeringLastKnownSnapshot?.copiableContainer()?.let { return it }
         val departed = context.triggeringEntityId?.let { state.getEntity(it) } ?: return null
         return departed.get<LastKnownPermanentComponent>()?.snapshot?.copiableContainer()
+    }
+
+    /**
+     * A permanent the trigger captured ("a spell that targets only a single artifact or creature
+     * you control, … a copy of that artifact or creature" — Vesuvan Duplimancy) that is no longer
+     * the same object on the battlefield when the payoff iterates it. It is copied as it last
+     * existed there (CR 608.2h): its departure snapshot while that still describes the captured
+     * visit, else the copiable values frozen when the ability triggered — all a token that has
+     * ceased to exist (CR 704.5d) leaves behind. Null while the captured permanent is still there.
+     */
+    private fun departedCapturedEntity(state: GameState, context: EffectContext): ComponentContainer? {
+        val id = context.iterationEntityId ?: return null
+        val captured = context.triggerContext?.capturedEntitySnapshots?.snapshotFor(id) ?: return null
+        val visit = captured.battlefieldEntryTimestamp
+        val entity = state.getEntity(id)
+        val sameVisit = entity?.get<BattlefieldEntryTimestampComponent>()?.timestamp == visit
+        if (id in state.getBattlefield() && sameVisit) return null
+        entity?.get<LastKnownPermanentComponent>()?.snapshot
+            ?.takeIf { it.battlefieldEntryTimestamp == visit }
+            ?.copiableContainer()
+            ?.let { return it }
+        return captured.copiableContainer()
     }
 
     /**

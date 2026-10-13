@@ -81,3 +81,25 @@ fun EntitySnapshot.copiableContainer(): ComponentContainer? {
     copiableDoubleFaced?.let { container = container.with(it) }
     return container
 }
+
+/**
+ * The copiable values of the permanent [entityId] as they are right now, tagged with its battlefield
+ * visit — what a trigger freezes about an object it captured, so a payoff can still copy it after
+ * the object has left (CR 608.2h), including a token that has since ceased to exist (CR 704.5d).
+ */
+fun captureCopiableSnapshot(
+    state: com.wingedsheep.engine.state.GameState,
+    entityId: com.wingedsheep.sdk.model.EntityId,
+    registry: CardRegistry,
+): EntitySnapshot? {
+    val container = state.getEntity(entityId) ?: return null
+    val card = container.copiableCardComponent() ?: return null
+    return EntitySnapshot(
+        entityId = entityId,
+        battlefieldEntryTimestamp = container
+            .get<com.wingedsheep.engine.state.components.battlefield.BattlefieldEntryTimestampComponent>()?.timestamp,
+        copiableCard = card,
+        copiableNumericKeywords = container.copiableNumericKeywords(registry),
+        copiableDoubleFaced = container.copiableDoubleFacedComponent { it },
+    )
+}

@@ -1046,6 +1046,10 @@ class TriggerDetector(
         }
     }
 
+    /** The captured permanents' copiable values at trigger time; see [TriggerContext.capturedEntitySnapshots]. */
+    private fun copiableSnapshots(state: GameState, ids: List<EntityId>) =
+        ids.mapNotNull { com.wingedsheep.engine.state.components.identity.captureCopiableSnapshot(state, it, cardRegistry) }
+
     private fun detectEventBasedDelayedTriggers(
         state: GameState,
         events: List<EngineGameEvent>,
@@ -1855,7 +1859,8 @@ class TriggerDetector(
                                         enchantedCreatureLastKnownPower = enchantedPower,
                                         // Never clobber a capture the event itself carries
                                         // (manifest dread's graveyard cards).
-                                        capturedEntityIds = capturedTargets ?: ctx.capturedEntityIds
+                                        capturedEntityIds = capturedTargets ?: ctx.capturedEntityIds,
+                                        capturedEntitySnapshots = capturedTargets?.let { copiableSnapshots(state, it) }
                                     )
                                 }
                             )
@@ -1910,7 +1915,10 @@ class TriggerDetector(
                                     controllerId = ownerId,
                                     triggerContext = TriggerContext.fromEvent(event).let { ctx ->
                                         if (capturedTargets == null) ctx
-                                        else ctx.copy(capturedEntityIds = capturedTargets)
+                                        else ctx.copy(
+                                            capturedEntityIds = capturedTargets,
+                                            capturedEntitySnapshots = copiableSnapshots(state, capturedTargets)
+                                        )
                                     }
                                 )
                             )
