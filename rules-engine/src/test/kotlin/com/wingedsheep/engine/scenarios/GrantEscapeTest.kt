@@ -88,9 +88,46 @@ class GrantEscapeTest : FunSpec({
         toughness = 1
     }
 
+    val adventure = card("Escape Adventure Bear") {
+        manaCost = "{2}{G}"
+        typeLine = "Creature — Bear"
+        power = 3
+        toughness = 3
+        adventure("Escape Adventure Bolt") {
+            manaCost = "{R}"
+            typeLine = "Instant — Adventure"
+            additionalCost(Costs.additional.PayLife(1))
+            spell {
+                val t = target(TargetFilter.Creature)
+                effect = Effects.DealDamage(2, t)
+            }
+        }
+    }
+    val instantDiscount = card("Escape Instant Discounter") {
+        typeLine = "Enchantment"
+        staticAbility {
+            ability = com.wingedsheep.sdk.scripting.ModifySpellCost(
+                com.wingedsheep.sdk.scripting.SpellCostTarget.YouCast(com.wingedsheep.sdk.scripting.GameObjectFilter.Instant),
+                com.wingedsheep.sdk.scripting.CostModification.ReduceGeneric(1)
+            )
+        }
+    }
+    val flashAdventure = card("Flash Escape Adventure Bear") {
+        manaCost = "{1}{G}"
+        typeLine = "Creature — Bear"
+        power = 2
+        toughness = 2
+        keywords(com.wingedsheep.sdk.core.Keyword.FLASH)
+        adventure("Sorcery Escape Adventure") {
+            manaCost = "{R}"
+            typeLine = "Sorcery — Adventure"
+            spell { effect = Effects.GainLife(2) }
+        }
+    }
+
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(granter, bear, instant, printed, zero, noCost))
+        driver.registerCards(TestCards.all + listOf(granter, bear, instant, printed, zero, noCost, adventure, instantDiscount, flashAdventure))
         driver.initMirrorMatch(deck = Deck.of("Mountain" to 40), skipMulligans = true, startingPlayer = 0)
         return driver
     }
@@ -276,6 +313,56 @@ class GrantEscapeTest : FunSpec({
         fillGraveyard(driver, you, 2)
         driver.giveMana(you, Color.GREEN, 2)
         escapeOffers(driver, you, card).shouldBeEmpty()
+    }
+
+    test("an instant Adventure escapes outside main phase with its own targets and the selected escape base") {
+        val driver = createDriver()
+        val you = driver.activePlayer!!
+        val opponent = driver.getOpponent(you)
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+        val card = driver.putCardInGraveyard(you, "Escape Adventure Bear")
+        val others = fillGraveyard(driver, you, 2)
+        val victim = driver.putCreatureOnBattlefield(opponent, "Grizzly Bears")
+        grantEscape(driver, you, card)
+        driver.putPermanentOnBattlefield(you, "Escape Instant Discounter")
+        driver.giveMana(you, Color.GREEN, 3)
+        val mainOffers = escapeOffers(driver, you, card)
+        mainOffers.size shouldBe 2
+        mainOffers.single { (it.action as CastSpell).faceIndex == null }.manaCostString shouldBe "{2}{G}"
+        mainOffers.single { (it.action as CastSpell).faceIndex == 0 }.manaCostString shouldBe "{1}{G}"
+
+        driver.passPriorityUntil(Step.BEGIN_COMBAT)
+        driver.giveMana(you, Color.GREEN, 2)
+        val offer = escapeOffers(driver, you, card).single()
+        (offer.action as CastSpell).faceIndex shouldBe 0
+        offer.requiresTargets.shouldBeTrue()
+        offer.validTargets.shouldNotBeNull() shouldContain victim
+        val action = (offer.action as CastSpell).copy(
+            targets = listOf(ChosenTarget.Permanent(victim)),
+            additionalCostPayment = AdditionalCostPayment(exiledCards = others),
+            paymentStrategy = PaymentStrategy.FromPool,
+        )
+        val result = driver.submit(action)
+        withClue("error=${result.error}") { result.outcome shouldBe Outcome.Done }
+        driver.getLifeTotal(you) shouldBe 19
+        driver.getExile(you) shouldContainAll others
+        while (driver.state.stack.isNotEmpty()) driver.bothPass()
+        driver.getGraveyard(opponent) shouldContain victim
+        driver.getExile(you) shouldContain card
+    }
+
+    test("a sorcery Adventure does not inherit flash from its creature face") {
+        val driver = createDriver()
+        val you = driver.activePlayer!!
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+        val card = driver.putCardInGraveyard(you, "Flash Escape Adventure Bear")
+        val others = fillGraveyard(driver, you, 2)
+        grantEscape(driver, you, card)
+        driver.passPriorityUntil(Step.BEGIN_COMBAT)
+        driver.giveMana(you, Color.GREEN, 2)
+        val offers = escapeOffers(driver, you, card)
+        offers.single().action.let { it as CastSpell }.faceIndex shouldBe null
+        driver.submit(escape(you, card, others).copy(faceIndex = 0)).outcome shouldNotBe Outcome.Done
     }
 
 })

@@ -1584,74 +1584,83 @@ class CastFromZoneEnumerator(
             val escapeOptions = EscapeCasts.availableEscape(
                 state, cardId, cardDef, playerId, context.cardRegistry, context.predicateEvaluator
             )
+            if (escapeOptions.isEmpty()) continue
+            val faceIndices: List<Int?> = listOf(null) + if (
+                cardDef.layout == com.wingedsheep.sdk.model.CardLayout.ADVENTURE ||
+                cardDef.layout == com.wingedsheep.sdk.model.CardLayout.OMEN
+            ) cardDef.cardFaces.indices.toList() else emptyList()
             for (escape in escapeOptions) {
+                for (faceIndex in faceIndices) {
+                    val spell = faceIndex?.let {
+                        context.costCalculator.faceCharacteristics(cardDef, cardDef.cardFaces[it])
+                    } ?: cardDef
+                    val isInstant = spell.typeLine.isInstant
+                    val hasFlash = spell.keywords.contains(com.wingedsheep.sdk.core.Keyword.FLASH) ||
+                        context.castPermissionUtils.hasGrantedFlash(state, cardId, context.playerId)
+                    if (!isInstant && !hasFlash && !context.canPlaySorcerySpeed) continue
 
-                val isInstant = cardComponent.typeLine.isInstant
-                val hasFlash = cardDef.keywords.contains(com.wingedsheep.sdk.core.Keyword.FLASH) ||
-                    context.castPermissionUtils.hasGrantedFlash(state, cardId, context.playerId)
-                if (!isInstant && !hasFlash && !context.canPlaySorcerySpeed) continue
-
-                val action = CastSpell(playerId, cardId, useAlternativeCost = true, alternativeCostType = AlternativeCostType.ESCAPE, escapeAbility = escape)
-                fun offer(
-                    affordable: Boolean,
-                    costString: String,
-                    costInfo: com.wingedsheep.engine.legalactions.AdditionalCostData? = null,
-                ) = LegalAction(
-                    actionType = "CastWithEscape",
-                    description = "Cast ${cardComponent.name} (Escape: ${escape.cost}${escape.additionalCost?.let { "; ${it.description}" }.orEmpty()})",
-                    action = action,
-                    affordable = affordable,
-                    manaCostString = costString,
-                    additionalCostInfo = costInfo,
-                    sourceZone = "GRAVEYARD"
-                )
-
-                if (context.cantCastSpell(cardId)) {
-                    result.add(offer(affordable = false, costString = escape.cost.toString()))
-                    continue
-                }
-                if (!context.legality.castRestrictionsMet(state, playerId, cardDef.script.castRestrictions)) continue
-
-                val effectiveCost = context.costCalculator.calculateEffectiveCostWithAlternativeBase(
-                    state, cardDef, escape.cost, playerId
-                )
-                val costString = effectiveCost.toString()
-                val canAfford = context.manaSolver.canPay(state, playerId, effectiveCost, precomputedSources = context.availableManaSources)
-                val (escapeCostInfo, canPayAdditionalCost) = presentOwedCosts(
-                    context, cardId, cardDef.script.additionalCosts + listOfNotNull(escape.additionalCost)
-                )
-                if (!canAfford || !canPayAdditionalCost) {
-                    result.add(offer(affordable = false, costString = costString, costInfo = escapeCostInfo))
-                    continue
-                }
-
-                val autoTapPreview = if (context.skipAutoTapPreview) null else {
-                    context.manaSolver.solve(state, playerId, effectiveCost, precomputedSources = context.availableManaSources)
-                        ?.sources?.map { it.entityId }
-                }
-                val targetReqs = buildList {
-                    addAll(cardDef.script.targetRequirements)
-                    cardDef.script.castAuraTarget?.let { add(it) }
-                }
-                if (targetReqs.isEmpty()) {
-                    result.add(offer(affordable = true, costString = costString, costInfo = escapeCostInfo).copy(autoTapPreview = autoTapPreview))
-                    continue
-                }
-                val targetInfos = context.targetUtils.buildTargetInfos(state, playerId, targetReqs, targetingSourceType = TargetingSourceType.SPELL)
-                if (!context.targetUtils.allRequirementsSatisfied(targetInfos)) continue
-                val firstReq = targetReqs.first()
-                val firstInfo = targetInfos.first()
-                result.add(
-                    offer(affordable = true, costString = costString, costInfo = escapeCostInfo).copy(
-                        validTargets = firstInfo.validTargets,
-                        requiresTargets = true,
-                        targetCount = firstInfo.maxTargets,
-                        minTargets = firstReq.effectiveMinCount,
-                        targetDescription = firstReq.description,
-                        targetRequirements = targetInfos.surfacedRequirements(),
-                        autoTapPreview = autoTapPreview,
+                    val action = CastSpell(playerId, cardId, useAlternativeCost = true, alternativeCostType = AlternativeCostType.ESCAPE, escapeAbility = escape, faceIndex = faceIndex)
+                    fun offer(
+                        affordable: Boolean,
+                        costString: String,
+                        costInfo: com.wingedsheep.engine.legalactions.AdditionalCostData? = null,
+                    ) = LegalAction(
+                        actionType = "CastWithEscape",
+                        description = "Cast ${spell.name} (Escape: ${escape.cost}${escape.additionalCost?.let { "; ${it.description}" }.orEmpty()})",
+                        action = action,
+                        affordable = affordable,
+                        manaCostString = costString,
+                        additionalCostInfo = costInfo,
+                        sourceZone = "GRAVEYARD"
                     )
-                )
+
+                    if (context.cantCastSpell(cardId)) {
+                        result.add(offer(affordable = false, costString = escape.cost.toString()))
+                        continue
+                    }
+                    if (!context.legality.castRestrictionsMet(state, playerId, spell.script.castRestrictions)) continue
+
+                    val effectiveCost = context.costCalculator.calculateEffectiveCost(
+                        state, spell, playerId, fromZone = Zone.GRAVEYARD, baseCost = escape.cost, card = cardDef
+                    )
+                    val costString = effectiveCost.toString()
+                    val canAfford = context.manaSolver.canPay(state, playerId, effectiveCost, precomputedSources = context.availableManaSources)
+                    val (escapeCostInfo, canPayAdditionalCost) = presentOwedCosts(
+                        context, cardId, spell.script.additionalCosts + listOfNotNull(escape.additionalCost)
+                    )
+                    if (!canAfford || !canPayAdditionalCost) {
+                        result.add(offer(affordable = false, costString = costString, costInfo = escapeCostInfo))
+                        continue
+                    }
+
+                    val autoTapPreview = if (context.skipAutoTapPreview) null else {
+                        context.manaSolver.solve(state, playerId, effectiveCost, precomputedSources = context.availableManaSources)
+                            ?.sources?.map { it.entityId }
+                    }
+                    val targetReqs = buildList {
+                        addAll(spell.script.targetRequirements)
+                        spell.script.castAuraTarget?.let { add(it) }
+                    }
+                    if (targetReqs.isEmpty()) {
+                        result.add(offer(affordable = true, costString = costString, costInfo = escapeCostInfo).copy(autoTapPreview = autoTapPreview))
+                        continue
+                    }
+                    val targetInfos = context.targetUtils.buildTargetInfos(state, playerId, targetReqs, targetingSourceType = TargetingSourceType.SPELL)
+                    if (!context.targetUtils.allRequirementsSatisfied(targetInfos)) continue
+                    val firstReq = targetReqs.first()
+                    val firstInfo = targetInfos.first()
+                    result.add(
+                        offer(affordable = true, costString = costString, costInfo = escapeCostInfo).copy(
+                            validTargets = firstInfo.validTargets,
+                            requiresTargets = true,
+                            targetCount = firstInfo.maxTargets,
+                            minTargets = firstReq.effectiveMinCount,
+                            targetDescription = firstReq.description,
+                            targetRequirements = targetInfos.surfacedRequirements(),
+                            autoTapPreview = autoTapPreview,
+                        )
+                    )
+                }
             }
         }
     }

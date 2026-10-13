@@ -292,6 +292,17 @@ internal class CastCostTotaller(
         val castFace = action.faceIndex?.let { idx -> cardDef?.cardFaces?.getOrNull(idx) }
         return when {
             playForFree -> ManaCost.ZERO
+            action.useAlternativeCost && action.alternativeCostType == AlternativeCostType.ESCAPE && cardDef != null -> {
+                val escape = EscapeCasts.effectiveEscape(
+                    state, action.cardId, cardDef, action.playerId, cardRegistry, predicateEvaluator, action.escapeAbility
+                )?.takeIf { zoneResolver.hasEscapePermission(state, action.playerId, action.cardId) } ?: return null
+                val spell = castFace?.let { costCalculator.faceCharacteristics(cardDef, it) } ?: cardDef
+                costCalculator.calculateEffectiveCost(
+                    state, spell, action.playerId, action.targets.map { it.toEntityId() },
+                    fromZone = Zone.GRAVEYARD, declaredCostSlot = action.declaredCostSlot,
+                    baseCost = escape.cost, card = cardDef,
+                )
+            }
             castFace != null && cardDef != null ->
                 costCalculator.calculateFaceCastCost(
                     state,
