@@ -191,6 +191,7 @@ gradle-app.setting
 
 # Agent-loop run state (per-run scratch — never commit)
 .claude/loop-runs/
+e2e-scenarios/.loop-artifacts/
 
 # Agent-loop per-unit scratch notes, written in the unit's worktree (never commit)
 LOOP_UNIT.md

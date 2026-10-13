@@ -70,6 +70,13 @@ you read line by line. A loop PR that hides its origin is a defect even when the
 
 ## Step 3 — launch
 
+For player-visible changes, include the unattended UI verification protocol from
+[`docs/e2e-test-patterns.md`](../../../docs/e2e-test-patterns.md#unattended-loop-verification):
+targeted `just e2e-loop <test-path> <unused-client-port> <unused-server-port>` from the unit's worktree,
+dedicated headless Chromium, screenshots of the affected flow inspected with the image-viewing tool,
+and commands/results/artifact paths disclosed in the ledger and PR body. Never request personal desktop
+browser access for this gate. Card-only batches reusing established UI need no additional browser gate.
+
 Substitute `<SET>`, `<code>` and `<MODEL_ID>` throughout, then send the wrapper for the current harness.
 Claude Code:
 

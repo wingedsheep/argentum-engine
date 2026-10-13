@@ -715,6 +715,16 @@ e2e-install-browsers:
 e2e-test PATTERN:
     cd e2e-scenarios && npx playwright test {{PATTERN}}
 
+# Isolated Chromium verification for agent loops; choose two unused ports per worktree.
+[group: 'e2e']
+e2e-loop PATTERN CLIENT_PORT SERVER_PORT:
+    cd e2e-scenarios && E2E_CLIENT_PORT='{{CLIENT_PORT}}' E2E_SERVER_PORT='{{SERVER_PORT}}' npx playwright test --config=playwright.loop.config.ts '{{PATTERN}}'
+
+# Started and stopped by Playwright's loop config, with the machine-global build semaphore.
+[group: 'e2e']
+e2e-server PORT:
+    GAME_DEV_ENDPOINTS_ENABLED=true scripts/gradle-locked :game-server:bootRun --args='--spring.profiles.active=local --server.port={{PORT}}'
+
 # Run E2E tests under the Playwright Inspector (step through, inspect selectors)
 [group: 'e2e']
 e2e-debug PATTERN="":

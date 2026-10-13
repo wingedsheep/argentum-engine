@@ -15,6 +15,7 @@ markedly more token-efficient for browser automation than the Playwright MCP).
 |--------|-------------|
 | `just e2e` | Run the full suite |
 | `just e2e-test <pattern>` | Run a specific test by path or `--grep` substring (e.g. `just e2e-test sparksmith`) |
+| `just e2e-loop <test-path> <client-port> <server-port>` | Verify a loop's own worktree in isolated headless Chromium; retain screenshots |
 | `just e2e-headed` | Watch the run in a visible browser |
 | `just e2e-ui` | Playwright UI mode — best for triaging failures interactively |
 | `just e2e-debug <pattern>` | Step through a single test under the Playwright Inspector |
@@ -42,6 +43,41 @@ SKIP_WEB_SERVER=true npx playwright test ...                         # skip auto
 5. **If a CI trace is provided**, `just e2e-trace <path>` opens it locally.
 
 Avoid `just e2e` (full suite) during iteration — it's slow and most failures are unrelated to the test under work.
+
+## Unattended loop verification
+
+When a loop adds or changes a player-visible flow, including an engine/server feature rendered by existing
+components, verify that flow in dedicated Playwright Chromium. Card batches that reuse established UI do
+not need another browser gate. Desktop browser permissions (for example Brave access) are not a dependency;
+leave denied apps alone and use the isolated test browser, which has no personal profile or signed-in tabs.
+
+From the unit's worktree, install dependencies and Chromium if missing (`just e2e-install`, then
+`just e2e-install-browsers`). Choose two unused ports and run a specific test file:
+
+```bash
+just e2e-loop tests/general/gift-promised-at-cast-time.spec.ts 15173 18080
+```
+
+The loop config starts this worktree's game server with dev endpoints and its Vite client, routes both the
+scenario API and client proxy to that server, and stops both on exit. It always starts its own servers,
+ignores `SKIP_WEB_SERVER` and URL overrides, rejects occupied ports, and makes Vite fail rather than shift
+to another port. Concurrent loops must choose different port pairs; never kill another loop's server.
+Server startup goes through `just e2e-server` and the global Gradle semaphore. No desktop browser is opened.
+
+Reuse a relevant test or add a focused test using the existing fixtures. Assert that the player can complete
+the affected interaction; a page-load screenshot alone does not verify a decision flow. Capture the important
+prompt/state with `await gamePage.screenshot('Describe the state')` or `test.info().attach(...)` so passing
+tests preserve it too. Results and PNG attachments are in `e2e-scenarios/.loop-artifacts/test-results/`, with
+an HTML report in `.loop-artifacts/report/`. These worktree-local outputs are gitignored and replaced by the
+next run; preserve any evidence needed for the PR before rerunning or removing the worktree.
+
+Inspect the relevant PNGs with the image-viewing tool before claiming visual verification. Record the command,
+result, screenshot paths and inspection status in the ledger and PR body. State browser startup or image-viewing
+limitations precisely, and distinguish automated E2E from a manual playthrough. Shell/browser execution still
+follows the task's sandbox permissions; this command does not override a denied app or execution request.
+If Chromium fails with a sandbox permission error (on macOS, `bootstrap_check_in` /
+`MachPortRendezvousServer`), request scoped execution approval for the same `just e2e-loop` command through
+the harness. Do not disable global approval review. If approval is rejected, record the rejection and reason.
 
 ## Key Files
 

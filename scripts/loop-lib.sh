@@ -9,6 +9,18 @@ LOOP_PR_PROTOCOL="PR LIFECYCLE — every PR is reviewed BEFORE it is opened, so 
 - Gate with \`just loop-gate\` from the worktree, plus whatever unit-specific gates the step names (rebless,
   printing checks, assay gates). Never run \`just build\` or \`just test\`: loop-gate runs the tests your diff can
   break and CI runs the full suite on the PR — running the full suite twice is the waste this rule exists to stop.
+- UI VERIFICATION — for a player-visible flow added or changed by this unit (including engine/server changes
+  rendered by existing UI), follow docs/e2e-test-patterns.md's Unattended loop verification section before review.
+  Use dedicated headless Playwright Chromium via \`just e2e-loop <test-path> <unused-client-port> <unused-server-port>\`
+  from this worktree. Exercise the affected flow with assertions and a screenshot at the relevant prompt/state;
+  inspect the saved PNGs with the image-viewing tool. Card-only batches using established UI need no extra UI gate.
+  Never request access to a personal desktop browser such as Brave for this check. A denied app stays denied;
+  the isolated test browser does not use its profile or tabs. If Chromium fails with a sandbox permission error
+  (on macOS, bootstrap_check_in / MachPortRendezvousServer), request scoped execution approval for the same
+  e2e-loop command through the harness; do not disable global approvals. If rejected, disclose the reason.
+  Report the command, result, screenshot paths and
+  whether they were visually inspected in the ledger and PR body. If the browser cannot run or images cannot be
+  inspected, record that exact limitation rather than claiming a UX pass. Do not call automated E2E a manual playthrough.
 - Then review the branch (\`origin/main...HEAD\`) with the review-changes skill in SPLIT MODE: you wrote the code, so
   you only dispatch — one TRIAGE subagent, then (unless it reviewed a single-area diff itself in a single pass) one
   subagent per area it names (at most three) and one WEIGH subagent — each a fresh context,

@@ -32,6 +32,11 @@ keeps its default of `claude-opus-5-5`. The `pick` menu requires an interactive 
 The selected CLI must be installed and signed in. Codex runs with `--approve-for-me` (automatic
 approval review in the workspace sandbox); Claude uses `PERMISSION_MODE`, defaulting to `auto`.
 Both share the ledger and logs under `.claude/loop-runs/`, so run only one launcher per set at a time.
+Player-visible changes use dedicated headless Chromium via
+`just e2e-loop <test-path> <unused-client-port> <unused-server-port>` from the unit's worktree.
+The shared PR protocol requires assertions for the affected interaction and inspection of saved screenshots;
+it never requests access to a personal desktop browser. See
+[unattended loop verification](../e2e-test-patterns.md#unattended-loop-verification) for setup and artifacts.
 Started from a terminal, the launcher opens a live dashboard (`scripts/loop-tui`): what the running
 session is doing, the loop's open PRs and their CI, the set's progress, every finished session with
 its completion timestamp and duration, and the last summary. Log lines, including streamed
