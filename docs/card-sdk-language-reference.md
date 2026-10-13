@@ -16357,11 +16357,14 @@ not update an existing copy.
   Example: Lich uses `ReplaceLifeGainWith(Effects.DrawCards(DynamicAmounts.replacementLifeGainAmount()))`.
 - `ModifyLifeGain(multiplier, modifier, appliesTo, restrictions)` — modify life gain by a multiplicative *and/or*
   additive factor: `gained = (original * multiplier) + modifier`, clamped to ≥ 0. `appliesTo` is a `LifeGainEvent`
-  whose `player` filter (default `Player.Each`) gates which players the replacement applies to. `restrictions`
+  whose `player` filter (default `Player.You`) gates which players the replacement applies to. `restrictions`
   (a `List<Condition>`, ALL must hold, evaluated against the gaining player as controller) gates *when* it applies
   — e.g. Phial of Galadriel `restrictions = listOf(Conditions.LifeAtMost(5))` ("while you have 5 or less life").
   Used by Alhammarret's Archive (`multiplier = 2`), Leyline of Hope (`multiplier = 1, modifier = 1, player =
-  Player.You`). Multiple instances stack (×s multiply, +s sum) — two Leylines of Hope add 2 to every life-gain event.
+  Player.You`), Knight of Dawn's Light. Multiple instances stack (×s multiply, +s sum) — two Leylines of Hope add 2 to
+  every life-gain event. When the applicable modifiers don't commute (a doubler beside a "+1"), the gaining player
+  chooses which applies first (CR 616.1), on every life-gain path including lifelink. A source that has lost all
+  abilities or is face down modifies nothing — the fast path and the replacement processor gather the same set.
 - `ModifyLifeLoss(multiplier, modifier, restrictions, appliesTo)` — same shape as `ModifyLifeGain` for life loss
   events (`LifeLossEvent`), plus a `restrictions: List<Condition>` list that further gates the replacement.
 - `LifeLossFloor(floor, restrictions, appliesTo)` — cap damage-induced life loss so the resulting life total

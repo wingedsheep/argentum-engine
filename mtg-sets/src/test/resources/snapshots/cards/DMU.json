@@ -3646,6 +3646,61 @@
     "colorIdentityOverride": []
 }
 
+// Knight of Dawn's Light
+{
+    "name": "Knight of Dawn's Light",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Human Knight",
+    "oracleText": "First strike\nIf you would gain life, you gain that much life plus 1 instead.\n{1}{W}: This creature gets +1/+1 until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FIRST_STRIKE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Knight of Dawn's Light:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{W}"
+                    }
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": "Self"
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "ModifyLifeGain",
+                "multiplier": 1,
+                "modifier": 1
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "23",
+        "rarity": "UNCOMMON",
+        "artist": "Billy Christian",
+        "flavorText": "\"Phyrexians destroyed my village, but they cannot break my hope.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/7/b7c7a54e-4df6-4745-8bae-aeefda934d82.jpg?1783921364"
+    }
+}
+
 // Leaf-Crowned Visionary
 {
     "name": "Leaf-Crowned Visionary",
