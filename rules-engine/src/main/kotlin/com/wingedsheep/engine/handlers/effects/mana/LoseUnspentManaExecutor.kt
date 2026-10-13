@@ -36,8 +36,9 @@ class LoseUnspentManaExecutor(private val cardRegistry: CardRegistry) : EffectEx
                 pool.copy(
                     white = 0, blue = 0, black = 0, red = 0, green = 0, colorless = 0,
                     snowMana = emptyMap(), snowColorless = 0,
+                    manaUnits = pool.manaUnits.map { it.copy(color = conversion) },
                     restrictedMana = pool.restrictedMana.map { it.copy(color = conversion) }
-                ).add(conversion, plainMana)
+                ).add(conversion, plainMana).markSnow(conversion, pool.snowTotal)
             }
             if (updatedPool == pool) continue
             // A converted pool lost nothing: the mana became another colour instead (CR 614.1a).

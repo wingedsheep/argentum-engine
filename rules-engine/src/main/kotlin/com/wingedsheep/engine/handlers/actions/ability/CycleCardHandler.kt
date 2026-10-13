@@ -184,6 +184,7 @@ class CycleCardHandler(
             colorless = poolComponent.colorless,
             restrictedMana = poolComponent.restrictedMana,
             snowMana = poolComponent.snowMana,
+            manaUnits = poolComponent.manaUnits,
             snowColorless = poolComponent.snowColorless
         ).withSpendingColors(currentState, action.playerId)
 
@@ -210,6 +211,7 @@ class CycleCardHandler(
                     colorless = poolAfterPayment.colorless,
                     restrictedMana = poolAfterPayment.restrictedMana,
                     snowMana = poolAfterPayment.snowMana,
+                    manaUnits = poolAfterPayment.manaUnits,
                     snowColorless = poolAfterPayment.snowColorless
                 )
             )

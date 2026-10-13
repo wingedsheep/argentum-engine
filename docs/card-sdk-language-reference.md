@@ -14013,7 +14013,7 @@ forbids `DynamicAmount.X` in card definitions.
   `lifeTotal(player)`, `yourLifeTotal()`, `startingLifeTotal(player)`, `playerCount(scope)`,
   `countPlayersWith(scope, condition)`, `greatestAmongPlayers(inner, players)`,
   `leastAmongPlayers(inner, players)`, `fewestControlledBySinglePlayer(filter, players)`, `totalManaSpent()`,
-  `manaSpentOnX(color)`, `manaSpentFromSubtype(subtype)`, `unspentMana(player)`,
+  `manaSpentOnX(color)`, `manaSpentFromSubtype(subtype, payment)`, `triggerDieResult()`, `unspentMana(player)`,
   `largestSharedCreatureTypeCount(player)`, `craftedMaterialsTotalPower() / TotalManaValue() /
   ColorCount()`, the entity readers `powerOf / toughnessOf / manaValueOf / countersOn /
   manaSpentToCast / propertyOf(entity, property)` (plus the `source…` / `triggering…` shortcuts), and
@@ -14070,13 +14070,18 @@ forbids `DynamicAmount.X` in card definitions.
   trigger's own payment snapshot first), so it resolves on the stack, as the permanent enters
   (`EntersWithDynamicCounters`) and in its enters trigger; 0 for a permanent that wasn't cast. For a
   yes/no "if {W}{W} was spent" use the `ManaSpentToCastIncludes` condition instead.
-- `ManaSpentFromSubtype(subtype)` — how many mana units produced by a source with `subtype` were spent
+- `ManaSpentFromSubtype(subtype, payment = ManaPayment.CAST)` — how many mana units produced by a source with `subtype` were spent
   to cast the current spell. Bat Colony's "create a 1/1 black Bat with flying **for each mana from a
   Cave spent to cast it**" is `ManaSpentFromSubtype(Subtype.CAVE)`. Like `DistinctColorsManaSpent`, it
   resolves off the source entity's recorded provenance (live `SpellOnStackComponent.manaSpentBySubtype`
   on the stack, the resolved permanent's `CastRecordComponent.manaSpentBySubtype` as it enters), so an
   enters-the-battlefield payoff reads it correctly. The subtype is snapshotted at production. 0 for a
   permanent that wasn't cast. See `SpellCastPredicate.PaidWithManaFromSubtype` for the boolean form.
+  `payment = ManaPayment.ACTIVATION` reads only the resolving ability’s own payment, independent
+  of the source’s cast record. Source/color/snow snapshots follow the actual unrestricted and
+  restricted units consumed, including pre-floated mana and source sacrifice, through stack copies
+  and resolution decisions. Mr. House rolls `1 + manaSpentFromSubtype(Subtype.TREASURE,
+  ManaPayment.ACTIVATION)` dice. Unspent output and later activations cannot change that count.
 - `SnowManaSpent` — how much mana from snow sources was spent to cast the current spell: the "{S}
   spent" of CR 107.4h, counting snow mana spent on *any* part of the cost, not only `{S}` pips.
   Berg Strider's "**if {S} was spent to cast this spell**" is

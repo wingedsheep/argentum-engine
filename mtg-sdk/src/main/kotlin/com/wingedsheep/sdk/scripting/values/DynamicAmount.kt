@@ -935,12 +935,16 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
      * correctly whether read while the spell is still on the stack or as the permanent enters and its
      * enters-the-battlefield ability resolves. A permanent put onto the battlefield without being
      * cast spent no mana, so this is 0 for it. The subtype is snapshotted at production, so a
-     * Treasure sacrificed for its own mana still counts.
+     * Treasure sacrificed for its own mana still counts. `payment = ACTIVATION` instead reads the
+     * independently saved payment of the resolving activated ability, never the source’s cast record.
      */
     @SerialName("ManaSpentFromSubtype")
     @Serializable
-    data class ManaSpentFromSubtype(val subtype: com.wingedsheep.sdk.core.Subtype) : DynamicAmount {
-        override val description: String = "the amount of mana from a ${subtype.value} spent to cast this"
+    data class ManaSpentFromSubtype(
+        val subtype: com.wingedsheep.sdk.core.Subtype,
+        val payment: ManaPayment = ManaPayment.CAST,
+    ) : DynamicAmount {
+        override val description: String = "the amount of mana from a ${subtype.value} spent to ${if (payment == ManaPayment.CAST) "cast this" else "activate this ability"}"
     }
 
     /**
@@ -2109,3 +2113,7 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
     }
 
 }
+
+/** Which independently recorded cost supplies a mana provenance amount. */
+@Serializable
+enum class ManaPayment { CAST, ACTIVATION }

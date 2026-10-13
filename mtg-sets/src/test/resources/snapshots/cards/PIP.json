@@ -525,6 +525,120 @@
     }
 }
 
+// Mr. House, President and CEO
+{
+    "name": "Mr. House, President and CEO",
+    "manaCost": "{R}{W}{B}",
+    "typeLine": "Legendary Artifact Creature — Human",
+    "oracleText": "Whenever you roll a 4 or higher, create a 3/3 colorless Robot artifact creature token. If you rolled 6 or higher, instead create that token and a Treasure token.\n{4}, {T}: Roll a six-sided die plus an additional six-sided die for each mana from Treasures spent to activate this ability.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Mr. House, President and CEO:1",
+                "trigger": {
+                    "type": "DieRolledEvent",
+                    "player": "You",
+                    "minimumResult": 4
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CreateToken",
+                            "power": 3,
+                            "toughness": 3,
+                            "colors": [],
+                            "creatureTypes": [
+                                "Robot"
+                            ],
+                            "imageUri": "https://cards.scryfall.io/normal/front/7/6/76cde21f-2f01-4560-972b-7ecd6740d6de.jpg?1783912042",
+                            "artifactToken": true
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "ContextProperty",
+                                        "key": "TRIGGER_DIE_RESULT"
+                                    },
+                                    "operator": "GTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 6
+                                    }
+                                }
+                            },
+                            "then": {
+                                "type": "CreatePredefinedToken",
+                                "tokenType": "Treasure",
+                                "imageUri": "https://cards.scryfall.io/normal/front/1/d/1d74d012-66ca-4a0c-9e90-e31e96730d4d.jpg?1783912040"
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Mr. House, President and CEO:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{4}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "RollDice",
+                    "count": {
+                        "type": "Add",
+                        "left": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "right": {
+                            "type": "ManaSpentFromSubtype",
+                            "subtype": "Treasure",
+                            "payment": "ACTIVATION"
+                        }
+                    }
+                },
+                "descriptionOverride": "Roll a six-sided die, plus one for each Treasure mana spent"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "7",
+        "rarity": "MYTHIC",
+        "artist": "Joseph Meehan",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/3/23eb3cf7-c90d-4bfa-b125-4fbcb5614468.jpg?1783912421",
+        "rulings": [
+            {
+                "date": "2024-03-08",
+                "text": "Some cards from other releases may instruct you to roll dice other than six-sided dice. Results of 4 or higher on those dice cause Mr. House's first ability to trigger."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "The die rolls caused by Mr. House's last ability have no inherent effect. Abilities that trigger whenever you roll dice or whenever you roll a certain result, such as Mr. House's first ability, will trigger as appropriate."
+            }
+        ]
+    }
+}
+
 // Overflowing Basin
 {
     "name": "Overflowing Basin",

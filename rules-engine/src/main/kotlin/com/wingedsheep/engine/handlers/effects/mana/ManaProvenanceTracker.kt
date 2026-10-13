@@ -30,7 +30,7 @@ import com.wingedsheep.sdk.model.EntityId
 object ManaProvenanceTracker {
 
     /**
-     * Snapshot what [sourceId] is right now. Subtypes come from the base [CardComponent.typeLine] —
+     * Snapshot what [sourceId] is right now. Subtypes come from projected state on the battlefield and the base [CardComponent.typeLine] otherwise —
      * the source may already be in the graveyard (a Treasure's `{T}, Sacrifice this` pays the cost
      * before the mana effect resolves), but the entity persists with its base type line intact.
      * Card types read the *projected* type line while the source is on the battlefield, so an
@@ -45,7 +45,17 @@ object ManaProvenanceTracker {
         } else {
             typeLine?.cardTypes ?: emptySet()
         }
-        return ManaSourceTag(sourceId, typeLine?.subtypes?.toSet() ?: emptySet(), cardTypes, isSnowSource(state, sourceId))
+        return ManaSourceTag(sourceId, if (projectedTypes.isNotEmpty()) state.projectedState.getSubtypes(sourceId).mapTo(mutableSetOf()) { com.wingedsheep.sdk.core.Subtype(it) } else typeLine?.subtypes?.toSet() ?: emptySet(), cardTypes, isSnowSource(state, sourceId))
+    }
+
+    private fun sourceTag(state: GameState, sourceId: EntityId,
+                          context: com.wingedsheep.engine.handlers.EffectContext): ManaSourceTag {
+        if (state.projectedState.getTypes(sourceId).isNotEmpty()) return sourceTag(state, sourceId)
+        val snapshot = context.lastKnownSourceSnapshot ?: return sourceTag(state, sourceId)
+        return ManaSourceTag(sourceId,
+            snapshot.subtypes.mapTo(mutableSetOf()) { com.wingedsheep.sdk.core.Subtype(it) },
+            snapshot.typeLine?.cardTypes.orEmpty(),
+            snapshot.supertypes.any { it.equals("Snow", ignoreCase = true) })
     }
 
     /**
@@ -82,12 +92,13 @@ object ManaProvenanceTracker {
      * Increment the producing player's provenance counters when [sourceId] produced [amount]
      * unrestricted mana. A null [sourceId] contributes nothing.
      */
-    fun tagAddedMana(state: GameState, playerId: EntityId, sourceId: EntityId?, amount: Int): GameState {
+    fun tagAddedMana(state: GameState, playerId: EntityId, sourceId: EntityId?, amount: Int, color: Color?, context: com.wingedsheep.engine.handlers.EffectContext): GameState {
         if (amount <= 0 || sourceId == null) return state
-        val tag = sourceTag(state, sourceId)
+        val tag = sourceTag(state, sourceId, context)
         return state.updateEntity(playerId) { container ->
             val pool = container.get<ManaPoolComponent>() ?: ManaPoolComponent()
-            container.with(pool.withProvenance(tag, amount))
+            container.with(pool.withProvenance(tag, amount).copy(manaUnits = pool.manaUnits +
+                List(amount) { com.wingedsheep.engine.mechanics.mana.ManaUnit(color, tag) }))
         }
     }
 
@@ -96,9 +107,9 @@ object ManaProvenanceTracker {
      * restricted mana ("spend this mana only to cast a creature spell") carries its provenance
      * into the payment like unrestricted mana does.
      */
-    fun tagAddedRestrictedMana(state: GameState, playerId: EntityId, sourceId: EntityId?, amount: Int): GameState {
+    fun tagAddedRestrictedMana(state: GameState, playerId: EntityId, sourceId: EntityId?, amount: Int, context: com.wingedsheep.engine.handlers.EffectContext): GameState {
         if (amount <= 0 || sourceId == null) return state
-        val tag = sourceTag(state, sourceId)
+        val tag = sourceTag(state, sourceId, context)
         return state.updateEntity(playerId) { container ->
             val pool = container.get<ManaPoolComponent>() ?: return@updateEntity container
             container.with(pool.withRestrictedProvenance(tag, amount))

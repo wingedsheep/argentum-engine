@@ -159,7 +159,10 @@ private fun ManaPool.matchFloating(
         } else {
             // Deduct the selected snow/plain bucket exactly, independent of pip visitation order.
             val color = unit.color
+            pool = pool.copy(manaUnits = pool.manaUnits.consume(color,
+                if (unit.snow) 0 else count, if (unit.snow) count else 0))
             pool = if (color == null) pool.copy(colorless = pool.colorless - count,
+                manaUnits = pool.manaUnits,
                 snowColorless = pool.snowColorless - if (unit.snow) count else 0)
             else {
                 val nextSnow = (pool.snowMana[color] ?: 0) - if (unit.snow) count else 0

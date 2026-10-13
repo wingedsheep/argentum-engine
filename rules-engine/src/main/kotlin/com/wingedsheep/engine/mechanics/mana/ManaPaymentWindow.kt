@@ -250,7 +250,7 @@ object ManaPaymentWindow {
         val pool = state.getEntity(playerId)
             ?.get<com.wingedsheep.engine.state.components.player.ManaPoolComponent>()
             ?: return cost
-        return ManaPool(pool.white, pool.blue, pool.black, pool.red, pool.green, pool.colorless, restrictedMana = pool.restrictedMana, snowMana = pool.snowMana, snowColorless = pool.snowColorless).withSpendingColors(state, playerId)
+        return ManaPool(pool.white, pool.blue, pool.black, pool.red, pool.green, pool.colorless, restrictedMana = pool.restrictedMana, snowMana = pool.snowMana, manaUnits = pool.manaUnits, snowColorless = pool.snowColorless).withSpendingColors(state, playerId)
             .payPartial(cost, spellContext).remainingCost
     }
 
@@ -271,6 +271,7 @@ object ManaPaymentWindow {
                     snowMana = (pool.snowMana.keys + produced.snowMana.keys).associateWith {
                         (pool.snowMana[it] ?: 0) + (produced.snowMana[it] ?: 0)
                     },
+                    manaUnits = pool.manaUnits,
                     snowColorless = pool.snowColorless + produced.snowColorless
                 )
             )
@@ -382,7 +383,7 @@ object ManaPaymentWindow {
         val pool = state.getEntity(playerId)
             ?.get<com.wingedsheep.engine.state.components.player.ManaPoolComponent>()
             ?: return false
-        return ManaPool(pool.white, pool.blue, pool.black, pool.red, pool.green, pool.colorless, snowMana = pool.snowMana, snowColorless = pool.snowColorless).withSpendingColors(state, playerId)
+        return ManaPool(pool.white, pool.blue, pool.black, pool.red, pool.green, pool.colorless, snowMana = pool.snowMana, manaUnits = pool.manaUnits, snowColorless = pool.snowColorless).withSpendingColors(state, playerId)
             .payPartial(cost)
             .remainingCost
             .isEmpty()
@@ -398,7 +399,7 @@ object ManaPaymentWindow {
         val pool = state.getEntity(decision.playerId)
             ?.get<com.wingedsheep.engine.state.components.player.ManaPoolComponent>()
             ?: return cost
-        return ManaPool(pool.white, pool.blue, pool.black, pool.red, pool.green, pool.colorless, snowMana = pool.snowMana, snowColorless = pool.snowColorless).withSpendingColors(state, decision.playerId)
+        return ManaPool(pool.white, pool.blue, pool.black, pool.red, pool.green, pool.colorless, snowMana = pool.snowMana, manaUnits = pool.manaUnits, snowColorless = pool.snowColorless).withSpendingColors(state, decision.playerId)
             .payPartial(cost)
             .remainingCost
     }

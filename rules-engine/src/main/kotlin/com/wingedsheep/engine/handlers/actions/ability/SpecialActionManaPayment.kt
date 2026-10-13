@@ -59,6 +59,7 @@ internal class SpecialActionManaPayment(
             colorless = poolComponent.colorless,
             restrictedMana = poolComponent.restrictedMana,
             snowMana = poolComponent.snowMana,
+            manaUnits = poolComponent.manaUnits,
             snowColorless = poolComponent.snowColorless
         ).withSpendingColors(currentState, playerId)
         val partial = pool.payPartial(cost)
@@ -83,6 +84,7 @@ internal class SpecialActionManaPayment(
                     colorless = poolAfter.colorless,
                     restrictedMana = poolAfter.restrictedMana,
                     snowMana = poolAfter.snowMana,
+                    manaUnits = poolAfter.manaUnits,
                     snowColorless = poolAfter.snowColorless
                 )
             )

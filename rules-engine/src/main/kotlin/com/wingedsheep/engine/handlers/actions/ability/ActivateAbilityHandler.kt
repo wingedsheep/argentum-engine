@@ -212,6 +212,7 @@ class ActivateAbilityHandler(
                 val remaining = ManaPool(pool.white, pool.blue, pool.black, pool.red, pool.green, pool.colorless,
                     restrictedMana = pool.restrictedMana,
                     snowMana = pool.snowMana,
+                    manaUnits = pool.manaUnits,
                     snowColorless = pool.snowColorless).withSpendingColors(state, action.playerId).payPartial(mana, paymentContext).remainingCost
                 val excluded = if (activation.effectiveCost.hasTapCost()) setOf(action.sourceId) else emptySet()
                 if (manaSolver.solve(state, action.playerId, remaining, excludeSources = excluded, spellContext = paymentContext) == null) {
@@ -629,6 +630,7 @@ class ActivateAbilityHandler(
                 manaBySource = repeatPoolComponent.manaBySource,
                 manaByCardType = repeatPoolComponent.manaByCardType,
                 snowMana = repeatPoolComponent.snowMana,
+                manaUnits = repeatPoolComponent.manaUnits,
                 snowColorless = repeatPoolComponent.snowColorless
             ).withSpendingColors(currentState, action.playerId)
 
@@ -683,6 +685,7 @@ class ActivateAbilityHandler(
                     manaBySource = repeatPoolAfterProvenance.manaBySource,
                     manaByCardType = repeatPoolAfterProvenance.manaByCardType,
                     snowMana = repeatPool.snowMana,
+                    manaUnits = repeatPool.manaUnits,
                     snowColorless = repeatPool.snowColorless
                 ))
             }

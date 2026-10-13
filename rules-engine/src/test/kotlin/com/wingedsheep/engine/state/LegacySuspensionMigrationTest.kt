@@ -281,7 +281,7 @@ class LegacySuspensionMigrationTest : ScenarioTestBase() {
      * independently verifies their capture, retention after departure and serialization.
      */
     private fun normalizeRouting(value: JsonElement, root: Boolean = false): JsonElement = when (value) {
-        is JsonObject -> JsonObject(((if (root) value - "controlAtTurnStart" else value) - "targetObjectRefs" - "referencedObjects" -
+        is JsonObject -> JsonObject(((if (root) value - "controlAtTurnStart" else value) - "targetObjectRefs" - "referencedObjects" - "manaUnits" -
             // The graveyard turn history (Crawling Sensation) postdates the capture.
             "com.wingedsheep.engine.state.components.player.CardsPutIntoGraveyardThisTurnComponent").mapValues { (key, child) ->
             when {
@@ -327,7 +327,9 @@ class LegacySuspensionMigrationTest : ScenarioTestBase() {
                 // Snow-mana tracking (CR 107.4h) postdates the capture.
                 value.getValue("snowMana") shouldBe JsonObject(emptyMap())
                 value.getValue("snowColorless") shouldBe JsonPrimitive(0)
-                value - "snowMana" - "snowColorless"
+                // Exact mana-source units postdate this trace; ActivationManaProvenanceTest
+                // separately verifies their consumption, retention and round-trip serialization.
+                value - "snowMana" - "snowColorless" - "manaUnits"
             } else if (value["type"] == JsonPrimitive(
                     "com.wingedsheep.engine.state.components.player.LandDropsComponent"
                 )) {

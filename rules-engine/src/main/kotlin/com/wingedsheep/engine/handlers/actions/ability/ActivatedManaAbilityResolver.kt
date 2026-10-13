@@ -182,6 +182,8 @@ internal class ActivatedManaAbilityResolver(
             // permanent is already in the graveyard (CR 113.7a); without the snapshots the
             // amount resolves to 0 and the ability produces nothing.
             sacrificedPermanents = sacrificedSnapshots,
+            lastKnownSourceSnapshot = if (state.projectedState.getTypes(action.sourceId).isEmpty())
+                com.wingedsheep.engine.state.components.stack.captureLastKnown(stateBeforeActivation, action.sourceId) else null,
             // Dropped when another player chooses the color at resolution (Spectral Searchlight) —
             // the activator has no say in it, whatever the client sent.
             manaColorChoice = action.manaColorChoice.takeUnless {

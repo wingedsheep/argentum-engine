@@ -206,6 +206,7 @@ class CombatTaxContinuationResumer(
             poolComponent.red, poolComponent.green, poolComponent.colorless,
             restrictedMana = poolComponent.restrictedMana,
             snowMana = poolComponent.snowMana,
+            manaUnits = poolComponent.manaUnits,
             snowColorless = poolComponent.snowColorless
         ).withSpendingColors(state, playerId)
 
@@ -258,6 +259,7 @@ class CombatTaxContinuationResumer(
                     red = newPool.red, green = newPool.green, colorless = newPool.colorless,
                     restrictedMana = newPool.restrictedMana,
                     snowMana = newPool.snowMana,
+                    manaUnits = newPool.manaUnits,
                     snowColorless = newPool.snowColorless
                 )
             )
