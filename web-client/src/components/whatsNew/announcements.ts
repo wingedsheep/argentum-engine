@@ -30,6 +30,16 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: readonly Announcement[] = [
   {
+    id: 'set-bro',
+    date: '2026-10-13',
+    kind: 'set',
+    setCode: 'BRO',
+    title: 'The Brothers’ War is complete',
+    body:
+      'Urza and Mishra’s war over Dominaria is fully playable: artifact creatures you can prototype cheap early or cast full-size late, unearth to drag Mishra’s war machines back for one last attack, Powerstones that only fuel artifacts, and two meld pairs that fuse into Urza, Planeswalker and Mishra, Lost to Phyrexia. Decks lean hard on artifacts and reward building a war machine turn by turn.',
+    tryIf: 'artifact synergies, flexible-cost threats and graveyard recursion',
+  },
+  {
     id: 'feature-dungeons-initiative',
     date: '2026-10-12',
     kind: 'feature',

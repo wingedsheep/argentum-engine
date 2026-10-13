@@ -28,15 +28,19 @@ import io.kotest.matchers.shouldNotBe
 class UrzaLordProtectorScenarioTest : ScenarioTestBase() {
     private val urza = "Urza, Lord Protector"
 
-    private fun board(withMightstone: Boolean = true, activePlayer: Int = 1): TestGame {
+    private fun board(
+        withMightstone: Boolean = true,
+        phase: Phase = Phase.PRECOMBAT_MAIN,
+        step: Step = Step.PRECOMBAT_MAIN,
+    ): TestGame {
         var b = scenario()
             .withPlayers("Player", "Opponent")
             .withCardOnBattlefield(1, urza)
             .withLandsOnBattlefield(1, "Island", 7)
             .withCardInLibrary(1, "Island")
             .withCardInLibrary(2, "Island")
-            .withActivePlayer(activePlayer)
-            .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+            .withActivePlayer(1)
+            .inPhase(phase, step)
         if (withMightstone) b = b.withCardOnBattlefield(1, "The Mightstone and Weakstone")
         return b.build()
     }
@@ -80,8 +84,8 @@ class UrzaLordProtectorScenarioTest : ScenarioTestBase() {
             game.isInExile(1, urza) shouldBe false
         }
 
-        test("activate only as a sorcery: not during the opponent's turn") {
-            val game = board(activePlayer = 2)
+        test("activate only as a sorcery: not with priority outside a main phase") {
+            val game = board(phase = Phase.COMBAT, step = Step.BEGIN_COMBAT)
 
             game.execute(game.meldAction()).error shouldNotBe null
             game.findPermanent(urza).shouldNotBeNull()

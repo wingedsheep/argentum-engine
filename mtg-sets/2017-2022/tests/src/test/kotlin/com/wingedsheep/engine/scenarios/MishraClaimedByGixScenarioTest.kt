@@ -90,5 +90,18 @@ class MishraClaimedByGixScenarioTest : ScenarioTestBase() {
             game.findPermanent(mishra).shouldNotBeNull()
             game.findPermanent(lost) shouldBe null
         }
+
+        test("a Dragon Engine that stays home doesn't meld; only Mishra's attack is counted") {
+            val game = board(engine)
+
+            game.declareAttackers(mapOf(mishra to 2)).error shouldBe null
+            game.resolveStack()
+
+            game.getLifeTotal(2) shouldBe 19
+            game.getLifeTotal(1) shouldBe 21
+            game.findPermanent(mishra).shouldNotBeNull()
+            game.findPermanent(engine).shouldNotBeNull()
+            game.findPermanent(lost) shouldBe null
+        }
     }
 }
