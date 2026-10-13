@@ -2,7 +2,7 @@
 
 **Set Size:** 336 cards
 **Release Date:** March 8, 2024
-**Implemented:** 138 / 336
+**Implemented:** 139 / 336
 | Section    | Total | Done |
 |------------|-------|------|
 | Extras     | 336   | 129  |
