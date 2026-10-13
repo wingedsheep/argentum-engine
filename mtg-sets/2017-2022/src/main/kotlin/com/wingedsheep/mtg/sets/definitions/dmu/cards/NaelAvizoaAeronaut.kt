@@ -7,7 +7,6 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.conditions.ComparisonOperator
 import com.wingedsheep.sdk.scripting.effects.CardOrder
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.events.Recipient
@@ -60,11 +59,7 @@ val NaelAvizoaAeronaut = card("Nael, Avizoa Aeronaut") {
             toLibraryBottom(split.remainder, order = CardOrder.Random)
         } then
             Effects.If(
-                condition = Conditions.CompareAmounts(
-                    DynamicAmounts.domain(),
-                    ComparisonOperator.GTE,
-                    DynamicAmounts.fixed(5)
-                ),
+                condition = Conditions.BasicLandTypesAtLeast(5),
                 then = Effects.DrawCards(1)
             )
     }

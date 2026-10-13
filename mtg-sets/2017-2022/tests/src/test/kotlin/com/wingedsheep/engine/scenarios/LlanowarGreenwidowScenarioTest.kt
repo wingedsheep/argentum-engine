@@ -22,6 +22,11 @@ import io.kotest.matchers.shouldNotBe
  */
 class LlanowarGreenwidowScenarioTest : ScenarioTestBase() {
 
+    private fun TestGame.untappedLands(): Int = state.getBattlefield(player1Id).count { id ->
+        val entity = state.getEntity(id)
+        entity?.get<CardComponent>()?.typeLine?.isLand == true && !entity.has<TappedComponent>()
+    }
+
     private fun abilityId() = cardRegistry.getCard("Llanowar Greenwidow")!!.activatedAbilities.first().id
 
     private fun ScenarioBuilder.domainFive(): ScenarioBuilder = this
@@ -52,6 +57,9 @@ class LlanowarGreenwidowScenarioTest : ScenarioTestBase() {
                 )
                 withClue("{7}{G} less 5 for domain is {2}{G}: ${result.error}") {
                     result.error shouldBe null
+                }
+                withClue("exactly three of the seven lands were tapped for {2}{G}") {
+                    game.untappedLands() shouldBe 4
                 }
                 game.resolveStack()
 

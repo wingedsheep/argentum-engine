@@ -1,5 +1,7 @@
 package com.wingedsheep.engine.scenarios
 
+import com.wingedsheep.engine.state.components.battlefield.TappedComponent
+import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
@@ -19,6 +21,11 @@ import io.kotest.matchers.shouldNotBe
  */
 class LeylineBindingScenarioTest : ScenarioTestBase() {
 
+    private fun TestGame.untappedLands(): Int = state.getBattlefield(player1Id).count { id ->
+        val entity = state.getEntity(id)
+        entity?.get<CardComponent>()?.typeLine?.isLand == true && !entity.has<TappedComponent>()
+    }
+
     init {
         test("four basic land types make it cost {1}{W}; the trigger exiles the target") {
             val game = scenario()
@@ -36,6 +43,9 @@ class LeylineBindingScenarioTest : ScenarioTestBase() {
 
             withClue("four lands pay only the domain-discounted {1}{W}") {
                 game.castSpell(1, "Leyline Binding").error shouldBe null
+            }
+            withClue("exactly two of the four lands were tapped for {1}{W}") {
+                game.untappedLands() shouldBe 2
             }
             game.resolveStack()
             game.selectTargets(listOf(bears)).error shouldBe null
