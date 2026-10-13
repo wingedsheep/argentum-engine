@@ -6033,6 +6033,143 @@
     ]
 }
 
+// The Phasing of Zhalfir
+{
+    "name": "The Phasing of Zhalfir",
+    "manaCost": "{2}{U}{U}",
+    "typeLine": "Enchantment — Saga",
+    "oracleText": "Read ahead (Choose a chapter and start with that many lore counters. Add one after your draw step. Skipped chapters don't trigger. Sacrifice after III.)\nI, II — Another target nonland permanent phases out. It can't phase in for as long as you control this Saga.\nIII — Destroy all creatures. For each creature destroyed this way, its controller creates a 2/2 black Phyrexian creature token.",
+    "keywords": [
+        "READ_AHEAD"
+    ],
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "EntersWithChoice",
+                "choiceType": "NUMBER",
+                "minValue": 1,
+                "maxValue": 3
+            }
+        ],
+        "sagaChapters": [
+            {
+                "chapter": 1,
+                "effect": {
+                    "type": "PhaseOut",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "cantPhaseInWhileYouControlSource": true
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "nonland permanent",
+                        "excludeSelf": true
+                    },
+                    "id": "t0"
+                }
+            },
+            {
+                "chapter": 2,
+                "effect": {
+                    "type": "PhaseOut",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    },
+                    "cantPhaseInWhileYouControlSource": true
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "nonland permanent",
+                        "excludeSelf": true
+                    },
+                    "id": "t1"
+                }
+            },
+            {
+                "chapter": 3,
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "BattlefieldMatching",
+                                        "filter": "creature"
+                                    },
+                                    "storeAs": "destroyAll_gathered"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "destroyAll_gathered",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Graveyard"
+                                    },
+                                    "moveType": "Destroy",
+                                    "storeMovedAs": "stored0"
+                                }
+                            ]
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Collection",
+                                "collection": "stored0"
+                            },
+                            "body": {
+                                "type": "CreateToken",
+                                "power": 2,
+                                "toughness": 2,
+                                "colors": [
+                                    "BLACK"
+                                ],
+                                "creatureTypes": [
+                                    "Phyrexian"
+                                ],
+                                "controller": {
+                                    "type": "PlayerRef",
+                                    "player": "ControllerOfIterationEntity"
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "59",
+        "rarity": "RARE",
+        "artist": "L.A. Draws",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/7/0770eb6a-4f01-4677-a401-14c1b30692c9.jpg?1783921347",
+        "rulings": [
+            {
+                "date": "2022-09-09",
+                "text": "Permanents that phase out as The Phasing of Zhalfir's first and second chapter abilities resolve don't phase in during their controllers' untap steps while the Saga is on the battlefield. After it leaves the battlefield, they will phase in during their controller's next untap step as normal."
+            },
+            {
+                "date": "2022-09-09",
+                "text": "As a permanent is phased out, Auras and Equipment attached to it also phase out at the same time. Those Auras and Equipment will phase in at the same time that permanent does, and they'll phase in still attached to it."
+            },
+            {
+                "date": "2022-09-09",
+                "text": "As a Saga with read ahead enters the battlefield, its controller chooses a number from one to that Saga's greatest chapter number. The Saga enters the battlefield with the chosen number of lore counters. Neither choosing the number nor putting the counters on the Saga use the stack, and neither can be responded to."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Thran Portal
 {
     "name": "Thran Portal",

@@ -105,7 +105,9 @@ data class ModalContinuation(
 data class PreTargetedEffectEntry(
     val effect: @Serializable Effect,
     val targets: List<ChosenTarget>,
-    val targetRequirements: List<@Serializable TargetRequirement>
+    val targetRequirements: List<@Serializable TargetRequirement>,
+    /** Null means the queue must validate; otherwise these are the resolution-validated slots. */
+    val alignedTargets: List<ChosenTarget?>? = null
 )
 
 /**
@@ -126,6 +128,7 @@ data class PreTargetedEffectEntry(
  */
 @Serializable
 data class ModalPreChosenContinuation(
+    val baseContext: com.wingedsheep.engine.handlers.EffectContext? = null,
     val controllerId: EntityId,
     val sourceId: EntityId?,
     val sourceName: String?,

@@ -7,8 +7,7 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.TimingRule
-import com.wingedsheep.sdk.scripting.effects.Mode
-import com.wingedsheep.sdk.scripting.effects.ModalEffect
+import com.wingedsheep.sdk.scripting.effects.EffectChoice
 import com.wingedsheep.sdk.scripting.effects.SearchDestination
 
 /**
@@ -33,12 +32,20 @@ val TransmutationFont = card("Transmutation Font") {
     // {T}: Create your choice of a Blood token, a Clue token, or a Food token.
     activatedAbility {
         cost = Costs.Tap
-        effect = ModalEffect.chooseOne(
-            Mode.noTarget(Effects.CreateBlood(), "Create a Blood token"),
-            Mode.noTarget(Effects.CreateClue(), "Create a Clue token"),
-            Mode.noTarget(Effects.CreateFood(), "Create a Food token"),
-            countsAsModalSpell = false
-        )
+        effect = Effects.ChooseAction(listOf(
+            EffectChoice(
+                label = "Create a Blood token",
+                effect = Effects.CreateBlood(),
+            ),
+            EffectChoice(
+                label = "Create a Clue token",
+                effect = Effects.CreateClue(),
+            ),
+            EffectChoice(
+                label = "Create a Food token",
+                effect = Effects.CreateFood(),
+            )
+        ))
     }
 
     // {3}, {T}, Sacrifice three artifact tokens with different names:

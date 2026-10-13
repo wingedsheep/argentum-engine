@@ -218,6 +218,10 @@ export interface ActivateAbilityAction {
   readonly sourceId: EntityId
   readonly abilityId: string
   readonly targets?: readonly ChosenTarget[]
+  /** Announcement-time modes. Absent/null asks the server to collect the choice before payment. */
+  readonly chosenModes?: readonly number[] | null
+  readonly modeTargetGroupCountsOrdered?: readonly (readonly number[])[]
+  readonly modeTargetsOrdered?: readonly (readonly ChosenTarget[])[]
   /** How many of `targets` each target requirement owns, in requirement order (CR 601.2c). */
   readonly targetGroupCounts?: readonly number[]
   /** Payment choices for ability costs (sacrifice, etc.) */

@@ -6,8 +6,7 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.effects.ModalEffect
-import com.wingedsheep.sdk.scripting.effects.Mode
+import com.wingedsheep.sdk.scripting.effects.EffectChoice
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 /**
@@ -31,20 +30,20 @@ val ButcherOfTheHorde = card("Butcher of the Horde") {
 
     activatedAbility {
         cost = Costs.SacrificeAnother(GameObjectFilter.Creature)
-        effect = ModalEffect.chooseOne(
-            Mode.noTarget(
-                Effects.GrantKeyword(Keyword.VIGILANCE, EffectTarget.Self),
-                "This creature gains vigilance until end of turn"
+        effect = Effects.ChooseAction(listOf(
+            EffectChoice(
+                label = "This creature gains vigilance until end of turn",
+                effect = Effects.GrantKeyword(Keyword.VIGILANCE, EffectTarget.Self),
             ),
-            Mode.noTarget(
-                Effects.GrantKeyword(Keyword.LIFELINK, EffectTarget.Self),
-                "This creature gains lifelink until end of turn"
+            EffectChoice(
+                label = "This creature gains lifelink until end of turn",
+                effect = Effects.GrantKeyword(Keyword.LIFELINK, EffectTarget.Self),
             ),
-            Mode.noTarget(
-                Effects.GrantKeyword(Keyword.HASTE, EffectTarget.Self),
-                "This creature gains haste until end of turn"
+            EffectChoice(
+                label = "This creature gains haste until end of turn",
+                effect = Effects.GrantKeyword(Keyword.HASTE, EffectTarget.Self),
             )
-        )
+        ))
         description = "Sacrifice another creature: This creature gains your choice of vigilance, lifelink, or haste until end of turn."
     }
 

@@ -9856,30 +9856,29 @@
                     ]
                 },
                 "effect": {
-                    "type": "Modal",
-                    "modes": [
+                    "type": "ChooseAction",
+                    "choices": [
                         {
+                            "label": "Lock a door",
                             "effect": {
                                 "type": "LockDoor",
                                 "target": {
                                     "type": "BoundVariable",
                                     "name": "t0"
                                 }
-                            },
-                            "description": "Lock a door"
+                            }
                         },
                         {
+                            "label": "Unlock a door",
                             "effect": {
                                 "type": "UnlockDoor",
                                 "target": {
                                     "type": "BoundVariable",
                                     "name": "t0"
                                 }
-                            },
-                            "description": "Unlock a door"
+                            }
                         }
-                    ],
-                    "countsAsModalSpell": false
+                    ]
                 },
                 "targetRequirements": [
                     {
@@ -10907,30 +10906,29 @@
                 "id": "Marina Vendrell:2",
                 "cost": "CostTap",
                 "effect": {
-                    "type": "Modal",
-                    "modes": [
+                    "type": "ChooseAction",
+                    "choices": [
                         {
+                            "label": "Lock a door",
                             "effect": {
                                 "type": "LockDoor",
                                 "target": {
                                     "type": "BoundVariable",
                                     "name": "t0"
                                 }
-                            },
-                            "description": "Lock a door"
+                            }
                         },
                         {
+                            "label": "Unlock a door",
                             "effect": {
                                 "type": "UnlockDoor",
                                 "target": {
                                     "type": "BoundVariable",
                                     "name": "t0"
                                 }
-                            },
-                            "description": "Unlock a door"
+                            }
                         }
-                    ],
-                    "countsAsModalSpell": false
+                    ]
                 },
                 "targetRequirements": [
                     {

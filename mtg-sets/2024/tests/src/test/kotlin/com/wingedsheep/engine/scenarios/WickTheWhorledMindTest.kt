@@ -1,7 +1,6 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.ActivateAbility
-import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.mtg.sets.definitions.blb.cards.WickTheWhorledMind
@@ -77,7 +76,6 @@ class WickTheWhorledMindTest : FunSpec({
                 playerId = activePlayer,
                 sourceId = wick,
                 abilityId = sacrificeAbilityId,
-                targets = listOf(ChosenTarget.Player(opponent)),
                 costPayment = AdditionalCostPayment(sacrificedPermanents = listOf(snail))
             )
         )
@@ -119,7 +117,6 @@ class WickTheWhorledMindTest : FunSpec({
                 playerId = activePlayer,
                 sourceId = wick,
                 abilityId = sacrificeAbilityId,
-                targets = listOf(ChosenTarget.Player(opponent)),
                 costPayment = AdditionalCostPayment(sacrificedPermanents = listOf(snail))
             )
         )

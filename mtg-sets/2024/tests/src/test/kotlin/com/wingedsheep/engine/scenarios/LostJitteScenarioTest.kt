@@ -103,13 +103,13 @@ class LostJitteScenarioTest : FunSpec({
         val result = driver.submit(
             ActivateAbility(playerId = me, sourceId = jitte, abilityId = abilityId)
         )
-        result.outcome shouldBe Outcome.Done
+        (result.outcome is Outcome.Paused) shouldBe true
 
-        driver.bothPass() // resolve → mode choice
 
         // Choose "Put a +1/+1 counter on equipped creature" (mode 2)
         val modeDecision = driver.pendingDecision as ChooseOptionDecision
-        driver.submitDecision(me, OptionChosenResponse(modeDecision.id, 2))
+        driver.submitDecision(me, OptionChosenResponse(modeDecision.id, modeDecision.options.indexOfFirst { it.contains("+1/+1") }))
+        driver.bothPass()
 
         // The charge counter was removed as the cost, and the creature grew.
         driver.chargeCounters(jitte) shouldBe 0
@@ -137,7 +137,6 @@ class LostJitteScenarioTest : FunSpec({
 
         val abilityId = LostJitte.activatedAbilities[0].id
         driver.submit(ActivateAbility(playerId = me, sourceId = jitte, abilityId = abilityId))
-        driver.bothPass() // resolve → mode choice
 
         // Choose "Untap target land" (mode 0)
         val modeDecision = driver.pendingDecision as ChooseOptionDecision

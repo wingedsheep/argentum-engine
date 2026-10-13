@@ -2,7 +2,7 @@
 
 **Set Size:** 336 cards
 **Release Date:** March 8, 2024
-**Implemented:** 131 / 336
+**Implemented:** 132 / 336
 | Section    | Total | Done |
 |------------|-------|------|
 | Extras     | 336   | 129  |
@@ -273,7 +273,7 @@
 - [x] Sunpetal Grove
 - [x] Sunscorched Divide
 - [ ] Super Mutant Scavenger
-- [ ] Survivor's Med Kit
+- [x] Survivor's Med Kit
 - [ ] Swamp
 - [x] Swiftfoot Boots
 - [x] Swords to Plowshares

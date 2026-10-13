@@ -83,7 +83,7 @@ class CankerbloomScenarioTest : ScenarioTestBase() {
 
             val modeDecision = game.state.pendingDecision as? ChooseOptionDecision
                 ?: error("expected a ChooseOptionDecision; got ${game.state.pendingDecision}")
-            game.submitDecision(OptionChosenResponse(modeDecision.id, optionIndex = 2))
+            game.submitDecision(OptionChosenResponse(modeDecision.id, optionIndex = modeDecision.options.indexOfFirst { it.contains("proliferate", ignoreCase = true) }))
 
             var prompts = 0
             var guard = 0

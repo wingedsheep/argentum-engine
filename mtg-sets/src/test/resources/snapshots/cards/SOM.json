@@ -1914,9 +1914,10 @@
                     }
                 },
                 "effect": {
-                    "type": "Modal",
-                    "modes": [
+                    "type": "ChooseAction",
+                    "choices": [
                         {
+                            "label": "It gains flying until end of turn",
                             "effect": {
                                 "type": "GrantKeyword",
                                 "keyword": "FLYING",
@@ -1924,10 +1925,10 @@
                                     "type": "BoundVariable",
                                     "name": "t1"
                                 }
-                            },
-                            "description": "It gains flying until end of turn"
+                            }
                         },
                         {
+                            "label": "It gains trample until end of turn",
                             "effect": {
                                 "type": "GrantKeyword",
                                 "keyword": "TRAMPLE",
@@ -1935,10 +1936,10 @@
                                     "type": "BoundVariable",
                                     "name": "t1"
                                 }
-                            },
-                            "description": "It gains trample until end of turn"
+                            }
                         },
                         {
+                            "label": "It gains haste until end of turn",
                             "effect": {
                                 "type": "GrantKeyword",
                                 "keyword": "HASTE",
@@ -1946,11 +1947,9 @@
                                     "type": "BoundVariable",
                                     "name": "t1"
                                 }
-                            },
-                            "description": "It gains haste until end of turn"
+                            }
                         }
-                    ],
-                    "countsAsModalSpell": false
+                    ]
                 },
                 "targetRequirements": [
                     {

@@ -458,7 +458,13 @@ data class ActivateAbility(
      */
     val opponentTargetsChosen: Boolean = false,
     /** Per-requirement target counts, as for [CastSpell.targetGroupCounts]. */
-    val targetGroupCounts: List<Int>? = null
+    val targetGroupCounts: List<Int>? = null,
+    /** Null requests announcement-time mode selection; an empty list explicitly chooses none. */
+    val chosenModes: List<Int>? = null,
+    /** Explicit per-requirement target counts for each mode occurrence. */
+    val modeTargetGroupCountsOrdered: List<List<Int>> = emptyList(),
+    /** Per-mode target bindings, aligned with chosenModes, in addition to outer ability targets. */
+    val modeTargetsOrdered: List<List<ChosenTarget>> = emptyList()
 ) : GameAction
 
 // =============================================================================

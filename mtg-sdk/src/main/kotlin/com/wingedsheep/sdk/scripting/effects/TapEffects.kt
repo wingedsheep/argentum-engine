@@ -47,13 +47,25 @@ data class TapUntapCollectionEffect(
  *
  * Used as the "suffer" effect of a pay-or-phase trigger
  * (e.g. Vaporous Djinn: "phases out unless you pay {U}{U}").
+ *
+ * @property cantPhaseInWhileYouControlSource "It can't phase in for as long as you control this
+ *   Saga" (The Phasing of Zhalfir). The permanent skips its untap-step phase-in while the effect's
+ *   controller controls the source; once that ends (the source leaves or changes hands) the
+ *   prohibition is gone for good, and it phases in at its controller's next untap step — not
+ *   immediately, which is what separates this from [PhaseOutUntilLeavesEffect].
  */
 @SerialName("PhaseOut")
 @Serializable
 data class PhaseOutEffect(
-    val target: EffectTarget = EffectTarget.Self
+    val target: EffectTarget = EffectTarget.Self,
+    val cantPhaseInWhileYouControlSource: Boolean = false
 ) : Effect {
-    override val description: String = "${target.description} phases out"
+    override val description: String = buildString {
+        append("${target.description} phases out")
+        if (cantPhaseInWhileYouControlSource) {
+            append(". It can't phase in for as long as you control this permanent")
+        }
+    }
 }
 
 /**

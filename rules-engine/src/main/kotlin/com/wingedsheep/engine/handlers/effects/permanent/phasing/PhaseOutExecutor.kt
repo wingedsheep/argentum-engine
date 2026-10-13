@@ -7,6 +7,7 @@ import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.AttachmentsComponent
+import com.wingedsheep.engine.state.components.battlefield.PhaseInLock
 import com.wingedsheep.engine.state.components.battlefield.PhasedOutComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.model.EntityId
@@ -44,12 +45,23 @@ class PhaseOutExecutor : EffectExecutor<PhaseOutEffect> {
         // Indirect phasing: the permanent and everything attached to it phase out together.
         val toPhaseOut = collectWithAttachments(state, targetId)
 
+        // "It can't phase in for as long as you control [source]": lock the permanent and its
+        // indirectly phased attachments, which phase back in with it. A source already gone has
+        // nothing to lock against, so the permanent phases out normally.
+        val lock = if (effect.cantPhaseInWhileYouControlSource) {
+            context.sourceId
+                ?.takeIf { it in state.getBattlefield() }
+                ?.let { PhaseInLock(it, context.controllerId) }
+        } else null
+
         var newState = state
         val events = mutableListOf<GameEvent>()
         for (entityId in toPhaseOut) {
             if (newState.getEntity(entityId)?.has<PhasedOutComponent>() == true) continue
             val name = newState.getEntity(entityId)?.get<CardComponent>()?.name ?: "Permanent"
-            newState = newState.updateEntity(entityId) { it.with(PhasedOutComponent(controllerId)) }
+            newState = newState.updateEntity(entityId) {
+                it.with(PhasedOutComponent(controllerId, phaseInLock = lock))
+            }
             events.add(PhasedOutEvent(entityId, name))
         }
 

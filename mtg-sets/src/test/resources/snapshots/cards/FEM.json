@@ -926,9 +926,10 @@
                     ]
                 },
                 "effect": {
-                    "type": "Modal",
-                    "modes": [
+                    "type": "ChooseAction",
+                    "choices": [
                         {
+                            "label": "Put a +0/+1 counter on it",
                             "effect": {
                                 "type": "AddCounters",
                                 "counterType": "PLUS_ZERO_PLUS_ONE",
@@ -937,10 +938,10 @@
                                     "type": "BoundVariable",
                                     "name": "t0"
                                 }
-                            },
-                            "description": "Put a +0/+1 counter on it"
+                            }
                         },
                         {
+                            "label": "Put a +1/+0 counter on it",
                             "effect": {
                                 "type": "AddCounters",
                                 "counterType": "PLUS_ONE_PLUS_ZERO",
@@ -949,11 +950,9 @@
                                     "type": "BoundVariable",
                                     "name": "t0"
                                 }
-                            },
-                            "description": "Put a +1/+0 counter on it"
+                            }
                         }
-                    ],
-                    "countsAsModalSpell": false
+                    ]
                 },
                 "targetRequirements": [
                     {

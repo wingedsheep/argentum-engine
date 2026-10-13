@@ -48,8 +48,23 @@ data class PhasedOutComponent(
      */
     val phaseInOnSourceLeaves: EntityId? = null,
     /** Tap this permanent when it phases back in (Oubliette: "Tap that creature as it phases in"). */
-    val tapOnPhaseIn: Boolean = false
+    val tapOnPhaseIn: Boolean = false,
+    /**
+     * When non-null, this permanent "can't phase in for as long as [PhaseInLock.controllerId]
+     * controls [PhaseInLock.sourceId]" (The Phasing of Zhalfir). The untap step skips it while the
+     * lock is present; `EndedDurationExpiryCheck` removes the lock the moment the source leaves the
+     * battlefield or changes controller (one-way, CR 611.2b). Releasing the lock does not phase the
+     * permanent in — it phases in at its controller's next untap step like any other.
+     */
+    val phaseInLock: PhaseInLock? = null
 ) : Component
+
+/** The "for as long as you control [sourceId]" prohibition on a [PhasedOutComponent]'s phase-in. */
+@Serializable
+data class PhaseInLock(
+    val sourceId: EntityId,
+    val controllerId: EntityId
+)
 
 /**
  * Marks a permanent as having been cast from its controller's hand.
@@ -776,7 +791,7 @@ data class AbilityActivatedEverComponent(
  *
  * NOT cleared at end of turn — the memory persists for as long as the permanent
  * remains the same object on the battlefield (it resets when the permanent leaves
- * and returns as a new object, per CR 700.4 / object identity).
+ * and returns as a new object).
  */
 @Serializable
 data class ChosenModesEverComponent(
@@ -796,7 +811,7 @@ data class ChosenModesEverComponent(
  *
  * The turn-scoped sibling of [ChosenModesEverComponent]: cleared at end of turn by
  * CleanupPhaseManager, so every mode becomes available again next turn. Keyed to the source
- * object, so two copies of the same source track their chosen modes independently (CR 700.4).
+ * object, so two copies of the same source track their chosen modes independently.
  */
 @Serializable
 data class ChosenModesThisTurnComponent(

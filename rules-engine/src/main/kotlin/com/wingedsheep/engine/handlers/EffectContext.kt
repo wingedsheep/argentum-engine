@@ -202,6 +202,8 @@ data class EffectContext(
      * [modeTargetsOrdered] instead of prompting for a mode decision.
      */
     val chosenModes: List<Int> = emptyList(),
+    /** Activation-bound requirements per occurrence, including repeated modes with different counts. */
+    val modeTargetRequirementsOrdered: List<List<TargetRequirement>> = emptyList(),
     val modeTargetsOrdered: List<List<ChosenTarget>> = emptyList(),
     val modeTargetRequirements: Map<Int, List<TargetRequirement>> = emptyMap(),
     /** Number of cards exiled as an additional cost (for ExileVariableCards) */

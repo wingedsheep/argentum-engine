@@ -12034,18 +12034,19 @@
                     }
                 },
                 "effect": {
-                    "type": "Modal",
-                    "modes": [
+                    "type": "ChooseAction",
+                    "choices": [
                         {
+                            "label": "Put a plague counter on this artifact",
                             "effect": {
                                 "type": "AddCounters",
                                 "counterType": "PLAGUE",
                                 "count": 1,
                                 "target": "Self"
-                            },
-                            "description": "Put a plague counter on this artifact"
+                            }
                         },
                         {
+                            "label": "Remove a plague counter from this artifact",
                             "effect": {
                                 "type": "RemoveCounters",
                                 "counterType": "PLAGUE",
@@ -12054,8 +12055,7 @@
                                     "amount": 1
                                 },
                                 "target": "Self"
-                            },
-                            "description": "Remove a plague counter from this artifact"
+                            }
                         }
                     ]
                 },

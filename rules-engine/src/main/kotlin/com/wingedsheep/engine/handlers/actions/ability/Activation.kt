@@ -39,10 +39,15 @@ internal data class Activation(
     /** The ability's target requirements with text-changing effects applied. */
     val targetRequirements: List<TargetRequirement>
         get() = if (textReplacement != null) {
-            ability.targetRequirements.map { it.applyTextReplacement(textReplacement) }
+            (ability.targetRequirements + modalTargetRequirements()).map { it.applyTextReplacement(textReplacement) }
         } else {
-            ability.targetRequirements
+            ability.targetRequirements + modalTargetRequirements()
         }
+
+    private fun modalTargetRequirements(): List<TargetRequirement> =
+        ((ability.effect as? com.wingedsheep.sdk.scripting.effects.ModalEffect))?.let { modal ->
+            action.chosenModes.orEmpty().flatMap { modal.modes[it].targetRequirements }
+        } ?: emptyList()
 
     val variablePermanentsCost: CostAtom.VariablePermanents?
         get() = effectiveCost.extractVariablePermanentsCost()

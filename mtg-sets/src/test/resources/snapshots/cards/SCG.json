@@ -5462,9 +5462,10 @@
                     }
                 },
                 "effect": {
-                    "type": "Modal",
-                    "modes": [
+                    "type": "ChooseAction",
+                    "choices": [
                         {
+                            "label": "Enchanted creature gets +1/-1 until end of turn",
                             "effect": {
                                 "type": "ModifyStats",
                                 "powerModifier": {
@@ -5476,10 +5477,10 @@
                                     "amount": -1
                                 },
                                 "target": "EnchantedCreature"
-                            },
-                            "description": "Enchanted creature gets +1/-1 until end of turn"
+                            }
                         },
                         {
+                            "label": "Enchanted creature gets -1/+1 until end of turn",
                             "effect": {
                                 "type": "ModifyStats",
                                 "powerModifier": {
@@ -5491,8 +5492,7 @@
                                     "amount": 1
                                 },
                                 "target": "EnchantedCreature"
-                            },
-                            "description": "Enchanted creature gets -1/+1 until end of turn"
+                            }
                         }
                     ]
                 },

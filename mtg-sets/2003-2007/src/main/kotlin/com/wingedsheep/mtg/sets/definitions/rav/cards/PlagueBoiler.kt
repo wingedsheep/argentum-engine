@@ -8,8 +8,7 @@ import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.effects.ModalEffect
-import com.wingedsheep.sdk.scripting.effects.Mode
+import com.wingedsheep.sdk.scripting.effects.EffectChoice
 import com.wingedsheep.sdk.scripting.effects.SuccessCriterion
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.core.Step
@@ -63,16 +62,16 @@ val PlagueBoiler = card("Plague Boiler") {
 
     activatedAbility {
         cost = Costs.Mana("{1}{B}{G}")
-        effect = ModalEffect.chooseOne(
-            Mode.noTarget(
-                Effects.AddCounters(CounterType.PLAGUE, 1, EffectTarget.Self),
-                "Put a plague counter on this artifact"
+        effect = Effects.ChooseAction(listOf(
+            EffectChoice(
+                label = "Put a plague counter on this artifact",
+                effect = Effects.AddCounters(CounterType.PLAGUE, 1, EffectTarget.Self),
             ),
-            Mode.noTarget(
-                Effects.RemoveCounters(CounterType.PLAGUE, 1, EffectTarget.Self),
-                "Remove a plague counter from this artifact"
+            EffectChoice(
+                label = "Remove a plague counter from this artifact",
+                effect = Effects.RemoveCounters(CounterType.PLAGUE, 1, EffectTarget.Self),
             )
-        )
+        ))
         description = "{1}{B}{G}: Put a plague counter on this artifact or remove a plague " +
             "counter from it."
     }

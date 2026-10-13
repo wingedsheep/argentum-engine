@@ -35,16 +35,12 @@ import kotlin.reflect.KClass
  *
  * - **Resolution-time mode picking**: whatever arrives here with `chosenModes` empty. The executor
  *   presents a [ChooseOptionDecision] inline, pushes [ModalContinuation], and the modal-and-clone
- *   resumer drives target selection via `processChosenModeQueue`. Two populations still take this
- *   path:
- *   - modal **activated** abilities, which don't go through the cast pipeline; and
- *   - a [ModalEffect] **nested inside another effect** — inside a gated effect, a reflexive
- *     trigger, a pipeline step — where the mode question isn't the spell's or ability's own.
+ *   resumer drives target selection via `processChosenModeQueue`. This serves a [ModalEffect]
+ *   nested inside another effect, where the mode question is not the ability's own.
  *
- *   Modal *triggered* abilities do **not**: their top-level modes and per-mode targets are picked
- *   as the ability is put onto the stack (CR 603.3c / 700.2b, and 603.3d for the targets) by
- *   [com.wingedsheep.engine.event.TriggerProcessor], so they reach this executor pre-chosen just
- *   like a cast spell.
+ *   Top-level activated abilities announce modes and targets through ActivateAbilityHandler;
+ *   triggered abilities do so through [com.wingedsheep.engine.event.TriggerProcessor]. Both
+ *   reach this executor pre-chosen, like a cast spell.
  *
  * @param effectExecutor Function to execute a sub-effect (provided by registry)
  */
@@ -69,9 +65,7 @@ class ModalEffectExecutor(
             return executePreChosenModes(state, effect, context)
         }
 
-        // Mode not pre-chosen — present mode selection decision (triggered/activated
-        // modal abilities, rule 603.3c; modal spells always arrive pre-chosen via the
-        // cast-time picker in CastSpellHandler).
+        // Nested modal choice — top-level spells and abilities arrive pre-chosen.
         val playerId = context.controllerId
 
         val sourceName = context.sourceId?.let { sourceId ->
@@ -178,12 +172,24 @@ class ModalEffectExecutor(
         effect: ModalEffect,
         context: EffectContext
     ): EffectResult {
-        val entries = buildModeEntries(
+        var entries = buildModeEntries(
             effect,
             chosenModes = context.chosenModes,
             modeTargetsOrdered = context.modeTargetsOrdered,
             modeTargetRequirements = context.modeTargetRequirements
         )
+        if (context.activatedAbility != null) {
+            val sizes = context.modeTargetsOrdered.map { it.size }
+            val start = context.alignedTargets.size - sizes.sum()
+            var offset = start
+            val alignedModes = sizes.map { size ->
+                context.alignedTargets.drop(offset).take(size).also { offset += size }
+            }
+            entries = context.chosenModes.withIndex().sortedBy { it.value }.mapIndexed { i, pick ->
+                entries[i].copy(alignedTargets = if (entries[i].targetRequirements.isEmpty()) context.alignedTargets.take(start) else alignedModes[pick.index],
+                    targetRequirements = context.modeTargetRequirementsOrdered.getOrNull(pick.index) ?: entries[i].targetRequirements)
+            }
+        }
         val sourceName = context.sourceId?.let { id -> state.getEntity(id)?.get<CardComponent>()?.name }
         val baseCtx = PreTargetedEffectContext(
             resolvingTriggeredAbility = context.resolvingTriggeredAbility,
@@ -198,7 +204,8 @@ class ModalEffectExecutor(
             // spell X as `StoredCardManaValue("exiledCard")`, the collection its reflexive
             // trigger's action half filled. Dropping it made every such amount read 0.
             pipeline = context.pipeline,
-            objectReferences = context.objectReferences
+            objectReferences = context.objectReferences,
+            baseContext = context
         )
         return processPreTargetedEffectQueue(state, entries, baseCtx, effectExecutor, targetValidator, emptyList())
     }
@@ -245,6 +252,7 @@ class ModalEffectExecutor(
 
 /** Base fields needed to build per-mode [EffectContext]s during pre-chosen mode drainage. */
 internal data class PreTargetedEffectContext(
+    val baseContext: EffectContext? = null,
     val controllerId: com.wingedsheep.sdk.model.EntityId,
     val sourceId: com.wingedsheep.sdk.model.EntityId?,
     val sourceName: String?,
@@ -296,7 +304,7 @@ internal fun processPreTargetedEffectQueue(
     val sourceColors = cardComponent?.colors ?: emptySet()
     val sourceSubtypes = cardComponent?.typeLine?.subtypes?.map { it.value }?.toSet() ?: emptySet()
 
-    val validationError = if (head.targetRequirements.isNotEmpty()) {
+    val validationError = if (head.alignedTargets == null && head.targetRequirements.isNotEmpty()) {
         targetValidator.validateTargets(
             state = state,
             targets = head.targets,
@@ -324,19 +332,26 @@ internal fun processPreTargetedEffectQueue(
         return processPreTargetedEffectQueue(state, tail, ctx, effectExecutor, targetValidator, accumulatedEvents)
     }
 
-    val effectContext = EffectContext(
+    val effectContext = (ctx.baseContext ?: EffectContext(sourceId = ctx.sourceId, controllerId = ctx.controllerId)).copy(
         resolvingTriggeredAbility = ctx.resolvingTriggeredAbility,
         sourceId = ctx.sourceId,
         objectReferences = ctx.objectReferences,
         controllerId = ctx.controllerId,
         xValue = ctx.xValue,
-        targets = head.targets,
+        targets = head.alignedTargets?.filterNotNull() ?: head.targets,
+        alignedTargets = head.alignedTargets ?: head.targets,
+        chosenModes = emptyList(),
+        modeTargetsOrdered = emptyList(),
+        modeTargetRequirements = emptyMap(),
+        modeTargetRequirementsOrdered = emptyList(),
         // The enclosing resolution's pipeline, with this mode's own named targets laid over it.
         // A bare `PipelineState(namedTargets = …)` here dropped every stored collection, number
         // and chosen value the resolution had accumulated before the modal.
         pipeline = ctx.pipeline.copy(
-            namedTargets = ctx.pipeline.namedTargets +
-                EffectContext.buildNamedTargets(head.targetRequirements, head.targets)
+            namedTargets = ctx.pipeline.namedTargets.filterKeys { key ->
+                head.targetRequirements.none { req -> req.id?.let { key == it || key.startsWith("$it[") } == true }
+            } +
+                EffectContext.buildNamedTargets(head.targetRequirements, head.alignedTargets ?: head.targets)
         ),
         triggeringEntityId = ctx.triggeringEntityId,
         triggeringPlayerId = ctx.triggerContext?.triggeringPlayerId,
@@ -349,6 +364,7 @@ internal fun processPreTargetedEffectQueue(
 
         state.pushContinuation(
             ModalPreChosenContinuation(
+                baseContext = ctx.baseContext,
                 resolvingTriggeredAbility = ctx.resolvingTriggeredAbility,
                 controllerId = ctx.controllerId,
                 sourceId = ctx.sourceId,

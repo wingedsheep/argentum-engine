@@ -5,8 +5,7 @@ import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.effects.Mode
-import com.wingedsheep.sdk.scripting.effects.ModalEffect
+import com.wingedsheep.sdk.scripting.effects.EffectChoice
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 /**
@@ -36,29 +35,28 @@ val UrzasAvenger = card("Urza's Avenger") {
 
     activatedAbility {
         cost = Costs.Free
-        effect = ModalEffect.chooseOne(
-            Mode.noTarget(
-                Effects.ModifyStats(-1, -1, EffectTarget.Self) then
+        effect = Effects.ChooseAction(listOf(
+            EffectChoice(
+                label = "This creature gets -1/-1 and gains banding until end of turn",
+                effect = Effects.ModifyStats(-1, -1, EffectTarget.Self) then
                     Effects.GrantKeyword(Keyword.BANDING, EffectTarget.Self),
-                "This creature gets -1/-1 and gains banding until end of turn"
             ),
-            Mode.noTarget(
-                Effects.ModifyStats(-1, -1, EffectTarget.Self) then
+            EffectChoice(
+                label = "This creature gets -1/-1 and gains flying until end of turn",
+                effect = Effects.ModifyStats(-1, -1, EffectTarget.Self) then
                     Effects.GrantKeyword(Keyword.FLYING, EffectTarget.Self),
-                "This creature gets -1/-1 and gains flying until end of turn"
             ),
-            Mode.noTarget(
-                Effects.ModifyStats(-1, -1, EffectTarget.Self) then
+            EffectChoice(
+                label = "This creature gets -1/-1 and gains first strike until end of turn",
+                effect = Effects.ModifyStats(-1, -1, EffectTarget.Self) then
                     Effects.GrantKeyword(Keyword.FIRST_STRIKE, EffectTarget.Self),
-                "This creature gets -1/-1 and gains first strike until end of turn"
             ),
-            Mode.noTarget(
-                Effects.ModifyStats(-1, -1, EffectTarget.Self) then
+            EffectChoice(
+                label = "This creature gets -1/-1 and gains trample until end of turn",
+                effect = Effects.ModifyStats(-1, -1, EffectTarget.Self) then
                     Effects.GrantKeyword(Keyword.TRAMPLE, EffectTarget.Self),
-                "This creature gets -1/-1 and gains trample until end of turn"
-            ),
-            countsAsModalSpell = false
-        )
+            )
+        ))
         description = "{0}: This creature gets -1/-1 and gains your choice of banding, flying, " +
             "first strike, or trample until end of turn."
     }
