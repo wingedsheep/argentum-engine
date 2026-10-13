@@ -4570,6 +4570,61 @@
     ]
 }
 
+// Snarespinner
+{
+    "name": "Snarespinner",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Spider",
+    "oracleText": "Reach\nWhenever this creature blocks a creature with flying, this creature gets +2/+0 until end of turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "keywords": [
+        "REACH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Snarespinner:1",
+                "trigger": {
+                    "type": "BlockEvent",
+                    "attackerFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "HasKeyword",
+                                "keyword": "FLYING"
+                            }
+                        ]
+                    }
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "176",
+        "artist": "Yeong-Hao Han",
+        "flavorText": "\"Let's lure the drakes to the webs over the Samok Stand. Keep the spiders content.\"\n—Aurelia",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/8/48a0fcc5-57d3-43ab-9e3d-0e015792239a.jpg?1783933407"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Spark Reaper
 {
     "name": "Spark Reaper",
