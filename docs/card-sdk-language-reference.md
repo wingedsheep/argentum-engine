@@ -7095,6 +7095,10 @@ The shapes in this family, with their engine notes.
   "another land you control" wants `Triggers.a(filter).enters()` / `Triggers.another(filter).enters()` instead.
 - `Triggers.a(filter).enters()` / `Triggers.another(filter).enters()` — Covers face-down filters,
   ANY-binding tribal scopes, permanent-you-control scopes, enchantment-enters scopes (Eerie), etc.
+  The filter's card-type predicates (`Creature`, `Artifact`, `notCreature()`, `Legendary`, …) read the
+  entrant's **projected** types, like its subtypes and keywords: a noncreature artifact animated by March
+  of the Machines enters as a creature, so Wingmantle Chaplain's "another creature you control with
+  defender enters" sees it. An entrant already gone again falls back to its printed type line.
 
 **Leaves / dies**
 

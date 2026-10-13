@@ -7503,6 +7503,85 @@
     }
 }
 
+// Wingmantle Chaplain
+{
+    "name": "Wingmantle Chaplain",
+    "manaCost": "{3}{W}",
+    "typeLine": "Creature — Human Cleric",
+    "oracleText": "Defender\nWhen this creature enters, create a 1/1 white Bird creature token with flying for each creature with defender you control.\nWhenever another creature you control with defender enters, create a 1/1 white Bird creature token with flying.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 3
+    },
+    "keywords": [
+        "DEFENDER"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Wingmantle Chaplain:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "creature kw:defender"
+                    },
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Bird"
+                    ],
+                    "keywords": [
+                        "FLYING"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/5/f/5f3034f6-145f-4e60-9e55-c4054fd8e70f.jpg?1783921132"
+                }
+            },
+            {
+                "id": "Wingmantle Chaplain:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature kw:defender ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Bird"
+                    ],
+                    "keywords": [
+                        "FLYING"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/5/f/5f3034f6-145f-4e60-9e55-c4054fd8e70f.jpg?1783921132"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "39",
+        "rarity": "UNCOMMON",
+        "artist": "Miranda Meeks",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/5/f5800f3d-b2e0-4c74-94bf-f29b27f82130.jpg?1783921356"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Wooded Ridgeline
 {
     "name": "Wooded Ridgeline",

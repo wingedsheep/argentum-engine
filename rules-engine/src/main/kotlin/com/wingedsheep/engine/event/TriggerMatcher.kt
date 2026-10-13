@@ -1244,6 +1244,11 @@ class TriggerMatcher(
                 cardComponent?.typeLine ?: event.lastKnown?.typeLine
             }
             val isFaceDown = entity?.has<FaceDownComponent>() == true
+            // A permanent still on the battlefield after entering is matched by its projected card
+            // types, not its printed ones: an artifact animated by March of the Machines enters as
+            // an artifact creature, so "whenever a creature you control enters" sees it. Empty when
+            // the entrant has no projection entry (it already left again), which falls back to LKI.
+            val liveEntryTypes = if (event.toZone == Zone.BATTLEFIELD) projected.getTypes(event.entityId) else emptySet()
 
             // LKI-aware predicate evaluation. Composites (Or/And/Not — e.g. the collapsed
             // `Artifact or Creature` union on Tarrian's Soulcleaver) must recurse through THIS
@@ -1251,6 +1256,9 @@ class TriggerMatcher(
             // before the matcher runs, so the generic cardComponent-based path returns false for
             // every predicate inside the composite and the trigger silently misses token deaths.
             fun matchesLkiPredicate(predicate: com.wingedsheep.sdk.scripting.predicates.CardPredicate): Boolean {
+                if (liveEntryTypes.isNotEmpty()) {
+                    projectedCardTypeMatch(predicate, liveEntryTypes, isFaceDown)?.let { return it }
+                }
                 return when (predicate) {
                     is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsCreature -> {
                         // For dying creatures: use base state (they're already in graveyard)
@@ -1416,6 +1424,33 @@ class TriggerMatcher(
         }
 
         return true
+    }
+
+    /**
+     * A card-type predicate read off a permanent's projected type set (layer 4), or null when
+     * [predicate] isn't one. Supertypes share the projected set, so LEGENDARY / SNOW live here too.
+     */
+    private fun projectedCardTypeMatch(
+        predicate: com.wingedsheep.sdk.scripting.predicates.CardPredicate,
+        types: Set<String>,
+        isFaceDown: Boolean
+    ): Boolean? = when (predicate) {
+        com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsCreature -> "CREATURE" in types || isFaceDown
+        com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsLand -> "LAND" in types
+        com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsArtifact -> "ARTIFACT" in types
+        com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsEnchantment -> "ENCHANTMENT" in types
+        com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsPlaneswalker -> "PLANESWALKER" in types
+        com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsBattle -> "BATTLE" in types
+        com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsKindred -> "KINDRED" in types
+        com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsPermanent -> true
+        com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsNonland -> "LAND" !in types
+        com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsNoncreature -> "CREATURE" !in types && !isFaceDown
+        com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsNonenchantment -> "ENCHANTMENT" !in types
+        com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsNonartifact -> "ARTIFACT" !in types
+        com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsLegendary -> "LEGENDARY" in types
+        com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsNonlegendary -> "LEGENDARY" !in types
+        com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsSnow -> "SNOW" in types
+        else -> null
     }
 
     fun matchesCardPredicate(
