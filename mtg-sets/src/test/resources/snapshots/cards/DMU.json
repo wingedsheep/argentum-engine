@@ -1786,6 +1786,95 @@
     ]
 }
 
+// Bortuk Bonerattle
+{
+    "name": "Bortuk Bonerattle",
+    "manaCost": "{4}{B}{G}",
+    "typeLine": "Legendary Creature — Troll Shaman",
+    "oracleText": "Domain — When Bortuk Bonerattle enters, if you cast it, choose target creature card in your graveyard. Return that card to the battlefield if its mana value is less than or equal to the number of basic land types among lands you control. Otherwise, put it into your hand.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Bortuk Bonerattle:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "EntityProperty",
+                                "entity": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "numericProperty": "ManaValue"
+                            },
+                            "operator": "LTE",
+                            "right": {
+                                "type": "AggregateBattlefield",
+                                "player": "You",
+                                "filter": "land",
+                                "aggregation": "DISTINCT_BASIC_LAND_SUBTYPES"
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "destination": "Battlefield",
+                        "fromZone": "Graveyard"
+                    },
+                    "otherwise": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "destination": "Hand"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature own:you",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                },
+                "interveningIf": "WasCast"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "197",
+        "rarity": "UNCOMMON",
+        "artist": "Wayne Reynolds",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/a/9a25855f-abfc-482d-a36b-088b023a7df6.jpg?1783921286",
+        "rulings": [
+            {
+                "date": "2022-09-09",
+                "text": "The basic land types are Plains, Island, Swamp, Mountain, and Forest. Land types other than basic land types (such as Desert) don't contribute to domain abilities."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
+    ]
+}
+
 // Braids's Frightful Return
 {
     "name": "Braids's Frightful Return",
@@ -3077,6 +3166,106 @@
     ]
 }
 
+// Danitha, Benalia's Hope
+{
+    "name": "Danitha, Benalia's Hope",
+    "manaCost": "{4}{W}",
+    "typeLine": "Legendary Creature — Human Knight",
+    "oracleText": "First strike, vigilance, lifelink\nWhen Danitha enters, you may put an Aura or Equipment card from your hand or graveyard onto the battlefield attached to Danitha.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FIRST_STRIKE",
+        "VIGILANCE",
+        "LIFELINK"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Danitha, Benalia's Hope:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromMultipleZones",
+                                "zones": [
+                                    "Hand",
+                                    "Graveyard"
+                                ],
+                                "filter": "Aura|Equipment"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected1",
+                            "prompt": "Put an Aura or Equipment card onto the battlefield attached to Danitha"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            },
+                            "attachTo": "Self"
+                        },
+                        {
+                            "type": "ConditionalOnCollection",
+                            "collection": "selected1",
+                            "ifNotEmpty": {
+                                "type": "AttachTargetEquipmentToCreature",
+                                "equipmentTarget": {
+                                    "type": "PipelineTarget",
+                                    "collectionName": "selected1"
+                                },
+                                "creatureTarget": "Self"
+                            },
+                            "filter": "Equipment"
+                        }
+                    ]
+                },
+                "descriptionOverride": "When Danitha enters, you may put an Aura or Equipment card from your hand or graveyard onto the battlefield attached to Danitha."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "15",
+        "rarity": "RARE",
+        "artist": "Magali Villeneuve",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/4/845e5663-2959-44ae-b4c6-d6ea41f01d6e.jpg?1783921367",
+        "rulings": [
+            {
+                "date": "2022-09-09",
+                "text": "If you attempt to put an Aura onto the battlefield this way and Danitha is no longer on the battlefield or that Aura can't legally be attached to Danitha, that Aura does not enter the battlefield at all. Instead, it will stay in its previous zone."
+            },
+            {
+                "date": "2022-09-09",
+                "text": "Conversely, if you attempt to put a non-Aura Equipment onto the battlefield this way and Danitha is no longer on the battlefield or that Equipment can't legally be attached to Danitha, that Equipment will enter the battlefield unattached."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Deathbloom Gardener
 {
     "name": "Deathbloom Gardener",
@@ -4227,6 +4416,189 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Evolved Sleeper
+{
+    "name": "Evolved Sleeper",
+    "manaCost": "{B}",
+    "typeLine": "Creature — Human",
+    "oracleText": "{B}: This creature becomes a Human Cleric with base power and toughness 2/2.\n{1}{B}: If this creature is a Cleric, put a deathtouch counter on it and it becomes a Phyrexian Human Cleric with base power and toughness 3/3.\n{1}{B}{B}: If this creature is a Phyrexian, put a +1/+1 counter on it, then you draw a card and you lose 1 life.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Evolved Sleeper:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{B}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "SetCreatureSubtypes",
+                            "subtypes": [
+                                "Human",
+                                "Cleric"
+                            ]
+                        },
+                        {
+                            "type": "SetBaseStats",
+                            "target": "Self",
+                            "power": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "toughness": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "This creature becomes a Human Cleric with base power and toughness 2/2."
+            },
+            {
+                "id": "Evolved Sleeper:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{B}"
+                    }
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": "Self",
+                            "filter": "Cleric"
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "AddCounters",
+                                "counterType": "DEATHTOUCH",
+                                "count": 1,
+                                "target": "Self"
+                            },
+                            {
+                                "type": "SetCreatureSubtypes",
+                                "subtypes": [
+                                    "Phyrexian",
+                                    "Human",
+                                    "Cleric"
+                                ]
+                            },
+                            {
+                                "type": "SetBaseStats",
+                                "target": "Self",
+                                "power": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                },
+                                "toughness": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                }
+                            }
+                        ]
+                    }
+                },
+                "descriptionOverride": "If this creature is a Cleric, put a deathtouch counter on it and it becomes a Phyrexian Human Cleric with base power and toughness 3/3."
+            },
+            {
+                "id": "Evolved Sleeper:3",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{B}{B}"
+                    }
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": "Self",
+                            "filter": "Phyrexian"
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "AddCounters",
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "count": 1,
+                                "target": "Self"
+                            },
+                            {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            {
+                                "type": "LoseLife",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "target": "Controller"
+                            }
+                        ]
+                    }
+                },
+                "descriptionOverride": "If this creature is a Phyrexian, put a +1/+1 counter on it, then you draw a card and you lose 1 life."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "93",
+        "rarity": "RARE",
+        "artist": "Jason A. Engle",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/b/ebeafbc2-0399-4335-8f63-76a3e085e8c6.jpg?1783921332",
+        "rulings": [
+            {
+                "date": "2022-09-09",
+                "text": "None of these abilities has a duration. If one of them resolves, it will remain in effect until the game ends, Evolved Sleeper leaves the battlefield, or some subsequent effect changes its characteristics, whichever comes first."
+            },
+            {
+                "date": "2022-09-09",
+                "text": "Evolved Sleeper's first two abilities overwrite its power, toughness, and creature types. Typically, those abilities are activated in the order they appear on the card. However, if Evolved Sleeper is a 3/3 Phyrexian Human Cleric and you activate its first ability again, it will become a 2/2 Human Cleric as that ability resolves."
+            },
+            {
+                "date": "2022-09-09",
+                "text": "You can activate Evolved Sleeper's second and third abilities regardless of what creature types it is. Each of those abilities checks Evolved Sleeper's creature types when that ability resolves. If Evolved Sleeper isn't the appropriate creature type at that time, the ability does nothing."
+            },
+            {
+                "date": "2022-09-09",
+                "text": "Evolved Sleeper's second ability checks whether it's a Cleric, and its third ability checks whether it's a Phyrexian. It doesn't matter how it became the appropriate creature type."
+            },
+            {
+                "date": "2022-09-09",
+                "text": "The effects from the first and second abilities overwrite other effects that set power and/or toughness if and only if those effects existed before the ability resolved. It will not overwrite effects that modify power or toughness without setting it (whether from a static ability, counters, or a resolved spell or ability), nor will it overwrite effects that set power and toughness which come into existence after the ability resolves. Effects that switch the creature's power and toughness are always applied after any other power or toughness changing effects, including this one, regardless of the order in which they are created."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -5901,6 +6273,93 @@
     ]
 }
 
+// In Thrall to the Pit
+{
+    "name": "In Thrall to the Pit",
+    "manaCost": "{3}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Kicker {2}{B} (You may pay an additional {2}{B} as you cast this spell.)\nGain control of target creature until end of turn. Untap that creature. It gains haste until end of turn. If this spell was kicked, sacrifice that creature at the beginning of the next end step.",
+    "keywordAbilities": [
+        {
+            "type": "Kicker",
+            "manaCost": "{2}{B}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GainControl",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "duration": "EndOfTurn"
+                },
+                {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "tap": false
+                },
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "HASTE",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": "WasKicked"
+                    },
+                    "then": {
+                        "type": "CreateDelayedTrigger",
+                        "step": "END",
+                        "effect": {
+                            "type": "SacrificeTarget",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "132",
+        "artist": "Andrey Kuzinskiy",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/f/0f33284f-bdb1-4982-8636-8f2e12896053.jpg?1783921315",
+        "rulings": [
+            {
+                "date": "2022-09-09",
+                "text": "If an effect allows In Thrall to the Pit to be cast during the end step and it is kicked, you will gain control of the target creature until this turn ends. The delayed triggered ability will trigger at the beginning of the next turn's end step, but you won't be able to sacrifice that creature because you no longer control it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
+    ]
+}
+
 // Inscribed Tablet
 {
     "name": "Inscribed Tablet",
@@ -6153,6 +6612,104 @@
         "imageUri": "https://cards.scryfall.io/normal/front/4/b/4b78eaab-819c-4f06-b3b1-a25c17ab2235.jpg?1783921314"
     },
     "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Jhoira, Ageless Innovator
+{
+    "name": "Jhoira, Ageless Innovator",
+    "manaCost": "{U}{R}",
+    "typeLine": "Legendary Creature — Human Artificer",
+    "oracleText": "{T}: Put two ingenuity counters on Jhoira, then you may put an artifact card with mana value X or less from your hand onto the battlefield, where X is the number of ingenuity counters on Jhoira.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Jhoira, Ageless Innovator:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "INGENUITY",
+                            "count": 2,
+                            "target": "Self"
+                        },
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand",
+                                "filter": "artifact"
+                            },
+                            "storeAs": "gathered1"
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "gathered1",
+                            "filter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "ManaValueAtMostDynamic",
+                                        "amount": {
+                                            "type": "EntityProperty",
+                                            "entity": "Self",
+                                            "numericProperty": {
+                                                "type": "CounterCount",
+                                                "counterType": "INGENUITY"
+                                            }
+                                        }
+                                    }
+                                ]
+                            },
+                            "storeMatching": "matching2"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "matching2",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected3",
+                            "selectedLabel": "Put onto the battlefield"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected3",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Put two ingenuity counters on Jhoira, then you may put an artifact card with mana value X or less from your hand onto the battlefield, where X is the number of ingenuity counters on Jhoira."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "202",
+        "rarity": "RARE",
+        "artist": "Justyna Dura",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/d/dd911900-1f5f-4420-96b8-1e4fe67e59f6.jpg?1783921284",
+        "rulings": [
+            {
+                "date": "2022-09-09",
+                "text": "If Jhoira, Ageless Innovator isn't on the battlefield as the activated ability resolves, you won't be able to put any ingenuity counters on it. However, you can still put an artifact card from your hand onto the battlefield. Use the number of ingenuity counters that were on Jhoira before it left the battlefield to determine the value of X."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
         "RED"
     ]
 }
@@ -7066,6 +7623,121 @@
     ]
 }
 
+// Lagomos, Hand of Hatred
+{
+    "name": "Lagomos, Hand of Hatred",
+    "manaCost": "{1}{B}{R}",
+    "typeLine": "Legendary Creature — Human Shaman",
+    "oracleText": "At the beginning of combat on your turn, create a 2/1 red Elemental creature token with trample and haste. Sacrifice it at the beginning of the next end step.\n{T}: Search your library for a card, put it into your hand, then shuffle. Activate only if five or more creatures died this turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Lagomos, Hand of Hatred:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "BEGIN_COMBAT"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 2,
+                    "toughness": 1,
+                    "colors": [
+                        "RED"
+                    ],
+                    "creatureTypes": [
+                        "Elemental"
+                    ],
+                    "keywords": [
+                        "TRAMPLE",
+                        "HASTE"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/c/6/c6b2ff6f-d55a-4fa2-86be-e2e012267de4.jpg?1783921129",
+                    "sacrificeAtStep": "END"
+                },
+                "descriptionOverride": "At the beginning of combat on your turn, create a 2/1 red Elemental creature token with trample and haste. Sacrifice it at the beginning of the next end step."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Lagomos, Hand of Hatred:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Library"
+                            },
+                            "storeAs": "searchable",
+                            "search": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "searchable",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "found",
+                            "prompt": "Search your library for a card to put into your hand",
+                            "selectedLabel": "Put into your hand"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "found",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        },
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
+                    ]
+                },
+                "restrictions": [
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "TurnTracking",
+                                "player": "Each",
+                                "tracker": "CREATURES_DIED"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 5
+                            }
+                        }
+                    }
+                ],
+                "descriptionOverride": "Search your library for a card, put it into your hand, then shuffle. Activate only if five or more creatures died this turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "205",
+        "rarity": "UNCOMMON",
+        "artist": "Tuan Duong Chu",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/a/1a6bb0c2-1e3c-48cd-8f10-49f047e0514c.jpg?1783921281"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
+    ]
+}
+
 // Leaf-Crowned Visionary
 {
     "name": "Leaf-Crowned Visionary",
@@ -7904,6 +8576,105 @@
     ]
 }
 
+// Monstrous War-Leech
+{
+    "name": "Monstrous War-Leech",
+    "manaCost": "{3}{B}",
+    "typeLine": "Creature — Leech Horror",
+    "oracleText": "Kicker {U} (You may pay an additional {U} as you cast this spell.)\nAs this creature enters, if it was kicked, mill four cards. (To mill a card, put the top card of your library into your graveyard.)\nMonstrous War-Leech's power and toughness are each equal to the greatest mana value among cards in your graveyard.",
+    "creatureStats": {
+        "power": {
+            "type": "Dynamic",
+            "source": {
+                "type": "AggregateZone",
+                "player": "You",
+                "zone": "Graveyard",
+                "aggregation": "MAX",
+                "property": "MANA_VALUE"
+            }
+        },
+        "toughness": {
+            "type": "Dynamic",
+            "source": {
+                "type": "AggregateZone",
+                "player": "You",
+                "zone": "Graveyard",
+                "aggregation": "MAX",
+                "property": "MANA_VALUE"
+            }
+        }
+    },
+    "keywordAbilities": [
+        {
+            "type": "Kicker",
+            "manaCost": "{U}"
+        }
+    ],
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "OnEnterRunEffect",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": "WasKicked"
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "TopOfLibrary",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 4
+                                    },
+                                    "isMill": true
+                                },
+                                "storeAs": "milled"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "milled",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "98",
+        "rarity": "UNCOMMON",
+        "artist": "Christopher Burdett",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/6/660d7983-b335-48b4-898d-f182effcf2de.jpg?1783921331",
+        "rulings": [
+            {
+                "date": "2022-09-09",
+                "text": "If Monstrous War-Leech was kicked, it enters the battlefield with power and toughness each equal to the highest mana value among cards in your graveyard, including cards that were milled due to its replacement effect. For example, if you have no cards in your graveyard as it enters and you mill three land cards and a card with mana value 4, Monstrous War-Leech is a 4/4 creature entering the battlefield."
+            },
+            {
+                "date": "2022-09-09",
+                "text": "If a card in a graveyard has an {X} in its mana cost, X is 0."
+            },
+            {
+                "date": "2022-09-09",
+                "text": "Monstrous War-Leech's second ability is a replacement effect, not a triggered ability. It happens at the same time that Monstrous War-Leech enters the battlefield, it doesn't use the stack, and it can't be responded to."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
+    ]
+}
+
 // Mossbeard Ancient
 {
     "name": "Mossbeard Ancient",
@@ -8065,6 +8836,72 @@
     "colorIdentityOverride": [
         "GREEN",
         "BLUE"
+    ]
+}
+
+// Najal, the Storm Runner
+{
+    "name": "Najal, the Storm Runner",
+    "manaCost": "{2}{U}{U}{R}",
+    "typeLine": "Legendary Creature — Efreet Wizard",
+    "oracleText": "You may cast sorcery spells as though they had flash.\nWhenever Najal attacks, you may pay {2}. If you do, when you next cast an instant or sorcery spell this turn, copy it. You may choose new targets for the copy.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Najal, the Storm Runner:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayManaCost",
+                            "cost": "{2}"
+                        }
+                    },
+                    "then": "CopyNextSpellCast"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantFlashToSpellType",
+                "filter": "sorcery",
+                "controllerOnly": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "208",
+        "rarity": "UNCOMMON",
+        "artist": "PINDURSKI",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/0/9017ee70-761b-434e-bc44-705cf14336fa.jpg?1783921281",
+        "rulings": [
+            {
+                "date": "2022-09-09",
+                "text": "If the spell that's copied is modal, the copy created by Najal's delayed triggered ability will have the same mode or modes. You can't choose different ones."
+            },
+            {
+                "date": "2022-09-09",
+                "text": "If the spell that's copied has damage divided as it was cast, the division can't be changed (although the targets receiving that damage still can). The same is true of spells that distribute counters."
+            },
+            {
+                "date": "2022-09-09",
+                "text": "You can't choose to pay any additional costs for the copy created by Najal's delayed triggered ability. However, effects based on any additional costs that were paid for the original spell are copied as though those same costs were paid for the copy too."
+            },
+            {
+                "date": "2022-09-09",
+                "text": "The copies that Najal's ability creates are created on the stack, so they're not \"cast.\" Abilities that trigger when a player casts a spell won't trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
     ]
 }
 
@@ -8640,6 +9477,205 @@
     ]
 }
 
+// Pixie Illusionist
+{
+    "name": "Pixie Illusionist",
+    "manaCost": "{U}",
+    "typeLine": "Creature — Faerie Wizard",
+    "oracleText": "Kicker {3}{G} (You may pay an additional {3}{G} as you cast this spell.)\nFlying\nIf this creature was kicked, it enters with two +1/+1 counters on it.\n{T}: Target land you control becomes the basic land type of your choice until end of turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Kicker",
+            "manaCost": "{3}{G}"
+        }
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Pixie Illusionist:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ChooseOption",
+                            "optionType": "BASIC_LAND_TYPE",
+                            "storeAs": "chosen0"
+                        },
+                        {
+                            "type": "SetLandType",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "fromChosenValueKey": "chosen0"
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "land ctrl:you"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "count": 2,
+                "selfOnly": true,
+                "condition": "WasKicked"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "61",
+        "artist": "Anastasia Ovchinnikova",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/7/171bfcb2-dd43-4d63-b2e2-6ca594c2ec40.jpg?1783921347",
+        "rulings": [
+            {
+                "date": "2022-09-09",
+                "text": "You choose a basic land type as the last ability resolves."
+            },
+            {
+                "date": "2022-09-09",
+                "text": "The affected land loses its existing land types and any abilities printed on it. It becomes the chosen basic land type and now has the ability to tap to add one mana of the appropriate color. Pixie Illusionist's ability doesn't change the affected land's name or whether it's legendary or basic."
+            },
+            {
+                "date": "2022-09-09",
+                "text": "Pixie Illusionist's third ability isn't a triggered ability. If it was kicked, there is no point where an opponent can respond while it is on the battlefield but doesn't yet have counters on it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "GREEN"
+    ]
+}
+
+// Plaza of Heroes
+{
+    "name": "Plaza of Heroes",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "{T}: Add {C}.\n{T}: Add one mana of any color. Spend this mana only to cast a legendary spell.\n{T}: Add one mana of any color among legendary permanents you control.\n{3}, {T}, Exile this land: Target legendary creature gains hexproof and indestructible until end of turn.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Plaza of Heroes:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Plaza of Heroes:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddManaOfChoice",
+                    "restriction": "LegendarySpellsOnly"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Plaza of Heroes:3",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddManaOfChoice",
+                    "colorSet": {
+                        "type": "ManaColorSet.AmongPermanents",
+                        "filter": {
+                            "cardPredicates": [
+                                "IsPermanent",
+                                "IsLegendary"
+                            ],
+                            "controllerPredicate": "ControlledByYou"
+                        }
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Plaza of Heroes:4",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{3}"
+                            }
+                        },
+                        "CostTap",
+                        "CostExileSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "HEXPROOF",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "INDESTRUCTIBLE",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature",
+                                    "IsLegendary"
+                                ]
+                            }
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "252",
+        "rarity": "RARE",
+        "artist": "Gabor Szikszai",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/2/a2cfcf67-f83c-43af-9e2d-5513fcdde835.jpg?1783921260"
+    }
+}
+
 // Prayer of Binding
 {
     "name": "Prayer of Binding",
@@ -8803,6 +9839,61 @@
     "colorIdentityOverride": [
         "WHITE",
         "BLUE"
+    ]
+}
+
+// Queen Allenal of Ruadach
+{
+    "name": "Queen Allenal of Ruadach",
+    "manaCost": "{G}{W}{W}",
+    "typeLine": "Legendary Creature — Elf Noble",
+    "oracleText": "Queen Allenal of Ruadach's power and toughness are each equal to the number of creatures you control.\nIf one or more creature tokens would be created under your control, those tokens plus a 1/1 white Soldier creature token are created instead.",
+    "creatureStats": {
+        "power": {
+            "type": "Dynamic",
+            "source": {
+                "type": "AggregateBattlefield",
+                "player": "You",
+                "filter": "creature"
+            }
+        },
+        "toughness": {
+            "type": "Dynamic",
+            "source": {
+                "type": "AggregateBattlefield",
+                "player": "You",
+                "filter": "creature"
+            }
+        }
+    },
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "CreateAdditionalToken",
+                "additionalTokenType": "Soldier",
+                "inheritTapped": true,
+                "appliesTo": {
+                    "type": "TokenCreationEvent",
+                    "tokenFilter": "creature"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "210",
+        "rarity": "UNCOMMON",
+        "artist": "Ekaterina Burmak",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/4/b44b4e8b-7675-4c6a-a16a-92f8b6a0259f.jpg?1783921281",
+        "rulings": [
+            {
+                "date": "2022-09-09",
+                "text": "The additional Soldier token won't have any abilities the other tokens were created with. Anything else specified in the effect creating the tokens (such as tapped, attacking, \"That token gains haste,\" or \"Exile that token at end of combat\") applies to both the original tokens and the Soldier."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE"
     ]
 }
 
@@ -9192,6 +10283,98 @@
     ]
 }
 
+// Ratadrabik of Urborg
+{
+    "name": "Ratadrabik of Urborg",
+    "manaCost": "{2}{W}{B}",
+    "typeLine": "Legendary Creature — Zombie Wizard",
+    "oracleText": "Vigilance, ward {2}\nOther Zombies you control have vigilance.\nWhenever another legendary creature you control dies, create a token that's a copy of that creature, except it's not legendary and it's a 2/2 black Zombie in addition to its other colors and types.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "VIGILANCE",
+        "WARD"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Ward",
+            "cost": {
+                "type": "WardCost.Mana",
+                "manaCost": "{2}"
+            }
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ratadrabik of Urborg:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            "IsLegendary"
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    },
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "CreateTokenCopyOfTarget",
+                    "target": "TriggeringEntity",
+                    "exceptions": {
+                        "removedSupertypes": [
+                            "LEGENDARY"
+                        ],
+                        "addedSubtypes": [
+                            "Zombie"
+                        ],
+                        "addedColors": [
+                            "BLACK"
+                        ],
+                        "powerOverride": 2,
+                        "toughnessOverride": 2
+                    }
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "VIGILANCE",
+                "filter": {
+                    "baseFilter": "creature Zombie ctrl:you",
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "213",
+        "rarity": "RARE",
+        "artist": "Anna Pavleeva",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/3/9315812d-03e8-4eb4-a693-e7adf281f7fb.jpg?1783921278",
+        "rulings": [
+            {
+                "date": "2022-09-09",
+                "text": "The token copies the creature as it last existed on the battlefield before it died, not as it exists in the graveyard."
+            },
+            {
+                "date": "2022-09-09",
+                "text": "Except for power and toughness, the token copies only what was printed on the original creature (unless that creature is copying something else) and adds the color black and the creature type Zombie. It doesn't copy counters, Auras, Equipment, or non-copy effects."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
+    ]
+}
+
 // Relic of Legends
 {
     "name": "Relic of Legends",
@@ -9551,6 +10734,208 @@
     "colorIdentityOverride": [
         "BLUE",
         "BLACK"
+    ]
+}
+
+// Rulik Mons, Warren Chief
+{
+    "name": "Rulik Mons, Warren Chief",
+    "manaCost": "{1}{R}{G}{G}",
+    "typeLine": "Legendary Creature — Goblin",
+    "oracleText": "Menace (This creature can't be blocked except by two or more creatures.)\nWhenever Rulik Mons attacks, look at the top card of your library. If it's a land card, you may put it onto the battlefield tapped. If you didn't put a card onto the battlefield this way, create a 1/1 red Goblin creature token.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "MENACE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Rulik Mons, Warren Chief:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.DoAction",
+                        "action": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "TopOfLibrary",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeAs": "gathered0"
+                                },
+                                {
+                                    "type": "FilterCollection",
+                                    "from": "gathered0",
+                                    "filter": "land",
+                                    "storeMatching": "matching1"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "matching1",
+                                    "selection": {
+                                        "type": "ChooseUpTo",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeSelected": "selected2",
+                                    "selectedLabel": "Put onto the battlefield tapped"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "selected2",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Battlefield",
+                                        "placement": "Tapped"
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": []
+                    },
+                    "otherwise": {
+                        "type": "CreateToken",
+                        "power": 1,
+                        "toughness": 1,
+                        "colors": [
+                            "RED"
+                        ],
+                        "creatureTypes": [
+                            "Goblin"
+                        ],
+                        "imageUri": "https://cards.scryfall.io/normal/front/1/2/128511d0-bc4c-48d9-9e8e-9c7c945cfaeb.jpg?1783921128"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "217",
+        "rarity": "UNCOMMON",
+        "artist": "Tuan Duong Chu",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/f/3fa49711-473d-4774-99b8-2bfbabc6b735.jpg?1783921277",
+        "rulings": [
+            {
+                "date": "2022-09-09",
+                "text": "Putting a land onto the battlefield with Rulik Mons, Warren Chief's second ability doesn't count as playing a land for the turn."
+            },
+            {
+                "date": "2022-09-09",
+                "text": "If it is a land, you may choose not to put it onto the battlefield this way. In that case, you will create a 1/1 red Goblin creature token."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN"
+    ]
+}
+
+// Rundvelt Hordemaster
+{
+    "name": "Rundvelt Hordemaster",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Goblin Warrior",
+    "oracleText": "Other Goblins you control get +1/+1.\nWhenever this creature or another Goblin you control dies, exile the top card of your library. If it's a Goblin creature card, you may cast that card until the end of your next turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Rundvelt Hordemaster:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "permanent Goblin ctrl:you",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "gathered0",
+                            "filter": "creature Goblin",
+                            "storeMatching": "matching2"
+                        },
+                        {
+                            "type": "GrantMayPlayFromExile",
+                            "from": "matching2",
+                            "expiry": {
+                                "type": "UntilControllerStep",
+                                "step": "CLEANUP",
+                                "includeCurrentTurn": false
+                            },
+                            "nonLandOnly": true
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever this creature or another Goblin you control dies, exile the top card of your library. If it's a Goblin creature card, you may cast that card until the end of your next turn."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1,
+                "filter": {
+                    "baseFilter": "permanent Goblin ctrl:you",
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "142",
+        "rarity": "RARE",
+        "artist": "Bruno Biazotto",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/f/ffee9dbe-af90-4e19-844d-4df1180f24c4.jpg?1783921311",
+        "rulings": [
+            {
+                "date": "2022-09-09",
+                "text": "If Rundvelt Hordemaster and one or more other Goblins you control die at the same time, its ability will trigger once for each of them."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -10137,6 +11522,109 @@
     "colorIdentityOverride": [
         "GREEN",
         "WHITE"
+    ]
+}
+
+// Shanna, Purifying Blade
+{
+    "name": "Shanna, Purifying Blade",
+    "manaCost": "{G}{W}{U}",
+    "typeLine": "Legendary Creature — Human Warrior",
+    "oracleText": "Lifelink\nAt the beginning of your end step, you may pay {X}. If you do, draw X cards. X can't be greater than the amount of life you gained this turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "LIFELINK"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Shanna, Purifying Blade:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "TurnTracking",
+                                "player": "You",
+                                "tracker": "LIFE_GAINED"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "ChooseNumberThen",
+                        "then": {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": "XValue",
+                                    "operator": "GT",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 0
+                                    }
+                                }
+                            },
+                            "then": {
+                                "type": "Gated",
+                                "gate": {
+                                    "type": "Gate.MayPay",
+                                    "cost": {
+                                        "type": "PayDynamicManaCost",
+                                        "amount": "XValue"
+                                    }
+                                },
+                                "then": {
+                                    "type": "DrawCards",
+                                    "count": "XValue"
+                                }
+                            }
+                        },
+                        "maxValue": {
+                            "type": "TurnTracking",
+                            "player": "You",
+                            "tracker": "LIFE_GAINED"
+                        },
+                        "prompt": "Choose X — pay {X} to draw X cards (0 to decline)"
+                    }
+                },
+                "descriptionOverride": "At the beginning of your end step, you may pay {X}. If you do, draw X cards. X can't be greater than the amount of life you gained this turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "218",
+        "rarity": "MYTHIC",
+        "artist": "Magali Villeneuve",
+        "flavorText": "Shanna had heard Sisay's legend all her life. Now it was time to forge her own.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/2/7261c443-8d27-4d85-8027-2a0271b85e07.jpg?1783921275",
+        "rulings": [
+            {
+                "date": "2022-09-09",
+                "text": "You choose the value for X as the ability resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE",
+        "BLUE"
     ]
 }
 

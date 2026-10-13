@@ -723,6 +723,24 @@ object PredefinedTokens {
     }
 
     /**
+     * Soldier token — a vanilla 1/1 white creature (Queen Allenal of Ruadach's "those tokens plus a
+     * 1/1 white Soldier creature token"). White from its color indicator, like [Frog]. Registered
+     * under the plain name "Soldier"; ordinary `Effects.CreateToken` Soldiers mint `token:Soldier`
+     * ids, so they never resolve to this definition.
+     */
+    val Soldier = card("Soldier") {
+        typeLine = "Creature — Soldier"
+        colorIdentity = "W"
+        power = 1
+        toughness = 1
+
+        metadata {
+            imageUri = "https://cards.scryfall.io/normal/front/8/c/8c4b0257-2ca5-4015-9d63-d7cf6e87ab9d.jpg?1783921132"
+            artist = "Justine Cruz"
+        }
+    }
+
+    /**
      * Vehicle token — the 3/2 colorless Vehicle artifact token with crew 1 that Aetherdrift's
      * Pilots hand out (Mu Yanling, Wind Rider; Chandra, Spark Hunter; …).
      *
@@ -1215,6 +1233,7 @@ object PredefinedTokens {
         Mutagen,
         Frog,
         Squirrel,
+        Soldier,
         Pest,
         PhyrexianMite,
         Vehicle,
