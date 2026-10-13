@@ -106,6 +106,259 @@
     }
 }
 
+// Boomer Scrapper
+{
+    "name": "Boomer Scrapper",
+    "manaCost": "{1}{B}{R}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "Whenever this creature enters or attacks, you lose 1 life and create a Junk token. (It's an artifact with \"{T}, Sacrifice this token: Exile the top card of your library. You may play that card this turn. Activate only as a sorcery.\")\nWhenever a token you control leaves the battlefield, put a +1/+1 counter on this creature.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Boomer Scrapper:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": "Controller"
+                        },
+                        {
+                            "type": "CreatePredefinedToken",
+                            "tokenType": "Junk"
+                        }
+                    ]
+                }
+            },
+            {
+                "id": "Boomer Scrapper:2",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": "Controller"
+                        },
+                        {
+                            "type": "CreatePredefinedToken",
+                            "tokenType": "Junk"
+                        }
+                    ]
+                }
+            },
+            {
+                "id": "Boomer Scrapper:3",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "token ctrl:you",
+                    "from": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "95",
+        "rarity": "RARE",
+        "artist": "Xavier Ribeiro",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/9/193d0316-9b94-4ccb-9103-509e6a0963a1.jpg?1783912394",
+        "rulings": [
+            {
+                "date": "2024-03-08",
+                "text": "You can't sacrifice a Junk token to pay multiple costs. For example, you can't sacrifice a Junk token to activate its own ability and also to activate the second ability of Junk Jet."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "You pay all costs and follow all normal timing rules for the card played from exile with a Junk token's ability. For example, if the exiled card is a land card, you may play it only during your main phase while the stack is empty."
+            }
+        ]
+    }
+}
+
+// Butch DeLoria, Tunnel Snake
+{
+    "name": "Butch DeLoria, Tunnel Snake",
+    "manaCost": "{1}{B}",
+    "typeLine": "Legendary Creature — Human Rogue",
+    "oracleText": "Menace (This creature can't be blocked except by two or more creatures.)\nTunnel Snakes Rule! — Whenever Butch DeLoria attacks, it gets +1/+1 until end of turn for each other Rogue and/or Snake you control.\n{1}{B}: Put a menace counter on another target creature. It becomes a Rogue in addition to its other types.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "MENACE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Butch DeLoria, Tunnel Snake:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "Rogue|Snake",
+                        "excludeSelf": true
+                    },
+                    "toughnessModifier": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "Rogue|Snake",
+                        "excludeSelf": true
+                    },
+                    "target": "Self"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Butch DeLoria, Tunnel Snake:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{B}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "MENACE",
+                            "count": 1,
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "AddCreatureType",
+                            "subtype": "Rogue",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature",
+                            "excludeSelf": true
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "43",
+        "rarity": "UNCOMMON",
+        "artist": "Zuzanna Wużyk",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/6/d6ed508c-ff2c-444c-8149-34b29e2fbebe.jpg?1783912408",
+        "rulings": [
+            {
+                "date": "2024-03-08",
+                "text": "A permanent that's both a Rogue and a Snake is counted only once for Butch DeLoria's second ability."
+            }
+        ]
+    }
+}
+
+// Charisma Bobblehead
+{
+    "name": "Charisma Bobblehead",
+    "manaCost": "{3}",
+    "typeLine": "Artifact — Bobblehead",
+    "oracleText": "{T}: Add one mana of any color.\n{4}, {T}: Create X 1/1 white Soldier creature tokens, where X is the number of Bobbleheads you control. Activate only as a sorcery.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Charisma Bobblehead:1",
+                "cost": "CostTap",
+                "effect": "AddManaOfChoice",
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Charisma Bobblehead:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{4}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "Bobblehead"
+                    },
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Soldier"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/a/f/af191656-5e62-440f-b63a-705cfed314e7.jpg?1783912045"
+                },
+                "timing": "SorcerySpeed",
+                "descriptionOverride": "Create a 1/1 white Soldier token for each Bobblehead you control."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "130",
+        "rarity": "UNCOMMON",
+        "artist": "Michał Miłkowski",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/5/35f61330-869f-448c-8374-1cbac7c23454.jpg?1783912380",
+        "rulings": [
+            {
+                "date": "2024-03-08",
+                "text": "The value of X is calculated only once, as Charisma Bobblehead’s last ability resolves."
+            }
+        ]
+    }
+}
+
 // Contaminated Drink
 {
     "name": "Contaminated Drink",
@@ -157,6 +410,174 @@
             {
                 "date": "2024-03-08",
                 "text": "If a player has fewer cards remaining in their library than the number of rad counters they have when the triggered ability resolves, they’ll mill as many cards as they can."
+            }
+        ]
+    }
+}
+
+// Craig Boone, Novac Guard
+{
+    "name": "Craig Boone, Novac Guard",
+    "manaCost": "{1}{R}{W}",
+    "typeLine": "Legendary Creature — Human Soldier",
+    "oracleText": "Reach, lifelink\nOne for My Baby — Whenever you attack with two or more creatures, put two quest counters on Craig Boone. When you do, Craig Boone deals damage equal to the number of quest counters on it to up to one target creature unless that creature's controller has Craig Boone deal that much damage to them.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "REACH",
+        "LIFELINK"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Craig Boone, Novac Guard:1",
+                "trigger": {
+                    "type": "YouAttackEvent",
+                    "minAttackers": 2
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "StoreNumber",
+                            "name": "number0",
+                            "amount": {
+                                "type": "EntityProperty",
+                                "entity": "Self",
+                                "numericProperty": {
+                                    "type": "CounterCount",
+                                    "counterType": "QUEST"
+                                }
+                            }
+                        },
+                        {
+                            "type": "AddCounters",
+                            "counterType": "QUEST",
+                            "count": 2,
+                            "target": "Self"
+                        },
+                        {
+                            "type": "RepeatDynamicTimes",
+                            "amount": {
+                                "type": "Divide",
+                                "numerator": {
+                                    "type": "Subtract",
+                                    "left": {
+                                        "type": "EntityProperty",
+                                        "entity": "Self",
+                                        "numericProperty": {
+                                            "type": "CounterCount",
+                                            "counterType": "QUEST"
+                                        }
+                                    },
+                                    "right": {
+                                        "type": "VariableReference",
+                                        "variableName": "number0"
+                                    }
+                                },
+                                "denominator": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                },
+                                "roundUp": false
+                            },
+                            "body": {
+                                "type": "ReflexiveTrigger",
+                                "action": {
+                                    "type": "Composite",
+                                    "effects": []
+                                },
+                                "optional": false,
+                                "reflexiveEffect": {
+                                    "type": "Gated",
+                                    "gate": {
+                                        "type": "Gate.WhenCondition",
+                                        "condition": {
+                                            "type": "EntityMatches",
+                                            "entity": {
+                                                "type": "BoundVariable",
+                                                "name": "t0"
+                                            },
+                                            "filter": "creature"
+                                        }
+                                    },
+                                    "then": {
+                                        "type": "Gated",
+                                        "gate": {
+                                            "type": "Gate.MayDecide",
+                                            "prompt": "Have Craig Boone deal that much damage to you instead of to your creature?"
+                                        },
+                                        "then": {
+                                            "type": "DealDamage",
+                                            "amount": {
+                                                "type": "EntityProperty",
+                                                "entity": "Self",
+                                                "numericProperty": {
+                                                    "type": "CounterCount",
+                                                    "counterType": "QUEST"
+                                                }
+                                            },
+                                            "target": "TargetController",
+                                            "damageSource": "Self"
+                                        },
+                                        "otherwise": {
+                                            "type": "DealDamage",
+                                            "amount": {
+                                                "type": "EntityProperty",
+                                                "entity": "Self",
+                                                "numericProperty": {
+                                                    "type": "CounterCount",
+                                                    "counterType": "QUEST"
+                                                }
+                                            },
+                                            "target": {
+                                                "type": "BoundVariable",
+                                                "name": "t0"
+                                            },
+                                            "damageSource": "Self"
+                                        },
+                                        "decisionMaker": "TargetController"
+                                    }
+                                },
+                                "reflexiveTargetRequirements": [
+                                    {
+                                        "type": "TargetObject",
+                                        "optional": true,
+                                        "filter": {
+                                            "baseFilter": "creature"
+                                        },
+                                        "id": "t0"
+                                    }
+                                ],
+                                "descriptionOverride": "Craig Boone deals damage equal to the number of quest counters on it to up to one target creature unless that creature's controller has Craig Boone deal that much damage to them."
+                            }
+                        }
+                    ],
+                    "descriptionOverride": "Put two quest counters on Craig Boone. When you do, Craig Boone deals damage equal to the number of quest counters on it to up to one target creature unless that creature's controller has Craig Boone deal that much damage to them."
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "100",
+        "rarity": "UNCOMMON",
+        "artist": "Pierre Raveneau",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/3/63d83dad-21c3-4777-84b0-3c775585b5fd.jpg?1783912390",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "In the rare case where more than two quest counters are placed on Craig Boone because of the effect of its last ability (for example, because of the effect of Doubling Season), the reflexive triggered ability will trigger once for every two quest counters placed on Craig Boone this way."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "You don't choose a target for Craig Boone's last ability at the time it triggers. Rather, a second \"reflexive\" ability triggers when you put two quest counters on Craig Boone this way. You choose up to one target for that ability as it goes on the stack. Each player may respond to this triggered ability as normal."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "If Craig Boone is no longer on the battlefield when the reflexive triggered ability resolves, use the number of quest counters that were on it when it was last on the battlefield to determine how much damage it deals."
             }
         ]
     }
@@ -297,6 +718,276 @@
         "BLACK",
         "WHITE"
     ]
+}
+
+// Diamond City
+{
+    "name": "Diamond City",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "This land enters with a shield counter on it. (If it would be dealt damage or destroyed, remove a shield counter from it instead.)\n{T}: Add {C}.\n{T}: Move a shield counter from this land onto target creature. Activate only if two or more creatures entered the battlefield under your control this turn.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Diamond City:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Diamond City:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "MoveCounters",
+                    "counterType": "SHIELD",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "source": "Self",
+                    "destination": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "restrictions": [
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "CardTypeEnteredUnderControlThisTurn",
+                                "player": "You",
+                                "cardType": "CREATURE"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        }
+                    }
+                ]
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "counterType": "SHIELD",
+                "count": 1,
+                "selfOnly": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "147",
+        "rarity": "RARE",
+        "artist": "Pascal Quidault",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/e/3e9bd49a-e9f1-4543-b04a-777a9e5a55ec.jpg?1783912374",
+        "rulings": [
+            {
+                "date": "2024-03-08",
+                "text": "Shield counters don’t prevent players from sacrificing permanents."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "If a permanent that would be dealt damage has more than one shield counter on it, that damage is prevented and only one shield counter is removed."
+            }
+        ]
+    }
+}
+
+// ED-E, Lonesome Eyebot
+{
+    "name": "ED-E, Lonesome Eyebot",
+    "manaCost": "{3}",
+    "typeLine": "Legendary Artifact Creature — Robot",
+    "oracleText": "Flying\nED-E My Love — Whenever you attack, if the number of attacking creatures is greater than the number of quest counters on ED-E, put a quest counter on it.\n{2}, Sacrifice ED-E: Draw a card, then draw an additional card for each quest counter on ED-E.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ED-E, Lonesome Eyebot:1",
+                "trigger": "YouAttackEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "QUEST",
+                    "count": 1,
+                    "target": "Self"
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateBattlefield",
+                        "player": "Each",
+                        "filter": "creature attacking"
+                    },
+                    "operator": "GT",
+                    "right": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": {
+                            "type": "CounterCount",
+                            "counterType": "QUEST"
+                        }
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "ED-E, Lonesome Eyebot:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}"
+                            }
+                        },
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Add",
+                        "left": {
+                            "type": "LastKnownSourceCounters",
+                            "counterType": "QUEST"
+                        },
+                        "right": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    }
+                },
+                "descriptionOverride": "Draw a card, then draw an additional card for each quest counter on ED-E."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "131",
+        "rarity": "RARE",
+        "artist": "Leanna Crossan",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/3/b319f0e1-6f18-4fea-9f72-a21da5513aa4.jpg?1783912378",
+        "rulings": [
+            {
+                "date": "2024-03-08",
+                "text": "If the number of attacking creatures isn't greater than the number of quest counters on ED-E when you attack, its second ability won't trigger at all. When the ability tries to resolve, if the number of attacking creatures is no longer greater than the number of quest counters on ED-E, it won't resolve, and you won't put a quest counter on ED-E."
+            }
+        ]
+    }
+}
+
+// Elder Arthur Maxson
+{
+    "name": "Elder Arthur Maxson",
+    "manaCost": "{1}{W}{B}",
+    "typeLine": "Legendary Creature — Human Knight",
+    "oracleText": "Creature tokens you control have training. (Whenever a creature token you control attacks with another creature with greater power, put a +1/+1 counter on that token.)\nBlind Betrayal — Sacrifice another creature: Elder Arthur Maxson gains indestructible until end of turn.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Elder Arthur Maxson:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomSacrifice",
+                        "filter": "creature",
+                        "excludeSelf": true
+                    }
+                },
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "INDESTRUCTIBLE",
+                    "target": "Self"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "TRAINING",
+                "filter": {
+                    "baseFilter": "creature token ctrl:you"
+                }
+            },
+            {
+                "type": "GrantTriggeredAbility",
+                "ability": {
+                    "id": "Elder Arthur Maxson:1",
+                    "trigger": {
+                        "type": "AttackEvent",
+                        "requires": [
+                            "AttacksAlongsideGreaterPower"
+                        ]
+                    },
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "AddCounters",
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "count": 1,
+                                "target": "Self"
+                            },
+                            "EmitTrainedEvent"
+                        ]
+                    },
+                    "descriptionOverride": "Training (Whenever this creature attacks with another creature with greater power, put a +1/+1 counter on this creature.)"
+                },
+                "filter": {
+                    "baseFilter": "creature token ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "102",
+        "rarity": "RARE",
+        "artist": "Anton Solovianchyk",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/4/049771b0-69ad-4f2d-8567-47e8a87b4496.jpg?1783912391",
+        "rulings": [
+            {
+                "date": "2024-03-08",
+                "text": "A creature’s training ability triggers only when both that creature and a creature with greater power are declared as attackers. Increasing a creature’s power after attackers are declared won’t cause a training ability to trigger."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "Once a creature’s training ability has triggered, destroying the other attacking creature or reducing its power won’t stop the creature with training from getting a +1/+1 counter."
+            }
+        ]
+    }
 }
 
 // Expert-Level Safe
@@ -612,6 +1303,162 @@
     }
 }
 
+// Kellogg, Dangerous Mind
+{
+    "name": "Kellogg, Dangerous Mind",
+    "manaCost": "{1}{B}{R}",
+    "typeLine": "Legendary Creature — Human Mercenary",
+    "oracleText": "First strike, haste\nWhenever Kellogg attacks, create a Treasure token.\nSacrifice five Treasures: Gain control of target creature for as long as you control Kellogg. Activate only as a sorcery.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "FIRST_STRIKE",
+        "HASTE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Kellogg, Dangerous Mind:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Treasure",
+                    "imageUri": "https://cards.scryfall.io/normal/front/1/d/1d74d012-66ca-4a0c-9e90-e31e96730d4d.jpg?1783912040"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Kellogg, Dangerous Mind:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomSacrifice",
+                        "filter": "artifact Treasure",
+                        "count": 5
+                    }
+                },
+                "effect": {
+                    "type": "GainControl",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "duration": {
+                        "type": "WhileYouControlSource",
+                        "sourceDescription": "Kellogg"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "descriptionOverride": "Sacrifice five Treasures: Gain control of target creature for as long as you control Kellogg."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "106",
+        "rarity": "RARE",
+        "artist": "Josh Hass",
+        "flavorText": "\"We both know how this will end. So... you ready?\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/2/f2b22b32-be24-48e3-aa81-9256190df02c.jpg?1783912387",
+        "rulings": [
+            {
+                "date": "2024-03-08",
+                "text": "If you lose control of Kellogg before its last ability resolves, you won't gain control of the target creature at all."
+            }
+        ]
+    }
+}
+
+// Legate Lanius, Caesar's Ace
+{
+    "name": "Legate Lanius, Caesar's Ace",
+    "manaCost": "{2}{B}{R}",
+    "typeLine": "Legendary Creature — Human Soldier",
+    "oracleText": "Decimate — When Legate Lanius enters, each opponent sacrifices a tenth of the creatures they control of their choice, rounded up.\nWhenever an opponent sacrifices a creature, put a +1/+1 counter on Legate Lanius.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Legate Lanius, Caesar's Ace:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "EachOpponent"
+                    },
+                    "body": {
+                        "type": "ForceSacrifice",
+                        "filter": "creature",
+                        "target": {
+                            "type": "PlayerRef",
+                            "player": "You"
+                        },
+                        "dynamicCount": {
+                            "type": "Divide",
+                            "numerator": {
+                                "type": "AggregateBattlefield",
+                                "player": "You",
+                                "filter": "creature"
+                            },
+                            "denominator": {
+                                "type": "Fixed",
+                                "amount": 10
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "id": "Legate Lanius, Caesar's Ace:2",
+                "trigger": {
+                    "type": "PermanentsSacrificedEvent",
+                    "filter": "creature",
+                    "sacrificedBy": "EachOpponent",
+                    "perPermanent": true
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "107",
+        "rarity": "UNCOMMON",
+        "artist": "Bruno Biazotto",
+        "flavorText": "\"Victory shall be ours, it shall be swift, and it will be honest, purchased with blood.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/1/f14eb369-b8e3-4abf-9e77-79d1fe5b426f.jpg?1783912387",
+        "rulings": [
+            {
+                "date": "2024-03-08",
+                "text": "For example, when Legate Lanius's first ability resolves, an opponent who controls between one and ten creatures will sacrifice one creature. An opponent who controls between eleven and twenty creatures will sacrifice two creatures, and so on."
+            }
+        ]
+    }
+}
+
 // Luck Bobblehead
 {
     "name": "Luck Bobblehead",
@@ -711,6 +1558,105 @@
             {
                 "date": "2024-03-08",
                 "text": "You win the game only if you rolled 6 exactly seven times while resolving a single instance of Luck Bobblehead’s last ability. Results of previous die rolls, whether they’re from previous resolutions of Luck Bobblehead’s last ability or from other effects that instruct you to roll dice, don’t matter for the purposes of this effect."
+            }
+        ]
+    }
+}
+
+// MacCready, Lamplight Mayor
+{
+    "name": "MacCready, Lamplight Mayor",
+    "manaCost": "{W}{B}",
+    "typeLine": "Legendary Creature — Human Advisor",
+    "oracleText": "Whenever a creature you control with power 2 or less attacks, it gains skulk until end of turn. (It can't be blocked by creatures with greater power.)\nWhenever a creature with power 4 or greater attacks you, its controller loses 2 life and you gain 2 life.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "MacCready, Lamplight Mayor:1",
+                "trigger": {
+                    "type": "AttackEvent",
+                    "filter": "creature pow<=2 ctrl:you"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "GrantStaticAbility",
+                    "ability": {
+                        "type": "CantBeBlockedBy",
+                        "blockerFilter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                {
+                                    "type": "PowerGreaterThanEntity",
+                                    "reference": "Self"
+                                }
+                            ]
+                        }
+                    },
+                    "target": "TriggeringEntity"
+                },
+                "descriptionOverride": "Whenever a creature you control with power 2 or less attacks, it gains skulk until end of turn."
+            },
+            {
+                "id": "MacCready, Lamplight Mayor:2",
+                "trigger": {
+                    "type": "AttackEvent",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "PowerAtLeast",
+                                "min": 4
+                            }
+                        ],
+                        "statePredicates": [
+                            {
+                                "type": "IsAttackingPlayer",
+                                "player": "Controller"
+                            }
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "target": "ControllerOfTriggeringEntity"
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "108",
+        "rarity": "RARE",
+        "artist": "Stephen Stark",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/d/0d2251ce-2d5b-4d0d-8dc9-44f6b40aa7cf.jpg?1783912387",
+        "rulings": [
+            {
+                "date": "2024-03-08",
+                "text": "The power of your attacking creature is checked only when MacCready’s first ability triggers. Once it triggers, the creature will gain skulk until end of turn when the ability resolves, regardless of whether or not its power is still 2 or less at that time."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "Similarly, the power of the creature attacking you is checked only when MacCready’s second ability triggers. Once it triggers, the creature’s controller will lose 2 life and you’ll gain 2 life when the ability resolves, regardless of whether or not its power is still 4 or greater at that time or whether or not it’s still on the battlefield."
             }
         ]
     }
@@ -1008,6 +1954,124 @@
     ]
 }
 
+// Paladin Elizabeth Taggerdy
+{
+    "name": "Paladin Elizabeth Taggerdy",
+    "manaCost": "{1}{R}{W}",
+    "typeLine": "Legendary Creature — Human Knight",
+    "oracleText": "Battalion — Whenever Paladin Elizabeth Taggerdy and at least two other creatures attack, draw a card, then you may put a creature card with mana value X or less from your hand onto the battlefield tapped and attacking, where X is Paladin Elizabeth Taggerdy's power.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Paladin Elizabeth Taggerdy:1",
+                "trigger": {
+                    "type": "AttackEvent",
+                    "requires": [
+                        {
+                            "type": "AttackerCountAtLeast",
+                            "n": 3
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand",
+                                "filter": "creature"
+                            },
+                            "storeAs": "gathered1"
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "gathered1",
+                            "filter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "ManaValueAtMostDynamic",
+                                        "amount": {
+                                            "type": "EntityProperty",
+                                            "entity": "Self",
+                                            "numericProperty": "Power"
+                                        }
+                                    }
+                                ]
+                            },
+                            "storeMatching": "matching2"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "matching2",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected3",
+                            "prompt": "You may put a creature card onto the battlefield tapped and attacking",
+                            "selectedLabel": "Put onto the battlefield tapped and attacking"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected3",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield",
+                                "placement": "TappedAndAttacking"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "114",
+        "rarity": "RARE",
+        "artist": "Wisnu Tan",
+        "flavorText": "\"Into the killing ground!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/2/a24fd14b-cfd1-43db-b155-3187a1063d92.jpg?1783912385",
+        "rulings": [
+            {
+                "date": "2024-03-08",
+                "text": "The three attacking creatures don’t have to be attacking the same player, planeswalker, or battle."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "Once Paladin Elizabeth Taggerdy’s battalion ability has triggered, it doesn’t matter how many creatures are still attacking when that ability resolves."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "If Paladin Elizabeth Taggerdy is no longer on the battlefield when its battalion ability resolves, use its power as it last existed on the battlefield to determine the value of X."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "Although the creature you put onto the battlefield is attacking, it was never declared as an attacking creature. This means that abilities that trigger whenever a creature attacks won’t trigger when it enters the battlefield attacking."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "You choose which player, planeswalker, or battle the creature you put onto the battlefield is attacking as it enters the battlefield. It doesn’t have to be attacking the same player, planeswalker, or battle that Paladin Elizabeth Taggerdy is attacking."
+            }
+        ]
+    }
+}
+
 // Powder Ganger
 {
     "name": "Powder Ganger",
@@ -1288,6 +2352,97 @@
     }
 }
 
+// Sierra, Nuka's Biggest Fan
+{
+    "name": "Sierra, Nuka's Biggest Fan",
+    "manaCost": "{3}{W}",
+    "typeLine": "Legendary Creature — Human Citizen",
+    "oracleText": "The Nuka-Cola Challenge — Whenever one or more creatures you control deal combat damage to a player, put a quest counter on Sierra and create a Food token.\nWhenever you sacrifice a Food, target creature you control gets +X/+X until end of turn, where X is the number of quest counters on Sierra.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sierra, Nuka's Biggest Fan:1",
+                "trigger": "OneOrMoreDealCombatDamageToPlayerEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "QUEST",
+                            "count": 1,
+                            "target": "Self"
+                        },
+                        {
+                            "type": "CreatePredefinedToken",
+                            "tokenType": "Food"
+                        }
+                    ]
+                }
+            },
+            {
+                "id": "Sierra, Nuka's Biggest Fan:2",
+                "trigger": {
+                    "type": "PermanentsSacrificedEvent",
+                    "filter": "artifact Food",
+                    "perPermanent": true
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": {
+                            "type": "CounterCount",
+                            "counterType": "QUEST"
+                        }
+                    },
+                    "toughnessModifier": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": {
+                            "type": "CounterCount",
+                            "counterType": "QUEST"
+                        }
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "25",
+        "rarity": "RARE",
+        "artist": "Anna Podedworna",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/4/641dd97c-6577-4cab-8672-56f870477961.jpg?1783912415",
+        "rulings": [
+            {
+                "date": "2024-03-08",
+                "text": "If an effect refers to a Food, it means any Food artifact, not just a Food artifact token. For example, if you sacrifice a nontoken Food artifact, such as Candy Trail from the Wilds of Eldraine set, Sierra's last ability will trigger."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "Sierra's last ability triggers whenever you sacrifice a Food for any reason, not just to activate a Food's activated ability."
+            }
+        ]
+    }
+}
+
 // Sunscorched Divide
 {
     "name": "Sunscorched Divide",
@@ -1423,6 +2578,95 @@
         "rarity": "UNCOMMON",
         "artist": "Valera Lutfullina",
         "imageUri": "https://cards.scryfall.io/normal/front/a/2/a2f30a39-aad3-45da-8f03-50b1d1806b00.jpg?1783912375"
+    }
+}
+
+// The Nipton Lottery
+{
+    "name": "The Nipton Lottery",
+    "manaCost": "{2}{B}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Choose a creature at random. You gain control of that creature until end of turn. Untap it. It gains haste until end of turn. Then destroy all other creatures.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "BattlefieldMatching",
+                        "filter": "creature"
+                    },
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered0",
+                    "selection": {
+                        "type": "Random",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "storeSelected": "selected1",
+                    "storeRemainder": "remainder1"
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Collection",
+                        "collection": "selected1"
+                    },
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GainControl",
+                                "target": "IterationEntity",
+                                "duration": "EndOfTurn"
+                            },
+                            {
+                                "type": "TapUntap",
+                                "target": "IterationEntity",
+                                "tap": false
+                            },
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "HASTE",
+                                "target": "IterationEntity"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "remainder1",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard"
+                    },
+                    "moveType": "Destroy"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "113",
+        "rarity": "RARE",
+        "artist": "Olivier Bernard",
+        "flavorText": "Oliver Swanick won the only lottery that matters: a chance to live another day.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/0/a0abd847-1c9d-45cd-a6d1-3a0cda3687cb.jpg?1783912386",
+        "rulings": [
+            {
+                "date": "2024-03-08",
+                "text": "The creature chosen at random isn’t targeted, so a creature with shroud or an opponent’s creature with hexproof can be chosen this way."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "Players can’t take actions between the time the creature is randomly chosen and the time at which the rest of the effects occur."
+            }
+        ]
     }
 }
 
@@ -1743,6 +2987,84 @@
     ]
 }
 
+// Vault 75: Middle School
+{
+    "name": "Vault 75: Middle School",
+    "manaCost": "{2}{W}{W}",
+    "typeLine": "Enchantment — Saga",
+    "oracleText": "(As this Saga enters and after your draw step, add a lore counter. Sacrifice after III.)\nI — Exile all creatures with power 4 or greater.\nII, III — Put a +1/+1 counter on each creature you control.",
+    "script": {
+        "sagaChapters": [
+            {
+                "chapter": 1,
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "BattlefieldMatching",
+                                "filter": "creature pow>=4"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "chapter": 2,
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": "IterationEntity"
+                    }
+                }
+            },
+            {
+                "chapter": 3,
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": "IterationEntity"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "27",
+        "rarity": "RARE",
+        "artist": "Victor Harmatiuk",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/9/3992e262-0491-4379-b74b-13cc8b63065e.jpg?1783912413"
+    }
+}
+
 // Viridescent Bog
 {
     "name": "Viridescent Bog",
@@ -1965,4 +3287,71 @@
         "WHITE",
         "BLACK"
     ]
+}
+
+// Wild Wasteland
+{
+    "name": "Wild Wasteland",
+    "manaCost": "{2}{R}",
+    "typeLine": "Enchantment",
+    "oracleText": "Skip your draw step.\nAt the beginning of your upkeep, exile the top two cards of your library. You may play those cards this turn.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Wild Wasteland:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        },
+                        {
+                            "type": "GrantMayPlayFromExile",
+                            "from": "gathered0"
+                        }
+                    ]
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "SkipStepOrPhase",
+                "part": "DRAW_STEP"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "71",
+        "rarity": "RARE",
+        "artist": "Mathias Kollros",
+        "flavorText": "Some things in the wasteland are best left unexplained.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/a/ca1024d6-c5f1-48f5-9081-fb90d0c46fdb.jpg?1783912401",
+        "rulings": [
+            {
+                "date": "2024-03-08",
+                "text": "You pay all costs and follow all normal timing rules for cards played from exile with Wild Wasteland’s ability. For example, if one of the exiled cards is a land card, you may play it only during your main phase while the stack is empty."
+            }
+        ]
+    }
 }
