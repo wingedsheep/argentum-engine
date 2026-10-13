@@ -4,6 +4,7 @@ import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.handlers.effects.DamageUtils
+import com.wingedsheep.engine.handlers.effects.LifeGainModifiers
 import com.wingedsheep.engine.replacement.*
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.sdk.dsl.Effects
@@ -14,7 +15,18 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 /** The shared life primitive queues effect work where damage arithmetic cannot pause. */
 object LifeGainReplacements {
-    fun applies(state: GameState, playerId: EntityId, amount: Int, predicates: PredicateEvaluator): Boolean {
+    /**
+     * Whether this gain needs the full replacement processor rather than the arithmetic fast
+     * path: a [ReplaceLifeGainWith] applies, or the applicable
+     * [com.wingedsheep.sdk.scripting.ModifyLifeGain]s don't commute, so the affected player
+     * chooses their order (CR 616.1).
+     */
+    fun applies(state: GameState, playerId: EntityId, amount: Int, predicates: PredicateEvaluator): Boolean =
+        replacesWithEffect(state, playerId, amount, predicates) ||
+            LifeGainModifiers.orderMatters(LifeGainModifiers.gather(state, playerId, amount, predicates))
+
+    /** Whether a [ReplaceLifeGainWith] applies to this gain. */
+    fun replacesWithEffect(state: GameState, playerId: EntityId, amount: Int, predicates: PredicateEvaluator): Boolean {
         if (amount <= 0) return false
         return ActiveReplacements.all(state).any { active ->
             val printed = active.effect as? ReplaceLifeGainWith ?: return@any false

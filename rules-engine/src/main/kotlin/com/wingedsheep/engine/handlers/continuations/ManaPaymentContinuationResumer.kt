@@ -757,6 +757,10 @@ class ManaPaymentContinuationResumer(
                 for ((_, production) in solution.manaProduced) {
                     currentPool = currentPool.addProduction(production)
                 }
+                // A composite tap's extra fixed colors (Timeless Lotus) aren't in manaProduced.
+                for (source in solution.sources) {
+                    for ((color, amount) in source.compositeBonusMana) currentPool = currentPool.add(color, amount)
+                }
             } else {
                 // Split off sources that carry a tap-permanents sub-cost (Springleaf Drum) —
                 // those require a follow-up creature-selection prompt before the source can
@@ -1186,6 +1190,10 @@ class ManaPaymentContinuationResumer(
                 for ((_, production) in solution.manaProduced) {
                     currentPool = currentPool.addProduction(production)
                 }
+                // A composite tap's extra fixed colors (Timeless Lotus) aren't in manaProduced.
+                for (source in solution.sources) {
+                    for ((color, amount) in source.compositeBonusMana) currentPool = currentPool.add(color, amount)
+                }
             } else {
                 val manual = applyManualSourceSelection(
                     currentState,
@@ -1461,6 +1469,10 @@ class ManaPaymentContinuationResumer(
                 for ((_, production) in solution.manaProduced) {
                     currentPool = currentPool.addProduction(production)
                 }
+                // A composite tap's extra fixed colors (Timeless Lotus) aren't in manaProduced.
+                for (source in solution.sources) {
+                    for ((color, amount) in source.compositeBonusMana) currentPool = currentPool.add(color, amount)
+                }
             } else {
                 val manual = applyManualSourceSelection(
                     currentState,
@@ -1551,6 +1563,10 @@ class ManaPaymentContinuationResumer(
         fallbackControllerId: EntityId
     ): ManualSourceTapResult? {
         val sourceMap = availableSources.associateBy { it.entityId }
+        // A composite tap ("{T}: Add {W}{U}{B}{R}{G}") adds its extra fixed colors too; the
+        // option only carries the primary one.
+        val compositeExtras = services.manaSolver.findAvailableManaSources(state, fallbackControllerId)
+            .associate { it.entityId to it.compositeBonusMana }
         var currentState = state
         var currentPool = pool
         val events = mutableListOf<GameEvent>()
@@ -1593,6 +1609,7 @@ class ManaPaymentContinuationResumer(
             } else if (source.producesColorless) {
                 currentPool = currentPool.addColorless(1).let { if (ManaProvenanceTracker.isSnowSource(currentState, sourceId)) it.markSnow(null, 1) else it }
             }
+            for ((color, amount) in compositeExtras[sourceId].orEmpty()) currentPool = currentPool.add(color, amount)
         }
 
         return ManualSourceTapResult(currentState, currentPool, events)

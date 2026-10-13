@@ -2432,6 +2432,9 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
 - `AddAnyColorManaSpendOnChosenType(typeName)` — mana that can only pay for a specific card type (kept separate because it derives a runtime [ManaRestriction] from the source's chosen subtype).
 - `AddDynamicMana(amount, allowedColors, restriction?)` — split X across a fixed color set, distinct from `AddManaOfChoice` because it distributes the full X total across multiple colors rather than producing X copies of one chosen color.
 - `AddManaInAnyCombination(amount, allowedColors?, restriction?)` — "Add N mana in any combination of colors" (Wizard's Rockets, Thornvault Forager, Interdimensional Web Watch). Sugar for `AddDynamicMana`; `allowedColors` defaults to all five. The controller colors **each** pip independently at resolution (3+ colors → pip-by-pip color choice; 2 colors → one "how much of the first" prompt; ≤0 → no mana, no prompt), so the result can mix colors — distinct from `AddAnyColorMana`, where all N share one color. For "any combination of **its** colors" (a looked-at card), repeat `AddManaOfChoice(ManaColorSet.ColorsOf(…))` N times.
+- Several fixed kinds on one tap ("{T}: Add {R}{G}", Timeless Lotus's "{T}: Add {W}{U}{B}{R}{G}") — chain
+  `AddMana(color)` / `AddColorlessMana` leaves with `then`. Auto-pay models every leaf: the first feeds the
+  source's colors, each extra fixed color is credited separately, so a lone Lotus pays a `{W}{U}{B}{R}{G}` spell.
 - `AddOneManaOfEachColorAmong(filter)` — one mana of *each* color found among matching permanents (Bloom Tender shape).
 - `AddOneManaOfEachCraftedMaterialColor()` — one mana of *each* printed color among the exiled cards used to craft the source (`AddOneManaOfEachColorAmongEffect(colorSource = ManaColorSource.CraftedMaterials)`; Sunbird Effigy).
 - `PayDynamicMana(amount, payer?, color?)` — pay a dynamically-computed amount of mana at resolution; the
@@ -7092,6 +7095,10 @@ The shapes in this family, with their engine notes.
   "another land you control" wants `Triggers.a(filter).enters()` / `Triggers.another(filter).enters()` instead.
 - `Triggers.a(filter).enters()` / `Triggers.another(filter).enters()` — Covers face-down filters,
   ANY-binding tribal scopes, permanent-you-control scopes, enchantment-enters scopes (Eerie), etc.
+  The filter's card-type predicates (`Creature`, `Artifact`, `notCreature()`, `Legendary`, …) read the
+  entrant's **projected** types, like its subtypes and keywords: a noncreature artifact animated by March
+  of the Machines enters as a creature, so Wingmantle Chaplain's "another creature you control with
+  defender enters" sees it. An entrant already gone again falls back to its printed type line.
 
 **Leaves / dies**
 
@@ -16359,11 +16366,14 @@ not update an existing copy.
   Example: Lich uses `ReplaceLifeGainWith(Effects.DrawCards(DynamicAmounts.replacementLifeGainAmount()))`.
 - `ModifyLifeGain(multiplier, modifier, appliesTo, restrictions)` — modify life gain by a multiplicative *and/or*
   additive factor: `gained = (original * multiplier) + modifier`, clamped to ≥ 0. `appliesTo` is a `LifeGainEvent`
-  whose `player` filter (default `Player.Each`) gates which players the replacement applies to. `restrictions`
+  whose `player` filter (default `Player.You`) gates which players the replacement applies to. `restrictions`
   (a `List<Condition>`, ALL must hold, evaluated against the gaining player as controller) gates *when* it applies
   — e.g. Phial of Galadriel `restrictions = listOf(Conditions.LifeAtMost(5))` ("while you have 5 or less life").
   Used by Alhammarret's Archive (`multiplier = 2`), Leyline of Hope (`multiplier = 1, modifier = 1, player =
-  Player.You`). Multiple instances stack (×s multiply, +s sum) — two Leylines of Hope add 2 to every life-gain event.
+  Player.You`), Knight of Dawn's Light. Multiple instances stack (×s multiply, +s sum) — two Leylines of Hope add 2 to
+  every life-gain event. When the applicable modifiers don't commute (a doubler beside a "+1"), the gaining player
+  chooses which applies first (CR 616.1), on every life-gain path including lifelink. A source that has lost all
+  abilities or is face down modifies nothing — the fast path and the replacement processor gather the same set.
 - `ModifyLifeLoss(multiplier, modifier, restrictions, appliesTo)` — same shape as `ModifyLifeGain` for life loss
   events (`LifeLossEvent`), plus a `restrictions: List<Condition>` list that further gates the replacement.
 - `LifeLossFloor(floor, restrictions, appliesTo)` — cap damage-induced life loss so the resulting life total

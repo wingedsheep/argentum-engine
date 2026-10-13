@@ -567,9 +567,7 @@ class CostPaymentService(private val services: EngineServices) {
             // though the solver counted the bonus toward affordability. Mirrors the activate-ability
             // auto-tap path (ActivationAutoTapper.autoTapForManaCost).
             for (source in solution.sources) {
-                if (source.bonusManaPerTap > 0 && source.bonusManaColor != null) {
-                    combined = combined.add(source.bonusManaColor, source.bonusManaPerTap)
-                }
+                for ((color, amount) in source.fixedBonusMana) combined = combined.add(color, amount)
             }
         }
 

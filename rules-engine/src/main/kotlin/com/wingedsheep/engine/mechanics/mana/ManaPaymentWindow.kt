@@ -177,10 +177,7 @@ object ManaPaymentWindow {
             // Bonus mana from mana auras / "whenever you tap for mana" riders isn't in
             // manaProduced; credit it or the cost comes up short (mirrors CostPaymentService.payMana).
             for (source in solution.sources) {
-                val bonusColor = source.bonusManaColor
-                if (source.bonusManaPerTap > 0 && bonusColor != null) {
-                    produced = produced.add(bonusColor, source.bonusManaPerTap)
-                }
+                for ((color, amount) in source.fixedBonusMana) produced = produced.add(color, amount)
             }
         } else {
             val byId = availableSources.filter { it.entityId !in excludeSources }.associateBy { it.entityId }
@@ -201,6 +198,12 @@ object ManaPaymentWindow {
                     source.producesColorless -> produced.addColorless(source.manaAmount)
                     else -> produced
                 }.let { if (actual.isSnow && restriction == null) it.markSnow(color, source.manaAmount) else it }
+                // A composite tap ("{T}: Add {W}{U}{B}{R}{G}") adds its extra fixed colors too.
+                for ((extraColor, amount) in actual.compositeBonusMana) {
+                    val extraRestriction = actual.colorRestrictions[extraColor] ?: actual.restriction
+                    produced = if (extraRestriction != null) produced.addRestricted(extraColor, amount, extraRestriction)
+                        else produced.add(extraColor, amount)
+                }
             }
         }
 

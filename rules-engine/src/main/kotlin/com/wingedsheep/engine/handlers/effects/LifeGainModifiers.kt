@@ -1,13 +1,11 @@
 package com.wingedsheep.engine.handlers.effects
 
 import com.wingedsheep.engine.handlers.PredicateEvaluator
+import com.wingedsheep.engine.replacement.PendingGameEvent
+import com.wingedsheep.engine.replacement.ReplacementEffectProcessor
 import com.wingedsheep.engine.state.GameState
-import com.wingedsheep.engine.state.components.battlefield.ReplacementEffectSourceComponent
-import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.sdk.model.EntityId
-import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.ModifyLifeGain
-import com.wingedsheep.sdk.scripting.references.Player
 
 /**
  * Shared application path for [ModifyLifeGain] replacement effects (Alhammarret's Archive,
@@ -17,8 +15,7 @@ import com.wingedsheep.sdk.scripting.references.Player
  * damage → life path in [DamageUtils] — so any source of life gain runs through the same
  * replacement filter.
  *
- * The arithmetic mirrors [com.wingedsheep.sdk.scripting.ModifyLifeLoss.apply]:
- * `newAmount = (originalAmount * multiplier) + modifier`, clamped to ≥ 0. Per the Leyline of
+ * Each modifier maps `amount -> (amount * multiplier) + modifier`, clamped to ≥ 0. Per the Leyline of
  * Hope rulings, the modifier applies **once per life-gain event** regardless of how the
  * original amount was assembled — so this helper is invoked once per receiving player per
  * event, not per "+1" pip.
@@ -26,71 +23,47 @@ import com.wingedsheep.sdk.scripting.references.Player
 object LifeGainModifiers {
 
     /**
-     * Apply every applicable [ModifyLifeGain] effect on the battlefield to a single life-gain
-     * event. Returns the modified amount (≥ 0).
+     * Every [ModifyLifeGain] that would apply to [recipientId] gaining [amount] life, gathered
+     * through the shared [ReplacementEffectProcessor] so this fast path sees exactly what the
+     * full CR 614 pipeline sees: sources that have lost all abilities or are face down are
+     * skipped, text changes apply, the recipient filter and `restrictions` are read the same way,
+     * and granted or floating modifiers count too.
+     */
+    fun gather(state: GameState, recipientId: EntityId, amount: Int, predicateEvaluator: PredicateEvaluator): List<ModifyLifeGain> {
+        if (amount <= 0) return emptyList()
+        return ReplacementEffectProcessor(predicateEvaluator.conditions)
+            .gatherReplacements(state, PendingGameEvent.LifeGainPending(recipientId, amount))
+            .mapNotNull { it.effect as? ModifyLifeGain }
+    }
+
+    /**
+     * Whether the order in which [modifiers] apply changes the result — the case where CR 616.1
+     * has the affected player choose. Each modifier is the affine map `x -> a*x + b`; two of them
+     * commute exactly when `b1*(a2-1) == b2*(a1-1)`, so same-shape stacks (several Leylines of
+     * Hope, several doublers) never need a choice while a doubler next to a "+1" does.
+     */
+    fun orderMatters(modifiers: List<ModifyLifeGain>): Boolean =
+        modifiers.indices.any { i ->
+            (i + 1 until modifiers.size).any { j ->
+                val f = modifiers[i]
+                val g = modifiers[j]
+                f.modifier * (g.multiplier - 1) != g.modifier * (f.multiplier - 1)
+            }
+        }
+
+    /**
+     * Apply every applicable [ModifyLifeGain] to a single life-gain event. Returns the modified
+     * amount (≥ 0). Callers route a gain whose modifiers don't commute ([orderMatters]) through
+     * the replacement processor instead, so the affected player picks the order; here every
+     * order gives the same answer.
      *
-     * @param state Current game state — read for [ReplacementEffectSourceComponent]s on the battlefield
+     * @param state Current game state
      * @param recipientId The player who is gaining life
      * @param originalAmount The life amount the event would normally apply
      */
     fun apply(state: GameState, recipientId: EntityId, originalAmount: Int, predicateEvaluator: PredicateEvaluator): Int {
         if (originalAmount <= 0) return originalAmount
-
-        val conditionEvaluator = predicateEvaluator.conditions
-        var multiplier = 1
-        var modifier = 0
-
-        for (entityId in state.getBattlefield()) {
-            val container = state.getEntity(entityId) ?: continue
-            val replacementComponent = container.get<ReplacementEffectSourceComponent>() ?: continue
-            // Projected controller so a control-changing effect (e.g. Confiscate stealing a
-            // Leyline of Hope) routes the "you" filter to the current controller, not the
-            // owner baked into the base ControllerComponent. Falls back to base for entities
-            // the projector hasn't assigned a controller to.
-            val sourceControllerId = state.projectedState.getController(entityId)
-                ?: container.get<ControllerComponent>()?.playerId ?: continue
-
-            for (effect in replacementComponent.replacementEffects) {
-                if (effect !is ModifyLifeGain) continue
-
-                val lifeGainEvent = effect.appliesTo as? EventPattern.LifeGainEvent ?: continue
-
-                // Honor the recipient filter on the LifeGainEvent. Default is Player.Each.
-                val recipientMatches = when (lifeGainEvent.player) {
-                    Player.Each -> true
-                    Player.You -> recipientId == sourceControllerId
-                    // A real opponent test — the controller's teammate is not an opponent (CR 102.3).
-                    Player.EachOpponent, Player.TargetOpponent -> state.isOpponentOf(recipientId, sourceControllerId)
-                    else -> recipientId == sourceControllerId
-                }
-                if (!recipientMatches) continue
-
-                // Gate by any restrictions (e.g. Phial of Galadriel's "while you have 5 or less
-                // life"), evaluated against the gaining player as controller. Mirrors the
-                // ModifyDrawAmount restriction path in DrawReplacementDispatcher.
-                if (effect.restrictions.isNotEmpty()) {
-                    val effectContext = com.wingedsheep.engine.handlers.EffectContext(
-                        sourceId = entityId,
-                        controllerId = recipientId,
-                    )
-                    val restrictionsHold = effect.restrictions.all { restriction ->
-                        conditionEvaluator.evaluate(state, restriction, effectContext)
-                    }
-                    if (!restrictionsHold) continue
-                }
-
-                // Multiple Leylines of Hope: each adds 1, so stack the modifiers additively.
-                // Multiple Archives stack multiplicatively (×2 × ×2 = ×4).
-                // Note: with mixed shapes (Archive ×2 + Leyline +1) this always applies
-                // multiply-then-add (2X+1). CR 616.1 lets the affected player choose
-                // replacement order, but same-shape stacks are order-independent and the
-                // mixed case is currently unreachable (Alhammarret's Archive isn't implemented).
-                multiplier *= effect.multiplier
-                modifier += effect.modifier
-            }
-        }
-
-        val modified = originalAmount * multiplier + modifier
-        return modified.coerceAtLeast(0)
+        return gather(state, recipientId, originalAmount, predicateEvaluator)
+            .fold(originalAmount) { amount, effect -> (amount * effect.multiplier + effect.modifier).coerceAtLeast(0) }
     }
 }

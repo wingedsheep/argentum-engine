@@ -128,6 +128,14 @@ data class ManaSource(
      * [BonusManaEntry] when the source is tapped, so it can pay {C}/generic pips or land in the pool.
      */
     val bonusManaColorlessPerTap: Int = 0,
+    /**
+     * The *additional* fixed-color mana one tap adds beyond its primary leaf, per color — a
+     * composite mana ability that adds several kinds at once (Gruul Turf's "{T}: Add {R}{G}",
+     * Timeless Lotus's "{T}: Add {W}{U}{B}{R}{G}"). Kept apart from [bonusManaColor], which holds a
+     * single color, so every fixed color survives and an aura bonus on the same source can't
+     * overwrite it. Floated as one [BonusManaEntry] per color when the source is tapped.
+     */
+    val compositeBonusMana: Map<Color, Int> = emptyMap(),
     /** Mana spending restriction (e.g., "only for instant/sorcery"). Null = unrestricted. */
     val restriction: ManaRestriction? = null,
     /**
@@ -218,6 +226,18 @@ data class ManaSource(
      */
     fun amountFor(color: Color?): Int =
         if (color == null) colorlessAmount ?: manaAmount else colorAmounts[color] ?: manaAmount
+
+    /**
+     * Every fixed-color mana one tap adds beyond what `manaProduced` records: the aura/tap bonus
+     * ([bonusManaColor]) plus each extra composite leaf ([compositeBonusMana]). Payment paths credit
+     * this to the pool so the cost isn't short of mana the solver counted.
+     */
+    val fixedBonusMana: Map<Color, Int>
+        get() {
+            val bonusColor = bonusManaColor
+            if (bonusManaPerTap <= 0 || bonusColor == null) return compositeBonusMana
+            return compositeBonusMana + (bonusColor to (compositeBonusMana[bonusColor] ?: 0) + bonusManaPerTap)
+        }
 
     fun availableColorsFor(spellContext: SpellPaymentContext?): Set<Color> {
         if (colorRestrictions.isEmpty() || spellContext == null) return producesColors
@@ -478,6 +498,14 @@ class ManaSolver private constructor(
         // fold it into the mana-spent-to-cast tally — see [BonusManaEntry.countsTowardSpent].
         val bonusManaSpentByColor = mutableMapOf<Color, Int>()
 
+        // The extra fixed colors of a composite tap (Timeless Lotus's {U}{B}{R}{G} beside its {W}),
+        // one entry per color. Genuinely-extra mana, not in `manaProduced` — count it when spent.
+        fun floatCompositeBonus(source: ManaSource) {
+            for ((color, amount) in source.compositeBonusMana) {
+                bonusManaPool.add(BonusManaEntry(color, amount, restriction = null, countsTowardSpent = true, sourceId = source.entityId))
+            }
+        }
+
         // Helper to update available counts when a source is used
         fun useSource(source: ManaSource, colorUsed: Color?) {
             usedSources.add(source)
@@ -522,6 +550,7 @@ class ManaSolver private constructor(
                     )
                 )
             }
+            floatCompositeBonus(source)
             // Colorless tap-bonus (Ultima's "tap a land for {C}, add an additional {C}"). Floated as
             // a colorless entry so it can pay {C}/generic pips or float to the pool.
             if (source.bonusManaColorlessPerTap > 0) {
@@ -600,7 +629,8 @@ class ManaSolver private constructor(
         // Ground forest, even though tapping that forest would produce it.
         fun payColoredPipFromAuraBonus(color: Color): Boolean {
             val source = remainingSources.firstOrNull { src ->
-                src.bonusManaPerTap > 0 && (src.bonusManaIsAnyColor || src.bonusManaColor == color)
+                (src.bonusManaPerTap > 0 && (src.bonusManaIsAnyColor || src.bonusManaColor == color)) ||
+                    (src.compositeBonusMana[color] ?: 0) > 0
             } ?: return false
             usedSources.add(source)
             remainingSources.remove(source)
@@ -618,17 +648,20 @@ class ManaSolver private constructor(
                 manaProduced[source.entityId] = ManaProduction(colorless = source.amountFor(null))
             }
             // Aura bonus → bonus pool (any-color or fixed), then spend one toward this pip.
-            bonusManaPool.add(
-                BonusManaEntry(
-                    color = source.bonusManaColor ?: Color.WHITE,
-                    amount = source.bonusManaPerTap,
-                    restriction = null,
-                    anyColor = source.bonusManaIsAnyColor,
-                    // Genuinely-extra mana, not in `manaProduced` — count it when spent.
-                    countsTowardSpent = true,
-                    sourceId = source.entityId,
+            if (source.bonusManaPerTap > 0) {
+                bonusManaPool.add(
+                    BonusManaEntry(
+                        color = source.bonusManaColor ?: Color.WHITE,
+                        amount = source.bonusManaPerTap,
+                        restriction = null,
+                        anyColor = source.bonusManaIsAnyColor,
+                        // Genuinely-extra mana, not in `manaProduced` — count it when spent.
+                        countsTowardSpent = true,
+                        sourceId = source.entityId,
+                    )
                 )
-            )
+            }
+            floatCompositeBonus(source)
             return spendBonusMana(color)
         }
 
@@ -701,6 +734,7 @@ class ManaSolver private constructor(
             val relevant = source.availableColorsFor(spellContext).any { it in strictColors } ||
                 (needsColorless && source.producesColorless)
             relevant && source.bonusManaPerTap == 0 && source.bonusManaColorlessPerTap == 0 &&
+                source.compositeBonusMana.isEmpty() &&
                 source.colorActivationManaCost.values.all { it == 0 } &&
                 source.producesColors.all { source.amountFor(it) == 1 } &&
                 (!source.producesColorless || source.amountFor(null) == 1)
@@ -1155,6 +1189,9 @@ class ManaSolver private constructor(
                     if (source.bonusManaPerTap > 0 && source.bonusManaColor != null) {
                         leftovers += BonusManaEntry(source.bonusManaColor, source.bonusManaPerTap, sourceId = source.entityId)
                     }
+                    for ((color, extra) in source.compositeBonusMana) {
+                        leftovers += BonusManaEntry(color, extra, sourceId = source.entityId)
+                    }
                     riders += (if (kind == null) source.colorlessRiders else source.colorRiders[kind].orEmpty())
                 }
                 return rest.copy(
@@ -1459,8 +1496,7 @@ class ManaSolver private constructor(
             // how to spend it — see useSource / spendBonusMana / payColoredPipFromAuraBonus). Without
             // this the second color is dropped and a spell payable only with it (Grumgully {1}{R}{G})
             // is wrongly reported unaffordable, so the client never highlights it.
-            var extraBonusColor: Color? = null
-            var extraBonusAmount = 0
+            val extraBonusByColor = mutableMapOf<Color, Int>()
             var extraColorlessBonus = 0
             var anyAbilityHasNoPainCost = false
             var minPainAmount = Int.MAX_VALUE
@@ -1695,8 +1731,7 @@ class ManaSolver private constructor(
                                 if (!seenPrimary && leaf === manaEffect) {
                                     seenPrimary = true // the primary leaf; handled by the `when` below
                                 } else {
-                                    extraBonusColor = extraBonusColor ?: leaf.color
-                                    extraBonusAmount += evaluateManaAmount(leaf.amount, state, entityId, playerId)
+                                    extraBonusByColor.merge(leaf.color, evaluateManaAmount(leaf.amount, state, entityId, playerId), Int::plus)
                                 }
                             }
                             is AddColorlessManaEffect ->
@@ -1877,10 +1912,11 @@ class ManaSolver private constructor(
                 // bonus alongside a colored source; if the source is otherwise colorless-only
                 // (never happens for the two real cards, but keep it sound) the extra colored
                 // leaf still needs `producesColors` non-empty so its color is spendable.
-                if (extraBonusColor != null && combinedColors.isEmpty()) {
-                    combinedColors.add(extraBonusColor)
-                    extraBonusColor = null
-                    extraBonusAmount = maxOf(0, extraBonusAmount - 1)
+                if (combinedColors.isEmpty()) {
+                    extraBonusByColor.keys.firstOrNull()?.let { color ->
+                        combinedColors.add(color)
+                        extraBonusByColor[color] = extraBonusByColor.getValue(color) - 1
+                    }
                 }
 
                 return@mapNotNull ManaSource(
@@ -1900,9 +1936,8 @@ class ManaSolver private constructor(
                     // single-amount source leaves both empty and reads maxManaAmount everywhere.
                     colorAmounts = perColorAmount.filter { (_, amount) -> amount in 1 until maxManaAmount },
                     colorlessAmount = colorlessAmountMax.takeIf { producesColorless && it in 1 until maxManaAmount },
-                    bonusManaPerTap = extraBonusAmount,
-                    bonusManaColor = extraBonusColor,
                     bonusManaColorlessPerTap = extraColorlessBonus,
+                    compositeBonusMana = extraBonusByColor.filterValues { it > 0 },
                     restriction = sourceRestriction,
                     colorRiders = perColorRiders.mapValues { (_, v) -> v.toSet() },
                     colorlessRiders = colorlessRiders.toSet(),
@@ -2514,7 +2549,7 @@ class ManaSolver private constructor(
     private fun applyLandManaDampening(sources: List<ManaSource>): List<ManaSource> {
         return sources.map { source ->
             // Only dampen lands; non-land mana sources (mana dorks, mana rocks) are unaffected
-            val totalMana = source.manaAmount + source.bonusManaPerTap
+            val totalMana = source.manaAmount + source.bonusManaPerTap + source.compositeBonusMana.values.sum()
             if (source.isLand && totalMana >= 2) {
                 source.copy(
                     exactIndependentTap = false,
@@ -2524,7 +2559,8 @@ class ManaSolver private constructor(
                     colorAmounts = emptyMap(),
                     colorlessAmount = null,
                     bonusManaPerTap = 0,
-                    bonusManaColor = null
+                    bonusManaColor = null,
+                    compositeBonusMana = emptyMap()
                 )
             } else {
                 source
@@ -2853,7 +2889,7 @@ class ManaSolver private constructor(
             // permanent yields the better of the two — never their sum.
             .sumOf { source ->
                 maxOf(
-                    source.manaAmount + source.bonusManaPerTap,
+                    source.manaAmount + source.bonusManaPerTap + source.compositeBonusMana.values.sum(),
                     sacrificeManaBySource[source.entityId]?.totalMana ?: 0
                 )
             }
