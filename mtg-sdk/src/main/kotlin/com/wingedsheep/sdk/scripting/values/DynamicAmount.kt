@@ -86,6 +86,15 @@ enum class TurnTracker {
      */
     DEALT_NONCOMBAT_DAMAGE_LAST_TURN,
     /**
+     * Indicator (0 or 1) that a creature or planeswalker the player controlled was dealt excess
+     * damage this turn (CR 120.4a) — combat or noncombat, from any source. Keyed on the
+     * recipient's controller as the damage was dealt, so it stays set after the recipient dies to
+     * that damage or changes controller. Battles don't count. Powers "if a creature or
+     * planeswalker an opponent controlled was dealt excess damage this turn" (Rith, Liberated
+     * Primeval) — reach for it via `Conditions.OpponentPermanentWasDealtExcessDamageThisTurn`.
+     */
+    PERMANENT_DEALT_EXCESS_DAMAGE,
+    /**
      * Indicator (0 or 1) that the player has been dealt combat damage since their own last turn
      * ended — every other player's turn in between, plus their current turn so far. Cleared when
      * the player's own turn ends, so it survives the turn boundaries a "this turn" tracker resets
@@ -361,6 +370,8 @@ enum class TurnTracker {
             "whether ${player.description} were dealt combat damage by a legendary creature this turn"
         DEALT_NONCOMBAT_DAMAGE -> "whether ${player.description} were dealt noncombat damage this turn"
         DEALT_NONCOMBAT_DAMAGE_LAST_TURN -> "whether ${player.description} were dealt noncombat damage last turn"
+        PERMANENT_DEALT_EXCESS_DAMAGE ->
+            "whether a creature or planeswalker under ${player.possessive} control was dealt excess damage this turn"
         DEALT_COMBAT_DAMAGE_SINCE_YOUR_LAST_TURN ->
             "whether ${player.description} were dealt combat damage since their last turn"
         COUNTERS_PUT_ON_CREATURE -> "whether ${player.description} put a counter on a creature this turn"

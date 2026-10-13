@@ -161,6 +161,7 @@ class TurnManager(
             playersWhoCommittedCrimeThisTurn = emptySet(),
             playersDealtNoncombatDamageLastTurn = state.playersDealtNoncombatDamageThisTurn,
             playersDealtNoncombatDamageThisTurn = emptySet(),
+            playersWithPermanentDealtExcessDamageThisTurn = emptySet(),
             // "Since your last turn" ends with the outgoing active player's (or team's) own turn;
             // everyone else keeps accumulating across this boundary.
             playersDealtCombatDamageSinceTheirLastTurn = state.playersDealtCombatDamageSinceTheirLastTurn -

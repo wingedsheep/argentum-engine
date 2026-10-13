@@ -759,6 +759,8 @@ class DynamicAmountEvaluator(
                     }
                     TurnTracker.DEALT_NONCOMBAT_DAMAGE -> playerIds.count { it in state.playersDealtNoncombatDamageThisTurn }
                     TurnTracker.DEALT_NONCOMBAT_DAMAGE_LAST_TURN -> playerIds.count { it in state.playersDealtNoncombatDamageLastTurn }
+                    TurnTracker.PERMANENT_DEALT_EXCESS_DAMAGE ->
+                        playerIds.count { it in state.playersWithPermanentDealtExcessDamageThisTurn }
                     TurnTracker.DEALT_COMBAT_DAMAGE_SINCE_YOUR_LAST_TURN ->
                         playerIds.count { it in state.playersDealtCombatDamageSinceTheirLastTurn }
                     TurnTracker.DEALT_COMBAT_DAMAGE_BY_LEGENDARY_CREATURE -> playerIds.count { playerId ->

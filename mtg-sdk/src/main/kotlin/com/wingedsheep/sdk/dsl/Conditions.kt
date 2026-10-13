@@ -1983,6 +1983,17 @@ object Conditions {
         )
 
     /**
+     * If a creature or planeswalker an opponent controlled was dealt excess damage this turn
+     * (CR 120.4a; Rith, Liberated Primeval). Turn history, not a board scan: the recipient
+     * dying to that damage doesn't undo it.
+     */
+    val OpponentPermanentWasDealtExcessDamageThisTurn: ConditionInterface =
+        trackerAtLeast(
+            com.wingedsheep.sdk.scripting.values.TurnTracker.PERMANENT_DEALT_EXCESS_DAMAGE,
+            player = Player.EachOpponent
+        )
+
+    /**
      * If [player] lost life this turn (from any source). Use when the wording binds the
      * check to a specific player rather than "an opponent" — e.g. Thought-Stalker Warlock:
      * "choose target opponent. If THEY lost life this turn, …" →

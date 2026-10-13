@@ -370,6 +370,13 @@ data class GameState(
      */
     val playersDealtNoncombatDamageLastTurn: Set<EntityId> = emptySet(),
     /**
+     * Players (by entity id) who controlled a creature or planeswalker that was dealt excess damage
+     * (CR 120.4a) this turn, keyed on the recipient's controller as the damage was dealt. Populated
+     * by `DamageUtils.trackExcessDamageToPermanent` and cleared at every turn boundary. Backs
+     * `TurnTracker.PERMANENT_DEALT_EXCESS_DAMAGE`.
+     */
+    val playersWithPermanentDealtExcessDamageThisTurn: Set<EntityId> = emptySet(),
+    /**
      * Players (by entity id) who lost life during the previous turn, whoever's turn it was.
      * Snapshotted from each player's `LifeLostThisTurnComponent` by
      * `CleanupPhaseManager.cleanupEndOfTurn` just before that marker is cleared. Backs

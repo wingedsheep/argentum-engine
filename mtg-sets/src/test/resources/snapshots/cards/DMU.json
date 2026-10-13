@@ -998,6 +998,53 @@
     }
 }
 
+// Benalish Sleeper
+{
+    "name": "Benalish Sleeper",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Phyrexian Human Soldier",
+    "oracleText": "Kicker {B} (You may pay an additional {B} as you cast this spell.)\nWhen this creature enters, if it was kicked, each player sacrifices a creature of their choice.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "keywordAbilities": [
+        {
+            "type": "Kicker",
+            "manaCost": "{B}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Benalish Sleeper:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ForceSacrifice",
+                    "filter": "creature",
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "Each"
+                    }
+                },
+                "interveningIf": "WasKicked"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "8",
+        "artist": "Josu Hernaiz",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/9/f96089ea-20cf-496d-84a6-9b660c2ef672.jpg?1783921370"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
+    ]
+}
+
 // Bite Down
 {
     "name": "Bite Down",
@@ -4732,6 +4779,116 @@
         "imageUri": "https://cards.scryfall.io/normal/front/3/e/3e11ad33-b9d7-43ef-840a-61955683b599.jpg"
     },
     "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Rith, Liberated Primeval
+{
+    "name": "Rith, Liberated Primeval",
+    "manaCost": "{2}{R}{G}{W}",
+    "typeLine": "Legendary Creature — Dragon",
+    "oracleText": "Flying, ward {2}\nOther Dragons you control have ward {2}.\nAt the beginning of your end step, if a creature or planeswalker an opponent controlled was dealt excess damage this turn, create a 4/4 red Dragon creature token with flying.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "FLYING",
+        "WARD"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Ward",
+            "cost": {
+                "type": "WardCost.Mana",
+                "manaCost": "{2}"
+            }
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Rith, Liberated Primeval:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 4,
+                    "toughness": 4,
+                    "colors": [
+                        "RED"
+                    ],
+                    "creatureTypes": [
+                        "Dragon"
+                    ],
+                    "keywords": [
+                        "FLYING"
+                    ]
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "TurnTracking",
+                        "player": "EachOpponent",
+                        "tracker": "PERMANENT_DEALT_EXCESS_DAMAGE"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantWard",
+                "cost": {
+                    "type": "WardCost.Mana",
+                    "manaCost": "{2}"
+                },
+                "filter": {
+                    "baseFilter": "permanent Dragon ctrl:you",
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "214",
+        "rarity": "MYTHIC",
+        "artist": "Victor Adame Minguez",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/c/ac148784-b7b6-4aae-bffb-a4cf09f56971.jpg?1783921278",
+        "rulings": [
+            {
+                "date": "2022-09-09",
+                "text": "A creature has been dealt excess damage if one or more sources dealt more damage to it than the minimum amount of damage required to be lethal damage. In most cases, this means damage greater than its toughness, but consider the damage already dealt to it that turn."
+            },
+            {
+                "date": "2022-09-09",
+                "text": "A planeswalker is dealt excess damage if it's dealt damage greater than its current loyalty."
+            },
+            {
+                "date": "2022-09-09",
+                "text": "Even 1 damage dealt to a creature from a source with deathtouch is considered lethal damage, so any amount greater than that will cause excess damage to be dealt, even if the total amount of damage isn't greater than the creature's toughness. Note that a source of damage having deathtouch has no effect on damage dealt to planeswalkers."
+            },
+            {
+                "date": "2022-09-09",
+                "text": "It doesn't matter whether a creature, spell, or ability you control deals the excess damage, only that excess damage was dealt at some point during the turn."
+            },
+            {
+                "date": "2022-09-09",
+                "text": "Rith's ability will trigger as long as an opponent controlled the creature as excess damage was dealt to it, even if the creature is no longer on the battlefield or you control it at the end of the turn."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN",
         "WHITE"
     ]
 }

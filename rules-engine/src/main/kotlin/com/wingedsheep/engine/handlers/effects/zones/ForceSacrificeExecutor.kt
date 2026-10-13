@@ -64,20 +64,27 @@ class ForceSacrificeExecutor(
             SacrificeImmunity.appliesTo(state, it, effectControllerId, predicateEvaluator = zones.predicateEvaluator)
         }
 
-        return processPlayers(state, eligiblePlayers, effect.filter, count, context.sourceId)
+        return processPlayers(state, inApnapOrder(state, eligiblePlayers), effect.filter, count, context.sourceId)
     }
 
     /**
-     * Process sacrifice for a list of players in order. Auto-sacrifices when possible,
-     * pauses for a decision when a player must choose, storing remaining players
-     * in the continuation.
+     * Collect each player's sacrifice choice in order, then sacrifice everything at once.
+     *
+     * "Each player sacrifices a creature" is one simultaneous event: each affected player chooses
+     * in APNAP order, and only then are all the chosen permanents sacrificed together (CR 101.4),
+     * so a "whenever a creature dies" trigger sees every one of them, and no player's sacrifice
+     * happens before a later player has chosen. A player with no more candidates than [count]
+     * has nothing to choose; their permanents join the batch without a prompt. When a player must
+     * choose, the executor pauses with the remaining players and the choices made so far in the
+     * continuation, and [SacrificeContinuation]'s resumer re-enters here.
      */
     fun processPlayers(
         state: GameState,
         playerIds: List<EntityId>,
         filter: GameObjectFilter,
         count: Int,
-        sourceId: EntityId?
+        sourceId: EntityId?,
+        chosen: List<SacrificeChoice> = emptyList()
     ): EffectResult {
         val sourceName = if (sourceId != null) {
             state.getEntity(sourceId)?.get<CardComponent>()?.name ?: "Unknown"
@@ -85,38 +92,36 @@ class ForceSacrificeExecutor(
             "Unknown"
         }
 
-        var currentState = state
-        val allEvents = mutableListOf<GameEvent>()
-        val allSnapshots = mutableListOf<EntitySnapshot>()
+        val choices = chosen.toMutableList()
 
         for ((index, playerId) in playerIds.withIndex()) {
-            val validPermanents = findValidPermanents(currentState, playerId, filter, sourceId)
+            val validPermanents = findValidPermanents(state, playerId, filter, sourceId)
 
             if (validPermanents.isEmpty()) {
                 continue
             }
 
             if (validPermanents.size <= count) {
-                // Auto-sacrifice without prompting
-                val result = sacrificePermanents(currentState, playerId, validPermanents)
-                currentState = result.state
-                allEvents.addAll(result.events)
-                allSnapshots.addAll(result.updatedSacrificedPermanents)
+                choices += SacrificeChoice(playerId, validPermanents)
                 continue
             }
 
-            // Player must choose — pause and store remaining players in continuation
-            val remainingPlayers = playerIds.drop(index + 1)
+            // Player must choose — pause and store remaining players and earlier choices
             return presentSacrificeDecision(
-                currentState, playerId, sourceId, sourceName,
+                state, playerId, sourceId, sourceName,
                 validPermanents, minSelections = count, maxSelections = count,
-                remainingPlayers = remainingPlayers, filter = filter, count = count,
-                priorEvents = allEvents
-            ).copy(updatedSacrificedPermanents = allSnapshots)
+                remainingPlayers = playerIds.drop(index + 1), filter = filter, count = count,
+                chosen = choices
+            )
         }
 
-        return EffectResult.success(currentState, allEvents)
-            .copy(updatedSacrificedPermanents = allSnapshots)
+        return sacrificeChoices(state, choices)
+    }
+
+    /** Rotate [playerIds] into APNAP order (CR 101.4); players outside the turn order keep their place at the end. */
+    private fun inApnapOrder(state: GameState, playerIds: List<EntityId>): List<EntityId> {
+        val order = state.apnapOrder
+        return playerIds.sortedBy { id -> order.indexOf(id).let { if (it < 0) Int.MAX_VALUE else it } }
     }
 
     private fun findValidPermanents(
@@ -145,7 +150,7 @@ class ForceSacrificeExecutor(
         remainingPlayers: List<EntityId>,
         filter: GameObjectFilter,
         count: Int,
-        priorEvents: List<GameEvent>
+        chosen: List<SacrificeChoice>
     ): EffectResult {
         // Describe the actual filter ("a land", "a creature", "an artifact"...) rather than
         // hardcoding "creature" — Serendib Djinn / Goblin Firebug sacrifice lands, edicts
@@ -168,7 +173,8 @@ class ForceSacrificeExecutor(
             sourceName = sourceName,
             remainingPlayers = remainingPlayers,
             filter = filter,
-            count = count
+            count = count,
+            chosen = chosen
         )
 
         val decisionResult = decisionHandler.createCardSelectionDecision(
@@ -186,36 +192,41 @@ class ForceSacrificeExecutor(
             answer = continuation
         )
 
-        return EffectResult.propagatePause(
-            decisionResult.state,
-            priorEvents + decisionResult.events
-        )
+        return EffectResult.propagatePause(decisionResult.state, decisionResult.events)
     }
 
     internal fun sacrificePermanents(
         state: GameState,
         playerId: EntityId,
         permanentIds: List<EntityId>
+    ): EffectResult = sacrificeChoices(state, listOf(SacrificeChoice(playerId, permanentIds)))
+
+    /** Sacrifice every player's chosen permanents as one simultaneous event. */
+    internal fun sacrificeChoices(
+        state: GameState,
+        choices: List<SacrificeChoice>
     ): EffectResult {
         var newState = state
         val events = mutableListOf<GameEvent>()
+        val permanentIds = choices.flatMap { it.permanentIds }
 
         // Capture P/T/subtype/supertype/controller snapshots BEFORE the zone change so
         // a follow-up sibling effect can read the sacrificed permanent's characteristics
         // (Rise of the Witch-king's "if you sacrificed a creature this way…", Nasty End-style
         // "was legendary?" gates). Mirrors SacrificeExecutor's capture path.
         val snapshots = if (permanentIds.isNotEmpty()) {
-            captureEntitySnapshots(permanentIds, newState.projectedState, newState)
+            captureEntitySnapshots(permanentIds, newState)
         } else {
             emptyList()
         }
 
-        if (permanentIds.isNotEmpty()) {
-            val permanentNames = permanentIds.map { id ->
+        for (choice in choices) {
+            if (choice.permanentIds.isEmpty()) continue
+            val permanentNames = choice.permanentIds.map { id ->
                 newState.getEntity(id)?.get<CardComponent>()?.name ?: "Unknown"
             }
-            events.add(PermanentsSacrificedEvent(playerId, permanentIds, permanentNames))
-            newState = ZoneTransitionService.trackPermanentSacrifice(newState, permanentIds, playerId)
+            events.add(PermanentsSacrificedEvent(choice.playerId, choice.permanentIds, permanentNames))
+            newState = ZoneTransitionService.trackPermanentSacrifice(newState, choice.permanentIds, choice.playerId)
         }
 
         // One simultaneous event: a batch move freezes every look-back grant before the first goes.

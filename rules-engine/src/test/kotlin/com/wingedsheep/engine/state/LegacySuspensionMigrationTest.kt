@@ -389,6 +389,7 @@ class LegacySuspensionMigrationTest : ScenarioTestBase() {
             "playerActionPermissions",
             "objectIdentities", "nextObjectGeneration", "zoneReturns", "pendingTriggers", "controlAtTurnStart",
             "playersDealtNoncombatDamageThisTurn", "playersDealtNoncombatDamageLastTurn", "playersWhoLostLifeLastTurn",
+            "playersWithPermanentDealtExcessDamageThisTurn",
             "pendingReplacementRiders", "playersDealtCombatDamageSinceTheirLastTurn", "roundNumber", "monarch",
             "initiative",
         )
