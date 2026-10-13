@@ -452,10 +452,9 @@ object DamageUtils {
         events.addAll(shieldCounterEvents)
         events.addAll(reflectEvents)
         events.addAll(preventionLifeEvents)
-        // Excess damage (CR 120.4a) is computed below for the non-wither creature branch (above
-        // lethal), the planeswalker branch (above its loyalty) and the battle branch (above its
-        // defense) — the wither path (damage dealt as -1/-1 counters) is not yet modelled and
-        // stays at 0 here.
+        // Excess damage (CR 120.4a) is computed below for the creature branch (above lethal,
+        // whether the damage is marked or dealt as wither's -1/-1 counters), the planeswalker
+        // branch (above its loyalty) and the battle branch (above its defense).
         var creatureExcessDamage = 0
 
         // Check if target is a player, planeswalker, or creature
@@ -525,7 +524,14 @@ object DamageUtils {
                 state.getEntity(sourceId)?.get<SpellGrantedKeywordsComponent>()?.keywords?.contains(Keyword.WITHER.name) == true
             )
             if (hasWither) {
-                // Wither (CR 702.80): damage to creatures is dealt in the form of -1/-1 counters
+                // Wither (CR 702.80): damage to creatures is dealt in the form of -1/-1 counters.
+                // It is still damage, so the excess (CR 120.4a) is measured against lethal damage
+                // exactly as for marked damage, before the counters change the toughness.
+                val witherLethalNeeded =
+                    if (sourceId != null && sourceHasDeathtouch(zones.cardRegistry, newState, projected, sourceId)) 1
+                    else ((projected.getToughness(targetId) ?: 0) -
+                        (newState.getEntity(targetId)?.get<DamageComponent>()?.amount ?: 0)).coerceAtLeast(0)
+                creatureExcessDamage = (effectiveAmount - witherLethalNeeded).coerceAtLeast(0)
                 val counters = newState.getEntity(targetId)?.get<CountersComponent>() ?: CountersComponent()
                 newState = newState.updateEntity(targetId) { container ->
                     container.with(counters.withAdded(CounterType.MINUS_ONE_MINUS_ONE, effectiveAmount))
@@ -643,6 +649,10 @@ object DamageUtils {
                 sourceTargetIdsAtDamage = sourceTargetIds,
                 sourceAttachmentIds = attachmentIdsOf(state, sourceId),
             )
+        )
+        // A redirected excess (Gandalf's Sanction) never reaches the creature, so it wasn't dealt excess damage.
+        newState = trackExcessDamageToPermanent(
+            newState, projected, targetId, if (excessToController) 0 else creatureExcessDamage
         )
 
         // "An opponent was dealt noncombat damage this turn" (Whiplash Wordsmith, Command the Stage).
@@ -1191,6 +1201,28 @@ object DamageUtils {
                 updated
             }
         }
+    }
+
+    /**
+     * Record that a creature or planeswalker was dealt [excess] damage (CR 120.4a) this turn,
+     * against the player who controlled it in [projected] — the projection as the damage was
+     * dealt, so a recipient that dies to this damage (or is a creature only through a continuous
+     * effect) is credited correctly. Battles don't count. Backs
+     * `TurnTracker.PERMANENT_DEALT_EXCESS_DAMAGE` (Rith, Liberated Primeval).
+     */
+    fun trackExcessDamageToPermanent(
+        state: GameState,
+        projected: ProjectedState,
+        targetId: EntityId,
+        excess: Int,
+    ): GameState {
+        if (excess <= 0) return state
+        if (!projected.isCreature(targetId) && !projected.isPlaneswalker(targetId)) return state
+        val controllerId = projected.getController(targetId) ?: return state
+        if (controllerId in state.playersWithPermanentDealtExcessDamageThisTurn) return state
+        return state.copy(
+            playersWithPermanentDealtExcessDamageThisTurn = state.playersWithPermanentDealtExcessDamageThisTurn + controllerId
+        )
     }
 
     /**

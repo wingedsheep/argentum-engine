@@ -13263,6 +13263,10 @@ answer it and would silently return `false`.
 - `OpponentWasDealtNoncombatDamageThisTurn` / `OpponentWasDealtNoncombatDamageLastTurn` — an
   opponent was dealt noncombat damage this turn / during the previous turn (Whiplash Wordsmith,
   Command the Stage). Backed by `TurnTracker.DEALT_NONCOMBAT_DAMAGE(_LAST_TURN)`.
+- `OpponentPermanentWasDealtExcessDamageThisTurn` — a creature or planeswalker an opponent controlled
+  was dealt excess damage this turn (CR 120.4a; Rith, Liberated Primeval). Turn history keyed on the
+  recipient's controller at damage time, so it holds after that creature died. Backed by
+  `TurnTracker.PERMANENT_DEALT_EXCESS_DAMAGE`.
 - `ScriedOrSurveiledThisTurn` — you scried or surveilled this turn (Surveillance Phantasm, Desperate
   Futurescribe, Proctor of Potential), read through the `SCRIED_OR_SURVEILED` turn tracker.
 - `PutCounterOnCreatureThisTurn` — you put ≥1 counter of *any* kind on a creature this turn (Lasting
@@ -15054,6 +15058,14 @@ of `AddMana` and `AddColorlessMana`. The engine empties pools as each step and p
 - `DEALT_NONCOMBAT_DAMAGE_LAST_TURN` — the same record one turn back: the previous turn in the game,
   whoever's it was, rolled over by `TurnManager.startTurn`. Facade
   `Conditions.OpponentWasDealtNoncombatDamageLastTurn` (Command the Stage).
+- `PERMANENT_DEALT_EXCESS_DAMAGE` — indicator (0/1) that a creature or planeswalker the player
+  controlled was dealt excess damage this turn (CR 120.4a): past lethal for a creature (marked damage
+  counts; a deathtouch source makes anything past 1 excess; wither's -1/-1 counters count as the
+  damage they are), past loyalty for a planeswalker. Combat or noncombat, any source; battles and
+  excess redirected elsewhere (`DealDamageExcessToController`) don't count. Recorded by
+  `DamageUtils.trackExcessDamageToPermanent` on `GameState.playersWithPermanentDealtExcessDamageThisTurn`
+  against the recipient's controller as the damage was dealt, cleared at the turn boundary. Facade
+  `Conditions.OpponentPermanentWasDealtExcessDamageThisTurn` (Rith, Liberated Primeval).
 - `DEALT_COMBAT_DAMAGE_SINCE_YOUR_LAST_TURN` — indicator (0/1) that the player has been dealt combat
   damage since *their own* last turn ended: every other player's turn in between plus their current
   turn so far. Recorded at the combat-damage-to-a-player sites in `CombatDamageManager` on
