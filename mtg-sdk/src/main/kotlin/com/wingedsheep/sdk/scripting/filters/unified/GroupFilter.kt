@@ -13,8 +13,8 @@ import kotlinx.serialization.Serializable
  * Where a [GroupFilter] applies. Most filters scan the battlefield (`Battlefield`),
  * but some refer to a specific permanent relative to the source — the source itself
  * (`Self`), the creature this Aura/Equipment is attached to (`AttachedTo`), the source
- * together with the creature it's soulbond-paired with (`SoulbondPair`), or a
- * pre-bound entity (`Specific`).
+ * together with the creature it's soulbond-paired with (`SoulbondPair`), the creature the source
+ * chose as it entered (`ChosenCreature`), or a pre-bound entity (`Specific`).
  */
 @Serializable
 sealed interface Scope {
@@ -42,6 +42,22 @@ sealed interface Scope {
     @SerialName("SoulbondPair")
     @Serializable
     data object SoulbondPair : Scope
+
+    /**
+     * The creature the source chose as it entered — "as this creature enters, choose another
+     * creature you control. The chosen creature gets +3/+3 and has flying" (Tyrannical Pitlord).
+     * The choice is the `EntersWithChoice(ChoiceType.CREATURE_ON_BATTLEFIELD)` replacement's, the
+     * same one [com.wingedsheep.sdk.scripting.targets.EffectTarget.ChosenCreature] reads for a
+     * one-shot effect; this is its continuous-effect twin.
+     *
+     * Bound to the chosen *object* (CR 400.7): once that creature leaves the battlefield the scope is
+     * empty for good, even if the card returns — "if the chosen creature leaves the battlefield, you
+     * can't choose a new creature." Control of it doesn't matter; a stolen chosen creature keeps the
+     * bonus. Empty when nothing was chosen.
+     */
+    @SerialName("ChosenCreature")
+    @Serializable
+    data object ChosenCreature : Scope
 
     @SerialName("Specific")
     @Serializable
@@ -115,6 +131,7 @@ data class GroupFilter(
         is Scope.Self -> "this creature"
         is Scope.AttachedTo -> "enchanted/equipped creature"
         is Scope.SoulbondPair -> "this creature and the creature it's paired with"
+        is Scope.ChosenCreature -> "the chosen creature"
         is Scope.Specific -> "the chosen permanent"
         is Scope.Battlefield -> buildString {
             append("all ")
@@ -228,6 +245,9 @@ data class GroupFilter(
          * every soulbond payoff static.
          */
         fun soulbondPair() = GroupFilter(GameObjectFilter.Permanent, scope = Scope.SoulbondPair)
+
+        /** "The chosen creature" — the creature the source chose as it entered ([Scope.ChosenCreature]). */
+        fun chosenCreature() = GroupFilter(GameObjectFilter.Permanent, scope = Scope.ChosenCreature)
 
         /** A specific pre-bound entity. */
         fun specific(entityId: EntityId) =

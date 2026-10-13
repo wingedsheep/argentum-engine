@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.mechanics.combat.rules
 
+import com.wingedsheep.engine.state.components.battlefield.chosenCreatureOf
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
@@ -380,6 +381,7 @@ class CantAttackYouDefenderRule(
             Scope.Battlefield -> true
             Scope.AttachedTo -> ctx.state.getEntity(holder)?.get<AttachedToComponent>()?.targetId == attacker
             Scope.SoulbondPair -> SoulbondPairing.isInPairOf(ctx.state, holder, attacker)
+            Scope.ChosenCreature -> ctx.state.chosenCreatureOf(holder) == attacker
             is Scope.Specific -> scope.entityId == attacker
         }
         return inScope && !(filter.excludeSelf && holder == attacker) &&

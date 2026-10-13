@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.mechanics.combat
 
+import com.wingedsheep.engine.state.components.battlefield.chosenCreatureOf
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
@@ -87,6 +88,7 @@ class GoadRules(
             Scope.Battlefield -> true
             Scope.AttachedTo -> state.getEntity(holder)?.get<AttachedToComponent>()?.targetId == creatureId
             Scope.SoulbondPair -> SoulbondPairing.isInPairOf(state, holder, creatureId)
+            Scope.ChosenCreature -> state.chosenCreatureOf(holder) == creatureId
             is Scope.Specific -> scope.entityId == creatureId
         }
         return inScope && !(filter.excludeSelf && holder == creatureId) &&

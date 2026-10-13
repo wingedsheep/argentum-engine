@@ -256,7 +256,15 @@ data class TriggerContext(
      * [com.wingedsheep.sdk.scripting.targets.EffectTarget.AttachedToTriggeringPermanent] in that
      * case, and leaves the attach case on its live read (CR 611.2b). `null` otherwise.
      */
-    val unattachedFromEntityId: EntityId? = null
+    val unattachedFromEntityId: EntityId? = null,
+    /**
+     * For a battlefield-departure trigger — the creature the departing permanent chose as it
+     * entered, frozen off the leave event's last-known snapshot. Resolves
+     * [com.wingedsheep.sdk.scripting.targets.EffectTarget.ChosenCreature] for the departed
+     * source's own leaves trigger ("sacrifice the chosen creature" — Tyrannical Pitlord), whose
+     * live choice went with the old object (CR 400.7). `null` otherwise.
+     */
+    val lastKnownChosenCreature: com.wingedsheep.engine.state.components.battlefield.ChoiceValue.EntityChoice? = null,
 ) {
     /**
      * The triggering permanent's last-known type line ([lastKnownCardTypes] + [lastKnownSubtypes],
@@ -315,7 +323,8 @@ data class TriggerContext(
                         event.lastKnown?.damageDealtByPlayers?.takeIf { it.isNotEmpty() },
                     lastKnownBlockingOrBlockedByIds =
                         event.lastKnown?.blockingOrBlockedByIds?.takeIf { it.isNotEmpty() },
-                    lastKnownAttachmentIds = event.lastKnown?.attachmentIds?.takeIf { it.isNotEmpty() }
+                    lastKnownAttachmentIds = event.lastKnown?.attachmentIds?.takeIf { it.isNotEmpty() },
+                    lastKnownChosenCreature = event.lastKnown?.chosenCreature,
                 )
                 is DamageDealtEvent -> TriggerContext(
                     triggeringEntityId = event.targetId,

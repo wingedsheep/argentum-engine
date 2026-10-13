@@ -374,9 +374,12 @@ object PermanentEntryReplacements {
 
     /**
      * Read the player's answer to an [entersChoicePrompt] question into the [ChoiceSlot] it fills
-     * and the value to record there, or `null` when the response doesn't fit the question.
+     * and the value to record there, or `null` when the response doesn't fit the question. A chosen
+     * creature is stamped with its current object generation from [state], so readers can tell the
+     * chosen object from a later one the same card becomes (CR 400.7).
      */
     fun decodeEntersChoice(
+        state: GameState,
         question: EntersWithChoiceOnBattlefieldContinuation,
         response: DecisionResponse,
     ): Pair<ChoiceSlot, ChoiceValue>? {
@@ -387,7 +390,7 @@ object PermanentEntryReplacements {
             ChoiceType.CREATURE_TYPE -> option(question.creatureTypes)
                 ?.let { ChoiceSlot.CREATURE_TYPE to ChoiceValue.TextChoice(it) }
             ChoiceType.CREATURE_ON_BATTLEFIELD -> (response as? CardsSelectedResponse)?.selectedCards?.firstOrNull()
-                ?.let { ChoiceSlot.CREATURE to ChoiceValue.EntityChoice(it) }
+                ?.let { ChoiceSlot.CREATURE to ChoiceValue.EntityChoice(it, state.objectRef(it)?.generation) }
             ChoiceType.MODE -> option(question.modeOptionIds)
                 ?.let { ChoiceSlot.MODE to ChoiceValue.TextChoice(it) }
             ChoiceType.BASIC_LAND_TYPE -> option(question.landTypes)

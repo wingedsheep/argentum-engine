@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.mechanics.combat.rules
 
+import com.wingedsheep.engine.state.components.battlefield.chosenCreatureOf
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.mechanics.SoulbondPairing
@@ -66,6 +67,7 @@ object TappedBlockBypass {
                     is Scope.Specific -> scope.entityId == entityId
                     is Scope.AttachedTo -> permanent.get<AttachedToComponent>()?.targetId == entityId
                     is Scope.SoulbondPair -> SoulbondPairing.isInPairOf(state, permanentId, entityId)
+                    is Scope.ChosenCreature -> state.chosenCreatureOf(permanentId) == entityId
                     is Scope.Battlefield ->
                         !(grant.filter.excludeSelf && permanentId == entityId) &&
                             predicateEvaluator.matches(state, projected, entityId, grant.filter.baseFilter, predicateContext)

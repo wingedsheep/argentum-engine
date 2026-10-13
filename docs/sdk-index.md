@@ -1531,6 +1531,7 @@ Families:
 
 - `Scope.AttachedTo`
 - `Scope.Battlefield`
+- `Scope.ChosenCreature` — The creature the source chose as it entered — "as this creature enters, choose another creature you control.
 - `Scope.Self`
 - `Scope.SoulbondPair` — The source **and** the creature it is soulbond-paired with (CR 702.95b) — the "both creatures" / "each of those creatures" of a soulbond payoff (Lightning Mauler's "as long as this creature is pair…
 - `Scope.Specific(entityId: EntityId)`

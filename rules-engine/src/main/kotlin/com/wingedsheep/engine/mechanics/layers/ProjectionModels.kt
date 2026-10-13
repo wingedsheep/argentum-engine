@@ -148,6 +148,14 @@ sealed interface AffectsFilter {
     }
 
     /**
+     * The creature the source chose as it entered ([com.wingedsheep.sdk.scripting.filters.unified.Scope.ChosenCreature]),
+     * while it is still that object on the battlefield. Empty once it leaves (CR 400.7).
+     */
+    @Serializable
+    data object ChosenCreature : AffectsFilter {
+    }
+
+    /**
      * All creatures that have a specific counter type.
      * Used for Aurification: "Each creature with a gold counter on it..."
      */

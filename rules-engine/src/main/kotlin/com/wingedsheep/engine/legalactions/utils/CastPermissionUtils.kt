@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.legalactions.utils
 
+import com.wingedsheep.engine.state.components.battlefield.chosenCreatureOf
 import com.wingedsheep.engine.state.components.battlefield.liveStaticAbilities
 import com.wingedsheep.engine.state.manaAbilitySourceAllowed
 import com.wingedsheep.engine.core.CastSpell
@@ -1562,6 +1563,9 @@ class CastPermissionUtils(
                     is com.wingedsheep.sdk.scripting.filters.unified.Scope.Specific -> {
                         if (scope.entityId == entityId) result.add(StaticGrantedAbility(ability.ability, permanentId))
                     }
+                    is com.wingedsheep.sdk.scripting.filters.unified.Scope.ChosenCreature -> {
+                        if (state.chosenCreatureOf(permanentId) == entityId) result.add(StaticGrantedAbility(ability.ability, permanentId))
+                    }
                 }
             }
         }
@@ -1640,6 +1644,9 @@ class CastPermissionUtils(
                 is Scope.Specific -> {
                     if (scope.entityId == entityId) result.add(StaticGrantedAbility(grantAbility.ability, granterId))
                 }
+                is Scope.ChosenCreature -> {
+                    if (state.chosenCreatureOf(granterId) == entityId) result.add(StaticGrantedAbility(grantAbility.ability, granterId))
+                }
             }
         }
         return result
@@ -1674,6 +1681,7 @@ class CastPermissionUtils(
                 val gainsAbilities = when (val scope = gain.grantedTo.scope) {
                     is com.wingedsheep.sdk.scripting.filters.unified.Scope.Self -> granterId == entityId
                     is com.wingedsheep.sdk.scripting.filters.unified.Scope.Specific -> scope.entityId == entityId
+                    is com.wingedsheep.sdk.scripting.filters.unified.Scope.ChosenCreature -> state.chosenCreatureOf(granterId) == entityId
                     is com.wingedsheep.sdk.scripting.filters.unified.Scope.SoulbondPair ->
                         com.wingedsheep.engine.mechanics.SoulbondPairing.isInPairOf(state, granterId, entityId)
                     is com.wingedsheep.sdk.scripting.filters.unified.Scope.AttachedTo ->
@@ -1739,6 +1747,7 @@ class CastPermissionUtils(
                 val applies = when (val scope = any.filter.scope) {
                     is com.wingedsheep.sdk.scripting.filters.unified.Scope.Self -> granterId == sourceId
                     is com.wingedsheep.sdk.scripting.filters.unified.Scope.Specific -> scope.entityId == sourceId
+                    is com.wingedsheep.sdk.scripting.filters.unified.Scope.ChosenCreature -> state.chosenCreatureOf(granterId) == sourceId
                     is com.wingedsheep.sdk.scripting.filters.unified.Scope.SoulbondPair ->
                         com.wingedsheep.engine.mechanics.SoulbondPairing.isInPairOf(state, granterId, sourceId)
                     is com.wingedsheep.sdk.scripting.filters.unified.Scope.AttachedTo ->
@@ -1939,6 +1948,7 @@ fun donorGrantReaches(
 ): Boolean = when (val scope = ability.receivedBy.scope) {
     is com.wingedsheep.sdk.scripting.filters.unified.Scope.Self -> granterId == receiverId
     is com.wingedsheep.sdk.scripting.filters.unified.Scope.Specific -> scope.entityId == receiverId
+    is com.wingedsheep.sdk.scripting.filters.unified.Scope.ChosenCreature -> state.chosenCreatureOf(granterId) == receiverId
     is com.wingedsheep.sdk.scripting.filters.unified.Scope.AttachedTo ->
         state.getEntity(granterId)?.get<com.wingedsheep.engine.state.components.battlefield.AttachedToComponent>()?.targetId == receiverId
     is com.wingedsheep.sdk.scripting.filters.unified.Scope.SoulbondPair ->

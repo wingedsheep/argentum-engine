@@ -1404,6 +1404,7 @@ class StaticAbilityHandler(
             is com.wingedsheep.sdk.scripting.filters.unified.Scope.Self -> return AffectsFilter.Self
             is com.wingedsheep.sdk.scripting.filters.unified.Scope.AttachedTo -> return AffectsFilter.AttachedPermanent
             is com.wingedsheep.sdk.scripting.filters.unified.Scope.SoulbondPair -> return AffectsFilter.SoulbondPair
+            is com.wingedsheep.sdk.scripting.filters.unified.Scope.ChosenCreature -> return AffectsFilter.ChosenCreature
             is com.wingedsheep.sdk.scripting.filters.unified.Scope.Specific ->
                 return AffectsFilter.SpecificEntities(setOf(scope.entityId))
             is com.wingedsheep.sdk.scripting.filters.unified.Scope.Battlefield -> { /* fall through */ }

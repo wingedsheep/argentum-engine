@@ -101,7 +101,7 @@ class ModalAndCloneContinuationResumer(
         checkForMore: CheckForMore,
     ): ExecutionResult {
         val (slot, value) = com.wingedsheep.engine.handlers.effects.PermanentEntryReplacements
-            .decodeEntersChoice(continuation.question, response)
+            .decodeEntersChoice(state, continuation.question, response)
             ?: return ExecutionResult.error(state, "Unexpected response for ${continuation.question.choiceType} choice")
         val context = if (continuation.question.syntheticRiot) {
             // A granted-Riot answer (counter or haste) — recorded apart from the printed MODE slot.
@@ -704,7 +704,7 @@ class ModalAndCloneContinuationResumer(
                 val chosenCreatureId = response.selectedCards.firstOrNull()
                     ?: return ExecutionResult.error(state, "No creature selected")
                 state.updateEntity(spellId) { c ->
-                    c.withCastChoice(ChoiceSlot.CREATURE, ChoiceValue.EntityChoice(chosenCreatureId))
+                    c.withCastChoice(ChoiceSlot.CREATURE, ChoiceValue.EntityChoice(chosenCreatureId, state.objectRef(chosenCreatureId)?.generation))
                 }
             }
             com.wingedsheep.sdk.scripting.ChoiceType.MODE -> {
@@ -868,7 +868,7 @@ class ModalAndCloneContinuationResumer(
         val entityId = continuation.entityId
         // Store the chosen value into the unified cast-choices bag.
         val (slot, value) = com.wingedsheep.engine.handlers.effects.PermanentEntryReplacements
-            .decodeEntersChoice(continuation, response)
+            .decodeEntersChoice(state, continuation, response)
             ?: return ExecutionResult.error(state, "Unexpected response for ${continuation.choiceType} choice")
         var newState = state.updateEntity(entityId) { c ->
             val recorded = c.withCastChoice(slot, value)

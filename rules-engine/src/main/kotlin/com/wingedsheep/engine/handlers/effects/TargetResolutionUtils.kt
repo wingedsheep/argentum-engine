@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.handlers.effects
-import com.wingedsheep.engine.state.components.battlefield.chosenCreatureRef
+import com.wingedsheep.engine.state.components.battlefield.chosenCreatureOf
+import com.wingedsheep.engine.state.components.battlefield.currentIn
 import com.wingedsheep.engine.state.components.battlefield.chosenOpponent
 
 import com.wingedsheep.engine.handlers.EffectContext
@@ -119,7 +120,7 @@ object TargetResolutionUtils {
         EffectTarget.EnchantedCreature,
         EffectTarget.EquippedCreature,
         EffectTarget.EnchantedPermanent -> state?.let { attachmentHost(context, it) }
-        EffectTarget.ChosenCreature -> context.sourceId?.let { state?.getEntity(it)?.chosenCreatureRef() }
+        EffectTarget.ChosenCreature -> state?.let { chosenCreature(context, it) }
         is EffectTarget.LinkedExiledCard -> state?.let {
             com.wingedsheep.engine.handlers.effects.linkedexile.LinkedExileLookup
                 .exiledCard(it, context.sourceId, target.index)
@@ -152,6 +153,19 @@ object TargetResolutionUtils {
      * Regenerate enchanted creature" has already unattached itself by the time the regeneration
      * shield is created, and reading the live link there answers "nothing".
      */
+    /**
+     * "The chosen creature": the creature the source chose as it entered, while it is still that
+     * object (CR 400.7). The source's own leaves trigger reads the choice frozen on its departure,
+     * since the live bag went with the old object — and a returned source has chosen anew.
+     */
+    private fun chosenCreature(context: EffectContext, state: GameState): EntityId? {
+        val trigger = context.triggerContext
+        trigger?.lastKnownChosenCreature
+            ?.takeIf { trigger.triggeringEntityId == context.sourceId }
+            ?.let { return it.currentIn(state) }
+        return context.sourceId?.let { state.chosenCreatureOf(it) }
+    }
+
     private fun attachmentHost(context: EffectContext, state: GameState): EntityId? {
         val container = context.sourceId?.let { state.getEntity(it) } ?: return null
         return container.get<AttachedToComponent>()?.targetId

@@ -282,7 +282,10 @@ sealed interface EffectTarget {
 
     /**
      * CHOSEN CREATURE: Refers to the creature chosen when this permanent entered the battlefield.
-     * Used by cards like Dauntless Bodyguard that store a chosen creature reference.
+     * Used by cards like Dauntless Bodyguard that store a chosen creature reference. Resolves only
+     * while that is still the chosen object (CR 400.7); the source's own leaves trigger reads the
+     * choice as it last existed (Tyrannical Pitlord). The static-ability twin is
+     * [com.wingedsheep.sdk.scripting.filters.unified.Scope.ChosenCreature].
      */
     @SerialName("ChosenCreature")
     @Serializable

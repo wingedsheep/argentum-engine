@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.mechanics.combat.rules
 
+import com.wingedsheep.engine.state.components.battlefield.chosenCreatureOf
 import com.wingedsheep.engine.mechanics.targeting.SourceKindProtection
 import com.wingedsheep.engine.mechanics.targeting.ColorProtection
 import com.wingedsheep.engine.handlers.PredicateContext
@@ -258,6 +259,7 @@ class CantBeBlockedByRule(
                     is Scope.Battlefield -> true
                     is Scope.SoulbondPair ->
                         com.wingedsheep.engine.mechanics.SoulbondPairing.isInPairOf(ctx.state, hostId, ctx.attackerId)
+                    is Scope.ChosenCreature -> ctx.state.chosenCreatureOf(hostId) == ctx.attackerId
                     is Scope.Self -> false // already covered by the attacker's own printed read
                 }
                 if (!scopeMatches) continue

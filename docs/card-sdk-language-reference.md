@@ -6321,6 +6321,13 @@ relative to the static's source; `baseFilter` / `excludeSelf` are ignored for th
   set** while the source is unpaired, so a payoff's "as long as this creature is paired with another
   creature" clause is self-enforcing and needs no `condition =` gate — and the bonus switches off the
   instant CR 702.95e breaks the pair (Lightning Mauler's haste, Deadeye Navigator's granted blink).
+- `GroupFilter.chosenCreature()` (`Scope.ChosenCreature`) — "the chosen creature": the creature the source
+  chose with `EntersWithChoice(ChoiceType.CREATURE_ON_BATTLEFIELD)`, the static twin of
+  `EffectTarget.ChosenCreature`. Bound to that *object* (CR 400.7): once it leaves the battlefield the scope is
+  empty for good, even if the card returns; control doesn't matter. Tyrannical Pitlord:
+  `ModifyStats(3, 3, GroupFilter.chosenCreature())` + `GrantKeyword(Keyword.FLYING, GroupFilter.chosenCreature())`,
+  and `Triggers.self.leaves()` → `Effects.SacrificeTarget(EffectTarget.ChosenCreature)` — the source's own
+  leaves trigger reads the choice as it last existed, since the live choice went with the departed object.
 - `GroupFilter.specific(entityId)` (`Scope.Specific`) — a pre-bound entity.
 
 ### Stack-object predicates

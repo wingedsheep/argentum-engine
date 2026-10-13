@@ -514,6 +514,7 @@ class StateProjector {
                         is com.wingedsheep.sdk.scripting.filters.unified.Scope.Self -> AffectsFilter.Self
                         is com.wingedsheep.sdk.scripting.filters.unified.Scope.AttachedTo -> AffectsFilter.AttachedPermanent
                         is com.wingedsheep.sdk.scripting.filters.unified.Scope.SoulbondPair -> AffectsFilter.SoulbondPair
+                        is com.wingedsheep.sdk.scripting.filters.unified.Scope.ChosenCreature -> AffectsFilter.ChosenCreature
                         is com.wingedsheep.sdk.scripting.filters.unified.Scope.Specific -> AffectsFilter.SpecificEntities(setOf(scope.entityId))
                         is com.wingedsheep.sdk.scripting.filters.unified.Scope.Battlefield -> AffectsFilter.Generic(ability.filter)
                     }

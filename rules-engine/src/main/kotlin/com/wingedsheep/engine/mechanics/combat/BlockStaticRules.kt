@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.mechanics.combat
 
+import com.wingedsheep.engine.state.components.battlefield.chosenCreatureOf
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
@@ -72,6 +73,7 @@ class BlockStaticRules(
             Scope.Battlefield -> true
             Scope.AttachedTo -> state.getEntity(holder)?.get<AttachedToComponent>()?.targetId == blocker
             Scope.SoulbondPair -> SoulbondPairing.isInPairOf(state, holder, blocker)
+            Scope.ChosenCreature -> state.chosenCreatureOf(holder) == blocker
             is Scope.Specific -> scope.entityId == blocker
         }
         return inScope && !(filter.excludeSelf && holder == blocker) &&

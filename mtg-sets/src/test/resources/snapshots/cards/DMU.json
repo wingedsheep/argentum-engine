@@ -6666,6 +6666,93 @@
     ]
 }
 
+// Tyrannical Pitlord
+{
+    "name": "Tyrannical Pitlord",
+    "manaCost": "{4}{B}{B}",
+    "typeLine": "Creature — Demon",
+    "oracleText": "Flying, trample\nAs this creature enters, choose another creature you control.\nThe chosen creature gets +3/+3 and has flying.\nWhen this creature leaves the battlefield, sacrifice the chosen creature.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "keywords": [
+        "FLYING",
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Tyrannical Pitlord:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield"
+                },
+                "effect": {
+                    "type": "SacrificeTarget",
+                    "target": "ChosenCreature"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 3,
+                "toughnessBonus": 3,
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "ChosenCreature"
+                }
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "FLYING",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "ChosenCreature"
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithChoice",
+                "choiceType": "CREATURE_ON_BATTLEFIELD"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "284",
+        "rarity": "RARE",
+        "artist": "Donato Giancola",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/2/027ef1fc-4a7a-465c-9c25-dc19c771b5f5.jpg?1783921246",
+        "rulings": [
+            {
+                "date": "2022-09-09",
+                "text": "The ability of Tyrannical Pitlord that allows you to choose a creature isn't a triggered ability and doesn't use the stack. Players can't respond to your choice of which creature it's affecting."
+            },
+            {
+                "date": "2022-09-09",
+                "text": "If Tyrannical Pitlord enters the battlefield at the same time as another creature, that creature can't be chosen."
+            },
+            {
+                "date": "2022-09-09",
+                "text": "If the chosen creature leaves the battlefield, you can't choose a new creature."
+            },
+            {
+                "date": "2022-09-09",
+                "text": "If another player gains control of the chosen creature while Tyrannical Pitlord is still on the battlefield, that creature will continue to have flying and get +3/+3."
+            },
+            {
+                "date": "2022-09-09",
+                "text": "If Tyrannical Pitlord's leaves-the-battlefield triggered ability resolves while its controller is not the same as the controller of the chosen creature, that creature will not be sacrificed."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Urza Assembles the Titans
 {
     "name": "Urza Assembles the Titans",

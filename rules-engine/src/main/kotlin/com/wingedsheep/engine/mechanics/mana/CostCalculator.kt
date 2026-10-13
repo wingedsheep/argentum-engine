@@ -1,4 +1,5 @@
 package com.wingedsheep.engine.mechanics.mana
+import com.wingedsheep.engine.state.components.battlefield.chosenCreatureOf
 import com.wingedsheep.engine.state.components.battlefield.chosenCreatureType
 import com.wingedsheep.engine.state.components.battlefield.chosenColor
 import com.wingedsheep.engine.state.components.battlefield.CastChoicesComponent
@@ -461,6 +462,7 @@ class CostCalculator(
                 }
                 is Scope.SoulbondPair ->
                     com.wingedsheep.engine.mechanics.SoulbondPairing.isInPairOf(state, sourceId, targetId)
+                is Scope.ChosenCreature -> state.chosenCreatureOf(sourceId) == targetId
                 is Scope.Battlefield ->
                     predicateEvaluator.matches(state, projected, targetId, targetFilter.baseFilter, context)
             }

@@ -225,6 +225,13 @@ data class EntitySnapshot(
     /** The cast-time {X} carried by `CastChoicesComponent`, so dies/leaves triggers read `DynamicAmount.CastX`. */
     val castX: Int? = null,
     /**
+     * The creature this permanent chose as it entered (`ChoiceSlot.CREATURE`), with the chosen
+     * object's generation. Frozen because the cast-choices bag is stripped on departure (CR 400.7),
+     * yet "when this creature leaves the battlefield, sacrifice the chosen creature" (Tyrannical
+     * Pitlord) resolves after that.
+     */
+    val chosenCreature: com.wingedsheep.engine.state.components.battlefield.ChoiceValue.EntityChoice? = null,
+    /**
      * True if this permanent was face down (CR 708) when it left the battlefield.
      *
      * Frozen because a card put into a graveyard is always turned face up (CR 708.4), so by the

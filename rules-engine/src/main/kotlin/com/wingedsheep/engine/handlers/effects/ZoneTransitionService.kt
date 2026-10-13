@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.handlers.effects
 
+import com.wingedsheep.engine.state.components.battlefield.chosenCreatureChoice
 import com.wingedsheep.engine.state.components.identity.copiableDoubleFacedComponent
 import com.wingedsheep.engine.state.components.identity.copiableNumericKeywords
 import com.wingedsheep.engine.state.components.identity.copiableCardComponent
@@ -502,6 +503,7 @@ class ZoneTransitionService(
                 damageDealtByPlayers = lastKnownDamageDealtByPlayers,
                 damageSources = lastKnownDamageSources,
                 wasFaceDown = lastKnownWasFaceDown,
+                chosenCreature = container.chosenCreatureChoice(),
                 copyTriggeredAbilities = com.wingedsheep.engine.state.components.stack.captureCopyTriggeredAbilities(state, entityId),
                 lookBackGrants = (options.lookBackGrants
                     ?: LookBackGrants.of(state, entityId, cardRegistry, conditionEvaluator))

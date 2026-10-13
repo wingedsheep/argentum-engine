@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.mechanics.combat
 
+import com.wingedsheep.engine.state.components.battlefield.chosenCreatureOf
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.mechanics.layers.ProjectedState
 import com.wingedsheep.engine.mechanics.layers.SerializableModification
@@ -1285,6 +1286,7 @@ internal class BlockPhaseManager(
             is Scope.Self -> listOf(sourceId)
             is Scope.SoulbondPair ->
                 com.wingedsheep.engine.mechanics.SoulbondPairing.pairOf(state, sourceId).toList()
+            is Scope.ChosenCreature -> listOfNotNull(state.chosenCreatureOf(sourceId))
             is Scope.Specific -> listOf(scope.entityId)
             is Scope.Battlefield -> attackerSet.toList()
         }

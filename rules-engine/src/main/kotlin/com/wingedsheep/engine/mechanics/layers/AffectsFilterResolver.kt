@@ -3,6 +3,7 @@ package com.wingedsheep.engine.mechanics.layers
 import com.wingedsheep.engine.state.components.battlefield.chosenColor
 import com.wingedsheep.engine.state.components.battlefield.chosenCreatureType
 import com.wingedsheep.engine.state.components.battlefield.CastChoicesComponent
+import com.wingedsheep.engine.state.components.battlefield.chosenCreatureOf
 import com.wingedsheep.engine.state.components.battlefield.ChoiceValue
 import com.wingedsheep.engine.handlers.predicates.becameTappedOnlyOnceThisTurn
 import com.wingedsheep.engine.handlers.predicates.hasDealtDamage
@@ -203,6 +204,10 @@ internal class AffectsFilterResolver(
             // static's "as long as this creature is paired" clause needs no separate gate.
             is AffectsFilter.SoulbondPair ->
                 com.wingedsheep.engine.mechanics.SoulbondPairing.pairOf(state, sourceId)
+            // "The chosen creature gets …" — bound to the chosen object, whoever controls it now.
+            is AffectsFilter.ChosenCreature -> state.chosenCreatureOf(sourceId)
+                ?.takeIf { it in state.getBattlefield() }
+                ?.let(::setOf) ?: emptySet()
             is AffectsFilter.FaceDownCreatures -> {
                 state.getBattlefield().filter { entityId ->
                     state.getEntity(entityId)?.has<FaceDownComponent>() == true
