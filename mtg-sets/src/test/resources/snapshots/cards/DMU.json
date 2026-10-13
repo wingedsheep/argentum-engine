@@ -3366,6 +3366,108 @@
     ]
 }
 
+// Djinn of the Fountain
+{
+    "name": "Djinn of the Fountain",
+    "manaCost": "{4}{U}{U}",
+    "typeLine": "Creature — Djinn",
+    "oracleText": "Flying\nWhenever you cast an instant or sorcery spell, choose one —\n• This creature gets +1/+1 until end of turn.\n• Exile this creature. Return it to the battlefield under its owner's control at the beginning of the next end step.\n• Scry 1.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Djinn of the Fountain:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    "IsInstant",
+                                    "IsSorcery"
+                                ]
+                            }
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "ModifyStats",
+                                "powerModifier": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "toughnessModifier": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "target": "Self"
+                            },
+                            "description": "This creature gets +1/+1 until end of turn"
+                        },
+                        {
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "MoveToZone",
+                                        "target": "Self",
+                                        "destination": "Exile"
+                                    },
+                                    {
+                                        "type": "CreateDelayedTrigger",
+                                        "step": "END",
+                                        "effect": {
+                                            "type": "MoveToZone",
+                                            "target": "Self",
+                                            "destination": "Battlefield"
+                                        }
+                                    }
+                                ]
+                            },
+                            "description": "Exile this creature. Return it to the battlefield under its owner's control at the beginning of the next end step"
+                        },
+                        {
+                            "effect": {
+                                "type": "Scry",
+                                "count": 1
+                            },
+                            "description": "Scry 1"
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever you cast an instant or sorcery spell, choose one — this creature gets +1/+1 until end of turn; or exile this creature and return it to the battlefield under its owner's control at the beginning of the next end step; or scry 1."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "47",
+        "rarity": "UNCOMMON",
+        "artist": "Bastien L. Deharme",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/5/f55606da-de3e-4375-925b-cc16b03b6365.jpg?1783921354",
+        "rulings": [
+            {
+                "date": "2022-09-09",
+                "text": "Djinn of the Fountain's triggered ability will resolve before the instant or sorcery spell that caused it to trigger resolves. It will resolve even if the spell that caused it to trigger is countered or has otherwise left the stack."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Drag to the Bottom
 {
     "name": "Drag to the Bottom",
@@ -3437,6 +3539,100 @@
                 "text": "The basic land types are Plains, Island, Swamp, Mountain, and Forest. Land types other than basic land types (such as Desert) don't contribute to domain abilities."
             }
         ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Eerie Soultender
+{
+    "name": "Eerie Soultender",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Spirit Cleric",
+    "oracleText": "When this creature enters, mill three cards. (Put the top three cards of your library into your graveyard.)\n{4}{B}, Exile this card from your graveyard: Return another target creature card from your graveyard to your hand.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Eerie Soultender:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                },
+                                "isMill": true
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Eerie Soultender:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{4}{B}"
+                            }
+                        },
+                        "CostExileSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Hand"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature own:you",
+                            "zone": "Graveyard",
+                            "excludeSelf": true
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "activateFromZone": "Graveyard"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "92",
+        "artist": "Igor Kieryluk",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/3/335f3146-743c-4a25-86b5-c45e9c66eb15.jpg?1783921334"
     },
     "colorIdentityOverride": [
         "BLACK"
@@ -3594,6 +3790,67 @@
     ]
 }
 
+// Elvish Hydromancer
+{
+    "name": "Elvish Hydromancer",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Elf Wizard",
+    "oracleText": "Kicker {3}{U} (You may pay an additional {3}{U} as you cast this spell.)\nWhen this creature enters, if it was kicked, create a token that's a copy of target creature you control.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywordAbilities": [
+        {
+            "type": "Kicker",
+            "manaCost": "{3}{U}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Elvish Hydromancer:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateTokenCopyOfTarget",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you"
+                    },
+                    "id": "t0"
+                },
+                "interveningIf": "WasKicked"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "162",
+        "rarity": "UNCOMMON",
+        "artist": "Fajareka Setiawan",
+        "flavorText": "\"Water remembers every living thing that it has ever been a part of. We need only bring that recollection to the surface.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/0/90dc4122-4f7a-4d9f-8427-de36e3e8a913.jpg?1783921302",
+        "rulings": [
+            {
+                "date": "2022-09-09",
+                "text": "If it was kicked, Elvish Hydromancer's ability can target any creature you control, including itself. If it targets itself, the token that is created won't have been kicked, so the ability will not trigger again."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ]
+}
+
 // Ertai Resurrected
 {
     "name": "Ertai Resurrected",
@@ -3707,6 +3964,69 @@
     "colorIdentityOverride": [
         "BLUE",
         "BLACK"
+    ]
+}
+
+// Ertai's Scorn
+{
+    "name": "Ertai's Scorn",
+    "manaCost": "{1}{U}{U}",
+    "typeLine": "Instant",
+    "oracleText": "This spell costs {U} less to cast if an opponent cast two or more spells this turn.\nCounter target spell.",
+    "script": {
+        "spellEffect": "Counter",
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {},
+                    "zone": "Stack"
+                },
+                "id": "t0"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "ReduceColored",
+                    "symbols": "{U}"
+                },
+                "gating": {
+                    "type": "OnlyIf",
+                    "condition": {
+                        "type": "Compare",
+                        "left": {
+                            "type": "GreatestAmongPlayers",
+                            "players": "EachOpponent",
+                            "inner": "SpellsCastThisTurn"
+                        },
+                        "operator": "GTE",
+                        "right": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "48",
+        "rarity": "UNCOMMON",
+        "artist": "Alex Negrea",
+        "flavorText": "\"You're not so special, Karn. Anything that has been assembled can be disassembled.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/1/6129b0d3-b50a-4a4b-9111-39f8fc6718dd.jpg?1783921354",
+        "rulings": [
+            {
+                "date": "2022-09-09",
+                "text": "If multiple opponents have each cast two or more spells this turn, Ertai's Scorn costs only {U} less to cast, not {U} less for each of them."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -4856,6 +5176,43 @@
     ]
 }
 
+// Haunting Figment
+{
+    "name": "Haunting Figment",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Illusion",
+    "oracleText": "Vigilance\nThis creature can't be blocked as long as you've cast an instant or sorcery spell this turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": "CantBeBlocked",
+                "condition": {
+                    "type": "PlayerCastSpellsThisTurn",
+                    "filter": "instant|sorcery",
+                    "atLeast": 1
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "53",
+        "artist": "Chris Cold",
+        "flavorText": "Some bad dreams stay with you forever.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/1/d14b07ea-18e4-41fb-8136-759d5349e88a.jpg?1783921350"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Herd Migration
 {
     "name": "Herd Migration",
@@ -4957,6 +5314,77 @@
     "colorIdentityOverride": [
         "GREEN"
     ]
+}
+
+// Hero's Heirloom
+{
+    "name": "Hero's Heirloom",
+    "manaCost": "{2}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Equipped creature gets +2/+1.\nAs long as equipped creature is legendary, it has trample and haste.\nEquip {2}",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Hero's Heirloom:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 2,
+                "toughnessBonus": 1
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "TRAMPLE"
+                },
+                "condition": "EnchantedCreatureIsLegendary"
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "HASTE"
+                },
+                "condition": "EnchantedCreatureIsLegendary"
+            }
+        ]
+    },
+    "equipCost": "{2}",
+    "metadata": {
+        "collectorNumber": "231",
+        "rarity": "UNCOMMON",
+        "artist": "Ovidio Cartagena",
+        "flavorText": "\"A blade is just a tool. Its power comes from the hand that wields it.\"\n—Danitha",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/b/5b7c0d2d-7107-4599-8d49-c7c57d21e467.jpg?1783921268"
+    }
 }
 
 // Heroic Charge
@@ -6109,6 +6537,114 @@
     ]
 }
 
+// King Darien XLVIII
+{
+    "name": "King Darien XLVIII",
+    "manaCost": "{1}{G}{W}",
+    "typeLine": "Legendary Creature — Human Soldier",
+    "oracleText": "Other creatures you control get +1/+1.\n{3}{G}{W}: Put a +1/+1 counter on King Darien and create a 1/1 white Soldier creature token.\nSacrifice King Darien: Creature tokens you control gain hexproof and indestructible until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "King Darien XLVIII:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}{G}{W}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 1,
+                            "target": "Self"
+                        },
+                        {
+                            "type": "CreateToken",
+                            "power": 1,
+                            "toughness": 1,
+                            "colors": [
+                                "WHITE"
+                            ],
+                            "creatureTypes": [
+                                "Soldier"
+                            ]
+                        }
+                    ]
+                }
+            },
+            {
+                "id": "King Darien XLVIII:2",
+                "cost": "CostSacrificeSelf",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Group",
+                                "filter": {
+                                    "baseFilter": "creature token ctrl:you"
+                                }
+                            },
+                            "body": {
+                                "type": "GrantKeyword",
+                                "keyword": "HEXPROOF",
+                                "target": "IterationEntity"
+                            }
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Group",
+                                "filter": {
+                                    "baseFilter": "creature token ctrl:you"
+                                }
+                            },
+                            "body": {
+                                "type": "GrantKeyword",
+                                "keyword": "INDESTRUCTIBLE",
+                                "target": "IterationEntity"
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1,
+                "filter": {
+                    "baseFilter": "creature ctrl:you",
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "204",
+        "rarity": "RARE",
+        "artist": "Donato Giancola",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/0/10eca3b1-f35a-4984-bfc0-818e619b1ece.jpg?1783921282",
+        "rulings": [
+            {
+                "date": "2022-09-09",
+                "text": "If King Darien XLVIII leaves the battlefield, other creatures you control immediately lose the +1/+1 bonus. Notably, this means that if you activate its last ability after a creature has already been dealt damage, it might die due to having lethal damage before the ability resolves and gives it indestructible."
+            }
+        ]
+    }
+}
+
 // Knight of Dawn's Light
 {
     "name": "Knight of Dawn's Light",
@@ -6162,6 +6698,65 @@
         "flavorText": "\"Phyrexians destroyed my village, but they cannot break my hope.\"",
         "imageUri": "https://cards.scryfall.io/normal/front/b/7/b7c7a54e-4df6-4745-8bae-aeefda934d82.jpg?1783921364"
     }
+}
+
+// Knight of Dusk's Shadow
+{
+    "name": "Knight of Dusk's Shadow",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Human Knight",
+    "oracleText": "Menace (This creature can't be blocked except by two or more creatures.)\nYour opponents can't gain life.\n{1}{B}: This creature gets +1/+1 until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "MENACE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Knight of Dusk's Shadow:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{B}"
+                    }
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": "Self"
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "PreventLifeGain",
+                "appliesTo": {
+                    "type": "LifeGainEvent",
+                    "player": "EachOpponent"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "96",
+        "rarity": "UNCOMMON",
+        "artist": "Wisnu Tan",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/3/33dfd2fe-e0e0-465c-b730-a30e6f5c271c.jpg?1783921331"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
 }
 
 // Leaf-Crowned Visionary
@@ -7886,6 +8481,196 @@
     ]
 }
 
+// Raff, Weatherlight Stalwart
+{
+    "name": "Raff, Weatherlight Stalwart",
+    "manaCost": "{W}{U}",
+    "typeLine": "Legendary Creature — Human Wizard",
+    "oracleText": "Whenever you cast an instant or sorcery spell, you may tap two untapped creatures you control. If you do, draw a card.\n{3}{W}{W}: Creatures you control get +1/+1 and gain vigilance until end of turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Raff, Weatherlight Stalwart:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    "IsInstant",
+                                    "IsSorcery"
+                                ]
+                            }
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "ControlledPermanents",
+                                        "filter": "creature untapped"
+                                    },
+                                    "storeAs": "gathered0"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "gathered0",
+                                    "selection": {
+                                        "type": "ChooseExactly",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 2
+                                        }
+                                    },
+                                    "storeSelected": "selected1",
+                                    "prompt": "Tap two untapped creatures you control",
+                                    "useTargetingUI": true
+                                },
+                                {
+                                    "type": "TapUntapCollection",
+                                    "collectionName": "selected1"
+                                }
+                            ]
+                        }
+                    },
+                    "then": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "descriptionOverride": "You may tap two untapped creatures you control. If you do, draw a card."
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Raff, Weatherlight Stalwart:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}{W}{W}"
+                    }
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "ModifyStats",
+                                "powerModifier": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "toughnessModifier": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "target": "IterationEntity"
+                            },
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "VIGILANCE",
+                                "target": "IterationEntity"
+                            }
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "212",
+        "rarity": "UNCOMMON",
+        "artist": "Eelis Kyttanen",
+        "flavorText": "\"This old ship has seen a lot, but she's not done yet.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/c/cc0cba4c-d9f0-421f-acf4-ab1adcd59c80.jpg?1783921279",
+        "rulings": [
+            {
+                "date": "2022-09-09",
+                "text": "Raff, Weatherlight Stalwart's triggered ability resolves before the spell that caused it to trigger. The ability will resolve even if that spell is countered."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
+    ]
+}
+
+// Relic of Legends
+{
+    "name": "Relic of Legends",
+    "manaCost": "{3}",
+    "typeLine": "Artifact",
+    "oracleText": "{T}: Add one mana of any color.\nTap an untapped legendary creature you control: Add one mana of any color.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Relic of Legends:1",
+                "cost": "CostTap",
+                "effect": "AddManaOfChoice",
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Relic of Legends:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomTapPermanents",
+                        "filter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                "IsLegendary"
+                            ]
+                        }
+                    }
+                },
+                "effect": "AddManaOfChoice",
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "236",
+        "rarity": "UNCOMMON",
+        "artist": "Titus Lunter",
+        "flavorText": "\"If the worst parts of history can repeat themselves, it stands to reason that the best parts can as well.\"\n—Teferi",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/4/64a2809e-c441-416c-90ff-6fb1e246dff3.jpg?1783921269",
+        "rulings": [
+            {
+                "date": "2022-09-09",
+                "text": "You can tap any untapped legendary creature you control, including one you haven't controlled continuously since the beginning of your most recent turn, to pay the cost of Relic of Legends's activated ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Resolute Reinforcements
 {
     "name": "Resolute Reinforcements",
@@ -8109,6 +8894,87 @@
         "rarity": "UNCOMMON",
         "artist": "Dominik Mayer",
         "imageUri": "https://cards.scryfall.io/normal/front/b/d/bdf96533-f28a-4465-893b-0c9394d5b8d7.jpg?1783921346"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
+    ]
+}
+
+// Rona, Sheoldred's Faithful
+{
+    "name": "Rona, Sheoldred's Faithful",
+    "manaCost": "{1}{U}{B}{B}",
+    "typeLine": "Legendary Creature — Human Wizard",
+    "oracleText": "Whenever you cast an instant or sorcery spell, each opponent loses 1 life.\nYou may cast this card from your graveyard by discarding two cards in addition to paying its other costs.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Rona, Sheoldred's Faithful:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    "IsInstant",
+                                    "IsSorcery"
+                                ]
+                            }
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "EachOpponent"
+                    }
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "MayCastSelfFromZones",
+                "zones": [
+                    "Graveyard"
+                ],
+                "additionalCost": {
+                    "type": "AdditionalAtom",
+                    "atom": {
+                        "type": "AtomDiscard",
+                        "count": 2
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "216",
+        "rarity": "UNCOMMON",
+        "artist": "Ryan Alexander Lee",
+        "flavorText": "\"Consider yourself lucky. Not everyone is granted the gift of *compleation*.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/c/cc8331ab-adc9-45c6-9728-66afc72d901c.jpg?1783921276",
+        "rulings": [
+            {
+                "date": "2022-09-09",
+                "text": "The casting permission granted by Rona's last ability doesn't change when you may cast it from your graveyard."
+            },
+            {
+                "date": "2022-09-09",
+                "text": "If Rona is countered or dies after being cast from your graveyard, it returns to the graveyard. It may be cast this way again later."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "BLUE",
@@ -9301,6 +10167,138 @@
     ]
 }
 
+// Sprouting Goblin
+{
+    "name": "Sprouting Goblin",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Goblin Druid",
+    "oracleText": "Kicker {G} (You may pay an additional {G} as you cast this spell.)\nWhen this creature enters, if it was kicked, search your library for a land card with a basic land type, reveal it, put it into your hand, then shuffle.\n{R}, {T}, Sacrifice a land: Draw a card.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywordAbilities": [
+        {
+            "type": "Kicker",
+            "manaCost": "{G}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sprouting Goblin:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Library",
+                                "filter": {
+                                    "cardPredicates": [
+                                        "IsLand",
+                                        {
+                                            "type": "HasAnyOfSubtypes",
+                                            "subtypes": [
+                                                "Plains",
+                                                "Island",
+                                                "Swamp",
+                                                "Mountain",
+                                                "Forest"
+                                            ]
+                                        }
+                                    ]
+                                }
+                            },
+                            "storeAs": "searchable",
+                            "search": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "searchable",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "found",
+                            "prompt": "Search your library for a Plains, Island, Swamp, Mountain, or Forest land card to put into your hand",
+                            "selectedLabel": "Put into your hand"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "found",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            },
+                            "revealed": true
+                        },
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
+                    ]
+                },
+                "interveningIf": "WasKicked"
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Sprouting Goblin:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{R}"
+                            }
+                        },
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "land"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "145",
+        "rarity": "UNCOMMON",
+        "artist": "Uriah Voth",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/0/602f5370-d096-4765-b612-16bcec3aafa7.jpg?1783921310",
+        "rulings": [
+            {
+                "date": "2022-09-09",
+                "text": "You may search for any land card with one of the basic land types, even if that land isn't a basic land. The basic land types are Plains, Island, Swamp, Mountain, and Forest."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN"
+    ]
+}
+
 // Stall for Time
 {
     "name": "Stall for Time",
@@ -10480,6 +11478,99 @@
     ]
 }
 
+// Tori D'Avenant, Fury Rider
+{
+    "name": "Tori D'Avenant, Fury Rider",
+    "manaCost": "{1}{R}{R}{W}",
+    "typeLine": "Legendary Creature — Human Knight",
+    "oracleText": "Vigilance, trample\nWhenever Tori D'Avenant attacks, all other attacking creatures you control get +1/+1 until end of turn. Other red attacking creatures you control gain trample until end of turn. Untap each other white attacking creature you control.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "VIGILANCE",
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Tori D'Avenant, Fury Rider:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Group",
+                                "filter": {
+                                    "baseFilter": "creature attacking ctrl:you",
+                                    "excludeSelf": true
+                                }
+                            },
+                            "body": {
+                                "type": "ModifyStats",
+                                "powerModifier": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "toughnessModifier": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "target": "IterationEntity"
+                            }
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Group",
+                                "filter": {
+                                    "baseFilter": "creature red attacking ctrl:you",
+                                    "excludeSelf": true
+                                }
+                            },
+                            "body": {
+                                "type": "GrantKeyword",
+                                "keyword": "TRAMPLE",
+                                "target": "IterationEntity"
+                            }
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Group",
+                                "filter": {
+                                    "baseFilter": "creature white attacking ctrl:you",
+                                    "excludeSelf": true
+                                }
+                            },
+                            "body": {
+                                "type": "TapUntap",
+                                "target": "IterationEntity",
+                                "tap": false
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "223",
+        "rarity": "UNCOMMON",
+        "artist": "Anna Podedworna",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/c/9c873c5b-61f6-49b9-8993-2d5e9823de62.jpg?1783921274",
+        "rulings": [
+            {
+                "date": "2022-09-09",
+                "text": "If another attacking creature is both red and white, it will get +1/+1 until end of turn, gain trample until end of turn, and be untapped."
+            }
+        ]
+    }
+}
+
 // Toxic Abomination
 {
     "name": "Toxic Abomination",
@@ -10670,6 +11761,65 @@
     "colorIdentityOverride": [
         "WHITE",
         "BLUE"
+    ]
+}
+
+// Twinferno
+{
+    "name": "Twinferno",
+    "manaCost": "{1}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Choose one —\n• When you cast your next instant or sorcery spell this turn, copy that spell. You may choose new targets for the copy.\n• Target creature you control gains double strike until end of turn. (It deals both first-strike and regular combat damage.)",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": "CopyNextSpellCast",
+                    "description": "Copy your next instant or sorcery spell this turn"
+                },
+                {
+                    "effect": {
+                        "type": "GrantKeyword",
+                        "keyword": "DOUBLE_STRIKE",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature ctrl:you"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "description": "Target creature you control gains double strike until end of turn"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "149",
+        "rarity": "UNCOMMON",
+        "artist": "Justyna Dura",
+        "flavorText": "\"More fire?\" Jaya asked.\n\"More fire,\" Jodah agreed.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/c/bc531409-26cb-4c58-ba69-f39dd8aee3d1.jpg?1783921308",
+        "rulings": [
+            {
+                "date": "2022-09-09",
+                "text": "If the spell that's copied is modal (that is, it says \"Choose one —\" or the like), the copy created by Twinferno's delayed triggered ability will have the same mode or modes. You can't choose different ones."
+            },
+            {
+                "date": "2022-09-09",
+                "text": "The copies that Twinferno's ability creates are created on the stack, so they're not \"cast.\" Abilities that trigger when a player casts a spell won't trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -11598,6 +12748,48 @@
         "flavorText": "\"You're just one more pollutant to be removed from the sea.\"",
         "imageUri": "https://cards.scryfall.io/normal/front/4/e/4ec464dc-b1dd-4e45-b093-c3ad65a74050.jpg?1783921340"
     }
+}
+
+// Volshe Tideturner
+{
+    "name": "Volshe Tideturner",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Merfolk Wizard",
+    "oracleText": "{T}: Add {U}. Spend this mana only to cast an instant or sorcery spell or a kicked spell.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Volshe Tideturner:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "BLUE",
+                    "restriction": {
+                        "type": "AnyOf",
+                        "restrictions": [
+                            "InstantOrSorceryOnly",
+                            "KickedSpellsOnly"
+                        ]
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "77",
+        "artist": "Tia Masic",
+        "flavorText": "Ships suspected of carrying Sheoldred's agents have a tendency to drift far off course as they sail through the Voda Sea.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/a/ea61871b-9295-4ea0-86ef-e7a11e23bda8.jpg?1783921340"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
 }
 
 // Walking Bulwark
