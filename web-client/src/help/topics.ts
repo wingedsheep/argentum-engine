@@ -379,7 +379,7 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
     body: [
       { kind: 'p', text: 'Without a format, the server opens eight boosters and builds the deck from them; the cards it left out are your sideboard, as in Sealed. Under a constructed format you get a 60-card deck and a fifteen-card wishboard from the same legal pool, so a wish or Learn card it rolls has something to fetch.' },
     ],
-    related: ['outside-the-game', 'targeting-and-combat'],
+    related: ['outside-the-game'],
   },
   {
     id: 'cards-momir',
@@ -391,7 +391,7 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
       { kind: 'p', text: 'The Momir Vig avatar sits in the command zone. Creatures are rolled from every implemented set, so games look nothing alike.' },
       { kind: 'p', text: 'Every game also rolls one shared wishboard: fifteen cards both players own outside the game, at least a few of them Lessons. When the avatar hands you a creature that learns, or one that wishes, this is where it looks — open your deck (D) and pick the Outside the game tab to see it.' },
     ],
-    related: ['outside-the-game', 'targeting-and-combat'],
+    related: ['outside-the-game'],
   },
   {
     id: 'cards-jump-in',
