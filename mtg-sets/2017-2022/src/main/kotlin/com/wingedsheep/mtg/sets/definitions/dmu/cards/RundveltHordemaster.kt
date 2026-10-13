@@ -19,8 +19,9 @@ import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
  * Whenever this creature or another Goblin you control dies, exile the top card of your library.
  * If it's a Goblin creature card, you may cast that card until the end of your next turn.
  *
- * "This creature or another Goblin" is the ANY binding — Hordemaster is a Goblin itself, so its own
- * death fires the trigger, and each Goblin dying simultaneously triggers it separately (ruling).
+ * "This creature or another Goblin" is two triggers sharing one effect: a self binding, so
+ * Hordemaster's own death fires even if it stopped being a Goblin, and an ANOTHER binding over Goblins
+ * you control — each Goblin dying simultaneously triggers it separately (ruling).
  * "If it's a Goblin creature card" tests the exiled *card*, so the exiled collection is filtered
  * before the grant (the Chandra, Dressed to Kill shape); a non-Goblin card simply stays exiled.
  * "Cast" never covers playing a land, hence `nonLandOnly`.
@@ -35,6 +36,22 @@ val RundveltHordemaster = card("Rundvelt Hordemaster") {
         "Whenever this creature or another Goblin you control dies, exile the top card of your " +
         "library. If it's a Goblin creature card, you may cast that card until the end of your next turn."
 
+    val hordeEffect = Effects.Pipeline {
+        val hordeExiled = gather(CardSource.TopOfLibrary(1))
+        exile(hordeExiled)
+        val hordeGoblin = filter(
+            hordeExiled,
+            GameObjectFilter.Creature.withSubtype(Subtype.GOBLIN)
+        )
+        run(
+            Effects.GrantMayPlayFromExile(
+                hordeGoblin,
+                expiry = MayPlayExpiry.UntilEndOfNextTurn,
+                nonLandOnly = true
+            )
+        )
+    }
+
     staticAbility {
         ability = ModifyStats(
             powerBonus = 1,
@@ -47,22 +64,16 @@ val RundveltHordemaster = card("Rundvelt Hordemaster") {
     }
 
     triggeredAbility {
-        trigger = Triggers.a(GameObjectFilter.Permanent.withSubtype(Subtype.GOBLIN).youControl()).dies()
-        effect = Effects.Pipeline {
-            val hordeExiled = gather(CardSource.TopOfLibrary(1))
-            exile(hordeExiled)
-            val hordeGoblin = filter(
-                hordeExiled,
-                GameObjectFilter.Creature.withSubtype(Subtype.GOBLIN)
-            )
-            run(
-                Effects.GrantMayPlayFromExile(
-                    hordeGoblin,
-                    expiry = MayPlayExpiry.UntilEndOfNextTurn,
-                    nonLandOnly = true
-                )
-            )
-        }
+        trigger = Triggers.self.dies()
+        effect = hordeEffect
+        description = "Whenever this creature or another Goblin you control dies, exile the top " +
+            "card of your library. If it's a Goblin creature card, you may cast that card until " +
+            "the end of your next turn."
+    }
+
+    triggeredAbility {
+        trigger = Triggers.another(GameObjectFilter.Permanent.withSubtype(Subtype.GOBLIN).youControl()).dies()
+        effect = hordeEffect
         description = "Whenever this creature or another Goblin you control dies, exile the top " +
             "card of your library. If it's a Goblin creature card, you may cast that card until " +
             "the end of your next turn."
