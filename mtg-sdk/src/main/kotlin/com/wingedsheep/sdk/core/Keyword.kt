@@ -293,6 +293,9 @@ enum class Keyword(val displayName: String) {
      * (`CastSpell.faceIndex`), not an `AlternativeCostType`.
      */
     AFTERMATH("Aftermath"),
+
+    /** Fuse (CR 702.102): cast both halves of a split card as one spell from hand. Declared on the card, not its faces. */
+    FUSE("Fuse"),
     DREDGE("Dredge"),
 
     /**

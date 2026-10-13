@@ -340,7 +340,7 @@
 - [ ] Wasteland Raider
 - [ ] Watchful Radstag
 - [x] Wayfarer's Bauble
-- [ ] Wear
+- [x] Wear
 - [ ] Well Rested
 - [x] Whirler Rogue
 - [ ] White Glove Gourmand

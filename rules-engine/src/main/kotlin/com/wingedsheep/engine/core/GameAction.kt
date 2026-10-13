@@ -194,6 +194,8 @@ data class CastSpell(
      * face's door unlocked (CR 709.5d).
      */
     val faceIndex: Int? = null,
+    /** Cast both halves of a card with fuse from hand as one spell. Mutually exclusive with faceIndex. */
+    val castFused: Boolean = false,
     /**
      * Invokes a `MayCastWithoutPayingManaCost` battlefield permission (e.g. Weftwalking): cast
      * the spell for {0} via the "without paying its mana cost" alternative cost. Per CR 118.9a

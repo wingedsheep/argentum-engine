@@ -173,9 +173,13 @@ class IntentCatalog private constructor(private val registry: CardRegistry?) {
      * cast-transformed cast puts on the stack, whose targets are its own (Catlike Curiosity's
      * "enchant creature", not Mischievous Catgeist's none).
      */
-    fun spellTargetPolarities(cardName: String, transformed: Boolean = false): List<TargetPolarity> {
+    fun spellTargetPolarities(cardName: String, transformed: Boolean = false, faceIndex: Int? = null, castFused: Boolean = false): List<TargetPolarity> {
         val printed = registry?.getCard(cardName) ?: return emptyList()
-        val definition = if (transformed) printed.backFace ?: return emptyList() else printed
+        if (castFused) return printed.cardFaces.flatMap { face ->
+            TargetPolarityAnalyzer.forSpell(printed.copy(name = face.name, script = face.script, cardFaces = emptyList()), ::tokenDefinition)
+        }
+        val definition = if (transformed) printed.backFace ?: return emptyList()
+            else faceIndex?.let { printed.cardFaces.getOrNull(it)?.let { face -> printed.copy(name = face.name, script = face.script, cardFaces = emptyList()) } } ?: printed
         return TargetPolarityAnalyzer.forSpell(definition, ::tokenDefinition)
     }
 

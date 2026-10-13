@@ -981,6 +981,7 @@ class ZoneTransitionService(
         if (actualDestZone != Zone.BATTLEFIELD && actualDestZone != Zone.STACK) {
             newState = com.wingedsheep.engine.mechanics.BestowCasts.end(newState, entityId)
             newState = com.wingedsheep.engine.mechanics.PrototypeCasts.end(newState, entityId)
+            newState = com.wingedsheep.engine.mechanics.SplitSpellCasts.end(newState, entityId)
             newState = restoreDfcFrontFace(newState, cardRegistry, entityId)
         }
 

@@ -121,7 +121,8 @@ internal class NonPermanentSpellResolver(
         val splicedSlotCount = SpliceCasts
             .splicedTargetSlotCounts(spellComponent.splicedCardNames, cardRegistry, allTargetRequirements).sum()
 
-        if (spellEffect != null) {
+        val fusedDefinition = resolvedCardDef?.takeIf { spellComponent.castFused }
+        if (spellEffect != null || fusedDefinition != null) {
             // Requirements are never filtered, so the tail comes straight off the end.
             val targetRequirements = allTargetRequirements.dropLast(splicedRequirementCount)
             // The tail is dropped from `alignedTargets`, NOT from `targets`: only the aligned list is
@@ -146,8 +147,15 @@ internal class NonPermanentSpellResolver(
             )
             newState = newState.pushContinuation(finishing)
 
-            val effectResult = runMainEffectThenSplice(
-                newState, spellId, spellComponent, cardComponent, spellEffect, context, spliceEntries
+            val effectResult = if (fusedDefinition != null) {
+                val entries = fusedEntries(state, spellId, fusedDefinition, targetRequirements, mainAlignedTargets)
+                processPreTargetedEffectQueue(newState, entries + spliceEntries,
+                    PreTargetedEffectContext(baseContext = context, controllerId = context.controllerId,
+                        sourceId = spellId, sourceName = cardComponent?.name, xValue = context.xValue,
+                        triggeringEntityId = null, objectReferences = context.objectReferences),
+                    effects::execute, spliceTargetValidator, emptyList())
+            } else runMainEffectThenSplice(
+                newState, spellId, spellComponent, cardComponent, spellEffect!!, context, spliceEntries
             )
 
             if (effectResult.outcome is Outcome.Paused) {
@@ -212,6 +220,29 @@ internal class NonPermanentSpellResolver(
             rawSpellEffect.applyTextReplacement(textReplacement)
         } else {
             rawSpellEffect
+        }
+    }
+
+    private fun fusedEntries(
+        state: GameState,
+        spellId: EntityId,
+        definition: com.wingedsheep.sdk.model.CardDefinition,
+        requirements: List<TargetRequirement>,
+        alignedTargets: List<ChosenTarget?>,
+    ): List<PreTargetedEffectEntry> {
+        var requirementIndex = 0
+        var targetIndex = 0
+        val text = TextChanges.forSpell(state, spellId)
+        return definition.cardFaces.mapNotNull { face ->
+            val bound = requirements.drop(requirementIndex).take(face.script.targetRequirements.size)
+            requirementIndex += bound.size
+            val count = bound.sumOf { it.count }
+            val slice = alignedTargets.drop(targetIndex).take(count)
+            targetIndex += count
+            val effect = face.script.spellEffect ?: return@mapNotNull null
+            // A half still does as much as possible when its target is illegal; continue into the other half.
+            PreTargetedEffectEntry(com.wingedsheep.sdk.scripting.effects.CompositeEffect(listOf(text?.let { effect.applyTextReplacement(it) } ?: effect)),
+                slice.filterNotNull(), bound, alignedTargets = slice)
         }
     }
 
@@ -409,6 +440,7 @@ internal class NonPermanentSpellResolver(
         // CR 712.8a — a card cast transformed with an instant or sorcery back face leaves the stack
         // here, so it turns back to its front face here.
         newState = restoreDfcFrontFace(newState, cardRegistry, spellId)
+        newState = com.wingedsheep.engine.mechanics.SplitSpellCasts.end(newState, spellId)
         val destinationObject = newState.objectRef(spellId)
         newState = applyOwnDestinationRiders(
             state, newState, spellId, spellComponent, cardComponent, ownerId, resolvedScript, destinationZone,

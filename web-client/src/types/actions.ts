@@ -198,6 +198,8 @@ export interface CastSpellAction {
    * cast. Required for SPLIT cards; null/omitted for normal single-face cards.
    */
   readonly faceIndex?: number | null
+  /** Cast both halves of a fuse split card from hand as one spell. Mutually exclusive with faceIndex. */
+  readonly castFused?: boolean
 }
 
 export type PaymentStrategy =

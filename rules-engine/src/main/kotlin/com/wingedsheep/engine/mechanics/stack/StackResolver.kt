@@ -126,6 +126,7 @@ class StackResolver(
         manaSpentOnXByColor: Map<Color, Int> = emptyMap(),
         phyrexianLifePips: Int = 0,
         faceIndex: Int? = null,
+        castFused: Boolean = false,
         spentManaProvenance: com.wingedsheep.engine.mechanics.mana.SpentManaProvenance =
             com.wingedsheep.engine.mechanics.mana.SpentManaProvenance(),
         castTimeFlags: Set<String> = emptySet(),
@@ -188,6 +189,7 @@ class StackResolver(
             manaSpentOnXByColor = manaSpentOnXByColor,
             phyrexianLifePips = phyrexianLifePips,
             faceIndex = faceIndex,
+            castFused = castFused,
             spentManaProvenance = spentManaProvenance,
             castTimeFlags = castTimeFlags,
             alternativeCost = alternativeCost,

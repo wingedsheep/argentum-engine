@@ -178,6 +178,13 @@ daemons and thrash the box into watchdog timeouts; the `just` recipes limit the 
 builds through a machine-global semaphore. The `verify` skill covers which gate to run for which change
 and how to read the results.
 
+**Scale verification to the change.** A simple merge/rebase conflict resolution that preserves already
+tested behavior does not require rerunning the full test suite locally. Inspect the resolved diff and
+check for leftover conflict markers; run targeted checks only if the resolution changes behavior or
+leaves a concrete concern. Updating the PR can proceed with full regression coverage left to CI.
+This exception takes precedence over the `verify` skill's default suite requirements; disclose which
+local checks ran and which were left to CI.
+
 ## Deprecated: `:mtgish-tooling`
 
 The `just coverage*` recipes and [`mtgish-tooling/`](mtgish-tooling/README.md) are the legacy

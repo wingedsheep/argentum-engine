@@ -12,12 +12,12 @@ import com.wingedsheep.sdk.model.EntityId
  */
 object CastCharacteristics {
     fun announce(state: GameState, action: CastSpell, registry: CardRegistry): GameState =
-        PrototypeCasts.announce(BestowCasts.announce(state, action, registry), action, registry)
+        SplitSpellCasts.announce(PrototypeCasts.announce(BestowCasts.announce(state, action, registry), action, registry), action, registry)
 
     fun definitionForCast(definition: CardDefinition?, action: CastSpell): CardDefinition? =
-        PrototypeCasts.definitionForCast(BestowCasts.definitionForCast(definition, action), action)
+        SplitSpellCasts.definitionForCast(PrototypeCasts.definitionForCast(BestowCasts.definitionForCast(definition, action), action), action)
 
     /** Abandons an announcement whose cast never reached the stack. */
     fun end(state: GameState, id: EntityId): GameState =
-        PrototypeCasts.end(BestowCasts.end(state, id), id)
+        SplitSpellCasts.end(PrototypeCasts.end(BestowCasts.end(state, id), id), id)
 }

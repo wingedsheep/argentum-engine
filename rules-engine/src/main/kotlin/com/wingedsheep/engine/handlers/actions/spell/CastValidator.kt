@@ -206,9 +206,9 @@ internal class CastValidator(
             return "Optional cost payment count exceeds the engine safety limit"
         }
         if (com.wingedsheep.engine.mechanics.BestowCasts.selected(action) &&
-            (action.castFaceDown || action.faceIndex != null)) return "Bestow cannot be combined with another face or face-down casting"
+            (action.castFaceDown || action.faceIndex != null || action.castFused)) return "Bestow cannot be combined with another face or face-down casting"
         if (action.castPrototyped) {
-            if (action.castFaceDown || action.faceIndex != null || com.wingedsheep.engine.mechanics.BestowCasts.selected(action)) {
+            if (action.castFaceDown || action.faceIndex != null || action.castFused || com.wingedsheep.engine.mechanics.BestowCasts.selected(action)) {
                 return "A prototyped spell is cast with its own characteristics only"
             }
             val printed = inputState.getEntity(action.cardId)?.get<CardComponent>()
@@ -223,6 +223,9 @@ internal class CastValidator(
             ?: return "Card not found: ${action.cardId}"
         val cardComponent = container.get<CardComponent>()
             ?: return "Not a card: ${action.cardId}"
+        com.wingedsheep.engine.mechanics.SplitSpellCasts.choiceFailure(
+            inputState, cardRegistry.getCard(cardComponent.cardDefinitionId), action
+        )?.let { return it }
         val source = castSource(state, action, cardComponent)
             ?: return "Card is not in your hand"
         val cardDef = com.wingedsheep.engine.mechanics.CastCharacteristics.definitionForCast(

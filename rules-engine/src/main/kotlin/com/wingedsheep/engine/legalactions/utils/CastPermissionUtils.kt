@@ -209,8 +209,9 @@ class CastPermissionUtils(
      * legal-action enumerator applies it to its final offers and the cast validator reaches it here.
      */
     fun castFaceZoneFailure(state: GameState, action: CastSpell): String? {
-        if (action.faceIndex == null) return null
         val card = state.getEntity(action.cardId)?.get<CardComponent>() ?: return null
+        com.wingedsheep.engine.mechanics.SplitSpellCasts.choiceFailure(state, cardRegistry.getCard(card.cardDefinitionId), action)?.let { return it }
+        if (action.faceIndex == null) return null
         return com.wingedsheep.engine.mechanics.AftermathCasts.zoneFailure(
             state, cardRegistry.getCard(card.cardDefinitionId), action
         )

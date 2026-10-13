@@ -117,6 +117,7 @@ internal class SpellCaster(
         manaSpentOnXByColor: Map<Color, Int> = emptyMap(),
         phyrexianLifePips: Int = 0,
         faceIndex: Int? = null,
+        castFused: Boolean = false,
         spentManaProvenance: com.wingedsheep.engine.mechanics.mana.SpentManaProvenance =
             com.wingedsheep.engine.mechanics.mana.SpentManaProvenance(),
         castTimeFlags: Set<String> = emptySet(),
@@ -260,6 +261,7 @@ internal class SpellCaster(
             manaSpentOnXByColor = manaSpentOnXByColor,
             phyrexianLifePips = phyrexianLifePips,
             faceIndex = faceIndex,
+            castFused = castFused,
             castTimeFlags = castTimeFlags
         )
         newState = newState.updateEntity(cardId) { c ->
@@ -311,9 +313,12 @@ internal class SpellCaster(
         val spellName = if (castTransformed) {
             newState.getEntity(cardId)?.get<CardComponent>()?.name ?: cardComponent.name
         } else {
-            cardComponent.name
+            // CR 709.3b — a single split half on the stack has only that half's name. Other face
+            // casts (Adventure, prepare) keep the card's name, which name-keyed trackers rely on.
+            faceIndex?.let { cardRegistry.getCard(cardComponent.cardDefinitionId)?.takeIf { d -> d.isSplit }?.cardFaces?.getOrNull(it)?.name }
+                ?: cardComponent.name
         }
-        // Preserve SpellCastEvent.cardName's historical public-name contract. The trusted
+        // SpellCastEvent.cardName is the spell's public name (a split half's own name). The trusted
         // presentation snapshot below separately retains semantic identity and private audiences.
         val eventName = if (castFaceDown) FACE_DOWN_DISPLAY_NAME else spellName
         val targetNames = castTargetNames(newState, effectiveTargets, casterId)

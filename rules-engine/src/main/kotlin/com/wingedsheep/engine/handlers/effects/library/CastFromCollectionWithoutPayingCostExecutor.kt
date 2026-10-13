@@ -82,6 +82,7 @@ class CastFromCollectionWithoutPayingCostExecutor(
             com.wingedsheep.engine.handlers.PipelineState.spellFaceKey(effect.from)
         ]
         val faceIndex = chosenFace?.takeIf { it >= 0 }
+        val castFused = chosenFace == com.wingedsheep.engine.mechanics.SplitSpellCasts.FUSED_FACE
         val castTransformed = effect.castTransformed || chosenFace == -2
         // `Chooser.Controller` (the default) is `context.controllerId`; the only other value a
         // printed card needs is `SourceController`, which survives the per-iteration controller
@@ -119,6 +120,7 @@ class CastFromCollectionWithoutPayingCostExecutor(
             state, cardId, controllerId, cardRegistry, targetFinder, effect.storeCastTo,
             castTransformed = castTransformed,
             faceIndex = faceIndex,
+            castFused = castFused,
         )
         if (prep is TargetPrep.NoLegalTargets) {
             // CR 601.2c — if no legal targets exist for a required slot, the cast can't
@@ -152,7 +154,7 @@ class CastFromCollectionWithoutPayingCostExecutor(
         }
 
         // No targets needed (or modal — CastSpellHandler will handle per-mode targets).
-        return invokeCast(newState, controllerId, cardId, permId, emptyList(), effect.storeCastTo, faceIndex, effect.castFaceDown)
+        return invokeCast(newState, controllerId, cardId, permId, emptyList(), effect.storeCastTo, faceIndex, effect.castFaceDown, castFused)
     }
 
     /** True when [cardId]'s definition has a back face to be cast transformed as. */
@@ -170,11 +172,12 @@ class CastFromCollectionWithoutPayingCostExecutor(
         storeCastTo: String?,
         faceIndex: Int?,
         castFaceDown: Boolean = false,
+        castFused: Boolean = false,
     ): EffectResult {
         val stateForCast = state.copy(priorityPlayerId = casterId)
         val castResult = castSpellHandlerProvider().execute(
             stateForCast,
-            CastSpell(casterId, cardId, targets, faceIndex = faceIndex, castFaceDown = castFaceDown),
+            CastSpell(casterId, cardId, targets, faceIndex = faceIndex, castFaceDown = castFaceDown, castFused = castFused),
         )
 
         if (castResult.error != null) {
@@ -334,10 +337,11 @@ class CastFromCollectionWithoutPayingCostExecutor(
             storeCastTo: String? = null,
             castTransformed: Boolean = false,
             faceIndex: Int? = null,
+            castFused: Boolean = false,
         ): TargetPrep {
             val cardComponent = state.getEntity(cardId)?.get<CardComponent>()
             val printedDef = cardComponent?.let { cardRegistry.getCard(it.cardDefinitionId) }
-            val cardDef = if (castTransformed) printedDef?.backFace ?: printedDef else printedDef
+            val cardDef = if (castFused && printedDef != null) com.wingedsheep.engine.mechanics.SplitSpellCasts.fusedDefinition(printedDef) else if (castTransformed) printedDef?.backFace ?: printedDef else printedDef
             val selectedFace = faceIndex?.let { printedDef?.cardFaces?.getOrNull(it) }
             val script = selectedFace?.script ?: cardDef?.script
             val isModalSpell = script?.spellEffect is ModalEffect
@@ -396,6 +400,7 @@ class CastFromCollectionWithoutPayingCostExecutor(
                 casterId = casterId,
                 storeCastTo = storeCastTo,
                 faceIndex = faceIndex,
+                castFused = castFused,
             )
             return TargetPrep.NeedsTargets(question, continuation)
         }

@@ -224,6 +224,8 @@ data class SpellOnStackComponent(
      * the correct face unlocked. `null` for normal single-face cards.
      */
     val faceIndex: Int? = null,
+    /** The spell has both split halves; copied with the spell and cleared when it leaves the stack. */
+    val castFused: Boolean = false,
     /**
      * Names of the "as you cast this spell" condition captures (CR 601.2i) whose condition was true
      * the moment this spell finished being cast. Frozen here so the resolving effect can branch on

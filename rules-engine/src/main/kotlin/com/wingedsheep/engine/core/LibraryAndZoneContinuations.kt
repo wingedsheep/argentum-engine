@@ -429,6 +429,7 @@ data class CastFromCollectionTargetsContinuation(
     val onCastFailure: FreeCastFallback = FreeCastFallback.LEAVE,
     @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
     val faceIndex: Int? = null,
+    val castFused: Boolean = false,
 ) : AnswerContinuation
 
 /**

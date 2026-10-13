@@ -146,7 +146,7 @@ object TargetSelection {
         val read = when (val base = action.action) {
             is CastSpell -> if (base.castFaceDown) emptyList()
                 else state.getEntity(base.cardId)?.get<CardComponent>()?.name
-                    ?.let { intents.spellTargetPolarities(it, castsTransformed(state, base)) }.orEmpty()
+                    ?.let { intents.spellTargetPolarities(it, castsTransformed(state, base), base.faceIndex, base.castFused) }.orEmpty()
             is ActivateAbility -> state.getEntity(base.sourceId)?.get<CardComponent>()?.name
                 ?.let { intents.abilityTargetPolarities(it, base.abilityId) }.orEmpty()
             else -> emptyList()

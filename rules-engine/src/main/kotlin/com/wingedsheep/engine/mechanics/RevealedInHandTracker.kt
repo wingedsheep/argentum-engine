@@ -116,7 +116,10 @@ object RevealedInHandTracker {
         // Only a card played *from hand* makes the known copies of its name ambiguous;
         // casting the same name from the graveyard/exile leaves the hand copy identifiable.
         if (castFromZone == Zone.HAND) {
-            newState = forgetSameNamedInHand(newState, event.casterId, event.underlyingCardName)
+            // The card's own name, not a split half's stack name: casting Wear makes every
+            // revealed Wear // Tear in that hand ambiguous.
+            val cardName = state.getEntity(event.spellEntityId)?.get<CardComponent>()?.name ?: event.underlyingCardName
+            newState = forgetSameNamedInHand(newState, event.casterId, cardName)
         }
         return newState
     }

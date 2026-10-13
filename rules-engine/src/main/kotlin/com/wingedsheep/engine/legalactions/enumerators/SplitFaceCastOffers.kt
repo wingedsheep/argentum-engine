@@ -31,11 +31,13 @@ internal object SplitFaceCastOffers {
         context: EnumerationContext,
         cardId: EntityId,
         cardDef: CardDefinition,
-        faceIndex: Int,
+        faceIndex: Int?,
         face: CardFace,
         result: MutableList<LegalAction>,
         sourceZone: String? = null,
         descriptionSuffix: String = "",
+        castFused: Boolean = false,
+        useWithoutPayingManaCost: Boolean = false,
     ) {
         val state = context.state
         val playerId = context.playerId
@@ -45,8 +47,12 @@ internal object SplitFaceCastOffers {
         if (!face.typeLine.isInstant && !context.canPlaySorcerySpeed) return
 
         val cachedSources = context.availableManaSources
-        val effectiveCost = context.costCalculator
-            .calculateFaceCastCost(state, cardDef, face, playerId)
+        val free = useWithoutPayingManaCost || state.getEntity(cardId)?.has<com.wingedsheep.engine.state.components.identity.PlayWithoutPayingCostComponent>() == true
+        val effectiveCost = if (free) {
+            context.costCalculator.calculateEffectiveCost(state,
+                context.costCalculator.faceCharacteristics(cardDef, face), playerId,
+                fromZone = com.wingedsheep.sdk.core.Zone.HAND, baseCost = com.wingedsheep.sdk.core.ManaCost.ZERO)
+        } else context.costCalculator.calculateFaceCastCost(state, cardDef, face, playerId)
         if (!context.manaSolver.canPay(state, playerId, effectiveCost, precomputedSources = cachedSources)) return
 
         val autoTapPreview = if (context.skipAutoTapPreview) null else {
@@ -55,6 +61,12 @@ internal object SplitFaceCastOffers {
                 ?.sources?.map { it.entityId }
         }
         val manaCostString = effectiveCost.toString()
+        val hasXCost = effectiveCost.hasX
+        val maxAffordableX = if (hasXCost) {
+            val available = context.manaSolver.getAvailableManaCount(state, playerId, precomputedSources = cachedSources)
+            ((available - effectiveCost.cmc) / effectiveCost.xCount.coerceAtLeast(1)).coerceAtLeast(0)
+        } else null
+
 
         val targetReqs = face.script.targetRequirements
         if (targetReqs.isEmpty()) {
@@ -62,9 +74,11 @@ internal object SplitFaceCastOffers {
                 LegalAction(
                     actionType = "CastSpell",
                     description = description,
-                    action = CastSpell(playerId, cardId, faceIndex = faceIndex),
+                    action = CastSpell(playerId, cardId, faceIndex = faceIndex, castFused = castFused, useWithoutPayingManaCost = useWithoutPayingManaCost),
                     manaCostString = manaCostString,
                     autoTapPreview = autoTapPreview,
+                    hasXCost = hasXCost,
+                    maxAffordableX = maxAffordableX,
                     sourceZone = sourceZone,
                 )
             )
@@ -86,9 +100,11 @@ internal object SplitFaceCastOffers {
                 LegalAction(
                     actionType = "CastSpell",
                     description = description,
-                    action = CastSpell(playerId, cardId, faceIndex = faceIndex, targets = listOf(autoTarget)),
+                    action = CastSpell(playerId, cardId, faceIndex = faceIndex, targets = listOf(autoTarget), castFused = castFused, useWithoutPayingManaCost = useWithoutPayingManaCost),
                     manaCostString = manaCostString,
                     autoTapPreview = autoTapPreview,
+                    hasXCost = hasXCost,
+                    maxAffordableX = maxAffordableX,
                     sourceZone = sourceZone,
                 )
             )
@@ -99,7 +115,7 @@ internal object SplitFaceCastOffers {
             LegalAction(
                 actionType = "CastSpell",
                 description = description,
-                action = CastSpell(playerId, cardId, faceIndex = faceIndex),
+                action = CastSpell(playerId, cardId, faceIndex = faceIndex, castFused = castFused, useWithoutPayingManaCost = useWithoutPayingManaCost),
                 validTargets = firstInfo.validTargets,
                 requiresTargets = true,
                 targetCount = firstInfo.maxTargets,
@@ -108,6 +124,8 @@ internal object SplitFaceCastOffers {
                 targetRequirements = targetInfos.surfacedRequirements(),
                 manaCostString = manaCostString,
                 autoTapPreview = autoTapPreview,
+                hasXCost = hasXCost,
+                maxAffordableX = maxAffordableX,
                 sourceZone = sourceZone,
             )
         )

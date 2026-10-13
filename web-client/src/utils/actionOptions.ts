@@ -419,11 +419,12 @@ export function buildActionOptions(
     // Curiosity; a prepare-spell copy in exile or an adventure-only permission, that it casts
     // Ancestral Craving rather than Bloodline Recollector.
     const castFaceIndex = (castAction.action as { faceIndex?: number | null }).faceIndex
+    const castFused = (castAction.action as { castFused?: boolean }).castFused === true
     const castPrototyped = (castAction.action as { castPrototyped?: boolean }).castPrototyped === true
     options.push({
       key: 'cast',
       label: castAction.actionType !== 'CastSpell' || castAction.castsTransformed === true ||
-        castFaceIndex != null || castPrototyped
+        castFaceIndex != null || castPrototyped || castFused
         ? castAction.description
         : `Cast ${cardInfo.name}`,
       ...costFieldsFor(castAction, cardInfo.manaCost),

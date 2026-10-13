@@ -504,6 +504,7 @@ val engineSerializersModule = SerializersModule {
         // Identity components
         subclass(com.wingedsheep.engine.mechanics.BestowedComponent::class)
         subclass(com.wingedsheep.engine.mechanics.PrototypedComponent::class)
+        subclass(com.wingedsheep.engine.mechanics.SplitSpellCharacteristicsComponent::class)
         subclass(CardComponent::class)
         subclass(OwnerComponent::class)
         subclass(ControllerComponent::class)

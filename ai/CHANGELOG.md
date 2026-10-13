@@ -28,7 +28,10 @@ Format — newest first, one bullet each:
 
 ## Changes
 
+- #3180 Chooses targets for the face being cast — a split half, both fused halves, an Adventure, Room or prepare face — avoiding beneficial enemy targets and harmful friendly targets.
+
 - #3181 Scry and surveil no longer keep a surplus land on top just because this turn's land drop is unspent — a card left in the library is drawn next turn at the earliest
+
 - #3174 Chooses compatible groups for spells and abilities whose targets must have equal toughness or another numeric value.
 
 - #3170 Values every token payoff in a mixed token-creation batch when assessing cards for play and deckbuilding.

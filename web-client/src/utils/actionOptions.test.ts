@@ -436,3 +436,24 @@ describe('buildActionOptions — bestow', () => {
     expect(options[1]!.hint).toContain('Pay 2 life')
   })
 })
+
+describe('Fuse cast options', () => {
+  const split = card('', { name: 'Wear // Tear', cardTypes: ['INSTANT'] })
+  const fused = action({
+    action: { type: 'CastSpell', castFused: true },
+    description: 'Cast Wear // Tear (fused)', manaCostString: '{1}{R}{W}',
+  })
+  it('keeps the fused label and combined cost when it is the only offered cast', () => {
+    const option = buildActionOptions(split, [fused])[0]!
+    expect(option.label).toBe('Cast Wear // Tear (fused)')
+    expect(option.manaCost).toBe('{1}{R}{W}')
+    expect(option.action?.action).toEqual({ type: 'CastSpell', castFused: true })
+  })
+  it('shows both halves and the fused option using the server descriptions', () => {
+    const options = buildActionOptions(split, [
+      action({ action: { type: 'CastSpell', faceIndex: 0 }, description: 'Cast Wear', manaCostString: '{1}{R}' }),
+      action({ action: { type: 'CastSpell', faceIndex: 1 }, description: 'Cast Tear', manaCostString: '{W}' }), fused,
+    ])
+    expect(options.filter((o) => o.actionType === 'cast').map((o) => o.label)).toEqual(['Cast Wear', 'Cast Tear', 'Cast Wear // Tear (fused)'])
+  })
+})

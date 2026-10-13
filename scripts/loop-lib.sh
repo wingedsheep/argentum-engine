@@ -127,10 +127,10 @@ loop_clear_stale_stop() {
 }
 
 # Machine-wide cap on concurrent loop sessions, across every loop and set. Each session runs its
-# own gate builds and subagents, so two loops working at once double the build load and the token
-# burn. Loops queue for a slot and take turns, one session each. Same shlock scheme as
+# own gate builds and subagents. Two sessions may run at once by default; additional loops queue
+# for a slot and take turns, one session each. Same shlock scheme as
 # scripts/gradle-locked: a slot held by a dead process is reclaimed automatically.
-LOOP_SESSION_SLOTS=${LOOP_SESSION_SLOTS:-1}
+LOOP_SESSION_SLOTS=${LOOP_SESSION_SLOTS:-2}
 LOOP_SESSION_LOCK=""
 _loop_session_base="$HOME/.cache/argentum/loop-session.lock"
 

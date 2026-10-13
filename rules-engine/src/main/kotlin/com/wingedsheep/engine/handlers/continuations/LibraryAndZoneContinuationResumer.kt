@@ -480,6 +480,7 @@ class LibraryAndZoneContinuationResumer(
                         when (it) {
                             -1 -> card.name
                             -2 -> definition!!.backFace!!.name
+                            com.wingedsheep.engine.mechanics.SplitSpellCasts.FUSED_FACE -> "${card.name} (fused)"
                             else -> definition!!.cardFaces[it].name
                         }
                     },
@@ -1254,6 +1255,7 @@ class LibraryAndZoneContinuationResumer(
             stateForCast,
             CastSpell(
                 continuation.casterId, continuation.cardId, chosenTargets, faceIndex = continuation.faceIndex,
+                castFused = continuation.castFused,
                 // The response is keyed by requirement, so it knows each group's size; inference
                 // can't always recover it (two optional groups with overlapping filters).
                 targetGroupCounts = response.selectedTargets.keys.maxOrNull()

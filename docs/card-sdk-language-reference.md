@@ -310,9 +310,18 @@ carries the other side for the hover preview's flip toggle.
 - `NORMAL` — standard single face (default).
 - `SPLIT` — two or more halves on one card; combined characteristics apply off-battlefield (CR 709.4c). Used for Rooms,
   Fuse, Aftermath, and the classic Invasion split cards (Pain // Suffering, Stand // Deliver, Wax // Wane). Each half is
-  cast independently via `CastSpell.faceIndex`; only the chosen half goes on the stack (CR 709.4). A non-permanent half
+  cast independently via `CastSpell.faceIndex`; only the chosen half goes on the stack (CR 709.3; fuse below is the exception). A non-permanent half
   carries its effect in a `face("Name") { spell { … } }` block (with its own `target(...)` requirements); a permanent
   half (Room) carries triggered/activated/static abilities instead.
+  - **Fuse (CR 702.102)** is `keywords(Keyword.FUSE)` on the split card itself (card level, as
+    Scryfall lists it; not on the faces). The hand action menu offers
+    each half and **Cast … (fused)**. `CastSpell.castFused = true` casts both halves as one spell;
+    it cannot be combined with `faceIndex` and is rejected outside the caster's hand. The spell
+    has both halves' colors, types and mana costs, with cost modifiers applied once to the combined
+    cost. Free casting from hand may still use fuse. Each half declares its own `spell` effect and
+    targets; resolution runs left then right with separate, position-preserving target slices,
+    and a left half that pauses for a decision resumes into the right half with its own slice. One illegal target does not stop the other half; all illegal
+    targets stop the whole spell. Spell copies retain the fused choice.
   - **Aftermath (CR 702.127)** is `keywords(Keyword.AFTERMATH)` on the aftermath **face** — no new type, no
     alternative cost. That half is offered only from its owner's graveyard (`CastFromZoneEnumerator`, "Cast Dawn
     (Aftermath)", `sourceZone = GRAVEYARD`) for its own printed cost at its normal timing; the hand enumerator skips

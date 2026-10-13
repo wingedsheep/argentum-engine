@@ -721,6 +721,7 @@ class CastSpellHandler(
             manaSpentOnXByColor = paid.payment.xManaSpentByColor,
             phyrexianLifePips = paid.payment.phyrexianLifePips,
             faceIndex = action.faceIndex,
+            castFused = action.castFused,
             spentManaProvenance = paid.payment.spentManaProvenance,
             castTimeFlags = castTimeFlags(state, action, castTimeScript),
             // Every enumerated alternative-cost offer names its mechanic explicitly, so this is the

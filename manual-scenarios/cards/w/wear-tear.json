@@ -1,0 +1,46 @@
+{
+  "player1Name": "Fuse",
+  "player2Name": "Targets",
+  "player1": {
+    "hand": [
+      "Wear // Tear",
+      "Wear // Tear",
+      "Wear // Tear"
+    ],
+    "battlefield": [
+      {
+        "name": "Mountain"
+      },
+      {
+        "name": "Mountain"
+      },
+      {
+        "name": "Plains"
+      },
+      {
+        "name": "Plains"
+      }
+    ],
+    "library": [
+      "Plains",
+      "Mountain"
+    ]
+  },
+  "player2": {
+    "battlefield": [
+      {
+        "name": "Sol Ring"
+      },
+      {
+        "name": "Intangible Virtue"
+      }
+    ],
+    "library": [
+      "Swamp",
+      "Swamp"
+    ]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1
+}

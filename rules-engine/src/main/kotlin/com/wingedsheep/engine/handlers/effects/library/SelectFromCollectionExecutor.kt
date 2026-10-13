@@ -451,6 +451,12 @@ class SelectFromCollectionExecutor(
             val faces = buildList {
                 // A split card's combined characteristics are not a castable face.
                 if (!definition.isSplit) add(-1 to card)
+                if (id in state.getHand(context.controllerId) && com.wingedsheep.engine.mechanics.SplitSpellCasts.hasFuse(definition)) {
+                    val fused = com.wingedsheep.engine.mechanics.SplitSpellCasts.fusedDefinition(definition)
+                    add(com.wingedsheep.engine.mechanics.SplitSpellCasts.FUSED_FACE to card.copy(
+                        manaCost = fused.manaCost, typeLine = fused.typeLine, colors = fused.colors,
+                        oracleText = fused.oracleText, baseKeywords = fused.keywords))
+                }
                 if (definition.layout == com.wingedsheep.sdk.model.CardLayout.MODAL_DFC) {
                     definition.backFace?.let { face ->
                         add(-2 to card.copy(
