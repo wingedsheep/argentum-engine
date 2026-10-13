@@ -469,7 +469,7 @@ class DecisionResponder(
         return when {
             isDiscard || isScryBottom -> {
                 // Pick cards we want LEAST (to discard / put on bottom)
-                val ranked = rankCardsContextual(state, options, playerId, wantToKeep = false)
+                val ranked = rankCardsContextual(state, options, playerId, wantToKeep = false, drawnLater = isScryBottom)
                 CardsSelectedResponse(decision.id, minimumLegalSelection(decision, ranked))
             }
             isSacrifice -> {
@@ -521,7 +521,7 @@ class DecisionResponder(
         decision: SelectCardsDecision,
         playerId: EntityId,
     ): List<EntityId> {
-        val value = CardSelectionValue.of(state, playerId, intents)
+        val value = CardSelectionValue.of(state, playerId, intents, drawnLater = true)
         val scored = decision.options.map { it to value.score(it) }.sortedBy { it.second }
         val count = scored.count { it.second < LOOK_KEEP_THRESHOLD }
             .coerceIn(decision.minSelections.coerceAtMost(decision.maxSelections), decision.maxSelections)
@@ -1049,7 +1049,7 @@ class DecisionResponder(
         playerId: EntityId
     ): DecisionResponse {
         val ranked = if (castabilityAwareCardSelection) {
-            rankCardsContextual(state, decision.cards, playerId, wantToKeep = true)
+            rankCardsContextual(state, decision.cards, playerId, wantToKeep = true, drawnLater = true)
         } else {
             decision.cards.sortedByDescending { entityId ->
                 searchCardContextualScore(state, decision.cardInfo[entityId], playerId)
@@ -1110,9 +1110,11 @@ class DecisionResponder(
         // The untap-limit choice ranks *permanents* by how much they are worth untapped, a
         // different question from which card to hold; it keeps the legacy reading either way.
         legacyOnly: Boolean = false,
+        // The cards stay in the library for a later draw (see [CardSelectionValue.of]).
+        drawnLater: Boolean = false,
     ): List<EntityId> {
         if (castabilityAwareCardSelection && !legacyOnly) {
-            val value = CardSelectionValue.of(state, playerId, intents)
+            val value = CardSelectionValue.of(state, playerId, intents, drawnLater)
             // A stable sort on the score keeps the decision's own order for ties, so identical
             // copies resolve the same way they always did.
             val scored = cards.map { it to value.score(it) }

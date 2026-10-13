@@ -6,6 +6,7 @@ import com.wingedsheep.engine.core.DecisionContext
 import com.wingedsheep.engine.core.DecisionPhase
 import com.wingedsheep.engine.core.SelectCardsDecision
 import com.wingedsheep.engine.state.ZoneKey
+import com.wingedsheep.engine.state.components.player.LandDropsComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.mtg.sets.MtgSetCatalog
 import com.wingedsheep.sdk.core.Step
@@ -26,6 +27,24 @@ class SelectionCountsByValueTest : FunSpec({
 
     val vow = MtgSetCatalog.requireByCode("VOW")
     val allCards = (vow.cards + vow.basicLands).distinctBy { it.name }
+
+    /** A game at [me]'s precombat main with [landsOut] Swamps out, an empty hand and the drop unspent. */
+    fun emptyHandGame(landsOut: Int): Pair<GameTestDriver, EntityId> {
+        val d = GameTestDriver().apply {
+            registerCards(allCards)
+            initMirrorMatch(Deck.of("Swamp" to 40))
+            passPriorityUntil(Step.PRECOMBAT_MAIN)
+        }
+        val me = d.activePlayer!!
+        var s = d.state
+        for (id in s.getZone(me, Zone.HAND)) {
+            s = s.moveToZone(id, ZoneKey(me, Zone.HAND), ZoneKey(me, Zone.LIBRARY))
+        }
+        d.replaceState(s)
+        repeat(landsOut) { d.putLandOnBattlefield(me, "Swamp") }
+        d.addComponent(me, LandDropsComponent(remaining = 1, playedThisTurn = 0))
+        return d to me
+    }
 
     /** A game at [me]'s precombat main: six Swamps out, two in hand, the rest in the library. */
     fun floodedGame(): Pair<GameTestDriver, EntityId> {
@@ -127,5 +146,23 @@ class SelectionCountsByValueTest : FunSpec({
 
         val creature = d.putCardOnTopOfLibrary(me, "Diregraf Scavenger")
         choose(d, me, listOf(creature), 1, "Put in graveyard", flag = true) shouldBe emptyList()
+    }
+
+    test("late game: surveil mills a land with thirteen out, though the land drop is unspent") {
+        // This turn's drop can't be filled by a card left on top — it is drawn next turn at the
+        // earliest — so the empty hand no longer props the thirteenth-plus land up to the keep line.
+        val (d, me) = emptyHandGame(landsOut = 13)
+        val land = d.putCardOnTopOfLibrary(me, "Swamp")
+
+        choose(d, me, listOf(land), 1, "Put in graveyard", flag = true) shouldBe listOf(land)
+        choose(d, me, listOf(land), 1, "Put on bottom", flag = true) shouldBe listOf(land)
+    }
+
+    test("early game: scry keeps a land on top with two out and an empty hand") {
+        val (d, me) = emptyHandGame(landsOut = 2)
+        val land = d.putCardOnTopOfLibrary(me, "Swamp")
+
+        choose(d, me, listOf(land), 1, "Put in graveyard", flag = true) shouldBe emptyList()
+        choose(d, me, listOf(land), 1, "Put on bottom", flag = true) shouldBe emptyList()
     }
 })

@@ -53,6 +53,11 @@ internal class CardSelectionValue private constructor(
     private val handSpells: List<Pair<EntityId, CardComponent>>,
     /** Whether a land from hand can still be played this turn. */
     private val landDropNow: Boolean,
+    /**
+     * The cards being priced stay in the library to be drawn on a later turn — scry, surveil and
+     * library reorders — so none of them can fill this turn's land drop.
+     */
+    private val drawnLater: Boolean,
     private val librarySize: Int,
     private val libraryLands: Int,
     private val libraryLandsByColor: Map<Color, Int>,
@@ -131,8 +136,11 @@ internal class CardSelectionValue private constructor(
             coming == 6 -> 1.5
             else -> 0.5
         }
-        // The only land for an unspent drop is mana this very turn.
-        if (landDropNow && otherHandLands.isEmpty()) score += 1.5
+        // The only land for an unspent drop is mana this very turn — but only a card in hand can be
+        // that land. One left on top of the library is drawn next turn at the earliest, by which
+        // time the drop it would fill is a fresh one the base curve already prices; counting this
+        // turn's drop kept a Plains on top of a thirteen-land board (0.5 + 1.5 = the keep line).
+        if (landDropNow && !drawnLater && otherHandLands.isEmpty()) score += 1.5
 
         // Spells in hand above the mana that is already coming want another land.
         val topEnd = handSpells.maxOfOrNull { it.second.manaValue } ?: 0
@@ -196,7 +204,17 @@ internal class CardSelectionValue private constructor(
             return colors
         }
 
-        fun of(state: GameState, playerId: EntityId, intents: IntentCatalog): CardSelectionValue {
+        /**
+         * [drawnLater]: the priced cards stay in the library for a later draw (scry, surveil,
+         * library reorder) rather than reaching the hand now, so this turn's land drop is no
+         * reason to keep a land.
+         */
+        fun of(
+            state: GameState,
+            playerId: EntityId,
+            intents: IntentCatalog,
+            drawnLater: Boolean = false,
+        ): CardSelectionValue {
             val projected = state.projectedState
             val myPermanents = projected.getBattlefieldControlledBy(playerId)
             val landsInPlay = myPermanents.filter { projected.hasType(it, "LAND") }
@@ -235,6 +253,7 @@ internal class CardSelectionValue private constructor(
                 handLands = handLands,
                 handSpells = handSpells,
                 landDropNow = landDropNow,
+                drawnLater = drawnLater,
                 librarySize = library.size,
                 libraryLands = libraryLands.size,
                 libraryLandsByColor = byColor,
