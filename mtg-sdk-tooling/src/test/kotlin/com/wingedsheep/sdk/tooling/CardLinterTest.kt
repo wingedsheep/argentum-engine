@@ -383,6 +383,24 @@ class CardLinterTest : DescribeSpec({
         }
     }
 
+
+    describe("owner-distribution counts") {
+        it("rejects conflicting raw serialized shapes and accepts both whole-count modes") {
+            val base = TargetObject(filter = TargetFilter.Creature,
+                ownerDistribution = com.wingedsheep.sdk.scripting.targets.OwnerDistribution.EXACTLY_ONE)
+            fun lint(requirement: TargetObject) = CardLinter.lint(instant("Owner Count Probe",
+                CardScript(spellEffect = Effects.TapEachTarget(), targetRequirements = listOf(requirement))))
+                .filterIsInstance<CardValidationError.AmbiguousDynamicTargetCount>()
+            lint(base).shouldBeEmpty()
+            lint(base.copy(ownerDistribution = com.wingedsheep.sdk.scripting.targets.OwnerDistribution.UP_TO_ONE)).shouldBeEmpty()
+            listOf(base.copy(count = 2, minCount = 2), base.copy(minCount = 0), base.copy(optional = true),
+                base.copy(unlimited = true), base.copy(dynamicMaxCount = DynamicAmount.XValue),
+                base.copy(dynamicMinCount = DynamicAmount.XValue, dynamicMaxCount = DynamicAmount.XValue)).forEach {
+                lint(it).shouldHaveSize(1)
+            }
+        }
+    }
+
     describe("opponent-chosen targets") {
 
         it("flags a TargetChooser.Opponent target on a spell — the controller would pick it") {

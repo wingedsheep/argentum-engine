@@ -520,7 +520,7 @@ export const createSelectionSlice: SliceCreator<SelectionSlice> = (set, get) => 
   // Decision selection actions
   startDecisionSelection: (state) => {
     set({ decisionSelectionState: { ...state, selectionPool: state.validOptions,
-      validOptions: compatibleSelectionPool(state.validOptions, state.selectionGroups, state.selectedOptions) } })
+      validOptions: compatibleSelectionPool(state.validOptions, state.selectionGroups, state.selectedOptions, state.exclusiveGroups) } })
   },
 
   toggleDecisionSelection: (cardId) => {
@@ -534,7 +534,7 @@ export const createSelectionSlice: SliceCreator<SelectionSlice> = (set, get) => 
             ...state.decisionSelectionState,
             selectedOptions: selectedOptions.filter((id) => id !== cardId),
             validOptions: compatibleSelectionPool(state.decisionSelectionState.selectionPool ?? state.decisionSelectionState.validOptions,
-              state.decisionSelectionState.selectionGroups, selectedOptions.filter((id) => id !== cardId)),
+              state.decisionSelectionState.selectionGroups, selectedOptions.filter((id) => id !== cardId), state.decisionSelectionState.exclusiveGroups),
             warning: null,
           },
         }
@@ -546,7 +546,7 @@ export const createSelectionSlice: SliceCreator<SelectionSlice> = (set, get) => 
             ...state.decisionSelectionState,
             selectedOptions: [...selectedOptions, cardId],
             validOptions: compatibleSelectionPool(state.decisionSelectionState.selectionPool ?? state.decisionSelectionState.validOptions,
-              state.decisionSelectionState.selectionGroups, [...selectedOptions, cardId]),
+              state.decisionSelectionState.selectionGroups, [...selectedOptions, cardId], state.decisionSelectionState.exclusiveGroups),
             warning: null,
           },
         }

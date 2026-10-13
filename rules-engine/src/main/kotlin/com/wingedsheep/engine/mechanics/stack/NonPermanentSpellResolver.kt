@@ -306,6 +306,7 @@ internal class NonPermanentSpellResolver(
                 // Use the positionally-aligned validated list so a sub-effect that
                 // references a target dropped by 608.2b through its BoundVariable id
                 // resolves to null and fizzles (CR 608.2b).
+                declaredTargetNames = targetRequirements.mapNotNull { it.id }.toSet(),
                 namedTargets = EffectContext.buildNamedTargets(targetRequirements, mainAlignedTargets),
                 storedCollections = buildBeheldStoredCollections(spellComponent.beheldCards, resolvedCardDef)
             )

@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.event
 
-import com.wingedsheep.engine.mechanics.targeting.withNumericEquality
+import com.wingedsheep.engine.mechanics.targeting.withTargetConstraints
 import com.wingedsheep.engine.handlers.TargetingSourceType
 import com.wingedsheep.engine.handlers.DependentTargetSelection
 import com.wingedsheep.engine.core.*
@@ -41,6 +41,7 @@ import com.wingedsheep.sdk.scripting.effects.StoreNumberEffect
 import com.wingedsheep.engine.legalactions.utils.TargetEnumerationUtils
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.components.player.PlayerLostComponent
+import com.wingedsheep.sdk.scripting.targets.withCount
 import com.wingedsheep.sdk.scripting.targets.TargetChooser
 import com.wingedsheep.sdk.scripting.targets.TargetObject
 import com.wingedsheep.sdk.scripting.targets.TargetOther
@@ -520,7 +521,7 @@ class TriggerProcessor(
                 differentControllers =
                     (req as? com.wingedsheep.sdk.scripting.targets.TargetObject)?.differentControllers == true,
                 onePerCardType = (req as? com.wingedsheep.sdk.scripting.targets.TargetObject)?.onePerCardType == true
-            ).withNumericEquality(state, req, allLegalTargets[index].orEmpty())
+            ).withTargetConstraints(state, req, allLegalTargets[index].orEmpty())
         }
 
         // Create the target selection decision. The hint banner tells the player *what*
@@ -817,15 +818,21 @@ class TriggerProcessor(
         currentOrdinal: Int,
         causedByAttack: Boolean,
         recordChosenModesOnSource: Boolean,
-        recordChosenModesThisTurn: Boolean
+        recordChosenModesThisTurn: Boolean,
+        resolvedModeTargetGroupCounts: List<List<Int>> = emptyList(),
     ): ExecutionResult {
         var ordinal = currentOrdinal
         var targetsAccum = resolvedModeTargets
+        var countsAccum = resolvedModeTargetGroupCounts
+        val trackCounts = chosenModeIndices.any { index ->
+            modes[index].targetRequirements.any { DynamicTargetCount.objectOf(it)?.ownerDistribution != null }
+        }
 
         while (ordinal < chosenModeIndices.size) {
             val mode = modes[chosenModeIndices[ordinal]]
             if (mode.targetRequirements.isEmpty()) {
                 targetsAccum = targetsAccum + listOf(emptyList())
+                if (trackCounts) countsAccum = countsAccum + listOf(emptyList())
                 ordinal++
                 continue
             }
@@ -840,7 +847,7 @@ class TriggerProcessor(
                     mustDifferFromEarlier = req is com.wingedsheep.sdk.scripting.targets.TargetOther,
                     minTargets = req.effectiveMinCount,
                     maxTargets = if (req.unlimited) legalTargetsMap[index].orEmpty().size else req.count
-                ).withNumericEquality(state, req, legalTargetsMap[index].orEmpty())
+                ).withTargetConstraints(state, req, legalTargetsMap[index].orEmpty())
             }
 
             if (requirementInfos.any { it.minTargets > it.maxTargets }) {
@@ -852,6 +859,7 @@ class TriggerProcessor(
             val soleLegal = legalTargetsMap[0].orEmpty()
             if (soleReq != null && TargetEnumerationUtils.shouldAutoSelectPlayerTarget(soleReq, soleLegal)) {
                 targetsAccum = targetsAccum + listOf(listOf(createChosenTarget(state, soleLegal.first())))
+                if (trackCounts) countsAccum = countsAccum + listOf(listOf(1))
                 ordinal++
                 continue
             }
@@ -884,6 +892,7 @@ class TriggerProcessor(
                 modes = modes,
                 chosenModeIndices = chosenModeIndices,
                 resolvedModeTargets = targetsAccum,
+                resolvedModeTargetGroupCounts = countsAccum,
                 currentOrdinal = ordinal,
                 causedByAttack = causedByAttack,
                 recordChosenModesOnSource = recordChosenModesOnSource,
@@ -896,7 +905,7 @@ class TriggerProcessor(
         return finalizeModalTrigger(
             state, ability, outerTargets, outerTargetRequirements,
             modes, chosenModeIndices, targetsAccum, causedByAttack,
-            recordChosenModesOnSource, recordChosenModesThisTurn
+            recordChosenModesOnSource, recordChosenModesThisTurn, countsAccum
         )
     }
 
@@ -917,7 +926,8 @@ class TriggerProcessor(
         resolvedModeTargets: List<List<com.wingedsheep.engine.state.components.stack.ChosenTarget>>,
         causedByAttack: Boolean,
         recordChosenModesOnSource: Boolean,
-        recordChosenModesThisTurn: Boolean
+        recordChosenModesThisTurn: Boolean,
+        resolvedModeTargetGroupCounts: List<List<Int>>,
     ): ExecutionResult {
         if (chosenModeIndices.isEmpty()) {
             // CR 603.3c — no mode was chosen, so the ability never reaches the stack. Either every
@@ -936,14 +946,26 @@ class TriggerProcessor(
             )
         }
 
+        val boundModeRequirements = chosenModeIndices.mapIndexed { ordinal, modeIndex ->
+            val requirements = modes[modeIndex].targetRequirements
+            if (requirements.none { DynamicTargetCount.objectOf(it)?.ownerDistribution != null }) requirements
+            else {
+                val binding = targetFinder.validator.bindTargetGroups(state, resolvedModeTargets[ordinal], requirements,
+                    ability.controllerId, sourceId = ability.sourceId, xValue = ability.triggerContext?.xValue,
+                    targetingSourceType = TargetingSourceType.TRIGGERED_ABILITY,
+                    explicitCounts = resolvedModeTargetGroupCounts.getOrNull(ordinal))
+                if (binding.error != null) return ExecutionResult.error(state, binding.error)
+                requirements.zip(binding.counts) { requirement, count -> requirement.withCount(count) }
+            }
+        }
         val component = ability.copy(
             chosenModes = chosenModeIndices,
             modeTargetsOrdered = resolvedModeTargets,
-            modeTargetRequirements = chosenModeIndices.associateWith { modes[it].targetRequirements }
+            modeTargetRequirements = chosenModeIndices.zip(boundModeRequirements).toMap(),
+            modeTargetRequirementsOrdered = if (resolvedModeTargetGroupCounts.isNotEmpty()) boundModeRequirements else emptyList()
         )
         val flatTargets = outerTargets + resolvedModeTargets.flatten()
-        val flatRequirements = outerTargetRequirements +
-            chosenModeIndices.flatMap { modes[it].targetRequirements }
+        val flatRequirements = outerTargetRequirements + boundModeRequirements.flatten()
 
         return stackResolver.putTriggeredAbility(
             stateWithMemory, component, flatTargets,
@@ -984,8 +1006,11 @@ class TriggerProcessor(
         ability: TriggeredAbilityOnStackComponent,
         mode: com.wingedsheep.sdk.scripting.effects.Mode
     ): Boolean = mode.targetRequirements.all { req ->
-        req.effectiveMinCount == 0 || com.wingedsheep.engine.mechanics.targeting.NumericTargetEquality
-            .eligible(state, findModeLegalTargets(state, ability, req), req).size >= req.effectiveMinCount
+        val candidates = findModeLegalTargets(state, ability, req)
+        val minimum = com.wingedsheep.engine.mechanics.targeting.OwnerTargetDistribution.bounds(state, req, candidates)?.min
+            ?: req.effectiveMinCount
+        minimum == 0 || com.wingedsheep.engine.mechanics.targeting.NumericTargetEquality
+            .eligible(state, candidates, req, minimum).size >= minimum
     }
 
     /**

@@ -8,7 +8,7 @@ export function compatibleSelectionPool(
   exclusiveGroups?: readonly (readonly EntityId[])[] | null,
 ): readonly EntityId[] {
   const eligible = exclusiveGroups
-    ? pool.filter((id) => !exclusiveGroups.some((group) => group.includes(id) && selected.some((pick) => group.includes(pick))))
+    ? pool.filter((id) => selected.includes(id) || !exclusiveGroups.some((group) => group.includes(id) && selected.some((pick) => group.includes(pick))))
     : pool
   if (!groups || selected.length === 0) return eligible
   const group = groups.find((ids) => selected.every((id) => ids.includes(id)))

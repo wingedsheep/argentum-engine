@@ -450,7 +450,9 @@ class ActivateAbilityHandler(
     private fun boundTargetRequirements(state: GameState, activation: Activation): List<TargetRequirement> {
         val requirements = activation.targetRequirements
         val action = activation.action
-        if (action.targets.isEmpty() || TargetValidator.hasFixedGroups(requirements) ||
+        if ((action.targets.isEmpty() && requirements.none {
+                com.wingedsheep.engine.mechanics.targeting.DynamicTargetCount.objectOf(it)?.ownerDistribution != null
+            }) || TargetValidator.hasFixedGroups(requirements) ||
             requirements.any { it.chooser != TargetChooser.Controller }
         ) return requirements
         val source = state.getEntity(action.sourceId)?.get<CardComponent>()

@@ -178,7 +178,7 @@ class ModalEffectExecutor(
             modeTargetsOrdered = context.modeTargetsOrdered,
             modeTargetRequirements = context.modeTargetRequirements
         )
-        if (context.activatedAbility != null) {
+        if (context.modeTargetsOrdered.isNotEmpty()) {
             val sizes = context.modeTargetsOrdered.map { it.size }
             val start = context.alignedTargets.size - sizes.sum()
             var offset = start
@@ -348,6 +348,7 @@ internal fun processPreTargetedEffectQueue(
         // A bare `PipelineState(namedTargets = …)` here dropped every stored collection, number
         // and chosen value the resolution had accumulated before the modal.
         pipeline = ctx.pipeline.copy(
+            declaredTargetNames = ctx.pipeline.declaredTargetNames + head.targetRequirements.mapNotNull { it.id },
             namedTargets = ctx.pipeline.namedTargets.filterKeys { key ->
                 head.targetRequirements.none { req -> req.id?.let { key == it || key.startsWith("$it[") } == true }
             } +

@@ -469,9 +469,9 @@ object TargetSelection {
         available: List<EntityId>,
         rankTarget: (EntityId) -> Double,
     ): List<EntityId> {
-        if (info.exclusiveGroups != null) return info.exclusiveGroups.orEmpty().mapNotNull { group ->
-            group.filter { it in available }.maxByOrNull(rankTarget)
-        }
+        if (info.exclusiveGroups != null) return com.wingedsheep.engine.core.constrainedTargetSelection(
+            available, info.minTargets, minOf(info.maxTargets, maxOf(1, info.minTargets)), info.selectionGroups,
+            info.exclusiveGroups.orEmpty(), rankTarget)
         val needed = maxOf(1, info.minTargets)
         val picks = mutableListOf<EntityId>()
         val controllers = mutableSetOf<EntityId>()

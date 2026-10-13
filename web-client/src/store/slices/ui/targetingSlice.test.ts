@@ -195,3 +195,25 @@ it('narrows a server-group pool and restores it after the last deselection', () 
   store.getState().removeTarget(id('a'))
   expect(targeting(store).validTargets).toEqual([id('a'), id('b'), id('c')])
 })
+
+it('keeps selected owner targets visible at the cap, restores them after Back, and permits revision', () => {
+  const { store } = makeStore()
+  const action = store.getState().pipelineState!.accumulatedAction
+  const initial = { action, validTargets: [id('a'), id('b'), id('c')], selectedTargets: [], minTargets: 2, maxTargets: 2,
+    exclusiveGroups: [[id('a'), id('b')], [id('c')]] }
+  store.getState().startTargeting(initial)
+  store.getState().addTarget(id('a'))
+  expect(targeting(store).validTargets).toEqual([id('a'), id('c')])
+  store.getState().addTarget(id('b'))
+  expect(targeting(store).selectedTargets).toEqual([id('a')])
+  store.getState().addTarget(id('c'))
+  expect(targeting(store).validTargets).toEqual([id('a'), id('c')])
+  store.getState().addTarget(id('a'))
+  expect(targeting(store).selectedTargets).toEqual([id('a'), id('c')])
+  store.getState().startTargeting({ ...initial, selectedTargets: [id('a'), id('c')] })
+  expect(targeting(store).validTargets).toEqual([id('a'), id('c')])
+  store.getState().removeTarget(id('a'))
+  expect(targeting(store).validTargets).toEqual([id('a'), id('b'), id('c')])
+  store.getState().addTarget(id('b'))
+  expect(targeting(store).selectedTargets).toEqual([id('c'), id('b')])
+})

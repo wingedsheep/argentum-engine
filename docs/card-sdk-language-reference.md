@@ -5429,8 +5429,12 @@ Every `TargetRequirement` carries count semantics (defaults shown):
   projected control; a no-op for single-target requirements. E.g.
   `TargetObject(filter = TargetFilter.Creature, count = 2, sameController = true)` (Barrin's Spite).
 - `ownerDistribution: OwnerDistribution? = null` — `EXACTLY_ONE` requires one target per owner
-  represented by cards matching the filter; `UP_TO_ONE` permits skipping owners. The engine computes
-  the count at announcement, sends disjoint `exclusiveGroups` to the picker, and validates both
+  represented by cards matching the filter; `UP_TO_ONE` permits skipping owners. This is the whole
+  count: do not combine it with `count`/`minCount` overrides, `optional`, `unlimited`, or dynamic
+  counts (`exactly` / `dynamicMaxCount` / `dynamicMinCount`); the DSL and card linter reject those
+  conflicting inputs. Numeric compatibility may be combined with distribution. The engine computes
+  the count at announcement (retaining each repeated mode occurrence and skipped slot separately),
+  sends disjoint `exclusiveGroups` to the picker, and validates both
   the total and at most one pick per owner. The count is fixed on the stack; targets are rechecked
   individually at resolution. Defaults preserve existing targeting. Use
   `targets(TargetFilter(GameObjectFilter.InstantOrSorcery, Zone.GRAVEYARD),

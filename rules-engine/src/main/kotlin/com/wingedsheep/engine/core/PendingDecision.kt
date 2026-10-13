@@ -219,8 +219,9 @@ fun ChooseTargetsDecision.legalTargetsFor(index: Int, chosen: Map<Int, List<Enti
 fun ChooseTargetsDecision.minimalSelection(): Map<Int, List<EntityId>> =
     targetRequirements.fold(emptyMap()) { chosen, req ->
         val pool = legalTargetsFor(req.index, chosen)
-        val compatible = req.exclusiveGroups?.mapNotNull { group -> group.firstOrNull { it in pool } }
-            ?: req.selectionGroups?.firstOrNull { group -> group.count { it in pool } >= req.minTargets }
+        val compatible = req.exclusiveGroups?.let { exclusive ->
+            constrainedTargetSelection(pool, req.minTargets, req.minTargets, req.selectionGroups, exclusive)
+        } ?: req.selectionGroups?.firstOrNull { group -> group.count { it in pool } >= req.minTargets }
             ?.filter { it in pool } ?: if (req.selectionGroups == null) pool else emptyList()
         chosen + (req.index to compatible.take(req.minTargets))
     }

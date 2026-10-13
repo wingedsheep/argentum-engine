@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers.continuations
 
-import com.wingedsheep.engine.mechanics.targeting.withNumericEquality
+import com.wingedsheep.engine.mechanics.targeting.withTargetConstraints
 
 import com.wingedsheep.engine.handlers.effects.composite.asMayDecide
 
@@ -100,7 +100,7 @@ class EffectAndTriggerContinuationResumer(
                             else maxOf(1, next.effectiveMinCount),
                         // Only the last slot may take several (DependentTargetSelection).
                         maxTargets = if (next.unlimited) legal.size else next.count,
-                    ).withNumericEquality(state, next, legal)),
+                    ).withTargetConstraints(state, next, legal)),
                     legalTargets = mapOf(0 to legal),
                     effectHint = com.wingedsheep.engine.event.TriggerTargetHint
                         .withoutTriggerClause(continuation.description),

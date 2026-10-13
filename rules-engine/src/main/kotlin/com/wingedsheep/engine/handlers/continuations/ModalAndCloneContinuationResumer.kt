@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers.continuations
 
-import com.wingedsheep.engine.mechanics.targeting.withNumericEquality
+import com.wingedsheep.engine.mechanics.targeting.withTargetConstraints
 import com.wingedsheep.engine.state.components.identity.copiableCardComponent
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.EffectContext
@@ -1726,7 +1726,7 @@ internal fun processChosenModeQueue(
             mustDifferFromEarlier = req is com.wingedsheep.sdk.scripting.targets.TargetOther,
             minTargets = req.effectiveMinCount,
             maxTargets = if (req.unlimited) compatible.size else req.count
-        ).withNumericEquality(state, req, compatible)
+        ).withTargetConstraints(state, req, compatible)
     }
 
     val allSatisfied = requirementInfos.all { info ->

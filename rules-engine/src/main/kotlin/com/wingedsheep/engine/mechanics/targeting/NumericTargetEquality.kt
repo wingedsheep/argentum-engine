@@ -31,25 +31,25 @@ object NumericTargetEquality {
 
     fun eligible(state: GameState, ids: List<EntityId>, requirement: com.wingedsheep.sdk.scripting.targets.TargetRequirement,
                  minimum: Int = requirement.effectiveMinCount): List<EntityId> {
-        val property = (requirement as? com.wingedsheep.sdk.scripting.targets.TargetObject)?.sameNumericProperty ?: return ids
-        return groups(state, ids, property).filter { it.size >= minimum }.flatten()
+        return compatibleGroups(state, ids, requirement, minimum)?.flatten() ?: ids
+    }
+
+    /** Equality pools that can also supply every required owner. */
+    fun compatibleGroups(
+        state: GameState, ids: List<EntityId>,
+        requirement: com.wingedsheep.sdk.scripting.targets.TargetRequirement,
+        minimum: Int = requirement.effectiveMinCount,
+    ): List<List<EntityId>>? {
+        val property = DynamicTargetCount.objectOf(requirement)?.sameNumericProperty ?: return null
+        val owners = OwnerTargetDistribution.bounds(state, requirement, ids)
+        val needed = maxOf(minimum, owners?.min ?: 0)
+        return groups(state, ids, property).filter { group ->
+            group.size >= needed && (owners == null || OwnerTargetDistribution.groups(state, group).size >= owners.min)
+        }
     }
 
     /** Each group is a server-approved pool from which any subset can be chosen together. */
     fun groups(state: GameState, ids: List<EntityId>, property: CardNumericProperty): List<List<EntityId>> =
         ids.mapNotNull { id -> value(state, id, property)?.let { it to id } }
             .groupBy({ it.first }, { it.second }).values.toList()
-}
-
-/** Attach the shared equality constraint to every targeting pause, including free casts. */
-fun com.wingedsheep.engine.core.TargetRequirementInfo.withNumericEquality(
-    state: GameState,
-    requirement: com.wingedsheep.sdk.scripting.targets.TargetRequirement,
-    candidates: List<EntityId>,
-): com.wingedsheep.engine.core.TargetRequirementInfo {
-    val distributed = withOwnerDistribution(state, requirement, candidates)
-    val property = (requirement as? com.wingedsheep.sdk.scripting.targets.TargetObject)?.sameNumericProperty ?: return distributed
-    val groups = NumericTargetEquality.groups(state, candidates, property).filter { it.size >= minTargets }
-    return distributed.copy(sameNumericProperty = property, selectionGroups = groups,
-        maxTargets = minOf(maxTargets, groups.maxOfOrNull { it.size } ?: 0))
 }

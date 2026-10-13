@@ -618,7 +618,12 @@ object CardLinter {
                     val max = present("dynamicMaxCount")
                     val min = present("dynamicMinCount")
                     val waived = flag("optional") || flag("unlimited")
+                    val ownerCountConflict = present("ownerDistribution") &&
+                        (max || min || waived ||
+                            (element["count"] as? JsonPrimitive)?.contentOrNull?.let { it != "1" } == true ||
+                            (element["minCount"] as? JsonPrimitive)?.contentOrNull?.let { it != "1" } == true)
                     val problem = when {
+                        ownerCountConflict -> "ownerDistribution alongside another target-count input"
                         min && !max -> "a dynamicMinCount without a dynamicMaxCount"
                         min && waived -> "a dynamicMinCount alongside optional/unlimited, which waive it"
                         max && !min && !waived ->
@@ -629,7 +634,10 @@ object CardLinter {
                         findings.add(
                             CardValidationError.AmbiguousDynamicTargetCount(
                                 cardName = cardName,
-                                message = "'$cardName' has a target requirement with $problem. Spell " +
+                                message = if (ownerCountConflict) {
+                                    "'$cardName' has ownerDistribution alongside another count input. " +
+                                        "ownerDistribution is the whole count; use UP_TO_ONE for optional per-owner targets."
+                                } else "'$cardName' has a target requirement with $problem. Spell " +
                                     "\"X target …\" as targets(filter, exactly = X) and \"up to X target …\" " +
                                     "as optional = true with dynamicMaxCount = X."
                             )

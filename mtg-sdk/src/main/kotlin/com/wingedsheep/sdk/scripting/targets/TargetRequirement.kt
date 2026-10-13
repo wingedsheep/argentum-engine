@@ -550,7 +550,7 @@ data class TargetObject(
      * static floor is 0 — the authoritative sites resolve the real one (see [dynamicMinCount]).
      */
     override val effectiveMinCount: Int
-        get() = if (optional || unlimited || dynamicMinCount != null) 0 else minCount
+        get() = if (optional || unlimited || dynamicMinCount != null || ownerDistribution == OwnerDistribution.UP_TO_ONE) 0 else minCount
 
     /** True for the exact dynamic shape — "X target creatures": [dynamicMinCount] equals [dynamicMaxCount]. */
     val exactDynamicCount: Boolean get() = dynamicMaxCount != null && dynamicMinCount == dynamicMaxCount

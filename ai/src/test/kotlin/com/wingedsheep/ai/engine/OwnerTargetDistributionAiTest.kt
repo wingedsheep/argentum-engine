@@ -39,4 +39,29 @@ class OwnerTargetDistributionAiTest : FunSpec({
             selected.contains(c) shouldBe true
         }
     }
+    test("every automatic policy satisfies owner spread and numeric equality together") {
+        val one = com.wingedsheep.sdk.dsl.card("Owner AI Value One") { manaCost = "{1}"; typeLine = "Instant" }
+        val two = com.wingedsheep.sdk.dsl.card("Owner AI Value Two") { manaCost = "{2}"; typeLine = "Instant" }
+        val cards = TestCards.all + listOf(one, two)
+        val d = GameTestDriver().apply { registerCards(cards); initMirrorMatch(Deck.of("Mountain" to 40)) }
+        val a1 = d.putCardInGraveyard(d.player1, one.name)
+        val a2 = d.putCardInGraveyard(d.player1, two.name)
+        val b2 = d.putCardInGraveyard(d.player2, two.name)
+        val b1 = d.putCardInGraveyard(d.player2, one.name)
+        val owners = listOf(listOf(a1, a2), listOf(b2, b1))
+        val numeric = listOf(listOf(a1, b1), listOf(a2, b2))
+        val pool = listOf(a1, a2, b2, b1)
+        val decision = ChooseTargetsDecision("combined", d.player1, "Equal value, one per owner", DecisionContext(),
+            listOf(TargetRequirementInfo(0, "combined", 2, 2, selectionGroups = numeric, exclusiveGroups = owners,
+                sameNumericProperty = com.wingedsheep.sdk.scripting.values.CardNumericProperty.MANA_VALUE)), mapOf(0 to pool))
+        val info = TargetInfo(0, "combined", 2, 2, pool, selectionGroups = numeric, exclusiveGroups = owners)
+        val picks = TargetSelection.pick(d.state, info, pool) { if (it == a1 || it == b2) 100.0 else 1.0 }
+        val registry = CardRegistry().apply { register(cards) }
+        listOf(TargetsResponse(decision.id, mapOf(0 to picks)), TargetsResponse(decision.id, decision.minimalSelection()),
+            FastDecisionResponder().respond(d.state, decision, d.player1),
+            DecisionResponder(GameSimulator(registry), AIPlayer.defaultEvaluator()).respond(d.state, decision, d.player1)).forEach {
+            DecisionValidators.validate(decision, it, d.state) shouldBe null
+        }
+    }
+
 })

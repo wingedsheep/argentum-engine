@@ -19,4 +19,19 @@ describe('restored server-group decisions', () => {
     store.getState().toggleDecisionSelection(id('c'))
     expect(store.getState().decisionSelectionState!.selectedOptions).toEqual([id('c')])
   })
+  it('restores owner groups, rejects a second pick in one group, and reopens it after deselection', () => {
+    const store = create<GameStore>()((set, get, api) => ({ ...createSelectionSlice(set, get, api) }) as unknown as GameStore)
+    store.getState().startDecisionSelection({ decisionId: 'owners', prompt: 'One per owner', minSelections: 2, maxSelections: 2,
+      validOptions: [id('a'), id('b'), id('c')], selectedOptions: [id('a')], exclusiveGroups: [[id('a'), id('b')], [id('c')]] })
+    expect(store.getState().decisionSelectionState!.validOptions).toEqual([id('a'), id('c')])
+    store.getState().toggleDecisionSelection(id('b'))
+    expect(store.getState().decisionSelectionState!.selectedOptions).toEqual([id('a')])
+    store.getState().toggleDecisionSelection(id('c'))
+    expect(store.getState().decisionSelectionState!.validOptions).toEqual([id('a'), id('c')])
+    store.getState().toggleDecisionSelection(id('a'))
+    expect(store.getState().decisionSelectionState!.validOptions).toEqual([id('a'), id('b'), id('c')])
+    store.getState().toggleDecisionSelection(id('b'))
+    expect(store.getState().decisionSelectionState!.selectedOptions).toEqual([id('c'), id('b')])
+  })
+
 })

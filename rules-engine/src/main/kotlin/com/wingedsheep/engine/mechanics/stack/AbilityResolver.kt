@@ -224,6 +224,7 @@ internal class AbilityResolver(
             lastKnownSourceAttachments = abilityComponent.lastKnownSourceAttachments,
             damageDistribution = abilityComponent.damageDistribution,
             pipeline = PipelineState(
+                declaredTargetNames = activatedReqs.mapNotNull { it.id }.toSet(),
                 namedTargets = EffectContext.buildNamedTargets(activatedReqs, alignedActivatedTargets),
                 // A "Reveal the creature type you chose" cost hands its type to the effect under the
                 // same key a mid-pipeline ChooseOption write uses, so CardPredicate

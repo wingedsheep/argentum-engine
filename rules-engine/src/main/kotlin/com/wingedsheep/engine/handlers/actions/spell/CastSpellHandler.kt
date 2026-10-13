@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers.actions.spell
 
-import com.wingedsheep.engine.mechanics.targeting.withNumericEquality
+import com.wingedsheep.engine.mechanics.targeting.withTargetConstraints
 import com.wingedsheep.engine.handlers.TargetFinder
 import com.wingedsheep.engine.handlers.TargetingSourceType
 import com.wingedsheep.engine.handlers.effects.ZoneTransitionService
@@ -393,7 +393,8 @@ class CastSpellHandler(
         // every requirement to zero. A choose-N modal cast may announce them per mode only, and the
         // validator binds each slice against its own mode. Fixed-size groups bind one way only.
         val unbound = spellTargeting(state, action, cardDef, transformedFace)
-        val announced = action.targets.isNotEmpty() || action.modeTargetsOrdered.any { it.isNotEmpty() }
+        val announced = action.targets.isNotEmpty() || action.modeTargetsOrdered.any { it.isNotEmpty() } ||
+            unbound.requirements.any { DynamicTargetCount.objectOf(it)?.ownerDistribution != null }
         val targeting = if (!announced || TargetValidator.hasFixedGroups(unbound.requirements)) unbound
             else unbound.boundTo(castValidator.targetBinding(state, action, cardDef, transformedFace)
                 ?.takeIf { it.error == null }?.counts)
@@ -1279,7 +1280,7 @@ class CastSpellHandler(
                     mustDifferFromEarlier = req is com.wingedsheep.sdk.scripting.targets.TargetOther,
                     minTargets = counts.min,
                     maxTargets = maxTargets
-                ).withNumericEquality(state, req, legalTargetsMap[index].orEmpty())
+                ).withTargetConstraints(state, req, legalTargetsMap[index].orEmpty())
             }
 
             if (requirementInfos.any { it.minTargets > it.maxTargets }) {

@@ -308,6 +308,10 @@ data class TriggeredAbilityOnStackComponent(
     val chosenModes: List<Int> = emptyList(),
     val modeTargetsOrdered: List<List<ChosenTarget>> = emptyList(),
     val modeTargetRequirements: Map<Int, List<TargetRequirement>> = emptyMap(),
+    /** Bound requirements for each occurrence, when the same owner-distributed mode repeats. */
+    @OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
+    @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
+    val modeTargetRequirementsOrdered: List<List<TargetRequirement>> = emptyList(),
     val modeDamageDistribution: Map<Int, Map<EntityId, Int>> = emptyMap(),
     /** Set when this triggered ability is a Saga chapter ability; on resolution the engine emits a
      *  SagaChapterResolvedEvent so "final chapter of a Saga resolves" triggers (Tom Bombadil) can fire. */

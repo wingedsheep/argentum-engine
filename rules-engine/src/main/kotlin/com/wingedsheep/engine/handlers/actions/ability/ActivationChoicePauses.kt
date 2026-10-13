@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers.actions.ability
 
-import com.wingedsheep.engine.mechanics.targeting.withNumericEquality
+import com.wingedsheep.engine.mechanics.targeting.withTargetConstraints
 
 import com.wingedsheep.engine.handlers.TargetingSourceType
 import com.wingedsheep.engine.core.ActivateAbility
@@ -553,7 +553,7 @@ internal class ActivationChoicePauses(
                 mustDifferFromEarlier = req is com.wingedsheep.sdk.scripting.targets.TargetOther,
                 minTargets = req.effectiveMinCount,
                 maxTargets = if (req.unlimited) legal.size else req.count
-            ).withNumericEquality(state, req, legal)
+            ).withTargetConstraints(state, req, legal)
         }
         val prompt = "Choose ${controllerTargetReqsExec.joinToString(" and ") { it.description }} for ${sourceName}"
         val continuation = ActivateAbilityControllerTargetContinuation(
@@ -688,7 +688,7 @@ internal class ActivationChoicePauses(
                 mustDifferFromEarlier = req is com.wingedsheep.sdk.scripting.targets.TargetOther,
                 minTargets = req.effectiveMinCount,
                 maxTargets = if (req.unlimited) legal.size else req.count
-            ).withNumericEquality(state, req, legal)
+            ).withTargetConstraints(state, req, legal)
         }
 
         // The prompt is shown to the opponent who is making the choice, so the "of an opponent's

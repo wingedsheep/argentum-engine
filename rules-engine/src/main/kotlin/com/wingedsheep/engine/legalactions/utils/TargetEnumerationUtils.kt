@@ -365,10 +365,8 @@ class TargetEnumerationUtils(
                 // (CR 601.2c, 115.3), so the requirement reports none and the action isn't offered.
                 ?.takeIf { it.size >= bounds.min }
                 ?: emptyList()
-            val equalityGroups = (req as? TargetObject)?.sameNumericProperty?.let {
-                com.wingedsheep.engine.mechanics.targeting.NumericTargetEquality.groups(state, validTargets, it)
-                    .filter { group -> group.size >= bounds.min }
-            }
+            val equalityGroups = com.wingedsheep.engine.mechanics.targeting.NumericTargetEquality
+                .compatibleGroups(state, validTargets, req, bounds.min)
             TargetInfo(
                 exclusiveGroups = if ((req as? TargetObject)?.ownerDistribution != null)
                     com.wingedsheep.engine.mechanics.targeting.OwnerTargetDistribution.groups(state, validTargets) else null,

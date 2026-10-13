@@ -113,6 +113,14 @@ class ModalTriggerContinuationResumer(
             .sortedBy { it.key }
             .flatMap { (_, ids) -> ids.map { entityIdToChosenTarget(state, it) } }
 
+        val trackCounts = continuation.chosenModeIndices.any { index ->
+            continuation.modes[index].targetRequirements.any {
+                com.wingedsheep.engine.mechanics.targeting.DynamicTargetCount.objectOf(it)?.ownerDistribution != null
+            }
+        }
+        val counts = continuation.modes[continuation.chosenModeIndices[continuation.currentOrdinal]]
+            .targetRequirements.indices.map { response.selectedTargets[it].orEmpty().size }
+
         return services.triggerProcessor.presentTriggerModalTargetDecision(
             state = state,
             ability = continuation.ability,
@@ -121,6 +129,8 @@ class ModalTriggerContinuationResumer(
             modes = continuation.modes,
             chosenModeIndices = continuation.chosenModeIndices,
             resolvedModeTargets = continuation.resolvedModeTargets + listOf(chosenTargets),
+            resolvedModeTargetGroupCounts = if (trackCounts) continuation.resolvedModeTargetGroupCounts + listOf(counts)
+                else emptyList(),
             currentOrdinal = continuation.currentOrdinal + 1,
             causedByAttack = continuation.causedByAttack,
             recordChosenModesOnSource = continuation.recordChosenModesOnSource,

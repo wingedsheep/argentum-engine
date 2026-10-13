@@ -592,7 +592,10 @@ data class EffectContext(
             chosenModes = ability.chosenModes,
             modeTargetsOrdered = ability.modeTargetsOrdered,
             modeTargetRequirements = ability.modeTargetRequirements,
+            modeTargetRequirementsOrdered = ability.modeTargetRequirementsOrdered,
             pipeline = PipelineState(
+                declaredTargetNames = targetRequirements.mapNotNull { it.id }.toSet() +
+                    (ability.carriedPipeline?.declaredTargetNames ?: emptySet()),
                 namedTargets = buildNamedTargets(targetRequirements, targets) +
                     (ability.carriedPipeline?.namedTargets ?: emptyMap()),
                 // Expose a batch trigger's captured permanents (the matching members of a

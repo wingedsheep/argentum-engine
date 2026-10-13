@@ -16,6 +16,10 @@ data class PipelineState(
     val storedCollections: Map<String, List<EntityId>> = emptyMap(),
     /** Named targets map for BoundVariable resolution (target name -> chosen target) */
     val namedTargets: Map<String, ChosenTarget> = emptyMap(),
+    /** Declaration roots remain known when a target is illegal or an optional slot is empty. */
+    @OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
+    @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
+    val declaredTargetNames: Set<String> = emptySet(),
     /** Named values chosen by the player during pipeline execution (e.g., creature type, color). */
     val chosenValues: Map<String, String> = emptyMap(),
     /** Named numeric values stored by pipeline effects (e.g., cards not drawn). */

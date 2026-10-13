@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.library
 
-import com.wingedsheep.engine.mechanics.targeting.withNumericEquality
+import com.wingedsheep.engine.mechanics.targeting.withTargetConstraints
 import com.wingedsheep.engine.core.suspendForDecision
 import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.core.CastFromCollectionTargetsContinuation
@@ -370,7 +370,7 @@ class CastFromCollectionWithoutPayingCostExecutor(
                     mustDifferFromEarlier = requirement is com.wingedsheep.sdk.scripting.targets.TargetOther,
                     minTargets = requirement.effectiveMinCount,
                     maxTargets = if (requirement.unlimited) compatible.size else requirement.count,
-                ).withNumericEquality(state, requirement, compatible)
+                ).withTargetConstraints(state, requirement, compatible)
             }
             val mandatoryRequirementHasNoTargets = requirementInfos.any { info ->
                 info.minTargets > 0 && legalTargetsMap[info.index].isNullOrEmpty()

@@ -243,7 +243,8 @@ class DecisionResponder(
         if (decision.targetRequirements.size == 1) {
             val req = decision.targetRequirements.first()
             if (req.exclusiveGroups != null) {
-                val picks = req.exclusiveGroups.orEmpty().mapNotNull { group -> group.maxByOrNull(heuristicFor(req)) }
+                val picks = constrainedTargetSelection(decision.legalTargetsFor(req.index, emptyMap()), req.minTargets, req.maxTargets,
+                    req.selectionGroups, req.exclusiveGroups.orEmpty(), heuristicFor(req))
                 return TargetsResponse(decision.id, mapOf(req.index to picks))
             }
             val equalityGroups = req.selectionGroups
@@ -328,7 +329,8 @@ class DecisionResponder(
             val heuristic = heuristicFor(req)
             val groups = req.selectionGroups
             val answer = if (req.exclusiveGroups != null) {
-                req.exclusiveGroups.orEmpty().mapNotNull { group -> group.filter { it in targets }.maxByOrNull(heuristic) }
+                constrainedTargetSelection(targets, req.minTargets, req.maxTargets, req.selectionGroups,
+                    req.exclusiveGroups.orEmpty(), heuristic)
             } else if (groups != null) {
                 val answers = groups.flatMap { group ->
                     val ranked = group.filter { it in targets }.sortedByDescending { targetHeuristic(state, it, playerId) }

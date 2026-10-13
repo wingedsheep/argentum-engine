@@ -62,6 +62,10 @@ data class TriggerModalTargetSelectionContinuation(
     val modes: List<@Serializable Mode>,
     val chosenModeIndices: List<Int>,
     val resolvedModeTargets: List<List<ChosenTarget>>,
+    /** Announced per-slot counts, including zero, for owner-distributed modes. */
+    @OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
+    @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
+    val resolvedModeTargetGroupCounts: List<List<Int>> = emptyList(),
     val currentOrdinal: Int,
     val causedByAttack: Boolean = false,
     /**
