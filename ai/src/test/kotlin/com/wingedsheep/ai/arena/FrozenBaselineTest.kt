@@ -162,7 +162,12 @@ class FrozenBaselineTest : FunSpec({
          * Re-blessed 2026-10-13 for fuse adding `CastSpell.castFused`, which only changes the
          * recorded action text. **`LEGACY_V0` did not move.** Seat 1 still wins on turn 20 at
          * life -8 / 16.
+         *
+         * Re-blessed 2026-10-13 for selected escape costs adding `CastSpell.escapeAbility`.
+         * **`LEGACY_V0` did not move.** With `", escapeAbility=null"` stripped from the recorded
+         * action text, this branch reproduces the previous golden `d5d18cc7f6eb856b` exactly.
+         * Seat 1 still wins on turn 20 at life -8 / 16.
          */
-        private const val GOLDEN_HASH = "d5d18cc7f6eb856b"
+        private const val GOLDEN_HASH = "04ef7e7080111148"
     }
 }
