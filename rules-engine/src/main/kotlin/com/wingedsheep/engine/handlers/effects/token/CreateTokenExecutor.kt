@@ -149,7 +149,7 @@ class CreateTokenExecutor(
         val substituted = appliedSubstitutions.isNotEmpty()
         // Apply token-count replacements (Doubling Season / Exalted Sunborn,
         // and per-N modifiers) before downstream replacements get a look.
-        val requestedCount = if (substituted) baseCount else TokenCreationReplacementHelper.applyCountReplacements(
+        val requestedCount = if (substituted || TokenCreationBatch.active(context)) baseCount else TokenCreationReplacementHelper.applyCountReplacements(
             state, tokenControllerId, baseCount,
             predicateEvaluator = amountEvaluator.predicates
         )
@@ -161,7 +161,7 @@ class CreateTokenExecutor(
         val count = com.wingedsheep.engine.core.GameLimits.cappedTokenCount(requestedCount, "tokens")
 
         // Check for token creation replacement effects (e.g., Mirrormind Crown)
-        val replacementResult = TokenCreationReplacementHelper.checkReplacement(
+        val replacementResult = if (TokenCreationBatch.active(context)) null else TokenCreationReplacementHelper.checkReplacement(
             state, effect, context, count, tokenControllerId, cardRegistry, staticAbilityHandler,
             predicateEvaluator = amountEvaluator.predicates
         )
@@ -214,7 +214,8 @@ class CreateTokenExecutor(
         TokenCreationReplacementHelper.findTokenSubstitution(
             state, tokenControllerId, prospective,
             predicateEvaluator = amountEvaluator.predicates,
-            alreadyApplied = appliedSubstitutions
+            alreadyApplied = appliedSubstitutions,
+            eligibleSources = TokenCreationBatch.sources(context),
         )?.let { return createSubstituteTokens(state, it, context, count, tokenControllerId, appliedSubstitutions) }
 
         // Art: an explicit per-card override wins, then the art printed by the set the creating
@@ -502,7 +503,7 @@ class CreateTokenExecutor(
         // Apply "create those tokens plus an additional X token" replacements (Worldwalker
         // Helm) once for this batch. Only the just-created tokens are matched against the
         // filter, so an added artifact token can't recursively re-trigger.
-        val (afterAdditional, additionalEvents) = TokenCreationReplacementHelper
+        val (afterAdditional, additionalEvents) = if (TokenCreationBatch.active(context)) newState to emptyList() else TokenCreationReplacementHelper
             .applyAdditionalTokenReplacements(
                 newState, tokenControllerId, createdTokens, effect.tapped,
                 cardRegistry, staticAbilityHandler, amountEvaluator.predicates

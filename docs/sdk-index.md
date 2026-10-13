@@ -784,6 +784,7 @@ Families:
 - `CreatePredefinedTokenEffect(tokenType: String, count: Int, controller: EffectTarget?, tapped: Boolean, dynamicCount: DynamicAmount?, imageUri: String?)` — Create predefined artifact tokens (Treasure, Food, Lander, etc.).
 - `CreateRandomCreatureTokenWithManaValueEffect(manaValue: DynamicAmount)` — Create a token that's a copy of a *randomly chosen* creature card whose mana value equals manaValue.
 - `CreateRoleTokenEffect(roleName: String, target: EffectTarget)` — Create an Aura Role token of the specified type attached to a target creature.
+- `CreateTokenBatchEffect(groups: List<Effect>, controller: EffectTarget?)` — Create mixed token groups as one token-creation event, under one controller.
 - `CreateTokenCopyOfChosenPermanentEffect(filter: GameObjectFilter)` — Choose a permanent you control matching filter, then create a token that's a copy of it.
 - `CreateTokenCopyOfEquippedCreatureEffect(removeLegendary: Boolean, grantHaste: Boolean)` — Create a token that's a copy of an equipped/attached creature.
 - `CreateTokenCopyOfSourceEffect(count: Int, overridePower: Int?, overrideToughness: Int?, exileAtStep: Step?, addCardTypes: Set<String>, removeLegendary: Boolean, exceptions: CopyExceptions)` — Create a token that's a copy of the source permanent.

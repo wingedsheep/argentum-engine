@@ -79,9 +79,15 @@ object ManaProvenanceTracker {
         sourceId: EntityId?,
         tapperId: EntityId,
     ): GameState {
-        if (sourceId == null || !isSnowSource(state, sourceId)) return state
+        if (sourceId == null) return state
         val before = stateBeforeEffect.getEntity(tapperId)?.get<ManaPoolComponent>() ?: ManaPoolComponent()
         val after = state.getEntity(tapperId)?.get<ManaPoolComponent>() ?: return state
+        val newUnits = after.manaUnits.toMutableList()
+        before.manaUnits.forEach { newUnits.remove(it) }
+        // The production tag retains projected snow status even after the source sacrifices itself.
+        val producesSnow = newUnits.firstOrNull { it.source.sourceId == sourceId }?.source?.isSnow
+            ?: isSnowSource(state, sourceId)
+        if (!producesSnow) return state
         val marked = Color.entries.fold(after) { pool, color ->
             pool.markSnow(color, after.getAmount(color) - before.getAmount(color))
         }.markSnow(null, after.colorless - before.colorless)

@@ -6,6 +6,7 @@ import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.mtg.sets.definitions.pip.cards.MrHousePresidentAndCEO
 import com.wingedsheep.mtg.sets.tokens.PredefinedTokens
+import com.wingedsheep.mtg.sets.definitions.ltr.cards.PeregrinTook
 import com.wingedsheep.sdk.core.*
 import com.wingedsheep.sdk.dsl.*
 import com.wingedsheep.sdk.model.*
@@ -75,6 +76,26 @@ class MrHousePresidentAndCEOScenarioTest : FunSpec({
             val permanents = d.getPermanents(player)
             permanents.count { d.getCardName(it) == "Robot Token" } shouldBe if (face >= 4) 1 else 0
             permanents.count { d.getCardName(it) == "Treasure" } shouldBe if (face >= 6) 1 else 0
+        }
+    }
+    test("Peregrin Took adds one Food to the joint Robot and Treasure event") {
+        for (face in listOf(4, 6)) {
+            val d = setup(); val player = d.activePlayer!!
+            d.registerCards(listOf(PeregrinTook, PredefinedTokens.Food))
+            d.putPermanentOnBattlefield(player, name)
+            d.putPermanentOnBattlefield(player, "Peregrin Took")
+            val roller = card("Test d6") { typeLine = "Artifact"; activatedAbility { effect = Effects.RollDice() } }
+            d.registerCards(listOf(roller))
+            val source = d.putPermanentOnBattlefield(player, "Test d6")
+            val seed = (0L..1000L).first { GameRng.seeded(it).nextInt(6).first + 1 == face }
+            d.submit(ActivateAbility(player, source, roller.script.activatedAbilities.single().id)).outcome shouldBe Outcome.Done
+            d.replaceState(d.state.copy(rng = GameRng.seeded(seed)))
+            d.bothPass()
+            while (d.state.stack.isNotEmpty()) d.bothPass()
+            val permanents = d.getPermanents(player)
+            permanents.count { d.getCardName(it) == "Robot Token" } shouldBe 1
+            permanents.count { d.getCardName(it) == "Treasure" } shouldBe if (face == 6) 1 else 0
+            permanents.count { d.getCardName(it) == "Food" } shouldBe 1
         }
     }
     test("auto and explicit source payment keep the same count and do not consume excess") {

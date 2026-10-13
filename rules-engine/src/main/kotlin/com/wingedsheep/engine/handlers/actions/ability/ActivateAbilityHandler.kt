@@ -254,6 +254,7 @@ class ActivateAbilityHandler(
                 effect = effect,
                 events = payment.events,
                 sacrificedSnapshots = payment.snapshots.sacrificed,
+                manaSpent = payment.manaSpent,
             )
         }
         return putOnStack(state, recorded, activation, effect, payment, paymentContext)

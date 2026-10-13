@@ -18,6 +18,7 @@ import com.wingedsheep.engine.registry.TokenArtRegistry
  */
 class TokenExecutors(
     private val zones: ZoneTransitionService,
+    private val executeEffect: (com.wingedsheep.engine.state.GameState, com.wingedsheep.sdk.scripting.effects.Effect, com.wingedsheep.engine.handlers.EffectContext) -> com.wingedsheep.engine.core.EffectResult,
     private val amountEvaluator: DynamicAmountEvaluator,
     private val staticAbilityHandler: StaticAbilityHandler? = null,
     private val cardRegistry: CardRegistry,
@@ -29,6 +30,7 @@ class TokenExecutors(
             cardRegistry, staticAbilityHandler, tokenArtRegistry = tokenArtRegistry, amountEvaluator = amountEvaluator
         )
         return listOf(
+            CreateTokenBatchExecutor(executeEffect, amountEvaluator, cardRegistry, staticAbilityHandler ?: StaticAbilityHandler(cardRegistry)),
             CreateTokenExecutor(amountEvaluator, staticAbilityHandler, cardRegistry, tokenArtRegistry),
             createPredefinedToken,
             InvestigateExecutor(createPredefinedToken, amountEvaluator),

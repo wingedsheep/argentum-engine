@@ -14,13 +14,17 @@ val MrHousePresidentAndCEO = card("Mr. House, President and CEO") {
     oracleText = "Whenever you roll a 4 or higher, create a 3/3 colorless Robot artifact creature token. If you rolled 6 or higher, instead create that token and a Treasure token.\n{4}, {T}: Roll a six-sided die plus an additional six-sided die for each mana from Treasures spent to activate this ability."
     triggeredAbility {
         trigger = Triggers.you.rollsDie(minimumResult = 4)
-        effect = Effects.CreateToken(
+        val robot = Effects.CreateToken(
             power = 3, toughness = 3, creatureTypes = setOf("Robot"),
             artifactToken = true, imageUri = "https://cards.scryfall.io/normal/front/7/6/76cde21f-2f01-4560-972b-7ecd6740d6de.jpg?1783912042",
-        ) then Effects.If(
-            Conditions.CompareAmounts(DynamicAmounts.triggerDieResult(),
-                ComparisonOperator.GTE, 6),
-            Effects.CreateTreasure(imageUri = "https://cards.scryfall.io/normal/front/1/d/1d74d012-66ca-4a0c-9e90-e31e96730d4d.jpg?1783912040"),
+        )
+        effect = Effects.If(
+            Conditions.CompareAmounts(DynamicAmounts.triggerDieResult(), ComparisonOperator.GTE, 6),
+            Effects.CreateTokensTogether(
+                robot,
+                Effects.CreateTreasure(imageUri = "https://cards.scryfall.io/normal/front/1/d/1d74d012-66ca-4a0c-9e90-e31e96730d4d.jpg?1783912040"),
+            ),
+            otherwise = robot,
         )
     }
     activatedAbility {

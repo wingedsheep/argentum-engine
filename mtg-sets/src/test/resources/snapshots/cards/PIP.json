@@ -546,43 +546,54 @@
                 },
                 "binding": "ANY",
                 "effect": {
-                    "type": "Composite",
-                    "effects": [
-                        {
-                            "type": "CreateToken",
-                            "power": 3,
-                            "toughness": 3,
-                            "colors": [],
-                            "creatureTypes": [
-                                "Robot"
-                            ],
-                            "imageUri": "https://cards.scryfall.io/normal/front/7/6/76cde21f-2f01-4560-972b-7ecd6740d6de.jpg?1783912042",
-                            "artifactToken": true
-                        },
-                        {
-                            "type": "Gated",
-                            "gate": {
-                                "type": "Gate.WhenCondition",
-                                "condition": {
-                                    "type": "Compare",
-                                    "left": {
-                                        "type": "ContextProperty",
-                                        "key": "TRIGGER_DIE_RESULT"
-                                    },
-                                    "operator": "GTE",
-                                    "right": {
-                                        "type": "Fixed",
-                                        "amount": 6
-                                    }
-                                }
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "ContextProperty",
+                                "key": "TRIGGER_DIE_RESULT"
                             },
-                            "then": {
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 6
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "CreateTokenBatch",
+                        "groups": [
+                            {
+                                "type": "CreateToken",
+                                "power": 3,
+                                "toughness": 3,
+                                "colors": [],
+                                "creatureTypes": [
+                                    "Robot"
+                                ],
+                                "imageUri": "https://cards.scryfall.io/normal/front/7/6/76cde21f-2f01-4560-972b-7ecd6740d6de.jpg?1783912042",
+                                "artifactToken": true
+                            },
+                            {
                                 "type": "CreatePredefinedToken",
                                 "tokenType": "Treasure",
                                 "imageUri": "https://cards.scryfall.io/normal/front/1/d/1d74d012-66ca-4a0c-9e90-e31e96730d4d.jpg?1783912040"
                             }
-                        }
-                    ]
+                        ]
+                    },
+                    "otherwise": {
+                        "type": "CreateToken",
+                        "power": 3,
+                        "toughness": 3,
+                        "colors": [],
+                        "creatureTypes": [
+                            "Robot"
+                        ],
+                        "imageUri": "https://cards.scryfall.io/normal/front/7/6/76cde21f-2f01-4560-972b-7ecd6740d6de.jpg?1783912042",
+                        "artifactToken": true
+                    }
                 }
             }
         ],

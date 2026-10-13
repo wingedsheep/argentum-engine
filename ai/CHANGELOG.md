@@ -28,6 +28,8 @@ Format — newest first, one bullet each:
 
 ## Changes
 
+- #3170 Values every token payoff in a mixed token-creation batch when assessing cards for play and deckbuilding.
+
 - Keeps ranked secret bids at their floor, chooses matching numbers independently, and casts creature ballots from the visible board without reading unrevealed answers.
 
 - #3137 AI plays its land before a cheaper spell when the land makes a bigger spell castable — hard-casting Shriekmaw instead of casting a 2-drop and then evoking it

@@ -2486,6 +2486,12 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
 
 ### Tokens & emblems
 
+- `CreateTokensTogether(vararg groups, controller?)` — create mixed creature/predefined token
+  groups as one token-creation event (`CreateTokenBatchEffect`). Keep each group's controller
+  unset and select the common recipient on the batch. Each group keeps its own count, art,
+  counters, abilities, tapped state and cleanup riders. Event-scoped additions (Peregrin Took's
+  Food) and attached-copy replacement choices apply once to the whole batch, including across
+  a paused decision. Use this for “create [token] and [token]”; `then` creates separate events.
 - `CreateToken(p, t, colors?, creatureTypes, keywords?, count?, controller?, imageUri?, name?, legendary?, tapped?, artifactToken?, enchantmentToken?, staticAbilities?, exileAtStep?, sacrificeAtStep?)` — make N creature tokens.
   `exileAtStep: Step?` arms the exile counterpart of the delayed trigger described below. Both the fixed
   and dynamic-count overloads expose both delayed zone-change options.

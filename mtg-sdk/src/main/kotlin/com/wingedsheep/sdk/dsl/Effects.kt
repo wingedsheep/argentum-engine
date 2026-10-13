@@ -3066,6 +3066,10 @@ object Effects {
     // Token Effects
     // =========================================================================
 
+    /** Create the supplied creature/predefined token groups in one shared creation event. */
+    fun CreateTokensTogether(vararg groups: Effect, controller: EffectTarget? = null): Effect =
+        com.wingedsheep.sdk.scripting.effects.CreateTokenBatchEffect(groups.toList(), controller)
+
     /**
      * Create creature tokens.
      * @param controller Who receives the token. Null = spell controller.

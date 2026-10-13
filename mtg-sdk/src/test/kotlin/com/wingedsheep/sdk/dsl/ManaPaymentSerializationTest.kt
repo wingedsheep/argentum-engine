@@ -18,4 +18,15 @@ class ManaPaymentSerializationTest : FunSpec({
             DynamicAmounts.manaSpentFromSubtype(Subtype.TREASURE, ManaPayment.ACTIVATION)
         Json.decodeFromString<DynamicAmount>(Json.encodeToString<DynamicAmount>(amount)) shouldBe amount
     }
+    test("mixed token batch round-trips without losing member art or counters") {
+        val batch = Effects.CreateTokensTogether(
+            Effects.CreateToken(power = 3, toughness = 3, creatureTypes = setOf("Robot"),
+                artifactToken = true, imageUri = "robot", initialCounters = mapOf(com.wingedsheep.sdk.core.CounterType.PLUS_ONE_PLUS_ONE to 2)),
+            Effects.CreateTreasure(tapped = true, imageUri = "treasure"),
+        )
+        Json.decodeFromString<com.wingedsheep.sdk.scripting.effects.Effect>(
+            Json.encodeToString<com.wingedsheep.sdk.scripting.effects.Effect>(batch)
+        ) shouldBe batch
+    }
+
 })
