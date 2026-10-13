@@ -807,6 +807,53 @@
     ]
 }
 
+// Gaea's Might
+{
+    "name": "Gaea's Might",
+    "manaCost": "{G}",
+    "typeLine": "Instant",
+    "oracleText": "Domain — Target creature gets +1/+1 until end of turn for each basic land type among lands you control.",
+    "script": {
+        "spellEffect": {
+            "type": "ModifyStats",
+            "powerModifier": {
+                "type": "AggregateBattlefield",
+                "player": "You",
+                "filter": "land",
+                "aggregation": "DISTINCT_BASIC_LAND_SUBTYPES"
+            },
+            "toughnessModifier": {
+                "type": "AggregateBattlefield",
+                "player": "You",
+                "filter": "land",
+                "aggregation": "DISTINCT_BASIC_LAND_SUBTYPES"
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "81",
+        "artist": "Ron Spencer",
+        "flavorText": "With the Heart of Yavimaya aiding him, Multani didn't even strain at the load.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/7/67e5adce-7735-4fa5-aa14-8dce012e9fcc.jpg?1783945613"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Gainsay
 {
     "name": "Gainsay",
