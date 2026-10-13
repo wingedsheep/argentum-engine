@@ -249,6 +249,10 @@ class CastZoneResolver(
         cardId: EntityId,
         cardComponent: CardComponent
     ): List<MayCastFromGraveyard> {
+        // A land is played, never cast (CR 305.9 — even one with another card type). A `playsLands` grant's filter admits land cards;
+        // its land half is `graveyardLandPlayGrant`, so the cast half must refuse them here — the
+        // action is client-supplied, and nothing later in the cast path rejects a land.
+        if (cardComponent.typeLine.isLand) return emptyList()
         // Any graveyard, not just the caster's: a `fromAnyGraveyard` grant (The Great Work) reaches
         // other players' graveyards too. Grants without it are held to the caster's own graveyard
         // by `mayCastFromGraveyardGrantApplies`.
@@ -314,6 +318,31 @@ class CastZoneResolver(
     }
 
     /**
+     * The [MayCastFromGraveyard] grant — paired with the permanent it hangs off — that a *land play*
+     * of [cardId] from [playerId]'s graveyard goes through, or null when no `playsLands` grant
+     * applies (Serra Paragon's "play a land … from your graveyard"). Shares the applies-check with
+     * the cast path, so the per-turn allowance, during-your-turn window and filter are one gate for
+     * both halves of the grant. Only the player's own graveyard: a land is played by its owner.
+     *
+     * When several apply, an unlimited riderless grant wins (no use spent, nothing attached), then
+     * any unlimited one, then the first once-per-turn source — the same "burn a use only when
+     * nothing unlimited could have authorized it" rule as [oncePerTurnGraveyardCastSourceToConsume].
+     * `PlayLandHandler` asks only after every other graveyard land permission (Crucible of Worlds,
+     * Muldrotha, a per-card may-play, mayhem) has declined, so those never spend this allowance.
+     */
+    fun graveyardLandPlayGrant(
+        state: GameState,
+        playerId: EntityId,
+        cardId: EntityId
+    ): Pair<EntityId, MayCastFromGraveyard>? {
+        if (cardId !in state.getZone(ZoneKey(playerId, Zone.GRAVEYARD))) return null
+        val grants = mayCastFromGraveyardGrantsWithSources(state, playerId, cardId).filter { it.second.playsLands }
+        return grants.firstOrNull { !it.second.oncePerTurn && !it.second.hasEntryRider }
+            ?: grants.firstOrNull { !it.second.oncePerTurn }
+            ?: grants.firstOrNull()
+    }
+
+    /**
      * After a graveyard cast authorized by a [MayCastFromGraveyard] grant, the permanent whose
      * `oncePerTurn` allowance should be marked used — or null when an unlimited grant already
      * authorized the same cast, so no per-turn use is burned. Mirrors
@@ -358,7 +387,8 @@ class CastZoneResolver(
                 it.entersWithCounter == selection.entersWithCounter &&
                     it.addedSubtypeOnEntry == selection.addedSubtype &&
                     it.exileInsteadOfGraveyard == selection.exileInsteadOfGraveyard &&
-                    it.additionalCost == selection.additionalCost
+                    it.additionalCost == selection.additionalCost &&
+                    it.grantedAbilityOnEntry == selection.grantedAbilityOnEntry
             }?.let { return it }
         }
         // Unspecified: a mandatory rider still wins, and among the rest a grant that owes no extra

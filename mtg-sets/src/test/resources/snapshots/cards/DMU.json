@@ -5043,6 +5043,68 @@
     ]
 }
 
+// Serra Paragon
+{
+    "name": "Serra Paragon",
+    "manaCost": "{2}{W}{W}",
+    "typeLine": "Creature — Angel",
+    "oracleText": "Flying\nOnce during each of your turns, you may play a land from your graveyard or cast a permanent spell with mana value 3 or less from your graveyard. If you do, it gains \"When this permanent is put into a graveyard from the battlefield, exile it and you gain 2 life.\"",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "MayCastFromGraveyard",
+                "filter": "permanent mv<=3",
+                "duringYourTurnOnly": true,
+                "oncePerTurn": true,
+                "playsLands": true,
+                "grantedAbilityOnEntry": {
+                    "id": "Serra Paragon:1",
+                    "trigger": {
+                        "type": "ZoneChangeEvent",
+                        "from": "Battlefield",
+                        "to": "Graveyard"
+                    },
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "MoveToZone",
+                                "target": "Self",
+                                "destination": "Exile",
+                                "fromZone": "Graveyard"
+                            },
+                            {
+                                "type": "GainLife",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
+                            }
+                        ]
+                    },
+                    "descriptionOverride": "When this permanent is put into a graveyard from the battlefield, exile it and you gain 2 life."
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "32",
+        "rarity": "MYTHIC",
+        "artist": "Heonhwa",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/e/ce295f1e-fb31-4275-a5d3-8c6f29afff40.jpg?1783921359"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Shadow-Rite Priest
 {
     "name": "Shadow-Rite Priest",

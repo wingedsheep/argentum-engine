@@ -63,6 +63,9 @@ class PlayLandHandler(
     private val legality: LegalityKernel
 ) : ActionHandler<PlayLand> {
     private val predicateEvaluator = conditionEvaluator.predicates
+    private val zoneResolver = com.wingedsheep.engine.handlers.actions.spell.CastZoneResolver(
+        cardRegistry, conditionEvaluator, legality
+    )
     override val actionType: KClass<PlayLand> = PlayLand::class
 
     override fun validate(state: GameState, action: PlayLand): String? =
@@ -214,6 +217,21 @@ class PlayLandHandler(
         // hidden-in-exile card (StackResolver strips FaceDownComponent as a spell hits the stack) —
         // so strip the marker here (CR 305.1: a land is always played face up). No-op when absent.
         newState = newState.updateEntity(action.cardId) { c -> c.without<FaceDownComponent>() }
+
+        // A land played through a `MayCastFromGraveyard(playsLands = true)` grant (Serra Paragon):
+        // only when no other graveyard land permission authorizes it, so Crucible of Worlds or a
+        // Muldrotha never spends the grant's allowance or attaches its rider. Read off the pre-play
+        // `state`, while the card is still in the graveyard.
+        val graveyardLandGrant = if (fromZone == Zone.GRAVEYARD &&
+            !hasOtherGraveyardLandPermission(state, action.playerId, action.cardId)
+        ) zoneResolver.graveyardLandPlayGrant(state, action.playerId, action.cardId) else null
+        if (graveyardLandGrant != null && graveyardLandGrant.second.oncePerTurn) {
+            // The same marker the cast path stamps, which is what makes a land play and a cast
+            // share one per-turn allowance.
+            newState = newState.updateEntity(graveyardLandGrant.first) { c ->
+                c.with(com.wingedsheep.engine.state.components.battlefield.MayCastFromGraveyardUsedThisTurnComponent)
+            }
+        }
 
         // Record Muldrotha graveyard land permission usage
         if (fromZone == Zone.GRAVEYARD) {
@@ -404,7 +422,19 @@ class PlayLandHandler(
         // tapped and as-enters branches below, since each of those is its own exit and the counters
         // belong to the entry regardless of which branch finishes it. The events are carried into
         // every exit so counter-placement triggers still see them.
-        val entersWithEvents: List<com.wingedsheep.engine.core.GameEvent> = if (cardDef != null) {
+        // The grant's entry rider (Serra Paragon's granted exile-and-gain-life trigger) — the land
+        // half of the rider the cast path applies in PermanentEntry.
+        val landRiderEvents: List<com.wingedsheep.engine.core.GameEvent> =
+            graveyardLandGrant?.second?.takeIf { it.hasEntryRider }?.let { grant ->
+                val (afterRider, riderEvents) = com.wingedsheep.engine.handlers.effects.EntersWithReplacements
+                    .applyCastFromGraveyardRider(
+                        newState, action.cardId, action.playerId,
+                        grant.entersWithCounter, grant.addedSubtypeOnEntry, grant.grantedAbilityOnEntry
+                    )
+                newState = afterRider
+                riderEvents
+            } ?: emptyList()
+        val entersWithEvents: List<com.wingedsheep.engine.core.GameEvent> = landRiderEvents + if (cardDef != null) {
             val (afterOwn, ownEvents) = com.wingedsheep.engine.handlers.effects.EntersWithReplacements
                 .applyFromDefinition(newState, action.cardId, cardDef, action.playerId, predicateEvaluator = predicateEvaluator, preEntryZone = sourceZoneKey)
             val (afterGlobal, globalEvents) = com.wingedsheep.engine.handlers.effects.EntersWithReplacements
@@ -754,6 +784,21 @@ class PlayLandHandler(
     ): Boolean {
         val graveyardZone = ZoneKey(playerId, Zone.GRAVEYARD)
         if (cardId !in state.getZone(graveyardZone)) return false
+        if (hasOtherGraveyardLandPermission(state, playerId, cardId)) return true
+        // Serra Paragon's shared "play a land or cast a permanent spell" grant.
+        return zoneResolver.graveyardLandPlayGrant(state, playerId, cardId) != null
+    }
+
+    /**
+     * Every graveyard land permission *other than* a `MayCastFromGraveyard(playsLands = true)`
+     * grant — those are asked last, so a play these already authorize never spends that grant's
+     * per-turn allowance nor takes its rider. [cardId] is known to be in [playerId]'s graveyard.
+     */
+    private fun hasOtherGraveyardLandPermission(
+        state: GameState,
+        playerId: EntityId,
+        cardId: EntityId
+    ): Boolean {
         // Generic per-card may-play permission (e.g. Tablet of Discovery's "mill a card. You
         // may play that card this turn." — the milled card sits in the graveyard). Mirrors the
         // exile path in [isInExileWithPlayPermission] and CastFromZoneEnumerator, which already

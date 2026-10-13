@@ -710,7 +710,8 @@ internal class PermanentEntry(
             val (riderState, riderEvents) =
                 com.wingedsheep.engine.handlers.effects.EntersWithReplacements.applyCastFromGraveyardRider(
                     newState, spellId, controllerId,
-                    graveyardCastRider.entersWithCounter, graveyardCastRider.addedSubtype
+                    graveyardCastRider.entersWithCounter, graveyardCastRider.addedSubtype,
+                    graveyardCastRider.grantedAbility
                 )
             newState = riderState
             counterEvents.addAll(riderEvents)

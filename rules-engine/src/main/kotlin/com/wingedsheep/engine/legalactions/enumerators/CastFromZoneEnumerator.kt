@@ -2501,7 +2501,7 @@ class CastFromZoneEnumerator(
             // options read differently when riders differ.
             val riderSelection = GraveyardCastRiderSelection(
                 permission.entersWithCounter, permission.addedSubtypeOnEntry, permission.exileInsteadOfGraveyard,
-                permission.additionalCost
+                permission.additionalCost, permission.grantedAbilityOnEntry
             )
             val riderSuffix = graveyardRiderSuffix(permission)
 
@@ -2517,6 +2517,9 @@ class CastFromZoneEnumerator(
                 if (scopedCardId != null && cardId != scopedCardId) continue
                 val container = state.getEntity(cardId) ?: continue
                 val cardComponent = container.get<CardComponent>() ?: continue
+                // A land is played, never cast (CR 305.9 — even one with another card type) — a `playsLands` grant's filter admits land
+                // cards, and those plays are offered by PlayLandEnumerator instead.
+                if (cardComponent.typeLine.isLand) continue
                 val cardDef = context.cardRegistry.getCard(cardComponent.cardDefinitionId) ?: continue
 
                 // Check if card matches filter
@@ -2548,7 +2551,7 @@ class CastFromZoneEnumerator(
                 if (!canPayGrantCost) continue
 
                 // Collapse permissions indistinguishable to the player (same card, life cost, rider, extra cost).
-                if (!emitted.add("$cardId|$lifeCost|${permission.entersWithCounter}|${permission.addedSubtypeOnEntry}|${permission.exileInsteadOfGraveyard}|${permission.additionalCost}")) continue
+                if (!emitted.add("$cardId|$lifeCost|${permission.entersWithCounter}|${permission.addedSubtypeOnEntry}|${permission.exileInsteadOfGraveyard}|${permission.additionalCost}|${permission.grantedAbilityOnEntry}")) continue
 
                 val effectiveCost = context.costCalculator.calculateEffectiveCost(state, cardDef, playerId)
                 val costString = effectiveCost.toString()
@@ -2634,6 +2637,7 @@ class CastFromZoneEnumerator(
             permission.additionalCost?.let { add(it.description.replaceFirstChar { c -> c.lowercase() }) }
             permission.entersWithCounter?.let { add("enters with a ${it.name.lowercase()} counter") }
             permission.addedSubtypeOnEntry?.let { add("becomes a $it") }
+            permission.grantedAbilityOnEntry?.let { add("gains \"${it.description}\"") }
         }
         if (parts.isEmpty()) return ""
         return " (" + parts.joinToString("; ") + ")"

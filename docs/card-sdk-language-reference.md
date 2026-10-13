@@ -10356,7 +10356,7 @@ riders, matching how the engine already treats e.g. City of Brass's damage durin
 
 **Alternative play / cast permissions** (let a player play or cast cards from non-hand zones)
 
-- `MayPlayLandsFromGraveyard` — play lands from your graveyard (no per-turn cap). (Icetill Explorer)
+- `MayPlayLandsFromGraveyard` — play lands from your graveyard (no per-turn cap). (Icetill Explorer) For a land play that shares a once-per-turn allowance with graveyard casts, use `MayCastFromGraveyard(playsLands = true)` (Serra Paragon).
 - `MayPlayPermanentsFromGraveyard` — Muldrotha: play a land + cast one permanent spell of each
   permanent type from your graveyard each turn (per-type-per-turn cap).
 - `EquipAbilitiesAtInstantSpeed` — the controller may activate equip abilities any time they could
@@ -10489,7 +10489,7 @@ riders, matching how the engine already treats e.g. City of Brass's damage durin
   `PlayersCantPayLifeForCosts(excludeManaAbilities = true)`. Stamped as a battlefield marker and read by
   `GameState.canPayLife(player, amount, LifePaymentPurpose)` — every payment site names its purpose; stops when the
   source loses its abilities. Unconditional only (not read behind a `ConditionalStaticAbility`).
-- `MayCastFromGraveyard(filter, lifeCost = 0, duringYourTurnOnly = false, entersWithCounter = null, addedSubtypeOnEntry = null, oncePerTurn = false, exileInsteadOfGraveyard = false, fromAnyGraveyard = false, additionalCost = null)`
+- `MayCastFromGraveyard(filter, lifeCost = 0, duringYourTurnOnly = false, entersWithCounter = null, addedSubtypeOnEntry = null, oncePerTurn = false, exileInsteadOfGraveyard = false, fromAnyGraveyard = false, additionalCost = null, playsLands = false, grantedAbilityOnEntry = null)`
   — cast spells matching `filter` from your graveyard following normal timing, optionally paying
   `lifeCost` life. Free for Yawgmoth's Agenda (`MayCastFromGraveyard(Nonland)`); `lifeCost = 1,
   duringYourTurnOnly = true` for Festival of Embers. **`oncePerTurn`** limits the grant to one cast
@@ -10528,6 +10528,27 @@ riders, matching how the engine already treats e.g. City of Brass's damage durin
   Osteomancer Adept's forage permission (`MayCastCreaturesFromGraveyardWithForageComponent`) shares it —
   `CastSpellHandler` freezes the same `GraveyardCastRiderComponent(entersWithCounter = FINALITY)` onto a
   forage-cast creature, applied on entry by the identical `StackResolver` path.
+  **Play, not just cast — one shared allowance:** `playsLands = true` turns the grant's verb into
+  *play*: land cards matching `filter` may also be played from your graveyard, as the turn's land
+  play (CR 305.9 — a land is played, never cast; the cast half refuses land cards even from a forged
+  `CastSpell`). `oncePerTurn` then spends the *same* marker for a land play as for a cast, so "play a
+  land **or** cast a spell" is one use. It is an explicit axis rather than "the filter admits lands"
+  because a `Creature` cast grant admits a land creature (Dryad Arbor), which it must never play. The
+  land half is offered by `PlayLandEnumerator` and authorized by `PlayLandHandler` through
+  `CastZoneResolver.graveyardLandPlayGrant`, which is asked only after every other graveyard land
+  permission (Crucible of Worlds' `MayPlayLandsFromGraveyard`, Muldrotha, a per-card may-play,
+  mayhem) declines — so those never spend the allowance or attach the rider. Unlimited land plays with
+  no shared allowance stay `MayPlayLandsFromGraveyard`.
+  **Granted-ability entry rider:** `grantedAbilityOnEntry` (a `TriggeredAbility`) is gained by a
+  permanent cast — or a land played — from the graveyard under this grant, as a `Duration.Permanent`
+  granted triggered ability: it lasts while that permanent stays on the battlefield, after the granter
+  leaves, and a spell that never resolves never gains it. It is part of the rider identity
+  (`GraveyardCastRiderSelection.grantedAbilityOnEntry`), so a riderless grant beside it is a separate
+  choice. Serra Paragon = `MayCastFromGraveyard(GameObjectFilter.Permanent.manaValueAtMost(3),
+  duringYourTurnOnly = true, oncePerTurn = true, playsLands = true, grantedAbilityOnEntry =
+  TriggeredAbility.create(trigger = Triggers.self.dies(), effect = Effects.Move(EffectTarget.Self,
+  Zone.EXILE, fromZone = Zone.GRAVEYARD) then Effects.GainLife(2)))` — a land's mana value is 0, so
+  the one filter covers both halves.
   **Cast-this-way exile rider:** `exileInsteadOfGraveyard = true` is the instant/sorcery half of the
   same rider family — "if an instant or sorcery spell cast this way would be put into your graveyard,
   exile it instead" (Bilbo, Thief in the Night). `CastSpellHandler` stamps

@@ -256,7 +256,13 @@ data class GraveyardCastRiderSelection(
      * Part of the identity so a player holding both a free grant and a retrace grant picks which
      * one they cast through — and thus whether they discard — rather than the handler choosing.
      */
-    val additionalCost: AdditionalCost? = null
+    val additionalCost: AdditionalCost? = null,
+    /**
+     * The granted-ability entry rider (Serra Paragon's "it gains 'When this permanent is put into a
+     * graveyard from the battlefield, exile it and you gain 2 life.'"). Part of the identity so a
+     * player holding a riderless grant beside it picks whether their permanent takes the ability.
+     */
+    val grantedAbilityOnEntry: com.wingedsheep.sdk.scripting.TriggeredAbility? = null
 )
 
 /**

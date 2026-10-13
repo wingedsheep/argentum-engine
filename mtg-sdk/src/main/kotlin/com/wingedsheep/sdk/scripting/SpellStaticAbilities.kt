@@ -670,6 +670,24 @@ data class GraveyardCardsHaveDredge(
  * from the graveyard some other way (escape, a Muldrotha-style permission, a free grant the player
  * picked) doesn't pay it.
  *
+ * [playsLands] turns the grant's verb from *cast* into *play* (CR 305.9: a land is played, never
+ * cast): land cards matching [filter] may also be played from the graveyard, as the turn's land
+ * play, under the same timing and per-turn allowance. The allowance belongs to the granting
+ * permanent, not to a kind of play, so with [oncePerTurn] a land played this way spends the same
+ * use a cast would — Serra Paragon's "Once during each of your turns, you may play a land from your
+ * graveyard or cast a permanent spell with mana value 3 or less from your graveyard" is one grant,
+ * `MayCastFromGraveyard(Permanent.manaValueAtMost(3), duringYourTurnOnly = true, oncePerTurn = true,
+ * playsLands = true)` (a land's mana value is 0, so the one filter covers both halves). It is an
+ * explicit axis rather than "the filter admits lands" because a "cast" filter like `Creature` admits
+ * Dryad Arbor, which no cast permission may ever play. Defaults to false; unlimited land plays
+ * from the graveyard with no shared allowance are still [MayPlayLandsFromGraveyard].
+ *
+ * [grantedAbilityOnEntry] is the last member of the entry rider family: a permanent cast — or a land
+ * played — from the graveyard under this grant gains that triggered ability for as long as it stays
+ * on the battlefield, even after the granter leaves (Serra Paragon's "If you do, it gains 'When this
+ * permanent is put into a graveyard from the battlefield, exile it and you gain 2 life.'"). A spell
+ * that never resolves never gains it.
+ *
  * @property filter The filter that spells must match (e.g., instant/sorcery, or any nonland card)
  * @property lifeCost The life cost to pay in addition to other costs (0 = free)
  * @property duringYourTurnOnly If true, only castable during your turn
@@ -680,6 +698,8 @@ data class GraveyardCardsHaveDredge(
  *   than put into its owner's graveyard — whether it resolves, is countered, or fizzles
  * @property fromAnyGraveyard If true, the permission covers every player's graveyard, not just yours
  * @property additionalCost If set, a non-mana cost a cast under this grant owes on top of its other costs
+ * @property playsLands If true, land cards matching [filter] may also be played from the graveyard
+ * @property grantedAbilityOnEntry If set, a permanent cast or land played this way gains this ability
  */
 @SerialName("MayCastFromGraveyard")
 @Serializable
@@ -692,10 +712,13 @@ data class MayCastFromGraveyard(
     val oncePerTurn: Boolean = false,
     val exileInsteadOfGraveyard: Boolean = false,
     val fromAnyGraveyard: Boolean = false,
-    val additionalCost: AdditionalCost? = null
+    val additionalCost: AdditionalCost? = null,
+    val playsLands: Boolean = false,
+    val grantedAbilityOnEntry: TriggeredAbility? = null
 ) : StaticAbility {
-    /** True when this grant carries a cast-this-way entry rider (finality counter / added subtype). */
-    val hasEntryRider: Boolean get() = entersWithCounter != null || addedSubtypeOnEntry != null
+    /** True when this grant carries a cast-this-way entry rider (finality counter / added subtype / granted ability). */
+    val hasEntryRider: Boolean
+        get() = entersWithCounter != null || addedSubtypeOnEntry != null || grantedAbilityOnEntry != null
 
     override val description: String = buildString {
         when {
@@ -704,7 +727,8 @@ data class MayCastFromGraveyard(
             duringYourTurnOnly -> append("During your turn, y")
             else -> append("Y")
         }
-        append("ou may cast ${filter.description} spells from ")
+        if (playsLands) append("ou may play a land or cast a ${filter.description} spell from ")
+        else append("ou may cast ${filter.description} spells from ")
         append(if (fromAnyGraveyard) "any graveyard" else "your graveyard")
         if (lifeCost > 0) append(" by paying $lifeCost life in addition to their other costs")
         if (additionalCost != null) {
@@ -715,6 +739,9 @@ data class MayCastFromGraveyard(
             if (entersWithCounter != null) append(" with a ${entersWithCounter.printed} counter on it")
             if (entersWithCounter != null && addedSubtypeOnEntry != null) append(" and")
             if (addedSubtypeOnEntry != null) append(" is a $addedSubtypeOnEntry in addition to its other types")
+        }
+        if (grantedAbilityOnEntry != null) {
+            append(". If you do, it gains \"${grantedAbilityOnEntry.description}\"")
         }
         if (exileInsteadOfGraveyard) {
             append(". If an instant or sorcery spell cast this way would be put into ")

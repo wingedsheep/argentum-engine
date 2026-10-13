@@ -591,14 +591,21 @@ object EntersWithReplacements {
      *  - it gains [addedSubtype] "in addition to its other types" via a floating [Layer.TYPE]
      *    modification with [Duration.Permanent] — floating effects targeting an entity are removed
      *    when it leaves the battlefield, giving exactly the "…while on the battlefield" persistence.
-     * The subtype is applied only to creatures (CR 205.1b). Returns the new state and the events.
+     * The subtype is applied only to creatures (CR 205.1b).
+     *  - it gains [grantedAbility] (Serra Paragon's exile-and-gain-life trigger) as a
+     *    [Duration.Permanent] granted triggered ability. Object grants are dropped when the permanent
+     *    leaves the battlefield (CR 400.7), after its own leaves-the-battlefield triggers are seen,
+     *    so the ability lasts exactly as long as the permanent — granter gone or not.
+     * Lands played from the graveyard under the same grant take this path too (`PlayLandHandler`).
+     * Returns the new state and the events.
      */
     fun applyCastFromGraveyardRider(
         state: GameState,
         entityId: EntityId,
         controllerId: EntityId,
         counter: CounterType?,
-        addedSubtype: String?
+        addedSubtype: String?,
+        grantedAbility: com.wingedsheep.sdk.scripting.TriggeredAbility? = null
     ): Pair<GameState, List<GameEvent>> {
         var newState = state
         val events = mutableListOf<GameEvent>()
@@ -625,6 +632,17 @@ object EntersWithReplacements {
                 affectedEntities = setOf(entityId),
                 duration = Duration.Permanent,
                 context = EffectContext(sourceId = entityId, controllerId = controllerId)
+            )
+        }
+        if (grantedAbility != null) {
+            newState = newState.copy(
+                grantedTriggeredAbilities = newState.grantedTriggeredAbilities +
+                    com.wingedsheep.engine.event.GrantedTriggeredAbility(
+                        entityId = entityId,
+                        ability = grantedAbility,
+                        duration = Duration.Permanent,
+                        sourceId = entityId
+                    )
             )
         }
         return newState to events

@@ -221,9 +221,12 @@ internal class CastRecords(
             else -> null
         }
         val riderSubtype: String? = grant?.takeIf { it.hasEntryRider }?.addedSubtypeOnEntry
-        if (riderCounter != null || riderSubtype != null) {
+        val riderAbility = grant?.grantedAbilityOnEntry
+        if (riderCounter != null || riderSubtype != null || riderAbility != null) {
             newState = newState.updateEntity(action.cardId) { c ->
-                c.with(GraveyardCastRiderComponent(entersWithCounter = riderCounter, addedSubtype = riderSubtype))
+                c.with(GraveyardCastRiderComponent(
+                    entersWithCounter = riderCounter, addedSubtype = riderSubtype, grantedAbility = riderAbility
+                ))
             }
         }
         if (grant?.exileInsteadOfGraveyard == true && cardComponent.typeLine.let { it.isInstant || it.isSorcery }) {

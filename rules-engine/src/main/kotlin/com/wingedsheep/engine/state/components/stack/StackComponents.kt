@@ -667,11 +667,13 @@ data class SpellCopyTokenRidersComponent(
  * several graveyard-cast grants are active. Read by
  * [com.wingedsheep.engine.mechanics.stack.StackResolver] when the spell resolves onto the
  * battlefield: the permanent enters with one [entersWithCounter] counter and gains
- * [addedSubtype] "in addition to its other types". The component disappears with the spell entity
- * when it leaves the stack (countered / fizzled spells simply never apply it).
+ * [addedSubtype] "in addition to its other types", and gains [grantedAbility] (Serra Paragon) for as
+ * long as it stays on the battlefield. The component disappears with the spell entity when it leaves
+ * the stack (countered / fizzled spells simply never apply it).
  */
 @Serializable
 data class GraveyardCastRiderComponent(
     val entersWithCounter: com.wingedsheep.sdk.core.CounterType? = null,
-    val addedSubtype: String? = null
+    val addedSubtype: String? = null,
+    val grantedAbility: com.wingedsheep.sdk.scripting.TriggeredAbility? = null
 ) : Component
