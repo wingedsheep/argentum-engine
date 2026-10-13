@@ -373,15 +373,12 @@ internal class AttackPhaseManager(
             newState = AttackedPermanents.markAttacked(newState, defenderId)
         }
 
-        // Keep directly attacked player identities after combat and across extra combats.
-        val attackedPlayers = attackers.values.filterTo(mutableSetOf()) { it in state.turnOrder }
-
-        // Attackers seen earlier this turn (across prior combat phases) — read before the per-turn
-        // set is unioned below so we can flag which of these attackers are attacking for the *first
-        // time this turn*. Backs AttackPredicate.FirstTimeEachTurn; this fact can't be derived after
-        // the union (the just-declared attacker would already be a member).
-        val previousAttackersThisTurn = state.getEntity(attackingPlayer)
-            ?.get<PlayerAttackersThisTurnComponent>()?.attackerIds ?: emptySet()
+        val attackingMembers = state.sharedTurnTeam(attackingPlayer)
+        // Creature-specific first attacks span the combined team declaration, even though each
+        // player's Raid and opponent history records only their own creatures.
+        val previousAttackersThisTurn = attackingMembers.flatMapTo(mutableSetOf()) { member ->
+            state.getEntity(member)?.get<PlayerAttackersThisTurnComponent>()?.attackerIds.orEmpty()
+        }
         val firstTimeAttackers = attackers.keys - previousAttackersThisTurn
 
         // Attackers whose declared defender is a *player* (CR 508.1), not a planeswalker or
@@ -393,32 +390,30 @@ internal class AttackPhaseManager(
         // and the per-turn record behind StatePredicate.AttackedABattleThisTurn (War Historian).
         val attackersAgainstBattle = attackers.filterValues { Battles.isBattle(state, it) }.keys
 
-        // CR 805.10b — the active team has ONE combined attack, and CR 805.10a makes every
-        // player on it an attacking player. So the declaration is recorded on every member of
-        // the attacking team, not just the seat that submitted it: the teammate is not asked to
-        // declare a second wave (PassPriorityHandler / CombatEnumerator read this marker), and
-        // "you attacked this turn" is true for both heads. Outside shared team turns the team
-        // is the declaring player alone.
-        for (member in state.sharedTurnTeam(attackingPlayer)) {
+        // The team declares once, but "you attacked" and attacked-opponent history belong to
+        // the controller of each declared creature. Use the declaration's projected control.
+        for (member in attackingMembers) {
+            val memberAttackers = attackers.filterKeys { projected.getController(it) == member }
+            val attackedPlayers = memberAttackers.values.filterTo(mutableSetOf()) { it in state.turnOrder }
             newState = newState.updateEntity(member) { container ->
                 // Both markers are stamped even for an empty declaration: they record that the step
                 // happened, which is what tells "declared nothing" apart from "never got the chance".
                 var updated = container
                     .with(AttackersDeclaredThisCombatComponent)
                     .with(AttackersDeclaredThisTurnComponent)
-                if (attackers.isNotEmpty()) {
+                if (memberAttackers.isNotEmpty()) {
                     updated = updated.with(PlayerAttackedThisTurnComponent)
                     val previous = container.get<PlayerAttackersThisTurnComponent>()
                     updated = updated.with(
                         PlayerAttackersThisTurnComponent(
-                            attackerIds = (previous?.attackerIds ?: emptySet()) + attackers.keys,
-                            battleAttackerIds = (previous?.battleAttackerIds ?: emptySet()) + attackersAgainstBattle
+                            attackerIds = (previous?.attackerIds ?: emptySet()) + memberAttackers.keys,
+                            battleAttackerIds = (previous?.battleAttackerIds ?: emptySet()) + (attackersAgainstBattle intersect memberAttackers.keys)
                         )
                     )
                     if (attackedPlayers.isNotEmpty()) {
                         val previousAttackedPlayers = container
                             .get<com.wingedsheep.engine.state.components.combat.PlayerAttackedPlayersThisTurnComponent>()
-                            ?.attackedPlayerIds ?: emptySet()
+                            ?.defendingPlayerIds ?: emptySet()
                         updated = updated.with(
                             com.wingedsheep.engine.state.components.combat.PlayerAttackedPlayersThisTurnComponent(
                                 previousAttackedPlayers + attackedPlayers

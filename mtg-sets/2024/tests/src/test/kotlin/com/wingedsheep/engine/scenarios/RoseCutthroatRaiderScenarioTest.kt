@@ -20,9 +20,13 @@ class RoseCutthroatRaiderScenarioTest : FunSpec({
         typeLine = "Artifact — Junk"
         activatedAbility { cost = Costs.SacrificeSelf; effect = Effects.GainLife(1) }
     }
-    fun setup(): GameTestDriver = GameTestDriver().apply {
+    fun setup(teamGame: Boolean = false): GameTestDriver = GameTestDriver().apply {
         registerCards(TestCards.all + listOf(RoseCutthroatRaider, PredefinedTokens.Junk, walker, outlet))
-        initMultiplayer(List(4) { Deck.of("Mountain" to 40) })
+        initMultiplayer(
+            List(4) { Deck.of("Mountain" to 40) },
+            format = if (teamGame) Format.TwoHeadedGiant() else Format.Standard,
+            teams = if (teamGame) listOf(listOf(0, 1), listOf(2, 3)) else null,
+        )
         passPriorityUntil(Step.PRECOMBAT_MAIN)
     }
     fun resolve(d: GameTestDriver) {
@@ -105,4 +109,17 @@ class RoseCutthroatRaiderScenarioTest : FunSpec({
         d.passPriorityUntil(Step.BEGIN_COMBAT)
         d.legalActions(d.player1).any { (it.action as? ActivateAbility)?.sourceId == token } shouldBe false
     }
+    for (ownAttack in listOf(false, true)) test("2HG teammate attacks ${if (ownAttack) "do not increase your Junk count" else "do not enable your Raid"}") {
+        val d = setup(teamGame = true)
+        val p = d.state.turnOrder
+        d.putCreatureOnBattlefield(p[0], RoseCutthroatRaider.name)
+        val teammate = d.putCreatureOnBattlefield(p[1], "Grizzly Bears").also(d::removeSummoningSickness)
+        val assignments = mutableMapOf(teammate to p[3])
+        if (ownAttack) assignments[d.putCreatureOnBattlefield(p[0], "Grizzly Bears").also(d::removeSummoningSickness)] = p[2]
+        d.passPriorityUntil(Step.DECLARE_ATTACKERS)
+        d.declareAttackers(p[0], assignments).error shouldBe null
+        endCombat(d)
+        junk(d).size shouldBe if (ownAttack) 1 else 0
+    }
+
 })

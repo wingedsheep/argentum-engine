@@ -311,7 +311,7 @@ data class PlayerAttackersLastTurnComponent(
  */
 @Serializable
 data class PlayerAttackedPlayersThisTurnComponent(
-    val attackedPlayerIds: Set<EntityId>
+    val defendingPlayerIds: Set<EntityId>
 ) : Component
 
 /**

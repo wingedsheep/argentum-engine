@@ -17,9 +17,13 @@ import io.kotest.matchers.shouldBe
 class OpponentsAttackedThisTurnTest : FunSpec({
     val walker = card("Defender Walker Probe") { typeLine = "Planeswalker — Test"; startingLoyalty = 20 }
     val battle = card("Defender Battle Probe") { typeLine = "Battle — Siege"; startingDefense = 20 }
-    fun setup(): GameTestDriver = GameTestDriver().apply {
+    fun setup(teamGame: Boolean = false): GameTestDriver = GameTestDriver().apply {
         registerCards(TestCards.all + listOf(walker, battle))
-        initMultiplayer(List(4) { Deck.of("Forest" to 40) })
+        initMultiplayer(
+            List(4) { Deck.of("Forest" to 40) },
+            format = if (teamGame) Format.TwoHeadedGiant() else Format.Standard,
+            teams = if (teamGame) listOf(listOf(0, 1), listOf(2, 3)) else null,
+        )
         passPriorityUntil(Step.PRECOMBAT_MAIN)
     }
     val evaluator = PredicateEvaluator(cardRegistry = null)
@@ -37,6 +41,7 @@ class OpponentsAttackedThisTurnTest : FunSpec({
         val d = setup()
         attack(d, mapOf(attacker(d) to d.player2, attacker(d) to d.player2))
         count(d) shouldBe 1
+        evaluator.conditions.evaluate(d.state, Conditions.PlayerAttackedPlayerThisTurn(Player.You, Player.AnOpponent), EffectContext(null, d.player1)) shouldBe true
         count(d, Player.EachOpponent) shouldBe 0
         count(d, Player.Each) shouldBe 1
     }
@@ -55,7 +60,7 @@ class OpponentsAttackedThisTurnTest : FunSpec({
         attack(d, mapOf(attacker(d) to pw, attacker(d) to b))
         count(d) shouldBe 0
         evaluator.conditions.evaluate(d.state, Conditions.YouAttackedThisTurn, EffectContext(null, d.player1)) shouldBe true
-        evaluator.conditions.evaluate(d.state, Conditions.PlayerAttackedPlayerThisTurn(Player.You, Player.EachOpponent), EffectContext(null, d.player1)) shouldBe false
+        evaluator.conditions.evaluate(d.state, Conditions.PlayerAttackedPlayerThisTurn(Player.You, Player.AnOpponent), EffectContext(null, d.player1)) shouldBe false
     }
     test("a creature entering attacking is not a declared attack") {
         val d = setup()
@@ -86,4 +91,45 @@ class OpponentsAttackedThisTurnTest : FunSpec({
         d.submit(com.wingedsheep.engine.core.Concede(d.player2)).error shouldBe null
         count(d) shouldBe 1
     }
+    test("shared-team histories count only each controller's creatures and declaration markers stay team-wide") {
+        val d = setup(teamGame = true)
+        val p = d.state.turnOrder
+        val own = attacker(d)
+        val teammate = d.putCreatureOnBattlefield(p[1], "Grizzly Bears").also(d::removeSummoningSickness)
+        attack(d, mapOf(own to p[2], teammate to p[3]))
+        count(d) shouldBe 1
+        evaluator.amounts.evaluate(d.state, DynamicAmounts.opponentsAttackedThisTurn(), EffectContext(null, p[1])) shouldBe 1
+        d.state.getEntity(p[0])?.get<com.wingedsheep.engine.state.components.combat.PlayerAttackersThisTurnComponent>()?.attackerIds shouldBe setOf(own)
+        d.state.getEntity(p[1])?.get<com.wingedsheep.engine.state.components.combat.PlayerAttackersThisTurnComponent>()?.attackerIds shouldBe setOf(teammate)
+        for (member in p.take(2)) {
+            d.state.getEntity(member)?.has<com.wingedsheep.engine.state.components.combat.AttackersDeclaredThisCombatComponent>() shouldBe true
+        }
+    }
+    test("a teammate-only attack does not enable your Raid, and repeated team attacks keep creature first-time history") {
+        val d = setup(teamGame = true)
+        val p = d.state.turnOrder
+        val teammate = d.putCreatureOnBattlefield(p[1], "Grizzly Bears").also(d::removeSummoningSickness)
+        d.addComponent(p[0], AdditionalPhasesComponent(listOf(QueuedPhase(ExtraPhaseKind.COMBAT))))
+        attack(d, mapOf(teammate to p[2]))
+        count(d) shouldBe 0
+        evaluator.conditions.evaluate(d.state, Conditions.YouAttackedThisTurn, EffectContext(null, p[0])) shouldBe false
+        evaluator.conditions.evaluate(d.state, Conditions.YouAttackedThisTurn, EffectContext(null, p[1])) shouldBe true
+        d.passPriorityUntil(Step.POSTCOMBAT_MAIN)
+        d.untapPermanent(teammate)
+        d.passPriorityUntil(Step.DECLARE_ATTACKERS)
+        val result = d.declareAttackers(p[0], mapOf(teammate to p[3]))
+        result.error shouldBe null
+        result.events.filterIsInstance<com.wingedsheep.engine.core.AttackersDeclaredEvent>().single().firstTimeAttackers shouldBe emptySet()
+        evaluator.amounts.evaluate(d.state, DynamicAmounts.opponentsAttackedThisTurn(), EffectContext(null, p[1])) shouldBe 2
+        count(d) shouldBe 0
+    }
+    test("the persisted attack-history field remains readable under its original spelling") {
+        val id = EntityId.generate()
+        val json = kotlinx.serialization.json.Json { ignoreUnknownKeys = true }
+        val encodedId = json.encodeToString(EntityId.serializer(), id)
+        val snapshot = """{"defendingPlayerIds":[$encodedId]}"""
+        val restored = json.decodeFromString(PlayerAttackedPlayersThisTurnComponent.serializer(), snapshot)
+        restored.defendingPlayerIds shouldBe setOf(id)
+    }
+
 })

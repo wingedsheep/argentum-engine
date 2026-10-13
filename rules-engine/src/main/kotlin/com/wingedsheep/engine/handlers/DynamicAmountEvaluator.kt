@@ -760,7 +760,7 @@ class DynamicAmountEvaluator(
                     TurnTracker.OPPONENTS_ATTACKED -> playerIds.sumOf { playerId ->
                         state.getEntity(playerId)
                             ?.get<com.wingedsheep.engine.state.components.combat.PlayerAttackedPlayersThisTurnComponent>()
-                            ?.attackedPlayerIds?.size ?: 0
+                            ?.defendingPlayerIds?.size ?: 0
                     }
                     TurnTracker.DEALT_COMBAT_DAMAGE -> playerIds.count { playerId ->
                         state.getEntity(playerId)

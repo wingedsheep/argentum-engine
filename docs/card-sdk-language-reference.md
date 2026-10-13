@@ -15091,7 +15091,8 @@ of `AddMana` and `AddColorlessMana`. The engine empties pools as each step and p
 - `OPPONENTS_ATTACKED` — distinct opponents directly attacked by declared creatures this turn.
   `DynamicAmounts.opponentsAttackedThisTurn(player = Player.You)` exposes the count. Multiple
   creatures and repeated combats count each opponent once; planeswalker/battle attacks and
-  creatures entering attacking do not count. History survives departures and resets at cleanup.
+  creatures entering attacking do not count. In shared-team declarations each player is credited
+  only for creatures they controlled at declaration. History survives departures and resets at cleanup.
 - `DEALT_COMBAT_DAMAGE` — combat damage dealt.
 - `DEALT_COMBAT_DAMAGE_BY_LEGENDARY_CREATURE` — indicator (0/1) that the player was dealt combat
   damage by a legendary creature this turn (recorded in `CombatDamageManager`, cleared at end of
