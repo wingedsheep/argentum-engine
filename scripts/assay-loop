@@ -100,6 +100,9 @@ RUNS="$REPO/.claude/loop-runs"
 mkdir -p "$RUNS"
 # shellcheck source=loop-lib.sh
 source "$(dirname "$0")/loop-lib.sh"
+# Grammar bands conflict on shared grammar files and the baked verdict ledger, so one at a time.
+LOOP_MAX_OPEN=${LOOP_MAX_OPEN:-1}
+loop_maybe_tui assay "$0" "$(loop_model_arg)" ${FOCUS:+"$FOCUS"}
 
 FOCUS_LINE="Focus: none — take whatever the probe ranks highest."
 [ -z "$FOCUS" ] || FOCUS_LINE="Focus: '$FOCUS' — PICK prefers families in this theme or SDK family while any in-scope one is left, then falls back to the full ranking."
@@ -179,6 +182,7 @@ STUCK: run the gates for the modules you changed, note the unrelated failure in 
 and carry on. Only answer STUCK when the failure is inside code your band changed or depends on.
 
 $LOOP_PR_PROTOCOL
+$(loop_pipeline_protocol "$LOOP_MAX_OPEN")
 
 A human watches your text live, one line at a time, so keep them posted in short lines (under 150 chars each):
 - once you know which step you're taking: 'Working on: <step and band, e.g. step 5, kicker condition band>'
@@ -240,8 +244,9 @@ log "assay-loop started${FOCUS:+ (focus: $FOCUS)} (harness $HARNESS, model $MODE
 N=0
 while [ ! -e "$RUNS/assay.stop" ]; do
   N=$((N + 1))
-  PR=$(loop_find_pr "loop-assay-")
-  [ -n "$PR" ] && loop_wait_ci "$PR"
+  loop_await_turn "loop-assay-" "$LOOP_MAX_OPEN" "${LAST:-}"
+  PR=$LOOP_PRS
+  [ -e "$RUNS/assay.stop" ] && break
 
   TRANSCRIPT="$LOGDIR/$(date '+%Y%m%d-%H%M%S')-iter$N.jsonl"
   log "iteration $N (PR: ${PR:-none}) — transcript $TRANSCRIPT"

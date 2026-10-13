@@ -107,6 +107,9 @@ RUNS="$REPO/.claude/loop-runs"
 mkdir -p "$RUNS"
 # shellcheck source=loop-lib.sh
 source "$(dirname "$0")/loop-lib.sh"
+# Open PRs at once: the next unit is built while CI runs on the last. 1 = strictly one at a time.
+LOOP_MAX_OPEN=${LOOP_MAX_OPEN:-2}
+loop_maybe_tui "$CODE" "$0" "$CODE" "$(loop_model_arg)" ${PRIORITY:+"$PRIORITY"}
 
 PROMPT="You are one iteration of an unattended loop implementing MTG set '$CODE' (Scryfall code).
 You are a fresh session: your memory is the ledger at $RUNS/$CODE-cards.md (create it if missing),
@@ -225,6 +228,7 @@ and carry on. Only answer STUCK when the failure is inside code your unit change
 failure is a trivial stale test, you may fix it in a separate one-commit PR.
 
 $LOOP_PR_PROTOCOL
+$(loop_pipeline_protocol "$LOOP_MAX_OPEN")
 
 A human watches your text live, one line at a time, so keep them posted in short lines (under 150 chars each):
 - once you know which step you're taking: 'Working on: <step and unit, e.g. step 6, G3 splice onto Arcane>'
@@ -308,8 +312,9 @@ log "set-loop $CODE started (harness $HARNESS, model $MODEL, log $RUNS/$CODE.log
 N=0
 while [ ! -e "$RUNS/$CODE.stop" ]; do
   N=$((N + 1))
-  PR=$(loop_find_pr "loop-$CODE-")
-  [ -n "$PR" ] && loop_wait_ci "$PR"
+  loop_await_turn "loop-$CODE-" "$LOOP_MAX_OPEN" "${LAST:-}"
+  PR=$LOOP_PRS
+  [ -e "$RUNS/$CODE.stop" ] && break
 
   TRANSCRIPT="$LOGDIR/$(date '+%Y%m%d-%H%M%S')-iter$N.jsonl"
   log "iteration $N (PR: ${PR:-none}) — transcript $TRANSCRIPT"

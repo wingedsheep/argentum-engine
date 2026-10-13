@@ -32,7 +32,12 @@ keeps its default of `claude-opus-5-5`. The `pick` menu requires an interactive 
 The selected CLI must be installed and signed in. Codex runs with `--approve-for-me` (automatic
 approval review in the workspace sandbox); Claude uses `PERMISSION_MODE`, defaulting to `auto`.
 Both share the ledger and logs under `.claude/loop-runs/`, so run only one launcher per set at a time.
-Stop with Ctrl-C, or `touch .claude/loop-runs/ecl.stop` to stop after the current step or retry wait.
+Started from a terminal, the launcher opens a live dashboard (`scripts/loop-tui`): what the running
+session is doing, the loop's open PRs and their CI, the set's progress, every finished session with
+its duration, and the last summary. Press **s** to stop after the current job (again to cancel),
+**q** twice to stop now, **l** for the raw log. `just loop-watch ecl` opens the same dashboard on a
+loop that is already running; `LOOP_TUI=0` keeps the plain streamed output. Without the dashboard,
+`touch .claude/loop-runs/ecl.stop` also stops after the current job, including while waiting on CI.
 `just loops` shows what every loop (set, assay, commander) is doing now, its last result, and its open
 PR. A launcher streams only the milestones a session reports; `LOOP_VERBOSE=1` adds every tool call.
 Codex launch failures stop with a transcript path; usage limits wait 30 minutes before retrying.
@@ -45,7 +50,10 @@ whole suite of any engine/SDK/server module it touched) and leaves the full suit
 reviews the branch with `review-changes` *before* pushing, opens the PR, and posts a
 `loop-reviewed <head sha>` comment. The launcher waits out CI between sessions; the next session
 merges the green PR and goes straight on to build the next unit. A session is only spent on an open
-PR when CI failed, it conflicts with main, or its head lacks a review marker. The shared protocol
+PR when CI failed, it conflicts with main, or its head lacks a review marker. `set-loop` and `commander-loop` keep up to two PRs open (`LOOP_MAX_OPEN`, default 2; set 1 for
+strictly one at a time): while one PR is in CI the launcher starts the next build session, which
+never builds on unmerged work. `assay-loop` stays at one, since grammar bands share files and the
+baked verdict ledger. The shared protocol
 lives in `scripts/loop-lib.sh` and applies to `set-loop`, `commander-loop` and `assay-loop` alike.
 
 The following describes the alternative in-session `/loop` workflow.

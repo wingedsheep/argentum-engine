@@ -103,6 +103,9 @@ RUNS="$REPO/.claude/loop-runs"
 mkdir -p "$RUNS"
 # shellcheck source=loop-lib.sh
 source "$(dirname "$0")/loop-lib.sh"
+# Open PRs at once: the next unit is built while CI runs on the last. 1 = strictly one at a time.
+LOOP_MAX_OPEN=${LOOP_MAX_OPEN:-2}
+loop_maybe_tui commander "$0" "$(loop_model_arg)" "$TOP"
 
 PROMPT="You are one iteration of an unattended loop that makes EDHREC's top $TOP Commander decks playable in
 Argentum, one reviewed PR at a time. You are a fresh session: your memory is the ledger at
@@ -183,6 +186,7 @@ and carry on. Only answer STUCK when the failure is inside code your unit change
 failure is a trivial stale test, you may fix it in a separate one-commit PR.
 
 $LOOP_PR_PROTOCOL
+$(loop_pipeline_protocol "$LOOP_MAX_OPEN")
 
 A human watches your text live, one line at a time, so keep them posted in short lines (under 150 chars each):
 - once you know which step you're taking: 'Working on: <step and unit, e.g. step 7, 12 cards for Baylen + Animar>'
@@ -243,8 +247,9 @@ log "commander-loop started (top $TOP, harness $HARNESS, model $MODEL, log $RUNS
 N=0
 while [ ! -e "$RUNS/commander.stop" ]; do
   N=$((N + 1))
-  PR=$(loop_find_pr "loop-cmdr-")
-  [ -n "$PR" ] && loop_wait_ci "$PR"
+  loop_await_turn "loop-cmdr-" "$LOOP_MAX_OPEN" "${LAST:-}"
+  PR=$LOOP_PRS
+  [ -e "$RUNS/commander.stop" ] && break
 
   TRANSCRIPT="$LOGDIR/$(date '+%Y%m%d-%H%M%S')-iter$N.jsonl"
   log "iteration $N (PR: ${PR:-none}) — transcript $TRANSCRIPT"

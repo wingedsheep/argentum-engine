@@ -1,0 +1,429 @@
+#!/usr/bin/env python3
+"""A live dashboard for one agent loop (set-loop, commander-loop, assay-loop).
+
+The launchers open it themselves when started from a terminal; it runs the launcher underneath and
+draws what it is doing from the loop's log, its open PRs and the set's progress:
+
+  scripts/loop-tui --name dmu -- scripts/set-loop dmu opus     (what `just set-loop` does for you)
+  scripts/loop-tui --name dmu                                    (watch a loop that is already running)
+  just loop-watch dmu                                            (the same, from just)
+
+Keys:  s  stop after the current job (press again to cancel)
+       q  quit — stops the loop now when this dashboard started it, or just closes the viewer
+       l  show / hide the raw log tail
+LOOP_TUI=0 keeps the old plain line-by-line output.
+"""
+from __future__ import annotations
+
+import curses
+import importlib.machinery
+import importlib.util
+import json
+import locale
+import os
+import re
+import signal
+import subprocess
+import sys
+import threading
+import time
+import unicodedata
+from datetime import datetime
+from pathlib import Path
+
+SCRIPTS = Path(__file__).resolve().parent
+
+
+def _load(name, file):
+    loader = importlib.machinery.SourceFileLoader(name, str(SCRIPTS / file))
+    spec = importlib.util.spec_from_loader(name, loader)
+    module = importlib.util.module_from_spec(spec)
+    loader.exec_module(module)
+    return module
+
+
+status = _load("loop_status", "loop-status")  # shares the log grammar with `just loops`
+
+
+# ---------------------------------------------------------------------------------------------
+# Model: everything the screen shows, rebuilt from files and gh. No state lives only in here.
+
+def width(text):
+    return sum(2 if unicodedata.east_asian_width(c) in "WF" else 0 if unicodedata.combining(c) else 1
+               for c in text)
+
+
+def clip(text, cols):
+    if width(text) <= cols:
+        return text
+    out, used = [], 0
+    for c in text:
+        w = width(c)
+        if used + w > cols - 1:
+            break
+        out.append(c)
+        used += w
+    return "".join(out) + "…"
+
+
+def wrap_text(text, cols):
+    lines, line = [], ""
+    for word in text.split():
+        if line and width(line) + 1 + width(word) > cols:
+            lines.append(line)
+            line = word
+        else:
+            line = f"{line} {word}" if line else word
+    return lines + [line] if line else lines or [""]
+
+
+def human(seconds):
+    m = int(seconds // 60)
+    return f"{m} min" if m < 60 else f"{m // 60}h {m % 60:02d}m"
+
+
+class Loop:
+    def __init__(self, name, runs, repo):
+        self.name, self.runs, self.repo = name, runs, repo
+        self.log = runs / f"{name}.log"
+        self.stop_file = runs / f"{name}.stop"
+        self.prefix = status.PR_PREFIX.get(name, f"loop-{name}-")
+        self.is_set = name not in status.PR_PREFIX
+        self.prs: list[dict] = []
+        self.progress = ""
+        self.lock = threading.Lock()
+
+    # Slow sources refresh on a background thread so a gh call never freezes the screen.
+    def refresh_remote(self):
+        prs = []
+        try:
+            out = subprocess.run(["gh", "pr", "list", "--author", "@me", "--state", "open", "--json",
+                                  "number,title,headRefName,statusCheckRollup,mergeable"],
+                                 capture_output=True, text=True, timeout=30, cwd=self.repo)
+            for p in json.loads(out.stdout or "[]"):
+                if p["headRefName"].startswith(self.prefix):
+                    prs.append({"number": p["number"], "title": p["title"],
+                                "ci": ci_state(p.get("statusCheckRollup") or []),
+                                "conflict": p.get("mergeable") == "CONFLICTING"})
+        except (OSError, subprocess.TimeoutExpired, json.JSONDecodeError):
+            prs = None
+        progress = self.set_progress() if self.is_set else ""
+        with self.lock:
+            if prs is not None:
+                self.prs = sorted(prs, key=lambda p: p["number"])
+            self.progress = progress
+
+    def set_progress(self):
+        try:
+            out = subprocess.run([str(SCRIPTS / "card-status"), "--set", self.name], capture_output=True,
+                                 text=True, timeout=30, cwd=self.repo).stdout
+            row = next((l for l in out.splitlines() if l.upper().startswith(self.name.upper() + " ")), "")
+            m = re.search(r"(\d+)\s+(\d+)\s+(\d+)\s+(\d+)%", row)
+            if not m:
+                return ""
+            done, total, _, pct = m.groups()
+            text = f"{done}/{total} cards ({pct}%)"
+            behind = subprocess.run(["git", "rev-list", "--count", "HEAD..origin/main"], capture_output=True,
+                                    text=True, cwd=self.repo).stdout.strip()
+            if behind and behind != "0":
+                text += f" in the main checkout, {behind} commits behind origin/main"
+            return text
+        except (OSError, subprocess.TimeoutExpired):
+            return ""
+
+    def gaps(self):
+        file = self.runs / f"{self.name}-gaps.md"
+        if not file.exists():
+            return ""
+        text = file.read_text(errors="replace")
+        total = len(re.findall(r"^- \[.\] G\d", text, re.M))
+        done = len(re.findall(r"^- \[x\] G\d", text, re.M))
+        stuck = len(re.findall(r"^- \[!\] G\d", text, re.M))
+        return f"engine gaps {done}/{total} built" + (f", {stuck} need a human" if stuck else "") if total else ""
+
+
+def ci_state(rollup):
+    states = [(c.get("conclusion") or c.get("state") or "PENDING").upper() for c in rollup]
+    if not states:
+        return "waiting for checks"
+    if any(s in ("FAILURE", "CANCELLED", "TIMED_OUT", "ERROR", "ACTION_REQUIRED") for s in states):
+        return "failed"
+    pending = sum(s in ("", "PENDING", "QUEUED", "IN_PROGRESS", "EXPECTED") for s in states)
+    if pending:
+        return f"running {len(states) - pending}/{len(states)}"
+    return "green"
+
+
+def read_log(loop):
+    if not loop.log.exists():
+        return [], [], []
+    events, milestones = status.parse(loop.log)
+    tail = loop.log.read_text(errors="replace").splitlines()[-200:]
+    return events, milestones, tail
+
+
+# ---------------------------------------------------------------------------------------------
+# View
+
+class Screen:
+    def __init__(self, stdscr, loop, child, command):
+        self.s, self.loop, self.child, self.command = stdscr, loop, child, command
+        self.show_log = False
+        self.flash = ""
+        self.quit_armed = 0.0
+        try:
+            curses.curs_set(0)
+        except curses.error:
+            pass
+        curses.raw()  # Ctrl-C arrives as a key (3), so it asks before killing anything
+        self.GREEN = self.YELLOW = self.RED = self.CYAN = self.MAGENTA = 0
+        if curses.has_colors():
+            try:
+                curses.start_color()
+                curses.use_default_colors()
+                for i, c in enumerate([curses.COLOR_GREEN, curses.COLOR_YELLOW, curses.COLOR_RED,
+                                       curses.COLOR_CYAN, curses.COLOR_MAGENTA], start=1):
+                    curses.init_pair(i, c, -1)
+                self.GREEN, self.YELLOW, self.RED, self.CYAN, self.MAGENTA = \
+                    (curses.color_pair(i) for i in range(1, 6))
+            except curses.error:
+                pass
+        self.DIM, self.BOLD = curses.A_DIM, curses.A_BOLD
+        stdscr.timeout(500)
+        # No insert/delete-line shortcuts: sections grow and shrink every frame, and terminals that
+        # mishandle those sequences leave stale rows behind.
+        stdscr.idlok(False)
+        stdscr.idcok(False)
+
+    def put(self, y, x, text, attr=0):
+        h, w = self.s.getmaxyx()
+        if 0 <= y < h - 1 and x < w:
+            try:
+                self.s.addstr(y, x, clip(text, w - x - 1), attr)
+            except curses.error:
+                pass
+
+    def draw(self):
+        loop, now = self.loop, datetime.now()
+        events, milestones, tail = read_log(loop)
+        with loop.lock:
+            prs, progress = list(loop.prs), loop.progress
+        self.s.erase()
+        h, w = self.s.getmaxyx()
+
+        # Header: what this is, whether it runs, how long.
+        alive = self.child.poll() is None if self.child else bool(status.running_loops(loop.runs).get(loop.name))
+        stopping = loop.stop_file.exists()
+        header = events[0] if events else None
+        model = re.search(r"model ([^,)]+)", header[1]).group(1) if header and "model " in header[1] else "?"
+        kind = "set-loop " + loop.name.upper() if loop.is_set else f"{loop.name}-loop"
+        self.put(0, 1, f"Argentum loop · {kind} · {model}", self.BOLD)
+        if not alive:
+            badge, attr = "■ ended", self.RED
+        elif stopping:
+            badge, attr = "◐ stopping after the current job", self.YELLOW
+        else:
+            badge, attr = "● running", self.GREEN
+        since = f"  {human((now - header[0]).total_seconds())}" if header else ""
+        self.put(0, max(1, w - width(badge + since) - 2), badge + since, attr | self.BOLD)
+        self.s.hline(1, 0, curses.ACS_HLINE, w)
+
+        y = 2
+        # NOW
+        y = self.section(y, "NOW", self.now_lines(events, milestones, now))
+        # PRs
+        pr_lines = []
+        for p in prs:
+            colour = self.GREEN if p["ci"] == "green" else self.RED if p["ci"] == "failed" else self.YELLOW
+            ci = "CI " + p["ci"] + (" · conflicts" if p["conflict"] else "")
+            pr_lines.append((f"#{p['number']}  {p['title']}", 0, ci, colour))
+        if not pr_lines:
+            pr_lines.append(("none open", self.DIM, "", 0))
+        y = self.section(y, "PRS", pr_lines)
+        # PROGRESS
+        prog = [x for x in (progress, loop.gaps()) if x]
+        units = sum(1 for _, t in events if status.FINISHED.match(t) and " DONE" in t)
+        prog.append(f"{units} step{'s' * (units != 1)} finished this run")
+        y = self.section(y, "PROGRESS", [(p, 0, "", 0) for p in prog])
+        # HISTORY: one row per finished session, newest first.
+        y = self.section(y, "HISTORY", self.history(events) or [("no session finished yet", self.DIM, "", 0)],
+                         limit=6)
+        # LAST SUMMARY
+        summary = self.last_summary(events, milestones)
+        if summary:
+            y = self.section(y, "SUMMARY", [(t, 0, "", 0) for t in summary], wrap=True)
+        if self.show_log:
+            room = max(0, h - y - 3)
+            y = self.section(y, "LOG", [(l, self.DIM, "", 0) for l in tail[-room:]] if room else [])
+
+        # Footer: the keys, and any transient message.
+        self.s.hline(h - 2, 0, curses.ACS_HLINE, w)
+        stop_key = "s cancel stop" if stopping else "s stop after current job"
+        quit_key = "q stop now" if self.child else "q close viewer"
+        keys = f" {stop_key}   {quit_key}   l {'hide' if self.show_log else 'show'} log"
+        if self.flash and time.time() - self.quit_armed < 3:
+            keys = " " + self.flash
+        try:
+            self.s.addstr(h - 1, 0, clip(keys, w - 1), self.CYAN)
+        except curses.error:
+            pass
+        self.s.refresh()
+
+    def section(self, y, title, lines, limit=None, wrap=False):
+        h, w = self.s.getmaxyx()
+        if y >= h - 3:
+            return y
+        if wrap:
+            lines = [(part, attr, right, rattr) for text, attr, right, rattr in lines
+                     for part in wrap_text(text, max(20, w - 13))]
+        self.put(y, 1, title, self.MAGENTA | self.BOLD)
+        for text, attr, right, rattr in (lines[:limit] if limit else lines):
+            if y >= h - 3:
+                break
+            room = w - 12 - (width(right) + 3 if right else 0)
+            self.put(y, 11, clip(text, max(10, room)), attr)
+            if right:
+                self.put(y, w - width(right) - 2, right, rattr | self.BOLD)
+            y += 1
+        if not lines:
+            y += 1
+        return y + 1
+
+    def now_lines(self, events, milestones, now):
+        if not events:
+            return [("starting…", self.DIM, "", 0)]
+        ts, last = events[-1]
+        ago = human((now - ts).total_seconds())
+        if m := status.ITERATION.match(last):
+            work = [(icon, t) for i, icon, t in milestones if i == len(events) - 1]
+            doing = [t for icon, t in work if icon == "🔨"]
+            lines = [(f"session {m.group(1)} running", self.BOLD, ago, self.CYAN)]
+            lines.append(("▸ " + (doing[-1].removeprefix("Working on: ") if doing else "choosing a step"), 0, "", 0))
+            lines += [("  · " + t.removeprefix("Finding: "), self.DIM, "", 0) for icon, t in work if icon == "🔎"][-3:]
+            return lines
+        if m := re.match(r"waiting for CI on PR #(\d+)", last):
+            return [(f"waiting for CI on PR #{m.group(1)} — no session running", 0, ago, self.YELLOW)]
+        if "limit reached" in last or "no result" in last:
+            return [(f"paused: {last}", self.YELLOW, ago, self.YELLOW)]
+        if "building the next unit meanwhile" in last:
+            return [(last, 0, ago, self.CYAN)]
+        return [(last, 0, ago, 0)]
+
+    def history(self, events):
+        rows, start = [], {}
+        for ts, text in events:
+            if m := status.ITERATION.match(text):
+                start[m.group(1)] = (ts, m.group(2))
+            elif m := status.FINISHED.match(text):
+                began, pr = start.get(m.group(1), (ts, ""))
+                result = m.group(2)
+                colour = self.GREEN if "DONE" in result or "COMPLETE" in result else \
+                    self.YELLOW if "WAITING" in result else self.RED
+                took = human((ts - began).total_seconds())
+                rows.append((f"{began:%H:%M}  {result}", 0, took, colour))
+        return rows[::-1]
+
+    def last_summary(self, events, milestones):
+        done = [i for i, (_, t) in enumerate(events) if status.FINISHED.match(t)]
+        if not done:
+            return []
+        end = done[-1]
+        begun = max((i for i in range(end) if status.ITERATION.match(events[i][1])), default=end)
+        return [t.removeprefix("Summary: ") for i, icon, t in milestones if begun <= i <= end and icon == "📋"]
+
+    # --- keys
+    def key(self, ch):
+        loop = self.loop
+        if ch in (ord("s"), ord("S")):
+            if loop.stop_file.exists():
+                loop.stop_file.unlink(missing_ok=True)
+            else:
+                loop.stop_file.touch()
+        elif ch in (ord("l"), ord("L")):
+            self.show_log = not self.show_log
+        elif ch in (ord("q"), ord("Q"), 3):
+            if not self.child or self.child.poll() is not None:
+                return False
+            if time.time() - self.quit_armed < 3:
+                stop_child(self.child)
+                return False
+            self.quit_armed = time.time()
+            self.flash = "press q again to stop the loop NOW (kills the running session) — s stops it cleanly"
+        return True
+
+
+def stop_child(child):
+    try:
+        os.killpg(child.pid, signal.SIGTERM)
+        child.wait(timeout=10)
+    except (ProcessLookupError, subprocess.TimeoutExpired):
+        try:
+            os.killpg(child.pid, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
+
+
+def run(stdscr, loop, command):
+    child, err = None, None
+    if command:
+        err = open(loop.runs / f"{loop.name}.tui-stderr", "w")
+        env = dict(os.environ, LOOP_UNDER_TUI="1")
+        child = subprocess.Popen(command, stdout=subprocess.DEVNULL, stderr=err, stdin=subprocess.DEVNULL,
+                                 env=env, start_new_session=True)
+    screen = Screen(stdscr, loop, child, command)
+    signal.signal(signal.SIGINT, lambda *_: None)  # Ctrl-C arrives as key 3; never kill silently
+
+    def poll_remote():
+        while True:
+            loop.refresh_remote()
+            time.sleep(30)
+
+    threading.Thread(target=poll_remote, daemon=True).start()
+    ended_at = None
+    while True:
+        screen.draw()
+        if child and child.poll() is not None and ended_at is None:
+            ended_at = time.time()
+            screen.flash = "the loop has ended — press any key to close"
+            screen.quit_armed = float("inf")
+        ch = stdscr.getch()
+        if ch == -1:
+            continue
+        if ended_at is not None:
+            break
+        if not screen.key(ch):
+            break
+    return child.returncode if child else 0
+
+
+def main(argv):
+    if not argv or argv[0] in ("-h", "--help"):
+        print(__doc__.strip())
+        return 0
+    command = []
+    if "--" in argv:
+        command = argv[argv.index("--") + 1:]
+        argv = argv[:argv.index("--")]
+    name = argv[argv.index("--name") + 1] if "--name" in argv else argv[0]
+    name = name.lower()
+    repo = status.repo_root()
+    runs = repo / ".claude" / "loop-runs"
+    runs.mkdir(parents=True, exist_ok=True)
+    loop = Loop(name, runs, repo)
+    if not command and not loop.log.exists():
+        print(f"loop-tui: no log for '{name}' at {loop.log}", file=sys.stderr)
+        return 1
+    locale.setlocale(locale.LC_ALL, "")
+    code = curses.wrapper(run, loop, command)
+    if command:
+        err = runs / f"{name}.tui-stderr"
+        if err.exists() and err.read_text().strip() and code:
+            print(err.read_text(), file=sys.stderr)
+        events, _, _ = read_log(loop)
+        if events:
+            print(f"{loop.name}: {events[-1][1]}  (log: {loop.log})")
+    return code or 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main(sys.argv[1:]))

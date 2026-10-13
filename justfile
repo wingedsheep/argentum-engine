@@ -268,6 +268,11 @@ check:
 loops *ARGS:
     scripts/loop-status {{ARGS}}
 
+# Live dashboard for a running loop (set code, commander or assay); s = stop after the current job
+[group: 'ai']
+loop-watch NAME:
+    scripts/loop-tui --name "{{NAME}}"
+
 # Waits out subscription usage limits; stop with `touch .claude/loop-runs/<code>.stop`.
 # Implement a set: set-loop ecl sonnet|opus|astra|codex:<model-id>|pick; no args shows help
 [group: 'ai']

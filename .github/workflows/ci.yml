@@ -45,8 +45,14 @@ jobs:
             tasks: ":mtg-sets:2025:tests:test :mtg-sets:2026:tests:test"
           - name: server            # Spring Boot integration tests; compiles the full module graph
             tasks: ":game-server:test"
-          - name: content           # SDK + card definitions + AI advisors
-            tasks: ":mtg-sdk:test :mtg-sdk-tooling:test :mtg-sets:test :ai:test :mtg-search:test"
+          # Content used to be one group; :mtg-sets:test and :ai:test then shared one runner after a
+          # ~5 min corpus compile and made it the slowest job. Each now gets its own runner.
+          - name: sdk               # SDK, SDK tooling, search — no card corpus to compile
+            tasks: ":mtg-sdk:test :mtg-sdk-tooling:test :mtg-search:test"
+          - name: content           # card definitions: snapshots, card lint, printing checks
+            tasks: ":mtg-sets:test"
+          - name: ai                # AI advisors, deckbuild/draft heuristics
+            tasks: ":ai:test"
           - name: tools             # gym RL env (mtgish tooling is legacy and not gated in CI)
             tasks: ":gym:test :gym-server:test :gym-trainer:test"
     name: test (${{ matrix.name }})
