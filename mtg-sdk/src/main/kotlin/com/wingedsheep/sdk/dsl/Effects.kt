@@ -64,6 +64,7 @@ import com.wingedsheep.sdk.scripting.effects.GrantCantBeBlockedByChosenColorEffe
 import com.wingedsheep.sdk.scripting.effects.GrantCantBeBlockedExceptByEffect
 import com.wingedsheep.sdk.scripting.effects.GrantEmbalmEffect
 import com.wingedsheep.sdk.scripting.effects.GrantFlashbackEffect
+import com.wingedsheep.sdk.scripting.effects.GrantEscapeEffect
 import com.wingedsheep.sdk.scripting.effects.GrantHarmonizeEffect
 import com.wingedsheep.sdk.scripting.effects.CantAttackGroupEffect
 import com.wingedsheep.sdk.scripting.effects.CantAttackEffect
@@ -3991,6 +3992,22 @@ object Effects {
         cost: ManaCost? = null,
         duration: Duration = Duration.EndOfTurn
     ): Effect = GrantFlashbackEffect(target, cost, duration)
+
+    /**
+     * Grant Escape (CR 702.138) to a target card in a graveyard.
+     * "Target creature card in your graveyard … gains escape until end of turn. The escape cost is
+     * equal to its mana cost plus exile two other cards from your graveyard." — Desdemona,
+     * Freedom's Edge: `GrantEscape(t, additionalCost = Costs.additional.ExileOtherCards(2))`.
+     *
+     * [cost] defaults to `null`, meaning the escape mana cost equals the card's own mana cost;
+     * [additionalCost] is the escape cost's non-mana half.
+     */
+    fun GrantEscape(
+        target: EffectTarget,
+        cost: ManaCost? = null,
+        additionalCost: AdditionalCost? = null,
+        duration: Duration = Duration.EndOfTurn
+    ): Effect = GrantEscapeEffect(target, cost, additionalCost, duration)
 
     /**
      * Grant Embalm (CR 702.128) to a target creature card in a graveyard.

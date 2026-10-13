@@ -133,6 +133,8 @@ export interface CastSpellAction {
    * "SELF_ALTERNATIVE", "MIRACLE"). Used by the action menu to identify the impending cast option.
    */
   readonly alternativeCostType?: string
+  /** Server-selected escape cost; echoed unchanged with the cast action. */
+  readonly escapeAbility?: { readonly cost: unknown; readonly additionalCost?: unknown } | null
   /**
    * Which optional additional cost this cast declares (the server's `ChoiceSlot` name — "KICKED"
    * for kicker/multikicker/offspring, "BARGAINED" for bargain), or absent when none. The server

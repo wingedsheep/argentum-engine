@@ -54,6 +54,89 @@
     }
 }
 
+// Desdemona, Freedom's Edge
+{
+    "name": "Desdemona, Freedom's Edge",
+    "manaCost": "{2}{R}{W}",
+    "typeLine": "Legendary Creature — Human Rogue",
+    "oracleText": "Vigilance\nWhenever Desdemona attacks, target creature card in your graveyard that's an artifact or that has mana value 3 or less gains escape until end of turn. The escape cost is equal to its mana cost plus exile two other cards from your graveyard. (You may cast it from your graveyard for its escape cost this turn.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Desdemona, Freedom's Edge:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "GrantEscape",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "additionalCost": {
+                        "type": "AdditionalAtom",
+                        "atom": {
+                            "type": "AtomExileFrom",
+                            "zone": "Graveyard",
+                            "count": 2,
+                            "excludeSelf": true
+                        }
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature artifact|mv<=3 own:you",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "101",
+        "rarity": "RARE",
+        "artist": "Anton Solovianchyk",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/c/cc38d445-1752-4921-bb83-5afcdf655015.jpg?1783912390",
+        "rulings": [
+            {
+                "date": "2024-03-08",
+                "text": "If a spell you're casting with escape has an additional cost of discarding cards or sacrificing permanents, you may exile cards discarded or sacrificed this way to pay that part of its escape cost."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "Escape's permission doesn't change when you may cast the spell from your graveyard."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "To determine the total cost of a spell, start with the mana cost or alternative cost you're paying (such as an escape cost), add any cost increases, then apply any cost reductions. The mana value of the spell remains unchanged, no matter what the total cost to cast it was and no matter whether an alternative cost was paid."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "After an escaped permanent spell resolves, it enters the battlefield and will return to its owner's graveyard if it dies later."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "If a card has multiple abilities giving you permission to cast it, such as two escape abilities or an escape ability and a flashback ability, you choose which one to apply. The others have no effect."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "If you cast a spell with its escape permission, you can't choose to apply any other alternative costs or to cast it without paying its mana cost. You may pay any optional additional costs the spell has, such as kicker costs. If it has any mandatory additional costs, you must pay those."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "Once you begin casting a spell with escape, it immediately moves to the stack. Players can't take any other actions until you're done casting the spell."
+            }
+        ]
+    }
+}
+
 // Desolate Mire
 {
     "name": "Desolate Mire",

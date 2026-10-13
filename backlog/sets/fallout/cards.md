@@ -2,7 +2,7 @@
 
 **Set Size:** 336 cards
 **Release Date:** March 8, 2024
-**Implemented:** 137 / 336
+**Implemented:** 138 / 336
 | Section    | Total | Done |
 |------------|-------|------|
 | Extras     | 336   | 129  |
@@ -85,7 +85,7 @@
 - [ ] Curie, Emergent Intelligence
 - [x] Darkwater Catacombs
 - [x] Deadly Dispute
-- [ ] Desdemona, Freedom's Edge
+- [x] Desdemona, Freedom's Edge
 - [ ] Desolate Mire
 - [ ] Diamond City
 - [ ] Dispatch

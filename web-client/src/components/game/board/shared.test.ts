@@ -198,6 +198,14 @@ describe('shouldShowCastModal', () => {
 })
 
 describe('hasMultipleCastingOptions', () => {
+  it('opens the menu for two escape costs even when one is unaffordable', () => {
+    const first = { ...castSpell(), actionType: 'CastWithEscape', description: 'Escape {R}' }
+    const second = { ...castSpell({ affordable: false }), actionType: 'CastWithEscape', description: 'Escape {3}{R}' }
+    expect(hasMultipleCastingOptions([first, second])).toBe(true)
+    expect(shouldShowCastModal([first, second])).toBe(true)
+    expect(hasMultipleCastingOptions([first])).toBe(false)
+  })
+
   it('counts a modal double-faced land\'s two land faces as two ways to play it', () => {
     // Both actions are PlayLand, so a boolean "has a play-land action" would count them as one
     // — and this helper's whole job is answering how many ways the card can be played (CR 712.12).

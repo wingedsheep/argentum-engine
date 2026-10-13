@@ -9,6 +9,7 @@ import com.wingedsheep.engine.handlers.effects.permanent.abilities.GainAllActiva
 import com.wingedsheep.engine.handlers.effects.permanent.abilities.GrantActivatedAbilityExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.abilities.GrantActivatedAbilityToGroupExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.abilities.GrantEmbalmExecutor
+import com.wingedsheep.engine.handlers.effects.permanent.abilities.GrantEscapeExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.abilities.GrantFlashbackExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.abilities.GrantHarmonizeExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.abilities.GrantKeywordExecutor
@@ -228,6 +229,7 @@ class PermanentExecutors(
         GrantActivatedAbilityToGroupExecutor(predicateEvaluator = zones.predicateEvaluator),
         GrantEmbalmExecutor(),
         GrantFlashbackExecutor(),
+        GrantEscapeExecutor(cardRegistry),
         GrantHarmonizeExecutor(),
         GrantKeywordExecutor(),
         GrantStaticAbilityExecutor(),

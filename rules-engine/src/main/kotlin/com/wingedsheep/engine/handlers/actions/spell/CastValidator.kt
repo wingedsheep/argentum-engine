@@ -229,6 +229,12 @@ internal class CastValidator(
             cardRegistry.getCard(cardComponent.cardDefinitionId), action
         )
 
+        action.escapeAbility?.let { selected ->
+            if (!action.useAlternativeCost || action.alternativeCostType != AlternativeCostType.ESCAPE ||
+                com.wingedsheep.engine.mechanics.EscapeCasts.effectiveEscape(
+                    state, action.cardId, cardDef, action.playerId, cardRegistry, predicateEvaluator, selected
+                ) == null) return "This escape cost is not available"
+        }
         validateAuthority(state, action, cardComponent, cardDef, source)?.let { return it }
         if (action.optionalCostPayments.isNotEmpty()) {
             if (action.optionalCostPayments.distinct().size != action.optionalCostPayments.size) return "An optional cost can only be paid once"
