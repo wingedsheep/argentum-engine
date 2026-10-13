@@ -2432,6 +2432,9 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
 - `AddAnyColorManaSpendOnChosenType(typeName)` — mana that can only pay for a specific card type (kept separate because it derives a runtime [ManaRestriction] from the source's chosen subtype).
 - `AddDynamicMana(amount, allowedColors, restriction?)` — split X across a fixed color set, distinct from `AddManaOfChoice` because it distributes the full X total across multiple colors rather than producing X copies of one chosen color.
 - `AddManaInAnyCombination(amount, allowedColors?, restriction?)` — "Add N mana in any combination of colors" (Wizard's Rockets, Thornvault Forager, Interdimensional Web Watch). Sugar for `AddDynamicMana`; `allowedColors` defaults to all five. The controller colors **each** pip independently at resolution (3+ colors → pip-by-pip color choice; 2 colors → one "how much of the first" prompt; ≤0 → no mana, no prompt), so the result can mix colors — distinct from `AddAnyColorMana`, where all N share one color. For "any combination of **its** colors" (a looked-at card), repeat `AddManaOfChoice(ManaColorSet.ColorsOf(…))` N times.
+- Several fixed kinds on one tap ("{T}: Add {R}{G}", Timeless Lotus's "{T}: Add {W}{U}{B}{R}{G}") — chain
+  `AddMana(color)` / `AddColorlessMana` leaves with `then`. Auto-pay models every leaf: the first feeds the
+  source's colors, each extra fixed color is credited separately, so a lone Lotus pays a `{W}{U}{B}{R}{G}` spell.
 - `AddOneManaOfEachColorAmong(filter)` — one mana of *each* color found among matching permanents (Bloom Tender shape).
 - `AddOneManaOfEachCraftedMaterialColor()` — one mana of *each* printed color among the exiled cards used to craft the source (`AddOneManaOfEachColorAmongEffect(colorSource = ManaColorSource.CraftedMaterials)`; Sunbird Effigy).
 - `PayDynamicMana(amount, payer?, color?)` — pay a dynamically-computed amount of mana at resolution; the

@@ -152,9 +152,7 @@ internal class ActivationAutoTapper(
         // Aura bonus mana is unrestricted — the source's restriction belongs to the
         // printed ability, not to the aura-granted extras.
         for (source in solution.sources) {
-            if (source.bonusManaPerTap > 0 && source.bonusManaColor != null) {
-                currentPool = currentPool.add(source.bonusManaColor, source.bonusManaPerTap)
-            }
+            for ((color, amount) in source.fixedBonusMana) currentPool = currentPool.add(color, amount)
         }
 
         // Update state with enriched pool — carry restrictedMana and mana-source provenance through
