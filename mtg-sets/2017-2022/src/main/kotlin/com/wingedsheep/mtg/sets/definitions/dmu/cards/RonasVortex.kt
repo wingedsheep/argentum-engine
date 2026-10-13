@@ -7,6 +7,7 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
+import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
 
 /**
  * Rona's Vortex
@@ -25,7 +26,9 @@ val RonasVortex = card("Rona's Vortex") {
     keywordAbility(KeywordAbility.kicker("{2}{B}"))
 
     spell {
-        val victim = target(TargetFilter(GameObjectFilter.CreatureOrPlaneswalker.opponentControls()))
+        val victim = target(TargetFilter(GameObjectFilter.CreatureOrPlaneswalker.withControllerPredicate(
+                ControllerPredicate.Not(ControllerPredicate.ControlledByYou)
+            )))
         effect = Effects.If(
             condition = Conditions.WasKicked,
             then = Effects.PutOnBottomOfLibrary(victim),

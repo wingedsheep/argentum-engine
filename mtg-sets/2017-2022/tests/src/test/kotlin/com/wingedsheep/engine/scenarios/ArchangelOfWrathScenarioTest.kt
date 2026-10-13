@@ -74,24 +74,28 @@ class ArchangelOfWrathScenarioTest : ScenarioTestBase() {
             game.castAndResolve(null) shouldBe 0
             game.isOnBattlefield("Archangel of Wrath") shouldBe true
             game.getLifeTotal(2) shouldBe 20
+            game.getLifeTotal(1) shouldBe 20
         }
 
         test("kicked with {B} only: one trigger deals 2") {
             val game = board()
             game.castAndResolve("Kicked {B}") shouldBe 1
             game.getLifeTotal(2) shouldBe 18
+            game.getLifeTotal(1) shouldBe 22
         }
 
         test("kicked with {R} only: one trigger deals 2") {
             val game = board()
             game.castAndResolve("Kicked {R}") shouldBe 1
             game.getLifeTotal(2) shouldBe 18
+            game.getLifeTotal(1) shouldBe 22
         }
 
         test("kicked twice: both triggers fire, 2 damage each") {
             val game = board()
             game.castAndResolve("Kicked {B} + {R}") shouldBe 2
             game.getLifeTotal(2) shouldBe 16
+            game.getLifeTotal(1) shouldBe 24
             game.isOnBattlefield("Archangel of Wrath") shouldBe true
         }
     }
