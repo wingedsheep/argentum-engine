@@ -552,7 +552,8 @@ class CastSpellHandler(
          * Everything after the cast walks the flat target list by `count` — named targets, the 608.2b
          * re-check, splice slices, mode slices, copies — so a partly filled "up to N" group must
          * record what it holds, or every later group would read the wrong slots. A mode chosen more
-         * than once keeps its printed requirements: [perMode] can hold only one binding per mode.
+         * than once keeps its printed requirements in [perMode], which cannot hold distinct
+         * occurrences; resolution slices the bound flat requirements for each occurrence instead.
          */
         fun boundTo(counts: List<Int>?): SpellTargeting {
             if (counts == null || counts.size != requirements.size) return this

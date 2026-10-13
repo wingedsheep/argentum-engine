@@ -214,4 +214,38 @@ class OwnerTargetDistributionTest : FunSpec({
         d.getLifeTotal(d.player2) shouldBe 23
     }
 
+    for (isActivation in listOf(false, true)) {
+        test("repeated modal ${if (isActivation) "activation" else "spell"} retains each occurrence's bound owner counts") {
+            val repeated = com.wingedsheep.sdk.scripting.effects.ModalEffect(
+                modes = listOf(mode("Optional owner targets then a player") {
+                    targets(req.filter, ownerDistribution = OwnerDistribution.UP_TO_ONE)
+                    effect = Effects.GainLife(3, target(Targets.Player))
+                }), chooseCount = 2, allowRepeat = true)
+            val probe = card("Owner Repeated ${if (isActivation) "Activation" else "Spell"} Probe") {
+                manaCost = "{0}"; typeLine = if (isActivation) "Artifact" else "Sorcery"
+                if (isActivation) activatedAbility { cost = Costs.Tap; effect = repeated }
+                else spell { effect = repeated }
+            }
+            val d = setup().apply { registerCards(listOf(probe)); passPriorityUntil(Step.PRECOMBAT_MAIN) }
+            val a = d.putCardInGraveyard(d.player1, "Lightning Bolt")
+            val b = d.putCardInGraveyard(d.player2, "Lightning Bolt")
+            val picks = listOf(listOf(ChosenTarget.Player(d.player1)), listOf(
+                ChosenTarget.Card(a, d.player1, Zone.GRAVEYARD),
+                ChosenTarget.Card(b, d.player2, Zone.GRAVEYARD), ChosenTarget.Player(d.player2)))
+            if (isActivation) {
+                val source = d.putPermanentOnBattlefield(d.player1, probe.name)
+                d.submit(ActivateAbility(d.player1, source, probe.activatedAbilities.single().id,
+                    targets = picks.flatten(), chosenModes = listOf(0, 0), modeTargetsOrdered = picks)).error.shouldBeNull()
+            } else {
+                d.submit(CastSpell(d.player1, d.putCardInHand(d.player1, probe.name),
+                    chosenModes = listOf(0, 0), modeTargetsOrdered = picks)).error.shouldBeNull()
+            }
+            d.state.getEntity(d.state.stack.last())!!.get<TargetsComponent>()!!.targetRequirements.map { it.count } shouldBe listOf(0, 1, 2, 1)
+            d.replaceState(d.state.removeEntity(a))
+            resolve(d)
+            d.getLifeTotal(d.player1) shouldBe 23
+            d.getLifeTotal(d.player2) shouldBe 23
+        }
+    }
+
 })

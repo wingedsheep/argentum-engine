@@ -298,6 +298,17 @@ internal class NonPermanentSpellResolver(
             chosenModes = spellComponent.chosenModes,
             modeTargetsOrdered = spellComponent.modeTargetsOrdered,
             modeTargetRequirements = spellComponent.modeTargetRequirements,
+            // A repeated mode can bind a different number of targets on each occurrence.
+            // The flat requirements already carry those announced counts, including zero.
+            modeTargetRequirementsOrdered = spellComponent.chosenModes.takeIf { modes ->
+                modes.all { it in spellComponent.modeTargetRequirements }
+            }?.let { modes ->
+                var cursor = 0
+                modes.map { mode ->
+                    val size = spellComponent.modeTargetRequirements[mode].orEmpty().size
+                    targetRequirements.drop(cursor).take(size).also { cursor += size }
+                }
+            }.orEmpty(),
             chosenCreatureType = spellComponent.chosenCreatureType,
             exiledCardCount = spellComponent.exiledCardCount,
             additionalCostBlightAmount = spellComponent.additionalCostBlightAmount,
