@@ -419,6 +419,48 @@
     ]
 }
 
+// Argivian Cavalier
+{
+    "name": "Argivian Cavalier",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Orc Knight",
+    "oracleText": "Enlist (As this creature attacks, you may tap a nonattacking creature you control without summoning sickness. When you do, add its power to this creature's until end of turn.)\nWhen this creature enters, create a 1/1 white Soldier creature token.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Argivian Cavalier:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Soldier"
+                    ]
+                }
+            }
+        ],
+        "staticAbilities": [
+            "Enlist"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "4",
+        "artist": "Chris Seaman",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/7/57746e72-ba9f-4717-a4a2-6c6a039080c3.jpg?1783921372"
+    }
+}
+
 // Argivian Phalanx
 {
     "name": "Argivian Phalanx",
@@ -729,6 +771,61 @@
     ]
 }
 
+// Balduvian Berserker
+{
+    "name": "Balduvian Berserker",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Kor Berserker",
+    "oracleText": "Enlist (As this creature attacks, you may tap a nonattacking creature you control without summoning sickness. When you do, add its power to this creature's until end of turn.)\nWhen this creature dies, it deals damage equal to its power to any target.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Balduvian Berserker:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": "Power"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "AnyTarget",
+                    "id": "t0"
+                }
+            }
+        ],
+        "staticAbilities": [
+            "Enlist"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "116",
+        "rarity": "UNCOMMON",
+        "artist": "Cristi Balanescu",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/3/c35bab2f-8464-4968-8c50-8807638d687b.jpg?1783921322",
+        "rulings": [
+            {
+                "date": "2022-09-09",
+                "text": "To determine the amount of damage it deals, use Balduvian Berserker's power as it last existed on the battlefield, not its power in the graveyard."
+            }
+        ]
+    }
+}
+
 // Balmor, Battlemage Captain
 {
     "name": "Balmor, Battlemage Captain",
@@ -806,6 +903,29 @@
         "BLUE",
         "RED"
     ]
+}
+
+// Barkweave Crusher
+{
+    "name": "Barkweave Crusher",
+    "manaCost": "{3}{G}",
+    "typeLine": "Creature — Elemental Warrior",
+    "oracleText": "Enlist (As this creature attacks, you may tap a nonattacking creature you control without summoning sickness. When you do, add its power to this creature's until end of turn.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 5
+    },
+    "script": {
+        "staticAbilities": [
+            "Enlist"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "154",
+        "artist": "Kev Walker",
+        "flavorText": "\"Phyrexia may be ancient, but Gaea is eternal.\"\n—Queen Allenal of Ruadach",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/1/41c62c55-7b04-4987-9047-1322c842bb59.jpg?1783921307"
+    }
 }
 
 // Battle-Rage Blessing
@@ -1454,6 +1574,56 @@
     ]
 }
 
+// Citizen's Arrest
+{
+    "name": "Citizen's Arrest",
+    "manaCost": "{1}{W}{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "When this enchantment enters, exile target creature or planeswalker an opponent controls until this enchantment leaves the battlefield.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Citizen's Arrest:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "MoveUntilSourceLeaves",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Exile"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature|planeswalker ctrl:opponent"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "11",
+        "artist": "Wisnu Tan",
+        "flavorText": "\"What lurks behind the faces of those you think you can trust?\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/8/9806370b-51e3-4144-a847-6b367fb937ef.jpg?1783921370",
+        "rulings": [
+            {
+                "date": "2022-09-09",
+                "text": "If Citizen's Arrest leaves the battlefield before its triggered ability resolves, the target permanent won't be exiled."
+            },
+            {
+                "date": "2022-09-09",
+                "text": "If a token is exiled this way, it will cease to exist and won't return to the battlefield."
+            }
+        ]
+    }
+}
+
 // Clockwork Drawbridge
 {
     "name": "Clockwork Drawbridge",
@@ -1512,6 +1682,58 @@
     "colorIdentityOverride": [
         "WHITE"
     ]
+}
+
+// Coalition Skyknight
+{
+    "name": "Coalition Skyknight",
+    "manaCost": "{3}{W}",
+    "typeLine": "Creature — Human Knight",
+    "oracleText": "Flying\nEnlist (As this creature attacks, you may tap a nonattacking creature you control without summoning sickness. When you do, add its power to this creature's until end of turn.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "staticAbilities": [
+            "Enlist"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "14",
+        "rarity": "UNCOMMON",
+        "artist": "Aaron Miller",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/b/8b12da45-aff4-406d-83a3-39ecaff6ff56.jpg?1783921368"
+    }
+}
+
+// Coalition Warbrute
+{
+    "name": "Coalition Warbrute",
+    "manaCost": "{3}{R}",
+    "typeLine": "Creature — Minotaur Berserker",
+    "oracleText": "Enlist (As this creature attacks, you may tap a nonattacking creature you control without summoning sickness. When you do, add its power to this creature's until end of turn.)\nTrample",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "staticAbilities": [
+            "Enlist"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "118",
+        "artist": "Will Gist",
+        "flavorText": "Anger is his greatest weapon, and he sharpens it daily.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/5/554c422f-2a1b-47c0-9358-42b85cdbb84e.jpg?1783921323"
+    }
 }
 
 // Combat Research
@@ -1871,6 +2093,326 @@
         "rarity": "RARE",
         "artist": "Ryan Pancoast",
         "imageUri": "https://cards.scryfall.io/normal/front/8/8/881cc4a3-252b-4155-a34f-63d4b4f44442.jpg?1783921353",
+        "rulings": [
+            {
+                "date": "2022-09-09",
+                "text": "You may only pay the additional cost once per permanent spell."
+            }
+        ]
+    }
+}
+
+// Defiler of Faith
+{
+    "name": "Defiler of Faith",
+    "manaCost": "{3}{W}{W}",
+    "typeLine": "Creature — Phyrexian Human",
+    "oracleText": "Vigilance\nAs an additional cost to cast white permanent spells, you may pay 2 life. Those spells cost {W} less to cast if you paid life this way. This effect reduces only the amount of white mana you pay.\nWhenever you cast a white permanent spell, create a 1/1 white Soldier creature token.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Defiler of Faith:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsPermanent",
+                            {
+                                "type": "HasColor",
+                                "color": "WHITE"
+                            }
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Soldier"
+                    ]
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": {
+                    "type": "YouCast",
+                    "filter": "permanent white"
+                },
+                "modification": {
+                    "type": "ReduceColored",
+                    "symbols": "{W}"
+                },
+                "optionalLifePayment": 2
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "16",
+        "rarity": "RARE",
+        "artist": "Magali Villeneuve",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/c/2cfe404d-1a27-4627-9284-56188d92d5d5.jpg?1783921366",
+        "rulings": [
+            {
+                "date": "2022-09-09",
+                "text": "You may only pay the additional cost once per permanent spell."
+            }
+        ]
+    }
+}
+
+// Defiler of Flesh
+{
+    "name": "Defiler of Flesh",
+    "manaCost": "{2}{B}{B}",
+    "typeLine": "Creature — Phyrexian Horror",
+    "oracleText": "Menace\nAs an additional cost to cast black permanent spells, you may pay 2 life. Those spells cost {B} less to cast if you paid life this way. This effect reduces only the amount of black mana you pay.\nWhenever you cast a black permanent spell, target creature you control gets +1/+1 and gains menace until end of turn.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "MENACE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Defiler of Flesh:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsPermanent",
+                            {
+                                "type": "HasColor",
+                                "color": "BLACK"
+                            }
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "MENACE",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you"
+                    },
+                    "id": "t0"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": {
+                    "type": "YouCast",
+                    "filter": "permanent black"
+                },
+                "modification": {
+                    "type": "ReduceColored",
+                    "symbols": "{B}"
+                },
+                "optionalLifePayment": 2
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "90",
+        "rarity": "RARE",
+        "artist": "Mathias Kollros",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/1/61a4dd11-6166-4a54-95c0-728c623d0fbc.jpg?1783921334",
+        "rulings": [
+            {
+                "date": "2022-09-09",
+                "text": "You may only pay the additional cost once per permanent spell."
+            }
+        ]
+    }
+}
+
+// Defiler of Instinct
+{
+    "name": "Defiler of Instinct",
+    "manaCost": "{2}{R}{R}",
+    "typeLine": "Creature — Phyrexian Kavu",
+    "oracleText": "First strike\nAs an additional cost to cast red permanent spells, you may pay 2 life. Those spells cost {R} less to cast if you paid life this way. This effect reduces only the amount of red mana you pay.\nWhenever you cast a red permanent spell, this creature deals 1 damage to any target.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FIRST_STRIKE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Defiler of Instinct:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsPermanent",
+                            {
+                                "type": "HasColor",
+                                "color": "RED"
+                            }
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "AnyTarget",
+                    "id": "t0"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": {
+                    "type": "YouCast",
+                    "filter": "permanent red"
+                },
+                "modification": {
+                    "type": "ReduceColored",
+                    "symbols": "{R}"
+                },
+                "optionalLifePayment": 2
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "119",
+        "rarity": "RARE",
+        "artist": "Steven Belledin",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/e/0e76e0cc-caff-4b15-b550-39e2324c8c95.jpg?1783921320",
+        "rulings": [
+            {
+                "date": "2022-09-09",
+                "text": "You may only pay the additional cost once per permanent spell."
+            }
+        ]
+    }
+}
+
+// Defiler of Vigor
+{
+    "name": "Defiler of Vigor",
+    "manaCost": "{3}{G}{G}",
+    "typeLine": "Creature — Phyrexian Wurm",
+    "oracleText": "Trample\nAs an additional cost to cast green permanent spells, you may pay 2 life. Those spells cost {G} less to cast if you paid life this way. This effect reduces only the amount of green mana you pay.\nWhenever you cast a green permanent spell, put a +1/+1 counter on each creature you control.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Defiler of Vigor:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsPermanent",
+                            {
+                                "type": "HasColor",
+                                "color": "GREEN"
+                            }
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": "IterationEntity"
+                    }
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": {
+                    "type": "YouCast",
+                    "filter": "permanent green"
+                },
+                "modification": {
+                    "type": "ReduceColored",
+                    "symbols": "{G}"
+                },
+                "optionalLifePayment": 2
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "160",
+        "rarity": "RARE",
+        "artist": "Chase Stone",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/8/0896860c-d028-4193-89a5-97e05c12a1e7.jpg?1783921304",
         "rulings": [
             {
                 "date": "2022-09-09",
@@ -2987,6 +3529,72 @@
     "colorIdentityOverride": []
 }
 
+// Guardian of New Benalia
+{
+    "name": "Guardian of New Benalia",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "Enlist (As this creature attacks, you may tap a nonattacking creature you control without summoning sickness. When you do, add its power to this creature's until end of turn.)\nWhenever this creature enlists a creature, scry 2.\nDiscard a card: This creature gains indestructible until end of turn. Tap it.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Guardian of New Benalia:1",
+                "trigger": "EnlistedEvent",
+                "effect": {
+                    "type": "Scry",
+                    "count": 2
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Guardian of New Benalia:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": "AtomDiscard"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "INDESTRUCTIBLE",
+                            "target": "Self"
+                        },
+                        {
+                            "type": "TapUntap",
+                            "target": "Self"
+                        }
+                    ]
+                }
+            }
+        ],
+        "staticAbilities": [
+            "Enlist"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "19",
+        "rarity": "RARE",
+        "artist": "Ernanda Souza",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/3/43da76ee-fec3-4b2e-915d-10cf8d518d2c.jpg?1783921365",
+        "rulings": [
+            {
+                "date": "2022-09-09",
+                "text": "Guardian of New Benalia's second ability triggers whenever its controller taps another creature for Guardian of New Benalia's enlist ability."
+            },
+            {
+                "date": "2022-09-09",
+                "text": "You may activate Guardian of New Benalia's last ability even if it's already tapped. You may also activate that ability multiple times in the same turn, even if Guardian of New Benalia already has indestructible."
+            }
+        ]
+    }
+}
+
 // Haughty Djinn
 {
     "name": "Haughty Djinn",
@@ -3066,6 +3674,40 @@
         "BLACK",
         "GREEN"
     ]
+}
+
+// Hexbane Tortoise
+{
+    "name": "Hexbane Tortoise",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Turtle",
+    "oracleText": "Ward {2} (Whenever this creature becomes the target of a spell or ability an opponent controls, counter it unless that player pays {2}.)\nEnlist (As this creature attacks, you may tap a nonattacking creature you control without summoning sickness. When you do, add its power to this creature's until end of turn.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "WARD"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Ward",
+            "cost": {
+                "type": "WardCost.Mana",
+                "manaCost": "{2}"
+            }
+        }
+    ],
+    "script": {
+        "staticAbilities": [
+            "Enlist"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "166",
+        "artist": "Joshua Raphael",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/c/acd5a635-bcf5-4a05-b00b-bf40322823fe.jpg?1783921301"
+    }
 }
 
 // Hurler Cyclops
@@ -3646,6 +4288,139 @@
     "colorIdentityOverride": []
 }
 
+// Keldon Flamesage
+{
+    "name": "Keldon Flamesage",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Human Shaman",
+    "oracleText": "Enlist\nWhenever this creature attacks, look at the top X cards of your library, where X is this creature's power. You may exile an instant or sorcery card with mana value X or less from among them. Put the rest on the bottom of your library in a random order. You may cast the exiled card without paying its mana cost.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Keldon Flamesage:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "StoreNumber",
+                            "name": "number0",
+                            "amount": {
+                                "type": "EntityProperty",
+                                "entity": "Self",
+                                "numericProperty": "Power"
+                            }
+                        },
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "VariableReference",
+                                    "variableName": "number0"
+                                }
+                            },
+                            "storeAs": "gathered1"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered1",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "filter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "Or",
+                                        "predicates": [
+                                            "IsInstant",
+                                            "IsSorcery"
+                                        ]
+                                    },
+                                    {
+                                        "type": "ManaValueAtMostDynamic",
+                                        "amount": {
+                                            "type": "VariableReference",
+                                            "variableName": "number0"
+                                        }
+                                    }
+                                ]
+                            },
+                            "storeSelected": "selected2",
+                            "storeRemainder": "remainder2",
+                            "prompt": "You may exile an instant or sorcery card with mana value X or less.",
+                            "selectedLabel": "Exile",
+                            "remainderLabel": "Put on bottom",
+                            "showAllCards": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected2",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "remainder2",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Bottom"
+                            },
+                            "order": "Random"
+                        },
+                        {
+                            "type": "ConditionalOnCollection",
+                            "collection": "selected2",
+                            "ifNotEmpty": {
+                                "type": "Gated",
+                                "gate": "Gate.MayDecide",
+                                "then": {
+                                    "type": "CastFromCollectionWithoutPayingCost",
+                                    "from": "selected2"
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "staticAbilities": [
+            "Enlist"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "135",
+        "rarity": "RARE",
+        "artist": "Jason A. Engle",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/1/710d2a3c-63a7-4e33-9ae3-21fb6b3d8326.jpg?1783921315",
+        "rulings": [
+            {
+                "date": "2022-09-09",
+                "text": "If Keldon Flamesage leaves the battlefield in response to its triggered ability, use its power as it last existed on the battlefield to determine the value of X."
+            },
+            {
+                "date": "2022-09-09",
+                "text": "If you cast a spell \"without paying its mana cost,\" you can't choose to cast it for any alternative costs. You can, however, pay additional costs, such as a kicker cost. If the card has any mandatory additional costs, you must pay those to cast the spell."
+            },
+            {
+                "date": "2022-09-09",
+                "text": "If the card has {X} in its mana cost, you must choose 0 as the value of X when casting it without paying its mana cost."
+            }
+        ]
+    }
+}
+
 // Knight of Dawn's Light
 {
     "name": "Knight of Dawn's Light",
@@ -3768,6 +4543,47 @@
     "colorIdentityOverride": [
         "GREEN"
     ]
+}
+
+// Linebreaker Baloth
+{
+    "name": "Linebreaker Baloth",
+    "manaCost": "{3}{G}{G}",
+    "typeLine": "Creature — Beast",
+    "oracleText": "Enlist (As this creature attacks, you may tap a nonattacking creature you control without summoning sickness. When you do, add its power to this creature's until end of turn.)\nThis creature can't be blocked by creatures with power 2 or less.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 5
+    },
+    "script": {
+        "staticAbilities": [
+            "Enlist",
+            {
+                "type": "CantBeBlockedBy",
+                "blockerFilter": {
+                    "cardPredicates": [
+                        "IsCreature",
+                        {
+                            "type": "PowerAtMost",
+                            "max": 2
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "168",
+        "rarity": "UNCOMMON",
+        "artist": "Brent Hollowell",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/5/15cc59c7-6478-4f84-898a-7e0fed10f004.jpg?1783921300",
+        "rulings": [
+            {
+                "date": "2022-09-09",
+                "text": "Once a creature with power 3 or greater has blocked this creature, changing the power of the blocking creature won't cause this creature to become unblocked."
+            }
+        ]
+    }
 }
 
 // Llanowar Loamspeaker
@@ -7783,4 +8599,62 @@
         "RED",
         "GREEN"
     ]
+}
+
+// Yavimaya Steelcrusher
+{
+    "name": "Yavimaya Steelcrusher",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Ape Warrior",
+    "oracleText": "Enlist (As this creature attacks, you may tap a nonattacking creature you control without summoning sickness. When you do, add its power to this creature's until end of turn.)\n{1}, Sacrifice this creature: Destroy target artifact.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Yavimaya Steelcrusher:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "artifact"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ],
+        "staticAbilities": [
+            "Enlist"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "152",
+        "artist": "Gabor Szikszai",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/5/25175622-7b68-4916-adf2-3bf2d82e8356.jpg?1783921307"
+    }
 }
