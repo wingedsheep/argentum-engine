@@ -420,7 +420,7 @@ sealed interface KeywordAbility {
                 else AdditionalCost.Composite(scaled.filterNotNull())
             }
             is AdditionalCost.Atom -> when (val atom = cost.atom) {
-                is CostAtom.PayLife -> AdditionalCost.Atom(atom.copy(amount = atom.amount * times))
+                is CostAtom.PayLife -> atom.fixedAmount?.let { AdditionalCost.Atom(CostAtom.PayLife(it * times)) }
                 is CostAtom.PayPlayerCounters -> (atom.amount as? DynamicAmount.Fixed)?.let {
                     AdditionalCost.Atom(atom.copy(amount = DynamicAmount.Fixed(it.amount * times)))
                 }

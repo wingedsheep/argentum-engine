@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.mechanics.cost
 
+import com.wingedsheep.engine.handlers.costs.CostAtomAmounts
 import com.wingedsheep.engine.state.LifePaymentPurpose
 
 import com.wingedsheep.engine.mechanics.mana.withSpendingColors
@@ -134,8 +135,10 @@ class CostPaymentService(private val services: EngineServices) {
             is PayCost.Atom -> when (val atom = resolved.atom) {
                 is CostAtom.Mana ->
                     yesNoPrompt(state, payerId, resolved, sourceId, sourceName, ctx, "Pay ${atom.cost}?", "Pay ${atom.cost}")
-                is CostAtom.PayLife ->
-                    yesNoPrompt(state, payerId, resolved, sourceId, sourceName, ctx, "Pay ${atom.amount} life?", "Pay ${atom.amount} life")
+                is CostAtom.PayLife -> {
+                    val life = CostAtomAmounts.life(state, atom, payerId, predicateEvaluator, sourceId)
+                    yesNoPrompt(state, payerId, resolved, sourceId, sourceName, ctx, "Pay $life life?", "Pay $life life")
+                }
                 // Nothing to select — every card goes — so this is a yes/no like a random discard.
                 is CostAtom.DiscardHand ->
                     yesNoPrompt(state, payerId, resolved, sourceId, sourceName, ctx, "Discard your hand?", "Discard hand")
@@ -379,7 +382,7 @@ class CostPaymentService(private val services: EngineServices) {
         is PayCost.DynamicLife -> CostPaymentExecution(state, emptyList(), success = false)
         is PayCost.Atom -> when (val atom = cost.atom) {
             is CostAtom.Mana -> payMana(state, payerId, atom.cost, sourceId)
-            is CostAtom.PayLife -> payLife(state, payerId, atom.amount)
+            is CostAtom.PayLife -> payLife(state, payerId, CostAtomAmounts.life(state, atom, payerId, predicateEvaluator, sourceId))
             is CostAtom.Discard ->
                 if (atom.random) discardRandom(state, payerId, atom.filter, atom.count)
                 else discardSelected(state, payerId, selected.keys.toList())
@@ -817,7 +820,9 @@ class CostPaymentService(private val services: EngineServices) {
                     is CostAtom.Mana -> manaSolver.canPay(state, payerId, atom.cost)
                     // CR 119.4 — a player may pay life only if their life total is at least the amount; paying
                     // life that would reduce them to 0 or less is legal (they then lose as a state-based action).
-                    is CostAtom.PayLife -> state.canPayLife(payerId, atom.amount, lifePurpose) // CR 119.8 too
+                    is CostAtom.PayLife -> state.canPayLife( // CR 119.8 too
+                        payerId, CostAtomAmounts.life(state, atom, payerId, predicateEvaluator, sourceId), lifePurpose
+                    )
                     is CostAtom.Discard -> domain(state, payerId, c, sourceId, predicateEvaluator = predicateEvaluator).size >= atom.count
                     // CR 118.3 — an empty hand discards nothing, and a cost of nothing is payable.
                     is CostAtom.DiscardHand -> true

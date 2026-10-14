@@ -1053,6 +1053,31 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
     }
 
     /**
+     * The number of colors (0–5) in a [ManaColorSet], resolved for the controller of the effect or
+     * the payer of the cost — War Room's "pay life equal to the number of colors in your
+     * commanders' color identity" is `ColorCount(ManaColorSet.CommanderIdentity)`.
+     *
+     * Reuses the engine's one color-set resolver, so every [ManaColorSet] the mana abilities
+     * understand counts here the same way. [ManaColorSet.CommanderIdentity] is the union of the
+     * color identities of the player's commanders (Partner / Background pairs included); a
+     * colorless commander counts 0. With no commander the quality is undefined (CR 903.4f): it
+     * reads 0 as an effect amount ("that part of the ability won't do anything"), and a *cost*
+     * priced from it is unpayable — War Room's draw can't be activated at all. Sets keyed off the resolving object
+     * ([ManaColorSet.SourceChosenColor], [ManaColorSet.AmongLinkedExiledCards],
+     * [ManaColorSet.ColorsOf] `Self`) read the source permanent; a [ManaColorSet.ColorsOf] naming
+     * any other referent counts 0 when priced as a cost, where nothing has been targeted yet.
+     */
+    @SerialName("ColorCount")
+    @Serializable
+    data class ColorCount(val colors: ManaColorSet) : DynamicAmount {
+        override val description: String = when (colors) {
+            ManaColorSet.CommanderIdentity -> "the number of colors in your commanders' color identity"
+            is ManaColorSet.ColorsOf -> "the number of colors ${colors.entity.description} is"
+            else -> "the number of colors in ${colors.description}"
+        }
+    }
+
+    /**
      * Reference to a stored variable by name.
      * Used for effects that need to reference a previously computed/stored value.
      * Example: Scapeshift stores "sacrificedCount" and SearchLibrary reads it.

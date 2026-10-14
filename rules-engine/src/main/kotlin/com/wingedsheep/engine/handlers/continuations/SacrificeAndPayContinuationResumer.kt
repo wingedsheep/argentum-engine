@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.handlers.continuations
 
+import com.wingedsheep.engine.handlers.costs.CostAtomAmounts
 import com.wingedsheep.engine.state.LifePaymentPurpose
 
 import com.wingedsheep.engine.mechanics.cost.SharedCreatureTypeTapCost
@@ -998,8 +999,9 @@ class SacrificeAndPayContinuationResumer(
 
                 is CostAtom.PayLife -> {
                     // CR 810.9a — team's shared total; CR 119.8 — a life-loss lock forbids paying.
-                    if (state.canPayLife(nextPlayerId, atom.amount, LifePaymentPurpose.OTHER)) {
-                        val prompt = "Pay ${atom.amount} life to prevent ${continuation.sourceName}'s effect?"
+                    val life = CostAtomAmounts.life(state, atom, nextPlayerId, services.predicateEvaluator, continuation.sourceId)
+                    if (state.canPayLife(nextPlayerId, life, LifePaymentPurpose.OTHER)) {
+                        val prompt = "Pay $life life to prevent ${continuation.sourceName}'s effect?"
                         val question = { decisionId: String -> YesNoDecision(
                             id = decisionId,
                             playerId = nextPlayerId,
@@ -1009,12 +1011,13 @@ class SacrificeAndPayContinuationResumer(
                                 sourceName = continuation.sourceName,
                                 phase = DecisionPhase.RESOLUTION
                             ),
-                            yesText = "Pay ${atom.amount} life",
+                            yesText = "Pay $life life",
                             noText = "Don't pay"
                         ) }
                         val newContinuation = continuation.copy(
                             currentPlayerId = nextPlayerId,
-                            remainingPlayers = remainingAfter
+                            remainingPlayers = remainingAfter,
+                            requiredCount = life,
                         )
                         return state.suspendForDecision(
                             question = question,

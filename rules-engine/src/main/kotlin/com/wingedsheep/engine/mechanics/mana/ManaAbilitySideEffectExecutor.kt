@@ -70,7 +70,7 @@ class ManaAbilitySideEffectExecutor(
             val production = solution.manaProduced[source.entityId]
             // Resolved once and shared: the activation event, the life cost and the side effects
             // all want the same ability, and this loop runs for every auto-tapped source of every payment.
-            val ability = ManaAbilityLifeCost.activatedManaAbility(cardRegistry, currentState, source.entityId, production)
+            val ability = ManaAbilityLifeCost.activatedManaAbility(cardRegistry, currentState, source.entityId, production, controllerId, zones.predicateEvaluator)
 
             // Auto-tapping a source *is* the player activating its mana ability — the fast path is
             // a UI shortcut, not a different game action (CR 605.3). Emit the activation event the
@@ -124,7 +124,7 @@ class ManaAbilitySideEffectExecutor(
         producedColor: Color?,
         controllerId: EntityId,
     ): AbilityActivatedEvent? = activationEvent(
-        state, sourceId, controllerId, ManaAbilityLifeCost.activatedManaAbility(cardRegistry, state, sourceId, ManaProduction(color = producedColor))
+        state, sourceId, controllerId, ManaAbilityLifeCost.activatedManaAbility(cardRegistry, state, sourceId, ManaProduction(color = producedColor), controllerId, zones.predicateEvaluator)
     )
 
     private fun activationEvent(
@@ -151,7 +151,7 @@ class ManaAbilitySideEffectExecutor(
         producedColor: Color?,
         controllerId: EntityId,
     ): Pair<GameState, List<GameEvent>> = runSideEffects(
-        state, sourceId, controllerId, ManaAbilityLifeCost.activatedManaAbility(cardRegistry, state, sourceId, ManaProduction(color = producedColor))
+        state, sourceId, controllerId, ManaAbilityLifeCost.activatedManaAbility(cardRegistry, state, sourceId, ManaProduction(color = producedColor), controllerId, zones.predicateEvaluator)
     )
 
     private fun runSideEffects(

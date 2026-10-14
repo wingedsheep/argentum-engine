@@ -536,7 +536,16 @@ counts a hybrid Phyrexian pip paid with life like any other Phyrexian pip.
   of Glory (MH3) — `Costs.Composite(Costs.Mana("{R}"), Costs.Tap, Costs.Exert)`. The attack-cost
   shape is `ExertAsItAttacks` (§ combat statics).
 - `Costs.Mana("{2}{U}")` — pay the given mana cost (string or `ManaCost`).
-- `Costs.PayLife(amount)` — pay N life.
+- `Costs.PayLife(amount)` — pay N life. `CostAtom.PayLife.amount` is a `DynamicAmount` (an `Int`
+  overload wraps it in `Fixed`), so `Costs.PayLife(amount: DynamicAmount)` prices a life cost from
+  game state as it is paid — War Room's "Pay life equal to the number of colors in your commanders'
+  color identity" is `Costs.PayLife(DynamicAmounts.commanderColorIdentityCount())`. The atom admits
+  only a nonnegative `Fixed` or a `ColorCount` (amounts priced from game state alone, no X or
+  targets); every engine site prices it through `CostAtomAmounts.life` with the payer, so the
+  legal-action enumerator, the activation validator and the payment charge the same number. Renders
+  "pay 2 life" / "pay life equal to <amount>". A commander-identity count for a player with **no**
+  commander is unpayable (CR 903.4f; War Room ruling), while a colorless commander prices it at 0. A dynamic
+  life cost can't be `repeated` (escalate) and isn't planned over by the scoped mana planner.
 - `Costs.PayXLife` — pay X life, where X is the value chosen for the ability's `{X}` mana cost
   (e.g. "{X}{B}, {T}, Pay X life: …" on Krumar Initiate). The X-linked counterpart to
   `Costs.PayLife`; `calculateMaxAffordableX` caps X at the controller's life total — X may go as
@@ -14265,6 +14274,15 @@ forbids `DynamicAmount.X` in card definitions.
   Berg Strider's "**if {S} was spent to cast this spell**" is
   `Conditions.CompareAmounts(DynamicAmounts.snowManaSpent(), GTE, 1)`. Same source-entity read as
   `ManaSpentFromSubtype` (and a cast trigger's own payment snapshot); 0 for a permanent that wasn't cast.
+- `ColorCount(colors: ManaColorSet)` — the number of colors (0–5) in a `ManaColorSet`, resolved by
+  the engine's one `ManaColorSetResolver` for the effect's controller (a cost's payer). Facades:
+  `DynamicAmounts.colorCount(set)` and `DynamicAmounts.commanderColorIdentityCount()` (=
+  `ColorCount(ManaColorSet.CommanderIdentity)`: the union of the player's commanders' color
+  identities, Partner / Background pairs included; 0 for a colorless commander or — as an effect
+  amount — no commander). Priced as a `Costs.PayLife` amount it is unpayable for a commanderless
+  player (CR 903.4f; War Room). Source-keyed sets (`SourceChosenColor`, `AmongLinkedExiledCards`,
+  `ColorsOf(Self)`) read the source; a `ColorsOf` naming any other referent counts 0 when priced as
+  a cost, before anything is targeted.
 - `DevotionTo(colors, player = You)` — a player's **devotion** to one or more colors (CR 700.5):
   the number of mana symbols of those colors among the mana costs of permanents the player controls.
   One color = "devotion to red"; several = devotion to that combination ("white and black"), where a

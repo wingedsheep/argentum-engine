@@ -189,7 +189,10 @@
                                     "type": "PayAtom",
                                     "atom": {
                                         "type": "AtomPayLife",
-                                        "amount": 5
+                                        "amount": {
+                                            "type": "Fixed",
+                                            "amount": 5
+                                        }
                                     }
                                 },
                                 "consequenceIfNonePaid": {
@@ -8994,7 +8997,10 @@
                             "type": "CostAtomWrapper",
                             "atom": {
                                 "type": "AtomPayLife",
-                                "amount": 1
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
                             }
                         }
                     ]
@@ -9887,7 +9893,10 @@
                             "type": "CostAtomWrapper",
                             "atom": {
                                 "type": "AtomPayLife",
-                                "amount": 1
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
                             }
                         }
                     ]
@@ -10549,7 +10558,10 @@
                             "type": "CostAtomWrapper",
                             "atom": {
                                 "type": "AtomPayLife",
-                                "amount": 2
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
                             }
                         }
                     ]
@@ -17089,7 +17101,10 @@
                             "type": "PayAtom",
                             "atom": {
                                 "type": "AtomPayLife",
-                                "amount": 1
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
                             }
                         },
                         "suffer": {

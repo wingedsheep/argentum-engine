@@ -1,12 +1,16 @@
 package com.wingedsheep.engine.handlers.costs
 
+import com.wingedsheep.engine.handlers.EffectContext
+import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.identity.CommanderRegistryComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.costs.CostAtom
 import com.wingedsheep.sdk.scripting.values.ContextPropertyKey
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
+import com.wingedsheep.sdk.scripting.values.ManaColorSet
 
 /**
  * The one place a [DynamicAmount] carried by a **cost atom** is turned into a number.
@@ -43,6 +47,13 @@ object CostAtomAmounts {
      *   mana value" amount ([CostAtom.PayPlayerCounters.SOURCE_MANA_VALUE]); without one — every
      *   activated-ability site — that amount can't be priced and is **unpayable** ([UNPRICEABLE])
      *   rather than free.
+     * @param payerId the player paying the cost. Prices the amounts read off the payer's own game
+     *   state ([DynamicAmount.ColorCount] — War Room's "the number of colors in your commanders'
+     *   color identity"); without a payer, or without [predicateEvaluator], those are
+     *   [UNPRICEABLE] rather than free.
+     * @param predicateEvaluator the engine's evaluator graph, through whose
+     *   [com.wingedsheep.engine.handlers.DynamicAmountEvaluator] a state-read amount is priced —
+     *   so a cost and an effect reading the same amount always agree.
      */
     fun evaluate(
         state: GameState,
@@ -50,6 +61,8 @@ object CostAtomAmounts {
         xValue: Int? = null,
         targets: List<ChosenTarget> = emptyList(),
         sourceId: EntityId? = null,
+        payerId: EntityId? = null,
+        predicateEvaluator: PredicateEvaluator? = null,
     ): Int = when (amount) {
         is DynamicAmount.Fixed -> amount.amount
         is DynamicAmount.XValue -> xValue ?: 0
@@ -65,8 +78,35 @@ object CostAtomAmounts {
             // which exists while a cost is being priced.
             else -> 0
         }
+        // Priced from the payer's game state alone, through the same evaluator an effect reading
+        // it would use. "The number of colors in your commanders' color identity" is undefined for
+        // a player with no commander, and a cost referring to it is unpayable (CR 903.4f; War
+        // Room's ruling) — unlike a colorless commander, which prices it at 0.
+        is DynamicAmount.ColorCount -> when {
+            payerId == null || predicateEvaluator == null -> UNPRICEABLE
+            amount.colors == ManaColorSet.CommanderIdentity && !hasCommander(state, payerId) -> UNPRICEABLE
+            else -> predicateEvaluator.conditions.amounts.evaluate(
+                state, amount, EffectContext(sourceId = sourceId, controllerId = payerId)
+            )
+        }
         else -> 0
     }
+
+    private fun hasCommander(state: GameState, playerId: EntityId): Boolean =
+        state.getEntity(playerId)?.get<CommanderRegistryComponent>()?.commanderIds?.isNotEmpty() == true
+
+    /**
+     * The life a [CostAtom.PayLife] asks [payerId] for right now — the one pricing of a life cost,
+     * shared by the legal-action enumerators, the activation validator, the payment itself and
+     * the mana solver, so "offered", "accepted" and "charged" can never disagree.
+     */
+    fun life(
+        state: GameState,
+        atom: CostAtom.PayLife,
+        payerId: EntityId,
+        predicateEvaluator: PredicateEvaluator,
+        sourceId: EntityId? = null,
+    ): Int = evaluate(state, atom.amount, sourceId = sourceId, payerId = payerId, predicateEvaluator = predicateEvaluator)
 
     /**
      * Whether [amount] can only be priced once the object's targets are announced — the signal an

@@ -712,7 +712,10 @@
                     "type": "CostAtomWrapper",
                     "atom": {
                         "type": "AtomPayLife",
-                        "amount": 10
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 10
+                        }
                     }
                 },
                 "effect": {

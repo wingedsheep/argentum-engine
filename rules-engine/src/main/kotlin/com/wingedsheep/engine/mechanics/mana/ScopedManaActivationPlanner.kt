@@ -359,7 +359,8 @@ class ScopedManaActivationPlanner(private val services: EngineServices, private 
         is AbilityCost.Composite -> cost.costs.isNotEmpty() && cost.costs.all(::supportedCost) && cost.costs.any(::safeCost)
         is AbilityCost.Atom -> when (val atom = cost.atom) {
             is CostAtom.Mana -> atom.cost.hasX || atom.cost.cmc > 0
-            is CostAtom.PayLife -> atom.amount > 0
+            // A state-priced life cost (War Room) isn't a fixed resource to plan repeats over.
+            is CostAtom.PayLife -> (atom.fixedAmount ?: 0) > 0
             is CostAtom.RemoveCounters -> atom.self && atom.counterType != null &&
                 ((atom.count as? DynamicAmount.Fixed)?.amount?.let { it > 0 } == true ||
                     atom.count is DynamicAmount.XValue)
@@ -379,7 +380,7 @@ class ScopedManaActivationPlanner(private val services: EngineServices, private 
         is AbilityCost.Composite -> cost.costs.all(::supportedCost)
         is AbilityCost.Atom -> when (val atom = cost.atom) {
             is CostAtom.Mana -> true
-            is CostAtom.PayLife -> atom.amount >= 0
+            is CostAtom.PayLife -> atom.fixedAmount != null
             else -> safeCost(cost)
         }
         else -> safeCost(cost)

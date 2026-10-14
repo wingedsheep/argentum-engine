@@ -386,7 +386,7 @@ class ActivatedAbilityEnumerator(
                         // Pay life gates on payability (CR 119.4 / 119.8, and a cost-scoped
                         // prohibition such as Karn's Sylex) but takes no selection.
                         is CostAtom.PayLife -> {
-                            if (!state.canPayLife(playerId, atom.amount, LifePaymentPurpose.ACTIVATE_ABILITY)) continue
+                            if (!state.canPayLife(playerId, com.wingedsheep.engine.handlers.costs.CostAtomAmounts.life(state, atom, playerId, predicateEvaluator, entityId), LifePaymentPurpose.ACTIVATE_ABILITY)) continue
                         }
                         // Reveal carries no enumeration-time gate here (validated at payment time).
                         // Putting counters on the source costs nothing the player must have, so it
@@ -650,7 +650,7 @@ class ActivatedAbilityEnumerator(
                                     }
                                     // See the top-level branch: life gates on payability.
                                     is CostAtom.PayLife -> {
-                                        if (!state.canPayLife(playerId, atom.amount, LifePaymentPurpose.ACTIVATE_ABILITY)) {
+                                        if (!state.canPayLife(playerId, com.wingedsheep.engine.handlers.costs.CostAtomAmounts.life(state, atom, playerId, predicateEvaluator, entityId), LifePaymentPurpose.ACTIVATE_ABILITY)) {
                                             costCanBePaid = false
                                             break
                                         }

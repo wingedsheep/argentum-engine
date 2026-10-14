@@ -93,7 +93,7 @@ class PredicateEvaluator(
      * engine to ask (the layer projection behind [GameState.projectedState]) should build. Everything
      * in the engine graph shares [com.wingedsheep.engine.core.EngineServices.predicateEvaluator].
      */
-    private val cardRegistry: com.wingedsheep.engine.registry.CardRegistry?,
+    val cardRegistry: com.wingedsheep.engine.registry.CardRegistry?,
     private val manaAbilityQueries: Set<EntityId> = emptySet(),
 ) {
 

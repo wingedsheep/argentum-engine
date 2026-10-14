@@ -7,6 +7,7 @@ import com.wingedsheep.engine.handlers.effects.lkiPolicyFor
 import com.wingedsheep.engine.handlers.effects.lkiSnapshotFor
 import com.wingedsheep.engine.mechanics.ControllerGrants
 import com.wingedsheep.engine.mechanics.layers.ProjectedState
+import com.wingedsheep.engine.mechanics.mana.ManaColorSetResolver
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.battlefield.AttachmentsComponent
@@ -180,6 +181,7 @@ class DynamicAmountEvaluator(
         DynamicAmount.CraftedMaterialsTotalManaValue,
         DynamicAmount.CraftedMaterialsTotalPower,
         DynamicAmount.CreaturesThatCrewedOrSaddledThisTurn,
+        is DynamicAmount.ColorCount,
         is DynamicAmount.DevotionTo,
         is DynamicAmount.DistinctCardTypesInCollections,
         DynamicAmount.DistinctColorsManaSpent,
@@ -553,6 +555,23 @@ class DynamicAmountEvaluator(
             // than one of the requested colors is still counted once. Controller is read from
             // projection so control-changing effects are honored (700.5a). Face-down permanents have
             // no mana cost (CR 708.2a) and contribute nothing.
+            // "The number of colors in <set>" — the same resolver the mana abilities use, for the
+            // effect's controller (the cost's payer when priced through CostAtomAmounts). No
+            // registry (a registry-free evaluator) means no definitions to read identity off: 0.
+            is DynamicAmount.ColorCount -> {
+                val registry = predicates.cardRegistry ?: return 0
+                ManaColorSetResolver.resolve(
+                    colorSet = amount.colors,
+                    state = state,
+                    projected = resolveProjection(state, projectedState),
+                    sourceId = context.sourceId,
+                    controllerId = context.controllerId,
+                    cardRegistry = registry,
+                    predicateEvaluator = predicates,
+                    resolveEntity = { context.resolveTarget(it, state) },
+                ).size
+            }
+
             is DynamicAmount.DevotionTo -> {
                 val playerIds = resolveUnifiedPlayerIds(state, amount.player, context, projectedState).toSet()
                 if (playerIds.isEmpty()) return 0

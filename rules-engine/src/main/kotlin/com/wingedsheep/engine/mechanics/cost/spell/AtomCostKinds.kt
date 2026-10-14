@@ -993,30 +993,38 @@ internal object RemoveCountersCostKind : SpellCostKind<CostAtom.RemoveCounters> 
     }
 }
 
-/** "Pay 2 life" (Timeline Culler's warp). Auto-paid: the amount is fixed, so there is nothing to choose. */
+/**
+ * "Pay 2 life" (Timeline Culler's warp). Auto-paid: the amount is priced from game state alone
+ * (a constant, or a [com.wingedsheep.sdk.scripting.values.DynamicAmount.ColorCount]), so there is
+ * nothing to choose.
+ */
 internal object PayLifeCostKind : SpellCostKind<CostAtom.PayLife> {
     // CR 810.9a — affordability uses the team's shared total in Two-Headed Giant.
     // CR 119.4 — a player may pay life only if their life total is >= the payment.
     override fun canPay(state: GameState, payerId: EntityId, cost: CostAtom.PayLife, costHandler: CostHandler) =
-        state.canPayLife(payerId, cost.amount, LifePaymentPurpose.CAST_SPELL)
+        state.canPayLife(
+            payerId, CostAtomAmounts.life(state, cost, payerId, costHandler.predicateEvaluator), LifePaymentPurpose.CAST_SPELL
+        )
 
     // Mode-level and cast-level affordability gate, so "discard a card or pay 3 life" doesn't
     // surface a Pay-3-Life action to a caster with fewer than 3 life (Bitter Triumph). Validation
     // still backstops it.
     override fun enumerate(env: SpellCostEnumeration, cost: CostAtom.PayLife, offer: SpellCostOffer): Boolean {
-        offer.lifeRequired += cost.amount
+        offer.lifeRequired += CostAtomAmounts.life(env.state, cost, env.playerId, env.predicateEvaluator, env.castCardId)
         return env.state.canPayLife(env.playerId, env.reservedLife + offer.lifeRequired, LifePaymentPurpose.CAST_SPELL)
     }
 
     override fun validate(check: SpellCostCheck, cost: CostAtom.PayLife): String? {
         // CR 119.4 — you can't pay life unless you have at least that much (CR 810.9a — team total)
-        if (!check.state.canPayLife(check.playerId, cost.amount, LifePaymentPurpose.CAST_SPELL)) {
-            return "Not enough life to pay ${cost.amount} life"
+        val life = lifeToPay(check, cost)
+        if (!check.state.canPayLife(check.playerId, life, LifePaymentPurpose.CAST_SPELL)) {
+            return "Not enough life to pay $life life"
         }
         return null
     }
 
-    override fun lifeToPay(check: SpellCostCheck, cost: CostAtom.PayLife) = cost.amount
+    override fun lifeToPay(check: SpellCostCheck, cost: CostAtom.PayLife) =
+        CostAtomAmounts.life(check.state, cost, check.playerId, check.predicateEvaluator, check.action.cardId)
 }
 
 /**

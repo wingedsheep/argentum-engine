@@ -1689,6 +1689,85 @@
     ]
 }
 
+// War Room
+{
+    "name": "War Room",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "{T}: Add {C}.\n{3}, {T}, Pay life equal to the number of colors in your commanders' color identity: Draw a card.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "War Room:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "War Room:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{3}"
+                            }
+                        },
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomPayLife",
+                                "amount": {
+                                    "type": "ColorCount",
+                                    "colors": "ManaColorSet.CommanderIdentity"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "361",
+        "rarity": "RARE",
+        "artist": "Milivoj Ćeran",
+        "flavorText": "A figure is moved on a map, and the tide of war changes.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/8/48d6ce7c-5dc8-449b-acbd-db259ae687ed.jpg?1783928737",
+        "rulings": [
+            {
+                "date": "2020-11-10",
+                "text": "Color identity is set before the game begins and doesn't change during the game, even if your commander is in a hidden zone (like the hand or library) or an effect changes your commander's color."
+            },
+            {
+                "date": "2020-11-10",
+                "text": "If you don't have a commander, you can't activate War Room's last ability at all."
+            },
+            {
+                "date": "2020-11-10",
+                "text": "If your commander has no colors in its color identity, you pay no life to activate War Room's last ability."
+            }
+        ]
+    }
+}
+
 // Wyleth, Soul of Steel
 {
     "name": "Wyleth, Soul of Steel",

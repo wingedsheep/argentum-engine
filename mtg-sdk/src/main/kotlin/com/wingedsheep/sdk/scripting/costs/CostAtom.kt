@@ -64,11 +64,37 @@ sealed interface CostAtom : TextReplaceable<CostAtom> {
         override val description: String get() = cost.toString()
     }
 
-    /** Pay [amount] life (CR 119.4 — payable only while life total ≥ amount). */
+    /**
+     * Pay [amount] life (CR 119.4 — payable only while life total ≥ amount; CR 119.4b — paying
+     * 0 life is always allowed).
+     *
+     * [amount] is a [DynamicAmount] so a printed cost can be priced from game state as it is
+     * paid — War Room's "pay life equal to the number of colors in your commanders' color
+     * identity" is `PayLife(DynamicAmount.ColorCount(ManaColorSet.CommanderIdentity))`. Every
+     * pricing site goes through the engine's `CostAtomAmounts.evaluate` with the payer, so the
+     * legal-action enumerator and the activation validator see the same number. The whitelist in
+     * `init` admits only amounts that price from game state alone (no X, no targets): a
+     * nonnegative [DynamicAmount.Fixed] or a [DynamicAmount.ColorCount].
+     */
     @SerialName("AtomPayLife")
     @Serializable
-    data class PayLife(val amount: Int) : CostAtom {
-        override val description: String get() = "pay $amount life"
+    data class PayLife(val amount: DynamicAmount) : CostAtom {
+        constructor(amount: Int) : this(DynamicAmount.Fixed(amount))
+
+        init {
+            require(amount is DynamicAmount.Fixed && amount.amount >= 0 ||
+                amount is DynamicAmount.ColorCount) {
+                "Life costs require a nonnegative fixed amount or a color count"
+            }
+        }
+
+        /** The amount when it is a printed constant, else null — for callers that only price fixed costs. */
+        val fixedAmount: Int? get() = (amount as? DynamicAmount.Fixed)?.amount
+
+        override val description: String get() = when (amount) {
+            is DynamicAmount.Fixed -> "pay ${amount.amount} life"
+            else -> "pay life equal to ${amount.description}"
+        }
     }
 
     /**

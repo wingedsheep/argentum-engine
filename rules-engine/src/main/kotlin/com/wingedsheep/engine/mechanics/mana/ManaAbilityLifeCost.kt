@@ -2,6 +2,8 @@ package com.wingedsheep.engine.mechanics.mana
 
 import com.wingedsheep.engine.core.GameEvent
 import com.wingedsheep.engine.core.tapForMana
+import com.wingedsheep.engine.handlers.PredicateEvaluator
+import com.wingedsheep.engine.handlers.costs.CostAtomAmounts
 import com.wingedsheep.engine.handlers.effects.ZoneTransitionService
 import com.wingedsheep.engine.handlers.effects.life.LifePaymentService
 import com.wingedsheep.engine.registry.CardRegistry
@@ -45,16 +47,31 @@ object ManaAbilityLifeCost {
     fun tax(state: GameState, entityId: EntityId): Int =
         state.projectedState.getManaAbilityLifeTax(entityId)
 
-    /** The life [cost] itself asks for — the sum of its [CostAtom.PayLife] atoms. */
-    fun printed(cost: AbilityCost): Int = when (cost) {
-        is AbilityCost.Atom -> (cost.atom as? CostAtom.PayLife)?.amount ?: 0
-        is AbilityCost.Composite -> cost.costs.sumOf { printed(it) }
+    /**
+     * The life [cost] itself asks [payerId] for — the sum of its [CostAtom.PayLife] atoms, each
+     * priced through [CostAtomAmounts.life] (a state-priced amount reads the payer's game state).
+     */
+    fun printed(
+        state: GameState,
+        cost: AbilityCost,
+        payerId: EntityId,
+        predicateEvaluator: PredicateEvaluator,
+        sourceId: EntityId? = null,
+    ): Int = when (cost) {
+        is AbilityCost.Atom -> (cost.atom as? CostAtom.PayLife)
+            ?.let { CostAtomAmounts.life(state, it, payerId, predicateEvaluator, sourceId) } ?: 0
+        is AbilityCost.Composite -> cost.costs.sumOf { printed(state, it, payerId, predicateEvaluator, sourceId) }
         else -> 0
     }
 
-    /** Total life activating [ability] (null: an intrinsic, cost-free one) of [sourceId] costs: printed + tax. */
-    fun total(state: GameState, sourceId: EntityId, ability: ActivatedAbility?): Int =
-        (ability?.let { printed(it.cost) } ?: 0) + tax(state, sourceId)
+    /** Total life activating [ability] (null: an intrinsic, cost-free one) of [sourceId] costs [payerId]: printed + tax. */
+    fun total(
+        state: GameState,
+        sourceId: EntityId,
+        ability: ActivatedAbility?,
+        payerId: EntityId,
+        predicateEvaluator: PredicateEvaluator,
+    ): Int = (ability?.let { printed(state, it.cost, payerId, predicateEvaluator, sourceId) } ?: 0) + tax(state, sourceId)
 
     /** [abilities] of [entityId] with the tax folded into each mana ability's cost. */
     fun withTax(state: GameState, entityId: EntityId, abilities: List<ActivatedAbility>): List<ActivatedAbility> {
@@ -87,6 +104,8 @@ object ManaAbilityLifeCost {
         state: GameState,
         sourceId: EntityId,
         production: ManaProduction?,
+        payerId: EntityId,
+        predicateEvaluator: PredicateEvaluator,
     ): ActivatedAbility? {
         val card = state.getEntity(sourceId)?.get<CardComponent>() ?: return null
         val printedAbilities = cardRegistry.getCard(card.cardDefinitionId)?.script?.activatedAbilities.orEmpty()
@@ -94,7 +113,7 @@ object ManaAbilityLifeCost {
             .filter { it.entityId == sourceId }
             .map { it.ability }
         val manaAbilities = (printedAbilities.asSequence() + granted).filter { it.isManaAbility }
-        return if (production == null) manaAbilities.minByOrNull { printed(it.cost) }
+        return if (production == null) manaAbilities.minByOrNull { printed(state, it.cost, payerId, predicateEvaluator, sourceId) }
         else manaAbilities.firstOrNull { abilityProducesColor(it, production.color) }
     }
 
@@ -109,7 +128,7 @@ object ManaAbilityLifeCost {
         payerId: EntityId,
         ability: ActivatedAbility?,
     ): Pair<GameState, List<GameEvent>> {
-        val life = total(state, sourceId, ability)
+        val life = total(state, sourceId, ability, payerId, zones.predicateEvaluator)
         if (life <= 0) return state to emptyList()
         return LifePaymentService.pay(zones, state, payerId, life) ?: (state to emptyList())
     }
@@ -129,7 +148,7 @@ object ManaAbilityLifeCost {
     ): Pair<GameState, List<GameEvent>> {
         val (tapped, tapEvents) = tapForMana(state, sourceId, tapperId)
         if (tapEvents.isEmpty()) return tapped to tapEvents
-        val ability = activatedManaAbility(zones.cardRegistry, tapped, sourceId, production)
+        val ability = activatedManaAbility(zones.cardRegistry, tapped, sourceId, production, tapperId, zones.predicateEvaluator)
         val (paid, lifeEvents) = pay(zones, tapped, sourceId, tapperId, ability)
         return paid to (tapEvents + lifeEvents)
     }

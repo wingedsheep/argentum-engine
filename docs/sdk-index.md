@@ -481,7 +481,7 @@ Families:
 - `CostAtom.ExileTopOfLibrary(count: Int)` — Exile the top count cards of your library — Arc-Slogger's "{R}, Exile the top ten cards of your library".
 - `CostAtom.Mana(cost: ManaCost)` — Pay a mana cost.
 - `CostAtom.Mill(count: Int)` — Mill count cards — put that many cards from the top of your library into your graveyard (CR 701.17a).
-- `CostAtom.PayLife(amount: Int)` — Pay amount life (CR 119.4 — payable only while life total ≥ amount).
+- `CostAtom.PayLife(amount: DynamicAmount)` — Pay amount life (CR 119.4 — payable only while life total ≥ amount; CR 119.4b — paying 0 life is always allowed).
 - `CostAtom.PayPlayerCounters(counterType: CounterType, amount: DynamicAmount)` — Pay counters from the paying player, before the spell or ability resolves.
 - `CostAtom.PutCountersOnPermanent(counterType: CounterType, count: Int, filter: GameObjectFilter)` — Put count counters of counterType on a permanent matching filter that the *payer* controls — the selected-permanent sibling of PutCountersOnSelf.
 - `CostAtom.PutCountersOnSelf(counterType: CounterType, count: Int)` — Put count counters of counterType on the permanent the cost belongs to — "Put a page counter on this artifact" (Mazemind Tome), the *accruing* mirror of RemoveCounters with `self = true`.
@@ -620,6 +620,7 @@ Families:
 - `DynamicAmount.CardsCycledThisGame(player: Player, cardName: String?)` — How many times a player has cycled a card this game — every cycling activation, typecycling included (CR 702.29f), counted when the card is discarded to pay the cost.
 - `DynamicAmount.CastChoice(slot: ChoiceSlot)` — A *numeric* value locked in for a com.wingedsheep.sdk.scripting.ChoiceSlot as this object was cast, read off the *current object* regardless of zone — the sibling of CastX for the other cast-choice…
 - `DynamicAmount.CastX` — The value of `{X}` this object was cast with, read off the *current object* regardless of what zone it is in.
+- `DynamicAmount.ColorCount(colors: ManaColorSet)` — The number of colors (0–5) in a ManaColorSet, resolved for the controller of the effect or the payer of the cost — War Room's "pay life equal to the number of colors in your commanders' color ident…
 - `DynamicAmount.Conditional(condition: Condition, ifTrue: DynamicAmount, ifFalse: DynamicAmount)` — Conditional amount: evaluates to one of two amounts based on a condition.
 - `DynamicAmount.ContextProperty(key: ContextPropertyKey)` — A value pulled from the current resolution context — trigger payload, additional-cost accumulator, target list, or a linked-exile pile attached to the source permanent.
 - `DynamicAmount.Count(player: Player, zone: Zone, filter: GameObjectFilter)` — Count game objects in a zone matching a unified filter.

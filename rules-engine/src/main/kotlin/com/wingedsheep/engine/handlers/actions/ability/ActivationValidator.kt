@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.handlers.actions.ability
 
+import com.wingedsheep.engine.handlers.costs.CostAtomAmounts
 import com.wingedsheep.engine.state.LifePaymentPurpose
 
 import com.wingedsheep.engine.handlers.effects.AnnouncedDivision
@@ -697,7 +698,9 @@ internal class ActivationValidator(
         val life = parts.sumOf { part ->
             when {
                 part is AbilityCost.PayXLife -> action.xValue ?: 0
-                part is AbilityCost.Atom && part.atom is CostAtom.PayLife -> (part.atom as CostAtom.PayLife).amount
+                part is AbilityCost.Atom && part.atom is CostAtom.PayLife -> CostAtomAmounts.life(
+                    state, part.atom as CostAtom.PayLife, action.playerId, predicateEvaluator, action.sourceId
+                )
                 else -> 0
             }
         }

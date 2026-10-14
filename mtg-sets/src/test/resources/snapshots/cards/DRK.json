@@ -627,7 +627,10 @@
                             "type": "CostAtomWrapper",
                             "atom": {
                                 "type": "AtomPayLife",
-                                "amount": 2
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
                             }
                         }
                     ]
@@ -942,7 +945,10 @@
                     "type": "PayAtom",
                     "atom": {
                         "type": "AtomPayLife",
-                        "amount": 1
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
                     }
                 },
                 "consequenceIfNonePaid": {
@@ -1670,7 +1676,10 @@
                                 "type": "PayAtom",
                                 "atom": {
                                     "type": "AtomPayLife",
-                                    "amount": 1
+                                    "amount": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
                                 }
                             }
                         ]
@@ -5440,7 +5449,10 @@
                         "type": "PayAtom",
                         "atom": {
                             "type": "AtomPayLife",
-                            "amount": 2
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
                         }
                     },
                     "suffer": "SacrificeSelf"
@@ -5792,7 +5804,10 @@
                             "type": "CostAtomWrapper",
                             "atom": {
                                 "type": "AtomPayLife",
-                                "amount": 1
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
                             }
                         }
                     ]
@@ -6409,7 +6424,10 @@
                                     "type": "PayAtom",
                                     "atom": {
                                         "type": "AtomPayLife",
-                                        "amount": 1
+                                        "amount": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
                                     }
                                 },
                                 "suffer": {

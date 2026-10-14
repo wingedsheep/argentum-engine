@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.mechanics.mana
 
+import com.wingedsheep.engine.handlers.costs.CostAtomAmounts
 import com.wingedsheep.engine.state.LifePaymentPurpose
 import com.wingedsheep.engine.core.ManaAbilitySourcesContinuation
 import com.wingedsheep.engine.core.ManaSpendingObligationsContinuation
@@ -1578,7 +1579,7 @@ class ManaSolver private constructor(
                     is AbilityCost.Atom -> when (val atom = cost.atom) {
                         is CostAtom.PayLife -> {
                             abilityHasPainCost = true
-                            abilityPainAmount = atom.amount
+                            abilityPainAmount = CostAtomAmounts.life(state, atom, playerId, predicateEvaluator, entityId)
                             true
                         }
                         else -> false // Non-pain atom-only cost: skip like other non-tap mana abilities.
@@ -1592,7 +1593,10 @@ class ManaSolver private constructor(
                                 is AbilityCost.Atom -> when (val atom = subCost.atom) {
                                     is CostAtom.PayLife -> {
                                         abilityHasPainCost = true
-                                        abilityPainAmount = maxOf(abilityPainAmount, atom.amount)
+                                        abilityPainAmount = maxOf(
+                                            abilityPainAmount,
+                                            CostAtomAmounts.life(state, atom, playerId, predicateEvaluator, entityId),
+                                        )
                                     }
                                     is CostAtom.Mana -> {
                                         abilityActivationManaCost += atom.cost.cmc
@@ -1650,7 +1654,7 @@ class ManaSolver private constructor(
                 // A mana ability whose life cost (printed "Pay N life" plus any Thran Portal tax)
                 // its controller can't pay can't be activated (CR 119.4), so auto-pay mustn't pick it.
                 if (abilityHasPainCost &&
-                    !state.canPayLife(playerId, ManaAbilityLifeCost.total(state, entityId, ability), LifePaymentPurpose.ACTIVATE_MANA_ABILITY)
+                    !state.canPayLife(playerId, ManaAbilityLifeCost.total(state, entityId, ability, playerId, predicateEvaluator), LifePaymentPurpose.ACTIVATE_MANA_ABILITY)
                 ) {
                     hadUnpayableLifeAbility = true
                     continue
@@ -2928,8 +2932,9 @@ class ManaSolver private constructor(
             val effect = permission.action.effect as? AddColorlessManaEffect ?: continue
             if (effect.restriction != null || effect.riders.isNotEmpty()) continue
             val amount = (effect.amount as? com.wingedsheep.sdk.scripting.values.DynamicAmount.Fixed)?.amount ?: continue
-            if (cost.amount <= 0 || amount <= 0) continue
-            bestProduction = maxOf(bestProduction, (life / cost.amount).toLong() * amount)
+            val lifeCost = CostAtomAmounts.life(state, cost, playerId, predicateEvaluator)
+            if (lifeCost <= 0 || amount <= 0) continue
+            bestProduction = maxOf(bestProduction, (life / lifeCost).toLong() * amount)
         }
         return TapPermanentsBonusMana(colorlessMana = bestProduction.coerceAtMost(Int.MAX_VALUE.toLong()).toInt())
     }

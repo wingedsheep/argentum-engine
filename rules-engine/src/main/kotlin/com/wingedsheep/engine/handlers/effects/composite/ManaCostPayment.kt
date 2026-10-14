@@ -68,9 +68,9 @@ fun payManaCostFromPool(
                     // Portal's tax). Only a life-costing source needs the zone service (for a
                     // life-payment replacement), so it is built only then.
                     val ability = ManaAbilityLifeCost.activatedManaAbility(
-                        cardRegistry, tapped, source.entityId, solution.manaProduced[source.entityId]
+                        cardRegistry, tapped, source.entityId, solution.manaProduced[source.entityId], player, predicateEvaluator
                     )
-                    if (tapEvents.isEmpty() || ManaAbilityLifeCost.total(tapped, source.entityId, ability) <= 0) tapped to tapEvents
+                    if (tapEvents.isEmpty() || ManaAbilityLifeCost.total(tapped, source.entityId, ability, player, predicateEvaluator) <= 0) tapped to tapEvents
                     else ManaAbilityLifeCost.pay(ZoneTransitionService(cardRegistry, predicateEvaluator), tapped, source.entityId, player, ability)
                         .let { (paid, lifeEvents) -> paid to (tapEvents + lifeEvents) }
                 }

@@ -2,7 +2,7 @@
 
 **Set Size:** 336 cards
 **Release Date:** March 8, 2024
-**Implemented:** 162 / 336
+**Implemented:** 165 / 336
 | Section    | Total | Done |
 |------------|-------|------|
 | Extras     | 336   | 158  |
@@ -335,7 +335,7 @@
 - [x] Viridescent Bog
 - [ ] Wake the Past
 - [x] Walking Ballista
-- [ ] War Room
+- [x] War Room
 - [x] Wasteland
 - [x] Wasteland Raider
 - [ ] Watchful Radstag

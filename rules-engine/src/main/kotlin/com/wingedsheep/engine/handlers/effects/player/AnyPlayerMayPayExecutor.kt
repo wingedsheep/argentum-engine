@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.player
 
+import com.wingedsheep.engine.handlers.costs.CostAtomAmounts
 import com.wingedsheep.engine.state.LifePaymentPurpose
 
 import com.wingedsheep.engine.handlers.PredicateEvaluator
@@ -130,7 +131,9 @@ class AnyPlayerMayPayExecutor(
             }
             // CR 119.4: a player may pay life only if their life total is at least the amount.
             is CostAtom.PayLife -> {
-                state.canPayLife(playerId, atom.amount, LifePaymentPurpose.OTHER) // CR 810.9a / 119.8
+                state.canPayLife( // CR 810.9a / 119.8
+                    playerId, CostAtomAmounts.life(state, atom, playerId, predicateEvaluator, sourceId), LifePaymentPurpose.OTHER
+                )
             }
             else -> false
         }
@@ -194,7 +197,8 @@ class AnyPlayerMayPayExecutor(
         playerOrder: List<EntityId>,
         currentIndex: Int
     ): EffectResult {
-        val prompt = "Pay ${cost.amount} life to prevent $sourceName's effect?"
+        val life = CostAtomAmounts.life(state, cost, playerId, predicateEvaluator, sourceId)
+        val prompt = "Pay $life life to prevent $sourceName's effect?"
 
         val decision = { decisionId: String -> YesNoDecision(
             id = decisionId,
@@ -205,7 +209,7 @@ class AnyPlayerMayPayExecutor(
                 sourceName = sourceName,
                 phase = DecisionPhase.RESOLUTION
             ),
-            yesText = "Pay ${cost.amount} life",
+            yesText = "Pay $life life",
             noText = "Don't pay"
         ) }
 
@@ -216,7 +220,7 @@ class AnyPlayerMayPayExecutor(
             remainingPlayers = playerOrder.drop(currentIndex + 1),
             sourceId = sourceId,
             sourceName = sourceName,
-            requiredCount = cost.amount,
+            requiredCount = life,
             filter = com.wingedsheep.sdk.scripting.GameObjectFilter.Any
         )
 

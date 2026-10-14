@@ -22,7 +22,7 @@ import com.wingedsheep.sdk.scripting.values.DynamicAmount
  *
  * `times = 0` yields a cost with nothing to pay, and `times = 1` returns the atom unchanged.
  *
- * @throws IllegalArgumentException for a [CostAtom.RemoveCounters] whose count is a runtime
+ * @throws IllegalArgumentException for a [CostAtom.RemoveCounters] (or a [CostAtom.PayLife]) whose amount is a runtime
  *   [DynamicAmount] — a variable amount has no fixed number to multiply. No printed repeated cost
  *   removes a variable number of counters.
  */
@@ -31,7 +31,10 @@ fun CostAtom.repeated(times: Int): CostAtom {
     if (times == 1) return this
     return when (this) {
         is CostAtom.Mana -> copy(cost = cost * times)
-        is CostAtom.PayLife -> copy(amount = amount * times)
+        is CostAtom.PayLife -> {
+            val fixed = fixedAmount ?: throw IllegalArgumentException("Cannot repeat a variable life cost")
+            CostAtom.PayLife(fixed * times)
+        }
         is CostAtom.Mill -> copy(count = count * times)
         is CostAtom.ExileTopOfLibrary -> copy(count = count * times)
         is CostAtom.Sacrifice -> copy(count = count * times)

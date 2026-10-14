@@ -9,6 +9,7 @@ import com.wingedsheep.sdk.scripting.values.CardNumericProperty
 import com.wingedsheep.sdk.scripting.values.ContextPropertyKey
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.sdk.scripting.values.EntityNumericProperty
+import com.wingedsheep.sdk.scripting.values.ManaColorSet
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.core.CounterType
@@ -431,6 +432,19 @@ object DynamicAmounts {
      */
     fun devotionTo(vararg colors: Color): DynamicAmount =
         DynamicAmount.DevotionTo(colors.toList())
+
+    /**
+     * The number of colors (0–5) in [colors], resolved for the player the amount is read for.
+     * See [DynamicAmount.ColorCount].
+     */
+    fun colorCount(colors: ManaColorSet): DynamicAmount = DynamicAmount.ColorCount(colors)
+
+    /**
+     * The number of colors in your commanders' color identity (War Room) — 0 for a colorless
+     * commander; a Partner / Background pair counts the union of their identities. As a cost it is
+     * unpayable for a player with no commander. See [DynamicAmount.ColorCount].
+     */
+    fun commanderColorIdentityCount(): DynamicAmount = colorCount(ManaColorSet.CommanderIdentity)
 
     fun creaturesYouControl(): DynamicAmount =
         battlefield(Player.You, GameObjectFilter.Creature).count()

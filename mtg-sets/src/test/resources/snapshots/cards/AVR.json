@@ -2617,7 +2617,10 @@
                     "type": "CostAtomWrapper",
                     "atom": {
                         "type": "AtomPayLife",
-                        "amount": 7
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 7
+                        }
                     }
                 },
                 "effect": {
@@ -3557,7 +3560,10 @@
                     "type": "CostAtomWrapper",
                     "atom": {
                         "type": "AtomPayLife",
-                        "amount": 4
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 4
+                        }
                     }
                 },
                 "effect": {
