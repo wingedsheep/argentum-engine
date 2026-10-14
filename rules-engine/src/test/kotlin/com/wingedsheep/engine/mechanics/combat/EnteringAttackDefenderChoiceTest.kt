@@ -1,0 +1,234 @@
+package com.wingedsheep.engine.mechanics.combat
+
+import com.wingedsheep.engine.core.ChooseTargetsDecision
+import com.wingedsheep.engine.handlers.EffectContext
+import com.wingedsheep.engine.state.components.battlefield.CountersComponent
+import com.wingedsheep.engine.state.components.battlefield.ProtectorComponent
+import com.wingedsheep.engine.state.components.battlefield.TappedComponent
+import com.wingedsheep.engine.state.components.combat.AttackingComponent
+import com.wingedsheep.engine.state.components.combat.BeingAttackedComponent
+import com.wingedsheep.engine.state.components.identity.TokenComponent
+import com.wingedsheep.engine.support.GameTestDriver
+import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.sdk.core.Color
+import com.wingedsheep.sdk.core.CounterType
+import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.dsl.Effects
+import com.wingedsheep.sdk.dsl.Triggers
+import com.wingedsheep.sdk.dsl.card
+import com.wingedsheep.sdk.model.Deck
+import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.effects.EnteringAttackDefender
+import io.kotest.assertions.withClue
+import io.kotest.core.spec.style.FunSpec
+import io.kotest.matchers.collections.shouldContainExactly
+import io.kotest.matchers.collections.shouldHaveSize
+import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
+import io.kotest.matchers.types.shouldBeInstanceOf
+
+/**
+ * CR 508.4: "If a creature is put onto the battlefield attacking, its controller chooses which
+ * defending player, planeswalker a defending player controls, or battle a defending player protects
+ * it's attacking as it enters the battlefield (unless the effect that put it onto the battlefield
+ * specifies what it's attacking)." — [EnteringAttackDefender.CONTROLLER_CHOOSES] on a token maker.
+ *
+ * Also CR 506.3b (a creature put onto the battlefield attacking under a player who isn't attacking
+ * never attacks) and that the default [EnteringAttackDefender.JOIN_SOURCE] is untouched.
+ */
+class EnteringAttackDefenderChoiceTest : FunSpec({
+
+    fun soldiers(choice: EnteringAttackDefender) = Effects.CreateToken(
+        power = 1, toughness = 1, colors = setOf(Color.RED, Color.WHITE),
+        creatureTypes = setOf("Soldier"), count = 2,
+        tapped = true, attacking = true, attackDefender = choice,
+    )
+
+    val captain = card("Test Choosing Captain") {
+        manaCost = "{2}{R}"
+        typeLine = "Creature — Human Soldier"
+        power = 2
+        toughness = 2
+        triggeredAbility {
+            trigger = Triggers.self.attacks()
+            effect = soldiers(EnteringAttackDefender.CONTROLLER_CHOOSES)
+        }
+    }
+
+    val legacyCaptain = card("Test Joining Captain") {
+        manaCost = "{2}{R}"
+        typeLine = "Creature — Human Soldier"
+        power = 2
+        toughness = 2
+        triggeredAbility {
+            trigger = Triggers.self.attacks()
+            effect = soldiers(EnteringAttackDefender.JOIN_SOURCE)
+        }
+    }
+
+    val walker = card("Test Defending Walker") {
+        manaCost = "{3}"
+        typeLine = "Legendary Planeswalker — Test"
+        startingLoyalty = 3
+        oracleText = ""
+    }
+
+    val bulwark = card("Test Defending Bulwark") {
+        manaCost = "{3}"
+        typeLine = "Battle"
+        startingDefense = 3
+        oracleText = ""
+    }
+
+    fun newDriver(): GameTestDriver {
+        val d = GameTestDriver()
+        d.registerCards(TestCards.all + listOf(captain, legacyCaptain, walker, bulwark))
+        d.initMirrorMatch(deck = Deck.of("Forest" to 40), skipMulligans = true, startingPlayer = 0)
+        d.passPriorityUntil(Step.PRECOMBAT_MAIN)
+        return d
+    }
+
+    fun GameTestDriver.ready(name: String): EntityId =
+        putCreatureOnBattlefield(player1, name).also { removeSummoningSickness(it) }
+
+    fun GameTestDriver.walkerFor(player: EntityId, loyalty: Int = 3): EntityId =
+        putPermanentOnBattlefield(player, "Test Defending Walker").also { pw ->
+            replaceState(state.updateEntity(pw) { it.with(CountersComponent().withAdded(CounterType.LOYALTY, loyalty)) })
+        }
+
+    fun GameTestDriver.battleProtectedBy(player: EntityId): EntityId =
+        putPermanentOnBattlefield(player, "Test Defending Bulwark").also { battle ->
+            replaceState(state.updateEntity(battle) {
+                it.with(CountersComponent().withAdded(CounterType.DEFENSE, 3)).with(ProtectorComponent(player))
+            })
+        }
+
+    fun GameTestDriver.resolveUntilDecision() {
+        var guard = 0
+        while (pendingDecision == null && stackSize > 0 && guard++ < 50) passPriority(priorityPlayer!!)
+    }
+
+    fun GameTestDriver.attackWith(attacker: EntityId) {
+        passPriorityUntil(Step.DECLARE_ATTACKERS)
+        declareAttackers(player1, listOf(attacker), player2).error shouldBe null
+        resolveUntilDecision()
+    }
+
+    fun GameTestDriver.soldierTokens(): List<EntityId> =
+        getCreatures(player1).filter { state.getEntity(it)?.has<TokenComponent>() == true }
+
+    fun GameTestDriver.attackedBy(id: EntityId): EntityId? = state.getEntity(id)?.get<AttackingComponent>()?.defenderId
+
+    test("only the defending player is legal: no question, both tokens attack that player") {
+        val d = newDriver()
+        d.attackWith(d.ready("Test Choosing Captain"))
+
+        d.pendingDecision shouldBe null
+        val tokens = d.soldierTokens()
+        tokens shouldHaveSize 2
+        tokens.forEach {
+            d.attackedBy(it) shouldBe d.player2
+            d.state.getEntity(it)!!.has<TappedComponent>() shouldBe true
+        }
+    }
+
+    test("one choice per token, before any token exists; two tokens may attack different defenders") {
+        val d = newDriver()
+        val ownWalker = d.walkerFor(d.player1)
+        val theirWalker = d.walkerFor(d.player2)
+        d.attackWith(d.ready("Test Choosing Captain"))
+
+        val first = d.pendingDecision.shouldBeInstanceOf<ChooseTargetsDecision>()
+        first.playerId shouldBe d.player1
+        withClue("the opponent and their planeswalker — never yourself or your own planeswalker") {
+            first.legalTargets[0]!! shouldContainExactly listOf(d.player2, theirWalker)
+        }
+        withClue("chosen as it enters: nothing is on the battlefield yet") { d.soldierTokens() shouldHaveSize 0 }
+
+        d.submitTargetSelection(d.player1, listOf(theirWalker)).error shouldBe null
+        d.pendingDecision.shouldBeInstanceOf<ChooseTargetsDecision>()
+        d.soldierTokens() shouldHaveSize 0
+        d.submitTargetSelection(d.player1, listOf(d.player2)).error shouldBe null
+
+        d.pendingDecision shouldBe null
+        val tokens = d.soldierTokens()
+        tokens shouldHaveSize 2
+        tokens.map { d.attackedBy(it) } shouldContainExactly listOf(theirWalker, d.player2)
+        withClue("the attacked planeswalker is stamped as being attacked (CR 506.4)") {
+            d.state.getEntity(theirWalker)!!.has<BeingAttackedComponent>() shouldBe true
+        }
+        tokens.forEach {
+            withClue("a planeswalker's controller is the defending player") {
+                d.state.getEntity(it)!!.get<AttackingComponent>()!!.defendingPlayerId shouldBe d.player2
+            }
+        }
+    }
+
+    test("an illegal answer is rejected and the question stays open") {
+        val d = newDriver()
+        val ownWalker = d.walkerFor(d.player1)
+        d.walkerFor(d.player2)
+        d.attackWith(d.ready("Test Choosing Captain"))
+
+        d.submitTargetSelection(d.player1, listOf(ownWalker)).error shouldNotBe null
+        d.submitTargetSelection(d.player1, listOf(d.player1)).error shouldNotBe null
+        d.pendingDecision.shouldBeInstanceOf<ChooseTargetsDecision>()
+    }
+
+    test("a battle the defending player protects can be chosen") {
+        val d = newDriver()
+        val battle = d.battleProtectedBy(d.player2)
+        d.attackWith(d.ready("Test Choosing Captain"))
+
+        val decision = d.pendingDecision.shouldBeInstanceOf<ChooseTargetsDecision>()
+        decision.legalTargets[0]!! shouldContainExactly listOf(d.player2, battle)
+        d.submitTargetSelection(d.player1, listOf(battle)).error shouldBe null
+        d.submitTargetSelection(d.player1, listOf(battle)).error shouldBe null
+
+        d.soldierTokens().forEach {
+            d.attackedBy(it) shouldBe battle
+            withClue("a battle defends on behalf of its protector (CR 310.9d)") {
+                d.state.getEntity(it)!!.get<AttackingComponent>()!!.defendingPlayerId shouldBe d.player2
+            }
+        }
+    }
+
+    test("combat damage goes to the chosen defender") {
+        val d = newDriver()
+        val theirWalker = d.walkerFor(d.player2, loyalty = 3)
+        d.attackWith(d.ready("Test Choosing Captain"))
+        d.submitTargetSelection(d.player1, listOf(theirWalker))
+        d.submitTargetSelection(d.player1, listOf(d.player2))
+
+        d.passPriorityUntil(Step.END_COMBAT)
+
+        withClue("one 1/1 Soldier hit the planeswalker") {
+            d.state.getEntity(theirWalker)!!.get<CountersComponent>()!!.getCount(CounterType.LOYALTY) shouldBe 2
+        }
+        withClue("the 2/2 captain and the other Soldier hit the player") { d.getLifeTotal(d.player2) shouldBe 17 }
+    }
+
+    test("the default (JOIN_SOURCE) is unchanged: no question, the tokens join the source's attack") {
+        val d = newDriver()
+        d.walkerFor(d.player2)
+        d.attackWith(d.ready("Test Joining Captain"))
+
+        d.pendingDecision shouldBe null
+        d.soldierTokens().map { d.attackedBy(it) } shouldContainExactly listOf(d.player2, d.player2)
+    }
+
+    test("outside combat nothing can be attacked: the tokens enter but aren't attacking (CR 506.3b)") {
+        val d = newDriver()
+        d.walkerFor(d.player2)
+        val result = d.services.effectExecutorRegistry.execute(
+            d.state, soldiers(EnteringAttackDefender.CONTROLLER_CHOOSES),
+            EffectContext(sourceId = null, controllerId = d.player1)
+        )
+        d.replaceState(result.state)
+
+        d.pendingDecision shouldBe null
+        val tokens = d.soldierTokens()
+        tokens shouldHaveSize 2
+        tokens.forEach { d.attackedBy(it) shouldBe null }
+    }
+})

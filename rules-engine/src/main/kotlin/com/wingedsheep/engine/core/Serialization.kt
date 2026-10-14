@@ -339,6 +339,7 @@ val engineSerializersModule = SerializersModule {
         subclass(EffectDiscardDestinationContinuation::class)
         subclass(EffectDiscardOrderContinuation::class)
         subclass(EffectCopyAuraEntryContinuation::class)
+        subclass(EnteringAttackDefenderContinuation::class)
         subclass(CloneAuraEntryContinuation::class)
         subclass(CloneEntersContinuation::class)
         subclass(CloneEntersOnBattlefieldContinuation::class)

@@ -1,0 +1,42 @@
+{
+  "player1Name": "Caesar",
+  "player2Name": "Opponent",
+  "player1": {
+    "battlefield": [
+      {
+        "name": "Caesar, Legion's Emperor",
+        "summoningSickness": false
+      },
+      {
+        "name": "Grizzly Bears"
+      }
+    ],
+    "library": [
+      "Plains",
+      "Plains",
+      "Plains",
+      "Plains",
+      "Plains"
+    ]
+  },
+  "player2": {
+    "battlefield": [
+      {
+        "name": "Jace Beleren",
+        "counters": {
+          "LOYALTY": 3
+        }
+      }
+    ],
+    "library": [
+      "Island",
+      "Island",
+      "Island",
+      "Island",
+      "Island"
+    ]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1
+}

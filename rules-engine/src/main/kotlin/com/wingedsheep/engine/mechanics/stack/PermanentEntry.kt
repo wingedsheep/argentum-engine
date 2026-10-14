@@ -865,19 +865,12 @@ internal class PermanentEntry(
             newState = newState.updateEntity(spellId) { c -> c.with(TappedComponent) }
             val projected = newState.projectedState
             // CR 506.3c / 508.4a: the creature only enters attacking if the carried defender is
-            // still a legal attack target — an opponent still in the game, an opponent's
+            // still a legal attack target — a defending player still in the game, their
             // planeswalker still on the battlefield, or a battle still on the battlefield and
-            // protected by an opponent (mirrors the defender check in AttackPhaseManager). If it's
-            // no longer valid, the creature enters but is never attacking — no redirect.
-            val opponents = newState.getOpponents(controllerId).toSet()
+            // protected by one of them. If it's no longer valid, the creature enters but is never
+            // attacking — no redirect.
             val legalDefender = spellComponent.sneakAttackDefenderId?.takeIf { d ->
-                (d in newState.turnOrder && d != controllerId) ||
-                    (projected.isPlaneswalker(d) &&
-                        d in newState.getBattlefield() &&
-                        projected.getController(d) != controllerId) ||
-                    (projected.isBattle(d) &&
-                        d in newState.getBattlefield() &&
-                        com.wingedsheep.engine.mechanics.battle.Battles.canBeAttackedBy(newState, d, controllerId, opponents))
+                com.wingedsheep.engine.mechanics.combat.CombatDefenders.isLegalEnteringAttackTarget(newState, controllerId, d)
             }
             if (legalDefender != null && projected.isCreature(spellId)) {
                 newState = newState.updateEntity(spellId) { c ->

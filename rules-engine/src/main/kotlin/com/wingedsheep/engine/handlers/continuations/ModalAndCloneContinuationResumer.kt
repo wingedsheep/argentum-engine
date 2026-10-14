@@ -39,6 +39,7 @@ class ModalAndCloneContinuationResumer(
         resumer(EffectDiscardDestinationContinuation::class, ::resumeEffectDiscardDestination),
         resumer(EffectDiscardOrderContinuation::class, ::resumeEffectDiscardOrder),
         resumer(EffectCopyAuraEntryContinuation::class, ::resumeEffectCopyAuraEntry),
+        resumer(EnteringAttackDefenderContinuation::class, ::resumeEnteringAttackDefender),
         resumer(CloneAuraEntryContinuation::class, ::resumeCloneAuraEntry),
         resumer(CloneEntersContinuation::class, ::resumeCloneEnters),
         resumer(CloneEntersOnBattlefieldContinuation::class, ::resumeCloneEntersOnBattlefield),
@@ -64,6 +65,25 @@ class ModalAndCloneContinuationResumer(
         if (response !is TargetsResponse) return ExecutionResult.error(state, "Expected enchant choice")
         val context = continuation.context.copy(entryAuraHosts = continuation.context.entryAuraHosts +
             (continuation.entityId to response.selectedTargets[0]?.firstOrNull()))
+        val result = services.effectExecutorRegistry.execute(state, continuation.effect, context)
+        if (result.outcome !is Outcome.Done) return result.toExecutionResult()
+        return checkForMore(exposeCollectionsToNextFrame(result.state, result.updatedCollections), result.events)
+    }
+
+    /**
+     * Record what the next token entering attacking is attacking (CR 508.4) and run the creating
+     * effect again: it asks for the following token, or creates every token once all are answered.
+     */
+    private fun resumeEnteringAttackDefender(
+        state: GameState, continuation: EnteringAttackDefenderContinuation,
+        response: DecisionResponse, checkForMore: CheckForMore,
+    ): ExecutionResult {
+        if (response !is TargetsResponse) return ExecutionResult.error(state, "Expected a defender choice")
+        val defender = response.selectedTargets[0]?.singleOrNull()
+            ?: return ExecutionResult.error(state, "Choose exactly one player, planeswalker or battle to attack")
+        val context = continuation.context.copy(
+            entryAttackDefenders = continuation.context.entryAttackDefenders + defender
+        )
         val result = services.effectExecutorRegistry.execute(state, continuation.effect, context)
         if (result.outcome !is Outcome.Done) return result.toExecutionResult()
         return checkForMore(exposeCollectionsToNextFrame(result.state, result.updatedCollections), result.events)

@@ -42,10 +42,39 @@ data class CreateTokenBatchEffect(
                 else -> false
             }
         }) { "Token batches accept creature/predefined groups; specify their shared controller on the batch" }
+        // A batch is one creation event and can't pause between groups for a defender choice.
+        require(groups.none { it is CreateTokenEffect && it.attackDefender != EnteringAttackDefender.JOIN_SOURCE }) {
+            "Token batches can't ask for a defender per token"
+        }
     }
     override val description: String = groups.joinToString(" and ") { it.description }
     override fun applyTextReplacement(replacer: TextReplacer): Effect =
         copy(groups = groups.map { it.applyTextReplacement(replacer) })
+}
+
+/**
+ * What a creature token put onto the battlefield attacking is attacking (CR 508.4: unless the
+ * effect says, its controller chooses, as it enters, a defending player, a planeswalker a defending
+ * player controls, or a battle a defending player protects).
+ */
+@Serializable
+enum class EnteringAttackDefender {
+    /**
+     * Join the source's attack, players only, never a prompt: the source's defending player when
+     * that is one of the controller's opponents, else an opponent already defending in this combat,
+     * else the first opponent. The reading for "tapped and attacking **that player**" and the
+     * long-standing default of every token-maker that enters attacking.
+     */
+    JOIN_SOURCE,
+
+    /**
+     * CR 508.4 as printed: for each token, its controller chooses among the defending players, the
+     * planeswalkers they control and the battles they protect — one choice per token, so two
+     * tokens may attack different defenders. A single legal choice is taken without asking; with
+     * none (outside combat, or a token controller who isn't the attacking player — CR 506.3b) the
+     * token enters but isn't attacking.
+     */
+    CONTROLLER_CHOOSES,
 }
 
 /**
@@ -140,7 +169,22 @@ data class CreateTokenEffect(
      * damage and "creatures with toxic".
      */
     val numericKeywords: List<com.wingedsheep.sdk.scripting.KeywordAbility.Numeric> = emptyList(),
+    /**
+     * What an [attacking] token is attacking — see [EnteringAttackDefender]. The default joins the
+     * source's attack against a player and asks nothing; [EnteringAttackDefender.CONTROLLER_CHOOSES]
+     * is the plain CR 508.4 reading of "tapped and attacking" with no "that player": the token's
+     * controller picks a player, planeswalker or battle for each token as it enters (Caesar,
+     * Legion's Emperor). Requires [attacking] and the effect's own controller as the tokens'
+     * controller ([controller] null).
+     */
+    val attackDefender: EnteringAttackDefender = EnteringAttackDefender.JOIN_SOURCE,
 ) : Effect {
+    init {
+        require(attackDefender == EnteringAttackDefender.JOIN_SOURCE || (attacking && controller == null)) {
+            "attackDefender = CONTROLLER_CHOOSES needs attacking = true and the effect controller as token controller"
+        }
+    }
+
     constructor(
         count: Int,
         power: Int,

@@ -414,6 +414,150 @@
     }
 }
 
+// Caesar, Legion's Emperor
+{
+    "name": "Caesar, Legion's Emperor",
+    "manaCost": "{1}{R}{W}{B}",
+    "typeLine": "Legendary Creature — Human Soldier",
+    "oracleText": "Whenever you attack, you may sacrifice another creature. When you do, choose two —\n• Create two 1/1 red and white Soldier creature tokens with haste that are tapped and attacking.\n• You draw a card and you lose 1 life.\n• Caesar deals damage equal to the number of creature tokens you control to target opponent.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Caesar, Legion's Emperor:1",
+                "trigger": "YouAttackEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "ReflexiveTrigger",
+                    "action": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "SelectTarget",
+                                "requirement": {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": "creature ctrl:you",
+                                        "excludeSelf": true
+                                    }
+                                },
+                                "storeAs": "target0",
+                                "nonTargeting": true,
+                                "prompt": "Choose another creature to sacrifice"
+                            },
+                            {
+                                "type": "SacrificeTarget",
+                                "target": {
+                                    "type": "PipelineTarget",
+                                    "collectionName": "target0"
+                                }
+                            }
+                        ]
+                    },
+                    "reflexiveEffect": {
+                        "type": "Modal",
+                        "modes": [
+                            {
+                                "effect": {
+                                    "type": "CreateToken",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 2
+                                    },
+                                    "power": 1,
+                                    "toughness": 1,
+                                    "colors": [
+                                        "RED",
+                                        "WHITE"
+                                    ],
+                                    "creatureTypes": [
+                                        "Soldier"
+                                    ],
+                                    "keywords": [
+                                        "HASTE"
+                                    ],
+                                    "imageUri": "https://cards.scryfall.io/normal/front/a/a/aae7bdfe-fe14-4a18-b2b0-16e9175a0441.jpg?1783912044",
+                                    "tapped": true,
+                                    "attacking": true,
+                                    "attackDefender": "CONTROLLER_CHOOSES"
+                                },
+                                "description": "Create two 1/1 red and white Soldier creature tokens with haste that are tapped and attacking."
+                            },
+                            {
+                                "effect": {
+                                    "type": "Composite",
+                                    "effects": [
+                                        {
+                                            "type": "DrawCards",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        {
+                                            "type": "LoseLife",
+                                            "amount": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            },
+                                            "target": "Controller"
+                                        }
+                                    ]
+                                },
+                                "description": "You draw a card and you lose 1 life."
+                            },
+                            {
+                                "effect": {
+                                    "type": "DealDamage",
+                                    "amount": {
+                                        "type": "Count",
+                                        "player": "You",
+                                        "zone": "Battlefield",
+                                        "filter": "creature token"
+                                    },
+                                    "target": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    }
+                                },
+                                "targetRequirements": [
+                                    {
+                                        "type": "TargetOpponent",
+                                        "id": "t0"
+                                    }
+                                ],
+                                "description": "Caesar deals damage equal to the number of creature tokens you control to target opponent."
+                            }
+                        ],
+                        "chooseCount": 2
+                    },
+                    "descriptionOverride": "You may sacrifice another creature. When you do, choose two — create two 1/1 red and white Soldier tokens with haste that are tapped and attacking; you draw a card and lose 1 life; or Caesar deals damage equal to the number of creature tokens you control to target opponent."
+                },
+                "descriptionOverride": "Whenever you attack, you may sacrifice another creature. When you do, choose two."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "1",
+        "rarity": "MYTHIC",
+        "artist": "Alexander Gering",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/4/246a7176-98bc-4f54-aa61-38747420f178.jpg?1783912422",
+        "rulings": [
+            {
+                "date": "2024-03-08",
+                "text": "You don't choose modes or a target for Caesar, Legion's Emperor's ability at the time it triggers. Rather, a second \"reflexive\" ability triggers when you sacrifice another creature this way. You choose modes and, if you chose the third mode, a target for that ability as it goes on the stack. Each player may respond to this triggered ability as normal."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "The Soldier tokens created by Caesar's ability enter the battlefield tapped and attacking, but since they weren't declared as attacking creatures, no abilities that trigger whenever a creature attacks or whenever you attack (such as Caesar's own ability) will trigger."
+            }
+        ]
+    }
+}
+
 // Charisma Bobblehead
 {
     "name": "Charisma Bobblehead",

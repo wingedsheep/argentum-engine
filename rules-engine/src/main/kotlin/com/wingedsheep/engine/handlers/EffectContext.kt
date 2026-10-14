@@ -380,6 +380,14 @@ data class EffectContext(
     val entryCopies: Map<EntityId, com.wingedsheep.engine.handlers.effects.copy.EntryCopyChoice> = emptyMap(),
     /** Prepared attachment choices; a null host means the Aura cannot enter. */
     val entryAuraHosts: Map<EntityId, EntityId?> = emptyMap(),
+    /**
+     * Prepared CR 508.4 defenders for the tokens this one instruction puts onto the battlefield
+     * attacking, in creation order — what each is attacking (a player, planeswalker or battle).
+     * Filled one answer at a time by
+     * [com.wingedsheep.engine.core.EnteringAttackDefenderContinuation] before any token exists.
+     */
+    @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
+    val entryAttackDefenders: List<EntityId> = emptyList(),
     /** Prepared "as this enters, choose …" answers, stamped on each entrant as it arrives. */
     val entryChoices: Map<EntityId, com.wingedsheep.engine.handlers.effects.EntryChoiceAnswers> = emptyMap(),
     /** Answers belong to this one discard instruction, including explicit declines. */

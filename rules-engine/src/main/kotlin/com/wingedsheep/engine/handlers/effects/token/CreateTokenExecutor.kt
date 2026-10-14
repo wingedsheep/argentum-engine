@@ -82,7 +82,9 @@ class CreateTokenExecutor(
         val allCreatedTokens = mutableListOf<EntityId>()
         for (tokenControllerId in tokenControllerIds) {
             val result = createTokensFor(currentState, effect, context, baseCount, tokenControllerId)
-            if (result.error != null) return result
+            // An error, or a CR 508.4 defender question raised before any token exists
+            // (CONTROLLER_CHOOSES always has the effect's controller as its single token controller).
+            if (result.error != null || result.outcome !is com.wingedsheep.engine.core.Outcome.Done) return result
             currentState = result.state
             allEvents.addAll(result.events)
             allCreatedTokens.addAll(result.updatedCollections[CREATED_TOKENS].orEmpty())
@@ -123,7 +125,8 @@ class CreateTokenExecutor(
             count = com.wingedsheep.sdk.scripting.values.DynamicAmount.Fixed(count),
             controller = null,
             tapped = false,
-            attacking = false
+            attacking = false,
+            attackDefender = com.wingedsheep.sdk.scripting.effects.EnteringAttackDefender.JOIN_SOURCE
         )
         return createTokensFor(
             state, normalized, context, count, tokenControllerId,
@@ -241,6 +244,15 @@ class CreateTokenExecutor(
             )?.takeIf { it.isNotEmpty() }
             ?: listOf(TokenArt.forCreatureTypes(effectiveCreatureTypes))
 
+        // CR 508.4: "its controller chooses ... as it enters" — every token's defender is settled
+        // before the first one is created, one question per token. Null when an answer is owed.
+        val chosenDefenders = if (effect.attacking &&
+            effect.attackDefender == com.wingedsheep.sdk.scripting.effects.EnteringAttackDefender.CONTROLLER_CHOOSES
+        ) {
+            EnteringAttackDefenderChooser.defenders(state, context, tokenControllerId, count)
+                ?: return EnteringAttackDefenderChooser.pause(state, effect, context, tokenControllerId, count, tokenName)
+        } else null
+
         var newState = state
         val createdTokens = mutableListOf<EntityId>()
 
@@ -283,15 +295,16 @@ class CreateTokenExecutor(
                     )
                 }
             }
-            if (effect.attacking) {
-                // Token enters attacking — it joins the attack of the source creature
-                // (CR 802.2a: defender per attacking creature), falling back to the sole
-                // active opponent outside combat-derived contexts.
-                val defenderId = com.wingedsheep.engine.handlers.effects.TargetResolutionUtils
+            // The defender an attacking token enters attacking: the one its controller chose
+            // (CR 508.4), else it joins the attack of the source creature (CR 802.2a: defender
+            // per attacking creature), falling back to the sole active opponent outside
+            // combat-derived contexts.
+            val defenderId = if (!effect.attacking) null
+                else if (chosenDefenders != null) chosenDefenders[indexInBatch]
+                else com.wingedsheep.engine.handlers.effects.TargetResolutionUtils
                     .defenderForEnteringAttacker(context, newState, tokenControllerId)
-                if (defenderId != null) {
-                    components.add(AttackingComponent(defenderId, defendingPlayerId = com.wingedsheep.engine.mechanics.combat.CombatDefenders.defendingPlayerOf(newState, defenderId)))
-                }
+            if (defenderId != null) {
+                components.add(AttackingComponent(defenderId, defendingPlayerId = com.wingedsheep.engine.mechanics.combat.CombatDefenders.defendingPlayerOf(newState, defenderId)))
             }
             var container = ComponentContainer.of(*components.toTypedArray())
             // "with toxic 1" — the token's printed numeric keywords ride the same components a
@@ -329,6 +342,10 @@ class CreateTokenExecutor(
             }
 
             newState = newState.withEntity(tokenId, container)
+            // A planeswalker or battle now being attacked is stamped as such (CR 506.4).
+            if (defenderId != null) {
+                newState = com.wingedsheep.engine.mechanics.combat.AttackedPermanents.markAttacked(newState, defenderId)
+            }
 
             // Add to battlefield
             newState = com.wingedsheep.engine.handlers.effects.BattlefieldEntry

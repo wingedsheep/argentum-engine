@@ -2524,9 +2524,19 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   counters, abilities, tapped state and cleanup riders. Event-scoped additions (Peregrin Took's
   Food) and attached-copy replacement choices apply once to the whole batch, including across
   a paused decision. Use this for “create [token] and [token]”; `then` creates separate events.
-- `CreateToken(p, t, colors?, creatureTypes, keywords?, count?, controller?, imageUri?, name?, legendary?, tapped?, artifactToken?, enchantmentToken?, staticAbilities?, exileAtStep?, sacrificeAtStep?)` — make N creature tokens.
+- `CreateToken(p, t, colors?, creatureTypes, keywords?, count?, controller?, imageUri?, name?, legendary?, tapped?, artifactToken?, enchantmentToken?, staticAbilities?, exileAtStep?, sacrificeAtStep?, attacking?, attackDefender?)` — make N creature tokens.
   `exileAtStep: Step?` arms the exile counterpart of the delayed trigger described below. Both the fixed
   and dynamic-count overloads expose both delayed zone-change options.
+  `attacking = true` (usually with `tapped = true`) puts the tokens onto the battlefield attacking, and
+  `attackDefender: EnteringAttackDefender` says what each one attacks. `JOIN_SOURCE` (default) joins the
+  source's attack and never asks: the source's defending player when that's an opponent, else an opponent
+  already defending, else the first opponent — the reading for "tapped and attacking **that player**".
+  `CONTROLLER_CHOOSES` is CR 508.4 as printed for a bare "tapped and attacking" (Caesar, Legion's Emperor):
+  before any token exists, the controller answers one `ChooseTargetsDecision` per token among the defending
+  players, their planeswalkers and the battles they protect, so two tokens may attack different defenders.
+  One legal choice is taken without asking; none (outside combat, or a token controller who isn't the
+  attacking player — CR 506.3b) means the tokens enter but aren't attacking. It needs `attacking = true`
+  and `controller = null`, and isn't accepted inside a `CreateTokenBatch`.
   `numericKeywords: List<KeywordAbility.Numeric>` gives the token keywords that carry an N, which a bare
   `Keyword` in `keywords` can't — "two 3/3 green Phyrexian Beast creature tokens with toxic 1" (Goliath
   Hatchery) is `numericKeywords = listOf(KeywordAbility.toxic(1))`. They land on the same components a card's

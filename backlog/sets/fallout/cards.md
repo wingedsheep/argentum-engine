@@ -2,7 +2,7 @@
 
 **Set Size:** 336 cards
 **Release Date:** March 8, 2024
-**Implemented:** 160 / 336
+**Implemented:** 161 / 336
 | Section    | Total | Done |
 |------------|-------|------|
 | Extras     | 336   | 158  |
@@ -57,7 +57,7 @@
 - [x] Buried Ruin
 - [ ] Butch DeLoria, Tunnel Snake
 - [ ] C.A.M.P.
-- [ ] Caesar, Legion's Emperor
+- [x] Caesar, Legion's Emperor
 - [ ] Cait, Cage Brawler
 - [x] Canopy Vista
 - [x] Canyon Slough

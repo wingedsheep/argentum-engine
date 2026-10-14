@@ -10,6 +10,7 @@ import com.wingedsheep.engine.state.GameState
  */
 internal fun AnswerContinuation.objectReferences(): ObjectReferenceEnvironment? = when (this) {
     is EffectCopyAuraEntryContinuation -> context.objectReferences
+    is EnteringAttackDefenderContinuation -> context.objectReferences
     is EffectCopyEntryContinuation -> context.objectReferences
     is EffectEntryChoiceContinuation -> context.objectReferences
     is EffectDiscardDestinationContinuation -> context.objectReferences
@@ -129,6 +130,7 @@ internal fun ContinuationFrame.objectReferences(): ObjectReferenceEnvironment? =
 
 internal fun AnswerContinuation.withObjectReferences(refs: ObjectReferenceEnvironment): AnswerContinuation = when (this) {
     is EffectCopyAuraEntryContinuation -> copy(context = context.copy(objectReferences = refs))
+    is EnteringAttackDefenderContinuation -> copy(context = context.copy(objectReferences = refs))
     is EffectCopyEntryContinuation -> copy(context = context.copy(objectReferences = refs))
     is EffectEntryChoiceContinuation -> copy(context = context.copy(objectReferences = refs))
     is EffectDiscardDestinationContinuation -> copy(context = context.copy(objectReferences = refs))

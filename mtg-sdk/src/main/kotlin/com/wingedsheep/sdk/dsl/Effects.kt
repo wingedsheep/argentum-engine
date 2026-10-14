@@ -3116,11 +3116,13 @@ object Effects {
         initialCounters: Map<CounterType, Int> = emptyMap(),
         stampCreator: Boolean = false,
         numericKeywords: List<KeywordAbility.Numeric> = emptyList(),
+        attackDefender: com.wingedsheep.sdk.scripting.effects.EnteringAttackDefender =
+            com.wingedsheep.sdk.scripting.effects.EnteringAttackDefender.JOIN_SOURCE,
     ): CreateTokenEffect = CreateToken(
         DynamicAmount.Fixed(count), power, toughness, colors, creatureTypes, keywords, controller, imageUri,
         name, legendary, tapped, artifactToken, enchantmentToken, staticAbilities, exileAtStep,
         sacrificeAtStep, attacking, triggeredAbilities, activatedAbilities, dynamicPower, dynamicToughness,
-        initialCounters, stampCreator, numericKeywords,
+        initialCounters, stampCreator, numericKeywords, attackDefender,
     )
 
     /**
@@ -3130,6 +3132,9 @@ object Effects {
      * `Int`-count overload above; callers pass `count = DynamicAmount.XValue` etc.
      *
      * @param attacking The tokens enter tapped and attacking when paired with `tapped = true`.
+     * @param attackDefender What an [attacking] token attacks: the source's defending player
+     *   (default) or, with `CONTROLLER_CHOOSES`, a player / planeswalker / battle its controller
+     *   picks per token as it enters (CR 508.4).
      * @param triggeredAbilities / [activatedAbilities] / [staticAbilities] The token's own abilities.
      * @param dynamicPower / [dynamicToughness] Base P/T evaluated at resolution, overriding
      *   [power] / [toughness] ("an X/X token").
@@ -3162,6 +3167,8 @@ object Effects {
         initialCounters: Map<CounterType, Int> = emptyMap(),
         stampCreator: Boolean = false,
         numericKeywords: List<KeywordAbility.Numeric> = emptyList(),
+        attackDefender: com.wingedsheep.sdk.scripting.effects.EnteringAttackDefender =
+            com.wingedsheep.sdk.scripting.effects.EnteringAttackDefender.JOIN_SOURCE,
     ): CreateTokenEffect = CreateTokenEffect(
         count = count, power = power, toughness = toughness, colors = colors,
         creatureTypes = creatureTypes, keywords = keywords, name = name, imageUri = imageUri,
@@ -3171,7 +3178,7 @@ object Effects {
         staticAbilities = staticAbilities, triggeredAbilities = triggeredAbilities,
         activatedAbilities = activatedAbilities, exileAtStep = exileAtStep,
         sacrificeAtStep = sacrificeAtStep, initialCounters = initialCounters, stampCreator = stampCreator,
-        numericKeywords = numericKeywords,
+        numericKeywords = numericKeywords, attackDefender = attackDefender,
     )
 
     /**
