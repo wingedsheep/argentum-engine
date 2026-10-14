@@ -102,6 +102,7 @@ class VeronicaDissidentScribeScenarioTest : ScenarioTestBase() {
             }
             game.resolveStack()
 
+            withClue("Both drawn Grizzly Bears were discarded") { game.findCardsInHand(1, "Grizzly Bears").size shouldBe 0 }
             withClue("One discard event of two nonland cards → one Junk") { game.junk() shouldBe 1 }
         }
     }
