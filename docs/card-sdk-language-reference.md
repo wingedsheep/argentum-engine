@@ -8767,7 +8767,11 @@ Dominant back faces that "stay" instead self-exile on their final chapter, dodgi
   - **Entity-scoped** — set `watchedTarget` to bind the trigger to one concrete entity (resolved at
     creation time): "when **that** creature deals combat damage / dies this turn" (Long River Lurker,
     Deflecting Palm). Only `DealsDamageEvent` (scoped on the damage source) and `ZoneChangeEvent`
-    (scoped on the moving entity) use this; the spec's `GameObjectFilter` is *not* applied — the
+    (scoped on the moving entity) use this, plus `SpellCastEvent`, where a `PlayerRef` watched
+    target scopes the **caster** ("that player gets two rad counters whenever they cast a spell" —
+    Nuka-Nuke Launcher: `trigger = Triggers.anyPlayer.casts(), watchedTarget =
+    PlayerRef(Player.DefendingPlayer)`; the spell filter still applies, and the spell stays the
+    triggering entity, its caster `Player.TriggeringPlayer`); the spec's `GameObjectFilter` is *not* applied — the
     watched entity is the whole scope.
   - **Recipient-scoped** — set `watchedRecipient` to bind a `DealsDamageEvent` trigger to the damaged
     *recipient* (rather than the source): "whenever a creature you control deals combat damage to
@@ -8827,7 +8831,12 @@ Dominant back faces that "stay" instead self-exile on their final chapter, dodgi
     continuous effect (Tamiyo, Field Researcher's +1: "Until your next turn, whenever either of
     those creatures deals combat damage, you draw a card", one entity-scoped watcher per chosen
     creature so simultaneous combat damage draws twice). It survives the intervening opponents'
-    turns, which `EndOfTurn` would not. `DelayedTriggerExpiry.Never`
+    turns, which `EndOfTurn` would not. `DelayedTriggerExpiry.EndOfPlayersNextTurn(player)` is the
+    delayed-trigger analogue of `Duration.EndOfYourNextTurn` with the player as an axis (default
+    `PlayerRef(Player.You)`): `player` is resolved when the trigger is created, the current turn never
+    counts, and the trigger is removed in the cleanup step of that player's next turn (or when they
+    leave the game) — "until the end of **defending player's** next turn, whenever …" (Nuka-Nuke
+    Launcher, `EndOfPlayersNextTurn(PlayerRef(Player.DefendingPlayer))`). `DelayedTriggerExpiry.Never`
     keeps it across turns until it fires (pair with `fireOnce = true`) or the game ends — for
     watch-a-permanent-until-it-leaves reflexive triggers that aren't turn-scoped, e.g. Zenos yae
     Galvus's "When the chosen creature leaves the battlefield, transform Zenos yae Galvus"

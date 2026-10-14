@@ -911,6 +911,23 @@ sealed interface DelayedTriggerExpiry {
     data object UntilControllersNextTurn : DelayedTriggerExpiry
 
     /**
+     * Remove the delayed trigger during the cleanup step of [player]'s **next** turn — "until the
+     * end of *defending player's* next turn, whenever …" (Nuka-Nuke Launcher). The delayed-trigger
+     * analogue of [com.wingedsheep.sdk.scripting.Duration.EndOfYourNextTurn], with the player made
+     * an axis: [player] is resolved to a concrete player when the trigger is created, and the
+     * current turn never counts, even when it is that player's.
+     *
+     * Not [UntilControllersNextTurn]: that one ends at the *beginning* of the turn (after its untap
+     * step) and is keyed to the trigger's controller; this one lasts through the whole turn, of
+     * any player. If [player] leaves the game the trigger is removed with them.
+     */
+    @SerialName("DelayedTriggerExpiry.EndOfPlayersNextTurn")
+    @Serializable
+    data class EndOfPlayersNextTurn(
+        val player: EffectTarget = EffectTarget.PlayerRef(Player.You)
+    ) : DelayedTriggerExpiry
+
+    /**
      * Remove the delayed trigger when the current combat phase ends — the scope of a "this combat"
      * rider, which [EndOfTurn] is too coarse for once a turn has more than one combat phase.
      *

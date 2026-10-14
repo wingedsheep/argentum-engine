@@ -583,6 +583,7 @@ Families:
 ## DelayedTriggerExpiry
 
 - `DelayedTriggerExpiry.EndOfCombat` — Remove the delayed trigger when the current combat phase ends — the scope of a "this combat" rider, which EndOfTurn is too coarse for once a turn has more than one combat phase.
+- `DelayedTriggerExpiry.EndOfPlayersNextTurn(player: EffectTarget)` — Remove the delayed trigger during the cleanup step of player's **next** turn — "until the end of *defending player's* next turn, whenever …" (Nuka-Nuke Launcher).
 - `DelayedTriggerExpiry.EndOfTurn` — Remove the delayed trigger at the end of the current turn.
 - `DelayedTriggerExpiry.Never` — Never expire on a turn boundary — the delayed trigger persists across turns until it fires (pair with `fireOnce = true`) or the game ends.
 - `DelayedTriggerExpiry.UntilControllersNextTurn` — Remove the delayed trigger after the untap step of its **controller's** next turn — the delayed-trigger analogue of com.wingedsheep.sdk.scripting.Duration.UntilYourNextTurn, and expired on the same…

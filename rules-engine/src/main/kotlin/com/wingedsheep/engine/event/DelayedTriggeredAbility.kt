@@ -51,6 +51,15 @@ data class DelayedTriggeredAbility(
     /** For event-based delayed triggers: the expiry rule. */
     val expiry: DelayedTriggerExpiry? = null,
     /**
+     * For [DelayedTriggerExpiry.EndOfPlayersNextTurn]: the player whose next turn ends the trigger,
+     * resolved at creation, and the first turn number that may be that turn (`turnNumber + 1` at
+     * creation, so the current turn never counts). The trigger is removed at the cleanup of the
+     * first turn at or after [expiresAfterTurn] that [expiryPlayerId] takes — the same floor plus
+     * active-player guard `Duration.EndOfYourNextTurn` uses. Null for every other expiry.
+     */
+    val expiryPlayerId: EntityId? = null,
+    val expiresAfterTurn: Int? = null,
+    /**
      * For event-based delayed triggers: when true this is a one-shot — it is removed the
      * first time it fires ("when you next … this turn"). When false it persists, firing on
      * every matching event until [expiry] removes it.

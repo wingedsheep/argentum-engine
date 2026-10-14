@@ -1,4 +1,5 @@
 import React from 'react'
+import { createPortal } from 'react-dom'
 import { useGameStore } from '@/store/gameStore.ts'
 import type { EntityId, ClientPlayerEffect, ClientCommanderDamage } from '@/types'
 import { useResponsiveContext, getEffectIcon } from '../board/shared'
@@ -695,10 +696,23 @@ export function CommanderDamageBadges({ entries }: { entries: readonly ClientCom
 /**
  * Active effects badges - shows status effects on a player.
  */
+const EFFECT_TOOLTIP_MAX_WIDTH = 320
+
+/** Under the badge, centred on it, but never past either edge of the viewport. */
+function effectTooltipPosition(anchor: DOMRect): React.CSSProperties {
+  const half = EFFECT_TOOLTIP_MAX_WIDTH / 2 + 8
+  const centre = anchor.left + anchor.width / 2
+  const left = Math.min(Math.max(centre, half), window.innerWidth - half)
+  return { left, top: anchor.bottom + 4, maxWidth: EFFECT_TOOLTIP_MAX_WIDTH }
+}
+
 export function ActiveEffectsBadges({ effects }: { effects: readonly ClientPlayerEffect[] | undefined }) {
   const responsive = useResponsiveContext()
   const [hoveredEffect, setHoveredEffect] = React.useState<string | null>(null)
   const [hoverPos, setHoverPos] = React.useState<{ x: number; y: number } | null>(null)
+  // The hovered badge's box: its tooltip is portalled to the body (the center HUD row clips its
+  // overflow) and placed under the badge, kept on screen.
+  const [hoverAnchor, setHoverAnchor] = React.useState<DOMRect | null>(null)
   // An emblem with abilities of its own (Karn, Living Legacy's) is activated from its badge: the
   // server's legal actions name the emblem as their source.
   const legalActions = useGameStore((state) => state.legalActions)
@@ -745,6 +759,7 @@ export function ActiveEffectsBadges({ effects }: { effects: readonly ClientPlaye
           onMouseEnter={(e) => {
             setHoveredEffect(effect.effectId)
             setHoverPos({ x: e.clientX, y: e.clientY })
+            setHoverAnchor(e.currentTarget.getBoundingClientRect())
           }}
           onMouseMove={(e) => {
             if (effect.imageUri) setHoverPos({ x: e.clientX, y: e.clientY })
@@ -752,14 +767,17 @@ export function ActiveEffectsBadges({ effects }: { effects: readonly ClientPlaye
           onMouseLeave={() => {
             setHoveredEffect(null)
             setHoverPos(null)
+            setHoverAnchor(null)
           }}
         >
           {effect.icon && <span style={styles.effectBadgeIcon}>{getEffectIcon(effect.icon)}</span>}
           <span style={styles.effectBadgeName}>{effect.name}</span>
-          {hoveredEffect === effect.effectId && effect.description && !effect.imageUri && menuFor !== effect.effectId && (
-            <div style={styles.effectTooltip}>
+          {hoveredEffect === effect.effectId && effect.description && !effect.imageUri && menuFor !== effect.effectId &&
+            hoverAnchor && createPortal(
+            <div style={{ ...styles.effectTooltip, ...effectTooltipPosition(hoverAnchor) }}>
               <AbilityText text={effect.description} size={13} />
-            </div>
+            </div>,
+            document.body,
           )}
           {menuFor === effect.effectId && activatable && (
             <div style={styles.effectAbilityMenu}>

@@ -1196,7 +1196,7 @@ class TurnManager(
      * the game and sits between them in seat order — plus any departed member of [to]'s own team,
      * whose shared turn is beginning (CR 805.4) — is a player whose next turn "would have begun"
      * right now. Their "until your next turn" / "until your next upkeep" / "until the end of your
-     * next turn" effects, their goads and their may-play permissions end here, the same hooks a
+     * next turn" effects and delayed triggers, their goads and their may-play permissions end here, the same hooks a
      * living player's untap step runs for them. Nothing to do while nobody has left.
      */
     private fun expireEffectsOfDepartedSeatsWhoseTurnWouldBeginNow(
@@ -1238,7 +1238,8 @@ class TurnManager(
                 mayPlayPermissions = s.mayPlayPermissions.filterNot { permission ->
                     !permission.permanent && permission.expiresAfterTurn != null &&
                         (permission.expiryControllerId ?: permission.controllerId) == leaver
-                }
+                },
+                delayedTriggers = s.delayedTriggers.filterNot { it.expiryPlayerId == leaver }
             )
         }
         return s

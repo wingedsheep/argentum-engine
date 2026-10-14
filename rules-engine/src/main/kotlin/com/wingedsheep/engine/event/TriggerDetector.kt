@@ -1213,6 +1213,10 @@ class TriggerDetector(
                     continue
                 }
 
+                // A cast watcher scopes the caster, not the triggering object: the spell stays the
+                // triggering entity (and the caster the triggering player) of a player-watched cast.
+                val watchedTriggering = delayed.watchedEntityId
+                    .takeUnless { specEvent is com.wingedsheep.sdk.scripting.EventPattern.SpellCastEvent }
                 if (delayed.fireOnce) firedOnceIds.add(delayed.id)
                 triggers.add(
                     PendingTrigger(
@@ -1225,11 +1229,11 @@ class TriggerDetector(
                             additionalTargetRequirements = delayed.additionalTargetRequirements
                         ),
                         sourceId = delayed.sourceId,
-                objectReferences = referencesFor(delayed.watchedEntityId ?: TriggerContext.fromEvent(event).triggeringEntityId),
+                objectReferences = referencesFor(watchedTriggering ?: TriggerContext.fromEvent(event).triggeringEntityId),
                         sourceName = delayed.sourceName,
                         controllerId = delayed.controllerId,
                         triggerContext = TriggerContext.fromEvent(event).copy(
-                            triggeringEntityId = delayed.watchedEntityId
+                            triggeringEntityId = watchedTriggering
                                 ?: TriggerContext.fromEvent(event).triggeringEntityId
                         ),
                         consumesDelayedTriggerId = if (delayed.fireOnce) delayed.id else null,
@@ -1294,7 +1298,11 @@ class TriggerDetector(
             // Spell-cast delayed triggers ("whenever you cast a [filtered] spell this turn, …",
             // Rediscover the Way chapter III) are filter-scoped: delegate to the canonical
             // spell-cast matcher so the spell filter and casting-player predicate are honored.
-            is com.wingedsheep.sdk.scripting.EventPattern.SpellCastEvent,
+            // A watched entity on a cast trigger is the one player it watches — "that player gets
+            // two rad counters whenever they cast a spell" (Nuka-Nuke Launcher).
+            is com.wingedsheep.sdk.scripting.EventPattern.SpellCastEvent ->
+                (watchedEntityId == null || (event as? SpellCastEvent)?.casterId == watchedEntityId) &&
+                    matcher.matchesTrigger(specEvent, spec.binding, event, sourceId, controllerId, state)
             is com.wingedsheep.sdk.scripting.EventPattern.SpellCopiedEvent ->
                 matcher.matchesTrigger(specEvent, spec.binding, event, sourceId, controllerId, state)
             // Ability-activation delayed triggers ("when you next activate an exhaust ability that

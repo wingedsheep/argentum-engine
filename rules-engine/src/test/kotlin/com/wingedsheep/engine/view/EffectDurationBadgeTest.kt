@@ -121,6 +121,27 @@ class EffectDurationBadgeTest : FunSpec({
             .map { it.duration } shouldContainExactlyInAnyOrder listOf("until end of turn", null)
     }
 
+    test("a cast watcher waiting on a named player's next turn names that player twice") {
+        val driver = createDriver()
+        val controller = driver.player1
+        val watched = driver.player2
+        fun watcher(expiresAfterTurn: Int) = DelayedTriggeredAbility(
+            id = "rads", effect = Effects.DrawCards(1), sourceId = controller, sourceName = "Launcher",
+            controllerId = controller, trigger = Triggers.anyPlayer.casts(), watchedEntityId = watched,
+            expiry = DelayedTriggerExpiry.EndOfPlayersNextTurn(), expiryPlayerId = watched,
+            expiresAfterTurn = expiresAfterTurn,
+        )
+        fun badge(state: GameState) = transformer(driver).transform(state, controller)
+            .players.single { it.playerId == controller }.activeEffects.single { it.name.startsWith("Launcher") }
+
+        val pending = badge(driver.state.copy(delayedTriggers = listOf(watcher(driver.state.turnNumber + 1))))
+        pending.duration shouldBe "until the end of Player 2's next turn"
+        pending.description!! shouldStartWith "Whenever Player 2 casts a spell"
+        // On that player's last turn the badge says the watcher ends tonight.
+        val lastTurn = driver.state.copy(activePlayerId = watched)
+        badge(lastTurn.copy(delayedTriggers = listOf(watcher(lastTurn.turnNumber)))).duration shouldBe "until end of turn"
+    }
+
     test("repeated pumps add up, and a conditional grant says when it applies") {
         val driver = createDriver()
         val bears = driver.putCreatureOnBattlefield(driver.player1, "Grizzly Bears")

@@ -1219,10 +1219,22 @@ class CleanupPhaseManager(
 
         // 10. Expire delayed triggered abilities with EndOfTurn expiry. This covers event-based
         // triggers and repeating step-based triggers such as "at the beginning of each combat this
-        // turn"; ordinary one-shot step triggers are consumed when they fire.
+        // turn"; ordinary one-shot step triggers are consumed when they fire. An
+        // EndOfPlayersNextTurn trigger ends at the cleanup of its named player's first turn past
+        // its floor (the Duration.EndOfYourNextTurn mechanism, keyed to that player).
         if (newState.delayedTriggers.isNotEmpty()) {
             val remainingDelayed = newState.delayedTriggers.filter { delayed ->
-                delayed.expiry !is DelayedTriggerExpiry.EndOfTurn
+                when (delayed.expiry) {
+                    is DelayedTriggerExpiry.EndOfTurn -> false
+                    is DelayedTriggerExpiry.EndOfPlayersNextTurn -> {
+                        val player = delayed.expiryPlayerId
+                        val floor = delayed.expiresAfterTurn
+                        // Assembled without the executor: fail closed, like an end-of-turn trigger.
+                        if (player == null || floor == null) false
+                        else !(newState.turnNumber >= floor && newState.isActiveTurnFor(player))
+                    }
+                    else -> true
+                }
             }
             if (remainingDelayed.size != newState.delayedTriggers.size) {
                 newState = newState.copy(delayedTriggers = remainingDelayed)

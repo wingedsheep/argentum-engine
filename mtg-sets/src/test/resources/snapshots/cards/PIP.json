@@ -2962,6 +2962,101 @@
     ]
 }
 
+// Nuka-Nuke Launcher
+{
+    "name": "Nuka-Nuke Launcher",
+    "manaCost": "{2}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Equipped creature gets +3/+0 and has intimidate. (It can't be blocked except by artifact creatures and/or creatures that share a color with it.)\nWhenever equipped creature attacks, until the end of defending player's next turn, that player gets two rad counters whenever they cast a spell.\nEquip {3}",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Nuka-Nuke Launcher:1",
+                "trigger": "AttackEvent",
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "CreateDelayedTrigger",
+                    "effect": {
+                        "type": "AddCounters",
+                        "counterType": "RAD",
+                        "count": 2,
+                        "target": {
+                            "type": "PlayerRef",
+                            "player": "TriggeringPlayer"
+                        }
+                    },
+                    "trigger": {
+                        "event": {
+                            "type": "SpellCastEvent",
+                            "player": "Each"
+                        },
+                        "binding": "ANY"
+                    },
+                    "watchedTarget": {
+                        "type": "PlayerRef",
+                        "player": "DefendingPlayer"
+                    },
+                    "expiry": {
+                        "type": "DelayedTriggerExpiry.EndOfPlayersNextTurn",
+                        "player": {
+                            "type": "PlayerRef",
+                            "player": "DefendingPlayer"
+                        }
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Nuka-Nuke Launcher:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 3,
+                "toughnessBonus": 0
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "INTIMIDATE"
+            }
+        ]
+    },
+    "equipCost": "{3}",
+    "metadata": {
+        "collectorNumber": "138",
+        "rarity": "RARE",
+        "artist": "Uriah Voth",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/8/68d5835b-c206-4884-bdcf-38c7cdc703f4.jpg?1783912377"
+    }
+}
+
 // Overflowing Basin
 {
     "name": "Overflowing Basin",

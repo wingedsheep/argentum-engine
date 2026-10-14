@@ -252,11 +252,14 @@ object TargetResolutionUtils {
      * assignment (a creature attacking a planeswalker defends against that planeswalker's
      * controller). When the source has already left combat (e.g. it died dealing combat
      * damage), the trigger event's player is last-known information for "deals combat
-     * damage to a player" triggers.
+     * damage to a player" triggers. A source that never attacks — an Equipment or Aura whose
+     * "whenever equipped creature attacks" fired — reads the triggering attacker's assignment
+     * instead (Nuka-Nuke Launcher's "defending player").
      */
     fun resolveDefendingPlayer(context: EffectContext, state: GameState): EntityId? {
         context.defendingPlayerId?.let { return it }
         defendingPlayerOfAttacker(state, context.sourceId)?.let { return it }
+        defendingPlayerOfAttacker(state, context.triggeringEntityId)?.let { return it }
         return (context.triggeringPlayerId ?: context.triggeringEntityId)
             ?.takeIf { it in state.turnOrder }
     }

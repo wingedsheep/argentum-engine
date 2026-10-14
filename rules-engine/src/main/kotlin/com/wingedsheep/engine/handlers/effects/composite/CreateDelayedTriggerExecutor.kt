@@ -82,7 +82,12 @@ class CreateDelayedTriggerExecutor(
 
         // For event-based delayed triggers, bake the watched target into a concrete
         // entity id so matching later is cheap and doesn't need the original context.
-        val watchedEntityId = effect.watchedTarget?.let { context.resolveTarget(it) }
+        // A player reference ("that player" — the defending player a cast watcher scopes) needs
+        // the state-aware player resolver; object targets resolve from the context alone.
+        val watchedEntityId = effect.watchedTarget?.let { target ->
+            if (target is EffectTarget.PlayerRef) context.resolvePlayerTarget(target, state)
+            else context.resolveTarget(target)
+        }
 
         // Recipient-scoped delayed triggers ("…deals combat damage to *that player* this turn"):
         // resolve the chosen recipient (e.g. ContextTarget(0) for the targeted opponent) into a
@@ -146,6 +151,17 @@ class CreateDelayedTriggerExecutor(
             else -> null
         }
 
+        // "Until the end of [player]'s next turn": bake the named player now, while the creating
+        // context still knows who "defending player" is, and floor the window past this turn.
+        val expiryPlayerId = (expiry as? DelayedTriggerExpiry.EndOfPlayersNextTurn)?.let { named ->
+            val resolved = context.resolvePlayerTarget(named.player, state)
+                ?: return EffectResult.error(state, "CreateDelayedTrigger expiry player did not resolve: ${named.player}")
+            if (resolved !in state.turnOrder) {
+                return EffectResult.error(state, "CreateDelayedTrigger expiry player $resolved is not a player")
+            }
+            resolved
+        }
+
         val (delayedTriggerId, stateWithRoutingId) = state.newRoutingId()
         val delayedTrigger = DelayedTriggeredAbility(
             id = delayedTriggerId,
@@ -165,6 +181,8 @@ class CreateDelayedTriggerExecutor(
             watchedEntityId = watchedEntityId,
             watchedRecipientId = watchedRecipientId,
             expiry = expiry,
+            expiryPlayerId = expiryPlayerId,
+            expiresAfterTurn = expiryPlayerId?.let { state.turnNumber + 1 },
             fireOnce = effect.trigger != null && effect.fireOnce,
             repeatAtEachMatchingStep = effect.trigger == null && effect.repeatAtEachMatchingStep,
             notBeforeTurn = notBeforeTurn,

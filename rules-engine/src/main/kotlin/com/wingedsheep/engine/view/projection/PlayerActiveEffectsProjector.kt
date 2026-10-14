@@ -787,20 +787,35 @@ internal class PlayerActiveEffectsProjector(
         val delayedBySource = state.delayedTriggers
             .filter { it.controllerId == playerId && it.trigger != null }
             // A face-down source (a morph granted the ability) shows its face-down name, not its face.
-            .groupBy { Triple(audience.name(state, it.sourceId, it.sourceName), it.expiry, it.fireOnce) }
+            .groupBy {
+                DelayedBadgeKey(
+                    audience.name(state, it.sourceId, it.sourceName), it.expiry, it.fireOnce,
+                    it.expiryPlayerId ?: it.watchedEntityId?.takeIf { id -> id in state.turnOrder }
+                )
+            }
 
         for ((key, triggers) in delayedBySource) {
             val (sourceName, expiry, fireOnce) = key
             val first = triggers.first()
-            val triggerDesc = first.trigger?.event?.description ?: "the triggered event"
+            val event = first.trigger?.event
+            // A cast watcher names the one player it watches ("Whenever Bob casts a spell").
+            val watchedCaster = first.watchedEntityId
+                ?.takeIf { event is com.wingedsheep.sdk.scripting.EventPattern.SpellCastEvent }
+                ?.let { state.getEntity(it)?.get<PlayerComponent>()?.name }
+            val triggerDesc = when {
+                event is com.wingedsheep.sdk.scripting.EventPattern.SpellCastEvent && watchedCaster != null ->
+                    watchedCaster + event.description.removePrefix(event.player.description)
+                else -> event?.description ?: "the triggered event"
+            }
             val effectDesc = first.effect.description.replaceFirstChar { it.lowercase() }
             val countSuffix = if (triggers.size > 1) " (×${triggers.size})" else ""
             val lead = if (fireOnce) "The next time" else "Whenever"
-            val ends = expiryPhrase(state, expiry, playerId)
+            val ends = expiryPhrase(state, first, playerId)
             effects.add(
                 ClientPlayerEffect(
                     effectId = "delayed_trigger_${sourceName.lowercase().replace(" ", "_").replace(",", "")}" +
-                        "_${expiry?.let { it::class.simpleName } ?: "Never"}${if (fireOnce) "_once" else ""}",
+                        "_${expiry?.let { it::class.simpleName } ?: "Never"}${if (fireOnce) "_once" else ""}" +
+                        (key.scopePlayerId?.let { "_${it.value}" } ?: ""),
                     name = "$sourceName$countSuffix",
                     description = "$lead $triggerDesc, $effectDesc." + (ends?.let { " (${it.replaceFirstChar { c -> c.uppercase() }})" } ?: ""),
                     icon = "triggered-ability",
@@ -868,12 +883,27 @@ internal class PlayerActiveEffectsProjector(
     }
 
     /** When an event-based delayed trigger stops watching, or null when only firing ends it. */
-    private fun expiryPhrase(state: GameState, expiry: DelayedTriggerExpiry?, controllerId: EntityId): String? = when (expiry) {
-        DelayedTriggerExpiry.EndOfTurn -> "until end of turn"
-        DelayedTriggerExpiry.EndOfCombat -> "until end of combat"
-        DelayedTriggerExpiry.UntilControllersNextTurn -> durationPhrase(state, Duration.UntilYourNextTurn, controllerId)
-        DelayedTriggerExpiry.Never, null -> null
-    }
+    private fun expiryPhrase(state: GameState, delayed: DelayedTriggeredAbility, controllerId: EntityId): String? =
+        when (delayed.expiry) {
+            DelayedTriggerExpiry.EndOfTurn -> "until end of turn"
+            DelayedTriggerExpiry.EndOfCombat -> "until end of combat"
+            DelayedTriggerExpiry.UntilControllersNextTurn -> durationPhrase(state, Duration.UntilYourNextTurn, controllerId)
+            is DelayedTriggerExpiry.EndOfPlayersNextTurn -> delayed.expiryPlayerId?.let { player ->
+                durationPhrase(state, Duration.EndOfYourNextTurn, player, delayed.expiresAfterTurn)
+            }
+            DelayedTriggerExpiry.Never, null -> null
+        }
+
+    /**
+     * Delayed triggers that share a badge: same source, ending and firing shape, and the same
+     * player they watch or wait on (two Nuka-Nuke riders on different opponents are two badges).
+     */
+    private data class DelayedBadgeKey(
+        val sourceName: String,
+        val expiry: DelayedTriggerExpiry?,
+        val fireOnce: Boolean,
+        val scopePlayerId: EntityId?
+    )
 
     /**
      * When a step-based delayed trigger fires: "At the beginning of the next end step", "At the
