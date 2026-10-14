@@ -313,9 +313,10 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
     }
 
     /**
-     * A player would perform a counted library keyword action — mill, scry or surveil. The
-     * replacement-only family [com.wingedsheep.sdk.scripting.ModifyKeywordActionAmount] resizes;
-     * [player] is whose action it is, relative to the replacement's controller.
+     * A player would perform a counted library keyword action — mill, scry or surveil — the
+     * family [com.wingedsheep.sdk.scripting.ModifyKeywordActionAmount] resizes; [player] is whose
+     * action it is, relative to the replacement's controller. Scry and surveil are replacement-only;
+     * [MillEvent] doubles as the mill trigger, as [DiscardEvent] does for discards.
      */
     @Serializable
     sealed interface KeywordActionCountEvent : EventPattern {
@@ -345,11 +346,13 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
         val cardFilter: GameObjectFilter? = null,
         val batch: Boolean = false
     ) : KeywordActionCountEvent {
+        // Trigger wording; ModifyKeywordActionAmount spells its own "would mill" announcement.
         override val description: String = buildString {
             append(player.description)
-            append(" would mill ")
-            if (batch || cardFilter == null) append("one or more ") else append("a ")
-            if (cardFilter != null) append(cardFilter.description) else append("cards")
+            append(" mills ")
+            if (batch) append("one or more ") else append("a ")
+            if (cardFilter != null) append(cardFilter.description) else append("card")
+            if (batch) append("s")
         }
 
         override fun applyTextReplacement(replacer: TextReplacer): EventPattern {
@@ -360,7 +363,7 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
     }
 
     /**
-     * When a player would scry a number of cards (CR 701.22). Replacement-only, like [MillEvent]:
+     * When a player would scry a number of cards (CR 701.22). Replacement-only:
      * used by [com.wingedsheep.sdk.scripting.ModifyKeywordActionAmount] to adjust the count at the scry
      * announcement (Kenessos, Priest of Thassa: "If you would scry a number of cards, scry that
      * many cards plus one instead"). Never matches a triggered ability — "whenever you scry" is

@@ -581,8 +581,10 @@ class SacrificeAndPayContinuationResumer(
         val count = KeywordActionAmountModifier.mill(state, playerId, continuation.requiredCount, predicateEvaluator = services.predicateEvaluator)
         val milled = state.getZone(ZoneKey(playerId, Zone.LIBRARY)).take(count)
         val result = services.zones.moveToZoneBatch(state, milled, Zone.GRAVEYARD)
+        val (millState, milledEvent) = com.wingedsheep.engine.handlers.effects.ZoneTransitionService
+            .trackMill(result.state, result.events, milled)
 
-        return checkForMore(result.state, result.events)
+        return checkForMore(millState, result.events + listOfNotNull(milledEvent))
     }
 
     /**

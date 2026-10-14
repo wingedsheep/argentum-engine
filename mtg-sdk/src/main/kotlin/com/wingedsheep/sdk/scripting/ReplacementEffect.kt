@@ -1369,7 +1369,12 @@ data class ModifyKeywordActionAmount(
         } else {
             append("If ")
         }
-        append(appliesTo.description)
+        append(
+            when (appliesTo) {
+                is EventPattern.MillEvent -> "${appliesTo.player.description} would mill one or more cards"
+                else -> appliesTo.description
+            }
+        )
         val verb = when (appliesTo) {
             is EventPattern.MillEvent -> "mill"
             is EventPattern.ScryEvent -> "scry"

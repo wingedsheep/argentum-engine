@@ -81,6 +81,34 @@ class MillTriggerScenarioTest : ScenarioTestBase() {
         }
     }
 
+    private val damageMiller = card("Mill Damage Replacer") {
+        manaCost = "{0}"; typeLine = "Creature — Vampire"; power = 1; toughness = 1
+        replacementEffect(
+            com.wingedsheep.sdk.scripting.ReplaceDamageWithCounters(
+                counterType = CounterType.PLUS_ONE_PLUS_ONE,
+                appliesTo = com.wingedsheep.sdk.scripting.EventPattern.DamageEvent(
+                    recipient = com.wingedsheep.sdk.scripting.events.Recipient.AnyPlayer,
+                    source = GameObjectFilter.Any.sourceItself(),
+                ),
+                damagedPlayerMills = true,
+            )
+        )
+        activatedAbility {
+            cost = Costs.Free
+            val player = target(Targets.Player)
+            effect = Effects.DealDamage(2, player)
+        }
+    }
+    private val payOrMill = card("Mill Pay Or Suffer Probe") {
+        manaCost = "{0}"; typeLine = "Instant"
+        spell {
+            effect = Effects.PayOrSuffer(
+                cost = Costs.pay.Atom(com.wingedsheep.sdk.scripting.costs.CostAtom.Mill(1)),
+                suffer = Effects.LoseLife(5, com.wingedsheep.sdk.scripting.targets.EffectTarget.Controller),
+            )
+        }
+    }
+
     private fun TestGame.zone(player: Int, zone: Zone) =
         state.getZone(ZoneKey(if (player == 1) player1Id else player2Id, zone))
 
@@ -91,7 +119,7 @@ class MillTriggerScenarioTest : ScenarioTestBase() {
         )
 
     init {
-        listOf(perCard, opponentOnly, batch, graveyardWatcher, millTwo, millOneTwice, millSelfThree, surveil, putTop, millCost)
+        listOf(perCard, opponentOnly, batch, graveyardWatcher, millTwo, millOneTwice, millSelfThree, surveil, putTop, millCost, damageMiller, payOrMill)
             .forEach { cardRegistry.register(it) }
 
         test("a per-card mill trigger fires once for each nonland card milled, binding that card") {
@@ -177,6 +205,32 @@ class MillTriggerScenarioTest : ScenarioTestBase() {
             g.resolveStack()
             g.getLifeTotal(1) shouldBe 21
             g.zone(1, Zone.GRAVEYARD).single().let { g.milledThisTurn(it) } shouldBe true
+        }
+
+        test("a pay-or-suffer mill cost is a mill") {
+            val g = scenario().withPlayers().withCardOnBattlefield(1, perCard.name)
+                .withCardInHand(1, payOrMill.name)
+                .withCardInLibrary(1, "Grizzly Bears").withCardInLibrary(2, "Forest").build()
+            g.castSpell(1, payOrMill.name).error shouldBe null
+            g.resolveStack()
+            g.answerYesNo(true).error shouldBe null
+            g.resolveStack()
+            g.getLifeTotal(1) shouldBe 21
+        }
+
+        test("damage replaced by a mill (\"that player mills that many cards\") is a mill") {
+            val g = scenario().withPlayers().withCardOnBattlefield(1, perCard.name)
+                .withCardOnBattlefield(1, damageMiller.name)
+                .withCardInLibrary(1, "Forest")
+                .withCardInLibrary(2, "Grizzly Bears").withCardInLibrary(2, "Lightning Bolt").build()
+            val source = g.findPermanent(damageMiller.name)!!
+            val ability = cardRegistry.getCard(damageMiller.name)!!.script.activatedAbilities.first()
+            g.execute(ActivateAbility(playerId = g.player1Id, sourceId = source, abilityId = ability.id,
+                targets = listOf(com.wingedsheep.engine.state.components.stack.ChosenTarget.Player(g.player2Id)))).error shouldBe null
+            g.resolveStack()
+            g.getLifeTotal(2) shouldBe 20
+            g.zone(2, Zone.GRAVEYARD).size shouldBe 2
+            g.getLifeTotal(1) shouldBe 22
         }
 
         test("a card a replacement exiles instead is still a milled card (CR 701.17c)") {

@@ -3195,11 +3195,15 @@ object DamageUtils {
                 // re-read.
                 if (effect.damagedPlayerMills && targetId in state.turnOrder) {
                     val millCount = KeywordActionAmountModifier.mill(newState, targetId, amount, predicateEvaluator = zones.predicateEvaluator)
-                    for (cardId in newState.getLibrary(targetId).take(millCount)) {
+                    val milledCards = newState.getLibrary(targetId).take(millCount)
+                    for (cardId in milledCards) {
                         val result = zones.moveToZone(newState, cardId, Zone.GRAVEYARD)
                         newState = result.state
                         events.addAll(result.events)
                     }
+                    val (trackedState, milledEvent) = ZoneTransitionService.trackMill(newState, events, milledCards)
+                    newState = trackedState
+                    milledEvent?.let(events::add)
                 }
 
                 return EffectResult.success(newState, events)
