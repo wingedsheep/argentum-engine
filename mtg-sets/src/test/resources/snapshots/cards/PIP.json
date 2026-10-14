@@ -624,6 +624,155 @@
     }
 }
 
+// Colonel Autumn
+{
+    "name": "Colonel Autumn",
+    "manaCost": "{1}{W}{B}",
+    "typeLine": "Legendary Creature — Human Soldier",
+    "oracleText": "Lifelink\nExploit (When this creature enters, you may sacrifice a creature.)\nOther legendary creatures you control have exploit.\nWhenever a creature you control exploits a creature, put a +1/+1 counter on each creature you control.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "LIFELINK",
+        "EXPLOIT"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Colonel Autumn:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ReflexiveTrigger",
+                    "action": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "Sacrifice",
+                                "filter": "creature"
+                            },
+                            "EmitExploitedEvent"
+                        ]
+                    },
+                    "reflexiveEffect": {
+                        "type": "Composite",
+                        "effects": []
+                    },
+                    "descriptionOverride": "You may sacrifice a creature"
+                },
+                "descriptionOverride": "Exploit (When this creature enters, you may sacrifice a creature.)"
+            },
+            {
+                "id": "Colonel Autumn:3",
+                "trigger": "ExploitedEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": "IterationEntity"
+                    }
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "EXPLOIT",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            "IsLegendary"
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    },
+                    "excludeSelf": true
+                }
+            },
+            {
+                "type": "GrantTriggeredAbility",
+                "ability": {
+                    "id": "Colonel Autumn:2",
+                    "trigger": {
+                        "type": "ZoneChangeEvent",
+                        "to": "Battlefield"
+                    },
+                    "effect": {
+                        "type": "ReflexiveTrigger",
+                        "action": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "Sacrifice",
+                                    "filter": "creature"
+                                },
+                                "EmitExploitedEvent"
+                            ]
+                        },
+                        "reflexiveEffect": {
+                            "type": "Composite",
+                            "effects": []
+                        },
+                        "descriptionOverride": "You may sacrifice a creature"
+                    },
+                    "descriptionOverride": "Exploit (When this creature enters, you may sacrifice a creature.)"
+                },
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            "IsLegendary"
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    },
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "98",
+        "rarity": "RARE",
+        "artist": "Daniel Romanovsky",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/a/ca0c3e5a-64f3-40b5-8080-1c53be45aa40.jpg?1783912390",
+        "rulings": [
+            {
+                "date": "2024-03-08",
+                "text": "A creature with exploit “exploits a creature” when the controller of an exploit ability sacrifices a creature as that ability resolves."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "You choose whether to sacrifice a creature and which creature to sacrifice as an exploit ability resolves."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "You can sacrifice the creature with exploit if it’s still on the battlefield. If it has an ability that triggers when it exploits a creature (or, in this case, when any creature you control exploits a creature), that ability will trigger."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "If Colonel Autumn isn’t on the battlefield as an exploit ability of a creature you control resolves, Colonel Autumn’s last ability won’t trigger. You won’t get +1/+1 counters, even if you sacrifice a creature."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "You can’t sacrifice more than one creature to any one exploit ability."
+            }
+        ]
+    }
+}
+
 // Contaminated Drink
 {
     "name": "Contaminated Drink",

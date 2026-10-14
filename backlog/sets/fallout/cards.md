@@ -2,7 +2,7 @@
 
 **Set Size:** 336 cards
 **Release Date:** March 8, 2024
-**Implemented:** 161 / 336
+**Implemented:** 162 / 336
 | Section    | Total | Done |
 |------------|-------|------|
 | Extras     | 336   | 158  |
@@ -71,7 +71,7 @@
 - [x] Cinder Glade
 - [x] Clifftop Retreat
 - [ ] Codsworth, Handy Helper
-- [ ] Colonel Autumn
+- [x] Colonel Autumn
 - [x] Command Tower
 - [ ] Commander Sofia Daguerre
 - [ ] Contagion Clasp

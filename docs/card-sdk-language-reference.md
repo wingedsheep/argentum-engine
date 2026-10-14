@@ -12456,11 +12456,18 @@ composite abilities).
   `exploit(onExploit = <target player draws 2, loses 2>, onExploitTargets = listOf(Targets.Player))`; Skull Skaab
   `exploit()` (no self-payoff) **plus** a hand-written broadcast watcher `triggeredAbility { trigger =
   EventPattern.ExploitedEvent(player = Player.You, requireNontokenExploited = true); effect = <create a 2/2 black Zombie> }`.
-  **Self-exploit look-back (CR 603.10a):** sacrifice triggers "look back in time", so an exploiter's own
-  `ExploitedEvent` watcher (SELF or ANY binding — e.g. Skull Skaab exploiting itself) still fires even though the
-  exploiter is in the graveyard when the event resolves. `TriggerDetector.detectExploitedSelfSacrificeTriggers` supplies
-  this pass by resolving the gone exploiter's last-known abilities from `event.exploiterId`; the main battlefield index
-  scan handles the exploiter-still-present case, and a battlefield-presence guard keeps the two from double-firing.
+  **Sacrificed-watcher look-back (CR 603.10a):** sacrifice triggers "look back in time", so a watcher on the
+  creature an exploit sacrifices still fires even though it is in the graveyard when the event resolves — Skull
+  Skaab exploiting itself, or Colonel Autumn exploiting itself or sacrificed to another creature's exploit.
+  `TriggerDetector.detectExploitedSacrificedWatcherTriggers` resolves the gone creature's abilities from
+  `event.sacrificedId` (SELF/OTHER bindings still compare against the exploiter); the main battlefield index scan
+  handles watchers still present, and a battlefield-presence guard keeps the two from double-firing. The look-back
+  is for the sacrificed object only: a watcher that left *before* the exploit resolved — Colonel Autumn bounced in
+  response to its own exploit trigger — does not trigger, even though it is still the event's exploiter.
+  **Granting exploit:** `exploitTriggeredAbility(onExploit?, onExploitTargets)` is the ability on its own, for a
+  static grant beside the badge — Colonel Autumn: `GrantKeyword(Keyword.EXPLOIT, group)` +
+  `GrantTriggeredAbility(exploitTriggeredAbility(), group)` over `Creature.legendary().youControl()` minus self
+  (the shape `trainingTriggeredAbility()` uses for Elder Arthur Maxson).
   `EmitExploitedEventEffect` is an internal `data object` (no player-facing text) and should not be used directly — it is
   wired into `exploit()`. See `EventPattern.ExploitedEvent` under Sacrifice triggers for the watcher form.
 - `Soulbond` — "Soulbond (You may pair this creature with another unpaired creature when either enters. They remain
