@@ -988,9 +988,10 @@ object DynamicAmounts {
 
     /**
      * How many counters of [counterType] a player currently has (CR 122.1 — counters placed on a
-     * player rather than a permanent). Poison, energy, and rad counters all live here.
+     * player rather than a permanent). Poison, energy, and rad counters all live here. `null`
+     * [counterType] counts every kind.
      */
-    fun playerCounterCount(counterType: CounterType, player: Player = Player.You): DynamicAmount =
+    fun playerCounterCount(counterType: CounterType?, player: Player = Player.You): DynamicAmount =
         DynamicAmount.PlayerCounterCount(counterType, player)
 
     /**

@@ -700,15 +700,22 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
      * A multi-player [player] scope sums across those players; for "an opponent has N or more" test
      * each player separately with [GreatestAmongPlayers] (`Conditions.Corrupted`).
      *
+     * A `null` [counterType] counts every kind at once — "each counter among players" — including
+     * kinds no card names (the type is open, so a fixed list of known kinds would miss some). It
+     * mirrors [AggregateBattlefield]'s [CardNumericProperty.COUNTERS] sum on the permanent side.
+     *
      * Examples:
      * ```kotlin
      * PlayerCounterCount(CounterType.ENERGY, Player.You)  // "your energy counters" — Longtusk Cub
+     * PlayerCounterCount(null, Player.Each)  // every counter on every player — Lumbering Megasloth
      * ```
      */
     @SerialName("PlayerCounterCount")
     @Serializable
-    data class PlayerCounterCount(val counterType: CounterType, val player: Player = Player.You) : DynamicAmount {
-        override val description: String = "${player.possessive} ${counterType.printed} counters"
+    data class PlayerCounterCount(val counterType: CounterType?, val player: Player = Player.You) : DynamicAmount {
+        override val description: String =
+            if (counterType == null) "the number of counters ${player.description} ${if (player == Player.You) "have" else "has"}"
+            else "${player.possessive} ${counterType.printed} counters"
     }
 
     /**

@@ -2242,6 +2242,9 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
     the number of energy counters you have" (Longtusk Cub, Electrostatic Pummeler). A multi-player scope
     (`Player.EachOpponent`) **sums** across those players; "an opponent has N or more" is a per-player test —
     `GreatestAmongPlayers(EachOpponent, PlayerCounterCount(type, You))`, or `Conditions.Corrupted` for poison.
+    `counterType = null` counts **every kind** a player has (the counter type is open, so never sum a list of
+    known kinds). "Each counter among players and permanents" (Lumbering Megasloth) adds it to the permanent side:
+    `DynamicAmounts.playerCounterCount(null, Player.Each) + DynamicAmounts.battlefield(Player.Each).totalCounters()`.
 - `ConvertCountersToTokensEffect(counterType = +1/+1, tokenFactory)` — "remove any number of `counterType`
   counters from this permanent; for each removed, create one token." Prompts for `0..(count on source)`,
   removes that many, then mints exactly that many tokens from `tokenFactory` (its own `count` is ignored).

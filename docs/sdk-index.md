@@ -655,7 +655,7 @@ Families:
 - `DynamicAmount.Multiply(amount: DynamicAmount, multiplier: Int)` — Multiply a dynamic amount by a fixed multiplier.
 - `DynamicAmount.PermanentsSacrificedThisWay` — Number of permanents sacrificed by the current resolving effect ("this way").
 - `DynamicAmount.PlayerCount(scope: Player)` — How many players are in scope — "for each opponent", "for each other player", "the number of players in the game".
-- `DynamicAmount.PlayerCounterCount(counterType: CounterType, player: Player)` — How many counters of counterType a player currently has — the player-scoped sibling of EntityProperty's com.wingedsheep.sdk.scripting.values.EntityNumericProperty.CounterCount (which reads one obje…
+- `DynamicAmount.PlayerCounterCount(counterType: CounterType?, player: Player)` — How many counters of counterType a player currently has — the player-scoped sibling of EntityProperty's com.wingedsheep.sdk.scripting.values.EntityNumericProperty.CounterCount (which reads one obje…
 - `DynamicAmount.Power(base: Int, exponent: DynamicAmount)` — Raise a fixed base to the power of a dynamic exponent (`base^exponent`).
 - `DynamicAmount.SnowManaSpent` — The amount of mana from snow sources spent to cast the current spell — the "{S} spent" of CR 107.4h, which counts snow mana spent on *any* part of the cost, not only on `{S}` pips.
 - `DynamicAmount.Speed(player: Player)` — A player's **speed** (Aetherdrift, CR 702.179) — the 0–4 designation that "Start your engines!" begins and the inherent speed trigger raises.

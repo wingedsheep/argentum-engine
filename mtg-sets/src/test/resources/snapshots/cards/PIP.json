@@ -2442,6 +2442,62 @@
     }
 }
 
+// Lumbering Megasloth
+{
+    "name": "Lumbering Megasloth",
+    "manaCost": "{10}{G}{G}",
+    "typeLine": "Creature — Sloth Mutant",
+    "oracleText": "This spell costs {1} less to cast for each counter among players and permanents.\nTrample\nThis creature enters tapped.",
+    "creatureStats": {
+        "power": 8,
+        "toughness": 8
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "ReduceGenericBy",
+                    "source": {
+                        "type": "Dynamic",
+                        "amount": {
+                            "type": "Add",
+                            "left": {
+                                "type": "PlayerCounterCount",
+                                "counterType": null,
+                                "player": "Each"
+                            },
+                            "right": {
+                                "type": "AggregateBattlefield",
+                                "player": "Each",
+                                "aggregation": "SUM",
+                                "property": "COUNTERS"
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "replacementEffects": [
+            "EntersTapped"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "80",
+        "rarity": "UNCOMMON",
+        "artist": "Daniel Romanovsky",
+        "flavorText": "When threatened, it slowly shakes its body to produce spores from the mushrooms growing on its back.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/3/53b92e8a-fadf-4568-8b30-2df68e6ff7cf.jpg?1783912397"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // MacCready, Lamplight Mayor
 {
     "name": "MacCready, Lamplight Mayor",
