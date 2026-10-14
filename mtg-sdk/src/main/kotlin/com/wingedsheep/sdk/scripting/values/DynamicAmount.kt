@@ -208,6 +208,14 @@ enum class TurnTracker {
      */
     CARDS_PUT_INTO_GRAVEYARD_FROM_LIBRARY,
     /**
+     * Number of cards put into the player's graveyard **from anywhere** this turn — every zone
+     * (battlefield, stack, hand, library, exile, command), keyed on the card's owner, tokens excluded
+     * (a token isn't a card, CR 111.6). A card that arrives twice counts twice. Backed by
+     * `CardsPutIntoGraveyardThisTurnComponent`, cleared at end of turn. Turn history: a card that
+     * later leaves the graveyard still counts. Fraying Sanity mills this many.
+     */
+    CARDS_PUT_INTO_GRAVEYARD,
+    /**
      * Number of cards the player has drawn this turn (CR 120). Backed by
      * `CardsDrawnThisTurnComponent`, reset to 0 for every player at the start of each turn.
      * Powers "equal to the number of cards you've drawn this turn" (Duelist of the Mind).
@@ -394,6 +402,8 @@ enum class TurnTracker {
             "the number of creature cards put into ${player.possessive} graveyard this turn"
         CARDS_PUT_INTO_GRAVEYARD_FROM_LIBRARY ->
             "the number of cards that were put into ${player.possessive} graveyard from their library this turn"
+        CARDS_PUT_INTO_GRAVEYARD ->
+            "the number of cards put into ${player.possessive} graveyard from anywhere this turn"
         CARDS_DRAWN -> "the number of cards ${player.description} have drawn this turn"
         CARDS_DISCARDED -> "the number of cards ${player.description} have discarded this turn"
         CARDS_PUT_INTO_EXILE -> "the number of cards put into exile this turn"

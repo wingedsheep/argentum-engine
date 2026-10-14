@@ -922,6 +922,14 @@ object DynamicAmounts {
         DynamicAmount.TurnTracking(player, TurnTracker.CARDS_PUT_INTO_GRAVEYARD_FROM_LIBRARY)
 
     /**
+     * "The number of cards put into [player]'s graveyard from anywhere this turn" (Fraying Sanity,
+     * with `Player.EnchantedPlayer`). Every origin zone counts, tokens don't; see
+     * [TurnTracker.CARDS_PUT_INTO_GRAVEYARD].
+     */
+    fun cardsPutIntoGraveyardThisTurn(player: Player = Player.You): DynamicAmount =
+        DynamicAmount.TurnTracking(player, TurnTracker.CARDS_PUT_INTO_GRAVEYARD)
+
+    /**
      * "The number of permanents [player] sacrificed this turn" (controller-scoped, any permanent
      * type). Reads the per-player `PermanentsSacrificedThisTurnComponent`, distinct from the
      * game-wide cost-reduction counter. Used by Sawblade Skinripper ("deals that much damage").

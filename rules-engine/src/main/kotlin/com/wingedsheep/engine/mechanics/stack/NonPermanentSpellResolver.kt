@@ -453,6 +453,12 @@ internal class NonPermanentSpellResolver(
         // here, so it turns back to its front face here.
         newState = restoreDfcFrontFace(newState, cardRegistry, spellId)
         newState = com.wingedsheep.engine.mechanics.SplitSpellCasts.end(newState, spellId)
+        if (destinationZone == Zone.GRAVEYARD) {
+            newState.getEntity(spellId)?.get<CardComponent>()?.let { card ->
+                newState = com.wingedsheep.engine.handlers.effects.ZoneTransitionService
+                    .recordGraveyardArrival(newState, spellId, ownerId, Zone.STACK, card, isToken = false)
+            }
+        }
         val destinationObject = newState.objectRef(spellId)
         newState = applyOwnDestinationRiders(
             state, newState, spellId, spellComponent, cardComponent, ownerId, resolvedScript, destinationZone,

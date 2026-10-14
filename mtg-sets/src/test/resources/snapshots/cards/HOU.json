@@ -286,6 +286,66 @@
     ]
 }
 
+// Fraying Sanity
+{
+    "name": "Fraying Sanity",
+    "manaCost": "{2}{U}",
+    "typeLine": "Enchantment — Aura Curse",
+    "oracleText": "Enchant player\nAt the beginning of each end step, enchanted player mills X cards, where X is the number of cards put into their graveyard from anywhere this turn.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Fraying Sanity:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "TurnTracking",
+                                    "player": "EnchantedPlayer",
+                                    "tracker": "CARDS_PUT_INTO_GRAVEYARD"
+                                },
+                                "player": "EnchantedPlayer",
+                                "isMill": true
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": "EnchantedPlayer"
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "auraTarget": "TargetPlayer"
+    },
+    "metadata": {
+        "collectorNumber": "35",
+        "rarity": "RARE",
+        "artist": "Ryan Alexander Lee",
+        "flavorText": "Those wound tightest are first to unravel.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/9/79e5c1ab-eebd-41ca-a1ca-29b00370f6e8.jpg?1783936053"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Gift of Strength
 {
     "name": "Gift of Strength",

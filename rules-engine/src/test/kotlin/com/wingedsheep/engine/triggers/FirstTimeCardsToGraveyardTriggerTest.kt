@@ -65,9 +65,9 @@ class FirstTimeCardsToGraveyardTriggerTest : ScenarioTestBase() {
             game.castSpell(1, "Test Raze Land", game.findPermanent("Plains")!!).error shouldBe null
             game.resolveStack()
             withClue("first land this turn triggers") { game.getLifeTotal(1) shouldBe life + 1 }
-            withClue("the owner's turn history lists the Plains") {
+            withClue("the owner's turn history lists the Plains, then the resolved Raze Land") {
                 game.state.getEntity(game.player1Id)!!
-                    .get<CardsPutIntoGraveyardThisTurnComponent>()!!.cardIds.size shouldBe 1
+                    .get<CardsPutIntoGraveyardThisTurnComponent>()!!.cardIds.size shouldBe 2
             }
 
             game.castSpell(1, "Test Raze Land", game.findPermanent("Island")!!).error shouldBe null

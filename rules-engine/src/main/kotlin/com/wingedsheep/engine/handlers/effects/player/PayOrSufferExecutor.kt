@@ -1243,7 +1243,6 @@ class PayOrSufferExecutor(
         permanentId: EntityId
     ): EffectResult {
         val battlefieldZone = ZoneKey(playerId, Zone.BATTLEFIELD)
-        val graveyardZone = ZoneKey(playerId, Zone.GRAVEYARD)
 
         // Check if the permanent is still on the battlefield
         if (permanentId !in state.getZone(battlefieldZone)) {
@@ -1252,23 +1251,13 @@ class PayOrSufferExecutor(
 
         val permanentName = state.getEntity(permanentId)?.get<CardComponent>()?.name ?: "Unknown"
 
-        var newState = com.wingedsheep.engine.handlers.effects.ZoneTransitionService
-            .trackPermanentSacrifice(state, listOf(permanentId), playerId)
-        newState = newState.removeFromZone(battlefieldZone, permanentId)
-        newState = newState.addToZone(graveyardZone, permanentId)
-
-        val events = listOf(
-            PermanentsSacrificedEvent(playerId, listOf(permanentId), listOf(permanentName)),
-            ZoneChangeEvent(
-                entityId = permanentId,
-                entityName = permanentName,
-                fromZone = Zone.BATTLEFIELD,
-                toZone = Zone.GRAVEYARD,
-                ownerId = playerId,
-                oldObject = state.objectRef(permanentId),
-                newObject = newState.objectRef(permanentId)
-            )
-        )
+        // Route the move through ZoneTransitionService so the sacrifice gets the full transition
+        // (LKI, counters/attachments cleanup, graveyard turn history) like every other sacrifice.
+        val tracked = ZoneTransitionService.trackPermanentSacrifice(state, listOf(permanentId), playerId)
+        val transition = zones.moveToZone(tracked, permanentId, Zone.GRAVEYARD)
+        val newState = transition.state
+        val events = listOf(PermanentsSacrificedEvent(playerId, listOf(permanentId), listOf(permanentName))) +
+            transition.events
 
         return EffectResult.success(newState, events)
     }

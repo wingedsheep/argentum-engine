@@ -282,8 +282,10 @@ class LegacySuspensionMigrationTest : ScenarioTestBase() {
      */
     private fun normalizeRouting(value: JsonElement, root: Boolean = false): JsonElement = when (value) {
         is JsonObject -> JsonObject(((if (root) value - "controlAtTurnStart" else value) - "targetObjectRefs" - "referencedObjects" - "manaUnits" -
-            // The graveyard turn history (Crawling Sensation) postdates the capture.
-            "com.wingedsheep.engine.state.components.player.CardsPutIntoGraveyardThisTurnComponent").mapValues { (key, child) ->
+            // The graveyard turn history (Crawling Sensation) postdates the capture, as does the
+            // per-card stamp on a resolved spell; CardsPutIntoGraveyardThisTurnTrackerTest pins both.
+            "com.wingedsheep.engine.state.components.player.CardsPutIntoGraveyardThisTurnComponent" -
+            "com.wingedsheep.engine.state.components.identity.PutIntoGraveyardThisTurnComponent").mapValues { (key, child) ->
             when {
                 // Captured ownership also postdates these traces; SourceOwnerLastKnownTest pins it.
                 // Departure object references postdate these historical traces. EnlistTest

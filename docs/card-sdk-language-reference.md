@@ -13950,6 +13950,12 @@ default to "you" so card authors don't need to pass it explicitly.
   per-player `CardsPutIntoGraveyardFromLibraryThisTurnComponent`, incremented in `ZoneTransitionService`
   (keyed on the owner) and cleared at end of turn. Turn history — a card that later leaves the graveyard
   still counts. Cruel Calculations: `DrawCards(cardsPutIntoGraveyardFromLibraryThisTurn(Player.ContextPlayer(0)))`.
+- `DynamicAmounts.cardsPutIntoGraveyardThisTurn(player)` / `TurnTracker.CARDS_PUT_INTO_GRAVEYARD` — the
+  number of cards put into `player`'s graveyard **from anywhere** this turn (resolved or countered spells,
+  discards, deaths, sacrifices, mills, …). Reads the size of the owner-keyed
+  `CardsPutIntoGraveyardThisTurnComponent` arrival list; tokens excluded, a card arriving twice counts
+  twice, and a card that later leaves the graveyard still counts. Fraying Sanity:
+  `Patterns.Library.mill(cardsPutIntoGraveyardThisTurn(Player.EnchantedPlayer), EffectTarget.PlayerRef(Player.EnchantedPlayer))`.
 - `CreatureCardsPutIntoGraveyardsThisTurn(atLeast = 1)` — the **game-wide** sibling of
   `CreatureCardPutIntoYourGraveyardThisTurn`: at least `atLeast` creature cards reached *any* player's
   graveyard this turn (summed via `Player.Each`). Case of the Gorgon's Kiss's "three or more creature
@@ -15331,6 +15337,9 @@ this turn").
 - `CARDS_PUT_INTO_GRAVEYARD_FROM_LIBRARY` — number of cards put into a player's graveyard from their
   library this turn (mill, surveil, …); recorded by the same `ZoneTransitionService` hook, keyed on the
   owner. Facade `DynamicAmounts.cardsPutIntoGraveyardFromLibraryThisTurn(player)` (Cruel Calculations).
+- `CARDS_PUT_INTO_GRAVEYARD` — number of cards put into a player's graveyard from any zone this turn,
+  tokens excluded; the size of the owner's `CardsPutIntoGraveyardThisTurnComponent`. Facade
+  `DynamicAmounts.cardsPutIntoGraveyardThisTurn(player)` (Fraying Sanity).
 - `CARDS_DRAWN` — number of cards a player has drawn this turn (backed by
   `CardsDrawnThisTurnComponent`, reset to 0 for every player at turn start). Powers
   characteristic-defining stats like Duelist of the Mind's "power is equal to the number of

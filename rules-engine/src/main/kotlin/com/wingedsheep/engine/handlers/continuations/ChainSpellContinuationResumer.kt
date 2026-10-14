@@ -7,7 +7,6 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
-import com.wingedsheep.engine.state.components.identity.OwnerComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.state.components.stack.SpellOnStackComponent
 import com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComponent
@@ -399,30 +398,17 @@ class ChainSpellContinuationResumer(
 
         when ((cost as? PayCost.Atom)?.atom) {
             is CostAtom.Sacrifice -> {
+                // Shared sacrifice path — the full zone transition (LKI, cleanup, graveyard turn
+                // history), as CostPaymentService does for every other sacrifice cost.
+                if (selectedCards.isNotEmpty()) {
+                    val names = selectedCards.map { newState.getEntity(it)?.get<CardComponent>()?.name ?: "Unknown" }
+                    events.add(PermanentsSacrificedEvent(controllerId, selectedCards, names))
+                    newState = ZoneTransitionService.trackPermanentSacrifice(newState, selectedCards, controllerId)
+                }
                 for (cardId in selectedCards) {
-                    val container = newState.getEntity(cardId) ?: continue
-                    val cardComponent = container.get<CardComponent>() ?: continue
-                    val currentZone = newState.zones.entries.find { (_, cards) -> cardId in cards }?.key
-                        ?: continue
-                    val ownerId = container.get<OwnerComponent>()?.playerId
-                        ?: cardComponent.ownerId
-                        ?: controllerId
-                    val graveyardZone = ZoneKey(ownerId, Zone.GRAVEYARD)
-
-                    newState = com.wingedsheep.engine.handlers.effects.ZoneTransitionService
-                        .trackPermanentSacrifice(newState, listOf(cardId), controllerId)
-                    val oldObject = newState.objectRef(cardId)
-                    newState = newState.removeFromZone(currentZone, cardId)
-                    newState = newState.addToZone(graveyardZone, cardId)
-
-                    events.add(PermanentsSacrificedEvent(controllerId, listOf(cardId), listOf(cardComponent.name)))
-                    events.add(ZoneChangeEvent(
-                        entityId = cardId,
-                        entityName = cardComponent.name,
-                        fromZone = Zone.BATTLEFIELD,
-                        toZone = Zone.GRAVEYARD,
-                        ownerId = ownerId, oldObject = oldObject, newObject = newState.objectRef(cardId)
-                    ))
+                    val transition = services.zones.moveToZone(newState, cardId, Zone.GRAVEYARD)
+                    newState = transition.state
+                    events.addAll(transition.events)
                 }
             }
             is CostAtom.Discard -> {

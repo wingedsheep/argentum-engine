@@ -1798,7 +1798,9 @@ data class CardsPutIntoGraveyardFromLibraryThisTurnComponent(val count: Int = 0)
  * on the owner, tokens excluded (a token isn't a card, CR 111.6). Turn history: a card that later
  * leaves the graveyard stays listed. Backs the `firstTimeEachTurn` axis of the batched "one or more
  * [filter] cards are put into your graveyard from anywhere" trigger (Crawling Sensation) — the
- * detector asks whether any card listed *before* the current batch already matched.
+ * detector asks whether any card listed *before* the current batch already matched. Its size is
+ * `TurnTracker.CARDS_PUT_INTO_GRAVEYARD` ("cards put into their graveyard from anywhere this turn",
+ * Fraying Sanity).
  */
 @Serializable
 data class CardsPutIntoGraveyardThisTurnComponent(val cardIds: List<EntityId> = emptyList()) : Component

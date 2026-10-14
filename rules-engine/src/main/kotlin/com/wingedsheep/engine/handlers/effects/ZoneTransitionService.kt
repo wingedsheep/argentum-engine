@@ -1269,17 +1269,6 @@ class ZoneTransitionService(
             }
         }
 
-        // 8b3. Stamp "put into a graveyard this turn" on the card entity, recording whether
-        // the arrival came from the battlefield. Backs Abyssal Harvester (FDN, any origin
-        // zone) and Samwise the Stouthearted / Lobelia Sackville-Baggins (LTR, battlefield
-        // only). Overwrites any previous stamp so a card that bounces into a graveyard twice
-        // in one turn records its most recent origin.
-        if (actualDestZone == Zone.GRAVEYARD && fromZone != Zone.GRAVEYARD) {
-            newState = newState.updateEntity(entityId) { c ->
-                c.with(PutIntoGraveyardThisTurnComponent(fromBattlefield = fromZone == Zone.BATTLEFIELD))
-            }
-        }
-
         // 8b4. "A permanent was put into your hand from the battlefield this turn" (Barrin,
         // Tolarian Archmage). Keyed on the owner, whose hand it goes to; tokens count — a bounced
         // token is put into its owner's hand before it ceases to exist.
@@ -1311,65 +1300,15 @@ class ZoneTransitionService(
             }
         }
 
-        val arrivingCard = newState.getEntity(entityId)?.get<CardComponent>() ?: cardComponent
-
-        // 8d. Descend (CR 700.11): track permanent cards put into a player's graveyard
-        // from any zone. Tokens are excluded per Scryfall ruling — although tokens are
-        // briefly placed in the graveyard before ceasing to exist, that placement does
-        // not count as the owner having descended. Non-permanent cards (instants /
-        // sorceries entering the graveyard from the stack, hand, or library) are also
-        // excluded. The count is keyed on the card's owner, not its last controller —
-        // "your graveyard" is the owner's graveyard.
-        if (actualDestZone == Zone.GRAVEYARD &&
-            arrivingCard.typeLine.isPermanent &&
-            !container.has<TokenComponent>()
-        ) {
-            newState = newState.updateEntity(ownerId) { playerContainer ->
-                val existing = playerContainer.get<PlayerDescendedThisTurnComponent>()
-                    ?: PlayerDescendedThisTurnComponent()
-                playerContainer.with(PlayerDescendedThisTurnComponent(existing.count + 1))
-            }
-        }
-
-        // 8d2. "A creature card was put into your graveyard from anywhere this turn" (Macabre
-        // Reconstruction). The creature-typed slice of the same arrival: any origin zone, keyed
-        // on the owner, tokens excluded. Turn history — reanimating the card later in the turn
-        // doesn't undo the count.
-        if (actualDestZone == Zone.GRAVEYARD &&
-            fromZone != Zone.GRAVEYARD &&
-            arrivingCard.typeLine.isCreature &&
-            !container.has<TokenComponent>()
-        ) {
-            newState = newState.updateEntity(ownerId) { playerContainer ->
-                val existing = playerContainer.get<CreatureCardsPutIntoGraveyardThisTurnComponent>()
-                    ?: CreatureCardsPutIntoGraveyardThisTurnComponent()
-                playerContainer.with(CreatureCardsPutIntoGraveyardThisTurnComponent(existing.count + 1))
-            }
-        }
-
-        // 8d2b. Every card put into a player's graveyard from another zone this turn, by id — the
-        // turn history behind "for the first time each turn" on the batched to-graveyard trigger
-        // (Crawling Sensation). Keyed on the owner, tokens excluded, like 8d2.
-        if (actualDestZone == Zone.GRAVEYARD &&
-            fromZone != Zone.GRAVEYARD &&
-            !container.has<TokenComponent>()
-        ) {
-            newState = newState.updateEntity(ownerId) { playerContainer ->
-                val existing = playerContainer.get<CardsPutIntoGraveyardThisTurnComponent>()
-                    ?: CardsPutIntoGraveyardThisTurnComponent()
-                playerContainer.with(CardsPutIntoGraveyardThisTurnComponent(existing.cardIds + entityId))
-            }
-        }
-
-        // 8d3. "Cards put into [a player's] graveyard from their library this turn" (Cruel
-        // Calculations) — mill, surveil, and every other library → graveyard move. Keyed on the
-        // owner, whose library and graveyard these are. Turn history, like 8d2.
-        if (actualDestZone == Zone.GRAVEYARD && fromZone == Zone.LIBRARY) {
-            newState = newState.updateEntity(ownerId) { playerContainer ->
-                val existing = playerContainer.get<CardsPutIntoGraveyardFromLibraryThisTurnComponent>()
-                    ?: CardsPutIntoGraveyardFromLibraryThisTurnComponent()
-                playerContainer.with(CardsPutIntoGraveyardFromLibraryThisTurnComponent(existing.count + 1))
-            }
+        // 8d. Graveyard-arrival turn history (descend, creature cards, every card, library mills,
+        // and the per-card "put into a graveyard this turn" stamp) — shared with the stack's own
+        // resolve / counter / fizzle moves, which don't route through here.
+        if (actualDestZone == Zone.GRAVEYARD) {
+            newState = recordGraveyardArrival(
+                newState, entityId, ownerId, fromZone,
+                arrivingCard = newState.getEntity(entityId)?.get<CardComponent>() ?: cardComponent,
+                isToken = container.has<TokenComponent>()
+            )
         }
 
         // 8e. Madness (CR 702.35a) — this move was a discard that the madness replacement diverted
@@ -1892,6 +1831,69 @@ class ZoneTransitionService(
          * `cardIds.size` backs `TurnTracker.CARDS_DISCARDED`; membership backs `YouDiscardedThisCardThisTurn`.
          * Cleared per-player at the start of each turn by `TurnManager`.
          */
+        /**
+         * Record a card's arrival in its owner's graveyard in the turn-history trackers. Called by
+         * [moveToZone] and by the stack's resolve / counter / fizzle moves, which place the card
+         * themselves — every "put into a graveyard … this turn" read sees both paths. Tokens are
+         * excluded from the card counts (a token isn't a card, CR 111.6); a graveyard → graveyard
+         * move isn't an arrival.
+         *
+         *  - the per-card [PutIntoGraveyardThisTurnComponent] stamp, recording whether the arrival
+         *    came from the battlefield (Abyssal Harvester; Samwise / Lobelia, battlefield only).
+         *    Overwrites any previous stamp so the most recent origin wins.
+         *  - descend (CR 700.11): permanent cards, [PlayerDescendedThisTurnComponent].
+         *  - creature cards, [CreatureCardsPutIntoGraveyardThisTurnComponent] (Macabre Reconstruction).
+         *  - every card, by id, [CardsPutIntoGraveyardThisTurnComponent] (Crawling Sensation's
+         *    first-time gate; its size is "cards put into their graveyard from anywhere", Fraying Sanity).
+         *  - library → graveyard moves, [CardsPutIntoGraveyardFromLibraryThisTurnComponent]
+         *    (Cruel Calculations).
+         *
+         * All keyed on the owner — "your graveyard" is the owner's — and turn history: the card need
+         * not still be there.
+         */
+        fun recordGraveyardArrival(
+            state: GameState,
+            entityId: EntityId,
+            ownerId: EntityId,
+            fromZone: Zone,
+            arrivingCard: CardComponent,
+            isToken: Boolean
+        ): GameState {
+            if (fromZone == Zone.GRAVEYARD) return state
+            var newState = state.updateEntity(entityId) { c ->
+                c.with(PutIntoGraveyardThisTurnComponent(fromBattlefield = fromZone == Zone.BATTLEFIELD))
+            }
+            if (isToken) return newState
+            fun bump(update: (ComponentContainer) -> ComponentContainer) {
+                newState = newState.updateEntity(ownerId, update)
+            }
+            if (arrivingCard.typeLine.isPermanent) bump { p ->
+                p.with(PlayerDescendedThisTurnComponent((p.get<PlayerDescendedThisTurnComponent>()?.count ?: 0) + 1))
+            }
+            if (arrivingCard.typeLine.isCreature) bump { p ->
+                p.with(
+                    CreatureCardsPutIntoGraveyardThisTurnComponent(
+                        (p.get<CreatureCardsPutIntoGraveyardThisTurnComponent>()?.count ?: 0) + 1
+                    )
+                )
+            }
+            bump { p ->
+                p.with(
+                    CardsPutIntoGraveyardThisTurnComponent(
+                        (p.get<CardsPutIntoGraveyardThisTurnComponent>()?.cardIds ?: emptyList()) + entityId
+                    )
+                )
+            }
+            if (fromZone == Zone.LIBRARY) bump { p ->
+                p.with(
+                    CardsPutIntoGraveyardFromLibraryThisTurnComponent(
+                        (p.get<CardsPutIntoGraveyardFromLibraryThisTurnComponent>()?.count ?: 0) + 1
+                    )
+                )
+            }
+            return newState
+        }
+
         /**
          * Per-mill bookkeeping, mirroring [trackDiscard]. Call at every mill site (the pipeline's
          * mill move, a mill cost, a damage-to-mill replacement) with the zone changes that move
