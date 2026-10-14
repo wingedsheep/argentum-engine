@@ -1654,7 +1654,7 @@ class ManaSolver private constructor(
                 // A mana ability whose life cost (printed "Pay N life" plus any Thran Portal tax)
                 // its controller can't pay can't be activated (CR 119.4), so auto-pay mustn't pick it.
                 if (abilityHasPainCost &&
-                    !state.canPayLife(playerId, ManaAbilityLifeCost.total(state, entityId, ability, playerId, predicateEvaluator), LifePaymentPurpose.ACTIVATE_MANA_ABILITY)
+                    !CostAtomAmounts.canPayLife(state, playerId, ManaAbilityLifeCost.total(state, entityId, ability, playerId, predicateEvaluator), LifePaymentPurpose.ACTIVATE_MANA_ABILITY)
                 ) {
                     hadUnpayableLifeAbility = true
                     continue

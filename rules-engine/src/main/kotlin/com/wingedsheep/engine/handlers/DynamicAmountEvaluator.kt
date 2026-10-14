@@ -7,7 +7,6 @@ import com.wingedsheep.engine.handlers.effects.lkiPolicyFor
 import com.wingedsheep.engine.handlers.effects.lkiSnapshotFor
 import com.wingedsheep.engine.mechanics.ControllerGrants
 import com.wingedsheep.engine.mechanics.layers.ProjectedState
-import com.wingedsheep.engine.mechanics.mana.ManaColorSetResolver
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.battlefield.AttachmentsComponent
@@ -181,7 +180,7 @@ class DynamicAmountEvaluator(
         DynamicAmount.CraftedMaterialsTotalManaValue,
         DynamicAmount.CraftedMaterialsTotalPower,
         DynamicAmount.CreaturesThatCrewedOrSaddledThisTurn,
-        is DynamicAmount.ColorCount,
+        is DynamicAmount.CommanderColorIdentityCount,
         is DynamicAmount.DevotionTo,
         is DynamicAmount.DistinctCardTypesInCollections,
         DynamicAmount.DistinctColorsManaSpent,
@@ -549,29 +548,22 @@ class DynamicAmountEvaluator(
                     evaluate(state, amount.inner, context.copy(controllerId = playerId), projectedState)
                 } ?: 0
 
+            // The number of colors in a player's commanders' color identity (CR 903.4) — the union
+            // across a Partner / Background pair. No commander (or a registry-free evaluator, with no
+            // definitions to read identity off) reads 0: CR 903.4f's "won't do anything". A *cost*
+            // priced from it is unpayable instead — see CostAtomAmounts.
+            is DynamicAmount.CommanderColorIdentityCount -> {
+                val playerId = resolveUnifiedPlayerIds(state, amount.player, context, projectedState).firstOrNull()
+                    ?: return 0
+                predicates.commanderColorIdentity(state, playerId)?.size ?: 0
+            }
+
             // Devotion (CR 700.5): the number of mana symbols of the named colors among the mana
             // costs of permanents the player controls. Hybrid ({W/U}), monocolored hybrid ({2/B}),
             // and Phyrexian ({B/P}) symbols each count toward their color(s); a symbol matching more
             // than one of the requested colors is still counted once. Controller is read from
             // projection so control-changing effects are honored (700.5a). Face-down permanents have
             // no mana cost (CR 708.2a) and contribute nothing.
-            // "The number of colors in <set>" — the same resolver the mana abilities use, for the
-            // effect's controller (the cost's payer when priced through CostAtomAmounts). No
-            // registry (a registry-free evaluator) means no definitions to read identity off: 0.
-            is DynamicAmount.ColorCount -> {
-                val registry = predicates.cardRegistry ?: return 0
-                ManaColorSetResolver.resolve(
-                    colorSet = amount.colors,
-                    state = state,
-                    projected = resolveProjection(state, projectedState),
-                    sourceId = context.sourceId,
-                    controllerId = context.controllerId,
-                    cardRegistry = registry,
-                    predicateEvaluator = predicates,
-                    resolveEntity = { context.resolveTarget(it, state) },
-                ).size
-            }
-
             is DynamicAmount.DevotionTo -> {
                 val playerIds = resolveUnifiedPlayerIds(state, amount.player, context, projectedState).toSet()
                 if (playerIds.isEmpty()) return 0

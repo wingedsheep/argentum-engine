@@ -1727,10 +1727,7 @@
                             "type": "CostAtomWrapper",
                             "atom": {
                                 "type": "AtomPayLife",
-                                "amount": {
-                                    "type": "ColorCount",
-                                    "colors": "ManaColorSet.CommanderIdentity"
-                                }
+                                "amount": "CommanderColorIdentityCount"
                             }
                         }
                     ]

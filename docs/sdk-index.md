@@ -620,7 +620,7 @@ Families:
 - `DynamicAmount.CardsCycledThisGame(player: Player, cardName: String?)` — How many times a player has cycled a card this game — every cycling activation, typecycling included (CR 702.29f), counted when the card is discarded to pay the cost.
 - `DynamicAmount.CastChoice(slot: ChoiceSlot)` — A *numeric* value locked in for a com.wingedsheep.sdk.scripting.ChoiceSlot as this object was cast, read off the *current object* regardless of zone — the sibling of CastX for the other cast-choice…
 - `DynamicAmount.CastX` — The value of `{X}` this object was cast with, read off the *current object* regardless of what zone it is in.
-- `DynamicAmount.ColorCount(colors: ManaColorSet)` — The number of colors (0–5) in a ManaColorSet, resolved for the controller of the effect or the payer of the cost — War Room's "pay life equal to the number of colors in your commanders' color ident…
+- `DynamicAmount.CommanderColorIdentityCount(player: Player)` — The number of colors (0–5) in player's commanders' color identity — the union of the color identities of all their commanders, so a Partner / Background pair counts both (CR 903.4).
 - `DynamicAmount.Conditional(condition: Condition, ifTrue: DynamicAmount, ifFalse: DynamicAmount)` — Conditional amount: evaluates to one of two amounts based on a condition.
 - `DynamicAmount.ContextProperty(key: ContextPropertyKey)` — A value pulled from the current resolution context — trigger payload, additional-cost accumulator, target list, or a linked-exile pile attached to the source permanent.
 - `DynamicAmount.Count(player: Player, zone: Zone, filter: GameObjectFilter)` — Count game objects in a zone matching a unified filter.

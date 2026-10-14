@@ -20,7 +20,8 @@ import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.TimingRule
 import com.wingedsheep.sdk.scripting.costs.CostAtom
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
-import com.wingedsheep.sdk.scripting.values.ManaColorSet
+import com.wingedsheep.sdk.scripting.PlayersCantPayLifeForCosts
+import com.wingedsheep.sdk.scripting.references.Player
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.FunSpec
@@ -28,16 +29,17 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 
 /**
- * Life costs priced from game state — [CostAtom.PayLife] carrying a [DynamicAmount.ColorCount]
+ * Life costs priced from game state — [CostAtom.PayLife] carrying a
+ * [DynamicAmount.CommanderColorIdentityCount]
  * (War Room's "Pay life equal to the number of colors in your commanders' color identity").
  *
  * Pins:
- *  - [DynamicAmount.ColorCount] over [ManaColorSet.CommanderIdentity] counts the union of a
+ *  - [DynamicAmount.CommanderColorIdentityCount] counts the union of a
  *    Partner pair's identities, alike through the effect evaluator and the cost pricer;
  *  - the activation charges that many life, read for the activating player;
  *  - a player whose life is below the price is neither offered the activation nor allowed to
  *    submit it (CR 119.4) — the enumerator and the validator agree;
- *  - a colorless commander prices it at 0;
+ *  - a colorless commander prices it at 0, payable even where no life may be paid (CR 119.4b);
  *  - a player with no commander can't activate it at all (War Room's ruling);
  *  - the atom's whitelist and printed text.
  */
@@ -75,7 +77,13 @@ class DynamicLifeCostTest : FunSpec({
         name = "Dynamic Life Filler", manaCost = ManaCost.parse("{1}"),
         subtypes = setOf(Subtype("Bear")), power = 1, toughness = 1,
     )
-    val all = listOf(lifeEngine, whitePartner, bluePartner, greenCommander, colorlessCommander, filler)
+    val lifeLock = card("Dynamic Life Cost Lock") {
+        manaCost = "{3}"
+        typeLine = "Artifact"
+        oracleText = "Players can't pay life to cast spells or to activate abilities."
+        staticAbility { ability = PlayersCantPayLifeForCosts() }
+    }
+    val all = listOf(lifeLock, lifeEngine, whitePartner, bluePartner, greenCommander, colorlessCommander, filler)
 
     /** Seat 0 commands the white/blue partners; seat 1 [secondCommander]. */
     fun commanderGame(secondCommander: CardDefinition = greenCommander): Pair<GameTestDriver, List<EntityId>> {
@@ -102,10 +110,10 @@ class DynamicLifeCostTest : FunSpec({
     fun GameTestDriver.price(player: EntityId) =
         CostAtomAmounts.life(state, lifeAtom, player, services.predicateEvaluator)
 
-    test("ColorCount(CommanderIdentity) counts a Partner pair's union, as effect and as cost") {
+    test("CommanderColorIdentityCount counts a Partner pair's union, as effect and as cost") {
         val (driver, players) = commanderGame()
         val (partnered, single) = players
-        val amount = DynamicAmount.ColorCount(ManaColorSet.CommanderIdentity)
+        val amount = DynamicAmount.CommanderColorIdentityCount()
         fun asEffect(player: EntityId) =
             driver.services.predicateEvaluator.amounts.evaluate(driver.state, amount, EffectContext(sourceId = null, controllerId = player))
 
@@ -167,6 +175,24 @@ class DynamicLifeCostTest : FunSpec({
         driver.getLifeTotal(colorless) shouldBe 5
     }
 
+    test("paying 0 life is always allowed, even under a can't-pay-life lock (CR 119.4b)") {
+        val (driver, players) = commanderGame(secondCommander = colorlessCommander)
+        val (partnered, colorless) = players
+        driver.putPermanentOnBattlefield(partnered, lifeLock.name)
+        val theirs = driver.putPermanentOnBattlefield(partnered, lifeEngine.name)
+        val engine = driver.putPermanentOnBattlefield(colorless, lifeEngine.name)
+
+        withClue("the two-color player owes 2 life, which the lock forbids") {
+            driver.canActivate(partnered, theirs) shouldBe false
+            driver.submit(ActivateAbility(playerId = partnered, sourceId = theirs, abilityId = abilityId)).error shouldNotBe null
+        }
+        driver.passPriority(partnered)
+        withClue("the colorless-commander player owes 0, which no lock can forbid") {
+            driver.canActivate(colorless, engine) shouldBe true
+            driver.submitSuccess(ActivateAbility(playerId = colorless, sourceId = engine, abilityId = abilityId))
+        }
+    }
+
     test("a player with no commander can't activate it at all (War Room ruling)") {
         val driver = GameTestDriver()
         driver.registerCards(all)
@@ -188,5 +214,12 @@ class DynamicLifeCostTest : FunSpec({
         lifeAtom.fixedAmount shouldBe null
         shouldThrow<IllegalArgumentException> { CostAtom.PayLife(-1) }
         shouldThrow<IllegalArgumentException> { CostAtom.PayLife(DynamicAmount.XValue) }
+        withClue("a cost is priced for its payer alone") {
+            shouldThrow<IllegalArgumentException> {
+                CostAtom.PayLife(DynamicAmount.CommanderColorIdentityCount(Player.TargetOpponent))
+            }
+        }
+        DynamicAmount.CommanderColorIdentityCount(Player.TargetOpponent).description shouldBe
+            "the number of colors in target opponent's commanders' color identity"
     }
 })

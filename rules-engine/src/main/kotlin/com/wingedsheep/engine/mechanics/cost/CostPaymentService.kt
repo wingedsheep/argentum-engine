@@ -608,6 +608,7 @@ class CostPaymentService(private val services: EngineServices) {
     }
 
     private fun payLife(state: GameState, payerId: EntityId, amount: Int): CostPaymentExecution {
+        if (amount >= CostAtomAmounts.UNPRICEABLE) return CostPaymentExecution(state, emptyList(), success = false)
         val (newState, events) = LifePaymentService.pay(services.zones, state, payerId, amount)
             ?: return CostPaymentExecution(state, emptyList(), success = false)
         return CostPaymentExecution(newState, events, success = true)
@@ -820,8 +821,8 @@ class CostPaymentService(private val services: EngineServices) {
                     is CostAtom.Mana -> manaSolver.canPay(state, payerId, atom.cost)
                     // CR 119.4 — a player may pay life only if their life total is at least the amount; paying
                     // life that would reduce them to 0 or less is legal (they then lose as a state-based action).
-                    is CostAtom.PayLife -> state.canPayLife( // CR 119.8 too
-                        payerId, CostAtomAmounts.life(state, atom, payerId, predicateEvaluator, sourceId), lifePurpose
+                    is CostAtom.PayLife -> CostAtomAmounts.canPayLife( // CR 119.8 too
+                        state, payerId, CostAtomAmounts.life(state, atom, payerId, predicateEvaluator, sourceId), lifePurpose
                     )
                     is CostAtom.Discard -> domain(state, payerId, c, sourceId, predicateEvaluator = predicateEvaluator).size >= atom.count
                     // CR 118.3 — an empty hand discards nothing, and a cost of nothing is payable.

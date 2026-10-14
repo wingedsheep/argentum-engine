@@ -46,7 +46,9 @@ sealed interface PayCost : TextReplaceable<PayCost> {
      * [OwnManaCost]: the card names a *rule* for the amount, not the amount. It is lowered to a
      * concrete `CostAtom.PayLife` at payment time by `PayOrSufferExecutor`, which is the one place
      * that holds the `EffectContext` the amount may need — a pipeline-scoped amount such as
-     * `ManaValueSumOfCollection` can only be read there.
+     * `ManaValueSumOfCollection` can only be read there. A state-priced amount that
+     * `CostAtom.PayLife` itself admits (War Room's commander color-identity count) is spelled
+     * `Atom(CostAtom.PayLife(..))` instead; this type is for pipeline-scoped amounts.
      *
      * Consequently this is a **PayOrSuffer-only** cost: it is not payable as a spell or ability
      * cost, where affordability has to be known before any context exists, and the cost-payment

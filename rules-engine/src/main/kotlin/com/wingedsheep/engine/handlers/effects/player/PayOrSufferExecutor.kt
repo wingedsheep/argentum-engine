@@ -736,7 +736,7 @@ class PayOrSufferExecutor(
 
         // If player doesn't have enough life to pay and survive, execute suffer effect
         // CR 119.8 — a player who can't lose life can't pay it, so they suffer.
-        if (playerLife <= life || state.isLifeLossLocked(controllerId)) {
+        if (life >= CostAtomAmounts.UNPRICEABLE || playerLife <= life || state.isLifeLossLocked(controllerId)) {
             return executeSufferEffect(state, effect.suffer, context)
         }
 
@@ -1034,7 +1034,8 @@ class PayOrSufferExecutor(
                 ).size >= atom.count
                 is CostAtom.PayLife -> {
                     val life = state.lifeTotal(playerId) // CR 810.9a — team's shared total
-                    life > CostAtomAmounts.life(state, atom, playerId, predicateEvaluator, sourceId)
+                    val price = CostAtomAmounts.life(state, atom, playerId, predicateEvaluator, sourceId)
+                    price < CostAtomAmounts.UNPRICEABLE && life > price
                 }
                 is CostAtom.Mana -> ManaSolver(cardRegistry, predicateEvaluator).canPay(state, playerId, atom.cost)
                 is CostAtom.ExileFrom -> findValidCardsInZone(state, playerId, atom.filter, atom.zone, sourceId).size >= atom.count

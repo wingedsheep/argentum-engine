@@ -96,7 +96,7 @@ object Costs {
      * Pay life equal to an amount priced from game state as the cost is paid — War Room's "Pay
      * life equal to the number of colors in your commanders' color identity" is
      * `PayLife(DynamicAmounts.commanderColorIdentityCount())`. Only amounts [CostAtom.PayLife]
-     * admits (a [DynamicAmount.ColorCount]) are accepted.
+     * admits (a [DynamicAmount.CommanderColorIdentityCount]) are accepted.
      */
     fun PayLife(amount: DynamicAmount): AbilityCost =
         AbilityCost.Atom(CostAtom.PayLife(amount))

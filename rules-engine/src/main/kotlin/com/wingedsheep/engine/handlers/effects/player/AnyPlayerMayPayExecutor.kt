@@ -131,8 +131,8 @@ class AnyPlayerMayPayExecutor(
             }
             // CR 119.4: a player may pay life only if their life total is at least the amount.
             is CostAtom.PayLife -> {
-                state.canPayLife( // CR 810.9a / 119.8
-                    playerId, CostAtomAmounts.life(state, atom, playerId, predicateEvaluator, sourceId), LifePaymentPurpose.OTHER
+                CostAtomAmounts.canPayLife( // CR 810.9a / 119.8
+                    state, playerId, CostAtomAmounts.life(state, atom, playerId, predicateEvaluator, sourceId), LifePaymentPurpose.OTHER
                 )
             }
             else -> false

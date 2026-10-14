@@ -540,8 +540,8 @@ counts a hybrid Phyrexian pip paid with life like any other Phyrexian pip.
   overload wraps it in `Fixed`), so `Costs.PayLife(amount: DynamicAmount)` prices a life cost from
   game state as it is paid — War Room's "Pay life equal to the number of colors in your commanders'
   color identity" is `Costs.PayLife(DynamicAmounts.commanderColorIdentityCount())`. The atom admits
-  only a nonnegative `Fixed` or a `ColorCount` (amounts priced from game state alone, no X or
-  targets); every engine site prices it through `CostAtomAmounts.life` with the payer, so the
+  only a nonnegative `Fixed` or a `CommanderColorIdentityCount()` for `Player.You` (amounts priced
+  from the payer's state alone, no X or targets); every engine site prices it through `CostAtomAmounts.life` with the payer, so the
   legal-action enumerator, the activation validator and the payment charge the same number. Renders
   "pay 2 life" / "pay life equal to <amount>". A commander-identity count for a player with **no**
   commander is unpayable (CR 903.4f; War Room ruling), while a colorless commander prices it at 0. A dynamic
@@ -14274,15 +14274,13 @@ forbids `DynamicAmount.X` in card definitions.
   Berg Strider's "**if {S} was spent to cast this spell**" is
   `Conditions.CompareAmounts(DynamicAmounts.snowManaSpent(), GTE, 1)`. Same source-entity read as
   `ManaSpentFromSubtype` (and a cast trigger's own payment snapshot); 0 for a permanent that wasn't cast.
-- `ColorCount(colors: ManaColorSet)` — the number of colors (0–5) in a `ManaColorSet`, resolved by
-  the engine's one `ManaColorSetResolver` for the effect's controller (a cost's payer). Facades:
-  `DynamicAmounts.colorCount(set)` and `DynamicAmounts.commanderColorIdentityCount()` (=
-  `ColorCount(ManaColorSet.CommanderIdentity)`: the union of the player's commanders' color
-  identities, Partner / Background pairs included; 0 for a colorless commander or — as an effect
-  amount — no commander). Priced as a `Costs.PayLife` amount it is unpayable for a commanderless
-  player (CR 903.4f; War Room). Source-keyed sets (`SourceChosenColor`, `AmongLinkedExiledCards`,
-  `ColorsOf(Self)`) read the source; a `ColorsOf` naming any other referent counts 0 when priced as
-  a cost, before anything is targeted.
+- `CommanderColorIdentityCount(player = You)` — the number of colors (0–5) in `player`'s
+  commanders' color identity: the union across all their commanders, so a Partner / Background
+  pair counts both (CR 903.4); 0 for a colorless commander. Facade:
+  `DynamicAmounts.commanderColorIdentityCount()`. With no commander the quality is undefined
+  (CR 903.4f): an effect reads 0, and a `Costs.PayLife` priced from it is unpayable (War Room).
+  Not `EntityNumericProperty.ColorCount` (one object's current colors) nor an `AggregateBattlefield`
+  distinct-colors count (colors among permanents) — identity is fixed before the game (CR 903.4a).
 - `DevotionTo(colors, player = You)` — a player's **devotion** to one or more colors (CR 700.5):
   the number of mana symbols of those colors among the mana costs of permanents the player controls.
   One color = "devotion to red"; several = devotion to that combination ("white and black"), where a

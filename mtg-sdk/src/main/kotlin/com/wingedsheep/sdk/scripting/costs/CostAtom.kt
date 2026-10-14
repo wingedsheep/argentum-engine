@@ -9,6 +9,7 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.text.TextReplaceable
 import com.wingedsheep.sdk.scripting.text.TextReplacer
 import com.wingedsheep.sdk.scripting.util.quantify
+import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -70,11 +71,12 @@ sealed interface CostAtom : TextReplaceable<CostAtom> {
      *
      * [amount] is a [DynamicAmount] so a printed cost can be priced from game state as it is
      * paid — War Room's "pay life equal to the number of colors in your commanders' color
-     * identity" is `PayLife(DynamicAmount.ColorCount(ManaColorSet.CommanderIdentity))`. Every
+     * identity" is `PayLife(DynamicAmount.CommanderColorIdentityCount())`. Every
      * pricing site goes through the engine's `CostAtomAmounts.evaluate` with the payer, so the
      * legal-action enumerator and the activation validator see the same number. The whitelist in
      * `init` admits only amounts that price from game state alone (no X, no targets): a
-     * nonnegative [DynamicAmount.Fixed] or a [DynamicAmount.ColorCount].
+     * nonnegative [DynamicAmount.Fixed] or a [DynamicAmount.CommanderColorIdentityCount] for
+     * `Player.You` (a cost is priced for its payer alone).
      */
     @SerialName("AtomPayLife")
     @Serializable
@@ -83,8 +85,8 @@ sealed interface CostAtom : TextReplaceable<CostAtom> {
 
         init {
             require(amount is DynamicAmount.Fixed && amount.amount >= 0 ||
-                amount is DynamicAmount.ColorCount) {
-                "Life costs require a nonnegative fixed amount or a color count"
+                amount is DynamicAmount.CommanderColorIdentityCount && amount.player == Player.You) {
+                "Life costs require a nonnegative fixed amount or your commanders' color-identity count"
             }
         }
 

@@ -677,7 +677,7 @@ class CostHandler(private val zones: ZoneTransitionService) {
             // Paying down to exactly 0 is legal; the state-based action checker handles the loss.
             // CR 119.8 — a player who can't lose life can't pay it at all; nor can one a cost-scoped
             // prohibition forbids (Karn's Sylex).
-            state.canPayLife(controllerId, CostAtomAmounts.life(state, atom, controllerId, predicateEvaluator, sourceId), lifePurpose)
+            CostAtomAmounts.canPayLife(state, controllerId, CostAtomAmounts.life(state, atom, controllerId, predicateEvaluator, sourceId), lifePurpose)
         }
         is CostAtom.Sacrifice -> {
             val candidates = findMatchingPermanentsUnified(state, controllerId, atom.filter, sourceId)
@@ -824,6 +824,7 @@ class CostHandler(private val zones: ZoneTransitionService) {
         }
         is CostAtom.PayLife -> {
             val life = CostAtomAmounts.life(state, atom, controllerId, predicateEvaluator, sourceId)
+            if (life >= CostAtomAmounts.UNPRICEABLE) return CostPaymentResult.failure("This life cost can't be paid")
             val (newState, events) = LifePaymentService.pay(zones, state, controllerId, life)
                 ?: return CostPaymentResult.failure("Player has no life total")
             CostPaymentResult.success(newState, manaPool, events = events)

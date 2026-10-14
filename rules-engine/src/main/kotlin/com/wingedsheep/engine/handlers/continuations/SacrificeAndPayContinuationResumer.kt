@@ -1000,7 +1000,7 @@ class SacrificeAndPayContinuationResumer(
                 is CostAtom.PayLife -> {
                     // CR 810.9a — team's shared total; CR 119.8 — a life-loss lock forbids paying.
                     val life = CostAtomAmounts.life(state, atom, nextPlayerId, services.predicateEvaluator, continuation.sourceId)
-                    if (state.canPayLife(nextPlayerId, life, LifePaymentPurpose.OTHER)) {
+                    if (CostAtomAmounts.canPayLife(state, nextPlayerId, life, LifePaymentPurpose.OTHER)) {
                         val prompt = "Pay $life life to prevent ${continuation.sourceName}'s effect?"
                         val question = { decisionId: String -> YesNoDecision(
                             id = decisionId,

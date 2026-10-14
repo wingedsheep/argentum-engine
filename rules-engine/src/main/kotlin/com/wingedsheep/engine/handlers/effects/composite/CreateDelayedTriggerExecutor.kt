@@ -317,7 +317,7 @@ class CreateDelayedTriggerExecutor(
         DynamicAmount.CraftedMaterialsTotalManaValue,
         DynamicAmount.CraftedMaterialsTotalPower,
         DynamicAmount.CreaturesThatCrewedOrSaddledThisTurn,
-        is DynamicAmount.ColorCount,
+        is DynamicAmount.CommanderColorIdentityCount,
         is DynamicAmount.DevotionTo,
         DynamicAmount.DistinctColorsManaSpent,
         is DynamicAmount.EntityProperty,

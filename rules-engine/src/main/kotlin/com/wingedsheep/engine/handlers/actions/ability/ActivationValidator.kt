@@ -704,7 +704,7 @@ internal class ActivationValidator(
                 else -> 0
             }
         }
-        return if (state.canPayLife(action.playerId, life, LifePaymentPurpose.activating(ability.isManaAbility))) null
+        return if (CostAtomAmounts.canPayLife(state, action.playerId, life, LifePaymentPurpose.activating(ability.isManaAbility))) null
         else "Cannot pay $life life to activate this ability"
     }
 

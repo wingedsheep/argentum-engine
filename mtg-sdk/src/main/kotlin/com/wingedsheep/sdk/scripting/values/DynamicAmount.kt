@@ -1053,28 +1053,24 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
     }
 
     /**
-     * The number of colors (0–5) in a [ManaColorSet], resolved for the controller of the effect or
-     * the payer of the cost — War Room's "pay life equal to the number of colors in your
-     * commanders' color identity" is `ColorCount(ManaColorSet.CommanderIdentity)`.
+     * The number of colors (0–5) in [player]'s commanders' color identity — the union of the color
+     * identities of all their commanders, so a Partner / Background pair counts both (CR 903.4).
+     * War Room's "pay life equal to the number of colors in your commanders' color identity" is
+     * `Costs.PayLife(DynamicAmounts.commanderColorIdentityCount())`. A colorless commander counts 0.
      *
-     * Reuses the engine's one color-set resolver, so every [ManaColorSet] the mana abilities
-     * understand counts here the same way. [ManaColorSet.CommanderIdentity] is the union of the
-     * color identities of the player's commanders (Partner / Background pairs included); a
-     * colorless commander counts 0. With no commander the quality is undefined (CR 903.4f): it
-     * reads 0 as an effect amount ("that part of the ability won't do anything"), and a *cost*
-     * priced from it is unpayable — War Room's draw can't be activated at all. Sets keyed off the resolving object
-     * ([ManaColorSet.SourceChosenColor], [ManaColorSet.AmongLinkedExiledCards],
-     * [ManaColorSet.ColorsOf] `Self`) read the source permanent; a [ManaColorSet.ColorsOf] naming
-     * any other referent counts 0 when priced as a cost, where nothing has been targeted yet.
+     * With no commander the quality is undefined (CR 903.4f): it reads 0 as an effect amount
+     * ("that part of the ability won't do anything"), and a *cost* priced from it is unpayable —
+     * War Room's draw can't be activated at all.
+     *
+     * Not [EntityNumericProperty.ColorCount] (one object's current colors) nor an
+     * `AggregateBattlefield` distinct-colors count (colors among permanents): a commander's color
+     * identity is fixed before the game begins (CR 903.4a) and read from its card, wherever it is.
      */
-    @SerialName("ColorCount")
+    @SerialName("CommanderColorIdentityCount")
     @Serializable
-    data class ColorCount(val colors: ManaColorSet) : DynamicAmount {
-        override val description: String = when (colors) {
-            ManaColorSet.CommanderIdentity -> "the number of colors in your commanders' color identity"
-            is ManaColorSet.ColorsOf -> "the number of colors ${colors.entity.description} is"
-            else -> "the number of colors in ${colors.description}"
-        }
+    data class CommanderColorIdentityCount(val player: Player = Player.You) : DynamicAmount {
+        override val description: String =
+            "the number of colors in ${player.possessive} commanders' color identity"
     }
 
     /**
