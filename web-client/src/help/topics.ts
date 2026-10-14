@@ -135,8 +135,7 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
     body: [
       { kind: 'h', text: 'Top bar' },
       { kind: 'ul', items: [
-        'Deckbuilder — build, import and save decks, and (with the Deck builder | Cube builder switch at the top) cubes.',
-        'Cubes — your cube library: play, share, duplicate or open a cube in the builder.',
+        'Decks & Cubes — everything you have built, on one shelf with a Decks tab and a Cubes tab. Open a deck or cube in the builder, start a new one, or play a cube straight from its tile.',
         'Replays — every finished game you played, ready to rewatch (shown once you are connected).',
         'Sets — Set Completion: which sets and cards are playable.',
         'Learn — the Learn to Play course. Help — this wiki.',
@@ -259,7 +258,7 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
     section: 'getting-started',
     title: 'Where your decks live',
     summary:
-      'Saved decks live in this browser until you sign in, and in your account afterwards. The deckbuilder’s My Decks list is the same list every lobby deck picker reads from.',
+      'Saved decks live in this browser until you sign in, and in your account afterwards. The Decks tab of Decks & Cubes (and the deckbuilder’s My Decks list) is the same list every lobby deck picker reads from.',
     body: [
       { kind: 'p', text: 'Browser storage is per-browser and easy to lose: clearing site data or history takes your decks with it, and they do not follow you to a phone or a second computer. An account is the fix — signing in later keeps everything you already built, and you are offered a one-click migration.' },
       { kind: 'p', text: 'A deck you want to keep without an account can also be exported as a decklist or a share link, both of which survive the browser.' },
@@ -458,7 +457,7 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
         'Running 2 copies of a card makes it twice as likely to show up in its rarity slot.',
         'A full pack needs enough different commons, uncommons and rares to fill its slots; the editor’s pack strip shows any slot the cube can’t fill.',
       ] },
-      { kind: 'p', text: 'Example — an extended Bloomburrow: start a new cube on the Cubes page, Add a set → Bloomburrow, then Add a set → Bloomburrow Commander with Reprints turned off, so only its new Bloomburrow cards come in. Set Packs to Play Boosters, save, and draft it like the real set.' },
+      { kind: 'p', text: 'Example — an extended Bloomburrow: start a new cube from the Cubes tab of Decks & Cubes, Add a set → Bloomburrow, then Add a set → Bloomburrow Commander with Reprints turned off, so only its new Bloomburrow cards come in. Set Packs to Play Boosters, save, and draft it like the real set.' },
     ],
     related: ['cards-cube', 'cube-building', 'cube-sharing', 'cards-draft'],
   },
@@ -916,7 +915,7 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
     section: 'limited',
     title: 'Building a cube',
     summary:
-      'Cubes are built in the deckbuilder: flip the Deck builder | Cube builder switch at the top, or open a cube from the Cubes page. Flipping back and forth keeps what you were working on in each, saved or not, for the rest of the session. Browse and filter cards exactly as for a deck, add a whole set or paste a list, choose how the cube becomes packs, and save it. The lobby’s Cube panel has a compact editor for quick tweaks. Cubes live alongside your decks — in this browser as a guest, in your account when signed in.',
+      'Cubes are built in the deckbuilder: flip the Deck builder | Cube builder switch at the top, or open a cube from the Cubes tab of Decks & Cubes. Flipping back and forth keeps what you were working on in each, saved or not, for the rest of the session. Browse and filter cards exactly as for a deck, add a whole set or paste a list, choose how the cube becomes packs, and save it. The lobby’s Cube panel has a compact editor for quick tweaks. Cubes live alongside your decks — in this browser as a guest, in your account when signed in.',
     body: [
       { kind: 'p', text: 'A cube is a list of card names with counts, so it isn’t tied to any set or printing. The builder keeps the deckbuilder’s card grid and filters; what changes in cube mode is the right-hand panel — no sideboard, format or 4-copy limit, but packs, rarities and pack health instead. Three ways to fill a cube:' },
       { kind: 'ul', items: [
@@ -929,7 +928,7 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
       { kind: 'p', text: 'Cubes are usually singleton (one of each), but counts are yours to set — the editor lets any card run as many copies as you want, and each copy is a separate physical card when packs are dealt.' },
       { kind: 'p', text: 'A cube whose names are all implemented is playable; one with cards the engine doesn’t have yet is not, and the editor says so in red with a one-click “drop the unimplemented cards”. You can still save a cube in that state — sets keep landing, so a cube naming a card that arrives next month is worth keeping — but a lobby won’t accept it until it resolves cleanly.' },
       { kind: 'p', text: 'The editor also shows the colour spread, mana curve and rarity spread as you go, which are what a cube is usually balanced on.' },
-      { kind: 'p', text: 'Each cube on the Cubes page has Play, which opens a lobby with the cube already loaded — a booster draft or sealed, with friends or against AI.' },
+      { kind: 'p', text: 'Each cube on the Cubes tab of Decks & Cubes has Play, which opens a lobby with the cube already loaded — a booster draft or sealed, with friends or against AI.' },
     ],
     related: ['cards-cube', 'cube-boosters', 'cube-sharing', 'cube-pool-play', 'where-decks-live', 'search-syntax', 'deck-import-export'],
   },

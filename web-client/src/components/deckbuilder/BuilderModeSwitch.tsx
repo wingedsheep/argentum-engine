@@ -1,5 +1,6 @@
 /**
- * Deck builder | Cube builder — the builder's two modes, in the page title where "Deckbuilder" used to sit.
+ * Decks & Cubes / Deck builder | Cube builder — the builder's two modes, in the page title, after a
+ * link back to the shelf both kinds of thing live on (`/library`).
  *
  * Decks and cubes are built with the same card browser, so they are one tool with two modes rather
  * than two tools; this switch is what says so. Each mode remembers where it was for the rest of the
@@ -8,7 +9,7 @@
  * flip must never cost the player the deck or cube they were in the middle of building.
  */
 import { useEffect } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import styles from './BuilderModeSwitch.module.css'
 
 export type BuilderMode = 'deck' | 'cube'
@@ -104,6 +105,16 @@ export function BuilderModeSwitch({
   }
 
   return (
+    <span className={styles.crumbs}>
+      <Link
+        to={`/library?tab=${mode === 'deck' ? 'decks' : 'cubes'}`}
+        className={styles.library}
+        onClick={() => onLeave?.()}
+        title={mode === 'deck' ? 'All your decks' : 'All your cubes'}
+      >
+        Decks &amp; Cubes
+      </Link>
+      <span className={styles.sep} aria-hidden>/</span>
     <div className={styles.switch} role="tablist" aria-label="Build">
       {(['deck', 'cube'] as const).map((m) => (
         <button
@@ -118,5 +129,6 @@ export function BuilderModeSwitch({
         </button>
       ))}
     </div>
+    </span>
   )
 }

@@ -111,6 +111,7 @@ class PlayerActivityTracker {
 
         fun pageLabel(page: String): String = when (page) {
             "deckbuilder" -> "the deckbuilder"
+            "library" -> "Decks & Cubes"
             "set-completion" -> "Set Completion"
             "scenario" -> "the scenario builder"
             "learn" -> "Learn to Play"

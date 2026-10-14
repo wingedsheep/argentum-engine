@@ -96,7 +96,7 @@ export function CubeBuilderPage() {
         {library.ready ? (
           <div className={p.panel}>
             <p className={p.empty}>This cube isn’t in your library — it may have been deleted, or saved on another device.</p>
-            <button type="button" className={p.button} onClick={() => navigate('/cubes')}>
+            <button type="button" className={p.button} onClick={() => navigate('/library?tab=cubes')}>
               Back to your cubes
             </button>
           </div>
@@ -278,7 +278,7 @@ function CubeBuilder({
         <div className={db.toolbarSpacer} />
         {toolsOpen && <div className={db.toolsBackdrop} onClick={() => setToolsOpen(false)} aria-hidden />}
         <div className={db.tools} data-open={toolsOpen}>
-          <button type="button" className={db.toolButton} onClick={openTool(() => guard(() => navigate('/cubes')))}>
+          <button type="button" className={db.toolButton} onClick={openTool(() => guard(() => navigate('/library?tab=cubes')))}>
             My cubes
           </button>
           <button type="button" className={db.toolButton} onClick={openTool(() => setDialog('set'))}>

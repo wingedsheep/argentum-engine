@@ -202,7 +202,7 @@ export function ProfilePage() {
             sub="Ratings, colors, curve & more"
             onClick={() => navigate('/stats')}
           />
-          {/* Launcher into the deckbuilder's saved-deck browser — no need to duplicate that UI here. */}
+          {/* Launcher into the Decks & Cubes library — no need to duplicate that UI here. */}
           <Shortcut
             icon={<DecksIcon />}
             title="My decks"
@@ -211,7 +211,7 @@ export function ProfilePage() {
                 ? 'None saved to your account yet'
                 : `${decks.length} deck${decks.length === 1 ? '' : 's'} saved to your account`
             }
-            onClick={() => navigate('/deckbuilder?decks=open')}
+            onClick={() => navigate('/library?tab=decks')}
           />
           <Shortcut icon={<FriendsIcon />} title="Friends" sub="Your friend code and who's online" onClick={() => navigate('/friends')} />
           <Shortcut

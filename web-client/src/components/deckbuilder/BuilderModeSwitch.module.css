@@ -1,3 +1,26 @@
+.crumbs {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  vertical-align: middle;
+}
+
+.library {
+  color: #d5dae6;
+  text-decoration: none;
+  border-radius: 6px;
+}
+
+.library:hover { color: #fff; text-decoration: underline; text-underline-offset: 4px; }
+.library:focus-visible { outline: 2px solid var(--color-focus-ring); outline-offset: 3px; }
+
+.sep { color: rgba(255, 255, 255, 0.3); font-size: 18px; }
+
+/* Narrow top bars keep the mode switch; the shelf is one tap away from the wordmark's home. */
+@media (max-width: 640px) {
+  .library, .sep { display: none; }
+}
+
 .switch {
   display: inline-flex;
   gap: 2px;

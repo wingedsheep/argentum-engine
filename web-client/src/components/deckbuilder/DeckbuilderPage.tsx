@@ -519,23 +519,32 @@ export function DeckbuilderPage() {
   const [bulkEditOpen, setBulkEditOpen] = useState(false)
   // Saved-decks browser overlay visibility.
   const [decksBrowserOpen, setDecksBrowserOpen] = useState(false)
-  // Deep link from the profile's "Manage decks" button (/deckbuilder?decks=open): open the saved-deck
-  // browser straight away, then strip the param so it doesn't re-open on later navigations.
+  // Example-decks picker overlay visibility.
+  const [examplesOpen, setExamplesOpen] = useState(false)
+  // Deep links that open one of the builder's dialogs straight away — the library's "Import a list"
+  // and "Start from an example" (?open=import|examples), and the older ?decks=open for the saved-deck
+  // browser — then strip the param so it doesn't re-open on later navigations.
   useEffect(() => {
-    if (searchParams.get('decks') !== 'open') return
-    reloadUnifiedDecks()
-    setDecksBrowserOpen(true)
+    const open = searchParams.get('decks') === 'open' ? 'decks' : searchParams.get('open')
+    if (open !== 'decks' && open !== 'import' && open !== 'examples') return
+    if (open === 'decks') {
+      reloadUnifiedDecks()
+      setDecksBrowserOpen(true)
+    } else if (open === 'import') {
+      setImportOpen(true)
+    } else {
+      setExamplesOpen(true)
+    }
     setSearchParams(
       (prev) => {
         const params = new URLSearchParams(prev)
         params.delete('decks')
+        params.delete('open')
         return params
       },
       { replace: true },
     )
   }, [searchParams, setSearchParams, reloadUnifiedDecks])
-  // Example-decks picker overlay visibility.
-  const [examplesOpen, setExamplesOpen] = useState(false)
 
   // Server-supplied starter decks. Mirrors the DeckPicker's Examples tab — fetched once and
   // surfaced in the deckbuilder via the topbar "Examples" button.

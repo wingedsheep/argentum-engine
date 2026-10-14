@@ -73,7 +73,7 @@ function NotFound({ message }: { message: string | null }) {
         {message ?? 'Its owner may have stopped sharing it or deleted the cube. Ask them for a new link.'}
       </p>
       <p>
-        <button type="button" className={p.button} onClick={() => navigate('/cubes')}>
+        <button type="button" className={p.button} onClick={() => navigate('/library?tab=cubes')}>
           Go to your cubes
         </button>
       </p>

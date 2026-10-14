@@ -10,6 +10,7 @@ import com.wingedsheep.sdk.scripting.CantAttack
 import com.wingedsheep.sdk.scripting.CantBlock
 import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.EventPattern
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.EntersTapped
 import com.wingedsheep.sdk.scripting.GrantDynamicStats
 import com.wingedsheep.sdk.scripting.GrantKeyword
@@ -22,6 +23,7 @@ import com.wingedsheep.sdk.scripting.effects.*
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.filters.unified.Scope
 import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
+import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.targets.TargetObject
 import com.wingedsheep.sdk.scripting.targets.TargetRequirement
@@ -171,8 +173,21 @@ object CardIntentAnalyzer {
         var expiringPump = false
         var pumpToughness = 0
         var expiringGroupPump = false
+        // Hand selection reads gated interiors too — see [handSelectionLeaves] for why only here.
+        val handLeaves = scripts.flatMap { script ->
+            EffectWalker.slots(script).map { it.effect } +
+                script.stateTriggeredAbilities.map { it.effect }
+        }.flatMap { handSelectionLeaves(it) }
         var gathersLibraryTop = false
         var movesToHand = false
+        val wishFilters = mutableListOf<GameObjectFilter>()
+        for (effect in handLeaves) {
+            if (effect is GatherCardsEffect && effect.source is CardSource.TopOfLibrary) gathersLibraryTop = true
+            wishFilterOf(effect)?.let { wishFilters += it }
+            if (effect is MoveCollectionEffect && (effect.destination as? CardDestination.ToZone)?.zone == Zone.HAND) {
+                movesToHand = true
+            }
+        }
 
         for (effect in leaves) {
             tags += tagsOf(effect)
@@ -183,10 +198,6 @@ object CardIntentAnalyzer {
                 pumpToughness = maxOf(pumpToughness, expiringToughnessOf(effect))
             }
             if (isExpiringGroupPump(effect)) expiringGroupPump = true
-            if (effect is GatherCardsEffect && effect.source is CardSource.TopOfLibrary) gathersLibraryTop = true
-            if (effect is MoveCollectionEffect && (effect.destination as? CardDestination.ToZone)?.zone == Zone.HAND) {
-                movesToHand = true
-            }
         }
 
         var anthemBonus = 0
@@ -227,9 +238,36 @@ object CardIntentAnalyzer {
             hasHaste = Keyword.HASTE in card.keywords,
             targetsOnlyOurPermanents = targetsOnlyOurPermanents(scripts),
             expiringGroupPump = expiringGroupPump,
-            selectsIntoHand = gathersLibraryTop && movesToHand,
+            selectsIntoHand = (gathersLibraryTop || wishFilters.isNotEmpty()) && movesToHand,
+            wishFilters = if (movesToHand) wishFilters else emptyList(),
         )
         return intent.copy(staticPriorValue = priorValueOf(card, intent))
+    }
+
+    /**
+     * [EffectWalker.leaves], plus the interiors of the gated effects it stops at — the action of an
+     * "if you do" ([Gate.DoAction]) and the branches of any gate the walk does not already open.
+     *
+     * Extrapolate the Impossible is the shape that needs it: "you may reveal two cards from outside
+     * the game; an opponent chooses one; put it into your hand" lowers to `May(IfYouDo(reveal, then
+     * = put into hand))`, and [EffectWalker] treats the `IfYouDo` as a leaf, so the card read as
+     * doing nothing at all. Used only for [CardIntent.selectsIntoHand] / [CardIntent.wishFilters]:
+     * widening the shared walk would move every tag and the rater's numbers with it, which is a
+     * separate change.
+     */
+    private fun handSelectionLeaves(effect: Effect): List<Effect> =
+        EffectWalker.leaves(effect).flatMap { leaf ->
+            if (leaf !is GatedEffect) return@flatMap listOf(leaf)
+            listOfNotNull((leaf.gate as? Gate.DoAction)?.action, leaf.then, leaf.otherwise)
+                .flatMap { handSelectionLeaves(it) }
+        }
+
+    /** The filter of a gather from its controller's own sideboard — "from outside the game". */
+    private fun wishFilterOf(effect: Effect): GameObjectFilter? {
+        if (effect !is GatherCardsEffect) return null
+        val source = effect.source as? CardSource.FromZone ?: return null
+        if (source.zone != Zone.SIDEBOARD || source.player != Player.You) return null
+        return source.filter
     }
 
     // ═════════════════════════════════════════════════════════════════════════

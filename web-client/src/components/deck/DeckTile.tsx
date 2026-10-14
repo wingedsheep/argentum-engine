@@ -64,6 +64,8 @@ export interface DeckTileProps {
   onClick: () => void
   /** Hover-revealed corner buttons. Build them with {@link DeckTileActionButton}. */
   actions?: ReactNode
+  /** Extra chips after the format chip — a cube's pack style, a "Shared" or warning flag. */
+  chips?: ReactNode
 }
 
 export function DeckTile({
@@ -82,6 +84,7 @@ export function DeckTile({
   disabled = false,
   onClick,
   actions,
+  chips,
 }: DeckTileProps) {
   // Hero art = the deck's rarest card as a wide Scryfall art crop. Derive it straight
   // from the card's CDN image URL (no rate-limited api.scryfall.com lookup) when we have
@@ -123,6 +126,7 @@ export function DeckTile({
                 {labelForFormat(format)}
               </span>
             )}
+            {chips}
             <span className={styles.pips}>
               {colors.length > 0 ? (
                 colors.map((c) => <ManaSymbol key={c} symbol={COLOR_PIP_SYMBOL[c] ?? 'C'} size={15} />)

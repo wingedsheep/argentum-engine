@@ -737,7 +737,10 @@ data class AiProfile(
      * With this on, `HoldPolicy` gives a sorcery-speed draw or card-selection spell the end-step
      * bonus in our postcombat main on an empty stack when no instant-speed card in hand wants the
      * mana — and `Strategist` drops that bonus whenever any other candidate beats passing on its
-     * own, so it never displaces a threat or a land drop. An instant-speed activated ability that
+     * own, so it never displaces a threat or a land drop. A wish — a card from outside the game into
+     * hand — is the same card-for-a-card trade and gets the same bonus, but only while the sideboard
+     * holds a card it can take (2026-10-14, game `2e28f192`: Extrapolate the Impossible held from
+     * the opening hand to the end, pinned by `HiddenZoneToHandAiTest`). An instant-speed activated ability that
      * only draws gets the end-step bonus at the opponent's end step, and is floored below passing
      * before it while an instant-speed card is in hand (lethal on board or a full hand releases
      * the hold). Needs [useCardIntent].

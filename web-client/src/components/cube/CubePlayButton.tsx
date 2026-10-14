@@ -7,16 +7,18 @@ import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import type { SharedCube } from '@/api/account'
 import { cubeOpponentRange, cubePlayRecipe, queueCubePlay, type CubePlayFormat, type CubePlayWith } from './playCube'
-import styles from './CubesPage.module.css'
+import styles from './CubePlayButton.module.css'
 
 interface CubePlayButtonProps {
   readonly cube: SharedCube
   /** Why the cube can't be played yet (unimplemented cards, empty) — disables the button. */
   readonly blockedReason?: string | null
-  readonly className?: string
+  readonly className?: string | undefined
+  /** Which edge of the button the panel lines up with; `end` for a button at the right of its row. */
+  readonly panelAlign?: 'start' | 'end'
 }
 
-export function CubePlayButton({ cube, blockedReason = null, className }: CubePlayButtonProps) {
+export function CubePlayButton({ cube, blockedReason = null, className, panelAlign = 'start' }: CubePlayButtonProps) {
   const navigate = useNavigate()
   const [open, setOpen] = useState(false)
   const [format, setFormat] = useState<CubePlayFormat>('DRAFT')
@@ -62,7 +64,7 @@ export function CubePlayButton({ cube, blockedReason = null, className }: CubePl
         Play
       </button>
       {open && (
-        <div className={styles.playPanel} role="dialog" aria-label={`Play ${cube.name}`}>
+        <div className={styles.playPanel} data-align={panelAlign} role="dialog" aria-label={`Play ${cube.name}`}>
           <div className={styles.playRow}>
             <span className={styles.playLabel} id="cube-play-format">Format</span>
             <div className={styles.segmented} role="radiogroup" aria-labelledby="cube-play-format">

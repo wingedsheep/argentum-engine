@@ -5,7 +5,7 @@
  *
  * - **Not yet connected, or a created game waiting for its opponent** — the centred glass card:
  *   name entry, the Learn callout for a first-time visitor, the invite code.
- * - **Connected** — the play hub over the card art: a top bar (Deckbuilder, Cubes, Replays, Sets, Learn, Help and
+ * - **Connected** — the play hub over the card art: a top bar (Decks & Cubes, Replays, Sets, Learn, Help and
  *   the account), a "jump back in" row (a lobby still open from before a reload, saved setups, an
  *   invite-code field), and the {@link PlayHub} mode catalogue with its launch panel. Open lobbies,
  *   live games and the account callouts sit beside the catalogue and give way to the panel.
@@ -346,18 +346,10 @@ export function HomeScreen({
             <button
               type="button"
               className={home.navItem}
-              onClick={() => navigate('/deckbuilder')}
-              title="Build and save decks, and search every card"
+              onClick={() => navigate('/library')}
+              title="Build and save decks and cubes, search every card, and share them with friends"
             >
-              Deckbuilder
-            </button>
-            <button
-              type="button"
-              className={home.navItem}
-              onClick={() => navigate('/cubes')}
-              title="Build cubes and set cubes to draft, and share them with friends"
-            >
-              Cubes
+              Decks &amp; Cubes
             </button>
             <button type="button" className={home.navItem} onClick={() => setShowReplays(true)}>Replays</button>
             {/* "Which cards of a set can I actually play with?" is a deckbuilding question. */}
@@ -486,8 +478,7 @@ export function HomeScreen({
           Argentum
         </Link>
         <nav className={home.nav} aria-label="Main">
-          <button type="button" className={home.navItem} onClick={() => navigate('/deckbuilder')}>Deckbuilder</button>
-          <button type="button" className={home.navItem} onClick={() => navigate('/cubes')}>Cubes</button>
+          <button type="button" className={home.navItem} onClick={() => navigate('/library')}>Decks &amp; Cubes</button>
           <button type="button" className={home.navItem} onClick={() => navigate('/set-completion')}>Sets</button>
           <button type="button" className={home.navItem} onClick={() => navigate('/learn')}>Learn</button>
           <button

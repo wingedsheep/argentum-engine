@@ -1,6 +1,6 @@
 import { StrictMode, Suspense, lazy } from 'react'
 import { createRoot } from 'react-dom/client'
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Navigate, Routes, Route } from 'react-router-dom'
 import './styles/variables.css'
 import './styles/base.css'
 import './styles/responsive.css'
@@ -33,8 +33,8 @@ const LlmTournamentPage = lazy(() =>
 const AiSandboxPage = lazy(() =>
   import('./components/aiSandbox/AiSandboxPage').then(({ AiSandboxPage }) => ({ default: AiSandboxPage }))
 )
-const CubesPage = lazy(() =>
-  import('./pages/CubesPage').then(({ CubesPage }) => ({ default: CubesPage }))
+const LibraryPage = lazy(() =>
+  import('./pages/LibraryPage').then(({ LibraryPage }) => ({ default: LibraryPage }))
 )
 const CubeBuilderPage = lazy(() =>
   import('./components/cube/CubeBuilderPage').then(({ CubeBuilderPage }) => ({ default: CubeBuilderPage }))
@@ -98,7 +98,8 @@ createRoot(rootElement).render(
           <Route path="/admin" element={<AdminPage />} />
           <Route path="/deckbuilder" element={<DeckbuilderPage />} />
           <Route path="/deckbuilder/:deckId" element={<DeckbuilderPage />} />
-          <Route path="/cubes" element={<CubesPage />} />
+          <Route path="/library" element={<LibraryPage />} />
+          <Route path="/cubes" element={<Navigate to="/library?tab=cubes" replace />} />
           <Route path="/cubes/new" element={<CubeBuilderPage />} />
           <Route path="/cubes/edit/:cubeId" element={<CubeBuilderPage />} />
           <Route path="/cubes/shared/:code" element={<SharedCubePage />} />

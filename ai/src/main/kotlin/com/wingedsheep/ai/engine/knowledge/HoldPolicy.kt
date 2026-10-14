@@ -3,6 +3,7 @@ package com.wingedsheep.ai.engine.knowledge
 import com.wingedsheep.ai.engine.evaluation.EvaluationWeights
 import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.core.CastSpell
+import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.mechanics.layers.ProjectedState
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.DamageComponent
@@ -300,8 +301,32 @@ class HoldPolicy(
         if (intent.tags.isEmpty() && !intent.selectsIntoHand) return false
         val card = state.getEntity(cast.cardId)?.get<CardComponent>() ?: return false
         if (card.typeLine.isPermanent) return false
+        if (intent.wishFilters.isNotEmpty() && !holdsWishableCard(state, playerId, intent)) return false
         return state.isActiveTurnFor(playerId) && state.step == Step.POSTCOMBAT_MAIN &&
             state.stack.isEmpty() && !holdsInstantSpeedCard(state, playerId)
+    }
+
+    /**
+     * Whether a wish has anything to take: our sideboard holds a card one of its gathers matches.
+     *
+     * The leaf prices a wish as a card spent and a card gained — the same tie as a cantrip, which is
+     * why it earns [idleDrawWindow]'s nudge at all (2026-10-14, Reality Fracture draft: Extrapolate
+     * the Impossible held all game with two Vraskas, a Jace and an Edgar outside the game). A wish
+     * into a sideboard with nothing it can take is a card thrown away, and the nudge must not
+     * outvote that. Reading the sideboard is honest: it is our own, and we know what is in it. An
+     * unreadable filter is "it might match", as in [DeadSearch].
+     */
+    private fun holdsWishableCard(state: GameState, playerId: EntityId, intent: CardIntent): Boolean {
+        val sideboard = state.getZone(playerId, Zone.SIDEBOARD)
+        if (sideboard.isEmpty()) return false
+        val predicates = intents.predicates ?: return true
+        val context = PredicateContext(controllerId = playerId)
+        val projected = state.projectedState
+        return intent.wishFilters.any { filter ->
+            sideboard.any { cardId ->
+                runCatching { predicates.matches(state, projected, cardId, filter, context) }.getOrDefault(true)
+            }
+        }
     }
 
     /** Whether our hand holds an instant-speed card — something mana left untapped can still buy. */

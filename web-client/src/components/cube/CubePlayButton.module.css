@@ -1,0 +1,142 @@
+/*
+ * "Play this cube" — the Play button and the small draft-or-sealed panel it opens. Used on the
+ * Decks & Cubes shelf and the shared-cube page.
+ */
+
+.playButton:focus-visible,
+.playGo:focus-visible,
+.segment:focus-visible {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+/* ── Play panel ────────────────────────────────────────────────────────── */
+
+.playAnchor {
+  position: relative;
+}
+
+.playButton {
+  min-height: 30px;
+  padding: 0 14px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: #1d1405;
+  background: #f2b45c;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.playButton:hover:not(:disabled) {
+  background: #f7c67f;
+}
+
+.playButton:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.playPanel {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: min(320px, calc(100vw - 32px));
+  padding: 16px;
+  border-radius: 14px;
+  background: rgba(16, 18, 28, 0.98);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.6);
+}
+
+.playPanel[data-align='end'] {
+  right: 0;
+  left: auto;
+}
+
+.playRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.playLabel {
+  font-size: 13px;
+  color: #9aa3b8;
+}
+
+.segmented {
+  display: inline-flex;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.segment {
+  padding: 5px 10px;
+  font: inherit;
+  font-size: 13px;
+  color: #b4bccd;
+  background: transparent;
+  border: none;
+  border-radius: 7px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.segment:hover {
+  color: #fff;
+}
+
+.segment[aria-checked='true'] {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.opponentInput {
+  width: 64px;
+  min-height: 30px;
+  padding: 0 8px;
+  font: inherit;
+  font-size: 13px;
+  color: #eef0f6;
+  background: rgba(0, 0, 0, 0.32);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 8px;
+}
+
+.playHint {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: #8f98ac;
+}
+
+.playGo {
+  min-height: 36px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1d1405;
+  background: #f2b45c;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.playGo:hover {
+  background: #f7c67f;
+}
+
+@media (max-width: 640px) {
+  .grid { grid-template-columns: 1fr; }
+  .playPanel { left: auto; right: 0; }
+}
