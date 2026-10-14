@@ -42,6 +42,106 @@
     ]
 }
 
+// Ayula, Queen Among Bears
+{
+    "name": "Ayula, Queen Among Bears",
+    "manaCost": "{1}{G}",
+    "typeLine": "Legendary Creature — Bear",
+    "oracleText": "Whenever another Bear you control enters, choose one —\n• Put two +1/+1 counters on target Bear.\n• Target Bear you control fights target creature you don't control.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ayula, Queen Among Bears:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "permanent Bear ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "AddCounters",
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "count": 2,
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": "permanent Bear"
+                                    },
+                                    "id": "t0"
+                                }
+                            ],
+                            "description": "Put two +1/+1 counters on target Bear"
+                        },
+                        {
+                            "effect": {
+                                "type": "Fight",
+                                "target1": {
+                                    "type": "BoundVariable",
+                                    "name": "t1"
+                                },
+                                "target2": {
+                                    "type": "BoundVariable",
+                                    "name": "t2"
+                                }
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": "permanent Bear ctrl:you"
+                                    },
+                                    "id": "t1"
+                                },
+                                {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": {
+                                            "cardPredicates": [
+                                                "IsCreature"
+                                            ],
+                                            "controllerPredicate": {
+                                                "type": "ControllerNot",
+                                                "predicate": "ControlledByYou"
+                                            }
+                                        }
+                                    },
+                                    "id": "t2"
+                                }
+                            ],
+                            "description": "Target Bear you control fights target creature you don't control"
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever another Bear you control enters, choose one — Put two +1/+1 counters on target Bear; or target Bear you control fights target creature you don't control."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "155",
+        "rarity": "RARE",
+        "artist": "Jesper Ejsing",
+        "flavorText": "Born from the oldest red cedar, nursed on the sap of the tallest spruce, coronated under the mightiest pine.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/0/c046dfb0-9ca3-4219-a6b0-d7503bc2fbd0.jpg?1783933100"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Azra Smokeshaper
 {
     "name": "Azra Smokeshaper",
@@ -3746,6 +3846,94 @@
     "colorIdentityOverride": [
         "BLUE",
         "RED"
+    ]
+}
+
+// Talisman of Curiosity
+{
+    "name": "Talisman of Curiosity",
+    "manaCost": "{2}",
+    "typeLine": "Artifact",
+    "oracleText": "{T}: Add {C}.\n{T}: Add {G} or {U}. This artifact deals 1 damage to you.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Talisman of Curiosity:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Talisman of Curiosity:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddMana",
+                            "color": "GREEN"
+                        },
+                        {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "You"
+                            }
+                        }
+                    ]
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Talisman of Curiosity:3",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddMana",
+                            "color": "BLUE"
+                        },
+                        {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "You"
+                            }
+                        }
+                    ]
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "232",
+        "rarity": "UNCOMMON",
+        "artist": "Lindsey Look",
+        "flavorText": "\"The pain of exploring is less than the pain of not knowing.\"\n—Tamiyo",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/d/fd52688a-39fd-430f-b950-cb56e0004396.jpg?1783933071"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "GREEN"
     ]
 }
 

@@ -1983,6 +1983,57 @@
     ]
 }
 
+// Rancor
+{
+    "name": "Rancor",
+    "manaCost": "{G}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature gets +2/+0 and has trample.\nWhen this Aura is put into a graveyard from the battlefield, return it to its owner's hand.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Rancor:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "Self",
+                    "destination": "Hand"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 2,
+                "toughnessBonus": 0
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "TRAMPLE"
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "110",
+        "artist": "Kev Walker",
+        "flavorText": "Hatred outlives the hateful.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/9/59e256c2-38df-4012-9308-ce17dd889e5f.jpg?1783946229"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Rank and File
 {
     "name": "Rank and File",

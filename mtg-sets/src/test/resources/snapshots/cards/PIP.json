@@ -106,6 +106,138 @@
     }
 }
 
+// Armory Paladin
+{
+    "name": "Armory Paladin",
+    "manaCost": "{1}{R}{W}",
+    "typeLine": "Creature — Human Knight",
+    "oracleText": "Trample\nWhenever you cast an Aura or Equipment spell, exile the top card of your library. You may play that card until the end of your next turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Armory Paladin:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    {
+                                        "type": "HasSubtype",
+                                        "subtype": "Aura"
+                                    },
+                                    {
+                                        "type": "HasSubtype",
+                                        "subtype": "Equipment"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeAs": "impulseExiled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "impulseExiled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        },
+                        {
+                            "type": "GrantMayPlayFromExile",
+                            "from": "impulseExiled",
+                            "expiry": {
+                                "type": "UntilControllerStep",
+                                "step": "CLEANUP",
+                                "includeCurrentTurn": false
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "93",
+        "rarity": "RARE",
+        "artist": "Javier Charro",
+        "flavorText": "\"Ad victoriam!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/e/4e5ffa95-5c5f-449b-820a-7d5bc1688d29.jpg?1783912393"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
+    ]
+}
+
+// Atomize
+{
+    "name": "Atomize",
+    "manaCost": "{2}{B}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Destroy target nonland permanent. Proliferate. (Choose any number of permanents and/or players, then give each another counter of each kind already there.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                "Proliferate"
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "nonland permanent"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "94",
+        "rarity": "RARE",
+        "artist": "Josu Solano",
+        "flavorText": "Plasma rifles—separating soft tissues from hard ones since 2077.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/9/592cbafc-ab4e-461f-b64f-0bf9d83aaff3.jpg?1783912392"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
+    ]
+}
+
 // Battle of Hoover Dam
 {
     "name": "Battle of Hoover Dam",
@@ -1404,6 +1536,93 @@
     }
 }
 
+// Elder Owyn Lyons
+{
+    "name": "Elder Owyn Lyons",
+    "manaCost": "{2}{W}{U}",
+    "typeLine": "Legendary Creature — Human Knight",
+    "oracleText": "Artifacts you control have ward {1}. (Whenever an artifact you control becomes the target of a spell or ability an opponent controls, counter it unless that player pays {1}.)\nWhen Elder Owyn Lyons enters or dies, return target artifact card from your graveyard to your hand.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Elder Owyn Lyons:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Hand"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "artifact own:you",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "When Elder Owyn Lyons enters, return target artifact card from your graveyard to your hand."
+            },
+            {
+                "id": "Elder Owyn Lyons:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    },
+                    "destination": "Hand"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "artifact own:you",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t1"
+                },
+                "descriptionOverride": "When Elder Owyn Lyons dies, return target artifact card from your graveyard to your hand."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantWard",
+                "cost": {
+                    "type": "WardCost.Mana",
+                    "manaCost": "{1}"
+                },
+                "filter": {
+                    "baseFilter": "artifact ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "103",
+        "rarity": "UNCOMMON",
+        "artist": "David Astruga",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/9/d923c845-59e0-403e-b57b-955fec528f1e.jpg?1783912388"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
+    ]
+}
+
 // Expert-Level Safe
 {
     "name": "Expert-Level Safe",
@@ -2314,6 +2533,59 @@
     }
 }
 
+// Nick Valentine, Private Eye
+{
+    "name": "Nick Valentine, Private Eye",
+    "manaCost": "{2}{U}",
+    "typeLine": "Legendary Artifact Creature — Synth Detective",
+    "oracleText": "Nick Valentine can't be blocked except by artifact creatures.\nWhenever Nick Valentine or another artifact creature you control dies, you may investigate. (To investigate, create a Clue token. It's an artifact with \"{2}, Sacrifice this token: Draw a card.\")",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Nick Valentine, Private Eye:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "artifact creature ctrl:you",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": "Investigate"
+                },
+                "descriptionOverride": "Whenever Nick Valentine or another artifact creature you control dies, you may investigate."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "CantBeBlockedExceptBy",
+                "blockerFilter": {
+                    "cardPredicates": [
+                        "IsArtifact",
+                        "IsCreature"
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "35",
+        "rarity": "RARE",
+        "artist": "Viko Menezes",
+        "flavorText": "\"Your case is my top concern.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/a/0a7c9553-d4a8-4d51-8e8a-8a0ffbdf1715.jpg?1783912413"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Overflowing Basin
 {
     "name": "Overflowing Basin",
@@ -2756,6 +3028,30 @@
     }
 }
 
+// Radstorm
+{
+    "name": "Radstorm",
+    "manaCost": "{3}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Storm (When you cast this spell, copy it for each spell cast before it this turn.)\nProliferate. (Choose any number of permanents and/or players, then give each another counter of each kind already there.)",
+    "keywords": [
+        "STORM"
+    ],
+    "script": {
+        "spellEffect": "Proliferate"
+    },
+    "metadata": {
+        "collectorNumber": "37",
+        "rarity": "RARE",
+        "artist": "Salvatorre Zee Yazzie",
+        "flavorText": "Green sky at night, ghoul's delight.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/7/d778cdec-8fc7-4174-bae1-4c8e8ccdfab3.jpg?1783912412"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Rose, Cutthroat Raider
 {
     "name": "Rose, Cutthroat Raider",
@@ -3116,6 +3412,101 @@
                 "text": "Sierra's last ability triggers whenever you sacrifice a Food for any reason, not just to activate a Food's activated ability."
             }
         ]
+    }
+}
+
+// Silver Shroud Costume
+{
+    "name": "Silver Shroud Costume",
+    "manaCost": "{2}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Flash\nWhen this Equipment enters, attach it to target creature you control. That creature gains shroud until end of turn. (It can't be the target of spells or abilities.)\nEquipped creature can't be blocked.\nEquip {3}",
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Silver Shroud Costume:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AttachEquipment",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "SHROUD",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you"
+                    },
+                    "id": "t0"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Silver Shroud Costume:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "CantBeBlocked",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            }
+        ]
+    },
+    "equipCost": "{3}",
+    "metadata": {
+        "collectorNumber": "142",
+        "rarity": "UNCOMMON",
+        "artist": "Zuzanna Wużyk",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/2/f21fba59-330b-4daf-bf77-6dd817327a64.jpg?1783912376"
     }
 }
 
@@ -3885,6 +4276,68 @@
             }
         ]
     }
+}
+
+// Well Rested
+{
+    "name": "Well Rested",
+    "manaCost": "{1}{G}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature has \"Whenever this creature becomes untapped, put two +1/+1 counters on it, then you gain 2 life and draw a card. This ability triggers only once each turn.\"",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantTriggeredAbility",
+                "ability": {
+                    "id": "Well Rested:1",
+                    "trigger": "UntapEvent",
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "AddCounters",
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "count": 2,
+                                "target": "Self"
+                            },
+                            {
+                                "type": "GainLife",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
+                            },
+                            {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            }
+                        ]
+                    },
+                    "oncePerTurn": true,
+                    "descriptionOverride": "Whenever this creature becomes untapped, put two +1/+1 counters on it, then you gain 2 life and draw a card. This ability triggers only once each turn."
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "88",
+        "rarity": "UNCOMMON",
+        "artist": "Brian Valeza",
+        "flavorText": "When you're a deep sleeper, any bed will do.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/d/ed640359-01e2-4a96-a4ab-aca053a2498d.jpg?1783912393"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
 }
 
 // White Glove Gourmand

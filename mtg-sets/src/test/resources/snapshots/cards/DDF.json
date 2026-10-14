@@ -1,3 +1,63 @@
+// Contagion Clasp
+{
+    "name": "Contagion Clasp",
+    "manaCost": "{2}",
+    "typeLine": "Artifact",
+    "oracleText": "When this artifact enters, put a -1/-1 counter on target creature.\n{4}, {T}: Proliferate. (Choose any number of permanents and/or players, then give each another counter of each kind already there.)",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Contagion Clasp:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "MINUS_ONE_MINUS_ONE",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Contagion Clasp:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{4}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": "Proliferate"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "63",
+        "rarity": "UNCOMMON",
+        "artist": "Anthony Palumbo",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/1/d134d21d-4a18-4fbe-a6c2-428e99a86466.jpg?1783941755"
+    }
+}
+
 // Kemba's Skyguard
 {
     "name": "Kemba's Skyguard",

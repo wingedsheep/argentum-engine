@@ -1149,6 +1149,69 @@
     ]
 }
 
+// Spire of Industry
+{
+    "name": "Spire of Industry",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "{T}: Add {C}.\n{T}, Pay 1 life: Add one mana of any color. Activate only if you control an artifact.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Spire of Industry:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Spire of Industry:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomPayLife",
+                                "amount": 1
+                            }
+                        }
+                    ]
+                },
+                "effect": "AddManaOfChoice",
+                "timing": "ManaAbility",
+                "restrictions": [
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "Exists",
+                            "player": "You",
+                            "zone": "Battlefield",
+                            "filter": "artifact"
+                        }
+                    }
+                ],
+                "isManaAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "184",
+        "rarity": "RARE",
+        "artist": "John Avon",
+        "flavorText": "A beacon of prosperity to some, a shadow of oppression to others.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/3/8331724d-6fab-454a-b06c-b06e499fa552.jpg?1783936719"
+    },
+    "colorIdentityOverride": []
+}
+
 // Universal Solvent
 {
     "name": "Universal Solvent",
