@@ -1973,7 +1973,8 @@ fun donorGrantReaches(
  * Soul Cauldron); [DonorCards.CRAFT_MATERIALS] reads its `CraftedFromExiledComponent` (Locus of
  * Enlightenment; CR 702.167c — "the exiled cards used to craft it"); [DonorCards.YOUR_GRAVEYARD]
  * reads the graveyard of the source's *controller* (Thranduil, the Elvenking); [DonorCards.ALL_GRAVEYARDS]
- * reads every player's graveyard (Mirran Safehouse). It looks up each donor card's definition and
+ * reads every player's graveyard (Mirran Safehouse); [DonorCards.ALL_EXILE] reads every card in exile
+ * (Rex, Cyber-Hound, narrowed to brain-counter cards). Face-down donors are skipped. It looks up each donor card's definition and
  * returns its `activatedAbilities` — for a land donor with basic land types, its mana abilities are
  * the intrinsic ones those types give it (CR 305.6), so a Watery Grave donates "{T}: Add {U}" and
  * "{T}: Add {B}" though its definition declares no mana ability. The caller grants each with the *receiver*
@@ -2023,13 +2024,18 @@ fun donorCardsActivatedAbilities(
             ?.get<com.wingedsheep.engine.state.components.battlefield.CraftedFromExiledComponent>()?.exiledIds
         com.wingedsheep.sdk.scripting.DonorCards.YOUR_GRAVEYARD -> controllerId?.let { state.getGraveyard(it) }
         com.wingedsheep.sdk.scripting.DonorCards.ALL_GRAVEYARDS -> state.activePlayers.flatMap { state.getGraveyard(it) }
+        com.wingedsheep.sdk.scripting.DonorCards.ALL_EXILE -> state.activePlayers.flatMap { state.getExile(it) }
     } ?: return emptyList()
     val unfiltered = cardFilter == com.wingedsheep.sdk.scripting.GameObjectFilter.Any
     // A filtered pool with no resolvable controller can't be evaluated — fail closed (grant nothing)
     // rather than handing out every donor card's abilities unfiltered.
     if (!unfiltered && controllerId == null) return emptyList()
     return donorIds.flatMap { donorId ->
-        val card = state.getEntity(donorId)?.get<CardComponent>() ?: return@flatMap emptyList()
+        val container = state.getEntity(donorId) ?: return@flatMap emptyList()
+        // A face-down card in exile has no characteristics (CR 406.3), so it donates nothing —
+        // matters for the pools that see exile cards this source didn't put there (ALL_EXILE).
+        if (container.has<FaceDownComponent>()) return@flatMap emptyList()
+        val card = container.get<CardComponent>() ?: return@flatMap emptyList()
         if (!unfiltered && !predicateEvaluator.matches(
                 state, projected, donorId, cardFilter,
                 PredicateContext(controllerId = controllerId!!, sourceId = sourceId)

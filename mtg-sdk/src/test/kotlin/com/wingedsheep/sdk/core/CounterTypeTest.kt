@@ -156,7 +156,8 @@ class CounterTypeTest : DescribeSpec({
             CounterType.JAVELIN to "javelin", CounterType.CREDIT to "credit", CounterType.CUBE to "cube",
             CounterType.TIDE to "tide", CounterType.SKEWER to "skewer", CounterType.ENERGY to "energy",
             CounterType.ICE to "ice", CounterType.PLAN to "plan", CounterType.INVASION to "invasion",
-            CounterType.UNLOCK to "unlock", CounterType.JUDGMENT to "judgment"
+            CounterType.UNLOCK to "unlock", CounterType.JUDGMENT to "judgment",
+            CounterType.BRAIN to "brain"
         )
     }
 }

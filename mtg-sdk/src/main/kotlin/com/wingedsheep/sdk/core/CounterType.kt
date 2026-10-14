@@ -740,6 +740,12 @@ value class CounterType(val name: String) {
          */
         val MUSTER = CounterType("MUSTER")
 
+        /**
+         * Brain counter (PIP — Rex, Cyber-Hound). A pure marker on a card in exile: it grants nothing
+         * on its own; Rex's `HasAllActivatedAbilitiesOfCards(DonorCards.ALL_EXILE)` filters exile by it.
+         */
+        val BRAIN = CounterType("BRAIN")
+
         /** Every counter kind the SDK names, in declaration order. */
         val KNOWN: List<CounterType> = listOf(
             PLUS_ONE_PLUS_ONE,
@@ -870,6 +876,7 @@ value class CounterType(val name: String) {
             VITALITY,
             PHYRESIS,
             MUSTER,
+            BRAIN,
         )
 
         /**

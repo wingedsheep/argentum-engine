@@ -2,14 +2,14 @@ import React, { useState, useEffect, useLayoutEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { useGameStore } from '@/store/gameStore.ts'
 import { useZoneCards, useStackCards, useZone, useCard, selectGameState, librarySlots } from '@/store/selectors.ts'
-import { graveyard, exile, library, sideboard } from '@/types'
+import { graveyard, exile, library, sideboard, CounterType } from '@/types'
 import type { ClientCard, ClientDeckCard, ClientPlayer } from '@/types'
 import { CARD_BACK_IMAGE_URL } from '@/utils/cardImages.ts'
 import { getCardImageUrl } from '@/utils/cardImages.ts'
-import { useResponsiveContext, handleImageError, getStashCounters, getTimeCounters } from './shared'
+import { useResponsiveContext, handleImageError, getStashCounters, getTimeCounters, getCounterCount } from './shared'
 import { DeckBrowser } from './DeckBrowser'
 import { counterManaClass } from '@/assets/icons/keywords'
-import { styles } from './styles'
+import { styles, passiveCounterBadgeStyle } from './styles'
 
 /** Stable empty array so the `ownDeck` selector doesn't hand Zustand a new reference each render. */
 const EMPTY_DECK: readonly ClientDeckCard[] = []
@@ -750,6 +750,17 @@ function ExileBrowser({ cards, ownerLabel, onClose }: { cards: readonly ClientCa
               {getStashCounters(card) > 0 && (
                 <div style={styles.stashGridBadge}>
                   <i className={`ms ms-${counterManaClass.STASH}`} /> {getStashCounters(card)}
+                </div>
+              )}
+              {/* Brain counters mark the exiled cards Rex, Cyber-Hound borrows activated abilities
+                  from, so the exile browser is where a player checks which ones count. Bottom-left,
+                  clear of the plotted and stash badges. */}
+              {getCounterCount(card, CounterType.BRAIN) > 0 && (
+                <div
+                  title="Brain counter"
+                  style={{ ...passiveCounterBadgeStyle(CounterType.BRAIN), top: 'auto', right: 'auto', bottom: 4, left: 4, padding: '2px 6px', fontSize: 11, pointerEvents: 'none' }}
+                >
+                  <i className={`ms ms-${counterManaClass.BRAIN}`} /> {getCounterCount(card, CounterType.BRAIN)}
                 </div>
               )}
             </div>

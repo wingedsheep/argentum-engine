@@ -3372,6 +3372,138 @@
     ]
 }
 
+// Rex, Cyber-Hound
+{
+    "name": "Rex, Cyber-Hound",
+    "manaCost": "{1}{W}{U}",
+    "typeLine": "Legendary Artifact Creature — Robot Dog",
+    "oracleText": "Whenever Rex deals combat damage to a player, they mill two cards and you get {E}{E} (two energy counters).\nPay {E}{E}: Choose target creature card in a graveyard. Exile it with a brain counter on it. Activate only as a sorcery.\nRex has all activated abilities of all cards in exile with brain counters on them.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Rex, Cyber-Hound:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                },
+                                "player": "TriggeringPlayer",
+                                "isMill": true
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": "TriggeringPlayer"
+                            }
+                        },
+                        {
+                            "type": "AddCounters",
+                            "counterType": "ENERGY",
+                            "count": 2,
+                            "target": "Controller"
+                        }
+                    ]
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Rex, Cyber-Hound:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomPayPlayerCounters",
+                        "counterType": "ENERGY",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    }
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Exile",
+                    "fromZone": "Graveyard",
+                    "addCounterType": "BRAIN"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature",
+                            "zone": "Graveyard"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "descriptionOverride": "Pay {E}{E}: Exile target creature card in a graveyard with a brain counter on it. Activate only as a sorcery."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "HasAllActivatedAbilitiesOfCards",
+                "donors": "AllExile",
+                "cardFilter": {
+                    "statePredicates": [
+                        {
+                            "type": "HasCounter",
+                            "counterType": "BRAIN"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "117",
+        "rarity": "RARE",
+        "artist": "Jeremy Paillotin",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/a/dae95822-d4a9-4698-bd11-c504414fc160.jpg?1783912385",
+        "rulings": [
+            {
+                "date": "2024-03-08",
+                "text": "Rex gains only activated abilities. It doesn't gain triggered abilities or static abilities. Activated abilities contain a colon. They're generally written \"[Cost]: [Effect].\" Some keywords are activated abilities and may have colons in their reminder text."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "If an activated ability of a card in exile with a brain counter on it references the card it's printed on by name, treat Rex's version of that ability as though it referenced Rex, Cyber-Hound instead. For example, say Arcade Gannon (which has the ability \"{T}: Draw a card, then discard a card. Put a quest counter on Arcade Gannon.\") is in exile with a brain counter on it. You would treat Rex's version of the ability as though it said \"{T}: Draw a card, then discard a card. Put a quest counter on Rex, Cyber-Hound.\""
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
+    ]
+}
+
 // Rose, Cutthroat Raider
 {
     "name": "Rose, Cutthroat Raider",

@@ -92,6 +92,15 @@ enum class DonorCards {
      * Anchored to no one: it re-reads each graveyard live, whoever controls the source.
      */
     @SerialName("AllGraveyards") ALL_GRAVEYARDS,
+
+    /**
+     * Every card in exile, whoever owns it and however it got there (Rex, Cyber-Hound — "all cards
+     * in exile with brain counters on them", narrowed by `cardFilter`). The exile twin of
+     * [ALL_GRAVEYARDS]: anchored to no one and re-read live, unlike [LINKED_EXILE], which only sees
+     * the cards *this* source exiled. Counters on an exiled card are its own state, so a
+     * `withCounter(...)` card filter reads them directly.
+     */
+    @SerialName("AllExile") ALL_EXILE,
 }
 
 /**
@@ -148,6 +157,7 @@ data class HasAllActivatedAbilitiesOfCards(
                 DonorCards.CRAFT_MATERIALS -> " cards exiled to craft this"
                 DonorCards.YOUR_GRAVEYARD -> " cards in your graveyard"
                 DonorCards.ALL_GRAVEYARDS -> " cards in all graveyards"
+                DonorCards.ALL_EXILE -> " cards in exile"
             }
         )
         if (oncePerTurnEach) append(" (each only once each turn)")
