@@ -1498,7 +1498,8 @@ export const styles: Record<string, React.CSSProperties> = {
     // Long trigger descriptions wrap rather than run off the board.
     width: 'max-content',
     whiteSpace: 'normal',
-    zIndex: 1000,
+    // Above the board like the sibling portalled tooltips (The Ring, speed).
+    zIndex: 2500,
     boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3)',
     pointerEvents: 'none',
   } as React.CSSProperties,

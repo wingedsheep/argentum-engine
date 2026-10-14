@@ -774,7 +774,9 @@ data class CreateDelayedTriggerEffect(
      * For event-based delayed triggers: the entity that scopes the trigger.
      * The trigger only fires for events sourced from this entity. Context
      * references (e.g. ContextTarget(0)) are baked into a concrete entity id
-     * at creation time by CreateDelayedTriggerExecutor.
+     * at creation time by CreateDelayedTriggerExecutor. On a spell-cast trigger the watched
+     * entity is a player — the **caster** it waits on ("that player … whenever they cast a
+     * spell", Nuka-Nuke Launcher); the spell remains the triggering entity.
      *
      * For step-based delayed triggers (no [trigger]) there is no event to scope, so the baked
      * entity instead becomes the fired trigger's *triggering entity* — reachable from the effect

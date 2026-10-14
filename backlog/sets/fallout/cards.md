@@ -196,7 +196,7 @@
 - [x] Nomad Outpost
 - [ ] Nuclear Fallout
 - [ ] Nuka-Cola Vending Machine
-- [ ] Nuka-Nuke Launcher
+- [x] Nuka-Nuke Launcher
 - [ ] One with the Machine
 - [ ] Open the Vaults
 - [x] Opulent Palace

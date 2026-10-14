@@ -62,15 +62,19 @@ class NukaNukeLauncherScenarioTest : ScenarioTestBase() {
             game.castFree(1)
             game.rads(game.player1Id) shouldBe 0
             game.rads(game.player2Id) shouldBe 0
+            // The rest of the attack turn is inside the window too.
+            game.passPriority()
+            game.castFree(2)
+            game.rads(game.player2Id) shouldBe 2
 
             // Defending player's next turn: each of their spells gives them two rad counters.
             game.passUntilPhase(Phase.BEGINNING, Step.UPKEEP)
             game.state.activePlayerId shouldBe game.player2Id
             game.castFree(2)
-            game.rads(game.player2Id) shouldBe 2
+            game.rads(game.player2Id) shouldBe 4
             game.passUntilPhase(Phase.ENDING, Step.END)
             game.castFree(2)
-            game.rads(game.player2Id) shouldBe 4
+            game.rads(game.player2Id) shouldBe 6
         }
 
         test("the watcher ends with the cleanup of the defending player's next turn") {

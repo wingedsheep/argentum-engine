@@ -693,9 +693,6 @@ export function CommanderDamageBadges({ entries }: { entries: readonly ClientCom
   )
 }
 
-/**
- * Active effects badges - shows status effects on a player.
- */
 const EFFECT_TOOLTIP_MAX_WIDTH = 320
 
 /** Under the badge, centred on it, but never past either edge of the viewport. */
@@ -706,6 +703,9 @@ function effectTooltipPosition(anchor: DOMRect): React.CSSProperties {
   return { left, top: anchor.bottom + 4, maxWidth: EFFECT_TOOLTIP_MAX_WIDTH }
 }
 
+/**
+ * Active effects badges - shows status effects on a player.
+ */
 export function ActiveEffectsBadges({ effects }: { effects: readonly ClientPlayerEffect[] | undefined }) {
   const responsive = useResponsiveContext()
   const [hoveredEffect, setHoveredEffect] = React.useState<string | null>(null)

@@ -803,7 +803,8 @@ internal class PlayerActiveEffectsProjector(
                 ?.takeIf { event is com.wingedsheep.sdk.scripting.EventPattern.SpellCastEvent }
                 ?.let { state.getEntity(it)?.get<PlayerComponent>()?.name }
             val triggerDesc = when {
-                event is com.wingedsheep.sdk.scripting.EventPattern.SpellCastEvent && watchedCaster != null ->
+                event is com.wingedsheep.sdk.scripting.EventPattern.SpellCastEvent && watchedCaster != null &&
+                    event.player == com.wingedsheep.sdk.scripting.references.Player.Each ->
                     watchedCaster + event.description.removePrefix(event.player.description)
                 else -> event?.description ?: "the triggered event"
             }

@@ -85,8 +85,11 @@ class CreateDelayedTriggerExecutor(
         // A player reference ("that player" — the defending player a cast watcher scopes) needs
         // the state-aware player resolver; object targets resolve from the context alone.
         val watchedEntityId = effect.watchedTarget?.let { target ->
-            if (target is EffectTarget.PlayerRef) context.resolvePlayerTarget(target, state)
-            else context.resolveTarget(target)
+            if (target is EffectTarget.PlayerRef) {
+                // An unresolved player must not widen a player-scoped watcher to every player.
+                context.resolvePlayerTarget(target, state)
+                    ?: return EffectResult.error(state, "CreateDelayedTrigger watched player did not resolve: $target")
+            } else context.resolveTarget(target)
         }
 
         // Recipient-scoped delayed triggers ("…deals combat damage to *that player* this turn"):
