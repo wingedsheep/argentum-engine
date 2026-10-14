@@ -12442,7 +12442,7 @@ composite abilities).
   `ReflexiveTriggerEffect(optional = true)`:
   - **action** = `CompositeEffect(SacrificeEffect(GameObjectFilter.Creature, count = 1), EmitExploitedEventEffect)` — an
     optional "you may sacrifice a creature" (any one creature the controller owns, **including this creature itself** —
-    CR 701.17a scopes sacrifice to the controller, and there is no self-exclusion), immediately followed by
+    CR 701.21a scopes sacrifice to the controller, and there is no self-exclusion), immediately followed by
     `EmitExploitedEventEffect`, which fires an observable `EventPattern.ExploitedEvent` (CR 702.110b). Declining the
     optional sacrifice sacrifices nothing, so no `ExploitedEvent` is emitted and no payoff fires (satisfies CR 702.110a's "may").
   - **reflexiveEffect** = the self-bound "when this creature exploits a creature, …" payoff (`onExploit`), or a no-op

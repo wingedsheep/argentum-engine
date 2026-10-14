@@ -2153,7 +2153,7 @@ class TriggerDetector(
 
         val container = state.getEntity(watcherId) ?: return
         val cardComponent = container.get<CardComponent>() ?: return
-        // Exploit sacrifices a creature its controller controls (CR 701.17a), so the sacrificed
+        // Exploit sacrifices a creature its controller controls (CR 701.21a), so the sacrificed
         // watcher's controller is the exploiter's.
         val controllerId = event.exploiterControllerId
 
