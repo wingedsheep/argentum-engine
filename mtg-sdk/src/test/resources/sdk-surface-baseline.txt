@@ -904,6 +904,7 @@ EffectTarget.EachDamagedBySourceThisGame — EffectTarget
 EffectTarget.EnchantedCreature — EffectTarget
 EffectTarget.EnchantedPermanent — EffectTarget
 EffectTarget.EquippedCreature — EffectTarget
+EffectTarget.ExiledAsCost — EffectTarget
 EffectTarget.FilteredTarget — EffectTarget
 EffectTarget.GrantingSource — EffectTarget
 EffectTarget.GroupRef — EffectTarget

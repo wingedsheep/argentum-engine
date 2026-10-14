@@ -1153,6 +1153,7 @@ class ConditionEvaluator(
         is EffectTarget.SacrificedAsCost,
         is EffectTarget.SpecificEntity,
         is EffectTarget.TappedAsCost,
+        is EffectTarget.ExiledAsCost,
         EffectTarget.TargetController,
         EffectTarget.TargetingSource -> false
     }

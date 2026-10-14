@@ -12,6 +12,8 @@ import com.wingedsheep.engine.core.CardsDiscardedEvent
 import com.wingedsheep.engine.core.CountersRemovedEvent
 import com.wingedsheep.engine.core.GameEvent
 import com.wingedsheep.engine.core.ManaSpentEvent
+import com.wingedsheep.engine.core.ZoneChangeEvent
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.engine.core.LoyaltyChangedEvent
 import com.wingedsheep.engine.core.PaymentStrategy
 import com.wingedsheep.engine.handlers.CostHandler
@@ -65,6 +67,18 @@ internal data class ActivationPayment(
     val firstTapSlice: List<EntityId>,
     /** The cards the cost exiled, as fed to payment. */
     val exileChoices: List<EntityId>,
+    /**
+     * The objects the cost atoms exiled other than the source itself, read off their own zone
+     * changes — the chosen cards, or the ones payment picked when there was no real choice.
+     */
+    val exiledAsCost: List<EntityId> = exileChoices,
+    /**
+     * Last-known snapshots (CR 113.7a / 608.2h) of the permanents the cost exiled from the
+     * battlefield, taken by the zone transition itself — "the exiled creature" as it last existed
+     * there, including its copiable values (Curie, Emergent Intelligence) and a token that has
+     * since ceased to exist.
+     */
+    val exiledAsCostSnapshots: List<EntitySnapshot> = emptyList(),
     /**
      * The cards the cost atoms discarded — chosen, random, or the source itself — read off the
      * atoms' own discard events, so a mana ability tapped to pay the mana portion never adds one.
@@ -263,6 +277,9 @@ internal class ActivationCostPayer(
         }
 
         currentState = costResult.newState!!
+        val costExiles = costResult.events.filterIsInstance<ZoneChangeEvent>().filter {
+            it.toZone == Zone.EXILE && it.fromZone != Zone.LIBRARY && it.entityId != action.sourceId
+        }
         manaPool = costResult.newManaPool!!
 
         // Collect events from cost payment (e.g., sacrifice events)
@@ -319,6 +336,8 @@ internal class ActivationCostPayer(
                 isTapBatch = isTapBatch,
                 firstTapSlice = firstTapSlice,
                 exileChoices = exileChoices,
+                exiledAsCost = exileChoices.ifEmpty { costExiles.map { it.entityId } },
+                exiledAsCostSnapshots = costExiles.filter { it.isBattlefieldDeparture }.mapNotNull { it.lastKnown },
                 discardedCards = costResult.events.filterIsInstance<CardsDiscardedEvent>().flatMap { it.cardIds },
                 countersRemovedAsCost = costResult.events.filterIsInstance<CountersRemovedEvent>().sumOf { it.amount },
                 snapshots = snapshots,

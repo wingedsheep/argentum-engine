@@ -1557,6 +1557,15 @@ class CostHandler(private val zones: ZoneTransitionService) {
 
         for (cardId in toExile) {
             val owner = ownerOf.getValue(cardId)
+            if (fromZone == Zone.BATTLEFIELD) {
+                // A permanent leaving the battlefield is a full zone transition (CR 400.7): its
+                // counters and Auras fall off, a copy reverts, and the departure carries the
+                // last-known snapshot the resolving ability reads "the exiled creature" from.
+                val transition = zones.moveToZone(newState, cardId, Zone.EXILE)
+                newState = transition.state
+                events.addAll(transition.events)
+                continue
+            }
             val cardName = newState.getEntity(cardId)?.get<CardComponent>()?.name ?: "Card"
             newState = newState.removeFromZone(ZoneKey(owner, fromZone), cardId)
             val oldObjectRef = newState.objectRef(cardId)

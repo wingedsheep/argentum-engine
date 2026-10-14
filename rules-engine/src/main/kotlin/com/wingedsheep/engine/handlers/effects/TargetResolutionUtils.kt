@@ -110,6 +110,7 @@ object TargetResolutionUtils {
         is EffectTarget.RevealedAsCost -> context.revealedAsCostSnapshots.getOrNull(target.index)?.entityId
         is EffectTarget.SacrificedAsCost -> context.sacrificedPermanents.getOrNull(target.index)?.entityId
         is EffectTarget.TappedAsCost -> context.tappedPermanents.getOrNull(target.index)
+        is EffectTarget.ExiledAsCost -> context.exiledAsCostCards.getOrNull(target.index)
         is EffectTarget.PipelineTarget ->
             context.pipeline.storedCollections[target.collectionName]?.getOrNull(target.index)
         EffectTarget.AmassedArmy ->

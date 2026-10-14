@@ -527,7 +527,8 @@ class ActivateAbilityHandler(
             // cards it exiled (`CardSource.ExiledAsCost`) — the sum-gated form (Baron Helmut Zemo)
             // and the plain counted form (Necropolis) alike. Empty for an ability whose cost exiles
             // nothing, so nothing else changes.
-            exiledAsCostCards = if (effectiveCost.hasExileAtom()) payment.exileChoices else emptyList(),
+            exiledAsCostCards = if (effectiveCost.hasExileAtom()) payment.exiledAsCost else emptyList(),
+            exiledAsCostSnapshots = if (effectiveCost.hasExileAtom()) payment.exiledAsCostSnapshots else emptyList(),
             // "The discarded card" (Hisoka, Minamo Sensei) — the activation counterpart of a
             // spell's additional discard cost, read at resolution as EffectTarget.DiscardedAsCost.
             discardedAsCostCards = payment.discardedCards,

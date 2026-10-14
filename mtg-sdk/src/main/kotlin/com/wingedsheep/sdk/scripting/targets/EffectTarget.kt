@@ -401,6 +401,23 @@ sealed interface EffectTarget {
     }
 
     /**
+     * EXILED AS COST: an object exiled to pay this activated ability's cost, by index — "the exiled
+     * creature" / "the exiled card". The exile counterpart of [SacrificedAsCost], reading
+     * `EffectContext.exiledAsCostCards`. A permanent exiled from the battlefield is read as it last
+     * existed there (CR 608.2h) from the snapshot its departure captured — copiable values included,
+     * so "becomes a copy of the exiled creature" copies what that creature was copying (Curie,
+     * Emergent Intelligence), and a token that has ceased to exist can still be read. A card exiled
+     * from any other zone is read as the card it now is in exile.
+     *
+     * @property index Which exiled object to reference (defaults to the first/only one).
+     */
+    @SerialName("ExiledAsCost")
+    @Serializable
+    data class ExiledAsCost(val index: Int = 0) : SingleEntity {
+        override val description: String = "the exiled creature"
+    }
+
+    /**
      * TAPPED AS COST: a permanent tapped to pay this activation's cost — the tap counterpart of
      * [SacrificedAsCost], reading `EffectContext.tappedPermanents`. A value read of it falls back
      * to the snapshot taken as the cost was paid if it has since left the battlefield.

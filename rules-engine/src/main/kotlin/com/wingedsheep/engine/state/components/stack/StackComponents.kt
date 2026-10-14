@@ -411,6 +411,13 @@ data class ActivatedAbilityOnStackComponent(
      */
     val exiledAsCostCards: List<EntityId> = emptyList(),
     /**
+     * Last-known snapshots (Rule 113.7a) of the entries of [exiledAsCostCards] exiled **from the
+     * battlefield**, taken by the cost's zone transition — what
+     * [com.wingedsheep.sdk.scripting.targets.EffectTarget.ExiledAsCost] reads "the exiled creature"
+     * from, copiable values included (Curie, Emergent Intelligence). Empty for other exile costs.
+     */
+    val exiledAsCostSnapshots: List<EntitySnapshot> = emptyList(),
+    /**
      * Cards discarded to pay this activation's cost, carried to resolution for
      * [com.wingedsheep.sdk.scripting.targets.EffectTarget.DiscardedAsCost] ("the discarded card").
      * The activated-ability counterpart of [SpellOnStackComponent.discardedAsCostCards].

@@ -1081,6 +1081,7 @@ Families:
 - `EffectTarget.EnchantedCreature` — The creature enchanted by this aura
 - `EffectTarget.EnchantedPermanent` — The permanent this aura/equipment is attached to, regardless of its type.
 - `EffectTarget.EquippedCreature` — The creature this equipment is attached to
+- `EffectTarget.ExiledAsCost(index: Int)` — EXILED AS COST: an object exiled to pay this activated ability's cost, by index — "the exiled creature" / "the exiled card".
 - `EffectTarget.FilteredTarget(filter: TargetFilter)` — FILTERED TARGET: Refers to a target matching a composable filter.
 - `EffectTarget.GrantingSource` — The permanent whose static ability granted the currently-resolving ability — the Equipment/Aura/permanent bearing the `GrantActivatedAbility` (or gained-abilities) static, as opposed to Self, which…
 - `EffectTarget.GroupRef(filter: GroupFilter)` — GROUP REFERENCE: Refers to a group of permanents for mass effects.

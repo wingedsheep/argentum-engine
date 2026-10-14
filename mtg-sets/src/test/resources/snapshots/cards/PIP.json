@@ -1129,6 +1129,129 @@
     }
 }
 
+// Curie, Emergent Intelligence
+{
+    "name": "Curie, Emergent Intelligence",
+    "manaCost": "{1}{U}",
+    "typeLine": "Legendary Artifact Creature — Robot",
+    "oracleText": "Whenever Curie deals combat damage to a player, draw cards equal to its base power.\n{1}{U}, Exile another nontoken artifact creature you control: Curie becomes a copy of the exiled creature, except it has \"Whenever this creature deals combat damage to a player, draw cards equal to its base power.\"",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Curie, Emergent Intelligence:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": "BasePower"
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Curie, Emergent Intelligence:3",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{U}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomExileFrom",
+                                "zone": "Battlefield",
+                                "filter": "artifact creature nontoken ctrl:you",
+                                "excludeSelf": true
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "EachPermanentBecomesCopyOfTarget",
+                    "target": "ExiledAsCost",
+                    "affected": "Self",
+                    "exceptions": {
+                        "addedTriggeredAbilities": [
+                            {
+                                "id": "Curie, Emergent Intelligence:2",
+                                "trigger": {
+                                    "type": "DealsDamageEvent",
+                                    "damageType": "DamageCombat",
+                                    "recipient": {
+                                        "type": "RecipientPlayer",
+                                        "player": "Any"
+                                    }
+                                },
+                                "effect": {
+                                    "type": "DrawCards",
+                                    "count": {
+                                        "type": "EntityProperty",
+                                        "entity": "Self",
+                                        "numericProperty": "BasePower"
+                                    }
+                                },
+                                "descriptionOverride": "Whenever this creature deals combat damage to a player, draw cards equal to its base power."
+                            }
+                        ]
+                    }
+                },
+                "descriptionOverride": "{1}{U}, Exile another nontoken artifact creature you control: Curie becomes a copy of the exiled creature, except it has \"Whenever this creature deals combat damage to a player, draw cards equal to its base power.\""
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "30",
+        "rarity": "RARE",
+        "artist": "Daniel Romanovsky",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/4/54870f19-96f3-4cde-ae44-a9c5bbb0dbc1.jpg?1783912413",
+        "rulings": [
+            {
+                "date": "2024-03-08",
+                "text": "Normally, a creature’s base power is the power printed on the card, or, for a token, the power set by the effect that created it. If another effect sets a creature’s power to a specific number or value, that becomes its base power. If an effect modifies a creature’s power without setting it, that is not included when determining its base power."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "If a creature has a characteristic-defining ability that sets its power, indicated with a * or similar in the power and toughness box, that ability is taken into account when determining its base power."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "If Curie is no longer on the battlefield when its first ability resolves, use its base power as it last existed on the battlefield to determine how many cards to draw."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "Curie’s last ability refers to the exiled creature, not the exiled card. In most cases, this means Curie copies exactly what was printed on the original creature and nothing else, plus the additional ability. However, if the exiled creature was copying something else when it was last on the battlefield, Curie copies whatever that creature was copying, plus the additional ability."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "Curie’s last ability won’t copy whether the exiled creature was tapped or untapped, whether it had any counters on it or Auras attached to it, or any non-copy effects that changed its power, toughness, types, color, and so on."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "If the copied creature has {X} in its mana cost, X is 0."
+            }
+        ]
+    }
+}
+
 // Desdemona, Freedom's Edge
 {
     "name": "Desdemona, Freedom's Edge",

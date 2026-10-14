@@ -10,6 +10,9 @@ import com.wingedsheep.engine.event.GrantedActivatedAbility
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.BattlefieldFilterUtils
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
+import com.wingedsheep.engine.handlers.effects.LkiPolicy
+import com.wingedsheep.engine.handlers.effects.lkiPolicyFor
+import com.wingedsheep.engine.handlers.effects.lkiSnapshotFor
 import com.wingedsheep.engine.handlers.effects.copy.CopyExceptionApplier
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
@@ -21,6 +24,7 @@ import com.wingedsheep.engine.state.components.identity.RevertCopyAtNextEndStepC
 import com.wingedsheep.engine.state.components.identity.RevertCopyAtYourNextTurnComponent
 import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.effects.EachPermanentBecomesCopyOfTargetEffect
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import kotlin.reflect.KClass
 
 /**
@@ -66,13 +70,22 @@ class EachPermanentBecomesCopyOfTargetExecutor(
         val targetId = context.resolveTarget(effect.target, state)
             ?: return EffectResult.success(state)
 
-        val targetCard = state.getEntity(targetId)?.copiableCardComponent()
+        // "Becomes a copy of the exiled creature" (Curie, Emergent Intelligence) names a permanent
+        // a cost already moved off the battlefield: it is copied as it last existed there
+        // (CR 608.2h, CR 707.2) — what it was copying, not the card now in exile — from the
+        // snapshot the departure captured, which also outlives a token that ceased to exist.
+        val departedCopiable = (effect.target as? EffectTarget.SingleEntity)
+            ?.takeIf { targetId !in state.getBattlefield() && lkiPolicyFor(it) == LkiPolicy.LIVE_THEN_LKI }
+            ?.let { context.lkiSnapshotFor(it, targetId)?.copiableCard }
+
+        val targetCard = departedCopiable
+            ?: state.getEntity(targetId)?.copiableCardComponent()
             ?: return EffectResult.success(state)
 
         // Target must still be on the battlefield to serve as a copy source — unless the effect
         // allows a non-battlefield source (Lazav, Familiar Stranger copies a creature card it just
         // exiled), in which case its copiable characteristics are read wherever it currently is.
-        if (!effect.sourceFromAnyZone && targetId !in state.getBattlefield()) {
+        if (departedCopiable == null && !effect.sourceFromAnyZone && targetId !in state.getBattlefield()) {
             return EffectResult.success(state)
         }
 

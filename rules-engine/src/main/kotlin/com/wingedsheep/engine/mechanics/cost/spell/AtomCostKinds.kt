@@ -62,6 +62,14 @@ internal fun handCandidates(env: SpellCostEnumeration, filter: GameObjectFilter)
 internal fun exileFromOwnZone(ledger: SpellCostLedger, cardIds: List<EntityId>, fromZone: Zone) {
     for (cardId in cardIds) {
         val card = ledger.state.getEntity(cardId)?.get<CardComponent>() ?: continue
+        if (fromZone == Zone.BATTLEFIELD) {
+            // Leaving the battlefield is a full zone transition (CR 400.7): counters and Auras
+            // fall off and a copy reverts, exactly as for any other exile of a permanent.
+            val transition = ledger.zones.moveToZone(ledger.state, cardId, Zone.EXILE)
+            ledger.state = transition.state
+            ledger.events.addAll(transition.events)
+            continue
+        }
         val sourceZone = ZoneKey(ledger.playerId, fromZone)
         val exileZone = ZoneKey(ledger.playerId, Zone.EXILE)
 

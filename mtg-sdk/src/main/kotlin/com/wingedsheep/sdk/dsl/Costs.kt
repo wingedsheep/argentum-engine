@@ -331,10 +331,18 @@ object Costs {
      * nothing downstream reads an X.
      *
      * Pass a controller-scoped [filter] (`.youControl()`): the battlefield zone map is keyed by
-     * **owner**, so the filter is what actually enforces "you control".
+     * **owner**, so the filter is what actually enforces "you control". Pass [excludeSelf] for
+     * "exile **another** …" (Curie, Emergent Intelligence), which the source can't pay with itself.
+     *
+     * The exile is a full zone transition, and the resolving ability can name what it exiled as
+     * `EffectTarget.ExiledAsCost` — read as it last existed on the battlefield.
      */
-    fun ExilePermanentsFixed(count: Int = 1, filter: GameObjectFilter = GameObjectFilter.Any): AbilityCost =
-        AbilityCost.Atom(CostAtom.ExileFrom(Zone.BATTLEFIELD, filter, count))
+    fun ExilePermanentsFixed(
+        count: Int = 1,
+        filter: GameObjectFilter = GameObjectFilter.Any,
+        excludeSelf: Boolean = false,
+    ): AbilityCost =
+        AbilityCost.Atom(CostAtom.ExileFrom(Zone.BATTLEFIELD, filter, count, excludeSelf = excludeSelf))
 
     /**
      * Exile X cards from graveyard, where X is the ability's X value.

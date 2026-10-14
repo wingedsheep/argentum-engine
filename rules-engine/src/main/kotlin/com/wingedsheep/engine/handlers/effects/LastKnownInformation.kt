@@ -52,6 +52,9 @@ fun lkiPolicyFor(reference: EffectTarget.SingleEntity): LkiPolicy = when (refere
     EffectTarget.EnchantedPermanent,
     is EffectTarget.SacrificedAsCost,
     is EffectTarget.TappedAsCost,
+    // A permanent exiled as a cost is read as it last was on the battlefield; a card exiled from
+    // another zone has no snapshot and falls through to the card it is in exile.
+    is EffectTarget.ExiledAsCost,
     is EffectTarget.PipelineTarget,
     // Never on the battlefield either, but its read is the in-hand capture — its live object may
     // since have been cast or discarded (Titan's Presence's ruling: "as it last existed in your hand").
@@ -96,6 +99,7 @@ fun EffectContext.lkiSnapshotFor(reference: EffectTarget.SingleEntity, entityId:
     when (reference) {
         is EffectTarget.SacrificedAsCost -> sacrificedPermanents.snapshotFor(entityId)
         is EffectTarget.TappedAsCost -> tappedEntitySnapshots.snapshotFor(entityId)
+        is EffectTarget.ExiledAsCost -> exiledAsCostSnapshots.snapshotFor(entityId)
         is EffectTarget.RevealedAsCost -> revealedAsCostSnapshots.snapshotFor(entityId)
         is EffectTarget.PipelineTarget -> chosenEntitySnapshots.snapshotFor(entityId)
         EffectTarget.TriggeringEntity -> triggerContext?.triggeringLastKnownSnapshot?.takeIf { it.entityId == entityId }

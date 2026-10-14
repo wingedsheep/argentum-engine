@@ -82,7 +82,7 @@
 - [ ] Crucible of Worlds
 - [x] Crush Contraband
 - [x] Cultivate
-- [ ] Curie, Emergent Intelligence
+- [x] Curie, Emergent Intelligence
 - [x] Darkwater Catacombs
 - [x] Deadly Dispute
 - [x] Desdemona, Freedom's Edge
