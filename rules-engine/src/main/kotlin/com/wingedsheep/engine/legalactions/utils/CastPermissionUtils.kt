@@ -2032,7 +2032,7 @@ fun donorCardsActivatedAbilities(
     if (!unfiltered && controllerId == null) return emptyList()
     return donorIds.flatMap { donorId ->
         val container = state.getEntity(donorId) ?: return@flatMap emptyList()
-        // A face-down card in exile has no characteristics (CR 406.3), so it donates nothing —
+        // A face-down card in exile has no characteristics (CR 406.3a), so it donates nothing —
         // matters for the pools that see exile cards this source didn't put there (ALL_EXILE).
         if (container.has<FaceDownComponent>()) return@flatMap emptyList()
         val card = container.get<CardComponent>() ?: return@flatMap emptyList()

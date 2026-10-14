@@ -10106,7 +10106,7 @@ staticAbility {
   `craft(...)` cost (CR 702.167c); `YOUR_GRAVEYARD` reads the graveyard of the source's *current
   controller*; `ALL_GRAVEYARDS` reads every player's graveyard (Mirran Safehouse); `ALL_EXILE` reads
   every card in exile, whoever exiled it (Rex, Cyber-Hound with `cardFilter = GameObjectFilter.Any.withCounter(CounterType.BRAIN)`
-  — counters on an exiled card are its own state). Face-down donors (CR 406.3) donate nothing. A land donor with basic
+  — counters on an exiled card are its own state). Face-down donors (CR 406.3a) donate nothing. A land donor with basic
   land types also lends the intrinsic mana abilities those types give it (CR 305.6), so a Watery Grave
   donates "{T}: Add {U}" and "{T}: Add {B}" though its definition declares none. Resolved dynamically at activation-legality time: the engine pulls each donor card's
   `activatedAbilities` and surfaces them on every matching permanent, with **that permanent** as granter

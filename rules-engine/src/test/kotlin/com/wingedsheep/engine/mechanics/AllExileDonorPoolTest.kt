@@ -24,7 +24,7 @@ import io.kotest.matchers.shouldBe
  * (Rex, Cyber-Hound). Unlike `LINKED_EXILE` it sees every card in exile whoever exiled it, it is
  * re-read live (a card leaving exile or losing its counter stops donating), a `withCounter` card
  * filter reads the exiled card's own counters, and a face-down exiled card donates nothing because
- * it has no characteristics (CR 406.3).
+ * it has no characteristics (CR 406.3a).
  */
 class AllExileDonorPoolTest : FunSpec({
 
