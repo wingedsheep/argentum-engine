@@ -108,11 +108,15 @@ object CombatDefenders {
     /**
      * Everything a creature [controllerId] puts onto the battlefield attacking could be attacking
      * (CR 508.4) — the defending players, then their planeswalkers, then the battles they protect.
-     * Empty outside the combat phase or when [controllerId] isn't the attacking player: such a
+     * Empty outside the combat phase or when [controllerId] isn't an attacking player — the active
+     * player, or under shared team turns any player on the active team (CR 805.10a): such a
      * creature enters but is never attacking (CR 506.3b).
      */
     fun enteringAttackTargets(state: GameState, controllerId: EntityId): List<EntityId> {
-        if (state.step.phase != com.wingedsheep.sdk.core.Phase.COMBAT || state.activePlayerId != controllerId) {
+        val active = state.activePlayerId
+        if (state.step.phase != com.wingedsheep.sdk.core.Phase.COMBAT || active == null ||
+            controllerId !in state.sharedTurnTeam(active)
+        ) {
             return emptyList()
         }
         val defending = legalDefendingPlayers(state, controllerId)

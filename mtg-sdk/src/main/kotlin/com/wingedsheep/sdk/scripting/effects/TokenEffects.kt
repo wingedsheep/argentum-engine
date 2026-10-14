@@ -62,8 +62,9 @@ enum class EnteringAttackDefender {
     /**
      * Join the source's attack, players only, never a prompt: the source's defending player when
      * that is one of the controller's opponents, else an opponent already defending in this combat,
-     * else the first opponent. The reading for "tapped and attacking **that player**" and the
-     * long-standing default of every token-maker that enters attacking.
+     * else the first opponent. Right for text that names the defender — "tapped and attacking
+     * **that player**" / "that opponent". Existing cards with a bare "tapped and attacking" that
+     * still use it are pending migration to [CONTROLLER_CHOOSES].
      */
     JOIN_SOURCE,
 

@@ -84,7 +84,7 @@ class CaesarLegionsEmperorScenarioTest : FunSpec({
             submitTargetSelection(player1, listOf(bears)).error shouldBe null
         }
         modes.forEach { chooseMode(it) }
-        (pendingDecision as? ChooseTargetsDecision)?.let { submitTargetSelection(player1, listOf(player2)) }
+        (pendingDecision as? ChooseTargetsDecision)?.let { submitTargetSelection(player1, listOf(player2)).error shouldBe null }
         resolveUntilDecision()
     }
 
@@ -141,10 +141,14 @@ class CaesarLegionsEmperorScenarioTest : FunSpec({
 
     test("damage without the token mode counts only creature tokens already there") {
         val (d, caesar, _) = setup()
+        val existingToken = d.putCreatureOnBattlefield(d.player1, "Hill Giant")
+        d.addComponent(existingToken, TokenComponent)
         d.attackSacrificeAndChoose(caesar, "draw a card", "deals damage")
 
-        d.soldiers() shouldHaveSize 0
-        d.getLifeTotal(d.player2) shouldBe 20
+        withClue("no Soldiers were created; only the token already there remains") {
+            d.soldiers() shouldContainExactly listOf(existingToken)
+        }
+        withClue("one creature token you control: 1 damage") { d.getLifeTotal(d.player2) shouldBe 19 }
         d.getLifeTotal(d.player1) shouldBe 19
     }
 

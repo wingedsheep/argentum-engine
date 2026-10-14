@@ -217,6 +217,33 @@ class EnteringAttackDefenderChoiceTest : FunSpec({
         d.soldierTokens().map { d.attackedBy(it) } shouldContainExactly listOf(d.player2, d.player2)
     }
 
+    test("Two-Headed Giant: the active player's teammate is an attacking player too (CR 805.10a)") {
+        val d = GameTestDriver()
+        d.registerCards(TestCards.all + listOf(captain, legacyCaptain, walker, bulwark))
+        val p = d.initMultiplayer(
+            List(4) { Deck.of("Forest" to 40) },
+            format = com.wingedsheep.sdk.core.Format.TwoHeadedGiant(),
+            teams = listOf(listOf(0, 1), listOf(2, 3)),
+        )
+        d.passPriorityUntil(Step.PRECOMBAT_MAIN)
+        val active = d.activePlayer!!
+        val teammate = d.state.sharedTurnTeam(active).single { it != active }
+        val opponents = d.state.getOpponents(teammate)
+        val theirWalker = d.walkerFor(opponents.first())
+        d.passPriorityUntil(Step.BEGIN_COMBAT)
+        p shouldHaveSize 4
+
+        val result = d.services.effectExecutorRegistry.execute(
+            d.state, soldiers(EnteringAttackDefender.CONTROLLER_CHOOSES),
+            EffectContext(sourceId = null, controllerId = teammate)
+        )
+        d.replaceState(result.state)
+
+        val decision = d.pendingDecision.shouldBeInstanceOf<ChooseTargetsDecision>()
+        decision.playerId shouldBe teammate
+        decision.legalTargets[0]!! shouldContainExactly d.state.turnOrder.filter { it in opponents } + theirWalker
+    }
+
     test("outside combat nothing can be attacked: the tokens enter but aren't attacking (CR 506.3b)") {
         val d = newDriver()
         d.walkerFor(d.player2)

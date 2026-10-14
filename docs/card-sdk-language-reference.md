@@ -2530,7 +2530,8 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   `attacking = true` (usually with `tapped = true`) puts the tokens onto the battlefield attacking, and
   `attackDefender: EnteringAttackDefender` says what each one attacks. `JOIN_SOURCE` (default) joins the
   source's attack and never asks: the source's defending player when that's an opponent, else an opponent
-  already defending, else the first opponent — the reading for "tapped and attacking **that player**".
+  already defending, else the first opponent — right for "tapped and attacking **that player** / **that
+  opponent**"; existing cards with a bare "tapped and attacking" still on it are pending migration.
   `CONTROLLER_CHOOSES` is CR 508.4 as printed for a bare "tapped and attacking" (Caesar, Legion's Emperor):
   before any token exists, the controller answers one `ChooseTargetsDecision` per token among the defending
   players, their planeswalkers and the battles they protect, so two tokens may attack different defenders.
