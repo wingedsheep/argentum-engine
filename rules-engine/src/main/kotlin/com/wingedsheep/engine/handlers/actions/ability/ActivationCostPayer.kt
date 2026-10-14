@@ -277,6 +277,8 @@ internal class ActivationCostPayer(
         }
 
         currentState = costResult.newState!!
+        // What the exile atoms took — a self-exile is the source, not "the exiled card", and
+        // exiling from the top of a library (CostAtom.ExileTopOfLibrary) is no chosen exile pick.
         val costExiles = costResult.events.filterIsInstance<ZoneChangeEvent>().filter {
             it.toZone == Zone.EXILE && it.fromZone != Zone.LIBRARY && it.entityId != action.sourceId
         }
