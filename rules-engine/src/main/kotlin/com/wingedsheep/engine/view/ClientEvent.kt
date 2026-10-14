@@ -1593,6 +1593,9 @@ is PermanentsSacrificedEvent -> {
             // discarded, the redirected ZoneChangeEvent shows it landing in exile, and the madness
             // trigger itself appears on the stack with its own description.
             is CardExiledWithMadnessEvent -> null
+            // The milled cards' own zone changes already narrate the mill; this event exists for
+            // mill triggers and the milled-this-turn stamp.
+            is com.wingedsheep.engine.core.CardsMilledEvent -> null
 
             is CardPlottedEvent -> ClientEvent.CardPlotted(
                 playerId = event.playerId,

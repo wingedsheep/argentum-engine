@@ -145,6 +145,14 @@ class MoveCollectionExecutor(
             is CardDestination.ToZoneExiledFrom ->
                 moveToZonesExiledFrom(state, context, cards, destination, effect)
         }
+        val milledCandidates = context.pipeline.storedCollections[
+            com.wingedsheep.engine.handlers.PipelineState.milledKey(effect.from)
+        ].orEmpty()
+        if (milledCandidates.isNotEmpty() && result.outcome is Outcome.Done) {
+            val (trackedState, milledEvent) = com.wingedsheep.engine.handlers.effects.ZoneTransitionService
+                .trackMill(result.state, result.events, milledCandidates)
+            if (milledEvent != null) result = result.copy(state = trackedState, events = result.events + milledEvent)
+        }
         val arrivedCards = (cards + result.events.filterIsInstance<ZoneChangeEvent>()
             .filter { it.meldedPermanent?.entityId in cards }.map { it.entityId }).distinct()
         if (effect.linkToSource && result.outcome is Outcome.Done) {

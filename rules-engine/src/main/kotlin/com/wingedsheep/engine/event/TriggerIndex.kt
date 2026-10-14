@@ -75,6 +75,7 @@ enum class TriggerCategory {
     COMMIT_CRIME,
     CHOOSE_TARGETS,
     DISCARD,
+    MILLED,
     RING_TEMPTED,
     VENTURED,
     DUNGEON_COMPLETED,
@@ -304,6 +305,9 @@ class TriggerIndex(
                 is SdkGameEvent.CommitCrimeEvent -> listOf(TriggerCategory.COMMIT_CRIME)
                 is SdkGameEvent.TargetsChosenEvent -> listOf(TriggerCategory.CHOOSE_TARGETS)
                 is SdkGameEvent.DiscardEvent -> listOf(TriggerCategory.DISCARD)
+                // Also a replacement filter (ModifyKeywordActionAmount); the index only sees it on
+                // triggered abilities, where it observes the CardsMilledEvent.
+                is SdkGameEvent.MillEvent -> MILLED_LIST
                 is SdkGameEvent.RingTemptedEvent -> RING_TEMPTED_LIST
                 is SdkGameEvent.VenturedIntoDungeonEvent -> VENTURED_LIST
                 is SdkGameEvent.DungeonCompletedEvent -> DUNGEON_COMPLETED_LIST
@@ -365,7 +369,6 @@ class TriggerIndex(
                 is SdkGameEvent.ExtraTurnEvent,
                 is SdkGameEvent.CounterSpellEvent,
                 is SdkGameEvent.LifePaymentEvent,
-                is SdkGameEvent.MillEvent,
                 is SdkGameEvent.ScryEvent,
                 is SdkGameEvent.SurveilEvent -> emptyList()
 
@@ -411,6 +414,7 @@ class TriggerIndex(
             is com.wingedsheep.engine.core.CommitCrimeEvent -> COMMIT_CRIME_LIST
             is com.wingedsheep.engine.core.TargetsChosenEvent -> CHOOSE_TARGETS_LIST
             is CardsDiscardedEvent -> DISCARD_LIST
+            is com.wingedsheep.engine.core.CardsMilledEvent -> MILLED_LIST
             is com.wingedsheep.engine.core.RingTemptedEvent -> RING_TEMPTED_LIST
             is com.wingedsheep.engine.core.VenturedIntoDungeonEvent -> VENTURED_LIST
             is com.wingedsheep.engine.core.DungeonCompletedEvent -> DUNGEON_COMPLETED_LIST
@@ -563,6 +567,7 @@ class TriggerIndex(
         private val COMMIT_CRIME_LIST = listOf(TriggerCategory.COMMIT_CRIME)
         private val CHOOSE_TARGETS_LIST = listOf(TriggerCategory.CHOOSE_TARGETS)
         private val DISCARD_LIST = listOf(TriggerCategory.DISCARD)
+        private val MILLED_LIST = listOf(TriggerCategory.MILLED)
         private val RING_TEMPTED_LIST = listOf(TriggerCategory.RING_TEMPTED)
         private val VENTURED_LIST = listOf(TriggerCategory.VENTURED)
         private val DUNGEON_COMPLETED_LIST = listOf(TriggerCategory.DUNGEON_COMPLETED)

@@ -6838,6 +6838,11 @@ work for abilities-on-stack (which carry no `CardComponent`).
   was cast for its warp cost (CR 702.185). Pair with
   `Conditions.TargetMatchesFilter(GameObjectFilter.Creature.castForWarp(), …)` to
   branch on whether a target was warp-cast (e.g., Full Bore).
+- `MilledThisTurn` (filter builder `milledThisTurn()`) — card currently in a graveyard that got
+  there by being milled this turn (CR 701.17): Raul, Trouble Shooter; Tato Farmer ("target land card
+  in a graveyard that was milled this turn"). Surveil or an unworded "put the top card into your
+  graveyard" doesn't count. Same `PutIntoGraveyardThisTurnComponent` and lifecycle as the two
+  predicates below, flagged `milled` by `ZoneTransitionService.trackMill` after a mill's move.
 - `PutIntoGraveyardThisTurn` (filter builder `putIntoGraveyardThisTurn()`) and
   `PutIntoGraveyardFromBattlefieldThisTurn` (filter builder
   `putIntoGraveyardFromBattlefieldThisTurn()`) — card currently in a graveyard that was put
@@ -6970,7 +6975,7 @@ minLoyaltyRemoved, exhaust, includeManaAbilities, excludeManaAbilities, withoutT
 `isDealtDamage(by?, damageType?)`, `isDealtCombatDamage()`, `getsCounters(type?)` (`you` only — counters
 put on the player by anyone: "whenever you get one or more {E}", `CountersPlacedEvent.recipient`),
 `draws(exceptFirstInDrawStep?)`,
-`drawsNth(n)`, `revealsFirstDraw(card?)`, `discards(card?, batch?)`, `cycles()`, `playsLand(…)`,
+`drawsNth(n)`, `revealsFirstDraw(card?)`, `discards(card?, batch?)`, `mills(card?, batch?)`, `cycles()`, `playsLand(…)`,
 `permanentTurnedFaceUp(filter)`, `searchesLibrary()`, `shufflesLibrary()`, `gainsLife(firstTimeEachTurn?)`,
 `losesLife()`, `losesGame()`, `sacrifices(filter, batch?)`,
 `sacrificesAnother(filter)`, `taps(filter, batch?)`, `tapsLandForMana(land?)`, `createsToken(token?)`,
@@ -7677,6 +7682,25 @@ in the graveyard when the trigger matches) — safe for type/subtype/color predi
 but a filter that depends on hand-specific state would read the wrong zone. `batch = true`
 selects the "one or more" wording: at most one firing per discard event even when several
 cards match the filter.
+
+**Mill** — `Triggers.<player>.mills(card, batch)` → `EventPattern.MillEvent(player, cardFilter, batch)`,
+observing the engine's `CardsMilledEvent` (one per mill instruction, carrying every card it moved
+out of a library). Only a mill counts (CR 701.17): a `CardSource.TopOfLibrary(isMill = true)`
+gather and the move that follows it, a `Costs.Mill` cost, a damage-to-mill replacement, radiation —
+never surveil or an unworded top-of-library move. The player is the one who milled (each card's
+owner); a card a replacement sent to exile instead is still milled (CR 701.17c).
+- `Triggers.anyPlayer.mills(GameObjectFilter.Nonland)` — "whenever a player mills a nonland card":
+  once per matching card, the card bound as the triggering entity and its owner as the
+  triggering player (Glowing One). `Triggers.anOpponent.mills(…)` narrows to opponents' cards
+  (Infesting Radroach, with `triggerZone = Zone.GRAVEYARD`).
+- `Triggers.anyPlayer.mills(GameObjectFilter.Nonland, batch = true)` — "whenever one or more nonland
+  cards are milled": once per mill instruction even when it made several players mill ("each player
+  mills a card" is one event, CR 603.2c); two mills in one resolution are two events. The matching
+  cards are the trigger's captured collection (`CollectionSlot.TriggerCaptured`), so "that many" is
+  `DynamicAmounts.distinctEntitiesIn(CollectionSlot.TriggerCaptured)`. Mirelurk Queen adds
+  `oncePerTurn = true` for "This ability triggers only once each turn."
+As a replacement filter the same pattern is the mill announcement (`ModifyKeywordActionAmount`);
+`cardFilter` and `batch` don't apply there.
 
 ### Spell casting
 

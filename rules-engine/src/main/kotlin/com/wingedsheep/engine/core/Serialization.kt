@@ -120,6 +120,7 @@ val engineSerializersModule = SerializersModule {
         subclass(CardRevealedFromDrawEvent::class)
         subclass(DrawFailedEvent::class)
         subclass(CardsDiscardedEvent::class)
+        subclass(CardsMilledEvent::class)
         subclass(DiscardRequiredEvent::class)
         subclass(LibraryShuffledEvent::class)
         subclass(DecisionRequestedEvent::class)

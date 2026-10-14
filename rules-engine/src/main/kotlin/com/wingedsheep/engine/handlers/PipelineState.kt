@@ -57,6 +57,14 @@ data class PipelineState(
         fun searchedKey(collection: String): String = "__searched:$collection"
 
         /**
+         * Reserved metadata collection published by a mill gather (`CardSource.TopOfLibrary` with
+         * `isMill`) alongside [collection]: the cards that mill took. The MoveCollection over
+         * [collection] reads it to report the move as a mill ([com.wingedsheep.engine.core.CardsMilledEvent]).
+         * Empty when a later non-mill gather reused the name.
+         */
+        fun milledKey(collection: String): String = "__milled:$collection"
+
+        /**
          * Pipeline collection name under which a batch trigger seeds the entities it captured
          * (the matching permanents in a `PermanentsEnteredEvent` batch). Aliases the SDK-side
          * contract [com.wingedsheep.sdk.scripting.effects.IterationSpace.TRIGGER_CAPTURED_COLLECTION]

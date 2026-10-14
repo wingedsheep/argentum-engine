@@ -531,6 +531,7 @@ class BeginningPhaseManager(
         StatePredicate.HasManaAbility -> predicateEvaluator.matchesStatePredicate(state, entityId, predicate, projected = projected)
         StatePredicate.SharesNameWithSpellCastThisTurn -> false
         StatePredicate.PutIntoGraveyardThisTurn -> false
+        StatePredicate.MilledThisTurn -> false
         StatePredicate.PutIntoGraveyardFromBattlefieldThisTurn -> false
         // Combat-partner history is cleared at cleanup, so nothing has blocked anything yet this turn.
         is StatePredicate.BlockedOrWasBlockedByEntityThisTurn -> false

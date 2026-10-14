@@ -458,10 +458,17 @@ class GatherCardsExecutor(
         // a gain; an empty pick is "fail to find"). A later non-search gather into the same name
         // clears a stale mark.
         val searchedKey = com.wingedsheep.engine.handlers.PipelineState.searchedKey(effect.storeAs)
-        val collections = when {
+        val searchCollections = when {
             effect.search -> mapOf(effect.storeAs to cards, searchedKey to cards)
             searchedKey in context.pipeline.storedCollections -> mapOf(effect.storeAs to cards, searchedKey to emptyList())
             else -> mapOf(effect.storeAs to cards)
+        }
+        // A mill marks what it took, so the move that follows is reported as a mill (CR 701.17).
+        val milledKey = com.wingedsheep.engine.handlers.PipelineState.milledKey(effect.storeAs)
+        val collections = when {
+            (effect.source as? CardSource.TopOfLibrary)?.isMill == true -> searchCollections + (milledKey to cards)
+            milledKey in context.pipeline.storedCollections -> searchCollections + (milledKey to emptyList())
+            else -> searchCollections
         }
         val sourceVariable = effect.source as? CardSource.FromVariable
         val updatedCollections = if (sourceVariable != null) {

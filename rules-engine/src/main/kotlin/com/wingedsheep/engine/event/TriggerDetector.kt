@@ -1798,6 +1798,24 @@ class TriggerDetector(
                     // the whole event to a single firing — CardsDiscardedEvent is already one event
                     // per discard action, so the cap is exactly the printed once-per-event — and has
                     // no single "it" to bind.
+                    // A mill trigger fires once per matching milled card, or once per mill
+                    // instruction for "one or more" (batch) — see TriggerMatcher.millTriggerContexts.
+                    else if (ability.trigger is EventPattern.MillEvent &&
+                        event is com.wingedsheep.engine.core.CardsMilledEvent) {
+                        for (millContext in matcher.millTriggerContexts(
+                            ability.trigger as EventPattern.MillEvent, event, entityId, controllerId, state
+                        )) {
+                            triggers.add(
+                                PendingTrigger(
+                                    ability = ability,
+                                    sourceId = entityId,
+                                    sourceName = cardComponent.name,
+                                    controllerId = controllerId,
+                                    triggerContext = millContext
+                                )
+                            )
+                        }
+                    }
                     else if (ability.trigger is EventPattern.DiscardEvent &&
                         event is CardsDiscardedEvent) {
                         val discardTrigger = ability.trigger as EventPattern.DiscardEvent
@@ -1913,6 +1931,14 @@ class TriggerDetector(
                         val ownerId = cardComponent.ownerId
                             ?: container.get<OwnerComponent>()?.playerId
                             ?: continue
+                        val millTrigger = ability.trigger as? EventPattern.MillEvent
+                        if (millTrigger != null && event is com.wingedsheep.engine.core.CardsMilledEvent) {
+                            for (millContext in matcher.millTriggerContexts(millTrigger, event, entityId, ownerId, state)) {
+                                triggers.add(PendingTrigger(ability = ability, sourceId = entityId, sourceName = cardComponent.name,
+                                    controllerId = ownerId, triggerContext = millContext))
+                            }
+                            continue
+                        }
                         if (matcher.matchesTrigger(ability.trigger, ability.binding, event, entityId, ownerId, state)) {
                             // Same trigger-time capture as the battlefield scan above, so a
                             // "…targets one or more X, those X …" ability active from the

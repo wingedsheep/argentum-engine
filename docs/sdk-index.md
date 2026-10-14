@@ -1191,7 +1191,7 @@ Families:
 - `EventPattern.LifeLossEvent(player: Player)` — When a player would lose life.
 - `EventPattern.LifePaymentEvent(player: Player)` — When a player would **pay** life — life spent to satisfy a cost (CR 118.8), as opposed to life lost to damage or to a "loses N life" effect.
 - `EventPattern.ManifestedDreadEvent(player: Player)` — Whenever a player manifests dread (CR 701.60).
-- `EventPattern.MillEvent(player: Player)` — When a player would mill one or more cards (CR 701.17).
+- `EventPattern.MillEvent(player: Player, cardFilter: GameObjectFilter?, batch: Boolean)` — A player mills (CR 701.17) — both a replacement pattern and a trigger, like DiscardEvent.
 - `EventPattern.NthCardDrawnEvent(nthCard: Int, player: Player)` — Fires on a `CardsDrawnEvent` when the drawing player's per-turn draw count crosses the specified threshold (CR 121.2 — each card drawn is an individual draw, so a single multi-card draw fires at mo…
 - `EventPattern.NthSpellCastEvent(nthSpell: Int, player: Player, spellFilter: GameObjectFilter?)` — When a player casts their Nth spell in a turn.
 - `EventPattern.OneOrMoreDealCombatDamageToPlayerEvent(sourceFilter: GameObjectFilter, orBattle: Boolean)` — Whenever one or more creatures matching sourceFilter you control deal combat damage to a player.
@@ -1682,6 +1682,7 @@ Families:
 - `StatePredicate.IsUnblocked` — Attacker with unblocked status after blockers are declared
 - `StatePredicate.IsUntapped`
 - `StatePredicate.IsWarpExiled` — Card in exile that was put there by the delayed triggered ability of a warp keyword (CR 702.185b).
+- `StatePredicate.MilledThisTurn` — This card is currently in a graveyard *and* got there by being milled (CR 701.17) this turn — Raul, Trouble Shooter's "cards in your graveyard that were milled this turn", Tato Farmer's "target lan…
 - `StatePredicate.Not(predicate: StatePredicate)`
 - `StatePredicate.NotTargetedByAbilityFromSameNamedSource` — The candidate object (a spell or permanent) is **not** currently the target of an ability on the stack whose source is *another* permanent sharing the effect source's name.
 - `StatePredicate.Or(predicates: List<StatePredicate>)`

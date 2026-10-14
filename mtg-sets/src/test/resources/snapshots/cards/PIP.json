@@ -2295,6 +2295,80 @@
     }
 }
 
+// Mirelurk Queen
+{
+    "name": "Mirelurk Queen",
+    "manaCost": "{4}{U}",
+    "typeLine": "Creature — Crab Mutant",
+    "oracleText": "Vigilance\nWhen this creature enters, target player gets two rad counters.\nWhenever one or more nonland cards are milled, draw a card, then put a +1/+1 counter on this creature. This ability triggers only once each turn.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Mirelurk Queen:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "RAD",
+                    "count": 2,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetPlayer",
+                    "id": "t0"
+                }
+            },
+            {
+                "id": "Mirelurk Queen:2",
+                "trigger": {
+                    "type": "MillEvent",
+                    "player": "Each",
+                    "cardFilter": "nonland",
+                    "batch": true
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 1,
+                            "target": "Self"
+                        }
+                    ]
+                },
+                "oncePerTurn": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "33",
+        "rarity": "RARE",
+        "artist": "Nicholas Gregory",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/e/6e6d1843-9e05-4cdd-ad4e-15d7913d87f7.jpg?1783912412"
+    }
+}
+
 // Mr. House, President and CEO
 {
     "name": "Mr. House, President and CEO",
@@ -3645,6 +3719,82 @@
         "rarity": "UNCOMMON",
         "artist": "Valera Lutfullina",
         "imageUri": "https://cards.scryfall.io/normal/front/a/2/a2f30a39-aad3-45da-8f03-50b1d1806b00.jpg?1783912375"
+    }
+}
+
+// Tato Farmer
+{
+    "name": "Tato Farmer",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Zombie Mutant Peasant",
+    "oracleText": "Landfall — Whenever a land you control enters, you may get two rad counters.\n{T}: Put target land card in a graveyard that was milled this turn onto the battlefield tapped under your control.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Tato Farmer:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "land ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "AddCounters",
+                        "counterType": "RAD",
+                        "count": 2,
+                        "target": "Controller"
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Tato Farmer:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Battlefield",
+                    "placement": "Tapped",
+                    "controllerOverride": "Controller",
+                    "fromZone": "Graveyard"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsLand"
+                                ],
+                                "statePredicates": [
+                                    "MilledThisTurn"
+                                ]
+                            },
+                            "zone": "Graveyard"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "86",
+        "rarity": "RARE",
+        "artist": "Xavier Ribeiro",
+        "flavorText": "\"Try one! They're disgusting!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/0/907bade4-7232-4808-af5c-2dbed4d5bf07.jpg?1783912395"
     }
 }
 

@@ -305,6 +305,7 @@ SourceIsModified — Condition
 SourceIsRingBearer — Condition
 SourcePlottedOnPriorTurn — Condition
 SourceReturnedAsEnchantment — Condition
+StatePredicate.MilledThisTurn — StatePredicate — Tato Farmer — StatePredicate.PutIntoGraveyardThisTurn, StatePredicate.PutIntoGraveyardFromBattlefieldThisTurn — both are argument-less arrival-history markers read off the same graveyard stamp; this is their third sibling (the arrival was a mill, CR 701.17), following the established one-object-per-route shape rather than reshaping both into a parameterised route axis that would move every existing reader
 TargetIsCreatureCard — Condition
 TargetIsPlayer — Condition
 TargetIsSource — Condition

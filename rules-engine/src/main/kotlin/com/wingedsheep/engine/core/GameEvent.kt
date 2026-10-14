@@ -1771,6 +1771,25 @@ data class CardsDiscardedEvent(
 ) : GameEvent
 
 /**
+ * Cards were milled (CR 701.17) — emitted once per mill instruction, after its zone changes, with
+ * every card it moved out of a library, in order. One instruction can make several players mill
+ * ("each player mills a card"); each card's owner is the player who milled it. A card a
+ * replacement sent elsewhere (exile instead of the graveyard) is still a milled card (CR 701.17c).
+ * Only a real mill emits this: surveil and other top-of-library moves don't.
+ */
+@Serializable
+@SerialName("CardsMilledEvent")
+data class CardsMilledEvent(
+    val cardIds: List<EntityId>,
+    val ownerIds: List<EntityId>,
+    val cardNames: List<String> = emptyList(),
+) : GameEvent {
+    init {
+        require(ownerIds.size == cardIds.size) { "ownerIds must parallel cardIds" }
+    }
+}
+
+/**
  * A player needs to discard cards during cleanup.
  */
 @Serializable

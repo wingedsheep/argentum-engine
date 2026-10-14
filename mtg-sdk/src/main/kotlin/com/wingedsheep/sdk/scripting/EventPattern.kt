@@ -323,17 +323,40 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
     }
 
     /**
-     * When a player would mill one or more cards (CR 701.17). Used by
-     * [com.wingedsheep.sdk.scripting.ModifyKeywordActionAmount] to adjust the count at the mill
-     * announcement (e.g. The Water Crystal: "If an opponent would mill one or more cards,
-     * they mill that many cards plus four instead").
+     * A player mills (CR 701.17) — both a replacement pattern and a trigger, like [DiscardEvent].
+     *
+     * As a replacement it is the mill *announcement*: [com.wingedsheep.sdk.scripting.ModifyKeywordActionAmount]
+     * adjusts the count (The Water Crystal: "If an opponent would mill one or more cards, they mill
+     * that many cards plus four instead"). [cardFilter] and [batch] don't apply there.
+     *
+     * As a trigger it fires on the cards a mill actually moved out of [player]'s library — only a
+     * mill instruction counts, never another top-of-library-to-graveyard move (surveil, "put the top
+     * card into your graveyard"). [player] is the player who milled, the owner of each milled card.
+     * Per card by default: "whenever a player mills a nonland card" fires once for each matching
+     * card (Glowing One), binding that card as the triggering entity. [batch] is "one or more
+     * [cardFilter] cards are milled": once per mill instruction, however many players it made mill
+     * (CR 603.2c — "each player mills a card" is one event), with the matching cards as the
+     * trigger's captured collection (Mirelurk Queen, The Wise Mothman).
      */
     @SerialName("MillEvent")
     @Serializable
     data class MillEvent(
-        override val player: Player = Player.You
+        override val player: Player = Player.You,
+        val cardFilter: GameObjectFilter? = null,
+        val batch: Boolean = false
     ) : KeywordActionCountEvent {
-        override val description: String = "${player.description} would mill one or more cards"
+        override val description: String = buildString {
+            append(player.description)
+            append(" would mill ")
+            if (batch || cardFilter == null) append("one or more ") else append("a ")
+            if (cardFilter != null) append(cardFilter.description) else append("cards")
+        }
+
+        override fun applyTextReplacement(replacer: TextReplacer): EventPattern {
+            val f = cardFilter ?: return this
+            val newFilter = f.applyTextReplacement(replacer)
+            return if (newFilter !== f) copy(cardFilter = newFilter) else this
+        }
     }
 
     /**

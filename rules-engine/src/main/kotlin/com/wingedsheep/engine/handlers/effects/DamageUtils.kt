@@ -3262,15 +3262,19 @@ object DamageUtils {
                 // the top cards before moving so a shrinking library doesn't re-read shifted slots.
                 var newState = state
                 val events = mutableListOf<EngineGameEvent>()
+                val milledCards = mutableListOf<EntityId>()
                 for (opponentId in state.getOpponents(sourceControllerId)) {
                     val topCards = newState.getLibrary(opponentId).take(amount)
+                    milledCards += topCards
                     for (cardId in topCards) {
                         val result = zones.moveToZone(newState, cardId, Zone.GRAVEYARD)
                         newState = result.state
                         events.addAll(result.events)
                     }
                 }
-                return EffectResult.success(newState, events)
+                // One mill instruction for every opponent (CR 603.2c: a single milled event).
+                val (trackedState, milledEvent) = ZoneTransitionService.trackMill(newState, events, milledCards)
+                return EffectResult.success(trackedState, events + listOfNotNull(milledEvent))
             }
         }
 

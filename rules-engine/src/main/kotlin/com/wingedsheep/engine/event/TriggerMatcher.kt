@@ -82,11 +82,16 @@ class TriggerMatcher(
             is EventPattern.DrawEvent -> {
                 event is CardsDrawnEvent && matchesPlayer(state, trigger.player, event.playerId, controllerId)
             }
-            // MillEvent / ScryEvent / SurveilEvent are replacement-only patterns
-            // (ModifyKeywordActionAmount); they never match a triggered ability. Applied at each
-            // action's announcement by KeywordActionAmountModifier; "whenever you scry / surveil"
-            // is ScriedEvent / SurveiledEvent.
-            is EventPattern.MillEvent,
+            // MillEvent is also the ModifyKeywordActionAmount announcement filter; as a trigger
+            // it observes the cards a mill moved (CardsMilledEvent).
+            is EventPattern.MillEvent -> {
+                event is com.wingedsheep.engine.core.CardsMilledEvent &&
+                    matchingMilledCards(trigger, event, sourceId, controllerId, state).isNotEmpty()
+            }
+            // ScryEvent / SurveilEvent are replacement-only patterns (ModifyKeywordActionAmount);
+            // they never match a triggered ability. Applied at each action's announcement by
+            // KeywordActionAmountModifier; "whenever you scry / surveil" is ScriedEvent /
+            // SurveiledEvent.
             is EventPattern.ScryEvent,
             is EventPattern.SurveilEvent -> false
             // DrawCardsEvent is a replacement-only pattern (ModifyDrawAmount for "N or more" draws);
@@ -1104,6 +1109,57 @@ class TriggerMatcher(
             } else filter
             predicateEvaluator.matches(state, projected, cardId, knownFilter, predicateContext)
         }
+    }
+
+    /**
+     * Which milled cards satisfy this mill trigger, in mill order: those whose owner — the player
+     * who milled them — matches [EventPattern.MillEvent.player] and that match its card filter,
+     * read where the mill put them (CR 701.17c).
+     */
+    fun matchingMilledCards(
+        trigger: EventPattern.MillEvent,
+        event: com.wingedsheep.engine.core.CardsMilledEvent,
+        sourceId: EntityId,
+        controllerId: EntityId,
+        state: GameState
+    ): List<EntityId> {
+        val byPlayer = event.cardIds.indices
+            .filter { matchesPlayer(state, trigger.player, event.ownerIds[it], controllerId) }
+            .map { event.cardIds[it] }
+        val filter = trigger.cardFilter ?: return byPlayer
+        val projected = state.projectedState
+        val predicateContext = com.wingedsheep.engine.handlers.PredicateContext(
+            controllerId = controllerId,
+            sourceId = sourceId
+        )
+        return byPlayer.filter { predicateEvaluator.matches(state, projected, it, filter, predicateContext) }
+    }
+
+    /**
+     * The trigger contexts one [com.wingedsheep.engine.core.CardsMilledEvent] gives a mill trigger:
+     * one per matching card, bound as the triggering entity with its owner as the triggering
+     * player ("whenever a player mills a nonland card", CR 603.2c — one event, several
+     * occurrences); or, for [EventPattern.MillEvent.batch], a single firing for the whole mill
+     * instruction carrying the matching cards as its captured collection ("whenever one or more
+     * nonland cards are milled"). Empty when nothing matches.
+     */
+    fun millTriggerContexts(
+        trigger: EventPattern.MillEvent,
+        event: com.wingedsheep.engine.core.CardsMilledEvent,
+        sourceId: EntityId,
+        controllerId: EntityId,
+        state: GameState
+    ): List<TriggerContext> {
+        val matching = matchingMilledCards(trigger, event, sourceId, controllerId, state)
+        if (matching.isEmpty()) return emptyList()
+        val ownerOf = event.cardIds.zip(event.ownerIds).toMap()
+        if (trigger.batch) {
+            return listOf(TriggerContext(
+                triggeringPlayerId = matching.map { ownerOf.getValue(it) }.distinct().singleOrNull(),
+                capturedEntityIds = matching
+            ))
+        }
+        return matching.map { TriggerContext(triggeringEntityId = it, triggeringPlayerId = ownerOf.getValue(it)) }
     }
 
     /**
@@ -2580,6 +2636,7 @@ class TriggerMatcher(
         }
         // Graveyard-zone-only predicates; trigger gating never sees a stamped entity here.
         is com.wingedsheep.sdk.scripting.predicates.StatePredicate.PutIntoGraveyardThisTurn -> false
+        is com.wingedsheep.sdk.scripting.predicates.StatePredicate.MilledThisTurn -> false
         is com.wingedsheep.sdk.scripting.predicates.StatePredicate.PutIntoGraveyardFromBattlefieldThisTurn -> false
         // No controller context here to resolve the protector predicate's "you"/"that player"; fail
         // closed rather than matching every battle.

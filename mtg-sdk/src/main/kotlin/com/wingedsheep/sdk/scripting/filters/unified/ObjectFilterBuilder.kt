@@ -881,6 +881,12 @@ interface ObjectFilterBuilder<out Self> {
      */
     fun putIntoGraveyardThisTurn() = withStatePredicate(StatePredicate.PutIntoGraveyardThisTurn)
 
+    /**
+     * Must currently be in a graveyard *and* have been milled this turn (Raul, Trouble Shooter;
+     * Tato Farmer). See [StatePredicate.MilledThisTurn].
+     */
+    fun milledThisTurn() = withStatePredicate(StatePredicate.MilledThisTurn)
+
     /** Must be saddled (CR 702.171b) */
     fun saddled() = withStatePredicate(StatePredicate.IsSaddled)
 

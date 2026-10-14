@@ -2101,6 +2101,12 @@ class PredicateEvaluator(
                 container.get<PutIntoGraveyardThisTurnComponent>()?.fromBattlefield == true
             }
 
+            // The mill-restricted sibling: the arrival was a mill (Raul, Trouble Shooter; Tato
+            // Farmer — PIP). Flagged by ZoneTransitionService.trackMill after the mill's move.
+            StatePredicate.MilledThisTurn -> {
+                container.get<PutIntoGraveyardThisTurnComponent>()?.milled == true
+            }
+
             // "Blocked or was blocked by a legendary creature this turn" (You Cannot Pass! — LTR).
             // Reads the marker stamped at block declaration; survives the legendary partner leaving.
             StatePredicate.BlockedOrWasBlockedByLegendaryThisTurn -> {

@@ -954,6 +954,14 @@ class PlayerTriggerSubject internal constructor(private val player: Player) {
     fun discards(card: GameObjectFilter? = null, batch: Boolean = false): TriggerSpec =
         spec(DiscardEvent(player = player, cardFilter = card, batch = batch))
 
+    /**
+     * "mills a [card] card" — once per milled card; [batch] is "one or more [card] cards are
+     * milled", once per mill instruction (CR 603.2c), the matching cards captured. Only a real
+     * mill counts (CR 701.17), never surveil or another library-to-graveyard move.
+     */
+    fun mills(card: GameObjectFilter? = null, batch: Boolean = false): TriggerSpec =
+        spec(MillEvent(player = player, cardFilter = card, batch = batch))
+
     /** "cycles a card". This card being cycled is [ObjectTriggerSubject.isCycled]. */
     fun cycles(): TriggerSpec = spec(CycleEvent(player))
 

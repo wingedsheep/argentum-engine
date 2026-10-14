@@ -912,12 +912,14 @@ class CostHandler(private val zones: ZoneTransitionService) {
             // mill ModifyKeywordActionAmount replacements once to the announced count (CR 616), then take that
             // many off the top. `take` clamps, so a replacement that enlarges the mill past the
             // library mills as many as possible — the affordability check above already guaranteed
-            // the printed count is available. Emits plain library→graveyard zone changes, which is
-            // what mill triggers match on.
+            // the printed count is available. Emits the library→graveyard zone changes plus the
+            // CardsMilledEvent mill triggers match on.
             val effectiveCount = KeywordActionAmountModifier.mill(state, controllerId, atom.count, predicateEvaluator = predicateEvaluator)
             val milled = state.getZone(ZoneKey(controllerId, Zone.LIBRARY)).take(effectiveCount)
             val result = zones.moveToZoneBatch(state, milled, Zone.GRAVEYARD)
-            CostPaymentResult.success(result.state, manaPool, result.events)
+            val (millState, milledEvent) = com.wingedsheep.engine.handlers.effects.ZoneTransitionService
+                .trackMill(result.state, result.events, milled)
+            CostPaymentResult.success(millState, manaPool, result.events + listOfNotNull(milledEvent))
         }
         is CostAtom.ExileTopOfLibrary -> {
             // No mill replacement to apply — exiling from the top is not milling (CR 701.17a), so

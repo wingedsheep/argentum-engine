@@ -777,6 +777,21 @@ sealed interface StatePredicate {
     }
 
     /**
+     * This card is currently in a graveyard *and* got there by being milled (CR 701.17) this
+     * turn — Raul, Trouble Shooter's "cards in your graveyard that were milled this turn", Tato
+     * Farmer's "target land card in a graveyard that was milled this turn". A card put there from
+     * the library any other way (surveil, "put the top card into your graveyard") doesn't count.
+     *
+     * The mill-restricted sibling of [PutIntoGraveyardThisTurn]: same
+     * `PutIntoGraveyardThisTurnComponent` and lifecycle, additionally requiring its `milled` flag.
+     */
+    @SerialName("MilledThisTurn")
+    @Serializable
+    data object MilledThisTurn : History {
+        override val description: String = "milled this turn"
+    }
+
+    /**
      * This creature blocked, or was blocked by, a legendary creature at some point during the
      * current turn. Used as a target predicate:
      *

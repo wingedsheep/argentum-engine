@@ -271,6 +271,8 @@ data object CantBeCopiedComponent : Component
  * rather than two markers that can drift apart:
  *  - `StatePredicate.PutIntoGraveyardThisTurn` — marker present, [fromBattlefield] ignored
  *    (FDN — Abyssal Harvester's "creature card from a graveyard that was put there this turn").
+ *  - `StatePredicate.MilledThisTurn` — marker present *and* [milled] (PIP — Raul, Trouble
+ *    Shooter; Tato Farmer).
  *  - `StatePredicate.PutIntoGraveyardFromBattlefieldThisTurn` — marker present *and*
  *    [fromBattlefield] (LTR — Samwise the Stouthearted's "permanent card in your graveyard
  *    that was put there from the battlefield this turn" and Lobelia Sackville-Baggins's
@@ -281,5 +283,10 @@ data object CantBeCopiedComponent : Component
  */
 @Serializable
 data class PutIntoGraveyardThisTurnComponent(
-    val fromBattlefield: Boolean
+    val fromBattlefield: Boolean,
+    /**
+     * True when this arrival was a mill (CR 701.17) — set after the move by
+     * `ZoneTransitionService.trackMill`. Backs `StatePredicate.MilledThisTurn`.
+     */
+    val milled: Boolean = false
 ) : Component

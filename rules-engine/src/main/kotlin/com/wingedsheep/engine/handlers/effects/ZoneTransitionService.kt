@@ -9,6 +9,7 @@ import com.wingedsheep.engine.state.components.identity.TextReplacementComponent
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.core.CardExiledWithMadnessEvent
 import com.wingedsheep.engine.core.CardsDiscardedEvent
+import com.wingedsheep.engine.core.CardsMilledEvent
 import com.wingedsheep.engine.core.CountersAddedEvent
 import com.wingedsheep.engine.core.ZoneChangeEvent
 import com.wingedsheep.engine.core.ZoneTransitionCause
@@ -1889,6 +1890,40 @@ class ZoneTransitionService(
          * `cardIds.size` backs `TurnTracker.CARDS_DISCARDED`; membership backs `YouDiscardedThisCardThisTurn`.
          * Cleared per-player at the start of each turn by `TurnManager`.
          */
+        /**
+         * Per-mill bookkeeping, mirroring [trackDiscard]. Call at every mill site (the pipeline's
+         * mill move, a mill cost, a damage-to-mill replacement) with the zone changes that move
+         * produced and the cards it was told to mill. The cards that actually left a library are
+         * the milled ones (CR 701.17c: a replacement may have sent one elsewhere): those that
+         * reached a graveyard get their [PutIntoGraveyardThisTurnComponent] flagged `milled`
+         * (`StatePredicate.MilledThisTurn`), and all of them make up the returned
+         * [CardsMilledEvent] — null when nothing was milled (an empty library, CR 701.17b).
+         */
+        fun trackMill(
+            state: GameState,
+            moveEvents: List<EngineGameEvent>,
+            milledCandidates: Collection<EntityId>
+        ): Pair<GameState, CardsMilledEvent?> {
+            val candidates = milledCandidates.toSet()
+            val moved = moveEvents.filterIsInstance<ZoneChangeEvent>()
+                .filter { it.fromZone == Zone.LIBRARY && it.entityId in candidates }
+                .distinctBy { it.entityId }
+            if (moved.isEmpty()) return state to null
+            var newState = state
+            for (event in moved) {
+                if (event.toZone != Zone.GRAVEYARD) continue
+                newState = newState.updateEntity(event.entityId) { c ->
+                    val stamp = c.get<PutIntoGraveyardThisTurnComponent>() ?: return@updateEntity c
+                    c.with(stamp.copy(milled = true))
+                }
+            }
+            return newState to CardsMilledEvent(
+                cardIds = moved.map { it.entityId },
+                ownerIds = moved.map { it.ownerId },
+                cardNames = moved.map { it.entityName }
+            )
+        }
+
         fun trackDiscard(state: GameState, playerId: EntityId, cardIds: List<EntityId>): GameState {
             if (cardIds.isEmpty()) return state
             return state.updateEntity(playerId) { container ->

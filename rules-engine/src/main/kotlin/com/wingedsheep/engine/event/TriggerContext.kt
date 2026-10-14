@@ -478,6 +478,12 @@ data class TriggerContext(
                     triggeringPlayerId = event.playerId,
                     discardedCardCount = event.cardIds.size
                 )
+                // Paths that don't expand a mill per card (granted/global observers) see the whole
+                // instruction's cards; TriggerMatcher.millTriggerContexts is the per-card form.
+                is com.wingedsheep.engine.core.CardsMilledEvent -> TriggerContext(
+                    capturedEntityIds = event.cardIds,
+                    triggeringPlayerId = event.ownerIds.distinct().singleOrNull()
+                )
                 is CardRevealedFromDrawEvent -> TriggerContext(
                     triggeringEntityId = event.cardEntityId,
                     triggeringPlayerId = event.playerId

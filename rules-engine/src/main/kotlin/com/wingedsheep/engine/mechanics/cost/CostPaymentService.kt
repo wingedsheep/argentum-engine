@@ -652,7 +652,8 @@ class CostPaymentService(private val services: EngineServices) {
         val effectiveCount = KeywordActionAmountModifier.mill(state, payerId, count, predicateEvaluator = predicateEvaluator)
         val milled = state.getZone(ZoneKey(payerId, Zone.LIBRARY)).take(effectiveCount)
         val result = services.zones.moveToZoneBatch(state, milled, Zone.GRAVEYARD)
-        return CostPaymentExecution(result.state, result.events, success = true)
+        val (newState, milledEvent) = ZoneTransitionService.trackMill(result.state, result.events, milled)
+        return CostPaymentExecution(newState, result.events + listOfNotNull(milledEvent), success = true)
     }
 
     /**
