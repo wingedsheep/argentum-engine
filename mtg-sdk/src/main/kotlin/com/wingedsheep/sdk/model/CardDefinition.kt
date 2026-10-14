@@ -406,6 +406,7 @@ data class CardDefinition(
     val isArtifact: Boolean get() = typeLine.isArtifact
     val isAura: Boolean get() = typeLine.isAura
     val isEquipment: Boolean get() = typeLine.isEquipment
+    val isFortification: Boolean get() = typeLine.isFortification
     val isPermanent: Boolean get() = typeLine.isPermanent
     val isDoubleFaced: Boolean get() = backFace != null
     val isFlip: Boolean get() = flipSide != null

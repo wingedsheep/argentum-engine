@@ -108,6 +108,9 @@ data class TargetFilter(
         /** Target creature you control */
         val CreatureYouControl = TargetFilter(GameObjectFilter.Companion.Creature.youControl())
 
+        /** Target land you control — the fortify ability's target (CR 702.67a). */
+        val LandYouControl = TargetFilter(GameObjectFilter.Companion.Land.youControl())
+
         /** Target creature an opponent controls */
         val CreatureOpponentControls = TargetFilter(GameObjectFilter.Companion.Creature.opponentControls())
 

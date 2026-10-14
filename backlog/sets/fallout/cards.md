@@ -2,7 +2,7 @@
 
 **Set Size:** 336 cards
 **Release Date:** March 8, 2024
-**Implemented:** 165 / 336
+**Implemented:** 167 / 336
 | Section    | Total | Done |
 |------------|-------|------|
 | Extras     | 336   | 158  |
@@ -56,7 +56,7 @@
 - [ ] Brotherhood Vertibird
 - [x] Buried Ruin
 - [ ] Butch DeLoria, Tunnel Snake
-- [ ] C.A.M.P.
+- [x] C.A.M.P.
 - [x] Caesar, Legion's Emperor
 - [ ] Cait, Cage Brawler
 - [x] Canopy Vista

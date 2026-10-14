@@ -62,7 +62,10 @@ fun payManaCostFromPool(
             ?: return EffectResult.error(state, "Cannot pay mana cost")
 
         for (source in solution.sources) {
-            val (tappedState, tapEvents) = tapForMana(currentState, source.entityId, player)
+            val (tappedState, tapEvents) = tapForMana(
+                currentState, source.entityId, player,
+                solution.manaProduced[source.entityId]?.producedColors.orEmpty()
+            )
                 .let { (tapped, tapEvents) ->
                     // The mana ability's life cost (Mana Confluence's printed "Pay 1 life", Thran
                     // Portal's tax). Only a life-costing source needs the zone service (for a

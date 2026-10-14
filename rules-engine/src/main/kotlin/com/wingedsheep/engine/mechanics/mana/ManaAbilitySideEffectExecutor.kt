@@ -63,11 +63,13 @@ class ManaAbilitySideEffectExecutor(
         var currentState = state
         val events = mutableListOf<GameEvent>()
         for (source in solution.sources) {
-            val (tappedState, tapEvents) = tapForMana(currentState, source.entityId, controllerId)
+            val production = solution.manaProduced[source.entityId]
+            val (tappedState, tapEvents) = tapForMana(
+                currentState, source.entityId, controllerId, production?.producedColors.orEmpty()
+            )
             currentState = tappedState
             events.addAll(tapEvents)
 
-            val production = solution.manaProduced[source.entityId]
             // Resolved once and shared: the activation event, the life cost and the side effects
             // all want the same ability, and this loop runs for every auto-tapped source of every payment.
             val ability = ManaAbilityLifeCost.activatedManaAbility(cardRegistry, currentState, source.entityId, production, controllerId, zones.predicateEvaluator)

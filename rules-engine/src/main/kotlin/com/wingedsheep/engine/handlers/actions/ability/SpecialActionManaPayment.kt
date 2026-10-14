@@ -92,9 +92,10 @@ internal class SpecialActionManaPayment(
 
         if (!partial.remainingCost.isEmpty()) {
             if (strategy is PaymentStrategy.Explicit) {
+                val credited = manaSolver.creditExplicitSources(currentState, playerId, strategy.manaAbilitiesToActivate, partial.remainingCost)
                 for (sourceId in strategy.manaAbilitiesToActivate) {
                     val (tapped, tapEvents) = manaAbilitySideEffectExecutor
-                        .tapForManaPayingLife(currentState, sourceId, playerId)
+                        .tapForManaPayingLife(currentState, sourceId, playerId, credited[sourceId])
                     currentState = tapped
                     events.addAll(tapEvents)
                 }

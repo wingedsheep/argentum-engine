@@ -6975,7 +6975,7 @@ excludeSacrifice?, asCraftMaterial?)`, `dies()`, `changesZone(from?, to?, exclud
 moves), `attacks(requires)`, `blocks(attackerFilter?, minBlockedAttackers?)`, `becomesBlocked(by?)`,
 `blocksOrBecomesBlocked(by?, oncePerCombat?)`, `attacksAndIsntBlocked()`, `dealsDamage(to, damageType,
 requireExcess, batch, requires)`, `dealsCombatDamage(to, …)`, `isDealtDamage(by)`,
-`damagedCreatureDies(dying?)`, `becomesTapped(reason?, firstTimeEachTurn?)`, `becomesUntapped()`, `tappedForMana()` (SELF),
+`damagedCreatureDies(dying?)`, `becomesTapped(reason?, firstTimeEachTurn?)`, `becomesUntapped()`, `tappedForMana()` (SELF / ATTACHED),
 `turnedFaceUp()`, `transforms(intoBackFace?)`, `phasesIn()`, `becomesTarget(of?, byYou, byOpponent,
 spellsOnly, abilitiesOnly, firstTimeEachTurn, includeSpellTargets, includePlayerTargets, ofBackupAbility,
 targetsOnlyIt)`,
@@ -8147,8 +8147,14 @@ Triggers.you.casts(GameObjectFilter.Noncreature or
   from hand, so the source can't see its own cycling — only a `self.isCycled()` trigger fires off that.
 - `Triggers.anyPlayer.tapsLandForMana()` / `Triggers.<player>.tapsLandForMana(land)` — "whenever
   [player] taps a [land] for mana" (`EventPattern.LandTappedForMana`). `Triggers.self.tappedForMana()`
-  is "whenever you tap **this** land for mana" (Forbidden Orchard — SELF only, no subject filter). The
-  engine emits `LandTappedForManaEvent` from the one tap helper every mana-payment path uses
+  is "whenever you tap **this** land for mana" (Forbidden Orchard — no subject filter);
+  `Triggers.attached.tappedForMana()` is "whenever enchanted / fortified land is tapped for mana" (C.A.M.P.)
+  — by any player (`Player.Each`), detected on the ATTACHED path. The event carries the colors the land's
+  mana ability produced (`LandTappedForManaEvent.producedColors` → `TriggerContext.producedManaColors`);
+  `GameObjectFilter.sharingColorWithTriggeringMana()` (`CardPredicate.SharesColorWithTriggeringMana`)
+  reads them — "if that creature shares a color with the mana that land produced" is
+  `Conditions.TargetMatchesFilter(GameObjectFilter.Any.sharingColorWithTriggeringMana(), creature)`.
+  Colorless mana shares no color. The engine emits `LandTappedForManaEvent` from the one tap helper every mana-payment path uses
   (`tapForMana`): a manual activation, solver auto-pay, an explicit source list, and the source-selection
   prompt all fire it. Only a mana ability with {T} in its cost taps the land *for mana*, and
   land-ness is read from projected state. These are **non-mana** riders — they use the stack and may
@@ -13103,7 +13109,16 @@ composite abilities).
   sorcery-speed and targets a single creature you control, renders as its printed `Equip …` line with
   no frozen cost, and — when its target label is narrower than the plain `"creature you control"` —
   declares the matching `equipQuality`.
-- `Fortify(cost)` — Aura-like attach cost on lands.
+- `Fortify(cost)` — CR 702.67a: "[cost]: Attach this Fortification to target land you control.
+  Activate only as a sorcery." Written `fortifyAbility("{3}")`; the lowering is
+  `ActivatedAbility.fortify(cost, id?)` — the same `AttachEquipmentEffect` equip uses, targeting
+  `TargetFilter.LandYouControl`, sorcery speed, flagged `isFortifyAbility` (not `isEquipAbility`, so
+  instant-speed equip, equip cost reductions, Forge Anew and equip-only mana never touch it). The menu
+  renders the printed `"Fortify {3}"`. The attachment rules come from the `Artifact — Fortification`
+  type line (`TypeLine.isFortification`): `AttachmentMover.canAttach` accepts only a land host and not
+  while the Fortification is a creature (CR 301.6), and `UnattachedAurasCheck` unattaches one whose
+  host stops being a land (CR 704.5n). "Fortified land" in a trigger is `Triggers.attached` (C.A.M.P.:
+  `Triggers.attached.tappedForMana()`); in a filter, `attachedToBySource()`.
 
 ```kotlin
 keywords(Keyword.FLYING, Keyword.VIGILANCE)

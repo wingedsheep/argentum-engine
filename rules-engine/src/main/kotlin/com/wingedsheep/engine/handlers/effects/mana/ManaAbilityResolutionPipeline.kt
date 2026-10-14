@@ -132,7 +132,8 @@ class ManaAbilityResolutionPipeline(
         // its cost taps the land for mana — a tapped source is how that shows here, since the
         // color-choice resume path no longer holds the activation's TappedEvent.
         if (onSourceTap.state.getEntity(sourceId)?.has<TappedComponent>() == true) {
-            landTappedForManaEvent(onSourceTap.state, sourceId, tapperId)?.let { allManaEvents = allManaEvents + it }
+            landTappedForManaEvent(onSourceTap.state, sourceId, tapperId, manaEvent.producedColors())
+                ?.let { allManaEvents = allManaEvents + it }
         }
 
         val anyColorBonuses = tappedForManaBonusResolver.collect(onSourceTap.state, sourceId, tapperId)
@@ -425,5 +426,17 @@ class ManaAbilityResolutionPipeline(
             }
         }
         return false
+    }
+}
+
+/** The colors among the mana this event added — empty for colorless (or no event). */
+private fun ManaAddedEvent?.producedColors(): Set<Color> {
+    if (this == null) return emptySet()
+    return buildSet {
+        if (white > 0) add(Color.WHITE)
+        if (blue > 0) add(Color.BLUE)
+        if (black > 0) add(Color.BLACK)
+        if (red > 0) add(Color.RED)
+        if (green > 0) add(Color.GREEN)
     }
 }

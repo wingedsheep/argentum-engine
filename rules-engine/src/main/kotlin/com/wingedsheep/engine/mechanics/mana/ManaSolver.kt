@@ -349,7 +349,10 @@ data class ManaProduction(
     val colorless: Int = 0,
     /** The source is a snow permanent, so this mana pays `{S}` once it floats (CR 107.4h). */
     val snow: Boolean = false
-)
+) {
+    /** The colors of this mana — empty for colorless. "The mana that land produced" (C.A.M.P.). */
+    val producedColors: Set<Color> get() = setOfNotNull(color)
+}
 
 /**
  * Solves mana payment by finding which lands/sources to tap for AutoPay.
@@ -2689,6 +2692,28 @@ class ManaSolver private constructor(
      * Checks if a player can pay a mana cost (from floating mana pool + auto-pay).
      * Considers floating mana first, then checks if remaining can be paid by tapping sources.
      */
+    /**
+     * The mana each of a player's hand-picked [chosen] sources is credited with when they pay
+     * [cost] — the solver run restricted to exactly those sources. The legacy explicit-payment
+     * paths (cycling, plot, unlocking a door, turning face up, special actions) tap the chosen
+     * sources directly; this lets them still stamp the tap's `LandTappedForManaEvent` with the
+     * colour the land produced (C.A.M.P.). Empty when the chosen sources can't pay — the tap then
+     * reads as colourless, the same as before the solver knew.
+     */
+    fun creditExplicitSources(
+        state: GameState,
+        playerId: EntityId,
+        chosen: Collection<EntityId>,
+        cost: ManaCost,
+        xValue: Int = 0,
+        spellContext: SpellPaymentContext? = null,
+    ): Map<EntityId, ManaProduction> {
+        if (chosen.isEmpty()) return emptyMap()
+        val chosenSet = chosen.toSet()
+        val excluded = findAvailableManaSources(state, playerId).map { it.entityId }.filter { it !in chosenSet }.toSet()
+        return solve(state, playerId, cost, xValue, excludeSources = excluded, spellContext = spellContext)?.manaProduced.orEmpty()
+    }
+
     fun canPay(
         state: GameState,
         playerId: EntityId,

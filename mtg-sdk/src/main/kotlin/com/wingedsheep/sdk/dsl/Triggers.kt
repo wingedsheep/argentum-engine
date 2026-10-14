@@ -346,12 +346,18 @@ class ObjectTriggerSubject internal constructor(
      * "Whenever you tap this land for mana" — a *non-mana* rider on the land's own mana ability
      * (Forbidden Orchard). It fires however the land was tapped to pay (manual activation or
      * auto-pay) and goes on the stack, so it may target. A rider that *adds* mana is a triggered
-     * mana ability (CR 605.1b) — author that as `AdditionalManaOnSourceTap`. [Triggers.self] only.
+     * mana ability (CR 605.1b) — author that as `AdditionalManaOnSourceTap`.
+     *
+     * Under [Triggers.attached] it is "Whenever enchanted / fortified land is tapped for mana"
+     * (C.A.M.P.) — by *any* player, since the passive voice names no tapper. The resolving effect
+     * reads the colors of the mana the land produced through
+     * `GameObjectFilter.sharingColorWithTriggeringMana()`.
      */
     fun tappedForMana(): TriggerSpec {
-        only("tappedForMana", TriggerBinding.SELF)
+        only("tappedForMana", TriggerBinding.SELF, TriggerBinding.ATTACHED)
         unfiltered("tappedForMana")
-        return spec(LandTappedForMana(player = Player.You))
+        val tapper = if (binding == TriggerBinding.ATTACHED) Player.Each else Player.You
+        return spec(LandTappedForMana(player = tapper))
     }
 
     /**

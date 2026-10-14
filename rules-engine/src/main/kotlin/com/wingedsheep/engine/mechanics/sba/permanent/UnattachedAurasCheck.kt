@@ -29,6 +29,8 @@ import com.wingedsheep.sdk.model.EntityId
  *              into a 0/0 Robot artifact creature by Tezzeret, Cruel Captain's emblem.
  *            - The host stops matching the Equipment's own "can be attached only to …"
  *              restriction (Konda's Banner on a creature that stops being legendary).
+ *          A Fortification is the same story with lands (CR 301.6): it unattaches once its host
+ *          stops being a land.
  * 704.5p - A battle or creature attached to an object or player becomes unattached but
  *          remains on the battlefield.
  *
@@ -108,8 +110,9 @@ class UnattachedAurasCheck(
 
             val isAura = cardComponent.typeLine.isAura
             val isEquipment = cardComponent.typeLine.isEquipment
+            val isFortification = cardComponent.typeLine.isFortification
 
-            if (!isAura && !isEquipment) continue
+            if (!isAura && !isEquipment && !isFortification) continue
 
             // A host that died during this SBA pass was still a legal host when the pass
             // began. Its orphaned Aura is a later SBA, above the host in graveyard order.
@@ -225,6 +228,13 @@ class UnattachedAurasCheck(
                     )
                 ) {
                     // Illegal attachment: the Equipment unattaches but stays on the battlefield.
+                    val (detached, unattachEvents) = unattachEmittingEvent(newState, entityId)
+                    newState = detached
+                    events.addAll(unattachEvents)
+                } else if (isFortification && !projected.hasType(attachedTo.targetId, "LAND")) {
+                    // CR 301.6 / 704.5n: a Fortification can only be attached to a land, so once the
+                    // host stops being one it unattaches and stays on the battlefield. (A
+                    // Fortification that became a creature already came off above, per 704.5p.)
                     val (detached, unattachEvents) = unattachEmittingEvent(newState, entityId)
                     newState = detached
                     events.addAll(unattachEvents)

@@ -546,6 +546,116 @@
     }
 }
 
+// C.A.M.P.
+{
+    "name": "C.A.M.P.",
+    "manaCost": "{3}",
+    "typeLine": "Artifact — Fortification",
+    "oracleText": "Whenever fortified land is tapped for mana, put a +1/+1 counter on target creature you control. If that creature shares a color with the mana that land produced, create a Junk token. (It's an artifact with \"{T}, Sacrifice this token: Exile the top card of your library. You may play that card this turn. Activate only as a sorcery.\")\nFortify {3} ({3}: Attach to target land you control. Fortify only as a sorcery.)",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "C.A.M.P.:1",
+                "trigger": "LandTappedForMana",
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 1,
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "EntityMatches",
+                                    "entity": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    },
+                                    "filter": {
+                                        "cardPredicates": [
+                                            "SharesColorWithTriggeringMana"
+                                        ]
+                                    }
+                                }
+                            },
+                            "then": {
+                                "type": "CreatePredefinedToken",
+                                "tokenType": "Junk"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you"
+                    },
+                    "id": "t0"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "C.A.M.P.:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "land you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "land ctrl:you"
+                        },
+                        "id": "land you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isFortifyAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "129",
+        "rarity": "UNCOMMON",
+        "artist": "Tomas Duchek",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/3/034d4543-2c53-4cda-acfd-7f26b8dd17fb.jpg?1783912380",
+        "rulings": [
+            {
+                "date": "2024-03-08",
+                "text": "Fortification is to lands what Equipment is to creatures. Except for the difference regarding what type of permanent they can be attached to, Fortifications and Equipment follow the same rules."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "If the fortified land produced more than one color of mana, you'll create a Junk token as long as the target creature is at least one of those colors."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "You can't sacrifice a Junk token to pay multiple costs. For example, you can't sacrifice a Junk token to activate its own ability and also to activate the second ability of Junk Jet."
+            }
+        ]
+    }
+}
+
 // Caesar, Legion's Emperor
 {
     "name": "Caesar, Legion's Emperor",

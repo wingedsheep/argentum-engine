@@ -216,6 +216,7 @@ value class Subtype(val value: String) {
         // Artifact subtypes
         val EQUIPMENT = Subtype("Equipment")
         val FOOD = Subtype("Food")
+        val FORTIFICATION = Subtype("Fortification")
         val LANDER = Subtype("Lander")
         val TREASURE = Subtype("Treasure")
         val VEHICLE = Subtype("Vehicle")

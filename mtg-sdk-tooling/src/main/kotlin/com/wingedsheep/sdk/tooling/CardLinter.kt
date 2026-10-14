@@ -1,7 +1,6 @@
 package com.wingedsheep.sdk.tooling
 
 import com.wingedsheep.sdk.core.Keyword
-import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.core.TypeLine
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.model.CardDefinition
@@ -91,12 +90,6 @@ object CardLinter {
     /** `Scope.AttachedTo`'s serial name. */
     private const val ATTACHED_TO = "AttachedTo"
 
-    /**
-     * Fortifications attach to lands (CR 301.6-adjacent; the Fortify keyword). No card in the
-     * corpus uses one yet and there is no `Subtype` constant, but they are an attachment type, so
-     * the attachability check honors the subtype rather than mis-flagging the first one added.
-     */
-    private val FORTIFICATION = Subtype("Fortification")
 
     fun lint(card: CardDefinition): List<CardValidationError> {
         val findings = mutableListOf<CardValidationError>()
@@ -479,7 +472,7 @@ object CardLinter {
     /** True if any face of the physical card can host an attachment. */
     private fun canEverBeAttached(card: CardDefinition): Boolean {
         fun attaches(typeLine: TypeLine, script: CardScript) =
-            typeLine.isAura || typeLine.isEquipment || typeLine.hasSubtype(FORTIFICATION) ||
+            typeLine.isAura || typeLine.isEquipment || typeLine.isFortification ||
                 // A card can carry the target/cost without the subtype; CardValidator reports that
                 // mismatch on its own, and this check has no business double-reporting it.
                 script.auraTarget != null

@@ -146,7 +146,7 @@ object ManaAbilityLifeCost {
         tapperId: EntityId,
         production: ManaProduction? = null,
     ): Pair<GameState, List<GameEvent>> {
-        val (tapped, tapEvents) = tapForMana(state, sourceId, tapperId)
+        val (tapped, tapEvents) = tapForMana(state, sourceId, tapperId, production?.producedColors.orEmpty())
         if (tapEvents.isEmpty()) return tapped to tapEvents
         val ability = activatedManaAbility(zones.cardRegistry, tapped, sourceId, production, tapperId, zones.predicateEvaluator)
         val (paid, lifeEvents) = pay(zones, tapped, sourceId, tapperId, ability)

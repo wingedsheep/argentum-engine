@@ -453,6 +453,7 @@ class PredicateEvaluator(
             is CardPredicate.SharesColorWith,
             is CardPredicate.SharesColorWithPermanentYouControl,
             CardPredicate.SharesColorWithRecipient,
+            CardPredicate.SharesColorWithTriggeringMana,
             is CardPredicate.SharesCreatureTypeWith,
             CardPredicate.SharesCreatureTypeWithSource,
             CardPredicate.SharesCreatureTypeWithTriggeringEntity,
@@ -1337,6 +1338,12 @@ class PredicateEvaluator(
                 }
                 if (recipientColors.isEmpty() || colors.isEmpty()) return false
                 colors.any { it in recipientColors }
+            }
+
+            CardPredicate.SharesColorWithTriggeringMana -> {
+                // The colors of the mana the triggering land produced; colorless mana has none.
+                val manaColors = context?.resolution?.triggerContext?.producedManaColors ?: return false
+                manaColors.any { it.name in colors }
             }
 
             // Context-relative predicates (pipeline variable references)
@@ -2617,6 +2624,7 @@ class PredicateEvaluator(
             CardPredicate.ConvokedSource, CardPredicate.HasChosenSubtype,
             CardPredicate.HasChosenColor, CardPredicate.SharesChosenColorWithSource,
             CardPredicate.SharesColorWithRecipient,
+            CardPredicate.SharesColorWithTriggeringMana,
             is CardPredicate.SharesCreatureTypeWith,
             is CardPredicate.SharesCardTypeWith,
             CardPredicate.SharesCardTypeWithLinkedExile,

@@ -4,6 +4,7 @@ import com.wingedsheep.engine.core.AbilityActivatedEvent
 import com.wingedsheep.engine.core.AttackersDeclaredEvent
 import com.wingedsheep.engine.core.BecomesTargetEvent
 import com.wingedsheep.engine.core.DamageDealtEvent
+import com.wingedsheep.engine.core.LandTappedForManaEvent
 import com.wingedsheep.engine.core.TappedEvent
 import com.wingedsheep.engine.core.TransformedEvent
 import com.wingedsheep.engine.core.TurnFaceUpEvent
@@ -164,6 +165,8 @@ class AttachmentTriggerDetector(
             is AttackersDeclaredEvent -> event.attackers
             is TurnFaceUpEvent -> listOf(event.entityId)
             is TappedEvent -> listOf(event.entityId)
+            // "Whenever enchanted / fortified land is tapped for mana" (C.A.M.P.).
+            is LandTappedForManaEvent -> listOf(event.landId)
             is UntappedEvent -> listOf(event.entityId)
             // "When equipped creature transforms" (Neglected Heirloom). A transform flips the
             // permanent in place, so the Equipment is still attached when the event fires.
@@ -220,6 +223,15 @@ class AttachmentTriggerDetector(
                 val tapper = trigger.tapper ?: return true
                 val tappedById = event.tappedById ?: return false
                 matcher.matchesPlayer(state, tapper, tappedById, auraControllerId)
+            }
+            // "Whenever fortified land is tapped for mana" (C.A.M.P.) — identity with the host, then
+            // the tapper axis relative to the attachment's controller (Each for the passive voice)
+            // and the pattern's optional land filter, as on the main path.
+            is EventPattern.LandTappedForMana -> {
+                if (event !is LandTappedForManaEvent || event.landId != attachedEntityId) return false
+                if (!matcher.matchesPlayer(state, trigger.player, event.tapperId, auraControllerId)) return false
+                val filter = trigger.landFilter ?: return true
+                matcher.matchesLandFilter(state, filter, event.landId, auraId, auraControllerId)
             }
             // "Whenever equipped creature becomes untapped" (Fishing Pole). UntapEvent carries no
             // filter, so identity with the attached permanent is the whole match.
@@ -281,6 +293,8 @@ class AttachmentTriggerDetector(
             // The attached creature's last-known information (types, P/T, counters) — "whenever
             // equipped creature dies" effects compare against it as it last existed (CR 608.2h).
             is ZoneChangeEvent -> TriggerContext.fromEvent(event)
+            // The tapper and the colors of the mana the land produced (C.A.M.P.).
+            is LandTappedForManaEvent -> TriggerContext.fromEvent(event)
             else -> TriggerContext(triggeringEntityId = attachedEntityId)
         }
     }

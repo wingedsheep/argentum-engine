@@ -266,6 +266,7 @@ Families:
 - `CardPredicate.SharesColorWith(entity: EffectTarget.SingleEntity)` — Matches objects that share a color with the referenced entity
 - `CardPredicate.SharesColorWithPermanentYouControl(filter: GameObjectFilter)` — Matches objects that share a color with at least one permanent the evaluating player controls matching filter.
 - `CardPredicate.SharesColorWithRecipient` — Matches objects that share a color with the recipient of the in-flight damage, and are not that recipient.
+- `CardPredicate.SharesColorWithTriggeringMana` — Matches objects that share a color with the mana a land produced when it was tapped for mana — the mana of the com.wingedsheep.sdk.scripting.EventPattern.LandTappedForMana event that triggered the…
 - `CardPredicate.SharesCreatureTypeWith(entity: EffectTarget.SingleEntity)` — Matches creatures that share a creature subtype with the referenced entity
 - `CardPredicate.SharesCreatureTypeWithSource` — Matches spells that share a creature subtype with the source permanent's projected types
 - `CardPredicate.SharesCreatureTypeWithTriggeringEntity` — Matches creatures that share a creature subtype with the triggering entity

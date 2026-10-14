@@ -1616,6 +1616,7 @@ class CostCalculator(
             is CardPredicate.DoesNotShareCreatureTypeWithPermanentYouControl -> true
             is CardPredicate.DoesNotShareLandTypeWithPermanentYouControl -> true
             CardPredicate.SharesColorWithRecipient -> false
+            CardPredicate.SharesColorWithTriggeringMana -> false
             CardPredicate.SharesChosenColorWithSource -> {
                 if (sourceEntityId == null || state == null) return false
                 val chosenColor = state.getEntity(sourceEntityId)

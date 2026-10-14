@@ -453,6 +453,12 @@ interface ObjectFilterBuilder<out Self> {
     fun sharingColorWithRecipient() = withCardPredicate(CardPredicate.SharesColorWithRecipient)
 
     /**
+     * Must share a color with the mana the triggering land produced — only meaningful in an ability
+     * triggered by a land being tapped for mana (C.A.M.P.). Colorless mana matches nothing.
+     */
+    fun sharingColorWithTriggeringMana() = withCardPredicate(CardPredicate.SharesColorWithTriggeringMana)
+
+    /**
      * Must share a color with at least one permanent the evaluating player controls matching
      * [filter] (Ringsight: "a card that shares a color with a legendary creature you control").
      */

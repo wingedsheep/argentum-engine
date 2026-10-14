@@ -1139,6 +1139,21 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
     }
 
     /**
+     * Matches objects that share a color with the mana a land produced when it was tapped for mana
+     * — the mana of the [com.wingedsheep.sdk.scripting.EventPattern.LandTappedForMana] event that
+     * triggered the resolving ability ("If that creature shares a color with the mana that land
+     * produced" — C.A.M.P.). Colorless is a type of mana but not a color (CR 106.1a–b), so it shares none; outside such
+     * a trigger nothing matches. The sibling of [SharesColorWithRecipient], whose reference is the
+     * damage recipient rather than a mana event; neither [SharesColorWith] (an object reference) nor
+     * [HasChosenColor] (a choice made during resolution) can name mana.
+     */
+    @SerialName("SharesColorWithTriggeringMana")
+    @Serializable
+    data object SharesColorWithTriggeringMana : CardPredicate {
+        override val description: String = "that shares a color with the mana that land produced"
+    }
+
+    /**
      * Matches objects that share a color with at least one permanent the evaluating player
      * controls matching [filter]. Used by Ringsight ("a card that shares a color with a legendary
      * creature you control") with `filter = GameObjectFilter.Creature.legendary()`. The colors of

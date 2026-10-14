@@ -1100,6 +1100,7 @@ internal class AffectsFilterResolver(
         CardPredicate.HasChosenSubtype,
         CardPredicate.SharesChosenColorWithSource,
         CardPredicate.SharesColorWithRecipient,
+        CardPredicate.SharesColorWithTriggeringMana,
         is CardPredicate.SharesCreatureTypeWith,
         is CardPredicate.SharesCardTypeWith,
         CardPredicate.SharesCardTypeWithLinkedExile,

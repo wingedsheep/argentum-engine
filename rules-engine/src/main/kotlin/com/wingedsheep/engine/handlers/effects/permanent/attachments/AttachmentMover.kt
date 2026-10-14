@@ -29,7 +29,8 @@ object AttachmentMover {
      * (CR 702.16c); an Aura that is also a creature can't enchant anything and can't enchant itself
      * (CR 303.4d). An Equipment can only equip a creature (CR 301.5), not while it is itself a
      * creature without reconfigure (CR 301.5c), not a creature with protection from one of its
-     * colors (CR 702.16d), and not one its own [EquipmentAttachRestriction] rules out. Anything else
+     * colors (CR 702.16d), and not one its own [EquipmentAttachRestriction] rules out. A Fortification
+     * can only fortify a land, and not while it is itself a creature (CR 301.6). Anything else
      * can't be attached at all (CR 701.3b). Reads the projected state so layer-4 type and control
      * changes are seen.
      */
@@ -61,6 +62,14 @@ object AttachmentMover {
                         state, projected, cardRegistry, attachmentId, card, hostId
                     ) &&
                     equipRestrictionAllows(state, predicateEvaluator, cardRegistry, attachmentId, hostId)
+            // CR 301.6: a Fortification can be attached only to a land, and one that's also a
+            // creature can't fortify a land; otherwise rules 301.5a–f apply as for Equipment.
+            card.typeLine.isFortification ->
+                projected.hasType(hostId, "LAND") &&
+                    !projected.isCreature(attachmentId) &&
+                    !EnchantRestriction.hostProtectedFromAttachment(
+                        state, projected, cardRegistry, attachmentId, card, hostId
+                    )
             else -> false
         }
     }

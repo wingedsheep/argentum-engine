@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.core
 
 import com.wingedsheep.sdk.core.BendType
+import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
@@ -1567,7 +1568,13 @@ data class PermanentUnattachedEvent(
 data class LandTappedForManaEvent(
     val tapperId: EntityId,
     val landId: EntityId,
-    val landName: String
+    val landName: String,
+    /**
+     * The colors of the mana the land's mana ability produced — "the mana that land produced"
+     * (C.A.M.P.). Empty for colorless mana, and on the few legacy auto-pay paths that tap a source
+     * without knowing what it was credited with.
+     */
+    val producedColors: Set<Color> = emptySet(),
 ) : GameEvent
 
 /**

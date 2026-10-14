@@ -25,6 +25,8 @@ data class TypeLine(
     val isRole: Boolean get() = isEnchantment && hasSubtype(Subtype.ROLE)
     val isSaga: Boolean get() = isEnchantment && hasSubtype(Subtype.SAGA)
     val isEquipment: Boolean get() = isArtifact && hasSubtype(Subtype.EQUIPMENT)
+    /** An artifact Fortification — attaches to a land the way an Equipment attaches to a creature (CR 301.6). */
+    val isFortification: Boolean get() = isArtifact && hasSubtype(Subtype.FORTIFICATION)
     val isVehicle: Boolean get() = isArtifact && hasSubtype(Subtype.VEHICLE)
     val isArtifactCreature: Boolean get() = isArtifact && isCreature
     val isRoom: Boolean get() = isEnchantment && hasSubtype(Subtype.ROOM)

@@ -273,6 +273,14 @@ data class TriggerContext(
      * live choice went with the old object (CR 400.7). `null` otherwise.
      */
     val lastKnownChosenCreature: com.wingedsheep.engine.state.components.battlefield.ChoiceValue.EntityChoice? = null,
+    /**
+     * For a [com.wingedsheep.engine.core.LandTappedForManaEvent] trigger — the colors of the mana
+     * the land produced (empty for colorless). Read by
+     * [com.wingedsheep.sdk.scripting.predicates.CardPredicate.SharesColorWithTriggeringMana] for
+     * "if that creature shares a color with the mana that land produced" (C.A.M.P.). `null` for
+     * every other trigger.
+     */
+    val producedManaColors: Set<com.wingedsheep.sdk.core.Color>? = null,
 ) {
     /**
      * The triggering permanent's last-known type line ([lastKnownCardTypes] + [lastKnownSubtypes],
@@ -511,7 +519,8 @@ data class TriggerContext(
                 is UntappedEvent -> TriggerContext(triggeringEntityId = event.entityId)
                 is com.wingedsheep.engine.core.LandTappedForManaEvent -> TriggerContext(
                     triggeringEntityId = event.landId,
-                    triggeringPlayerId = event.tapperId
+                    triggeringPlayerId = event.tapperId,
+                    producedManaColors = event.producedColors
                 )
                 is PhasedInEvent -> TriggerContext(triggeringEntityId = event.entityId)
                 is LifeChangedEvent -> TriggerContext(

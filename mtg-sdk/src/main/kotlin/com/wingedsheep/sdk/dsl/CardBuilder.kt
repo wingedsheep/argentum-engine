@@ -701,6 +701,15 @@ class CardBuilder(private val name: String) {
         )
     }
 
+    /**
+     * "Fortify [cost]" (CR 702.67a) — "[cost]: Attach this Fortification to target land you control.
+     * Activate only as a sorcery." The Fortification analog of [equipAbility]; the lowering is
+     * [ActivatedAbility.fortify]. Equip-keyed permissions and cost modifiers don't apply to it.
+     */
+    fun fortifyAbility(cost: String) {
+        activatedAbilities.add(ActivatedAbility.fortify(cost = ManaCost.parse(cost)))
+    }
+
     // =========================================================================
     // Additional Costs
     // =========================================================================

@@ -11,6 +11,7 @@ import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.sdk.core.AbilityFlag
+import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.TapReason
@@ -159,6 +160,7 @@ fun tapForMana(
     state: GameState,
     sourceId: EntityId,
     tapperId: EntityId,
+    producedColors: Set<Color> = emptySet(),
 ): Pair<GameState, List<GameEvent>> {
     val outcome = tap(state, sourceId)
     val tapEvent = outcome.tapped ?: return state to emptyList()
@@ -168,7 +170,7 @@ fun tapForMana(
     val stamped = tapped.updateEntity(sourceId) { c ->
         c.with((c.get<AbilityActivatedThisTurnComponent>() ?: AbilityActivatedThisTurnComponent()).withAnyActivated())
     }
-    return stamped to listOfNotNull(outcome.turnedFaceUp, tapEvent, landTappedForManaEvent(state, sourceId, tapperId))
+    return stamped to listOfNotNull(outcome.turnedFaceUp, tapEvent, landTappedForManaEvent(state, sourceId, tapperId, producedColors))
 }
 
 /**
@@ -180,10 +182,11 @@ fun landTappedForManaEvent(
     state: GameState,
     sourceId: EntityId,
     tapperId: EntityId,
+    producedColors: Set<Color> = emptySet(),
 ): LandTappedForManaEvent? {
     if (!state.projectedState.hasType(sourceId, "LAND")) return null
     val name = state.getEntity(sourceId)?.get<CardComponent>()?.name ?: return null
-    return LandTappedForManaEvent(tapperId = tapperId, landId = sourceId, landName = name)
+    return LandTappedForManaEvent(tapperId = tapperId, landId = sourceId, landName = name, producedColors = producedColors)
 }
 
 /**
