@@ -1483,8 +1483,11 @@ class ZoneTransitionService(
             moveEvents.addAll(result.events)
             transitions.addAll(result.transitions)
         }
+        val priorDiscards = discardsThisTurn(newState, playerId)
         newState = trackDiscard(newState, playerId, cardIds)
-        val discardEvent = CardsDiscardedEvent(playerId, cardIds, cardNames, asCyclingCost = asCyclingCost)
+        val discardEvent = CardsDiscardedEvent(
+            playerId, cardIds, cardNames, asCyclingCost = asCyclingCost, priorDiscardsThisTurn = priorDiscards
+        )
         return ZoneTransitionResult(newState, listOf(discardEvent) + moveEvents, transitions = transitions)
     }
 
@@ -1942,15 +1945,29 @@ class ZoneTransitionService(
             )
         }
 
-        fun trackDiscard(state: GameState, playerId: EntityId, cardIds: List<EntityId>): GameState {
+        fun trackDiscard(
+            state: GameState,
+            playerId: EntityId,
+            cardIds: List<EntityId>,
+            undefinedCharacteristics: Set<EntityId> = emptySet()
+        ): GameState {
             if (cardIds.isEmpty()) return state
             return state.updateEntity(playerId) { container ->
                 val prior = container.get<CardsDiscardedThisTurnComponent>() ?: CardsDiscardedThisTurnComponent()
                 container.with(
-                    prior.copy(cardIds = prior.cardIds + cardIds, count = prior.count + cardIds.size)
+                    prior.copy(
+                        cardIds = prior.cardIds + cardIds,
+                        count = prior.count + cardIds.size,
+                        history = prior.history + cardIds,
+                        undefinedCharacteristics = prior.undefinedCharacteristics + undefinedCharacteristics
+                    )
                 )
             }
         }
+
+        /** The length of [playerId]'s discard history this turn — the `priorDiscardsThisTurn` stamp. */
+        fun discardsThisTurn(state: GameState, playerId: EntityId): Int =
+            state.getEntity(playerId)?.get<CardsDiscardedThisTurnComponent>()?.history?.size ?: 0
 
         /**
          * Remove [cardId] from the discarded-this-turn *gate* list (not the monotonic count) on any

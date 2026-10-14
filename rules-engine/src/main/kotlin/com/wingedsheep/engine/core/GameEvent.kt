@@ -1768,6 +1768,14 @@ data class CardsDiscardedEvent(
     /** Unrevealed hidden-zone discard replacements leave characteristics undefined. */
     @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
     val undefinedCharacteristics: Set<EntityId> = emptySet(),
+    /**
+     * How many cards [playerId] had discarded earlier this turn — the length of the
+     * `CardsDiscardedThisTurnComponent.history` prefix before this event's cards. Stamped at the
+     * discard site, so "for the first time each turn" stays exact even when one resolution emits
+     * several discard events (detection reads the post-batch history).
+     */
+    @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
+    val priorDiscardsThisTurn: Int = 0,
 ) : GameEvent
 
 /**

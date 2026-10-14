@@ -912,8 +912,24 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
          * you discard a card" (Cool but Rude). Sequential discards ("discard a card, then
          * discard a card") are separate events and still fire separately.
          */
-        val batch: Boolean = false
+        val batch: Boolean = false,
+        /**
+         * "for the first time each turn" — fires only for the discard event that carries [player]'s
+         * *first* card matching [cardFilter] this turn (Veronica, Dissident Scribe: "Whenever you
+         * discard one or more nonland cards for the first time each turn"). Turn history, not a cap
+         * on this trigger: a matching discard earlier in the turn — even before the source was on the
+         * battlefield — closes the window, which is what separates it from `oncePerTurn`. A land
+         * discarded first doesn't close a nonland window. Batch-only: no printed card pairs it with
+         * the per-card wording.
+         */
+        val firstTimeEachTurn: Boolean = false
     ) : EventPattern {
+        init {
+            require(!firstTimeEachTurn || batch) {
+                "DiscardEvent: firstTimeEachTurn is only defined for the batch (\"one or more\") wording"
+            }
+        }
+
         override val description: String = buildString {
             append(player.description)
             append(" would discard ")
@@ -923,6 +939,7 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
             } else {
                 append(if (batch) "cards" else "a card")
             }
+            if (firstTimeEachTurn) append(" for the first time each turn")
         }
 
         override fun applyTextReplacement(replacer: TextReplacer): EventPattern {

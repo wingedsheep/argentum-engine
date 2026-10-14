@@ -1095,6 +1095,10 @@ class TriggerMatcher(
      * The filter is evaluated against post-discard state — the cards are already in the graveyard.
      * Safe for zone-independent predicates (type/subtype/color); a filter depending on hand-specific
      * state would read the wrong zone.
+     *
+     * [EventPattern.DiscardEvent.firstTimeEachTurn] empties the result when a matching card is
+     * among the player's discards *before* this event — the history prefix the event's
+     * `priorDiscardsThisTurn` stamp marks off.
      */
     fun matchingDiscardedCards(
         trigger: EventPattern.DiscardEvent,
@@ -1104,19 +1108,36 @@ class TriggerMatcher(
         state: GameState
     ): List<EntityId> {
         if (!matchesPlayer(state, trigger.player, event.playerId, controllerId)) return emptyList()
-        val filter = trigger.cardFilter ?: return event.cardIds
-        val projected = state.projectedState
-        val predicateContext = com.wingedsheep.engine.handlers.PredicateContext(
-            controllerId = controllerId,
-            sourceId = sourceId
-        )
-        return event.cardIds.filter { cardId ->
-            val knownFilter = if (cardId in event.undefinedCharacteristics) {
-                com.wingedsheep.engine.handlers.effects.EffectDiscardDestinations.filterForUndefinedCharacteristics(filter)
-                    ?: return@filter false
-            } else filter
-            predicateEvaluator.matches(state, projected, cardId, knownFilter, predicateContext)
+        val filter = trigger.cardFilter
+        val predicateContext = PredicateContext(controllerId = controllerId, sourceId = sourceId)
+        val matching = if (filter == null) event.cardIds else event.cardIds.filter { cardId ->
+            discardedCardMatches(state, cardId, cardId in event.undefinedCharacteristics, filter, predicateContext)
         }
+        if (matching.isEmpty() || !trigger.firstTimeEachTurn) return matching
+        val discards = state.getEntity(event.playerId)
+            ?.get<com.wingedsheep.engine.state.components.player.CardsDiscardedThisTurnComponent>()
+            ?: return matching
+        val matchedEarlier = discards.history.take(event.priorDiscardsThisTurn).any { cardId ->
+            filter == null || discardedCardMatches(
+                state, cardId, cardId in discards.undefinedCharacteristics, filter, predicateContext
+            )
+        }
+        return if (matchedEarlier) emptyList() else matching
+    }
+
+    /** A discarded card with undefined characteristics can satisfy only a filter's characteristic-free branches. */
+    private fun discardedCardMatches(
+        state: GameState,
+        cardId: EntityId,
+        undefinedCharacteristics: Boolean,
+        filter: GameObjectFilter,
+        predicateContext: PredicateContext
+    ): Boolean {
+        val knownFilter = if (undefinedCharacteristics) {
+            com.wingedsheep.engine.handlers.effects.EffectDiscardDestinations.filterForUndefinedCharacteristics(filter)
+                ?: return false
+        } else filter
+        return predicateEvaluator.matches(state, state.projectedState, cardId, knownFilter, predicateContext)
     }
 
     /**

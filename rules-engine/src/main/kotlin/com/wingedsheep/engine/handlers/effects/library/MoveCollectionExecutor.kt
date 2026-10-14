@@ -1068,10 +1068,12 @@ class MoveCollectionExecutor(
         if (moveType == MoveType.Discard && cards.isNotEmpty()) {
             for ((discarderId, discarded) in discardGroups) {
                 val discardNames = discarded.map { state.getEntity(it)?.get<CardComponent>()?.name ?: "Card" }
+                val undefined = undefinedDiscards.filter { it in discarded }.toSet()
+                val zones = com.wingedsheep.engine.handlers.effects.ZoneTransitionService
                 events.add(CardsDiscardedEvent(discarderId, discarded, discardNames,
-                    undefinedCharacteristics = undefinedDiscards.filter { it in discarded }.toSet()))
-                newState = com.wingedsheep.engine.handlers.effects.ZoneTransitionService
-                    .trackDiscard(newState, discarderId, discarded)
+                    undefinedCharacteristics = undefined,
+                    priorDiscardsThisTurn = zones.discardsThisTurn(newState, discarderId)))
+                newState = zones.trackDiscard(newState, discarderId, discarded, undefined)
             }
         }
 

@@ -1631,11 +1631,16 @@ data class PermanentsSacrificedThisTurnComponent(val count: Int = 0) : Component
  * counts as a discard). Reset to an empty list for every player at the start of each turn by
  * [com.wingedsheep.engine.core.TurnManager].
  *
- * Two roles with deliberately different lifetimes:
+ * Three roles with deliberately different lifetimes:
  *  - [count] — total cards discarded this turn (monotonic). Backs `TurnTracker.CARDS_DISCARDED`
  *    (`DynamicAmount.TurnTracking`) — e.g. Green Goblin, Revenant "draw a card for each card you've
  *    discarded this turn". Never decremented mid-turn: a discarded card that later leaves the
  *    graveyard was still discarded this turn.
+ *  - [history] — the same discards as ids, in discard order (a card discarded twice is listed
+ *    twice), never pruned. The entries before a [com.wingedsheep.engine.core.CardsDiscardedEvent]'s
+ *    `priorDiscardsThisTurn` are what the discard trigger's `firstTimeEachTurn` axis searches
+ *    (Veronica, Dissident Scribe); [undefinedCharacteristics] marks the ones discarded with
+ *    undefined characteristics, which no card predicate matches.
  *  - [cardIds] — entity ids of discarded-this-turn cards **still identifiable as that discarded
  *    object**. Membership (`sourceId in cardIds`) backs the `YouDiscardedThisCardThisTurn` condition
  *    that gates the Mayhem keyword (CR 702.187b). Entity ids are stable across the hand→graveyard
@@ -1647,7 +1652,9 @@ data class PermanentsSacrificedThisTurnComponent(val count: Int = 0) : Component
 @Serializable
 data class CardsDiscardedThisTurnComponent(
     val cardIds: List<EntityId> = emptyList(),
-    val count: Int = 0
+    val count: Int = 0,
+    val history: List<EntityId> = emptyList(),
+    val undefinedCharacteristics: Set<EntityId> = emptySet()
 ) : Component
 
 /**

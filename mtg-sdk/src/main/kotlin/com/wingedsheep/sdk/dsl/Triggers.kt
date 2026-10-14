@@ -955,10 +955,16 @@ class PlayerTriggerSubject internal constructor(private val player: Player) {
 
     /**
      * "discards a [card] card" — once per card; [batch] is "one or more cards", once per discard
-     * event (CR 603.2c). Your own card discarding itself is [ObjectTriggerSubject.isDiscarded].
+     * event (CR 603.2c). [firstTimeEachTurn] (batch only) is "for the first time each turn": the
+     * turn's first matching discard by that player, read from turn history. Your own card
+     * discarding itself is [ObjectTriggerSubject.isDiscarded].
      */
-    fun discards(card: GameObjectFilter? = null, batch: Boolean = false): TriggerSpec =
-        spec(DiscardEvent(player = player, cardFilter = card, batch = batch))
+    fun discards(
+        card: GameObjectFilter? = null,
+        batch: Boolean = false,
+        firstTimeEachTurn: Boolean = false
+    ): TriggerSpec =
+        spec(DiscardEvent(player = player, cardFilter = card, batch = batch, firstTimeEachTurn = firstTimeEachTurn))
 
     /**
      * "mills a [card] card" — once per milled card; [batch] is "one or more [card] cards are

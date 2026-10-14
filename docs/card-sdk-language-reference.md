@@ -7001,7 +7001,7 @@ minLoyaltyRemoved, exhaust, includeManaAbilities, excludeManaAbilities, withoutT
 `isDealtDamage(by?, damageType?)`, `isDealtCombatDamage()`, `getsCounters(type?)` (`you` only — counters
 put on the player by anyone: "whenever you get one or more {E}", `CountersPlacedEvent.recipient`),
 `draws(exceptFirstInDrawStep?)`,
-`drawsNth(n)`, `revealsFirstDraw(card?)`, `discards(card?, batch?)`, `mills(card?, batch?)`, `cycles()`, `playsLand(…)`,
+`drawsNth(n)`, `revealsFirstDraw(card?)`, `discards(card?, batch?, firstTimeEachTurn?)`, `mills(card?, batch?)`, `cycles()`, `playsLand(…)`,
 `permanentTurnedFaceUp(filter)`, `searchesLibrary()`, `shufflesLibrary()`, `gainsLife(firstTimeEachTurn?)`,
 `losesLife()`, `losesGame()`, `sacrifices(filter, batch?)`,
 `sacrificesAnother(filter)`, `taps(filter, batch?)`, `tapsLandForMana(land?)`, `createsToken(token?)`,
@@ -7699,8 +7699,17 @@ single "it" for "one or more cards".
   card, then discard a card") are separate `CardsDiscardedEvent`s and fire separately.
   Read the batch size ("that much" / "that many") via
   `DynamicAmount.ContextProperty(ContextPropertyKey.TRIGGER_DISCARD_COUNT)` — Magmakin Artillerist.
+- `Triggers.you.discards(GameObjectFilter.Nonland, batch = true, firstTimeEachTurn = true)` — "whenever
+  you discard one or more nonland cards **for the first time each turn**" (Veronica, Dissident Scribe).
+  Fires only for the discard event carrying the player's first `card`-matching discard of the turn. It is
+  turn history, not a cap on the ability (that is `oncePerTurn`): a nonland discard earlier in the turn —
+  even before the source was on the battlefield — closes the window, while an earlier *land* discard
+  doesn't. Backed by `CardsDiscardedThisTurnComponent.history` (every card discarded this turn, in order,
+  never pruned) and the `priorDiscardsThisTurn` stamp each `CardsDiscardedEvent` carries, so two discard
+  events in one resolution still resolve which came first. Batch only — `DiscardEvent` rejects
+  `firstTimeEachTurn` without `batch`.
 
-**Factory** — `Triggers.<player>.discards(card, batch)` — generic shape. `player = Player.Each`
+**Factory** — `Triggers.<player>.discards(card, batch, firstTimeEachTurn)` — generic shape. `player = Player.Each`
 matches any player; `cardFilter` narrows the fan-out to matching cards, so a batch that
 discards a creature and two lands fires a `cardFilter = Creature` trigger once, not three
 times. The cardFilter is evaluated against the **post-discard zone** (the cards are already
