@@ -14459,10 +14459,19 @@
                     },
                     "binding": "ANY",
                     "effect": {
-                        "type": "AddCounters",
-                        "counterType": "PLUS_ONE_PLUS_ONE",
-                        "count": 1,
-                        "target": "Self"
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "AddCounters",
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "count": 1,
+                                "target": "Self"
+                            },
+                            {
+                                "type": "EmitKeywordCounterEvent",
+                                "keyword": "EVOLVE"
+                            }
+                        ]
                     },
                     "interveningIf": {
                         "type": "Any",

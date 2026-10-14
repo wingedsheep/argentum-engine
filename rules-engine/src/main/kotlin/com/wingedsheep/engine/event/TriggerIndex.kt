@@ -93,6 +93,7 @@ enum class TriggerCategory {
     CONNIVED,
     EXPLOITED,
     TRAINED,
+    EVOLVED,
     DIE_ROLLED,
     ENLISTED,
     EXERTED,
@@ -329,6 +330,7 @@ class TriggerIndex(
                 is SdkGameEvent.ExploitedEvent -> EXPLOITED_LIST
                 is SdkGameEvent.DieRolledEvent -> DIE_ROLLED_LIST
                 is SdkGameEvent.TrainedEvent -> TRAINED_LIST
+                is SdkGameEvent.EvolvedEvent -> EVOLVED_LIST
                 is SdkGameEvent.EnlistedEvent -> ENLISTED_LIST
                 is SdkGameEvent.ExertedAsItAttacksEvent -> EXERTED_LIST
                 is SdkGameEvent.ChampionedEvent -> CHAMPIONED_LIST
@@ -434,6 +436,7 @@ class TriggerIndex(
             is com.wingedsheep.engine.core.ExploitedEvent -> EXPLOITED_LIST
             is com.wingedsheep.engine.core.DieRolledEvent -> DIE_ROLLED_LIST
             is com.wingedsheep.engine.core.TrainedEvent -> TRAINED_LIST
+            is com.wingedsheep.engine.core.EvolvedEvent -> EVOLVED_LIST
             is com.wingedsheep.engine.core.EnlistedEvent -> ENLISTED_LIST
             is com.wingedsheep.engine.core.ExertedEvent -> EXERTED_LIST
             is com.wingedsheep.engine.core.ChampionedEvent -> CHAMPIONED_LIST
@@ -587,6 +590,7 @@ class TriggerIndex(
         private val EXPLOITED_LIST = listOf(TriggerCategory.EXPLOITED)
         private val DIE_ROLLED_LIST = listOf(TriggerCategory.DIE_ROLLED)
         private val TRAINED_LIST = listOf(TriggerCategory.TRAINED)
+        private val EVOLVED_LIST = listOf(TriggerCategory.EVOLVED)
         private val ENLISTED_LIST = listOf(TriggerCategory.ENLISTED)
         private val EXERTED_LIST = listOf(TriggerCategory.EXERTED)
         private val CHAMPIONED_LIST = listOf(TriggerCategory.CHAMPIONED)

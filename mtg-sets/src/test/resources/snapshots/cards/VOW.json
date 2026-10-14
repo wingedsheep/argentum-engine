@@ -700,7 +700,10 @@
                             "count": 1,
                             "target": "Self"
                         },
-                        "EmitTrainedEvent"
+                        {
+                            "type": "EmitKeywordCounterEvent",
+                            "keyword": "TRAINING"
+                        }
                     ]
                 },
                 "descriptionOverride": "Training (Whenever this creature attacks with another creature with greater power, put a +1/+1 counter on this creature.)"
@@ -4359,7 +4362,10 @@
                             "count": 1,
                             "target": "Self"
                         },
-                        "EmitTrainedEvent"
+                        {
+                            "type": "EmitKeywordCounterEvent",
+                            "keyword": "TRAINING"
+                        }
                     ]
                 },
                 "descriptionOverride": "Training (Whenever this creature attacks with another creature with greater power, put a +1/+1 counter on this creature.)"
@@ -9049,7 +9055,10 @@
                             "count": 1,
                             "target": "Self"
                         },
-                        "EmitTrainedEvent"
+                        {
+                            "type": "EmitKeywordCounterEvent",
+                            "keyword": "TRAINING"
+                        }
                     ]
                 },
                 "descriptionOverride": "Training (Whenever this creature attacks with another creature with greater power, put a +1/+1 counter on this creature.)"
@@ -9100,7 +9109,10 @@
                             "count": 1,
                             "target": "Self"
                         },
-                        "EmitTrainedEvent"
+                        {
+                            "type": "EmitKeywordCounterEvent",
+                            "keyword": "TRAINING"
+                        }
                     ]
                 },
                 "descriptionOverride": "Training (Whenever this creature attacks with another creature with greater power, put a +1/+1 counter on this creature.)"
@@ -10208,7 +10220,10 @@
                             "count": 1,
                             "target": "Self"
                         },
-                        "EmitTrainedEvent"
+                        {
+                            "type": "EmitKeywordCounterEvent",
+                            "keyword": "TRAINING"
+                        }
                     ]
                 },
                 "descriptionOverride": "Training (Whenever this creature attacks with another creature with greater power, put a +1/+1 counter on this creature.)"
@@ -15100,7 +15115,10 @@
                             "count": 1,
                             "target": "Self"
                         },
-                        "EmitTrainedEvent"
+                        {
+                            "type": "EmitKeywordCounterEvent",
+                            "keyword": "TRAINING"
+                        }
                     ]
                 },
                 "descriptionOverride": "Training (Whenever this creature attacks with another creature with greater power, put a +1/+1 counter on this creature.)"
@@ -16579,7 +16597,10 @@
                             "count": 1,
                             "target": "Self"
                         },
-                        "EmitTrainedEvent"
+                        {
+                            "type": "EmitKeywordCounterEvent",
+                            "keyword": "TRAINING"
+                        }
                     ]
                 },
                 "descriptionOverride": "Training (Whenever this creature attacks with another creature with greater power, put a +1/+1 counter on this creature.)"
@@ -16772,7 +16793,10 @@
                             "count": 1,
                             "target": "Self"
                         },
-                        "EmitTrainedEvent"
+                        {
+                            "type": "EmitKeywordCounterEvent",
+                            "keyword": "TRAINING"
+                        }
                     ]
                 },
                 "descriptionOverride": "Training (Whenever this creature attacks with another creature with greater power, put a +1/+1 counter on this creature.)"
@@ -19029,7 +19053,10 @@
                             "count": 1,
                             "target": "Self"
                         },
-                        "EmitTrainedEvent"
+                        {
+                            "type": "EmitKeywordCounterEvent",
+                            "keyword": "TRAINING"
+                        }
                     ]
                 },
                 "descriptionOverride": "Training (Whenever this creature attacks with another creature with greater power, put a +1/+1 counter on this creature.)"
@@ -19079,7 +19106,10 @@
                                         "count": 1,
                                         "target": "Self"
                                     },
-                                    "EmitTrainedEvent"
+                                    {
+                                        "type": "EmitKeywordCounterEvent",
+                                        "keyword": "TRAINING"
+                                    }
                                 ]
                             },
                             "descriptionOverride": "Training (Whenever this creature attacks with another creature with greater power, put a +1/+1 counter on this creature.)"

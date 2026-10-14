@@ -1,6 +1,7 @@
 package com.wingedsheep.sdk.scripting.effects
 
 import com.wingedsheep.sdk.core.CounterType
+import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.events.Recipient
@@ -719,28 +720,39 @@ data class GrantCounterPlacementModifierEffect(
 }
 
 /**
- * Emit a `TrainedEvent` (CR 702.149c) after a training ability's +1/+1 counter placement resolves —
- * the training twin of [EmitExploitedEventEffect] / `EmitScriedEventEffect`. Appended internally by
- * [com.wingedsheep.sdk.dsl.training] as the tail of the training triggered ability, immediately after
- * its [AddCountersEffect], so "When this creature trains" payoffs
- * ([com.wingedsheep.sdk.scripting.EventPattern.TrainedEvent], e.g. Savior of Ollenbock) fire.
+ * Emit the keyword-action event of a self-growing keyword ability after that ability's +1/+1 counter
+ * placement resolves — the training/evolve twin of [EmitExploitedEventEffect] / `EmitScriedEventEffect`.
+ * Appended internally as the tail of the keyword's triggered ability, immediately after its
+ * [AddCountersEffect], so "when this creature [trains/evolves]" payoffs fire:
+ *  - [com.wingedsheep.sdk.core.Keyword.TRAINING] → `TrainedEvent` (CR 702.149c, Savior of Ollenbock),
+ *    wired by [com.wingedsheep.sdk.dsl.training];
+ *  - [com.wingedsheep.sdk.core.Keyword.EVOLVE] → `EvolvedEvent` (CR 702.100b, Watchful Radstag),
+ *    wired by [com.wingedsheep.sdk.dsl.evolve].
  *
- * CR 702.149c: "'When this creature trains' means 'When a resolving training ability puts one or more
- * +1/+1 counters on this creature.'" The executor honours the "puts one or more" clause: it emits the
- * event **only if** the source is still on the battlefield and can actually receive counters — a
- * Solemnity-type "can't have counters put on it" prohibition (the only way a training ability places
- * zero) trains nothing and fires no event. This gating is what distinguishes it from a raw
- * [com.wingedsheep.sdk.scripting.EventPattern.CountersPlacedEvent] watcher, which would fire for a
- * +1/+1 counter from any source; the emit only ever runs inside the training ability's own resolution.
+ * Both rules define the action as "a resolving [keyword] ability puts one or more +1/+1 counters on
+ * this creature". The executor honours the "puts one or more" clause: it emits the event **only if**
+ * the source is still on the battlefield and can actually receive counters — a Solemnity-type "can't
+ * have counters put on it" prohibition places zero and fires no event. This gating is what
+ * distinguishes it from a raw [com.wingedsheep.sdk.scripting.EventPattern.CountersPlacedEvent]
+ * watcher, which would fire for a +1/+1 counter from any source; the emit only ever runs inside the
+ * keyword ability's own resolution.
  *
- * The trained creature is the ability's source ([com.wingedsheep.engine.handlers.EffectContext.sourceId]);
- * the `TrainedEvent`'s subject is selected by the watching ability's `TriggerBinding` (SELF for
- * "this creature trains"). Card authors should not use this directly; it is wired into `training()`.
+ * The growing creature is the ability's source; the event's subject is selected by the watching
+ * ability's `TriggerBinding` (SELF for "this creature"). Card authors should not use this directly.
+ *
+ * @property keyword The keyword whose action the event marks — [com.wingedsheep.sdk.core.Keyword.TRAINING]
+ *   or [com.wingedsheep.sdk.core.Keyword.EVOLVE].
  */
-@SerialName("EmitTrainedEvent")
+@SerialName("EmitKeywordCounterEvent")
 @Serializable
-data object EmitTrainedEventEffect : Effect {
-    // Intentionally blank: this is an internal training-ability tail with no player-facing text.
+data class EmitKeywordCounterEventEffect(val keyword: Keyword) : Effect {
+    init {
+        require(keyword == Keyword.TRAINING || keyword == Keyword.EVOLVE) {
+            "EmitKeywordCounterEventEffect supports TRAINING and EVOLVE, not $keyword"
+        }
+    }
+
+    // Intentionally blank: this is an internal keyword-ability tail with no player-facing text.
     override val description: String = ""
 }
 

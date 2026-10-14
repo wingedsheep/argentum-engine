@@ -802,6 +802,14 @@ class TriggerMatcher(
                 if (binding == TriggerBinding.OTHER && event.trainedId == sourceId) return false
                 true
             }
+            is EventPattern.EvolvedEvent -> {
+                if (event !is com.wingedsheep.engine.core.EvolvedEvent) return false
+                // "Whenever THIS creature evolves" (Watchful Radstag): same binding rules as
+                // TrainedEvent; the emit already gates on a counter actually landing (CR 702.100b).
+                if (binding == TriggerBinding.SELF && event.evolvedId != sourceId) return false
+                if (binding == TriggerBinding.OTHER && event.evolvedId == sourceId) return false
+                true
+            }
             is EventPattern.ChampionedEvent -> {
                 if (event !is com.wingedsheep.engine.core.ChampionedEvent) return false
                 // "When a Faerie is championed with THIS creature" (Mistbind Clique): SELF binding

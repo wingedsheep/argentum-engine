@@ -5,6 +5,8 @@ import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.TriggeredAbility
 import com.wingedsheep.sdk.scripting.conditions.ComparisonOperator
+import com.wingedsheep.sdk.scripting.effects.CompositeEffect
+import com.wingedsheep.sdk.scripting.effects.EmitKeywordCounterEventEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 /** The printed Evolve reminder text (Gatecrash / Bloomburrow Commander wording). */
@@ -25,6 +27,11 @@ private const val EVOLVE_REMINDER =
  * and T against T only; a 1/5 entering beside a 3/3 evolves it, a 2/2 entering beside a 3/1 does
  * too. The evolving creature's own entry never qualifies (it can't be greater than itself).
  *
+ * The effect is a two-step [CompositeEffect]: place one +1/+1 counter, then
+ * [EmitKeywordCounterEventEffect] (EVOLVE) — the CR 702.100b "this creature evolves" signal, emitted only
+ * when the counter actually lands, so "Whenever this creature evolves" payoffs (Watchful Radstag,
+ * `Triggers.self.evolves()`) fire and arbitrary +1/+1 counter placements don't.
+ *
  * Standalone so a token that intrinsically has evolve can carry the same ability; each instance is
  * a separate `TriggeredAbility`, so multiple instances trigger separately (CR 702.100d).
  */
@@ -40,7 +47,12 @@ fun evolveTriggeredAbility(): TriggeredAbility {
                 DynamicAmounts.toughnessOf(entering), ComparisonOperator.GT, DynamicAmounts.toughnessOf(EffectTarget.Self)
             ),
         ),
-        effect = Effects.AddCounters(CounterType.PLUS_ONE_PLUS_ONE, 1, EffectTarget.Self),
+        effect = CompositeEffect(
+            listOf(
+                Effects.AddCounters(CounterType.PLUS_ONE_PLUS_ONE, 1, EffectTarget.Self),
+                EmitKeywordCounterEventEffect(Keyword.EVOLVE)
+            )
+        ),
         descriptionOverride = EVOLVE_REMINDER,
     )
 }

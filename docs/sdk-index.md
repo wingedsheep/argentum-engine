@@ -822,11 +822,11 @@ Families:
 - `EmitDiscoveredEventEffect(value: Int)` — Emit a `DiscoveredEvent` after a discover finishes resolving — the discover twin of EmitSurveiledEventEffect.
 - `EmitExploitedEventEffect` — Emit an `ExploitedEvent` (CR 702.110b) for each creature the source just sacrificed as its exploit ability resolved.
 - `EmitExploredEventEffect(target: EffectTarget, revealedCardWasLand: Boolean?)` — Tail marker that emits the "a permanent explored" event (CR 701.44), mirroring EmitSurveiledEventEffect.
+- `EmitKeywordCounterEventEffect(keyword: Keyword)` — Emit the keyword-action event of a self-growing keyword ability after that ability's +1/+1 counter placement resolves — the training/evolve twin of EmitExploitedEventEffect / `EmitScriedEventEffect`.
 - `EmitLibrarySearchedEventEffect` — Emit a `LibrarySearchedEvent` after a library-search pipeline finishes resolving — the search twin of EmitScriedEventEffect.
 - `EmitManifestedDreadEventEffect(graveyardCollection: String)` — Emit a `ManifestedDreadEvent` after a manifest-dread pipeline finishes resolving — the manifest-dread twin of EmitScriedEventEffect.
 - `EmitScriedEventEffect(gatherCollection: String, player: Player, bottomCollection: String)` — Emit a `ScriedEvent` after a scry pipeline finishes resolving.
 - `EmitSurveiledEventEffect(gatherCollection: String)` — Emit a `SurveiledEvent` after a surveil pipeline finishes resolving — the surveil twin of EmitScriedEventEffect.
-- `EmitTrainedEventEffect` — Emit a `TrainedEvent` (CR 702.149c) after a training ability's +1/+1 counter placement resolves — the training twin of EmitExploitedEventEffect / `EmitScriedEventEffect`.
 - `EnchantPutOntoBattlefieldEffect(from: String, filter: GameObjectFilter)` — "This Aura loses its enchant ability and gains 'enchant filter put onto the battlefield with this Aura.' … attach this Aura to it." — the reanimation-Aura idiom (Animate Dead, Dance of the Dead, Ne…
 - `EndTheTurnEffect` — End the turn (CR 724.1).
 - `ExchangeControlEffect(target1: EffectTarget, target2: EffectTarget)` — Exchange control of two target creatures.
@@ -1179,6 +1179,7 @@ Families:
 - `EventPattern.DungeonCompletedEvent(player: Player)` — Whenever a player completes a dungeon (CR 309.7) — as the dungeon card is removed from the game, by the state-based action (CR 704.5t) or by venturing from its bottommost room (CR 701.49c).
 - `EventPattern.EnlistedEvent` — This creature enlists another creature.
 - `EventPattern.EvidenceCollectedEvent(player: Player)` — Whenever player collects evidence (CR 701.59).
+- `EventPattern.EvolvedEvent` — When a creature evolves (CR 702.100b) — "A creature 'evolves' when one or more +1/+1 counters are put on it as a result of its evolve ability resolving." Watchful Radstag's "Whenever this creature…
 - `EventPattern.ExertedAsItAttacksEvent` — "When you do" after "you may exert this creature as it attacks" (CR 701.43d) — the triggered ability linked to com.wingedsheep.sdk.scripting.ExertAsItAttacks (CR 607.2h).
 - `EventPattern.ExpendEvent(threshold: Int, player: Player)` — When you expend N — i.e., you spend your Nth total mana to cast spells during a turn.
 - `EventPattern.ExploitedEvent(player: Player, requireNontokenExploited: Boolean)` — Whenever a creature exploits a creature (CR 702.110b) — a creature "exploits a creature" when the controller of its exploit ability sacrifices a creature as that ability resolves.

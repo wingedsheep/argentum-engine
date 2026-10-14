@@ -3169,7 +3169,7 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
      * and no event fires, faithful to "puts one or more +1/+1 counters." Distinct from the raw
      * [CountersPlacedEvent]: that fires for a +1/+1 counter from *any* source; this fires only for
      * the counter a *resolving training ability* placed (the Option A distinction — see
-     * `EmitTrainedEventEffect`).
+     * `EmitKeywordCounterEventEffect`).
      *
      * A parameterless [EventPattern] whose subject is selected by the ability's [TriggerBinding]
      * against the trained creature, exactly like [CountersPlacedEvent] / [ExploitedEvent]:
@@ -3187,6 +3187,22 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
     @Serializable
     data object TrainedEvent : EventPattern {
         override val description: String = "this creature trains"
+    }
+
+    /**
+     * When a creature evolves (CR 702.100b) — "A creature 'evolves' when one or more +1/+1 counters
+     * are put on it as a result of its evolve ability resolving." Watchful Radstag's "Whenever this
+     * creature evolves, create a token that's a copy of it."
+     *
+     * The evolve twin of [TrainedEvent]: emitted by the evolve ability's own resolution (the tail of
+     * `evolveTriggeredAbility()`), only when the +1/+1 counter actually lands, so +1/+1 counters from
+     * any other source don't fire it. The subject is selected by the ability's [TriggerBinding]
+     * (SELF for "this creature evolves", OTHER / ANY otherwise).
+     */
+    @SerialName("EvolvedEvent")
+    @Serializable
+    data object EvolvedEvent : EventPattern {
+        override val description: String = "this creature evolves"
     }
 
     /**

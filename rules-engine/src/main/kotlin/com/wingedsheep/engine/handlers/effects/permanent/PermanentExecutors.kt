@@ -167,7 +167,7 @@ class PermanentExecutors(
         DistributeCountersAmongTargetsExecutor(amountEvaluator = amountEvaluator),
         DistributeCountersAmongFilteredExecutor(predicateEvaluator = zones.predicateEvaluator),
         ProliferateExecutor(predicateEvaluator = zones.predicateEvaluator),
-        com.wingedsheep.engine.handlers.effects.permanent.counters.EmitTrainedEventExecutor(predicateEvaluator = zones.predicateEvaluator),
+        com.wingedsheep.engine.handlers.effects.permanent.counters.EmitKeywordCounterEventExecutor(predicateEvaluator = zones.predicateEvaluator),
         // control
         ExchangeControlExecutor(),
         GainControlExecutor(),

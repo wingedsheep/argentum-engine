@@ -6980,7 +6980,7 @@ requireExcess, batch, requires)`, `dealsCombatDamage(to, …)`, `isDealtDamage(b
 spellsOnly, abilitiesOnly, firstTimeEachTurn, includeSpellTargets, includePlayerTargets, ofBackupAbility,
 targetsOnlyIt)`,
 `getsCounters(type?, by?, firstTimeEachTurn?, batch?, orPlayer?)`, `losesCounters(type?, lastRemoved?,
-byDamagePrevention?)`, `trains()`, `champions()`, `crews()`, `saddles()`, `becomesSaddled()`,
+byDamagePrevention?)`, `trains()`, `evolves()`, `champions()`, `crews()`, `saddles()`, `becomesSaddled()`,
 `becomesRenowned()`, `becomesMonstrous()`, `becomesPlotted()`, `explores(revealed?)`, `connives()`, `becomesAttached(to,
 controller)`, `becomesUnattached(from, controller)`, `controlChanges(direction, toOpponent?)`,
 `isCast()`, `isCycled()`, `isDiscarded()`, `isSacrificed()`, `doorUnlocked()`, and on `attached`
@@ -8639,12 +8639,18 @@ Dominant back faces that "stay" instead self-exile on their final chapter, dodgi
   (CR 702.149c: "a resolving training ability puts one or more
   +1/+1 counters on this creature"). A `data object` (no parameters); the trainer identity is selected by the ability's
   `TriggerBinding` against the event's `trainedId` — `SELF` = "when **this** creature trains" (Savior of Ollenbock), `OTHER`
-  = "whenever **another** creature you control trains". The `training()` helper appends `EmitTrainedEventEffect` after the
+  = "whenever **another** creature you control trains". The `training()` helper appends `EmitKeywordCounterEventEffect(Keyword.TRAINING)` after the
   training `AddCounters`, which fires this **only when a +1/+1 counter actually landed** (recomputed on the post-placement
   state), so a Solemnity-type prohibition trains nothing and emits nothing. This is *not* a generic counter-placed watcher:
   it fires only for counters a training ability's resolution placed, never for other +1/+1 counter sources on the same
   creature (use `Triggers.<subject>.getsCounters(type, by, firstTimeEachTurn, batch)` / `Triggers.a(GameObjectFilter.Creature.youControl()).getsCounters(CounterType.PLUS_ONE_PLUS_ONE)` for those). See the `Training` keyword entry for
   full wiring.
+- `EventPattern.EvolvedEvent` (facade: `Triggers.self.evolves()`) — "whenever this creature evolves" (CR 702.100b: "one
+  or more +1/+1 counters are put on it as a result of its evolve ability resolving"). The evolve twin of `TrainedEvent`: a
+  `data object` whose subject is chosen by the `TriggerBinding` against the event's `evolvedId` (`SELF` — Watchful
+  Radstag). `evolve()` appends `EmitKeywordCounterEventEffect(Keyword.EVOLVE)` after its `AddCounters`, so it fires only
+  when the evolve counter actually lands — once even if a Hardened Scales-style replacement adds more — and never for
+  +1/+1 counters from other sources. See the `Evolve` keyword entry.
 - `Triggers.oneOrMore(filter).enter()` / `Triggers.oneOrMoreOther(filter).enter()` — batched ETB trigger; fires at most once per
   event batch (CR 603.3b). The `filter`'s controller predicate scopes which players' permanents
   count: no predicate means "you control" (default), `.opponentControls()` scopes to your opponents.
@@ -12569,7 +12575,7 @@ composite abilities).
   power attack, put a +1/+1 counter on this creature.)" (CR 702.149, Innistrad: Midnight Hunt; also WHO, SLD). Display-only
   keyword; wire the behavior with the `card { training() }` builder helper. It adds the keyword plus one attack-triggered
   ability — `Triggers.self.attacks(setOf(AttackPredicate.AttackedAlongsideGreaterPower))` (SELF) → a two-step
-  `CompositeEffect(Effects.AddCounters(CounterType.PLUS_ONE_PLUS_ONE, 1, EffectTarget.Self), EmitTrainedEventEffect)`. The predicate
+  `CompositeEffect(Effects.AddCounters(CounterType.PLUS_ONE_PLUS_ONE, 1, EffectTarget.Self), EmitKeywordCounterEventEffect(Keyword.TRAINING))`. The predicate
   reads **projected** power for every attacker (§8 `AttackPredicate`), so an anthem/aura on the *other* attacker can flip the
   trigger on; the comparison is strict. Multiple instances trigger separately (CR 702.149b) — call `training()` twice, or add a
   second `trainingTriggeredAbility()`, for two independent counters. The standalone `trainingTriggeredAbility()` factory (same
@@ -12577,12 +12583,12 @@ composite abilities).
   setOf(Keyword.TRAINING))` sets the display badge and `CreateTokenEffect(triggeredAbilities = listOf(trainingTriggeredAbility()))`
   supplies the behavior (Torens, Fist of the Angels' "1/1 Human Soldier creature token with training" — the token trains when it
   later attacks alongside greater power). **CR 702.149c "when this creature trains"** (a resolving training ability placing ≥1
-  +1/+1 counter) is realized by the `EmitTrainedEventEffect` tail: after the sibling `AddCounters` resolves it recomputes the
+  +1/+1 counter) is realized by the `EmitKeywordCounterEventEffect(Keyword.TRAINING)` tail: after the sibling `AddCounters` resolves it recomputes the
   placement decision on the post-placement state (still on battlefield, `canReceiveCounters`, ≥1 after counter-placement
   replacements) and, only if a counter actually landed, fires an observable `EventPattern.TrainedEvent` — so a Solemnity-type
   "can't have counters" prohibition trains nothing and no payoff fires. This is a *dedicated* signal, never a generic
-  counter-placed watcher (which would fire for non-training counters too). `EmitTrainedEventEffect` is an internal `data object`
-  (no player-facing text) wired into `training()`; do not use it directly. See `EventPattern.TrainedEvent` under counter triggers
+  counter-placed watcher (which would fire for non-training counters too). `EmitKeywordCounterEventEffect` is internal
+  (no player-facing text; `keyword` is `TRAINING` or `EVOLVE`) wired into `training()` and `evolve()`; do not use it directly. See `EventPattern.TrainedEvent` under counter triggers
   for the watcher form (Savior of Ollenbock).
 - `Mentor` — "Mentor (Whenever this creature attacks, put a +1/+1 counter on target attacking creature with lesser
   power.)" (CR 702.134, Ravnica Allegiance; Nyxborn Unicorn). Display-only keyword; wire it with `card { mentor() }`, which
@@ -12597,7 +12603,9 @@ composite abilities).
   this creature, put a +1/+1 counter on this creature.)" (CR 702.100, Gatecrash; Pollywog Prodigy). Display-only keyword;
   wire it with `card { evolve() }`, which adds the keyword plus `evolveTriggeredAbility()`:
   `Triggers.a(Creature.youControl()).enters()` with an intervening-if `Conditions.Any(power of TriggeringEntity > power
-  of Self, toughness of TriggeringEntity > toughness of Self)` → one +1/+1 counter on `Self`. P is compared to P and T to
+  of Self, toughness of TriggeringEntity > toughness of Self)` → one +1/+1 counter on `Self`, then
+  `EmitKeywordCounterEventEffect(Keyword.EVOLVE)`, which fires `EventPattern.EvolvedEvent` (CR 702.100b "evolves") only
+  if that counter landed — the hook for `Triggers.self.evolves()` payoffs (Watchful Radstag). P is compared to P and T to
   T only (a 0/4 evolves a 1/3). Both sides are value reads, so the recheck on resolution uses last-known P/T if either
   creature has left (the Gatecrash ruling). Multiple instances trigger separately (CR 702.100d); the standalone
   `evolveTriggeredAbility()` lets a token carry it.

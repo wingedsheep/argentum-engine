@@ -1732,6 +1732,9 @@ is PermanentsSacrificedEvent -> {
             // Ollenbock); the +1/+1 counter the training ability placed is already surfaced by its
             // own CountersAddedEvent (animation + log), so no separate client event.
             is TrainedEvent,
+            // Same for "whenever this creature evolves" (Watchful Radstag): the evolve counter is
+            // already surfaced by its own CountersAddedEvent.
+            is EvolvedEvent,
             // Internal signal that fires "when a [quality] is championed with this creature"
             // watcher triggers (Mistbind Clique); the exile itself is already surfaced by its own
             // zone-change event, so no separate client event.

@@ -1873,7 +1873,7 @@ data class ExploitedEvent(
 
 /**
  * A creature trained (CR 702.149c): a resolving training ability put one or more +1/+1 counters on
- * this creature. Emitted by `EmitTrainedEventExecutor` — the tail of the `training()` ability's
+ * this creature. Emitted by `EmitKeywordCounterEventExecutor` — the tail of the `training()` ability's
  * composite, right after its `AddCountersEffect` — but **only when the counter actually landed**
  * (the ability places nothing under a "can't have counters put on it" prohibition, and then no event
  * fires, faithful to "puts one or more +1/+1 counters"). Drives "When this creature trains" payoffs
@@ -1894,6 +1894,27 @@ data class ExploitedEvent(
 @SerialName("TrainedEvent")
 data class TrainedEvent(
     val trainedId: EntityId,
+    val controllerId: EntityId,
+    val counters: Int,
+    val sourceName: String
+) : GameEvent
+
+/**
+ * A creature evolved (CR 702.100b): one or more +1/+1 counters were put on it as a result of its
+ * evolve ability resolving. The evolve twin of [TrainedEvent], emitted by
+ * `EmitKeywordCounterEventExecutor` at the tail of `evolveTriggeredAbility()` only when the counter
+ * actually landed. Drives "Whenever this creature evolves" payoffs
+ * ([com.wingedsheep.sdk.scripting.EventPattern.EvolvedEvent], e.g. Watchful Radstag).
+ *
+ * @property evolvedId The creature that evolved (the trigger's subject).
+ * @property controllerId The evolved creature's controller at evolve time.
+ * @property counters How many +1/+1 counters the evolve ability placed (>= 1).
+ * @property sourceName The evolved creature's name (for display / logging).
+ */
+@Serializable
+@SerialName("EvolvedEvent")
+data class EvolvedEvent(
+    val evolvedId: EntityId,
     val controllerId: EntityId,
     val counters: Int,
     val sourceName: String

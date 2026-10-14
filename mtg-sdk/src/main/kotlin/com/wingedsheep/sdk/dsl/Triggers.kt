@@ -468,6 +468,12 @@ class ObjectTriggerSubject internal constructor(
         return spec(TrainedEvent)
     }
 
+    /** "evolves" (CR 702.100b) — only when a resolving evolve ability's counter actually lands. */
+    fun evolves(): TriggerSpec {
+        unfiltered("evolves")
+        return spec(EvolvedEvent)
+    }
+
     /**
      * "a [quality] is championed with this creature" (CR 702.72) — the champion clause already
      * restricts what can be exiled, so the quality isn't restated.
