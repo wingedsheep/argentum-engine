@@ -110,12 +110,6 @@ class SpellCounterer(
         newState = newState.addToZone(destZoneKey, spellId)
         val destinationObject = newState.objectRef(spellId)
         // A card-intrinsic redirect into the library shuffles the card in (Progenitus).
-        if (destZone == Zone.GRAVEYARD) {
-            newState.getEntity(spellId)?.get<CardComponent>()?.let { card ->
-                newState = com.wingedsheep.engine.handlers.effects.ZoneTransitionService
-                    .recordGraveyardArrival(newState, spellId, ownerId, Zone.STACK, card, isToken = false)
-            }
-        }
         if (destZone == Zone.LIBRARY && counterRedirect.shuffleIntoLibrary) {
             newState = SpellZoneMoves.shuffleOwnerLibrary(newState, ownerId)
         }
@@ -128,6 +122,10 @@ class SpellCounterer(
         newState = com.wingedsheep.engine.mechanics.BestowCasts.end(newState, spellId)
         newState = com.wingedsheep.engine.mechanics.PrototypeCasts.end(newState, spellId)
         newState = com.wingedsheep.engine.mechanics.SplitSpellCasts.end(newState, spellId)
+        if (destZone == Zone.GRAVEYARD) {
+            newState = com.wingedsheep.engine.handlers.effects.ZoneTransitionService
+                .recordSpellGraveyardArrival(newState, spellId, ownerId)
+        }
         newState = newState.updateEntity(spellId) { c ->
             c.without<SpellOnStackComponent>()
                 .without<TextReplacementComponent>()
@@ -266,16 +264,14 @@ class SpellCounterer(
             newState.addToZone(destZoneKey, spellId)
         }
         val destinationObject = newState.objectRef(spellId)
-        if (destZone == Zone.GRAVEYARD) {
-            newState.getEntity(spellId)?.get<CardComponent>()?.let { card ->
-                newState = com.wingedsheep.engine.handlers.effects.ZoneTransitionService
-                    .recordGraveyardArrival(newState, spellId, ownerId, Zone.STACK, card, isToken = false)
-            }
-        }
 
         newState = com.wingedsheep.engine.mechanics.BestowCasts.end(newState, spellId)
         newState = com.wingedsheep.engine.mechanics.PrototypeCasts.end(newState, spellId)
         newState = com.wingedsheep.engine.mechanics.SplitSpellCasts.end(newState, spellId)
+        if (destZone == Zone.GRAVEYARD) {
+            newState = com.wingedsheep.engine.handlers.effects.ZoneTransitionService
+                .recordSpellGraveyardArrival(newState, spellId, ownerId)
+        }
         newState = newState.updateEntity(spellId) { c ->
             c.without<SpellOnStackComponent>()
                 .without<TextReplacementComponent>()

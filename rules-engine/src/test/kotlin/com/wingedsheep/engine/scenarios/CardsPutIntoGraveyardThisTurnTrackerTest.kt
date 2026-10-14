@@ -2,11 +2,13 @@ package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
+import com.wingedsheep.engine.handlers.effects.ZoneTransitionService
 import com.wingedsheep.engine.state.ComponentContainer
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
+import com.wingedsheep.engine.state.components.identity.CopyOfComponent
 import com.wingedsheep.engine.state.components.identity.OwnerComponent
 import com.wingedsheep.engine.state.components.identity.TokenComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
@@ -96,6 +98,26 @@ class CardsPutIntoGraveyardThisTurnTrackerTest : FunSpec({
         driver.state.getGraveyard(player).contains(bears) shouldBe true
         driver.count() shouldBe 1
         driver.count(Player.EachOpponent) shouldBe 1
+    }
+
+    test("a spell copy the stack puts into a graveyard isn't a card and doesn't count") {
+        val driver = createDriver()
+        val player = driver.activePlayer!!
+        val bolt = driver.putCardInHand(player, "Lightning Bolt")
+        val copy = EntityId.generate()
+        val copyCard = driver.state.getEntity(bolt)!!.get<CardComponent>()!!
+        driver.replaceState(
+            driver.state.withEntity(
+                copy,
+                ComponentContainer.of(copyCard, OwnerComponent(player), CopyOfComponent("Lightning Bolt", "Lightning Bolt"))
+            )
+        )
+
+        driver.replaceState(ZoneTransitionService.recordSpellGraveyardArrival(driver.state, copy, player))
+        driver.count() shouldBe 0
+
+        driver.replaceState(ZoneTransitionService.recordSpellGraveyardArrival(driver.state, bolt, player))
+        driver.count() shouldBe 1
     }
 
     test("hand, library and battlefield arrivals all count, keyed on the owner") {

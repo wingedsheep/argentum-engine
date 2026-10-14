@@ -1832,6 +1832,20 @@ class ZoneTransitionService(
          * Cleared per-player at the start of each turn by `TurnManager`.
          */
         /**
+         * [recordGraveyardArrival] for a spell the stack itself just put into its owner's graveyard
+         * (resolved, countered or fizzled). A copy of a spell isn't a card (CR 707.10) and is skipped;
+         * the state-based sweep removes it. Call it after the cast-mode `end` hooks (bestow,
+         * prototype, split), so the card is recorded with its own characteristics.
+         */
+        fun recordSpellGraveyardArrival(state: GameState, spellId: EntityId, ownerId: EntityId): GameState {
+            val container = state.getEntity(spellId) ?: return state
+            val copy = container.get<com.wingedsheep.engine.state.components.identity.CopyOfComponent>()
+            if (copy != null && copy.originalCardComponent == null) return state
+            val card = container.get<CardComponent>() ?: return state
+            return recordGraveyardArrival(state, spellId, ownerId, Zone.STACK, card, isToken = false)
+        }
+
+        /**
          * Record a card's arrival in its owner's graveyard in the turn-history trackers. Called by
          * [moveToZone] and by the stack's resolve / counter / fizzle moves, which place the card
          * themselves — every "put into a graveyard … this turn" read sees both paths. Tokens are
