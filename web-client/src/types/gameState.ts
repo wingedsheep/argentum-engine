@@ -636,6 +636,9 @@ export interface ClientCard {
     readonly cost: string
     readonly additionalCostDescription?: string | null
   } | null
+
+  /** Mutate cost (CR 702.140), e.g. "{1}{G}{G}" — offered beside the normal cast like `evoke`. */
+  readonly mutate?: string | null
 }
 
 /** One face of a split-layout card (CR 709). */

@@ -12,6 +12,7 @@ import com.wingedsheep.engine.legalactions.EnumerationContext
 import com.wingedsheep.engine.legalactions.LegalAction
 import com.wingedsheep.engine.mechanics.BestowCasts
 import com.wingedsheep.engine.mechanics.CastCharacteristics
+import com.wingedsheep.engine.mechanics.MutateCasts
 import com.wingedsheep.engine.mechanics.PrototypeCasts
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.EntityId
@@ -29,7 +30,8 @@ import com.wingedsheep.sdk.scripting.KeywordAbility
 
 /**
  * A way to cast a card announced with characteristics other than its printed ones — bestow's Aura
- * (CR 702.103) or prototype's cost and size (CR 718.3). The announced characteristics decide
+ * (CR 702.103), a mutating creature spell's target (CR 702.140a) or prototype's cost and size
+ * (CR 718.3). The announced characteristics decide
  * every cost, payment and timing check, through [CastCharacteristics].
  */
 enum class CharacteristicsAnnouncement(val actionType: String) {
@@ -39,6 +41,13 @@ enum class CharacteristicsAnnouncement(val actionType: String) {
             CastSpell(player, card, useAlternativeCost = true, alternativeCostType = AlternativeCostType.BESTOW)
         override val targets = listOf(BestowCasts.enchantCreature)
         override fun description(printed: CardDefinition, card: CardComponent) = "Bestow ${card.name}"
+    },
+    MUTATE("CastWithAlternativeCost") {
+        override fun offers(printed: CardDefinition) = MutateCasts.mutateOf(printed) != null
+        override fun action(player: EntityId, card: EntityId) =
+            CastSpell(player, card, useAlternativeCost = true, alternativeCostType = AlternativeCostType.MUTATE)
+        override val targets = listOf<TargetRequirement>(MutateCasts.target)
+        override fun description(printed: CardDefinition, card: CardComponent) = "Mutate ${card.name}"
     },
     PROTOTYPE("CastSpell") {
         override fun offers(printed: CardDefinition) = PrototypeCasts.prototypeOf(printed) != null

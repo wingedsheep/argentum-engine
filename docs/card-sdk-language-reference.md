@@ -933,6 +933,8 @@ counts a hybrid Phyrexian pip paid with life like any other Phyrexian pip.
 - `evoke` — pay evoke cost; creature is sacrificed at ETB.
 - `keywordAbility(KeywordAbility.bestow(cost, additionalCost = null))` — cast as an Aura for the
   bestow price, or normally as a creature. See the parameterized keyword entry below.
+- `keywordAbility(KeywordAbility.mutate(cost))` — cast for the mutate cost onto a non-Human creature
+  with the same owner, merging with it, or normally. See the parameterized keyword entry below.
 - `keywordAbility(KeywordAbility.prototype(cost, power, toughness))` — cast prototyped with a
   smaller cost and size, or normally. Not an alternative cost. See the parameterized keyword entry below.
 - `morph` — cast face-down for `{3}`-ish.
@@ -5815,6 +5817,11 @@ This is the player-arm prerequisite for the planned composable mixed `TargetUnio
   `EnterUntappedReplacements` thread through.
 - `.ownedByYou()` / `.ownedByOpponent()` — owner predicates (for graveyard/exile cards without a
   controller, and "you own" battlefield wordings).
+- `.ownedBy(target)` (`ControllerPredicate.OwnedByReferencedPlayer(target)`) — owned by the player an
+  `EffectTarget` names, the owner sibling of `.targetPlayerControls(target)`.
+  `.ownedBy(EffectTarget.PlayerRef(Player.OwnerOfSource))` is "with the same owner as this" — the
+  target of a mutating creature spell (CR 702.140a), which differs from `.ownedByYou()` once someone
+  casts a card they don't own. Matches the card's immutable owner in every zone.
 - `.ownedByTargetPlayer()` (`ControllerPredicate.OwnedByTargetPlayer`, FQL `own:target-player`) —
   owned by the spell/ability's **target player**, the owner-axis sibling of `.targetPlayerControls()`.
   Matches the card's immutable owner against `context.targetPlayerId`, so it captures battlefield
@@ -6991,7 +6998,7 @@ moves), `attacks(requires)`, `blocks(attackerFilter?, minBlockedAttackers?)`, `b
 `blocksOrBecomesBlocked(by?, oncePerCombat?)`, `attacksAndIsntBlocked()`, `dealsDamage(to, damageType,
 requireExcess, batch, requires)`, `dealsCombatDamage(to, …)`, `isDealtDamage(by)`,
 `damagedCreatureDies(dying?)`, `becomesTapped(reason?, firstTimeEachTurn?)`, `becomesUntapped()`, `tappedForMana()` (SELF / ATTACHED),
-`turnedFaceUp()`, `transforms(intoBackFace?)`, `phasesIn()`, `becomesTarget(of?, byYou, byOpponent,
+`turnedFaceUp()`, `mutates()` (SELF only), `transforms(intoBackFace?)`, `phasesIn()`, `becomesTarget(of?, byYou, byOpponent,
 spellsOnly, abilitiesOnly, firstTimeEachTurn, includeSpellTargets, includePlayerTargets, ofBackupAbility,
 targetsOnlyIt)`,
 `getsCounters(type?, by?, firstTimeEachTurn?, batch?, orPlayer?)`, `losesCounters(type?, lastRemoved?,
@@ -8030,6 +8037,7 @@ Triggers.you.casts(GameObjectFilter.Noncreature or
 
 ### State change & misc
 
+- `Triggers.self.mutates()` — "whenever this creature mutates" (Gemrazer); see `Mutate` under parameterized keywords.
 - `Triggers.self.turnedFaceUp()` — source turns face up. Use `Triggers.self.turnedFaceUp()` / `Triggers.attached.turnedFaceUp()` for the ATTACHED-binding aura variant (Fatal Mutation).
 - `Triggers.<player>.permanentTurnedFaceUp(filter)` — when a creature you control turns face up. `filter`
   narrows *which* creature and is evaluated against the permanent's **post-flip** characteristics
@@ -10973,7 +10981,8 @@ riders, matching how the engine already treats e.g. City of Brass's damage durin
   from your graveyard using its bestow ability." Such a permission is offered by the ability's own
   enumerator (the bestow cast), never as an ordinary cast; the engine reads `Keyword.BESTOW` and
   `Keyword.BLITZ` (Tenacious Underdog: "You may cast this card from your graveyard using its blitz
-  ability") and any other keyword fails closed (authorizes nothing) until it is wired in `CastZoneResolver`.
+  ability") and `Keyword.MUTATE` ("cast it from your graveyard using its mutate ability"), and any other
+  keyword fails closed (authorizes nothing) until it is wired in `CastZoneResolver`.
   Wired through `CastZoneResolver.findMayCastSelfFromZoneAbility` (returns the applicable
   ability so callers can read its `additionalCost`), validated/collected in `CastSpellHandler`
   alongside the other additional-cost sources, and surfaced to legal-action enumeration in
@@ -12070,6 +12079,22 @@ composite abilities).
   "You may cast this card from your graveyard using its bestow ability" is
   `MayCastSelfFromZones(listOf(Zone.GRAVEYARD), castUsing = Keyword.BESTOW)` (Detective's Phoenix).
   Author the enchanted creature's bonuses and abilities with the existing attachment primitives.
+- `Mutate(cost)` (`KeywordAbility.mutate("{1}{G}{G}")`, CR 702.140) — an alternative cost
+  (`AlternativeCostType.MUTATE`) that makes the spell a *mutating creature spell* targeting a non-Human
+  creature with the same owner. If the target is still legal as it resolves, its controller chooses
+  over or under and the spell merges with the creature instead of entering: the permanent is the
+  same object (counters, Auras, summoning sickness and continuous effects stay), takes the topmost
+  card's characteristics, and has every component's abilities (CR 730.2, 702.140e). An illegal
+  target makes it resolve as an ordinary creature spell (702.140b). When the merged permanent leaves
+  the battlefield every component goes to the new zone (CR 730.3); a token component is a token
+  there, and the permanent is a token only while a token is on top (CR 730.2d). "Whenever this
+  creature mutates" is `Triggers.self.mutates()` — it fires for each mutate ability of the merged
+  permanent, whichever card carries it. Gemrazer:
+  `keywordAbility(KeywordAbility.mutate("{1}{G}{G}"))` + `keywords(REACH, TRAMPLE)` +
+  `triggeredAbility { trigger = Triggers.self.mutates(); val p = target(TargetFilter.ArtifactOrEnchantment.opponentControls()); effect = Effects.Destroy(p) }`.
+  Engine side: `MutateCasts` (target, merge, separation) and `MergedComponent`; the composite
+  ability definition is `MergedCardDefinitions`, resolved by `CardRegistry` from the permanent's
+  composite `cardDefinitionId`.
   Bestow does **not** automatically condition the card's other abilities: when Oracle says
   “As long as this permanent is a creature”, condition that self branch
   with `Conditions.SourceMatches(GameObjectFilter.Creature)` and author the enchanted-creature
@@ -17062,6 +17087,7 @@ Counter effects live in §4 (`AddCounters`, `RemoveCounters`, `Proliferate`, `Mo
 
 - `PutOntoBattlefieldFaceDown(count, target?)` — enter face-down (morph shape).
 - `Triggers.self.turnedFaceUp()` — fires when source flips face-up.
+- `Triggers.self.mutates()` — "whenever this creature mutates" (`EventPattern.MutateEvent`, CR 702.140d): a mutating creature spell merged with this permanent, over or under.
 - UI label: `"Turn Face-Up"` (used by E2E `selectAction("Turn Face-Up")`).
 
 ---

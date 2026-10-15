@@ -80,6 +80,12 @@ internal class SpellResolver(
                         .updateEntity(spellId) { it.without<TargetsComponent>() }
                     return resolveSpell(restored, spellId, restored.getEntity(spellId)!!)
                 }
+                // CR 702.140b: a mutating spell whose target is illegal isn't countered — it stops
+                // being a mutating spell and resolves as the creature spell it is.
+                if (com.wingedsheep.engine.mechanics.MutateCasts.mutatingTarget(container) != null) {
+                    val plain = state.updateEntity(spellId) { it.without<TargetsComponent>() }
+                    return resolveSpell(plain, spellId, plain.getEntity(spellId)!!)
+                }
                 // All targets invalid - spell fizzles
                 return fizzleSpell(state, spellId, cardComponent, spellComponent)
             }
@@ -105,6 +111,21 @@ internal class SpellResolver(
         }
         val resolvedTypeLine = faceTypeLine ?: cardComponent?.typeLine
         val isPermanent = resolvedTypeLine?.isPermanent ?: false
+
+        // A mutating creature spell with a legal target doesn't enter the battlefield: its
+        // controller puts it over or under the creature first (CR 702.140c).
+        val mutateOnto = if (isPermanent) com.wingedsheep.engine.mechanics.MutateCasts.mutatingTarget(container) else null
+        if (mutateOnto != null) {
+            val spellName = cardComponent?.name ?: "Unknown"
+            val targetName = nameVisibleToAll(newState, mutateOnto, newState.getEntity(mutateOnto)?.get<CardComponent>()?.name ?: "the creature")
+            val paused = newState.suspendForDecision(
+                question = { id ->
+                    com.wingedsheep.engine.mechanics.MutateCasts.question(id, spellId, spellName, targetName, spellComponent.casterId)
+                },
+                answer = MutateMergeContinuation(spellId, mutateOnto, spellComponent.casterId),
+            )
+            return ExecutionResult.propagatePause(paused.state, events + paused.events)
+        }
 
         if (isPermanent) {
             // Put permanent on battlefield

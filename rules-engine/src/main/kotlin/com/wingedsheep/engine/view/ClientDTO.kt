@@ -741,7 +741,13 @@ data class ClientCard(
     val evoke: String? = null,
 
     /** Bestow price, including any nonmana payment, shown alongside the ordinary creature cast. */
-    val bestow: ClientBestow? = null
+    val bestow: ClientBestow? = null,
+
+    /**
+     * Mutate cost (CR 702.140), shown alongside the ordinary creature cast like [evoke] — so a card
+     * the player can only afford to mutate never mutates itself the moment it's dragged out.
+     */
+    val mutate: String? = null
 )
 
 /**

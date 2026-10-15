@@ -382,7 +382,7 @@ export function shouldShowCastModal(
   // More than one legal action, or multiple casting variants (morph + normal cast, etc.).
   if (cardLegalActions.length > 1) return true
   if (hasMultipleCastingOptions(cardLegalActions)) return true
-  // Impending / evoke: the printed cost and the keyword cost are both real prices for this card,
+  // Impending / evoke / bestow / mutate: the printed cost and the keyword cost are both real prices for this card,
   // so any cast of it is a choice between two buttons — whichever one the server could afford.
   if (
     cardInfo &&

@@ -149,7 +149,10 @@ data class ZoneEntryOptions(
      * the partly-moved state. Null for a lone move: the pre-move state already is the look-back.
      */
     val lookBackGrants: LookBackGrants? = null,
-    /** Internal card-arrival half of a meld departure; replacements already chose both cards' destination. */
+    /**
+     * Internal card-arrival half of a melded or merged permanent's departure (CR 712.21, 730.3);
+     * replacements already chose every component's destination.
+     */
     val meldedPermanent: com.wingedsheep.engine.state.ObjectRef? = null
 )
 
@@ -716,6 +719,11 @@ class ZoneTransitionService(
         val melded = if (leavingBattlefield) {
             newState.getEntity(entityId)?.get<com.wingedsheep.engine.state.components.identity.MeldedComponent>()
         } else null
+        // CR 730.3: a merged (mutated) permanent likewise leaves as one permanent, and each of its
+        // components is put into the new zone.
+        val merged = if (leavingBattlefield) {
+            newState.getEntity(entityId)?.get<com.wingedsheep.engine.mechanics.MergedComponent>()
+        } else null
 
         // Strip battlefield components and remove floating effects AFTER removal
         if (leavingBattlefield) {
@@ -800,6 +808,9 @@ class ZoneTransitionService(
             if (melded != null) {
                 newState = com.wingedsheep.engine.handlers.effects.permanent.types
                     .separateMeldedHost(newState, cardRegistry, entityId, melded)
+            }
+            if (merged != null) {
+                newState = com.wingedsheep.engine.mechanics.MutateCasts.separate(newState, cardRegistry, entityId, merged)
             }
 
             newState = newState.updateEntity(entityId) { c -> stripBattlefieldComponents(c) }
@@ -1127,9 +1138,10 @@ class ZoneTransitionService(
             )
         )
 
-        if (melded != null) {
+        val partnerIds = listOfNotNull(melded?.partnerId) + merged?.partnerIds(entityId).orEmpty()
+        for (partnerId in partnerIds) {
             val partner = moveToZone(
-                newState, melded.partnerId, actualDestZone,
+                newState, partnerId, actualDestZone,
                 options.copy(skipZoneChangeRedirect = true, meldedPermanent = oldObject,
                     libraryPlacement = effectiveLibraryPlacement),
                 fromZoneKey = currentZoneKey
@@ -1141,7 +1153,7 @@ class ZoneTransitionService(
             })
             transitions.addAll(partner.transitions.map { it.copy(requestedDestination = destinationZone) })
             if (actualDestZone == Zone.EXILE) redirectResult.linkSourceId?.let { source ->
-                newState = ZoneMovementUtils.linkExiledToSource(newState, melded.partnerId, source)
+                newState = ZoneMovementUtils.linkExiledToSource(newState, partnerId, source)
             }
         }
 

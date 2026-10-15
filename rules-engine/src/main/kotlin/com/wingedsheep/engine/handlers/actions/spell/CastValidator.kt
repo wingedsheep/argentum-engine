@@ -207,6 +207,8 @@ internal class CastValidator(
         }
         if (com.wingedsheep.engine.mechanics.BestowCasts.selected(action) &&
             (action.castFaceDown || action.faceIndex != null || action.castFused)) return "Bestow cannot be combined with another face or face-down casting"
+        if (com.wingedsheep.engine.mechanics.MutateCasts.selected(action) &&
+            (action.castFaceDown || action.faceIndex != null || action.castFused || action.castPrototyped)) return "Mutate cannot be combined with another face or face-down casting"
         if (action.castPrototyped) {
             if (action.castFaceDown || action.faceIndex != null || action.castFused || com.wingedsheep.engine.mechanics.BestowCasts.selected(action)) {
                 return "A prototyped spell is cast with its own characteristics only"
@@ -775,6 +777,10 @@ internal class CastValidator(
         if (com.wingedsheep.engine.mechanics.BestowCasts.selected(action) && (playForFree ||
             state.getEntity(action.cardId)?.has<PlayWithFixedAlternativeManaCostComponent>() == true)) {
             return "Bestow cannot be combined with another alternative cost"
+        }
+        if (com.wingedsheep.engine.mechanics.MutateCasts.selected(action) && (playForFree ||
+            state.getEntity(action.cardId)?.has<PlayWithFixedAlternativeManaCostComponent>() == true)) {
+            return "Mutate cannot be combined with another alternative cost"
         }
         // The engine, not the client, decides what a convoke/delve/improvise choice is worth: every
         // chosen permanent or card must be one the payment could actually use, or the cost stage

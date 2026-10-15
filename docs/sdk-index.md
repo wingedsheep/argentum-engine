@@ -469,6 +469,7 @@ Families:
 - `ControllerPredicate.Not(predicate: ControllerPredicate)`
 - `ControllerPredicate.Or(predicates: List<ControllerPredicate>)`
 - `ControllerPredicate.OwnedByOpponent` — Owned by an opponent
+- `ControllerPredicate.OwnedByReferencedPlayer(target: EffectTarget)` — Owned by the player referenced by target — the owner sibling of ControlledByReferencedPlayer.
 - `ControllerPredicate.OwnedByTargetPlayer` — Owned by the targeted player (the spell/ability's "target player").
 - `ControllerPredicate.OwnedByTriggeringPlayer` — Owned by the player associated with the current trigger — the damaged player for a combat/damage trigger, the event's player otherwise (resolved from the effect context's `triggeringPlayerId`).
 - `ControllerPredicate.OwnedByYou` — Owned by the ability's controller
@@ -1198,6 +1199,7 @@ Families:
 - `EventPattern.LifePaymentEvent(player: Player)` — When a player would **pay** life — life spent to satisfy a cost (CR 118.8), as opposed to life lost to damage or to a "loses N life" effect.
 - `EventPattern.ManifestedDreadEvent(player: Player)` — Whenever a player manifests dread (CR 701.60).
 - `EventPattern.MillEvent(player: Player, cardFilter: GameObjectFilter?, batch: Boolean)` — A player mills (CR 701.17) — both a replacement pattern and a trigger, like DiscardEvent.
+- `EventPattern.MutateEvent` — When a mutating creature spell merges with a permanent (CR 702.140d).
 - `EventPattern.NthCardDrawnEvent(nthCard: Int, player: Player)` — Fires on a `CardsDrawnEvent` when the drawing player's per-turn draw count crosses the specified threshold (CR 121.2 — each card drawn is an individual draw, so a single multi-card draw fires at mo…
 - `EventPattern.NthSpellCastEvent(nthSpell: Int, player: Player, spellFilter: GameObjectFilter?)` — When a player casts their Nth spell in a turn.
 - `EventPattern.OneOrMoreDealCombatDamageToPlayerEvent(sourceFilter: GameObjectFilter, orBattle: Boolean)` — Whenever one or more creatures matching sourceFilter you control deal combat damage to a player.
@@ -1298,6 +1300,7 @@ Families:
 - `KeywordAbility.Mayhem(cost: ManaCost)` — Mayhem cost (CR 702.187, Marvel's Spider-Man).
 - `KeywordAbility.Miracle(cost: ManaCost)` — Miracle {cost} (CR 702.94).
 - `KeywordAbility.Morph(morphCost: PayCost, faceUpEffect: Effect?)` — Morph with a cost to turn face up.
+- `KeywordAbility.Mutate(cost: ManaCost)` — Mutate cost (CR 702.140).
 - `KeywordAbility.Ninjutsu(cost: ManaCost)` — Ninjutsu cost (CR 702.49).
 - `KeywordAbility.Numeric(keyword: Keyword, n: Int, onceEachTurn: Boolean)` — A keyword parameterized by a single integer.
 - `KeywordAbility.OptionalAdditionalCost(manaCost: ManaCost?, additionalCost: AdditionalCost?, multi: Boolean, displayPrefix: String, keyword: Keyword?, branchesEffect: Boolean, grantsFlashTiming: Boolean, declaredSlot: ChoiceSlot)` — **Optional additional cost paid at cast time.** Generalises Kicker, Multikicker, Offspring, Squad, Bargain, and the pre-kicker "pay {N} more to cast as though it had flash" pattern (Ghitu Fire et a…

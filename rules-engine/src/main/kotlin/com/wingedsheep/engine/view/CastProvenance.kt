@@ -122,6 +122,7 @@ object CastProvenance {
         AlternativeCostType.BLITZ -> "blitz"
         AlternativeCostType.EVOKE -> "evoke"
         AlternativeCostType.BESTOW -> "bestow"
+        AlternativeCostType.MUTATE -> "mutate"
         AlternativeCostType.EMERGE -> "emerge"
         AlternativeCostType.SNEAK -> "sneak"
         AlternativeCostType.WEB_SLINGING -> "web-slinging"

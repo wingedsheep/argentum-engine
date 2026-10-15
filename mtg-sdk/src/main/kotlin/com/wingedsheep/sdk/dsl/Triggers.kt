@@ -371,6 +371,17 @@ class ObjectTriggerSubject internal constructor(
     }
 
     /**
+     * "Whenever this creature mutates" (CR 702.140d) — a mutating creature spell merged with this
+     * permanent, whether it went over or under, and whether this card is the mutating one or an
+     * existing component. Self-only: the mutated permanent is the one whose abilities trigger.
+     */
+    fun mutates(): TriggerSpec {
+        only("mutates", TriggerBinding.SELF)
+        unfiltered("mutates")
+        return spec(MutateEvent)
+    }
+
+    /**
      * "transforms" — [intoBackFace] `true` to the back face, `false` to the front, `null` either way.
      * Under [Triggers.a] / [Triggers.another] the subject's filter is matched against the permanent's
      * post-transform characteristics: `Triggers.a(Permanent.youControl().withSubtype("Phyrexian"))

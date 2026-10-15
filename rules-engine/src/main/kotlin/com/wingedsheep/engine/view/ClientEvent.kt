@@ -743,6 +743,19 @@ sealed interface ClientEvent {
         }
     ) : ClientEvent
 
+    /** A mutating creature spell merged with a creature (CR 702.140c). */
+    @Serializable
+    @SerialName("mutated")
+    data class Mutated(
+        val cardId: EntityId,
+        val mutatingCardId: EntityId,
+        val mutatingCardName: String,
+        val targetName: String,
+        val controllerId: EntityId,
+        val onTop: Boolean,
+        override val description: String = "$mutatingCardName mutated ${if (onTop) "over" else "under"} $targetName"
+    ) : ClientEvent
+
     @Serializable
     @SerialName("turnedFaceUp")
     data class TurnedFaceUp(
@@ -1514,6 +1527,15 @@ object ClientEventTransformer {
                 sourceName = event.sourceName,
                 isYours = event.playerId == viewingPlayerId,
                 ignored = event.ignored
+            )
+
+            is MutatedEvent -> ClientEvent.Mutated(
+                cardId = event.permanentId,
+                mutatingCardId = event.mutatingCardId,
+                mutatingCardName = event.mutatingCardName,
+                targetName = event.targetName,
+                controllerId = event.controllerId,
+                onTop = event.onTop,
             )
 
             is TurnFaceUpEvent -> ClientEvent.TurnedFaceUp(

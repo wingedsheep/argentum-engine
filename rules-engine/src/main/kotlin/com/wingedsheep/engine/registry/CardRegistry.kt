@@ -30,6 +30,9 @@ class CardRegistry(private val parent: CardRegistry? = null) {
     // lookup rather than a scan of every variant key — called once per name while the server
     // builds its printing and booster indexes, a scan made startup quadratic in the corpus size.
     private val variantsByName = mutableMapOf<String, MutableMap<String, CardDefinition>>()
+    // Composite definitions of merged permanents, built on first lookup. Concurrent: the registry
+    // is shared by every game the server runs, and these entries appear mid-game.
+    private val mergedDefinitions = java.util.concurrent.ConcurrentHashMap<String, CardDefinition>()
     // Reverse DFC index: back face name -> front face name
     private val backFaceToFrontFace = mutableMapOf<String, String>()
 
@@ -95,7 +98,14 @@ class CardRegistry(private val parent: CardRegistry? = null) {
         // First try exact match with collector number format
         cardsByNameAndNumber[name]?.let { return it }
         // Fall back to name-only lookup, then to the parent registry for an overlay.
-        return cardsByName[name] ?: parent?.getCard(name)
+        cardsByName[name]?.let { return it }
+        // A merged permanent's composite id (mutate, CR 730) — built from this registry's own
+        // lookups, so an overlay resolves its components the same way it resolves anything else.
+        if (MergedCardDefinitions.isComposite(name)) {
+            return mergedDefinitions[name]
+                ?: MergedCardDefinitions.build(name, ::getCard).also { mergedDefinitions.putIfAbsent(name, it) }
+        }
+        return parent?.getCard(name)
     }
 
     /**

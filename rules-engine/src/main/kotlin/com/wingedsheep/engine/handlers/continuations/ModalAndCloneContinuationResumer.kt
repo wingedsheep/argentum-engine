@@ -42,6 +42,7 @@ class ModalAndCloneContinuationResumer(
         resumer(EnteringAttackDefenderContinuation::class, ::resumeEnteringAttackDefender),
         resumer(CloneAuraEntryContinuation::class, ::resumeCloneAuraEntry),
         resumer(CloneEntersContinuation::class, ::resumeCloneEnters),
+        resumer(MutateMergeContinuation::class, ::resumeMutateMerge),
         resumer(CloneEntersOnBattlefieldContinuation::class, ::resumeCloneEntersOnBattlefield),
         resumer(EntersWithChoiceSpellContinuation::class, ::resumeEntersWithChoiceSpell),
         resumer(EntersWithChoiceOnBattlefieldContinuation::class, ::resumeEntersWithChoiceOnBattlefield),
@@ -432,6 +433,22 @@ class ModalAndCloneContinuationResumer(
             state, entityId, CounterType.PLUS_ONE_PLUS_ONE, count, controllerId, entityName,
             predicateEvaluator = services.predicateEvaluator
         )
+    }
+
+    /**
+     * Finish a mutating creature spell once its controller chose over (yes) or under (no): it merges
+     * with the creature and leaves the stack without entering the battlefield (CR 702.140c).
+     */
+    private fun resumeMutateMerge(
+        state: GameState, continuation: MutateMergeContinuation,
+        response: DecisionResponse, checkForMore: CheckForMore,
+    ): ExecutionResult {
+        if (response !is YesNoResponse) return ExecutionResult.error(state, "Expected over/under choice for mutate")
+        val spellName = state.getEntity(continuation.spellId)?.get<CardComponent>()?.name ?: "Unknown"
+        val (merged, mutated) = com.wingedsheep.engine.mechanics.MutateCasts.merge(
+            state, services.cardRegistry, continuation.spellId, continuation.targetId, onTop = response.choice
+        )
+        return checkForMore(merged, listOf(mutated, ResolvedEvent(continuation.spellId, spellName)))
     }
 
     /**

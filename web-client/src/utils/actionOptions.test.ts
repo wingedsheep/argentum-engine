@@ -437,6 +437,30 @@ describe('buildActionOptions — bestow', () => {
   })
 })
 
+describe('buildActionOptions — mutate', () => {
+  const creature = card('{3}{G}', { name: 'Test Mutate', mutate: '{1}{G}{G}' })
+  const normal = action({ manaCostString: '{3}{G}' })
+  const mutate = action({
+    action: { type: 'CastSpell', alternativeCostType: 'MUTATE', useAlternativeCost: true },
+    actionType: 'CastWithAlternativeCost',
+    manaCostString: '{1}{G}{G}',
+    validTargets: [{ targetId: 'creature' }],
+  })
+
+  it.each([
+    { actions: [normal], enabled: [true, false] },
+    { actions: [mutate], enabled: [false, true] },
+    { actions: [normal, mutate], enabled: [true, true] },
+  ])('shows both prices and follows server availability: $enabled', ({ actions, enabled }) => {
+    const options = buildActionOptions(creature, actions)
+    expect(options.map(o => o.key)).toEqual(['cast', 'mutate'])
+    expect(options.map(o => o.isAvailable)).toEqual(enabled)
+    expect(options[1]).toMatchObject({ label: 'Mutate Test Mutate', manaCost: '{1}{G}{G}' })
+    if (enabled[1]) expect(options[1]!.action).toBe(mutate)
+    else expect(options[1]!.action).toBeNull()
+  })
+})
+
 describe('Fuse cast options', () => {
   const split = card('', { name: 'Wear // Tear', cardTypes: ['INSTANT'] })
   const fused = action({

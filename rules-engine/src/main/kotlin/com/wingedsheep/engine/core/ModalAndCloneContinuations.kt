@@ -265,6 +265,17 @@ data class ModalTargetContinuation(
  *   enters with (Altered Ego's "except it enters with X additional +1/+1 counters on it"). Applied
  *   only when a copy was actually made — declining the copy declines the counters too.
  */
+/**
+ * Resume a resolving mutating creature spell once its controller has chosen over or under
+ * (CR 702.140c): the yes answer puts [spellId] on top of [targetId], no puts it under.
+ */
+@Serializable
+data class MutateMergeContinuation(
+    val spellId: EntityId,
+    val targetId: EntityId,
+    val controllerId: EntityId,
+) : AnswerContinuation
+
 @Serializable
 data class CloneEntersContinuation(
     val spellId: EntityId,

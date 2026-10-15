@@ -44,6 +44,7 @@ export type ClientEvent =
   | HandRevealedEvent
   | CardsRevealedEvent
   | TurnedFaceUpEvent
+  | MutatedEvent
   | TransformedEvent
   | DieRolledEvent
   | CoinFlippedEvent
@@ -427,6 +428,18 @@ export interface CoinFlippedEvent {
 // ============================================================================
 // Morph Events
 // ============================================================================
+
+/** A mutating creature spell merged with a creature — over (`onTop`) or under it. */
+export interface MutatedEvent {
+  readonly type: 'mutated'
+  readonly cardId: EntityId
+  readonly mutatingCardId: EntityId
+  readonly mutatingCardName: string
+  readonly targetName: string
+  readonly controllerId: EntityId
+  readonly onTop: boolean
+  readonly description: string
+}
 
 export interface TurnedFaceUpEvent {
   readonly type: 'turnedFaceUp'

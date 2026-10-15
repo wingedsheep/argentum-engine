@@ -438,6 +438,10 @@ internal class CastCostTotaller(
                 }
             } else null
         },
+        // Mutate (CR 702.140a) — the mutate cost instead of the mana cost.
+        AlternativeCostType.MUTATE to {
+            com.wingedsheep.engine.mechanics.MutateCasts.mutateOf(cardDef)?.let { priced(it.cost) }
+        },
         AlternativeCostType.EVOKE to {
             cardDef.keywordAbilities.filterIsInstance<KeywordAbility.Evoke>().firstOrNull()?.let { priced(it.cost) }
         },

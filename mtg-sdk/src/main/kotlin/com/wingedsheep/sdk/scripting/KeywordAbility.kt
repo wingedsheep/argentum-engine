@@ -1002,6 +1002,25 @@ sealed interface KeywordAbility {
     }
 
     // =========================================================================
+    // Mutate
+
+    /**
+     * Mutate [cost] (CR 702.140). The caster may pay [cost] rather than the card's mana cost; the
+     * spell then becomes a *mutating creature spell* targeting a non-Human creature with the same
+     * owner. If the target is still legal as it resolves, the spell doesn't enter the battlefield:
+     * its controller puts it over or under the creature and the two merge into one mutated
+     * permanent — the topmost card's characteristics plus every component's abilities (CR 730.2a,
+     * 702.140e). If the target is illegal, it resolves as an ordinary creature spell (702.140b).
+     * "Whenever this creature mutates" is `Triggers.self.mutates()`.
+     */
+    @Serializable
+    @SerialName("Mutate")
+    data class Mutate(val cost: ManaCost) : KeywordAbility {
+        override val keyword: Keyword = Keyword.MUTATE
+        override val description: String = "Mutate $cost"
+    }
+
+    // =========================================================================
     // Prototype
 
     /**
@@ -1641,6 +1660,9 @@ sealed interface KeywordAbility {
          */
         fun bestow(cost: String, additionalCost: AdditionalCost? = null): KeywordAbility =
             Bestow(ManaCost.parse(cost), additionalCost)
+
+        /** Create Mutate with its alternative mana cost: `mutate("{1}{G}{G}")` (CR 702.140). */
+        fun mutate(cost: String): KeywordAbility = Mutate(ManaCost.parse(cost))
 
         /** Create Prototype with its alternative mana cost and size: `prototype("{3}{R}", 2, 2)`. */
         fun prototype(cost: String, power: Int, toughness: Int): KeywordAbility =

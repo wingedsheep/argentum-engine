@@ -2339,6 +2339,17 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
     }
 
     /**
+     * When a mutating creature spell merges with a permanent (CR 702.140d). Binding SELF =
+     * "whenever this creature mutates": the merged permanent — whichever of its cards carries the
+     * ability, top or under — is the one that mutated.
+     */
+    @SerialName("MutateEvent")
+    @Serializable
+    data object MutateEvent : EventPattern {
+        override val description: String = "this creature mutates"
+    }
+
+    /**
      * When a creature is turned face up.
      * [player] filters whose creature: [Player.You] (default), [Player.Any], etc.
      * [filter] narrows *which* creature, evaluated against the permanent's post-flip

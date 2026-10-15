@@ -319,6 +319,8 @@ enum class Keyword(val displayName: String) {
      * `MayCastSelfFromZones` permission to it (`castUsing = Keyword.BLITZ`).
      */
     BLITZ("Blitz"),
+    /** Mutate (CR 702.140) — see [com.wingedsheep.sdk.scripting.KeywordAbility.Mutate]. */
+    MUTATE("Mutate"),
     /** Prototype (CR 702.160) — see [com.wingedsheep.sdk.scripting.KeywordAbility.Prototype]. */
     PROTOTYPE("Prototype"),
 

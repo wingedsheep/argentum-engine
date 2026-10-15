@@ -643,7 +643,8 @@ internal class CardProjector(
             bestow = cardDef?.keywordAbilities
                 ?.filterIsInstance<KeywordAbility.Bestow>()
                 ?.firstOrNull()
-                ?.let { ClientBestow(it.cost.toString(), it.additionalCost?.description) }
+                ?.let { ClientBestow(it.cost.toString(), it.additionalCost?.description) },
+            mutate = com.wingedsheep.engine.mechanics.MutateCasts.mutateOf(cardDef)?.cost?.toString()
         )
     }
 

@@ -324,6 +324,12 @@ enum class AlternativeCostType {
     EVOKE,
     BESTOW,
     /**
+     * Mutate ([com.wingedsheep.sdk.scripting.KeywordAbility.Mutate], CR 702.140) — pays the mutate
+     * cost and makes the spell a *mutating creature spell* targeting a non-Human creature with the
+     * same owner; see [com.wingedsheep.engine.mechanics.MutateCasts].
+     */
+    MUTATE,
+    /**
      * Emerge ([com.wingedsheep.sdk.scripting.KeywordAbility.Emerge], CR 702.119) — hand, at the
      * spell's normal timing. Pays the emerge mana *reduced by the sacrificed creature's mana value*
      * (generic portion only) instead of the mana cost, plus sacrifices that creature

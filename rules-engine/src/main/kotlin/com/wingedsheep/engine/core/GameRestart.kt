@@ -123,7 +123,12 @@ class GameRestarter(
         val oldIdsByOwner = linkedMapOf<EntityId, MutableList<EntityId>>()
         val avatars = mutableListOf<Pair<EntityId, ComponentContainer>>()
         // A melded permanent is two cards (CR 712.21); the second one sits in no zone.
-        val meldPartners = state.getBattlefield().mapNotNull { state.getEntity(it)?.get<MeldedComponent>()?.partnerId }
+        // A merged (mutated) permanent is one card per component (CR 730.3), the others zoneless too.
+        val meldPartners = state.getBattlefield().flatMap { id ->
+            val container = state.getEntity(id)
+            listOfNotNull(container?.get<MeldedComponent>()?.partnerId) +
+                container?.get<com.wingedsheep.engine.mechanics.MergedComponent>()?.partnerIds(id).orEmpty()
+        }
         val candidates = state.zones
             .filterKeys { it.zoneType != Zone.SIDEBOARD }
             .values.flatten() + state.stack + meldPartners
@@ -219,6 +224,7 @@ class GameRestarter(
      */
     private fun printedCard(container: ComponentContainer, current: CardComponent, owner: EntityId): ComponentContainer {
         val uncopied = container.get<MeldedComponent>()?.hostFrontCard
+            ?: container.get<com.wingedsheep.engine.mechanics.MergedComponent>()?.hostCard
             ?: container.get<CopyOfComponent>()?.originalCardComponent ?: current
         val dfc = container.get<DoubleFacedComponent>()
         val printed = if (dfc != null && dfc.isBack) dfc.frontFaceCard ?: uncopied else uncopied

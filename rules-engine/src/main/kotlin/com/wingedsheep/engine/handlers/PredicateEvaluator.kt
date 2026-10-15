@@ -519,7 +519,8 @@ class PredicateEvaluator(
             ControllerPredicate.OwnedByYou,
             ControllerPredicate.OwnedByOpponent,
             ControllerPredicate.OwnedByTargetPlayer,
-            ControllerPredicate.OwnedByTriggeringPlayer -> false
+            ControllerPredicate.OwnedByTriggeringPlayer,
+            is ControllerPredicate.OwnedByReferencedPlayer -> false
         }
     }
 
@@ -1476,6 +1477,13 @@ class PredicateEvaluator(
                 val triggeringPlayer = context.triggeringPlayerId ?: context.triggeringEntityId
                 card?.ownerId != null && triggeringPlayer != null && card.ownerId == triggeringPlayer
             }
+            // "with the same owner as this" — PlayerRef(OwnerOfSource) for a mutating spell's target.
+            is ControllerPredicate.OwnedByReferencedPlayer -> {
+                val owner = container.get<CardComponent>()?.ownerId
+                val referenced = context.resolvePlayerTarget(predicate.target)
+                    ?: resolveReferencedPlayerFromState(state, projected, predicate.target, context)
+                owner != null && owner == referenced
+            }
             ControllerPredicate.ControlledByYou,
             ControllerPredicate.ControlledByOpponent,
             ControllerPredicate.ControlledByAny,
@@ -1550,7 +1558,8 @@ class PredicateEvaluator(
             }
         }
         ControllerPredicate.OwnedByYou, ControllerPredicate.OwnedByOpponent,
-        ControllerPredicate.OwnedByTargetPlayer, ControllerPredicate.OwnedByTriggeringPlayer -> false
+        ControllerPredicate.OwnedByTargetPlayer, ControllerPredicate.OwnedByTriggeringPlayer,
+        is ControllerPredicate.OwnedByReferencedPlayer -> false
     }
 
     /**
@@ -1610,6 +1619,11 @@ class PredicateEvaluator(
             // ability's controller. Same resolution as StatePredicate.IsAttackingEnchantedPlayer:
             // the `in state.turnOrder` guard is what keeps a permanent host out, so an Aura on a
             // creature can never make this match anything.
+            // "the same owner as this" — the source card's immutable owner, in any zone.
+            Player.OwnerOfSource -> context.sourceId?.let { state.getEntity(it) }?.let {
+                it.get<com.wingedsheep.engine.state.components.identity.OwnerComponent>()?.playerId
+                    ?: it.get<CardComponent>()?.ownerId
+            }
             Player.EnchantedPlayer -> context.sourceId
                 ?.let { state.getEntity(it) }
                 ?.get<com.wingedsheep.engine.state.components.battlefield.AttachedToComponent>()

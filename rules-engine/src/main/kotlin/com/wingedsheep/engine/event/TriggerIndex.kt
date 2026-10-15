@@ -58,6 +58,7 @@ enum class TriggerCategory {
     LIFE_LOSS,
     BECOMES_TARGET,
     TURN_FACE_UP,
+    MUTATED,
     STEP,
     LIBRARY_TO_GRAVEYARD,
     ANY_TO_GRAVEYARD,
@@ -285,6 +286,7 @@ class TriggerIndex(
                 is SdkGameEvent.LifeLossEvent -> listOf(TriggerCategory.LIFE_LOSS)
                 is SdkGameEvent.BecomesTargetEvent -> listOf(TriggerCategory.BECOMES_TARGET)
                 is SdkGameEvent.TurnFaceUpEvent -> listOf(TriggerCategory.TURN_FACE_UP)
+                is SdkGameEvent.MutateEvent -> listOf(TriggerCategory.MUTATED)
                 is SdkGameEvent.CreatureTurnedFaceUpEvent -> listOf(TriggerCategory.TURN_FACE_UP)
                 is SdkGameEvent.TurnBeginEvent -> emptyList() // replacement-only
                 is SdkGameEvent.StepEvent -> listOf(TriggerCategory.STEP)
@@ -409,6 +411,7 @@ class TriggerIndex(
             }
             is BecomesTargetEvent -> BECOMES_TARGET_LIST
             is TurnFaceUpEvent -> TURN_FACE_UP_LIST
+            is com.wingedsheep.engine.core.MutatedEvent -> MUTATED_LIST
             is CountersAddedEvent -> COUNTERS_ADDED_LIST
             is com.wingedsheep.engine.core.CountersRemovedEvent -> COUNTERS_REMOVED_LIST
             is GiftGivenEvent -> GIFT_GIVEN_LIST
@@ -563,6 +566,7 @@ class TriggerIndex(
         private val LIFE_LOSS_LIST = listOf(TriggerCategory.LIFE_LOSS)
         private val BECOMES_TARGET_LIST = listOf(TriggerCategory.BECOMES_TARGET)
         private val TURN_FACE_UP_LIST = listOf(TriggerCategory.TURN_FACE_UP)
+        private val MUTATED_LIST = listOf(TriggerCategory.MUTATED)
         private val COUNTERS_ADDED_LIST = listOf(TriggerCategory.COUNTERS_ADDED)
         private val COUNTERS_REMOVED_LIST = listOf(TriggerCategory.COUNTERS_REMOVED)
         private val GIFT_GIVEN_LIST = listOf(TriggerCategory.GIFT_GIVEN)

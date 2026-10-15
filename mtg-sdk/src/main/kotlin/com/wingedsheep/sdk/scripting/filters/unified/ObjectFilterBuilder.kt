@@ -1132,6 +1132,13 @@ interface ObjectFilterBuilder<out Self> {
     fun ownedByOpponent() = withControllerPredicate(ControllerPredicate.OwnedByOpponent)
 
     /**
+     * Must be owned by the player referenced by [target] — `ownedBy(PlayerRef(Player.OwnerOfSource))`
+     * is "with the same owner as this" (a mutating spell's target, CR 702.140a).
+     */
+    fun ownedBy(target: EffectTarget) =
+        withControllerPredicate(ControllerPredicate.OwnedByReferencedPlayer(target))
+
+    /**
      * Must be owned by the target player (Hurkyl's Recall — "all artifacts target player owns").
      * Matches the card's immutable owner, so it captures battlefield permanents the target owns
      * even when another player controls them.

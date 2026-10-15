@@ -2226,6 +2226,23 @@ data class TurnFaceUpEvent(
 ) : GameEvent
 
 /**
+ * A mutating creature spell merged with [permanentId] (CR 702.140c–d) — "whenever this creature
+ * mutates". [mutatingCardId] is the spell's card, now a component of the permanent; [onTop] is
+ * whether it went over the creature (true) or under it.
+ */
+@Serializable
+@SerialName("MutatedEvent")
+data class MutatedEvent(
+    val permanentId: EntityId,
+    val mutatingCardId: EntityId,
+    val controllerId: EntityId,
+    val mutatingCardName: String,
+    /** The creature's name as it was before the merge. */
+    val targetName: String,
+    val onTop: Boolean,
+) : GameEvent
+
+/**
  * A creature was turned face down (e.g., by Backslide).
  */
 @Serializable

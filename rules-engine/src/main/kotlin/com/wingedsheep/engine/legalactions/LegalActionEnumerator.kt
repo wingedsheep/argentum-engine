@@ -42,6 +42,7 @@ class LegalActionEnumerator(
         SneakCastEnumerator(),
         EmergeCastEnumerator(),
         AnnouncedCharacteristicsCastEnumerator(CharacteristicsAnnouncement.BESTOW),
+        AnnouncedCharacteristicsCastEnumerator(CharacteristicsAnnouncement.MUTATE),
         AnnouncedCharacteristicsCastEnumerator(CharacteristicsAnnouncement.PROTOTYPE),
         WebSlingingCastEnumerator(),
         CyclingEnumerator(),

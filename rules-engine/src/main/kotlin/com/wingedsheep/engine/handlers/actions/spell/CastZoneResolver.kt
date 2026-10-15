@@ -192,6 +192,7 @@ class CastZoneResolver(
         Keyword.BESTOW -> action != null && BestowCasts.selected(action)
         Keyword.BLITZ -> action != null && action.useAlternativeCost &&
             action.alternativeCostType == AlternativeCostType.BLITZ
+        Keyword.MUTATE -> action != null && com.wingedsheep.engine.mechanics.MutateCasts.selected(action)
         else -> false
     }
 

@@ -825,6 +825,9 @@ class TriggerMatcher(
             is EventPattern.BecomesTargetEvent -> {
                 event is BecomesTargetEvent && matchesBecomesTargetTrigger(trigger, binding, event, sourceId, controllerId, state)
             }
+            is EventPattern.MutateEvent -> {
+                event is com.wingedsheep.engine.core.MutatedEvent && event.permanentId == sourceId
+            }
             is EventPattern.TurnFaceUpEvent -> {
                 event is TurnFaceUpEvent && (binding != TriggerBinding.SELF || event.entityId == sourceId)
             }

@@ -534,6 +534,10 @@ data class TriggerContext(
                         else -> null
                     }
                 )
+                is com.wingedsheep.engine.core.MutatedEvent -> TriggerContext(
+                    triggeringEntityId = event.permanentId,
+                    triggeringPlayerId = event.controllerId,
+                )
                 is TurnFaceUpEvent -> TriggerContext(
                     triggeringEntityId = event.entityId,
                     triggeringPlayerId = event.controllerId,
