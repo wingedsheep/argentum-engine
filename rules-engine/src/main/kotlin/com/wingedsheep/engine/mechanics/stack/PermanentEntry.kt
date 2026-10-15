@@ -1002,14 +1002,15 @@ internal class PermanentEntry(
         controllerId: EntityId
     ): GameState {
         // Blitz (CR 702.152a): "sacrifice the permanent this spell becomes at the beginning of the
-        // next end step". The captured object reference scopes the sacrifice to this battlefield
-        // object, the same shape as the token-copy sacrifice rider above.
+        // next end step". `Self` is checked against the captured source reference, so the
+        // sacrifice only hits this battlefield object: one that was flickered or died and came back
+        // before the end step is a new object the trigger no longer tracks (CR 400.7 / 603.7c).
         if (!spellComponent.wasBlitzed) return state
         val (triggerId, allocatedState) = state.newRoutingId()
         return allocatedState.addDelayedTrigger(
             DelayedTriggeredAbility(
                 id = triggerId,
-                effect = com.wingedsheep.sdk.scripting.effects.SacrificeTargetEffect(EffectTarget.SpecificEntity(spellId)),
+                effect = com.wingedsheep.sdk.scripting.effects.SacrificeTargetEffect(EffectTarget.Self),
                 fireAtStep = Step.END,
                 sourceId = spellId,
                 objectReferences = com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(captured = true,

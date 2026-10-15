@@ -67,9 +67,19 @@ class BlitzMechanicTest : FunSpec({
         }
     }
 
+    // Minimal blink: exile the creature, then return it — a new object (CR 400.7).
+    val blink = card("Blitz Blink Test Sorcery") {
+        manaCost = "{R}"
+        typeLine = "Sorcery"
+        spell {
+            val creature = target(TargetFilter.CreatureYouControl)
+            effect = Effects.Move(creature, Zone.EXILE) then Effects.Move(creature, Zone.BATTLEFIELD)
+        }
+    }
+
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(blitzCreature, graveyardBlitzCreature, murder))
+        driver.registerCards(TestCards.all + listOf(blitzCreature, graveyardBlitzCreature, murder, blink))
         driver.initMirrorMatch(deck = Deck.of("Mountain" to 40))
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
         return driver
@@ -151,6 +161,30 @@ class BlitzMechanicTest : FunSpec({
         driver.findPermanent(player, "Blitz Test Creature") shouldBe null
         driver.getHandSize(player) shouldBe handBefore + 1
         // Destroyed, not sacrificed — the sacrifice rider stays quiet.
+        driver.getLifeTotal(player) shouldBe 20
+    }
+
+    test("a blitzed creature blinked before the end step is a new object and is not sacrificed") {
+        val driver = createDriver()
+        val player = driver.activePlayer!!
+        val cardId = driver.putCardInHand(player, "Blitz Test Creature")
+        driver.giveMana(player, Color.RED, 2)
+        driver.castForBlitz(player, cardId)
+        driver.bothPass()
+        val blitzed = driver.findPermanent(player, "Blitz Test Creature")!!
+
+        val blinkId = driver.putCardInHand(player, "Blitz Blink Test Sorcery")
+        driver.giveMana(player, Color.RED, 1)
+        driver.castSpell(player, blinkId, listOf(blitzed)).outcome shouldBe Outcome.Done
+        driver.bothPass()
+        val returned = driver.findPermanent(player, "Blitz Test Creature")!!
+        driver.state.getEntity(returned)?.has<BlitzedComponent>() shouldBe false
+
+        driver.passPriorityUntil(Step.END)
+        driver.bothPass()
+        driver.bothPass()
+
+        driver.findPermanent(player, "Blitz Test Creature") shouldNotBe null
         driver.getLifeTotal(player) shouldBe 20
     }
 
