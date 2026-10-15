@@ -2,7 +2,7 @@
 
 **Set Size:** 336 cards
 **Release Date:** March 8, 2024
-**Implemented:** 167 / 336
+**Implemented:** 168 / 336
 | Section    | Total | Done |
 |------------|-------|------|
 | Extras     | 336   | 158  |
@@ -62,7 +62,7 @@
 - [x] Canopy Vista
 - [x] Canyon Slough
 - [ ] Captain of the Watch
-- [ ] Cass, Hand of Vengeance
+- [x] Cass, Hand of Vengeance
 - [x] Casualties of War
 - [ ] Cathedral Acolyte
 - [ ] Champion's Helm

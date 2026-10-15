@@ -22,6 +22,7 @@ import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.LookAudience
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.engine.state.components.battlefield.AttachmentsComponent
+import com.wingedsheep.engine.state.components.battlefield.LastKnownPermanentComponent
 import com.wingedsheep.engine.state.components.battlefield.CrewSaddleContributorsComponent
 import com.wingedsheep.engine.state.components.battlefield.CraftedFromExiledComponent
 import com.wingedsheep.engine.state.components.battlefield.entitiesChoice
@@ -230,21 +231,29 @@ class GatherCardsExecutor(
                 // creature" (Rhuk, Hexgold Nabber) — its links are gone, so the attachments frozen on
                 // the trigger's zone change identify them. They still have to be on the battlefield
                 // and match the filter now; last-known info names them, it doesn't resurrect them.
-                val hostId = context.resolveTarget(source.host, state)
-                val attachedIds = if (hostId != null && hostId in state.getBattlefield()) {
-                    state.getEntity(hostId)?.get<AttachmentsComponent>()?.attachedIds ?: emptyList()
-                } else if (source.host == com.wingedsheep.sdk.scripting.targets.EffectTarget.TriggeringEntity) {
-                    context.triggerContext?.lastKnownAttachmentIds ?: emptyList()
+                //
+                // Off-battlefield leg ([CardSource.AttachedTo.zone] ≠ battlefield): the same frozen
+                // attachments, kept where they followed the host out of play — see
+                // [lastKnownAttachmentsInZone].
+                if (source.zone != Zone.BATTLEFIELD) {
+                    lastKnownAttachmentsInZone(state, source, context)
                 } else {
-                    emptyList()
-                }
-                if (attachedIds.isEmpty()) {
-                    emptyList()
-                } else {
-                    val matching = BattlefieldFilterUtils
-                        .findMatchingOnBattlefield(state, source.filter, context, predicateEvaluator = predicateEvaluator)
-                        .toSet()
-                    attachedIds.filter { it in matching }
+                    val hostId = context.resolveTarget(source.host, state)
+                    val attachedIds = if (hostId != null && hostId in state.getBattlefield()) {
+                        state.getEntity(hostId)?.get<AttachmentsComponent>()?.attachedIds ?: emptyList()
+                    } else if (source.host == com.wingedsheep.sdk.scripting.targets.EffectTarget.TriggeringEntity) {
+                        context.triggerContext?.lastKnownAttachmentIds ?: emptyList()
+                    } else {
+                        emptyList()
+                    }
+                    if (attachedIds.isEmpty()) {
+                        emptyList()
+                    } else {
+                        val matching = BattlefieldFilterUtils
+                            .findMatchingOnBattlefield(state, source.filter, context, predicateEvaluator = predicateEvaluator)
+                            .toSet()
+                        attachedIds.filter { it in matching }
+                    }
                 }
             }
 
@@ -480,6 +489,31 @@ class GatherCardsExecutor(
         return EffectResult.success(newState, events).copy(updatedCollections = updatedCollections)
     }
 
+
+    /**
+     * [CardSource.AttachedTo] with a non-battlefield [CardSource.AttachedTo.zone]: the triggering
+     * host's last-known attachments (frozen on its battlefield exit) that are now in the
+     * controller's [CardSource.AttachedTo.zone] and match the filter. Entity ids persist across
+     * zones, so a card proves it is the very object that was attached by still carrying its own
+     * battlefield-exit snapshot naming this host — the snapshot is stripped on its next zone
+     * change, when it becomes a new object (CR 400.7).
+     */
+    private fun lastKnownAttachmentsInZone(
+        state: GameState,
+        source: CardSource.AttachedTo,
+        context: EffectContext
+    ): List<EntityId> {
+        if (source.host != com.wingedsheep.sdk.scripting.targets.EffectTarget.TriggeringEntity) return emptyList()
+        val hostId = context.triggeringEntityId ?: return emptyList()
+        val frozen = context.triggerContext?.lastKnownAttachmentIds ?: return emptyList()
+        val zoneCards = state.getZone(ZoneKey(context.controllerId, source.zone)).toSet()
+        val predicateContext = PredicateContext.fromEffectContext(context)
+        return frozen.filter { cardId ->
+            cardId in zoneCards &&
+                state.getEntity(cardId)?.get<LastKnownPermanentComponent>()?.snapshot?.attachedTo == hostId &&
+                predicateEvaluator.matches(state, state.projectedState, cardId, source.filter, predicateContext)
+        }
+    }
     private fun isLibrarySource(source: CardSource): Boolean = when (source) {
         is CardSource.TopOfLibrary, is CardSource.BottomOfLibrary -> true
         is CardSource.FromZone -> source.zone == Zone.LIBRARY

@@ -4794,7 +4794,7 @@ their library into their graveyard. If it's a creature card, you create a 2/2 bl
   `FromLinkedExile`, which is the pile a permanent has
   accumulated over its lifetime and would hand a second activation the first one's cards; this gather
   is scoped to the one payment that put the ability on the stack.
-- `CardSource.AttachedTo(host, filter?)` — the permanents attached to the `host` entity (any
+- `CardSource.AttachedTo(host, filter?, zone = BATTLEFIELD)` — the permanents attached to the `host` entity (any
   `EffectTarget` that resolves to a permanent — a spell's `ContextTarget`, `Self`, `TriggeringEntity`, …)
   that match `filter`, read off the host's `AttachmentsComponent` and intersected with the projected
   filter matches. The non-targeted counterpart of "the Equipment/Aura attached to that creature": yields
@@ -4807,6 +4807,14 @@ their library into their graveyard. If it's a creature card, you create a 2/2 bl
   attached to that creature to Rhuk" (Rhuk, Hexgold Nabber) = `May(Pipeline { gather(AttachedTo(
   TriggeringEntity, Equipment)); ForEachInCollection(it, AttachTargetEquipmentToCreature(IterationEntity,
   Self)) })`.
+  **Off-battlefield leg:** `zone = GRAVEYARD` (or any non-battlefield zone) gathers those same frozen
+  attachments that followed the host out of play into **your** `zone` — "Aura cards that were attached to
+  it from your graveyard". A card counts only while it is still the object that left the battlefield
+  attached to that host (its own `LastKnownPermanentComponent` names the host; any later zone change makes
+  a new object, CR 400.7). Pair with `move(..., BATTLEFIELD, attachTo = …)` to re-attach — an Aura the new
+  host can't legally carry stays put. Cass, Hand of Vengeance: `chooseAnyNumber(gather(AttachedTo(
+  TriggeringEntity, Aura, zone = GRAVEYARD)))` → `move(…, attachTo = ContextTarget(0))`, then
+  `chooseAnyNumber(gather(AttachedTo(TriggeringEntity, Equipment)))` → `AttachTargetEquipmentToCreature`.
 - `CardSource.ChosenTargets` — the spell/ability's already-resolved targets.
 - `CardSource.FromLinkedExile(count?)` — the cards in the source's linked-exile pile.
 - `CardSource.CraftedMaterials` — the cards exiled to Craft the source (its

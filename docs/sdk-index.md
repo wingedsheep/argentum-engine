@@ -286,7 +286,7 @@ Families:
 
 ## CardSource
 
-- `CardSource.AttachedTo(host: EffectTarget, filter: GameObjectFilter)` — Permanents attached to a host entity (resolved from an EffectTarget) that match filter.
+- `CardSource.AttachedTo(host: EffectTarget, filter: GameObjectFilter, zone: Zone)` — Permanents attached to a host entity (resolved from an EffectTarget) that match filter.
 - `CardSource.BattlefieldMatching(filter: GameObjectFilter, player: Player, excludeSelf: Boolean, includeAttachments: Boolean, excludeTriggering: Boolean, excludeChosenTargets: Boolean)` — All permanents on the battlefield matching a filter (any controller by default).
 - `CardSource.BottomOfLibrary(count: DynamicAmount, player: Player)` — Bottom N cards of a player's library — "puts the bottom card of their library into their graveyard" (Cellar Door).
 - `CardSource.ChosenTargets` — The spell or ability's resolved targets, taken from EffectContext.targets.

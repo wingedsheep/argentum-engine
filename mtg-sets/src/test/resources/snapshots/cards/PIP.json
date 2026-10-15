@@ -800,6 +800,139 @@
     }
 }
 
+// Cass, Hand of Vengeance
+{
+    "name": "Cass, Hand of Vengeance",
+    "manaCost": "{2}{R}{W}",
+    "typeLine": "Legendary Creature — Human Ranger",
+    "oracleText": "Vigilance\nWhenever Cass or another creature you control dies, if it was enchanted or equipped, return any number of Aura cards that were attached to it from your graveyard to the battlefield attached to target creature, then attach any number of Equipment that were attached to it to that creature.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Cass, Hand of Vengeance:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "statePredicates": [
+                            {
+                                "type": "StateOr",
+                                "predicates": [
+                                    "IsEnchanted",
+                                    "IsEquipped"
+                                ]
+                            }
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    },
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "AttachedToTarget",
+                                "host": "TriggeringEntity",
+                                "filter": "Aura",
+                                "zone": "Graveyard"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": "ChooseAnyNumber",
+                            "storeSelected": "selected1",
+                            "prompt": "Choose any number of Aura cards to return attached to the target creature"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            },
+                            "attachTo": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "AttachedToTarget",
+                                "host": "TriggeringEntity",
+                                "filter": "artifact Equipment"
+                            },
+                            "storeAs": "gathered3"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered3",
+                            "selection": "ChooseAnyNumber",
+                            "storeSelected": "selected4",
+                            "prompt": "Choose any number of Equipment to attach to the target creature",
+                            "useTargetingUI": true
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Collection",
+                                "collection": "selected4"
+                            },
+                            "body": {
+                                "type": "AttachTargetEquipmentToCreature",
+                                "equipmentTarget": "IterationEntity",
+                                "creatureTarget": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Whenever Cass or another creature you control dies, if it was enchanted or equipped, return any number of Aura cards that were attached to it from your graveyard to the battlefield attached to target creature, then attach any number of Equipment that were attached to it to that creature."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "97",
+        "rarity": "RARE",
+        "artist": "Dan Watson",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/b/5b6d7fa6-4de6-4bc8-b250-2ed6eb559618.jpg?1783912391",
+        "rulings": [
+            {
+                "date": "2024-03-08",
+                "text": "You can't return Aura cards that can't legally be attached to the target creature. For example, if the target creature has protection from red, you can't return Grim Reaper's Sprint to the battlefield with Cass's last ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
+    ]
+}
+
 // Charisma Bobblehead
 {
     "name": "Charisma Bobblehead",

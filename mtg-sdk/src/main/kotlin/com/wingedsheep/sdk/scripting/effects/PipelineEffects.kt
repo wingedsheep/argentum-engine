@@ -255,14 +255,25 @@ sealed interface CardSource {
      * ([EffectTarget.ContextTarget]); any [EffectTarget] that resolves to a permanent works
      * (Self, TriggeringEntity, …). Yields nothing when the host has left play or has no
      * matching attachments.
+     *
+     * [zone] names where the gathered objects are *now*. The default, [Zone.BATTLEFIELD], is the
+     * attached permanents above. Any other zone reads the last-known attachments of a host that
+     * has left the battlefield ([EffectTarget.TriggeringEntity] on a dies / leaves trigger) and
+     * keeps the cards that followed it out of play into **your** [zone] — "return any number of
+     * Aura cards that were attached to it from your graveyard" (Cass, Hand of Vengeance). A card
+     * qualifies only while it is still the object that left the battlefield attached to that host:
+     * once it changes zones again it is a new object (CR 400.7) and is no longer gathered.
      */
     @SerialName("AttachedToTarget")
     @Serializable
     data class AttachedTo(
         val host: EffectTarget,
-        val filter: GameObjectFilter = GameObjectFilter.Companion.Any
+        val filter: GameObjectFilter = GameObjectFilter.Companion.Any,
+        val zone: Zone = Zone.BATTLEFIELD
     ) : CardSource {
-        override val description: String = "${filter.description} attached to ${host.description}"
+        override val description: String =
+            if (zone == Zone.BATTLEFIELD) "${filter.description} attached to ${host.description}"
+            else "${cardsPhrase(filter)} that were attached to ${host.description} in your ${zone.noun}"
     }
 
     /**
