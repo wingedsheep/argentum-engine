@@ -39,7 +39,7 @@ import com.wingedsheep.sdk.scripting.references.Player
  * | Subject | Printed wording | Binding |
  * |---|---|---|
  * | [self] | "this creature", "~", "this card" | [TriggerBinding.SELF] |
- * | [attached] | "enchanted creature", "equipped creature" | [TriggerBinding.ATTACHED] |
+ * | [attached] | "enchanted creature", "equipped creature", "fortified land" | [TriggerBinding.ATTACHED] |
  * | [a] | "a creature you control", "a player's creature" | [TriggerBinding.ANY] |
  * | [another] | "another creature you control" | [TriggerBinding.OTHER] |
  * | [oneOrMore] / [oneOrMoreOther] | "one or more creatures …" (a batch, CR 603.2c) | [TriggerBinding.ANY] |
@@ -57,7 +57,7 @@ object Triggers {
     /** "this creature / this permanent / this card" — [TriggerBinding.SELF]. */
     val self: ObjectTriggerSubject = ObjectTriggerSubject(null, TriggerBinding.SELF)
 
-    /** "enchanted / equipped creature" (the permanent this Aura or Equipment is attached to) — [TriggerBinding.ATTACHED]. */
+    /** "enchanted / equipped creature", "fortified land" (the permanent this Aura, Equipment or Fortification is attached to) — [TriggerBinding.ATTACHED]. */
     val attached: ObjectTriggerSubject = ObjectTriggerSubject(null, TriggerBinding.ATTACHED)
 
     /**

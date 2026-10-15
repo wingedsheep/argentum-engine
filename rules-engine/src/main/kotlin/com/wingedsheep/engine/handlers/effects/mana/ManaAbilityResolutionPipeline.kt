@@ -110,7 +110,9 @@ class ManaAbilityResolutionPipeline(
      * for a color decision.
      *
      * [manaEvent] describes what the ability itself produced; it gates the `whenProducing` clause
-     * and supplies the color a mirror bonus copies. [carriedEvents] is the event list to append to
+     * and supplies the color a mirror bonus copies. [producedColors] is every color the whole ability
+     * added — a land adding {G}{U} through two effects reports both, which [manaEvent] (its first
+     * mana-producing part) cannot — and is what the [LandTappedForManaEvent] carries (C.A.M.P.). [carriedEvents] is the event list to append to
      * — the caller has already put [manaEvent] (or its dampened replacement) into it.
      */
     fun finishTapBonuses(
@@ -120,6 +122,7 @@ class ManaAbilityResolutionPipeline(
         tapperId: EntityId,
         manaEvent: ManaAddedEvent?,
         carriedEvents: List<GameEvent>,
+        producedColors: Set<Color> = manaEvent.producedColors(),
     ): ExecutionResult {
         val onTap = resolveAdditionalManaOnTap(state, sourceId, tapperId, carriedEvents)
         val onSourceTap = resolveAdditionalManaOnSourceTap(
@@ -132,7 +135,7 @@ class ManaAbilityResolutionPipeline(
         // its cost taps the land for mana — a tapped source is how that shows here, since the
         // color-choice resume path no longer holds the activation's TappedEvent.
         if (onSourceTap.state.getEntity(sourceId)?.has<TappedComponent>() == true) {
-            landTappedForManaEvent(onSourceTap.state, sourceId, tapperId, manaEvent.producedColors())
+            landTappedForManaEvent(onSourceTap.state, sourceId, tapperId, producedColors)
                 ?.let { allManaEvents = allManaEvents + it }
         }
 
@@ -438,5 +441,19 @@ private fun ManaAddedEvent?.producedColors(): Set<Color> {
         if (black > 0) add(Color.BLACK)
         if (red > 0) add(Color.RED)
         if (green > 0) add(Color.GREEN)
+    }
+}
+
+/**
+ * The colors [playerId]'s pool gained between [before] and [after] — every color a mana ability's
+ * resolution added, however many effects it took (restricted mana included). Empty when only
+ * colorless was added.
+ */
+fun manaColorsAdded(before: GameState, after: GameState, playerId: EntityId): Set<Color> {
+    val old = before.getEntity(playerId)?.get<ManaPoolComponent>() ?: ManaPoolComponent()
+    val new = after.getEntity(playerId)?.get<ManaPoolComponent>() ?: ManaPoolComponent()
+    return Color.entries.filterTo(mutableSetOf()) { color ->
+        new.getAmount(color) + new.restrictedMana.count { it.color == color } >
+            old.getAmount(color) + old.restrictedMana.count { it.color == color }
     }
 }

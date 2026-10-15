@@ -2689,10 +2689,6 @@ class ManaSolver private constructor(
     }
 
     /**
-     * Checks if a player can pay a mana cost (from floating mana pool + auto-pay).
-     * Considers floating mana first, then checks if remaining can be paid by tapping sources.
-     */
-    /**
      * The mana each of a player's hand-picked [chosen] sources is credited with when they pay
      * [cost] — the solver run restricted to exactly those sources. The legacy explicit-payment
      * paths (cycling, plot, unlocking a door, turning face up, special actions) tap the chosen
@@ -2714,6 +2710,10 @@ class ManaSolver private constructor(
         return solve(state, playerId, cost, xValue, excludeSources = excluded, spellContext = spellContext)?.manaProduced.orEmpty()
     }
 
+    /**
+     * Checks if a player can pay a mana cost (from floating mana pool + auto-pay).
+     * Considers floating mana first, then checks if remaining can be paid by tapping sources.
+     */
     fun canPay(
         state: GameState,
         playerId: EntityId,

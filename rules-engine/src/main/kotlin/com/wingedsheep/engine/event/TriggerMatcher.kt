@@ -1790,11 +1790,6 @@ class TriggerMatcher(
     }
 
     /**
-     * Check if a Player filter matches the event's player. `EachOpponent` is a real opponent test
-     * ([GameState.isOpponentOf]) — in a team game the controller's teammate is not "an opponent",
-     * so "whenever an opponent gains life" must not fire off your own partner (CR 102.3).
-     */
-    /**
      * [EventPattern.LandTappedForMana.landFilter] against the tapped land, relative to the trigger's
      * source and controller. Shared by the main path and the ATTACHED path
      * ([AttachmentTriggerDetector]) so the two can't disagree about which lands count.
@@ -1810,6 +1805,11 @@ class TriggerMatcher(
         com.wingedsheep.engine.handlers.PredicateContext(controllerId = controllerId, sourceId = sourceId)
     )
 
+    /**
+     * Check if a Player filter matches the event's player. `EachOpponent` is a real opponent test
+     * ([GameState.isOpponentOf]) — in a team game the controller's teammate is not "an opponent",
+     * so "whenever an opponent gains life" must not fire off your own partner (CR 102.3).
+     */
     fun matchesPlayer(state: GameState, player: Player, eventPlayerId: EntityId, controllerId: EntityId): Boolean {
         return when (player) {
             Player.EachDefendingPlayer -> eventPlayerId in com.wingedsheep.engine.mechanics.combat.CombatDefenders.allDefendingPlayersInApnapOrder(state)

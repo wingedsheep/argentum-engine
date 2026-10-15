@@ -11,6 +11,7 @@ import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.CreatureStats
 import com.wingedsheep.sdk.scripting.AbilityId
+import com.wingedsheep.sdk.scripting.ActivatedAbility
 import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.GiftKind
 import com.wingedsheep.sdk.scripting.TriggeredAbility
@@ -308,6 +309,17 @@ class CardValidatorTest : DescribeSpec({
             val errors = CardValidator.validate(card)
             errors shouldHaveSize 1
             errors[0].shouldBeInstanceOf<CardValidationError.EquipmentMissingSubtype>()
+        }
+
+        it("flags a fortify ability on a card that isn't a Fortification") {
+            val card = CardDefinition(
+                name = "Weird Fort",
+                manaCost = ManaCost.parse("{1}"),
+                typeLine = TypeLine.artifact(),
+                script = CardScript(activatedAbilities = listOf(ActivatedAbility.fortify(ManaCost.parse("{3}"), id = AbilityId("CardValidatorTest_fortify")))),
+            )
+            val errors = CardValidator.validate(card)
+            errors.any { it is CardValidationError.FortificationMissingSubtype } shouldBe true
         }
     }
 

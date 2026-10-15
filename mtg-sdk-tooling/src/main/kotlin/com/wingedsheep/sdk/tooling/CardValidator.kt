@@ -126,6 +126,16 @@ object CardValidator {
                 )
             )
         }
+        // A fortify ability attaches only a Fortification (CR 702.67a, 301.6); on anything else it
+        // takes the mana and attaches nothing.
+        if (card.activatedAbilities.any { it.isFortifyAbility } && !card.typeLine.isFortification) {
+            errors.add(
+                CardValidationError.FortificationMissingSubtype(
+                    cardName = card.name,
+                    message = "Card '${card.name}' has a fortify ability but type line doesn't include Fortification subtype"
+                )
+            )
+        }
     }
 
     /**
@@ -214,6 +224,11 @@ sealed interface CardValidationError {
     ) : CardValidationError
 
     data class EquipmentMissingSubtype(
+        override val cardName: String,
+        override val message: String
+    ) : CardValidationError
+
+    data class FortificationMissingSubtype(
         override val cardName: String,
         override val message: String
     ) : CardValidationError

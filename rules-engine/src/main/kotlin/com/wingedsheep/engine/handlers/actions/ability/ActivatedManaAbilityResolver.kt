@@ -13,6 +13,7 @@ import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.handlers.effects.EffectExecutorRegistry
 import com.wingedsheep.engine.handlers.effects.mana.ManaAbilityResolutionPipeline
+import com.wingedsheep.engine.handlers.effects.mana.manaColorsAdded
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.activeManaSpendingScope
@@ -257,6 +258,10 @@ internal class ActivatedManaAbilityResolver(
         }
 
         val eventsWithMana = if (manaEvent != null) activationEvents + manaEvent else activationEvents
+        // Every color the activation added, read off the pool before tagging moves it into
+        // per-unit entries — a composite's ManaAddedEvent reports only its first part.
+        val producedColors = if (dampening.dampened) emptySet()
+            else manaColorsAdded(stateBeforeEffect, dampening.state, action.playerId)
 
         // Read the production event before tagging moves plain mana into per-unit entries.
         // Tag before triggered bonuses so those bonuses don't inherit the activation obligation.
@@ -282,7 +287,7 @@ internal class ActivatedManaAbilityResolver(
         if (!costsTap) return ExecutionResult.success(currentState, eventsWithMana + effectResult.events)
         return manaPipeline.finishTapBonuses(
             currentState, action.sourceId, cardComponent, action.playerId,
-            manaEvent, eventsWithMana + effectResult.events
+            manaEvent, eventsWithMana + effectResult.events, producedColors
         )
     }
 

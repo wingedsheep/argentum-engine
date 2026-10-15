@@ -7,11 +7,13 @@ import com.wingedsheep.engine.core.CycleCard
 import com.wingedsheep.engine.core.PaymentStrategy
 import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
+import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.mtg.sets.definitions.pip.cards.CAMP
 import com.wingedsheep.mtg.sets.tokens.PredefinedTokens
+import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.dsl.Costs
@@ -56,10 +58,26 @@ class CAMPScenarioTest : FunSpec({
         keywordAbility(KeywordAbility.cycling("{G}"))
     }
 
+    // Two mana-producing effects in one ability (Overflowing Basin's {G}{U} shape).
+    val simicLand = card("CAMP Test Simic Land") {
+        typeLine = "Land"
+        activatedAbility {
+            manaAbility = true
+            cost = Costs.Tap
+            effect = Effects.Composite(listOf(Effects.AddMana(Color.GREEN), Effects.AddMana(Color.BLUE)))
+        }
+    }
+    val blueOneDrop = card("CAMP Test Merfolk") {
+        manaCost = "{U}"
+        typeLine = "Creature — Merfolk"
+        power = 1
+        toughness = 1
+    }
+
     val fortifyId = CAMP.activatedAbilities.single { it.isFortifyAbility }.id
 
     fun driver(): GameTestDriver = GameTestDriver().apply {
-        registerCards(TestCards.all + listOf(CAMP, PredefinedTokens.Junk, wastes, greenTwoDrop, greenCycler))
+        registerCards(TestCards.all + listOf(CAMP, PredefinedTokens.Junk, wastes, greenTwoDrop, greenCycler, simicLand, blueOneDrop))
         initMirrorMatch(deck = Deck.of("Island" to 40))
         passPriorityUntil(Step.PRECOMBAT_MAIN)
     }
@@ -201,5 +219,45 @@ class CAMPScenarioTest : FunSpec({
 
         d.plusOneCounters(bear) shouldBe 1
         d.junkCount(you) shouldBe 1
+    }
+
+    test("a land adding two colors through two effects reports both: the second color still matches") {
+        val d = driver()
+        val you = d.activePlayer!!
+        val camp = d.putPermanentOnBattlefield(you, "C.A.M.P.")
+        val land = d.putLandOnBattlefield(you, "CAMP Test Simic Land")
+        val merfolk = d.putCreatureOnBattlefield(you, "CAMP Test Merfolk")
+        d.fortify(you, camp, land)
+
+        d.tapForMana(you, land, "CAMP Test Simic Land")
+        d.chooseTargetIfAsked(you, merfolk)
+        d.bothPass()
+
+        d.plusOneCounters(merfolk) shouldBe 1
+        d.junkCount(you) shouldBe 1
+    }
+
+    test("an opponent tapping the fortified land triggers C.A.M.P. for its controller") {
+        val d = driver()
+        val you = d.activePlayer!!
+        val opponent = d.getOpponent(you)
+        val camp = d.putPermanentOnBattlefield(you, "C.A.M.P.")
+        val forest = d.putLandOnBattlefield(you, "Forest")
+        val bear = d.putCreatureOnBattlefield(you, "Grizzly Bears")
+        d.fortify(you, camp, forest)
+        // The opponent gains control of the fortified land; C.A.M.P. stays attached (CR 301.6
+        // only restricts what Fortify can target).
+        d.replaceState(d.state.updateEntity(forest) { it.with(ControllerComponent(opponent)) })
+
+        d.passPriority(you)
+        d.priorityPlayer shouldBe opponent
+        d.tapForMana(opponent, forest, "Forest")
+        d.chooseTargetIfAsked(you, bear)
+        d.stackSize shouldBe 1
+        d.bothPass()
+
+        d.plusOneCounters(bear) shouldBe 1
+        d.junkCount(you) shouldBe 1
+        d.junkCount(opponent) shouldBe 0
     }
 })
