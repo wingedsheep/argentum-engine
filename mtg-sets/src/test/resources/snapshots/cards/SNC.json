@@ -329,6 +329,77 @@
     ]
 }
 
+// Body Dropper
+{
+    "name": "Body Dropper",
+    "manaCost": "{B}{R}",
+    "typeLine": "Creature — Devil Warrior",
+    "oracleText": "Whenever you sacrifice another creature, put a +1/+1 counter on this creature.\n{B}{R}, Sacrifice another creature: This creature gains menace until end of turn. (It can't be blocked except by two or more creatures.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Body Dropper:1",
+                "trigger": {
+                    "type": "PermanentsSacrificedEvent",
+                    "filter": "creature",
+                    "perPermanent": true
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Body Dropper:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{B}{R}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "creature",
+                                "excludeSelf": true
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "MENACE",
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "168",
+        "artist": "Jakub Kasper",
+        "flavorText": "\"Kill count? I lost track years ago.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/f/0fcb6d47-dccb-4b69-aed4-7a6215857606.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
+    ]
+}
+
 // Bootleggers' Stash
 {
     "name": "Bootleggers' Stash",
@@ -524,6 +595,56 @@
     ]
 }
 
+// Brokers Initiate
+{
+    "name": "Brokers Initiate",
+    "manaCost": "{W}",
+    "typeLine": "Creature — Cat Citizen",
+    "oracleText": "{4}{G/U}: This creature has base power and toughness 5/5 until end of turn.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 4
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Brokers Initiate:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{4}{G/U}"
+                    }
+                },
+                "effect": {
+                    "type": "SetBaseStats",
+                    "target": "Self",
+                    "power": {
+                        "type": "Fixed",
+                        "amount": 5
+                    },
+                    "toughness": {
+                        "type": "Fixed",
+                        "amount": 5
+                    },
+                    "duration": "EndOfTurn"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "5",
+        "artist": "Viko Menezes",
+        "flavorText": "Regarding the relative might of pen and sword, the official position of the Brokers is \"Why choose?\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/7/a7867f2d-e89d-429f-9ab8-5337b40b4d8d.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE",
+        "WHITE"
+    ]
+}
+
 // Brokers Veteran
 {
     "name": "Brokers Veteran",
@@ -570,6 +691,52 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Buy Your Silence
+{
+    "name": "Buy Your Silence",
+    "manaCost": "{4}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Exile target nonland permanent. Its controller creates a Treasure token. (It's an artifact with \"{T}, Sacrifice this token: Add one mana of any color.\")",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Exile"
+                },
+                {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Treasure",
+                    "controller": "TargetController"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "nonland permanent"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "6",
+        "artist": "Tony Foti",
+        "flavorText": "Mikey \"the Mouth\" kept his nickname after he struck his deal with Gregorio, even though he never spoke another word.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/c/8c9ac05f-f47c-4569-a06e-793d28cbb936.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -754,6 +921,81 @@
     "colorIdentityOverride": [
         "WHITE"
     ]
+}
+
+// Cement Shoes
+{
+    "name": "Cement Shoes",
+    "manaCost": "{1}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Equipped creature gets +3/+3 and has \"At the beginning of your end step, tap this creature.\"\nEquipped creature doesn't untap during its controller's untap step.\nEquip {2} ({2}: Attach to target creature you control. Equip only as a sorcery.)",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Cement Shoes:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 3,
+                "toughnessBonus": 3
+            },
+            {
+                "type": "GrantTriggeredAbility",
+                "ability": {
+                    "id": "Cement Shoes:1",
+                    "trigger": {
+                        "type": "StepEvent",
+                        "step": "END"
+                    },
+                    "binding": "ANY",
+                    "effect": {
+                        "type": "TapUntap",
+                        "target": "Self"
+                    },
+                    "descriptionOverride": "At the beginning of your end step, tap this creature."
+                }
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "DOESNT_UNTAP"
+            }
+        ]
+    },
+    "equipCost": "{2}",
+    "metadata": {
+        "collectorNumber": "235",
+        "rarity": "UNCOMMON",
+        "artist": "Mark Behm",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/1/b1100dba-de2d-481e-b29c-71f6d34663ba.jpg"
+    },
+    "colorIdentityOverride": []
 }
 
 // Chrome Cat
@@ -1222,6 +1464,91 @@
     ]
 }
 
+// Deal Gone Bad
+{
+    "name": "Deal Gone Bad",
+    "manaCost": "{3}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature gets -3/-3 until end of turn. Target player mills three cards. (They put the top three cards of their library into their graveyard.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": -3
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": -3
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                },
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t1"
+                                },
+                                "isMill": true
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t1"
+                                }
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            },
+            {
+                "type": "TargetPlayer",
+                "id": "t1"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "74",
+        "artist": "Mathias Kollros",
+        "flavorText": "\"Feed the rumor mills with delicious treachery. Bad blood between those two is a good deal for us.\"\n—Kamiz, Obscura Oculus",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/3/3359f13d-9946-49fa-b621-28b1ea714e55.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Demon's Due
 {
     "name": "Demon's Due",
@@ -1358,6 +1685,98 @@
         "GREEN",
         "BLUE",
         "WHITE"
+    ]
+}
+
+// Echo Inspector
+{
+    "name": "Echo Inspector",
+    "manaCost": "{3}{U}",
+    "typeLine": "Creature — Bird Rogue",
+    "oracleText": "Flying\nWhen this creature enters, it connives. (Draw a card, then discard a card. If you discarded a nonland card, put a +1/+1 counter on this creature.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Echo Inspector:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Connive",
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand"
+                                },
+                                "storeAs": "connive_hand"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "connive_hand",
+                                "selection": {
+                                    "type": "ChooseExactly",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "connive_discarded",
+                                "prompt": "Choose a card to discard"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "connive_discarded",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                },
+                                "moveType": "Discard"
+                            },
+                            {
+                                "type": "ConditionalOnCollection",
+                                "collection": "connive_discarded",
+                                "ifNotEmpty": {
+                                    "type": "AddCounters",
+                                    "counterType": "PLUS_ONE_PLUS_ONE",
+                                    "count": 1,
+                                    "target": "Self"
+                                },
+                                "filter": "nonland"
+                            }
+                        ],
+                        "descriptionOverride": "Connive"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "40",
+        "artist": "Lucas Graciano",
+        "flavorText": "The rendezvous took place hours ago, but the Obscura agent read the residue with ease.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/7/d7e530ea-ba51-4f7a-bf56-b657a48e86ae.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -1834,6 +2253,72 @@
     }
 }
 
+// Glittering Stockpile
+{
+    "name": "Glittering Stockpile",
+    "manaCost": "{2}{R}",
+    "typeLine": "Artifact — Treasure",
+    "oracleText": "{T}: Add {R}. Put a stash counter on this artifact.\n{T}, Sacrifice this artifact: Add X mana of any one color, where X is the number of stash counters on this artifact.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Glittering Stockpile:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddMana",
+                            "color": "RED"
+                        },
+                        {
+                            "type": "AddCounters",
+                            "counterType": "STASH",
+                            "count": 1,
+                            "target": "Self"
+                        }
+                    ]
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Glittering Stockpile:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "AddManaOfChoice",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": {
+                            "type": "CounterCount",
+                            "counterType": "STASH"
+                        }
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "107",
+        "rarity": "UNCOMMON",
+        "artist": "Brock Grossman",
+        "flavorText": "The only thing Ziatora desires is \"more.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/7/973685e8-3df1-436b-b5c2-01573a92b61e.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Glittermonger
 {
     "name": "Glittermonger",
@@ -2028,6 +2513,304 @@
         "rarity": "MYTHIC",
         "artist": "Anastasia Ovchinnikova",
         "imageUri": "https://cards.scryfall.io/normal/front/0/e/0ee79399-715c-4c46-9fa1-e76b1087f009.jpg?1783923158"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Halo Scarab
+{
+    "name": "Halo Scarab",
+    "manaCost": "{2}",
+    "typeLine": "Artifact Creature — Insect",
+    "oracleText": "{2}, Exile this card from your graveyard: Create a Treasure token. (It's an artifact with \"{T}, Sacrifice this token: Add one mana of any color.\")",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Halo Scarab:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}"
+                            }
+                        },
+                        "CostExileSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Treasure"
+                },
+                "activateFromZone": "Graveyard"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "239",
+        "artist": "Khurrum",
+        "flavorText": "It pulses with the colors that best complement the wearer's outfit.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/e/2eead159-b9a1-4c64-affe-c77b0a9e4775.jpg"
+    },
+    "colorIdentityOverride": []
+}
+
+// Hypnotic Grifter
+{
+    "name": "Hypnotic Grifter",
+    "manaCost": "{U}",
+    "typeLine": "Creature — Human Rogue",
+    "oracleText": "{3}: This creature connives. (Draw a card, then discard a card. If you discarded a nonland card, put a +1/+1 counter on this creature.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Hypnotic Grifter:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}"
+                    }
+                },
+                "effect": {
+                    "type": "Connive",
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand"
+                                },
+                                "storeAs": "connive_hand"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "connive_hand",
+                                "selection": {
+                                    "type": "ChooseExactly",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "connive_discarded",
+                                "prompt": "Choose a card to discard"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "connive_discarded",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                },
+                                "moveType": "Discard"
+                            },
+                            {
+                                "type": "ConditionalOnCollection",
+                                "collection": "connive_discarded",
+                                "ifNotEmpty": {
+                                    "type": "AddCounters",
+                                    "counterType": "PLUS_ONE_PLUS_ONE",
+                                    "count": 1,
+                                    "target": "Self"
+                                },
+                                "filter": "nonland"
+                            }
+                        ],
+                        "descriptionOverride": "Connive"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "45",
+        "rarity": "UNCOMMON",
+        "artist": "Josu Hernaiz",
+        "flavorText": "\"All is calm. All is well. You know me to be a trusted member of your family, and I would like to discuss the contents of our safe.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/9/69af30b3-d4b0-453a-891f-4506e06b5e14.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Illicit Shipment
+{
+    "name": "Illicit Shipment",
+    "manaCost": "{3}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Casualty 3 (As you cast this spell, you may sacrifice a creature with power 3 or greater. When you do, copy this spell.)\nSearch your library for a card, put it into your hand, then shuffle.",
+    "keywords": [
+        "CASUALTY"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Casualty",
+            "threshold": 3
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Library"
+                    },
+                    "storeAs": "searchable",
+                    "search": true
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "searchable",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "storeSelected": "found",
+                    "prompt": "Search your library for a card to put into your hand",
+                    "selectedLabel": "Put into your hand"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "found",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    }
+                },
+                "ShuffleLibrary",
+                "EmitLibrarySearchedEvent"
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "83",
+        "rarity": "UNCOMMON",
+        "artist": "Josu Hernaiz",
+        "flavorText": "Whatever the Maestros had ordered, it wasn't anyone's business, including his.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/f/1f7cced2-390b-499f-ace3-e52fd53d4712.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Illuminator Virtuoso
+{
+    "name": "Illuminator Virtuoso",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Human Rogue",
+    "oracleText": "Double strike\nWhenever this creature becomes the target of a spell you control, it connives. (Draw a card, then discard a card. If you discarded a nonland card, put a +1/+1 counter on this creature.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "DOUBLE_STRIKE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Illuminator Virtuoso:1",
+                "trigger": {
+                    "type": "BecomesTargetEvent",
+                    "byYou": true,
+                    "spellsOnly": true
+                },
+                "effect": {
+                    "type": "Connive",
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand"
+                                },
+                                "storeAs": "connive_hand"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "connive_hand",
+                                "selection": {
+                                    "type": "ChooseExactly",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "connive_discarded",
+                                "prompt": "Choose a card to discard"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "connive_discarded",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                },
+                                "moveType": "Discard"
+                            },
+                            {
+                                "type": "ConditionalOnCollection",
+                                "collection": "connive_discarded",
+                                "ifNotEmpty": {
+                                    "type": "AddCounters",
+                                    "counterType": "PLUS_ONE_PLUS_ONE",
+                                    "count": 1,
+                                    "target": "Self"
+                                },
+                                "filter": "nonland"
+                            }
+                        ],
+                        "descriptionOverride": "Connive"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "17",
+        "rarity": "UNCOMMON",
+        "artist": "John Stanko",
+        "flavorText": "The Obscura reserve their keenest blades for traitors in their midst.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/2/52ba20d9-9423-4114-8734-1dac307483c8.jpg"
     },
     "colorIdentityOverride": [
         "WHITE"
@@ -2491,6 +3274,46 @@
     ]
 }
 
+// Join the Maestros
+{
+    "name": "Join the Maestros",
+    "manaCost": "{4}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Casualty 2 (As you cast this spell, you may sacrifice a creature with power 2 or greater. When you do, copy this spell.)\nCreate a 4/3 black Ogre Warrior creature token.",
+    "keywords": [
+        "CASUALTY"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Casualty",
+            "threshold": 2
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "CreateToken",
+            "power": 4,
+            "toughness": 3,
+            "colors": [
+                "BLACK"
+            ],
+            "creatureTypes": [
+                "Ogre",
+                "Warrior"
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "85",
+        "artist": "Josh Hass",
+        "flavorText": "\"We're family now, big guy.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/f/ff2665f7-6cf8-4f9b-810e-17e264753225.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Knockout Blow
 {
     "name": "Knockout Blow",
@@ -2570,6 +3393,100 @@
     ]
 }
 
+// Ledger Shredder
+{
+    "name": "Ledger Shredder",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Bird Advisor",
+    "oracleText": "Flying\nWhenever a player casts their second spell each turn, this creature connives. (Draw a card, then discard a card. If you discarded a nonland card, put a +1/+1 counter on this creature.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ledger Shredder:1",
+                "trigger": {
+                    "type": "NthSpellCastEvent",
+                    "nthSpell": 2
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Connive",
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand"
+                                },
+                                "storeAs": "connive_hand"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "connive_hand",
+                                "selection": {
+                                    "type": "ChooseExactly",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "connive_discarded",
+                                "prompt": "Choose a card to discard"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "connive_discarded",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                },
+                                "moveType": "Discard"
+                            },
+                            {
+                                "type": "ConditionalOnCollection",
+                                "collection": "connive_discarded",
+                                "ifNotEmpty": {
+                                    "type": "AddCounters",
+                                    "counterType": "PLUS_ONE_PLUS_ONE",
+                                    "count": 1,
+                                    "target": "Self"
+                                },
+                                "filter": "nonland"
+                            }
+                        ],
+                        "descriptionOverride": "Connive"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "46",
+        "rarity": "RARE",
+        "artist": "Mila Pesic",
+        "flavorText": "No evidence, no crime.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/e/7ea4b5bc-18a4-45db-a56a-ab3f8bd2fb0d.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Light 'Em Up
 {
     "name": "Light 'Em Up",
@@ -2611,6 +3528,219 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Maestros Charm
+{
+    "name": "Maestros Charm",
+    "manaCost": "{U}{B}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Choose one —\n• Look at the top five cards of your library. Put one of those cards into your hand and the rest into your graveyard.\n• Each opponent loses 3 life and you gain 3 life.\n• Maestros Charm deals 5 damage to target creature or planeswalker.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "TopOfLibrary",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 5
+                                    }
+                                },
+                                "storeAs": "looked"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "looked",
+                                "selection": {
+                                    "type": "ChooseExactly",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "kept",
+                                "storeRemainder": "rest",
+                                "selectedLabel": "Put in hand",
+                                "remainderLabel": "Put in graveyard"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "kept",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Hand"
+                                }
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "rest",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                }
+                            }
+                        ]
+                    },
+                    "description": "Look at the top five cards of your library. Put one of those cards into your hand and the rest into your graveyard"
+                },
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "LoseLife",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                },
+                                "target": {
+                                    "type": "PlayerRef",
+                                    "player": "EachOpponent"
+                                }
+                            },
+                            {
+                                "type": "GainLife",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                }
+                            }
+                        ]
+                    },
+                    "description": "Each opponent loses 3 life and you gain 3 life"
+                },
+                {
+                    "effect": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 5
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetCreatureOrPlaneswalker",
+                            "id": "t0"
+                        }
+                    ],
+                    "description": "Maestros Charm deals 5 damage to target creature or planeswalker"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "199",
+        "rarity": "UNCOMMON",
+        "artist": "Steve Argyle",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/d/3dcdedb6-3c24-4a29-b9b9-27cc47d8ee56.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED",
+        "BLUE"
+    ]
+}
+
+// Maestros Initiate
+{
+    "name": "Maestros Initiate",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Human Citizen",
+    "oracleText": "{4}{U/R}, Exile this card from your graveyard: Draw two cards, then discard a card.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Maestros Initiate:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{4}{U/R}"
+                            }
+                        },
+                        "CostExileSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Hand"
+                                    },
+                                    "storeAs": "hand"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "hand",
+                                    "selection": {
+                                        "type": "ChooseExactly",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeSelected": "discarded",
+                                    "prompt": "Choose 1 card to discard"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "discarded",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Graveyard"
+                                    },
+                                    "moveType": "Discard"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "activateFromZone": "Graveyard"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "86",
+        "artist": "Irina Nordsol",
+        "flavorText": "\"How far are you willing to go for your family, cleanblade?\"\n—Lord Xander",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/b/db94f2a9-53be-449e-8240-77f013cdd7e3.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED",
+        "BLUE"
     ]
 }
 
@@ -2927,6 +4057,98 @@
     ]
 }
 
+// Psionic Snoop
+{
+    "name": "Psionic Snoop",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Human Rogue",
+    "oracleText": "Flash\nWhen this creature enters, it connives. (Draw a card, then discard a card. If you discarded a nonland card, put a +1/+1 counter on this creature.)",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Psionic Snoop:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Connive",
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand"
+                                },
+                                "storeAs": "connive_hand"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "connive_hand",
+                                "selection": {
+                                    "type": "ChooseExactly",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "connive_discarded",
+                                "prompt": "Choose a card to discard"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "connive_discarded",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                },
+                                "moveType": "Discard"
+                            },
+                            {
+                                "type": "ConditionalOnCollection",
+                                "collection": "connive_discarded",
+                                "ifNotEmpty": {
+                                    "type": "AddCounters",
+                                    "counterType": "PLUS_ONE_PLUS_ONE",
+                                    "count": 1,
+                                    "target": "Self"
+                                },
+                                "filter": "nonland"
+                            }
+                        ],
+                        "descriptionOverride": "Connive"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "53",
+        "artist": "Marcela Medeiros",
+        "flavorText": "She knows your next move before you do.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/1/b1e04834-7335-4b25-bedf-b7739c5c3aad.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Pyre-Sledge Arsonist
 {
     "name": "Pyre-Sledge Arsonist",
@@ -2985,6 +4207,159 @@
     "colorIdentityOverride": [
         "RED"
     ]
+}
+
+// Queza, Augur of Agonies
+{
+    "name": "Queza, Augur of Agonies",
+    "manaCost": "{1}{W}{U}{B}",
+    "typeLine": "Legendary Creature — Octopus Advisor",
+    "oracleText": "Whenever you draw a card, target opponent loses 1 life and you gain 1 life.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Queza, Augur of Agonies:1",
+                "trigger": "DrawEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponent",
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "212",
+        "rarity": "UNCOMMON",
+        "artist": "Josh Hass",
+        "flavorText": "Some try to unravel the tangled skeins of fate. She reweaves them to her own deadly design.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/e/7edb7a26-82be-4efd-9a5c-a3816e1ee2d6.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "BLUE",
+        "WHITE"
+    ]
+}
+
+// Quick-Draw Dagger
+{
+    "name": "Quick-Draw Dagger",
+    "manaCost": "{3}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Flash\nWhen this Equipment enters, attach it to target creature you control. That creature gains first strike until end of turn.\nEquipped creature gets +1/+1.\nEquip {1} ({1}: Attach to target creature you control. Equip only as a sorcery.)",
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Quick-Draw Dagger:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AttachEquipment",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "FIRST_STRIKE",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you"
+                    },
+                    "id": "t0"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Quick-Draw Dagger:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1
+            }
+        ]
+    },
+    "equipCost": "{1}",
+    "metadata": {
+        "collectorNumber": "243",
+        "artist": "Ovidio Cartagena",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/6/d64110f4-c4b6-4966-a23a-8da7d1983499.jpg"
+    },
+    "colorIdentityOverride": []
 }
 
 // Racers' Ring
@@ -3053,6 +4428,95 @@
     "colorIdentityOverride": [
         "GREEN",
         "RED"
+    ]
+}
+
+// Raffine's Informant
+{
+    "name": "Raffine's Informant",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "When this creature enters, it connives. (Draw a card, then discard a card. If you discarded a nonland card, put a +1/+1 counter on this creature.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Raffine's Informant:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Connive",
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand"
+                                },
+                                "storeAs": "connive_hand"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "connive_hand",
+                                "selection": {
+                                    "type": "ChooseExactly",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "connive_discarded",
+                                "prompt": "Choose a card to discard"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "connive_discarded",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                },
+                                "moveType": "Discard"
+                            },
+                            {
+                                "type": "ConditionalOnCollection",
+                                "collection": "connive_discarded",
+                                "ifNotEmpty": {
+                                    "type": "AddCounters",
+                                    "counterType": "PLUS_ONE_PLUS_ONE",
+                                    "count": 1,
+                                    "target": "Self"
+                                },
+                                "filter": "nonland"
+                            }
+                        ],
+                        "descriptionOverride": "Connive"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "26",
+        "artist": "John Stanko",
+        "flavorText": "\"I've analyzed the vault schematic. Do you want the fast way, the easy way, or the secret way in?\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/e/4e64ff87-2099-4360-94f6-164277b7b514.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -3149,6 +4613,154 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Refuse to Yield
+{
+    "name": "Refuse to Yield",
+    "manaCost": "{1}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature gets +2/+7 until end of turn. Untap it.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 7
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "tap": false
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "27",
+        "rarity": "UNCOMMON",
+        "artist": "Josh Hass",
+        "flavorText": "Her opponent threw her through the window, so she retaliated by throwing the window through her opponent.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/7/a7b597b3-5792-49e4-9bcb-74012e4e9cb6.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Revel Ruiner
+{
+    "name": "Revel Ruiner",
+    "manaCost": "{3}{B}",
+    "typeLine": "Creature — Octopus Rogue",
+    "oracleText": "Menace (This creature can't be blocked except by two or more creatures.)\nWhen this creature enters, it connives. (Draw a card, then discard a card. If you discarded a nonland card, put a +1/+1 counter on this creature.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "keywords": [
+        "MENACE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Revel Ruiner:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Connive",
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand"
+                                },
+                                "storeAs": "connive_hand"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "connive_hand",
+                                "selection": {
+                                    "type": "ChooseExactly",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "connive_discarded",
+                                "prompt": "Choose a card to discard"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "connive_discarded",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                },
+                                "moveType": "Discard"
+                            },
+                            {
+                                "type": "ConditionalOnCollection",
+                                "collection": "connive_discarded",
+                                "ifNotEmpty": {
+                                    "type": "AddCounters",
+                                    "counterType": "PLUS_ONE_PLUS_ONE",
+                                    "count": 1,
+                                    "target": "Self"
+                                },
+                                "filter": "nonland"
+                            }
+                        ],
+                        "descriptionOverride": "Connive"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "91",
+        "artist": "Christina Davis",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/3/e3fbe7f0-8a91-4832-8953-54ab3669372c.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -3464,6 +5076,115 @@
     ]
 }
 
+// Topiary Stomper
+{
+    "name": "Topiary Stomper",
+    "manaCost": "{1}{G}{G}",
+    "typeLine": "Creature — Plant Dinosaur",
+    "oracleText": "Vigilance (Attacking doesn't cause this creature to tap.)\nWhen this creature enters, search your library for a basic land card, put it onto the battlefield tapped, then shuffle.\nThis creature can't attack or block unless you control seven or more lands.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Topiary Stomper:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Library",
+                                "filter": "basicland"
+                            },
+                            "storeAs": "searchable",
+                            "search": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "searchable",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "found",
+                            "prompt": "Search your library for a basic land card to put onto the battlefield tapped",
+                            "selectedLabel": "Put onto the battlefield tapped"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "found",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield",
+                                "placement": "Tapped"
+                            }
+                        },
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
+                    ]
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "CantAttackUnless",
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "land"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 7
+                    }
+                }
+            },
+            {
+                "type": "CantBlockUnless",
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "land"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 7
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "160",
+        "rarity": "RARE",
+        "artist": "Robin Olausson",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/7/87bb2699-280f-4e1e-b3f8-73efe6088f31.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Tramway Station
 {
     "name": "Tramway Station",
@@ -3533,6 +5254,59 @@
     ]
 }
 
+// Vampire Scrivener
+{
+    "name": "Vampire Scrivener",
+    "manaCost": "{4}{B}",
+    "typeLine": "Creature — Vampire Warlock",
+    "oracleText": "Flying\nWhenever you gain life during your turn, put a +1/+1 counter on this creature.\nWhenever you lose life during your turn, put a +1/+1 counter on this creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Vampire Scrivener:1",
+                "trigger": "LifeGainEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                },
+                "triggerRestriction": "IsYourTurn"
+            },
+            {
+                "id": "Vampire Scrivener:2",
+                "trigger": "LifeLossEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                },
+                "triggerRestriction": "IsYourTurn"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "98",
+        "rarity": "UNCOMMON",
+        "artist": "Bastien L. Deharme",
+        "flavorText": "No one remains on her list for long.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/0/702315d7-dec9-49e8-a508-feacd47198dc.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Venom Connoisseur
 {
     "name": "Venom Connoisseur",
@@ -3597,6 +5371,66 @@
         "rarity": "UNCOMMON",
         "artist": "Marta Nael",
         "imageUri": "https://cards.scryfall.io/normal/front/0/4/04897d8c-ee05-45eb-80f7-76487dbcc449.jpg?1783923099"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Voice of the Vermin
+{
+    "name": "Voice of the Vermin",
+    "manaCost": "{3}{G}",
+    "typeLine": "Creature — Human Citizen",
+    "oracleText": "This creature enters with a shield counter on it. (If it would be dealt damage or destroyed, remove a shield counter from it instead.)\nWhenever this creature attacks, target creature you control has base power and toughness 4/4 until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Voice of the Vermin:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "SetBaseStats",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "power": {
+                        "type": "Fixed",
+                        "amount": 4
+                    },
+                    "toughness": {
+                        "type": "Fixed",
+                        "amount": 4
+                    },
+                    "duration": "EndOfTurn"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you"
+                    },
+                    "id": "t0"
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "counterType": "SHIELD",
+                "count": 1,
+                "selfOnly": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "163",
+        "rarity": "UNCOMMON",
+        "artist": "Irina Nordsol",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/f/bfe4e0eb-23a5-46a5-b719-5a6f9a1fc4ce.jpg"
     },
     "colorIdentityOverride": [
         "GREEN"
@@ -3853,6 +5687,60 @@
     ]
 }
 
+// Wingshield Agent
+{
+    "name": "Wingshield Agent",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "This creature enters with a shield counter on it. (If it would be dealt damage or destroyed, remove a shield counter from it instead.)\nWhenever this creature attacks, up to one other target creature gains flying until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Wingshield Agent:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "FLYING",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "creature",
+                        "excludeSelf": true
+                    },
+                    "id": "t0"
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "counterType": "SHIELD",
+                "count": 1,
+                "selfOnly": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "64",
+        "rarity": "UNCOMMON",
+        "artist": "Aaron J. Riley",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/9/b9ec36ec-1a9c-41db-b304-c23286a4d182.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Witness Protection
 {
     "name": "Witness Protection",
@@ -3896,6 +5784,52 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Witty Roastmaster
+{
+    "name": "Witty Roastmaster",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Devil Citizen",
+    "oracleText": "Alliance — Whenever another creature you control enters, this creature deals 1 damage to each opponent.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Witty Roastmaster:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "EachOpponent"
+                    }
+                },
+                "descriptionOverride": "Alliance — Whenever another creature you control enters, this creature deals 1 damage to each opponent."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "131",
+        "artist": "Joe Slucher",
+        "flavorText": "If you're lucky, you'll walk out with just your ego singed.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/1/71d13f19-482b-4a2e-9692-b7d7caf2f9f5.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
