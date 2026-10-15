@@ -3022,6 +3022,86 @@
     }
 }
 
+// Nerd Rage
+{
+    "name": "Nerd Rage",
+    "manaCost": "{2}{U}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nWhen this Aura enters, draw two cards.\nEnchanted creature has \"You have no maximum hand size\" and \"Whenever this creature attacks, if you have ten or more cards in hand, it gets +10/+10 until end of turn.\"",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Nerd Rage:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantStaticAbility",
+                "ability": "NoMaximumHandSize"
+            },
+            {
+                "type": "GrantTriggeredAbility",
+                "ability": {
+                    "id": "Nerd Rage:2",
+                    "trigger": "AttackEvent",
+                    "effect": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 10
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 10
+                        },
+                        "target": "Self"
+                    },
+                    "interveningIf": {
+                        "type": "Compare",
+                        "left": {
+                            "type": "Count",
+                            "player": "You",
+                            "zone": "Hand"
+                        },
+                        "operator": "GTE",
+                        "right": {
+                            "type": "Fixed",
+                            "amount": 10
+                        }
+                    },
+                    "descriptionOverride": "Whenever this creature attacks, if you have ten or more cards in hand, it gets +10/+10 until end of turn."
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "34",
+        "rarity": "UNCOMMON",
+        "artist": "Irina Nordsol",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/9/e9857669-5fad-458a-8eda-c1790298add7.jpg?1783912412"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Nick Valentine, Private Eye
 {
     "name": "Nick Valentine, Private Eye",

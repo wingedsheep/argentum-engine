@@ -694,6 +694,16 @@ class StaticAbilityHandler(
                 modification = Modification.GrantStaticAbility(ability),
                 affectsFilter = AffectsFilter.Self,
             )
+            // Read at cleanup from the holder's projected statics (MaximumHandSize), so the
+            // printed, resolved-effect and GrantStaticAbility routes all meet in Layer 6.
+            is NoMaximumHandSize -> ContinuousEffectData(
+                modification = Modification.GrantStaticAbility(ability),
+                affectsFilter = AffectsFilter.Self,
+            )
+            is com.wingedsheep.sdk.scripting.GrantStaticAbility -> ContinuousEffectData(
+                modification = Modification.GrantStaticAbility(ability.ability),
+                affectsFilter = convertGroupFilter(ability.filter),
+            )
             is com.wingedsheep.sdk.scripting.CanAttackAsThoughHasty -> {
                 ContinuousEffectData(
                     modification = Modification.CanAttackAsThoughHasty,
@@ -1215,7 +1225,6 @@ class StaticAbilityHandler(
 
             // Turn-based actions (BeginningPhaseManager / CleanupPhaseManager):
             is DamagePersistsThroughCleanup,
-            is NoMaximumHandSize,
             is com.wingedsheep.sdk.scripting.SkipStepOrPhase,
             is SetMaximumHandSize,
             is PreventManaPoolEmptying,

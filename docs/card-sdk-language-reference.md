@@ -9035,6 +9035,15 @@ staticAbility {
   source removes its printed grant immediately; an already activated ability remains on the
   stack. Self-references bind to the receiving card, not the granting permanent. Ordinary
   battlefield grants do not leak onto cards in other zones. No new effect or keyword type is needed.
+- `GrantStaticAbility(ability, filter = GroupFilter.attachedCreature())` — "[filter] have '<static ability>'",
+  the static sibling of `GrantTriggeredAbility` / `GrantActivatedAbility` and the continuous counterpart of the
+  one-shot `Effects.GrantStaticAbility`. Lowered to a Layer 6 (CR 613.1f) ability grant over `filter` (relative
+  to the granter: `Filters.EnchantedCreature`, `GroupFilter.source()`, or a battlefield lord group), so the
+  holder *has* the ability and its "you" is the holder's controller. Nerd Rage:
+  `GrantStaticAbility(NoMaximumHandSize, Filters.EnchantedCreature)` — an Aura on an opponent's creature frees
+  the opponent's hand. **Only for abilities whose engine read consults the holder's projected statics**
+  (`ProjectedState.getStaticAbilities`): today `NoMaximumHandSize` and `Enlist`. A kind read only off printed
+  scripts would be silently ignored, so widen its read before granting it this way.
 - `GrantTriggeredAbility(ability, filter)` — "[filter] have '<triggered ability>'". On a battlefield-scoped
   `GroupFilter` it is the lord shape — Unctus, Grand Metatect's "Other blue creatures you control have 'Whenever
   this creature becomes tapped, draw a card, then discard a card'" is `GrantTriggeredAbility(<becomesTapped → loot>,
@@ -10331,7 +10340,11 @@ staticAbility {
   The resolving counterparts are `Effects.SkipNextStepOrPhase` (spent by the step it skips) and
   `Effects.SkipStepOrPhaseThisTurn` (dropped at end of turn) — one `SkipStepOrPhaseEffect` over a `SkipDuration`.
 - `NoMaximumHandSize` — controller has no hand-size limit *while this permanent is on the
-  battlefield*. (Thought Vessel, Reliquary Tower) For a one-shot resolution effect that confers a
+  battlefield and has the ability*. (Thought Vessel, Reliquary Tower) It is lowered into Layer 6 like any
+  ability, and `MaximumHandSize` reads it off each permanent's **projected** static abilities, so the same
+  read covers a printed one, one gained from `Effects.GrantStaticAbility`, and one granted by the
+  `GrantStaticAbility` static (Nerd Rage: "Enchanted creature has 'You have no maximum hand size'" frees
+  the *creature's* controller); a permanent that loses all its abilities stops counting. For a one-shot resolution effect that confers a
   *permanent, player-scoped* "no maximum hand size for the rest of the game" (survives the source
   leaving play), use the effect `Effects.RemoveMaximumHandSize(target)` instead — see §4. (Wisdom of Ages)
 - `DamagePersistsThroughCleanup` — marked damage isn't removed from this permanent during cleanup
@@ -10371,7 +10384,8 @@ staticAbility {
   `EachOpponent` / `Each`, resolved relative to the source's controller) to a `DynamicAmount`, read at
   cleanup (Twenty-Toed Toad: `SetMaximumHandSize(Player.You, DynamicAmounts.fixed(20))`). It, `NoMaximumHandSize` and
   the rest-of-game `RemoveMaximumHandSize` apply in **timestamp order** (CR 613.11; a static takes its
-  permanent's battlefield-entry timestamp) and the latest wins — Spellbook then Toad is twenty, Toad
+  permanent's battlefield-entry timestamp, or for a granted `NoMaximumHandSize` the later of the holder's and
+  the granter's, CR 613.7a) and the latest wins — Spellbook then Toad is twenty, Toad
   then Spellbook is no maximum. Gate it behind a `ConditionalStaticAbility` for an "as
   long as …" form — the cleanup read unwraps the conditional and evaluates its condition against the
   source's controller. (Winter, Misanthropic Guide — `ConditionalStaticAbility(SetMaximumHandSize(

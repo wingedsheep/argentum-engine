@@ -553,6 +553,7 @@ class StateProjector {
                 name = v.name,
                 keywords = v.keywords,
                 staticAbilities = v.staticAbilities.toList(),
+                staticAbilitySourceIds = v.staticAbilitySourceIds.toList(),
                 enchantmentRestrictions = v.enchantmentRestrictions.toList(),
                 colors = v.colors,
                 types = v.types,

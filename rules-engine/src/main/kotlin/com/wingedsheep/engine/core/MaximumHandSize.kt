@@ -8,7 +8,6 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.BattlefieldEntryTimestampComponent
 import com.wingedsheep.engine.state.components.battlefield.chosenOpponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
-import com.wingedsheep.engine.state.components.identity.RoomFaceStatics
 import com.wingedsheep.engine.state.components.player.PlayerMaximumHandSizeReductionComponent
 import com.wingedsheep.engine.state.components.player.PlayerNoMaximumHandSizeComponent
 import com.wingedsheep.sdk.model.EntityId
@@ -48,7 +47,8 @@ object MaximumHandSize {
      *   [ConditionalStaticAbility] wrapper is unwrapped and its condition evaluated against the
      *   source's controller, so "as long as …" gates (Winter's Delirium) are honored. A set effect
      *   can raise the limit above [DEFAULT] as readily as lower it (Doctor Octopus sets eight).
-     * - [NoMaximumHandSize] statics on permanents [playerId] controls (Reliquary Tower).
+     * - [NoMaximumHandSize] abilities of permanents [playerId] controls — printed (Reliquary
+     *   Tower) or granted (Nerd Rage) — read from projection by [noMaximumTimestamps].
      * - The rest-of-game [PlayerNoMaximumHandSizeComponent] (Wisdom of Ages).
      *
      * A static ability's effect takes its permanent's battlefield-entry timestamp (CR 613.7a).
@@ -69,20 +69,14 @@ object MaximumHandSize {
         }
         val projected = state.projectedState
         for (permanentId in state.getBattlefield()) {
+            val controllerId = projected.getController(permanentId) ?: continue
+            if (controllerId == playerId) noMaximumTimestamps(state, permanentId).forEach { candidates += it to null }
             val container = state.getEntity(permanentId) ?: continue
             val card = container.get<CardComponent>() ?: continue
             val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
             if (cardDef.script.staticAbilities.isEmpty()) continue
-            val controllerId = projected.getController(permanentId) ?: continue
-            val timestamp = container.get<BattlefieldEntryTimestampComponent>()?.timestamp ?: 0L
+            val timestamp = entryTimestamp(state, permanentId)
             val context = EffectContext(sourceId = permanentId, controllerId = controllerId)
-            // Routed through RoomFaceStatics so a Room face's "You have no maximum hand size"
-            // (e.g. Steaming Sauna) counts only while that door is unlocked (CR 709.5).
-            if (controllerId == playerId &&
-                RoomFaceStatics.activeStaticAbilities(container, cardDef).any { it is NoMaximumHandSize }
-            ) {
-                candidates += timestamp to null
-            }
             for (raw in cardDef.script.staticAbilities) {
                 val setAbility = activeSetMaximumHandSize(state, raw, context, conditionEvaluator) ?: continue
                 if (!playerScopeIncludes(setAbility.player, playerId, controllerId, state, permanentId)) continue
@@ -98,6 +92,34 @@ object MaximumHandSize {
         val reduction = reductionFor(state, playerId)
         return (max - reduction).coerceAtLeast(0)
     }
+
+    /**
+     * The timestamps of every "You have no maximum hand size" [permanentId] has, read from its
+     * projected static abilities — so a printed one (Reliquary Tower; a Room face only while its
+     * door is unlocked, CR 709.5), one gained from a resolved effect, and one granted by a
+     * [com.wingedsheep.sdk.scripting.GrantStaticAbility] (Nerd Rage's enchanted creature) all
+     * count, and none survives the permanent losing all its abilities. Each is dated by the later
+     * of the permanent's own timestamp and that of the effect that gave it the ability
+     * (CR 613.7a): the granting permanent, or a resolved grant's own timestamp.
+     */
+    private fun noMaximumTimestamps(state: GameState, permanentId: EntityId): List<Long> {
+        val projected = state.projectedState
+        val abilities = projected.getStaticAbilities(permanentId)
+        if (abilities.none { it is NoMaximumHandSize }) return emptyList()
+        val sourceIds = projected.getStaticAbilitySourceIds(permanentId)
+        val holderTimestamp = entryTimestamp(state, permanentId)
+        val resolvedGrantTimestamp = state.grantedStaticAbilities
+            .filter { it.entityId == permanentId && it.ability is NoMaximumHandSize }
+            .maxOfOrNull { it.layerTimestamp ?: 0L } ?: 0L
+        return abilities.indices.filter { abilities[it] is NoMaximumHandSize }.map { index ->
+            val sourceId = sourceIds.getOrNull(index) ?: permanentId
+            if (sourceId == permanentId) maxOf(holderTimestamp, resolvedGrantTimestamp)
+            else maxOf(holderTimestamp, entryTimestamp(state, sourceId))
+        }
+    }
+
+    private fun entryTimestamp(state: GameState, permanentId: EntityId): Long =
+        state.getEntity(permanentId)?.get<BattlefieldEntryTimestampComponent>()?.timestamp ?: 0L
 
     /**
      * The accumulated rest-of-game maximum-hand-size reduction for [playerId]

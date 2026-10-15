@@ -61,6 +61,13 @@ data class ProjectedValues(
     val keywords: Set<String> = emptySet(),
     /** Point-of-use abilities lowered through GrantStaticAbility, with duplicate instances retained. */
     val staticAbilities: List<com.wingedsheep.sdk.scripting.StaticAbility> = emptyList(),
+    /**
+     * Parallel to [staticAbilities]: the source of the continuous effect that gave each entry —
+     * the holder itself for its own (printed or resolved-effect-gained) abilities, the granting
+     * permanent for a [com.wingedsheep.sdk.scripting.GrantStaticAbility]. Lets a point-of-use
+     * read date the ability by the later of holder and granter (CR 613.7a).
+     */
+    val staticAbilitySourceIds: List<EntityId> = emptyList(),
     val enchantmentRestrictions: List<ActiveEnchantmentRestriction> = emptyList(),
     val colors: Set<String> = emptySet(),
     val types: Set<String> = emptySet(),
@@ -280,6 +287,13 @@ class ProjectedState(
     fun getStaticAbilities(entityId: EntityId): List<com.wingedsheep.sdk.scripting.StaticAbility> =
         projectedValues[entityId]?.staticAbilities ?: emptyList()
 
+    /**
+     * The ids of the effect sources behind [getStaticAbilities], index for index — see
+     * [ProjectedValues.staticAbilitySourceIds].
+     */
+    fun getStaticAbilitySourceIds(entityId: EntityId): List<EntityId> =
+        projectedValues[entityId]?.staticAbilitySourceIds ?: emptyList()
+
     fun hasLostAllAbilities(entityId: EntityId): Boolean =
         projectedValues[entityId]?.lostAllAbilities == true
 
@@ -317,6 +331,7 @@ internal fun buildIntermediateProjectedState(
             baseToughness = v.baseToughness,
             keywords = v.keywords.toSet(),
             staticAbilities = v.staticAbilities.toList(),
+            staticAbilitySourceIds = v.staticAbilitySourceIds.toList(),
             enchantmentRestrictions = v.enchantmentRestrictions.toList(),
             colors = v.colors.toSet(),
             types = v.types.toSet(),

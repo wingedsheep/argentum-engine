@@ -1272,9 +1272,11 @@ data class SkipStepOrPhase(
  * Removes the maximum hand size limit for the controller.
  * Used for cards like Thought Vessel and Reliquary Tower: "You have no maximum hand size."
  *
- * The engine checks for this static ability during the cleanup step. If the active player
- * controls any permanent on the battlefield with this ability, the discard-down-to-hand-size
- * action is skipped.
+ * The engine reads it from each permanent's *projected* static abilities
+ * (`com.wingedsheep.engine.core.MaximumHandSize`), so it applies to whoever controls a
+ * permanent that has it — printed, gained from a resolved effect, or granted by
+ * [GrantStaticAbility] ("Enchanted creature has 'You have no maximum hand size'", Nerd Rage) —
+ * and stops applying when that permanent loses its abilities.
  */
 @SerialName("NoMaximumHandSize")
 @Serializable

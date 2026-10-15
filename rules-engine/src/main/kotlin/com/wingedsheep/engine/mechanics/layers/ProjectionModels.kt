@@ -835,6 +835,8 @@ internal data class MutableProjectedValues(
     var name: String? = null,
     val keywords: MutableSet<String> = mutableSetOf(),
     val staticAbilities: MutableList<com.wingedsheep.sdk.scripting.StaticAbility> = mutableListOf(),
+    /** Parallel to [staticAbilities]: the source of the effect that gave each entry. */
+    val staticAbilitySourceIds: MutableList<EntityId> = mutableListOf(),
     val enchantmentRestrictions: MutableList<ActiveEnchantmentRestriction> = mutableListOf(),
     val colors: MutableSet<String> = mutableSetOf(),
     val types: MutableSet<String> = mutableSetOf(),

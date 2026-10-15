@@ -444,10 +444,12 @@ internal class EffectApplicator(
                 }
                 is Modification.GrantStaticAbility -> {
                     values.staticAbilities.add(mod.ability)
+                    values.staticAbilitySourceIds.add(effect.sourceId)
                 }
                 is Modification.RemoveAllAbilities -> {
                     values.keywords.clear()
                     values.staticAbilities.clear()
+                    values.staticAbilitySourceIds.clear()
                     values.manaAbilityLifeTax = 0
                     values.lostAllAbilities = true
                 }
