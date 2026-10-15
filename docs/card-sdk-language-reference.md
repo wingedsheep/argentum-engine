@@ -9041,9 +9041,9 @@ staticAbility {
   to the granter: `Filters.EnchantedCreature`, `GroupFilter.source()`, or a battlefield lord group), so the
   holder *has* the ability and its "you" is the holder's controller. Nerd Rage:
   `GrantStaticAbility(NoMaximumHandSize, Filters.EnchantedCreature)` — an Aura on an opponent's creature frees
-  the opponent's hand. **Only for abilities whose engine read consults the holder's projected statics**
-  (`ProjectedState.getStaticAbilities`): today `NoMaximumHandSize` and `Enlist`. A kind read only off printed
-  scripts would be silently ignored, so widen its read before granting it this way.
+  the opponent's hand. `ability` is typed `ProjectedStaticAbility` — the sealed marker for kinds whose engine
+  read consults the holder's projected statics (`ProjectedState.getStaticAbilities`): today `NoMaximumHandSize`
+  and `Enlist`. To grant another kind this way, route its read through projection and mark it.
 - `GrantTriggeredAbility(ability, filter)` — "[filter] have '<triggered ability>'". On a battlefield-scoped
   `GroupFilter` it is the lord shape — Unctus, Grand Metatect's "Other blue creatures you control have 'Whenever
   this creature becomes tapped, draw a card, then discard a card'" is `GrantTriggeredAbility(<becomesTapped → loot>,

@@ -781,6 +781,6 @@ data class CanAttackAsThoughHasty(
  */
 @SerialName("Enlist")
 @Serializable
-data object Enlist : StaticAbility {
+data object Enlist : ProjectedStaticAbility {
     override val description: String = "Enlist"
 }

@@ -3,6 +3,7 @@ package com.wingedsheep.engine.core
 import com.wingedsheep.engine.handlers.ConditionEvaluator
 import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
+import com.wingedsheep.engine.mechanics.durations.GrantDurationGate
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.BattlefieldEntryTimestampComponent
@@ -108,9 +109,14 @@ object MaximumHandSize {
         if (abilities.none { it is NoMaximumHandSize }) return emptyList()
         val sourceIds = projected.getStaticAbilitySourceIds(permanentId)
         val holderTimestamp = entryTimestamp(state, permanentId)
+        // Only grants projection itself applied (same filters as StateProjector's resolved-grant
+        // pass), so an expired grant can't re-date a printed instance.
         val resolvedGrantTimestamp = state.grantedStaticAbilities
-            .filter { it.entityId == permanentId && it.ability is NoMaximumHandSize }
-            .maxOfOrNull { it.layerTimestamp ?: 0L } ?: 0L
+            .filter {
+                it.entityId == permanentId && it.ability is NoMaximumHandSize && it.layerTimestamp != null &&
+                    GrantDurationGate.holds(state, permanentId, it.sourceId, it.duration)
+            }
+            .maxOfOrNull { it.layerTimestamp!! } ?: 0L
         return abilities.indices.filter { abilities[it] is NoMaximumHandSize }.map { index ->
             val sourceId = sourceIds.getOrNull(index) ?: permanentId
             if (sourceId == permanentId) maxOf(holderTimestamp, resolvedGrantTimestamp)

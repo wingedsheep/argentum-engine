@@ -47,9 +47,9 @@ data class GrantTriggeredAbility(
  * player-facing ability such as "You have no maximum hand size" then applies to the holder's
  * controller — the "you" of an ability belongs to whoever controls the object that has it.
  *
- * The granted ability takes effect wherever its engine read consults the holder's projected
- * static abilities (`ProjectedState.getStaticAbilities`): [NoMaximumHandSize], [Enlist]. Check
- * that before granting another kind — an ability read only from printed scripts won't see it.
+ * [ability] is typed [ProjectedStaticAbility]: only a kind whose engine read consults the
+ * holder's projected static abilities can be granted this way, so a grant can't compile and then
+ * silently do nothing.
  *
  * @property ability The static ability to grant.
  * @property filter The permanents that gain the ability, relative to the granting permanent.
@@ -57,16 +57,25 @@ data class GrantTriggeredAbility(
 @SerialName("GrantStaticAbility")
 @Serializable
 data class GrantStaticAbility(
-    val ability: StaticAbility,
+    val ability: ProjectedStaticAbility,
     val filter: GroupFilter = GroupFilter.attachedCreature()
 ) : StaticAbility {
     override val description: String = "${filter.description} have \"${ability.description}\""
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
         val newFilter = filter.applyTextReplacement(replacer)
-        val newAbility = ability.applyTextReplacement(replacer)
+        val newAbility = ability.applyTextReplacement(replacer) as ProjectedStaticAbility
         return if (newFilter !== filter || newAbility !== ability) copy(filter = newFilter, ability = newAbility) else this
     }
 }
+
+/**
+ * A [StaticAbility] the engine reads off a permanent's *projected* static abilities
+ * (`ProjectedState.getStaticAbilities`) rather than its printed script, so a holder has it
+ * however it got it — printed, or granted by [GrantStaticAbility]. Implementing it is a promise
+ * about the engine half: the ability's point-of-use read must go through projection.
+ */
+@Serializable
+sealed interface ProjectedStaticAbility : StaticAbility
 
 /**
  * Grants an activated ability to a filtered set of objects in [recipientZone].

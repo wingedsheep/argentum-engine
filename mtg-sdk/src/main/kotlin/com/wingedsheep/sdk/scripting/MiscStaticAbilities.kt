@@ -1280,7 +1280,7 @@ data class SkipStepOrPhase(
  */
 @SerialName("NoMaximumHandSize")
 @Serializable
-data object NoMaximumHandSize : StaticAbility {
+data object NoMaximumHandSize : ProjectedStaticAbility {
     override val description: String = "You have no maximum hand size"
 }
 

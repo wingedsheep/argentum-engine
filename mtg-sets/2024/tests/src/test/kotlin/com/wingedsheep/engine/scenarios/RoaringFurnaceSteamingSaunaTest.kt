@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.CastSpell
+import com.wingedsheep.engine.core.MaximumHandSize
 import com.wingedsheep.engine.core.UnlockRoomDoor
 import com.wingedsheep.engine.state.components.identity.RoomComponent
 import com.wingedsheep.engine.state.components.identity.RoomFaceId
@@ -39,6 +40,10 @@ class RoaringFurnaceSteamingSaunaTest : FunSpec({
         return d
     }
 
+    fun GameTestDriver.maxHandSize(playerId: com.wingedsheep.sdk.model.EntityId): Int? = MaximumHandSize.effective(
+        state, playerId, cardRegistry, services.conditionEvaluator, services.conditionEvaluator.amounts
+    )
+
     test("unlocking Roaring Furnace deals damage equal to cards in hand to an opponent's creature") {
         val d = driver()
         val p1 = d.activePlayer!!
@@ -66,6 +71,8 @@ class RoaringFurnaceSteamingSaunaTest : FunSpec({
         val room = d.state.getEntity(roomId)?.get<RoomComponent>()
         room shouldNotBe null
         room!!.unlocked shouldBe setOf(RoomFaceId("Roaring Furnace"))
+        // Steaming Sauna's door is still locked, so its "no maximum hand size" doesn't apply (CR 709.5).
+        d.maxHandSize(p1) shouldBe 7
 
         // 2 cards in hand -> 2 damage -> the 2/2 dies (moves to its owner's graveyard).
         d.findPermanent(p2, "Grizzly Bears") shouldBe null
@@ -85,6 +92,7 @@ class RoaringFurnaceSteamingSaunaTest : FunSpec({
 
         val room = d.state.getEntity(roomId)?.get<RoomComponent>()!!
         room.unlocked shouldBe setOf(RoomFaceId("Steaming Sauna"))
+        d.maxHandSize(p1) shouldBe null
 
         // End step: the "draw a card" trigger fires.
         val handBefore = d.getHand(p1).size
