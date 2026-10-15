@@ -1,6 +1,7 @@
 package com.wingedsheep.sdk.scripting.predicates
 
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.scripting.references.Player
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -171,7 +172,9 @@ sealed interface ControllerPredicate {
     @SerialName("OwnedByReferencedPlayer")
     @Serializable
     data class OwnedByReferencedPlayer(val target: EffectTarget) : ControllerPredicate {
-        override val description: String = "${target.description} owns"
+        override val description: String =
+            if (target == EffectTarget.PlayerRef(Player.OwnerOfSource)) "with the same owner"
+            else "${target.description} owns"
     }
 
     // =============================================================================
