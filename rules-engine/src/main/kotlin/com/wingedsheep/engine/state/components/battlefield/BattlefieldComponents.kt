@@ -151,6 +151,18 @@ data object WarpedComponent : Component
 data object DashedComponent : Component
 
 /**
+ * Marks a permanent whose blitz cost was paid (CR 702.152a). Added when a blitzed spell resolves.
+ * While present, the permanent has haste (StateProjector seeds it off this marker, like
+ * [DashedComponent]) and the synthesized [com.wingedsheep.sdk.scripting.Blitz.diesDrawAbility]
+ * (TriggerAbilityResolver; frozen onto the exit snapshot as `wasBlitzed` so the dies trigger can look
+ * back, CR 603.10a). Both are abilities of the permanent, so "loses all abilities" switches them off.
+ * A delayed trigger created on entry sacrifices it at the beginning of the next end step. Stripped by
+ * ZoneMovementUtils when the permanent leaves the battlefield (CR 400.7).
+ */
+@Serializable
+data object BlitzedComponent : Component
+
+/**
  * Marks a permanent as having been cast for its evoke cost.
  * Added when an evoked spell resolves from the stack.
  * TriggerDetector detects this on ETB and creates a "sacrifice self" delayed trigger.

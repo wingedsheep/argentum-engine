@@ -312,7 +312,7 @@ export function attachmentStackLayout(input: {
 export function hasMultipleCastingOptions(cardLegalActions: LegalActionInfo[]): boolean {
   // Count distinct casting method types
   const hasNormalCast = cardLegalActions.some(
-    (a) => a.action.type === 'CastSpell' && a.actionType !== 'CastFaceDown' && a.actionType !== 'CastWithKicker' && a.actionType !== 'CastWithFlashback' && a.actionType !== 'CastWithEscape' && a.actionType !== 'CastWithWarp' && a.actionType !== 'CastWithDash' && a.actionType !== 'CastWithDisturb'
+    (a) => a.action.type === 'CastSpell' && a.actionType !== 'CastFaceDown' && a.actionType !== 'CastWithKicker' && a.actionType !== 'CastWithFlashback' && a.actionType !== 'CastWithEscape' && a.actionType !== 'CastWithWarp' && a.actionType !== 'CastWithDash' && a.actionType !== 'CastWithBlitz' && a.actionType !== 'CastWithDisturb'
   )
   const hasMorphCast = cardLegalActions.some((a) => a.actionType === 'CastFaceDown')
   const hasKickerCast = cardLegalActions.some((a) => a.actionType === 'CastWithKicker')
@@ -320,6 +320,7 @@ export function hasMultipleCastingOptions(cardLegalActions: LegalActionInfo[]): 
   const escapeCastCount = cardLegalActions.filter((a) => a.actionType === 'CastWithEscape').length
   const hasWarpCast = cardLegalActions.some((a) => a.actionType === 'CastWithWarp')
   const hasDashCast = cardLegalActions.some((a) => a.actionType === 'CastWithDash')
+  const hasBlitzCast = cardLegalActions.some((a) => a.actionType === 'CastWithBlitz')
   // Disturb (CR 702.146) casts the card's back face from the graveyard, so it is a distinct
   // casting option from any normal cast of the same card.
   const hasDisturbCast = cardLegalActions.some((a) => a.actionType === 'CastWithDisturb')
@@ -338,6 +339,7 @@ export function hasMultipleCastingOptions(cardLegalActions: LegalActionInfo[]): 
   options += escapeCastCount
   if (hasWarpCast) options++
   if (hasDashCast) options++
+  if (hasBlitzCast) options++
   if (hasDisturbCast) options++
   if (hasCycling) options++
   if (hasPlot) options++

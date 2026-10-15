@@ -1061,6 +1061,7 @@ IterationSpace.Targets — IterationSpace
 KeywordAbility.Affinity — KeywordAbility
 KeywordAbility.AffinityForSubtype — KeywordAbility
 KeywordAbility.Bestow — KeywordAbility
+KeywordAbility.Blitz — KeywordAbility
 KeywordAbility.Casualty — KeywordAbility
 KeywordAbility.Cleave — KeywordAbility
 KeywordAbility.Conspire — KeywordAbility

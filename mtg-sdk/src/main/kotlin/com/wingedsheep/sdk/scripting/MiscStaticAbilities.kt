@@ -778,7 +778,7 @@ data object OpponentsPlayWithHandsRevealed : StaticAbility {
  * (Detective's Phoenix) is `MayCastSelfFromZones(listOf(Zone.GRAVEYARD), castUsing = Keyword.BESTOW)`.
  * The card is then cast for that ability's price (CR 702.103a: bestow functions in any zone the
  * card could be cast from), never for its normal mana cost. The engine reads only keywords it knows
- * how to cast with (currently [Keyword.BESTOW]); any other keyword authorizes nothing.
+ * how to cast with ([Keyword.BESTOW], [Keyword.BLITZ]); any other keyword authorizes nothing.
  *
  * @property zones The zones from which this card may be cast.
  * @property condition Optional gate; null = always available (the Squee shape).

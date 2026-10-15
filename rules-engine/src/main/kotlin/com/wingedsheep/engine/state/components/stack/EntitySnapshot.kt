@@ -246,6 +246,14 @@ data class EntitySnapshot(
      * way [wasSuspected] does for the suspected designation.
      */
     val wasFaceDown: Boolean = false,
+    /**
+     * True if this permanent's blitz cost was paid (CR 702.152a) as it left. Frozen because the
+     * marker is stripped on departure, yet the blitz "when this permanent dies, draw a card" trigger
+     * looks back to it (CR 603.10a).
+     */
+    @OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
+    @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
+    val wasBlitzed: Boolean = false,
     /** Copy-added rules text, frozen before the original identity is restored on departure. */
     val copyTriggeredAbilities: List<com.wingedsheep.sdk.scripting.TriggeredAbility> = emptyList(),
     /**

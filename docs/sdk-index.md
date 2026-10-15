@@ -1273,6 +1273,7 @@ Families:
 - `KeywordAbility.Affinity(forType: CardType)` — Affinity for a card type.
 - `KeywordAbility.AffinityForSubtype(forSubtype: Subtype)` — Affinity for a creature subtype.
 - `KeywordAbility.Bestow(cost: ManaCost, additionalCost: AdditionalCost?)`
+- `KeywordAbility.Blitz(cost: ManaCost, additionalCost: AdditionalCost?)` — Blitz with a mana cost and an optional bundled non-mana cost (CR 702.152, Streets of New Capenna).
 - `KeywordAbility.Casualty(threshold: Int)` — Casualty N (CR 702.153).
 - `KeywordAbility.Cleave(cost: ManaCost)` — Cleave cost (CR 702.148, Innistrad: Crimson Vow).
 - `KeywordAbility.CompanionAbility(condition: CompanionCondition)` — Companion—condition (CR 702.139) — a keyword ability that functions **outside the game**.

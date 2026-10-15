@@ -120,6 +120,14 @@ class CastAdditionalCosts(
                     ?.additionalCost
                     ?.let { add(it) }
             }
+            // Blitz's bundled non-mana cost ("Blitz—{2}{B}{B}, Pay 2 life.", Tenacious Underdog).
+            if (action.altAllows(AlternativeCostType.BLITZ) &&
+                zoneResolver.hasBlitzPermission(state, action.playerId, action.cardId)
+            ) {
+                cardDef.keywordAbilities.filterIsInstance<KeywordAbility.Blitz>().firstOrNull()
+                    ?.additionalCost
+                    ?.let { add(it) }
+            }
         }
         // Runtime additional costs from entity component (e.g., The Infamous Cruelclaw)
         state.getEntity(action.cardId)

@@ -416,6 +416,11 @@ data class ClientCard(
      * later recast). Battlefield only. */
     val isDashed: Boolean = false,
 
+    /** Whether this permanent's blitz cost was paid (CR 702.152, Streets of New Capenna): it has
+     * haste and "when this dies, draw a card", and is sacrificed at the beginning of the next end
+     * step. Drives a "blitzed" cue on the battlefield. Battlefield only. */
+    val isBlitzed: Boolean = false,
+
     /** Morph cost for face-down creatures (only visible to controller) */
     val morphCost: String? = null,
 

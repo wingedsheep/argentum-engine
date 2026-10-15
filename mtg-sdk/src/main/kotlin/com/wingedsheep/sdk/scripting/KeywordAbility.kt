@@ -776,6 +776,37 @@ sealed interface KeywordAbility {
     }
 
     // =========================================================================
+    // Blitz
+    // =========================================================================
+
+    /**
+     * Blitz with a mana cost and an optional bundled non-mana cost (CR 702.152, Streets of New
+     * Capenna). "Blitz [cost]" — You may cast this card by paying [cost] rather than its mana cost.
+     * If you do, the permanent has haste and "When this permanent is put into a graveyard from the
+     * battlefield, draw a card" for as long as its blitz cost was paid, and it is sacrificed at the
+     * beginning of the next end step.
+     *
+     * [additionalCost] models the em-dash form that bundles a non-mana payment ("Blitz—{2}{B}{B},
+     * Pay 2 life." on Tenacious Underdog); it is paid only on the blitz cast path.
+     *
+     * Hand-only by default. "You may cast this card from your graveyard using its blitz ability"
+     * is a separate static ability: `MayCastSelfFromZones(listOf(Zone.GRAVEYARD), castUsing =
+     * Keyword.BLITZ)`. The haste and draw trigger are synthesized by the engine off the paid
+     * marker ([com.wingedsheep.sdk.scripting.Blitz.diesDrawAbility]), not printed on the card.
+     */
+    @SerialName("Blitz")
+    @Serializable
+    data class Blitz(
+        val cost: ManaCost,
+        val additionalCost: AdditionalCost? = null
+    ) : KeywordAbility {
+        override val keyword: Keyword = Keyword.BLITZ
+        override val description: String =
+            if (additionalCost == null) "Blitz $cost"
+            else "Blitz—$cost, ${additionalCost.description}"
+    }
+
+    // =========================================================================
     // Plot
     // =========================================================================
 
@@ -1596,6 +1627,14 @@ sealed interface KeywordAbility {
          * "Dash {1}{R}".
          */
         fun dash(cost: String): KeywordAbility = Dash(ManaCost.parse(cost))
+
+        /**
+         * Create Blitz from a mana cost string and an optional bundled non-mana cost (CR 702.152).
+         * E.g. `blitz("{2}{R}")`, or `blitz("{2}{B}{B}", Costs.additional.PayLife(2))` for
+         * "Blitz—{2}{B}{B}, Pay 2 life."
+         */
+        fun blitz(cost: String, additionalCost: AdditionalCost? = null): KeywordAbility =
+            Blitz(ManaCost.parse(cost), additionalCost)
 
         /**
          * Create Bestow with mana cost from string and an optional nonmana payment.

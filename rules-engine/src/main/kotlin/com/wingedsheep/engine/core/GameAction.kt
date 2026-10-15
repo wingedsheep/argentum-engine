@@ -312,6 +312,14 @@ enum class AlternativeCostType {
      * but returns to hand instead of exiling, and grants haste while the marker persists).
      */
     DASH,
+    /**
+     * Blitz ([com.wingedsheep.sdk.scripting.KeywordAbility.Blitz], CR 702.152) — hand, or the
+     * graveyard through `MayCastSelfFromZones(castUsing = Keyword.BLITZ)` (Tenacious Underdog). Pays
+     * the blitz mana plus any bundled non-mana cost. The resulting permanent carries
+     * `BlitzedComponent`: haste and "when this dies, draw a card" while it's there, and a delayed
+     * trigger sacrifices it at the beginning of the next end step.
+     */
+    BLITZ,
     /** Evoke ([com.wingedsheep.sdk.scripting.KeywordAbility.Evoke]) — hand. */
     EVOKE,
     BESTOW,

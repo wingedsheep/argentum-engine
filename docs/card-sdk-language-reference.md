@@ -941,6 +941,7 @@ counts a hybrid Phyrexian pip paid with life like any other Phyrexian pip.
 - `warp` — cast from anywhere; exiled at end of turn.
 - `dash` — cast from hand for the dash cost (CR 702.109); gains haste, returned to owner's hand at
   the beginning of the next end step (not exiled — unlike warp, dash has no later recast).
+- `keywordAbility(KeywordAbility.blitz("{2}{R}"))` — blitz (CR 702.152); see **Blitz** below.
 - `conditionalFlash` — flash while condition holds (may read the announced X — Silver Scrutiny).
 - `cantBeCountered` — spell is uncounterable.
 - `cantBeCounteredIf = condition` — uncounterable only while `condition` holds for the spell on the stack (Banefire).
@@ -10970,8 +10971,9 @@ riders, matching how the engine already treats e.g. City of Brass's damage durin
   uses that keyword's casting ability, for that ability's price — Detective's Phoenix (MH3) =
   `MayCastSelfFromZones(listOf(GRAVEYARD), castUsing = Keyword.BESTOW)` for "You may cast this card
   from your graveyard using its bestow ability." Such a permission is offered by the ability's own
-  enumerator (the bestow cast), never as an ordinary cast; the engine reads `Keyword.BESTOW` today
-  and any other keyword fails closed (authorizes nothing) until it is wired in `CastZoneResolver`.
+  enumerator (the bestow cast), never as an ordinary cast; the engine reads `Keyword.BESTOW` and
+  `Keyword.BLITZ` (Tenacious Underdog: "You may cast this card from your graveyard using its blitz
+  ability") and any other keyword fails closed (authorizes nothing) until it is wired in `CastZoneResolver`.
   Wired through `CastZoneResolver.findMayCastSelfFromZoneAbility` (returns the applicable
   ability so callers can read its `additionalCost`), validated/collected in `CastSpellHandler`
   alongside the other additional-cost sources, and surfaced to legal-action enumeration in
@@ -17376,6 +17378,19 @@ Card authors rarely reference these directly; they are created/updated by the ma
   `enteredBattlefieldTimestamp` the same way warp's exile does — a dashed permanent blinked before
   the end step is a new object and stays on the battlefield; one that already left (died, was
   bounced) is left where it is, per the official ruling.
+- **Blitz** — `keywordAbility(KeywordAbility.blitz("{2}{R}"))`, or with the em-dash bundled cost
+  `KeywordAbility.blitz("{2}{B}{B}", Costs.additional.PayLife(2))` (CR 702.152, Streets of New
+  Capenna). Alt cost from hand, cast at the spell's normal timing; the legal action is `CastWithBlitz`
+  (`AlternativeCostType.BLITZ`), enumerated beside the normal cast exactly like dash. A resolving
+  permanent gets a `BlitzedComponent` marker: `StateProjector` grants haste off it, and
+  `TriggerAbilityResolver` grants the synthesized `Blitz.diesDrawAbility` ("when this dies, draw a
+  card") — both are abilities of the permanent, so "loses all abilities" switches them off. The draw
+  trigger looks back through the exit snapshot's `wasBlitzed` (CR 603.10a). A delayed trigger
+  sacrifices the permanent at the next end step (a real sacrifice — "whenever you sacrifice" sees it).
+  "You may cast this card from your graveyard using its blitz ability" is a separate static:
+  `MayCastSelfFromZones(listOf(Zone.GRAVEYARD), castUsing = Keyword.BLITZ)`. Blitz on a token copy
+  ("It gains haste and 'When this token dies, draw a card.' Sacrifice it at the beginning of the next
+  end step.", Jaxis) is not the keyword — compose it on `CreateTokenCopyOfTargetEffect`.
 - **Evoke** — `evoke = "{U}"`; pay alt cost, sacrifice on ETB.
 - **Sneak** — `sneak("{1}{U}")`; declare-blockers-step alt cost (pay mana + return an unblocked attacker you control to hand); a resolving permanent enters tapped and attacking the same defender. `Conditions.SneakCostWasPaid` reads the rider flag.
 - **Ninjutsu** — `ninjutsu("{1}{U}{B}")`; the canonical CR 702.49 keyword that **Sneak** reflavors. Same declare-blockers alt cost and tapped-and-attacking entry, shared via `KeywordAbility.ninjutsuStyleCost`. *Kaito, Bane of Nightmares* (DSK).

@@ -364,6 +364,10 @@ export interface ClientCard {
    * Battlefield only. */
   readonly isDashed?: boolean
 
+  /** Whether this permanent's blitz cost was paid (CR 702.152, Streets of New Capenna): it has haste
+   * and "when this dies, draw a card", and is sacrificed at the next end step. Battlefield only. */
+  readonly isBlitzed?: boolean
+
   /** Saddle N printed on this permanent (CR 702.171a), or absent if it has no saddle ability.
    * Public — the number is how much power its controller must spend to switch its Mount payoffs
    * on, which is exactly what the other players need to play around. Battlefield only. */

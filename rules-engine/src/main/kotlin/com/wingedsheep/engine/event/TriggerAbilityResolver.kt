@@ -155,6 +155,9 @@ class TriggerAbilityResolver(
         // cost paid becomes a permanent with the token-copy trigger no card prints.
         val grantedOffspringAbilities = getGrantedOffspringAbilities(entityId, state)
 
+        // Blitz (CR 702.152a) — "when this permanent dies, draw a card" while its blitz cost was paid.
+        val blitzAbilities = getBlitzTriggeredAbilities(entityId, state)
+
         val allGranted = buildList {
             addAll(grantedAbilities)
             addAll(staticGrantedAbilities)
@@ -173,6 +176,7 @@ class TriggerAbilityResolver(
             addAll(exaltedAbilities)
             addAll(myriadAbilities)
             addAll(grantedOffspringAbilities)
+            addAll(blitzAbilities)
         }
         val copyAbilities = if (state.projectedState.hasLostAllAbilities(entityId)) emptyList()
             else state.getEntity(entityId)?.get<CardComponent>()?.copyTriggeredAbilities.orEmpty()
@@ -216,6 +220,22 @@ class TriggerAbilityResolver(
         if (state.projectedState.hasLostAllAbilities(entityId)) return emptyList()
         return listOf(com.wingedsheep.sdk.scripting.Offspring.tokenCopyAbility)
     }
+
+    /**
+     * Grant [com.wingedsheep.sdk.scripting.Blitz.diesDrawAbility] to a permanent carrying the
+     * [com.wingedsheep.engine.state.components.battlefield.BlitzedComponent] marker, unless it has
+     * lost all abilities — the trigger is an ability of the permanent (CR 702.152a). The marker is
+     * stripped as the permanent leaves, so a departed one's comes from its exit snapshot instead
+     * ([getDepartedTriggeredAbilities]).
+     */
+    private fun getBlitzTriggeredAbilities(entityId: EntityId, state: GameState): List<TriggeredAbility> =
+        if (state.getEntity(entityId)?.has<com.wingedsheep.engine.state.components.battlefield.BlitzedComponent>() == true &&
+            !state.projectedState.hasLostAllAbilities(entityId)
+        ) {
+            listOf(com.wingedsheep.sdk.scripting.Blitz.diesDrawAbility)
+        } else {
+            emptyList()
+        }
 
     /**
      * Grant [com.wingedsheep.sdk.scripting.Sieges.defeatAbility] to every Siege on the battlefield
@@ -351,6 +371,9 @@ class TriggerAbilityResolver(
         // cost paid becomes a permanent with the token-copy trigger no card prints.
         val grantedOffspringAbilities = getGrantedOffspringAbilities(entityId, state)
 
+        // Blitz (CR 702.152a) — "when this permanent dies, draw a card" while its blitz cost was paid.
+        val blitzAbilities = getBlitzTriggeredAbilities(entityId, state)
+
         val allGranted = buildList {
             addAll(grantedAbilities)
             addAll(staticGrantedAbilities)
@@ -369,6 +392,7 @@ class TriggerAbilityResolver(
             addAll(exaltedAbilities)
             addAll(myriadAbilities)
             addAll(grantedOffspringAbilities)
+            addAll(blitzAbilities)
         }
         val copyAbilities = if (state.projectedState.hasLostAllAbilities(entityId)) emptyList()
             else state.getEntity(entityId)?.get<CardComponent>()?.copyTriggeredAbilities.orEmpty()
@@ -571,7 +595,9 @@ class TriggerAbilityResolver(
             // A snapshot is the look-back: an attachment still on the battlefield now may not
             // have been there as the permanent left, and one that left with it is gone.
             attachmentGrants = event.lastKnown?.let { it.lookBackGrants?.attachmentGrantedTriggers.orEmpty() },
-        ).filterNot { it.id in currentCopyAbilityIds } + event.lastKnown?.copyTriggeredAbilities.orEmpty()
+        ).filterNot { it.id in currentCopyAbilityIds } + event.lastKnown?.copyTriggeredAbilities.orEmpty() +
+            // A blitzed permanent's draw trigger, looked back to off the snapshot (CR 603.10a).
+            listOfNotNull(com.wingedsheep.sdk.scripting.Blitz.diesDrawAbility.takeIf { event.lastKnown?.wasBlitzed == true })
         val frozenIds = event.lastKnown?.lookBackGrants?.conditionalSelfGrantIds ?: return live
         val liveIds = live.mapTo(HashSet()) { it.id }
         return live + ConditionalSelfGrants.byIds(cardDefinitionId, frozenIds, cardRegistry)

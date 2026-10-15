@@ -49,6 +49,7 @@ internal class CastAuthorization(
 internal class AlternativeCostMarks(
     val wasWarped: Boolean,
     val wasDashed: Boolean,
+    val wasBlitzed: Boolean,
     val wasEvoked: Boolean,
     val wasImpending: Boolean,
     val wasCleaved: Boolean,
@@ -105,6 +106,8 @@ internal class CastRecords(
                 WarpGrants.effectiveWarp(state, action.cardId, cardDef!!, action.playerId, cardRegistry, predicateEvaluator) != null,
             // Dash (CR 702.109): printed-only for now — no granted-dash resolver exists yet.
             wasDashed = hasKeyword(AlternativeCostType.DASH) { it is KeywordAbility.Dash },
+            // Blitz (CR 702.152a): printed only — the graveyard route is a cast permission, not a grant.
+            wasBlitzed = hasKeyword(AlternativeCostType.BLITZ) { it is KeywordAbility.Blitz },
             wasEvoked = hasKeyword(AlternativeCostType.EVOKE) { it is KeywordAbility.Evoke },
             wasImpending = hasKeyword(AlternativeCostType.IMPENDING) { it is KeywordAbility.Impending },
             // Cleave (CR 702.148): the spell resolves with its brackets-removed effect/target

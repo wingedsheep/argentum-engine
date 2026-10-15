@@ -104,6 +104,7 @@ class CastFromZoneEnumerator(
         enumerateGraveyardCast(context, result)
         enumerateWarp(context, result)
         enumerateDash(context, result)
+        enumerateBlitz(context, result)
         enumerateCommandZone(context, result)
         enumerateKickerForZoneCasts(context, result)
 
@@ -2118,63 +2119,110 @@ class CastFromZoneEnumerator(
     }
 
     // =========================================================================
-    // Dash (CR 702.109)
+    // Dash (CR 702.109) and blitz (CR 702.152)
     // =========================================================================
 
     /**
      * Enumerate dash casts of hand cards. Hand-only (CR 702.109a) — no graveyard variant, no
-     * granted-dash resolver yet. Structurally a trimmed [enumerateWarpFromZone]: same
-     * "always show both the normal cast and the alternative cast" UX, target-requirement
-     * handling, and {X}-in-the-alternative-cost support, minus the graveyard branch.
+     * granted-dash resolver yet.
      */
     private fun enumerateDash(
         context: EnumerationContext,
         result: MutableList<LegalAction>
     ) {
+        for (cardId in context.state.getHand(context.playerId)) {
+            val cardComponent = context.state.getEntity(cardId)?.get<CardComponent>() ?: continue
+            if (cardComponent.typeLine.isLand) continue
+            val cardDef = context.cardRegistry.getCard(cardComponent.cardDefinitionId) ?: continue
+            val dash = cardDef.keywordAbilities.filterIsInstance<KeywordAbility.Dash>().firstOrNull() ?: continue
+            enumerateKeywordAlternativeCast(
+                context, result, cardId, cardComponent, cardDef, Zone.HAND,
+                dash.cost, emptyList(), AlternativeCostType.DASH, "CastWithDash", "Dash"
+            )
+        }
+    }
+
+    /**
+     * Enumerate blitz casts (CR 702.152a): from the hand, and from the graveyard when the card's
+     * `MayCastSelfFromZones(castUsing = Keyword.BLITZ)` permission reaches it (Tenacious Underdog).
+     */
+    private fun enumerateBlitz(
+        context: EnumerationContext,
+        result: MutableList<LegalAction>
+    ) {
         val state = context.state
         val playerId = context.playerId
-        val handCards = state.getHand(playerId)
-
-        for (cardId in handCards) {
-            val container = state.getEntity(cardId) ?: continue
-            val cardComponent = container.get<CardComponent>() ?: continue
-
-            // Dash is for creature spells only.
+        val zones = com.wingedsheep.engine.handlers.actions.spell.CastZoneResolver(
+            context.cardRegistry, context.conditionEvaluator, context.legality
+        )
+        val fromHand = if (context.cantPlayCardsFromHand) emptyList() else state.getHand(playerId).map { it to Zone.HAND }
+        val candidates = fromHand + state.getGraveyard(playerId).map { it to Zone.GRAVEYARD }
+        for ((cardId, zone) in candidates) {
+            val cardComponent = state.getEntity(cardId)?.get<CardComponent>() ?: continue
             if (cardComponent.typeLine.isLand) continue
-
             val cardDef = context.cardRegistry.getCard(cardComponent.cardDefinitionId) ?: continue
-            val dashAbility = cardDef.keywordAbilities.filterIsInstance<KeywordAbility.Dash>().firstOrNull()
-                ?: continue
+            val blitz = cardDef.keywordAbilities.filterIsInstance<KeywordAbility.Blitz>().firstOrNull() ?: continue
+            if (!zones.hasBlitzPermission(state, playerId, cardId)) continue
+            enumerateKeywordAlternativeCast(
+                context, result, cardId, cardComponent, cardDef, zone,
+                blitz.cost, listOfNotNull(blitz.additionalCost), AlternativeCostType.BLITZ, "CastWithBlitz", "Blitz"
+            )
+        }
+    }
 
-            // Dash permanents at sorcery speed, instants at instant speed — CR 702.109a folds
-            // dash into the normal alternative-cost casting rules (601.2b, 601.2f–h) rather than
-            // waiving timing, and the official ruling spells this out explicitly: "You can cast
-            // a creature spell for its dash cost only when you otherwise could cast that
-            // creature spell."
-            val isInstant = cardComponent.typeLine.isInstant
-            if (!isInstant && !context.canPlaySorcerySpeed) continue
+    /**
+     * One card's cast for a keyword alternative cost that replaces the mana cost and otherwise
+     * follows the normal casting rules — dash and blitz. Same "always show both the normal cast and
+     * the alternative cast" UX as [enumerateWarpFromZone], with target-requirement handling, {X} in
+     * the alternative cost, and the cost's bundled non-mana half ([bundledCosts]).
+     */
+    private fun enumerateKeywordAlternativeCast(
+        context: EnumerationContext,
+        result: MutableList<LegalAction>,
+        cardId: EntityId,
+        cardComponent: CardComponent,
+        cardDef: com.wingedsheep.sdk.model.CardDefinition,
+        zone: Zone,
+        alternativeCost: com.wingedsheep.sdk.core.ManaCost,
+        bundledCosts: List<AdditionalCost>,
+        alternativeCostType: AlternativeCostType,
+        actionType: String,
+        label: String,
+    ) {
+        val state = context.state
+        val playerId = context.playerId
+        val description = "Cast ${cardComponent.name} ($label)"
 
-            if (context.cantCastSpell(cardId)) {
-                result.add(
-                    LegalAction(
-                        actionType = "CastWithDash",
-                        description = "Cast ${cardComponent.name} (Dash)",
-                        action = CastSpell(playerId, cardId, useAlternativeCost = true, alternativeCostType = AlternativeCostType.DASH),
-                        affordable = false,
-                        manaCostString = dashAbility.cost.toString(),
-                        sourceZone = Zone.HAND.name
-                    )
+        // Permanents at sorcery speed, instants at instant speed — dash (CR 702.109a) and blitz
+        // (CR 702.152a) fold into the normal alternative-cost casting rules (601.2b, 601.2f–h)
+        // rather than waiving timing; the dash ruling spells it out: "You can cast a creature
+        // spell for its dash cost only when you otherwise could cast that creature spell."
+        val isInstant = cardComponent.typeLine.isInstant
+        if (!isInstant && !context.canPlaySorcerySpeed) return
+
+        if (context.cantCastSpell(cardId)) {
+            result.add(
+                LegalAction(
+                    actionType = actionType,
+                    description = description,
+                    action = CastSpell(playerId, cardId, useAlternativeCost = true, alternativeCostType = alternativeCostType),
+                    affordable = false,
+                    manaCostString = alternativeCost.toString(),
+                    sourceZone = zone.name
                 )
-                continue
-            }
+            )
+            return
+        }
 
-            val castRestrictions = cardDef.script.castRestrictions
-            if (!context.legality.castRestrictionsMet(state, playerId, castRestrictions)) continue
+        val castRestrictions = cardDef.script.castRestrictions
+        if (!context.legality.castRestrictionsMet(state, playerId, castRestrictions)) return
 
-            // A dash card can always be cast two ways — its normal cost or its dash cost — and
-            // which to use is the caster's choice (CR 118.9a / 601.2b). Surface both in the
-            // action window, mirroring enumerateWarpFromZone: when the normal cast is
-            // unaffordable, add a greyed-out placeholder so the player still sees it.
+        // A card in hand can always be cast two ways — its normal cost or its alternative cost —
+        // and which to use is the caster's choice (CR 118.9a / 601.2b). Surface both in the
+        // action window, mirroring enumerateWarpFromZone: when the normal cast is
+        // unaffordable, add a greyed-out placeholder so the player still sees it. There is no
+        // normal cast from any other zone.
+        if (zone == Zone.HAND) {
             val normalCost = context.costCalculator.calculateEffectiveCost(state, cardDef, playerId)
             val canAffordNormal = context.manaSolver.canPay(
                 state, playerId, normalCost, precomputedSources = context.availableManaSources
@@ -2190,89 +2238,94 @@ class CastFromZoneEnumerator(
                     )
                 )
             }
+        }
 
-            val effectiveCost = context.costCalculator.calculateEffectiveCostWithAlternativeBase(
-                state, cardDef, dashAbility.cost, playerId
+        val effectiveCost = context.costCalculator.calculateEffectiveCostWithAlternativeBase(
+            state, cardDef, alternativeCost, playerId
+        )
+        val costString = effectiveCost.toString()
+        val canAffordMana = context.manaSolver.canPay(state, playerId, effectiveCost, precomputedSources = context.availableManaSources)
+        // The alternative cost's bundled non-mana half (Tenacious Underdog's "Pay 2 life").
+        val (bundledCostInfo, canPayBundled) = presentOwedCosts(context, cardId, bundledCosts)
+
+        if (!canAffordMana || !canPayBundled) {
+            result.add(
+                LegalAction(
+                    actionType = actionType,
+                    description = description,
+                    action = CastSpell(playerId, cardId, useAlternativeCost = true, alternativeCostType = alternativeCostType),
+                    affordable = false,
+                    manaCostString = costString,
+                    additionalCostInfo = bundledCostInfo,
+                    sourceZone = zone.name
+                )
             )
-            val costString = effectiveCost.toString()
-            val canAfford = context.manaSolver.canPay(state, playerId, effectiveCost, precomputedSources = context.availableManaSources)
+            return
+        }
 
-            if (!canAfford) {
+        // The alternative cost itself can contain {X} (mirrors enumerateWarpFromZone — without
+        // this the client never prompts for X and the spell is cast with X = 0). Neither has
+        // delve, so there's no delve ceiling.
+        val hasXCost = effectiveCost.hasX
+        val maxAffordableX: Int? = if (hasXCost) {
+            val availableSources = context.manaSolver.getAvailableManaCount(
+                state, playerId, precomputedSources = context.availableManaSources
+            )
+            val fixedCost = effectiveCost.cmc  // X contributes 0 to CMC
+            val xSymbolCount = effectiveCost.xCount.coerceAtLeast(1)
+            ((availableSources - fixedCost) / xSymbolCount).coerceAtLeast(0)
+        } else null
+
+        val targetReqs = buildList {
+            addAll(cardDef.script.targetRequirements)
+            cardDef.script.castAuraTarget?.let { add(it) }
+        }
+
+        val autoTapPreview = if (context.skipAutoTapPreview) null else {
+            context.manaSolver.solve(state, playerId, effectiveCost, precomputedSources = context.availableManaSources)
+                ?.sources?.map { it.entityId }
+        }
+
+        if (targetReqs.isNotEmpty()) {
+            val targetInfos = context.targetUtils.buildTargetInfos(state, playerId, targetReqs, targetingSourceType = TargetingSourceType.SPELL)
+            val allSatisfied = context.targetUtils.allRequirementsSatisfied(targetInfos)
+            if (allSatisfied) {
+                val firstReq = targetReqs.first()
+                val firstInfo = targetInfos.first()
                 result.add(
                     LegalAction(
-                        actionType = "CastWithDash",
-                        description = "Cast ${cardComponent.name} (Dash)",
-                        action = CastSpell(playerId, cardId, useAlternativeCost = true, alternativeCostType = AlternativeCostType.DASH),
-                        affordable = false,
-                        manaCostString = costString,
-                        sourceZone = Zone.HAND.name
-                    )
-                )
-                continue
-            }
-
-            // The dash cost itself can contain {X} (mirrors enumerateWarpFromZone — without this
-            // the client never prompts for X and the spell is cast with X = 0). Dash has no
-            // delve, so there's no delve ceiling.
-            val hasXCost = effectiveCost.hasX
-            val maxAffordableX: Int? = if (hasXCost) {
-                val availableSources = context.manaSolver.getAvailableManaCount(
-                    state, playerId, precomputedSources = context.availableManaSources
-                )
-                val fixedCost = effectiveCost.cmc  // X contributes 0 to CMC
-                val xSymbolCount = effectiveCost.xCount.coerceAtLeast(1)
-                ((availableSources - fixedCost) / xSymbolCount).coerceAtLeast(0)
-            } else null
-
-            val targetReqs = buildList {
-                addAll(cardDef.script.targetRequirements)
-                cardDef.script.castAuraTarget?.let { add(it) }
-            }
-
-            val autoTapPreview = if (context.skipAutoTapPreview) null else {
-                context.manaSolver.solve(state, playerId, effectiveCost, precomputedSources = context.availableManaSources)
-                    ?.sources?.map { it.entityId }
-            }
-
-            if (targetReqs.isNotEmpty()) {
-                val targetInfos = context.targetUtils.buildTargetInfos(state, playerId, targetReqs, targetingSourceType = TargetingSourceType.SPELL)
-                val allSatisfied = context.targetUtils.allRequirementsSatisfied(targetInfos)
-                if (allSatisfied) {
-                    val firstReq = targetReqs.first()
-                    val firstInfo = targetInfos.first()
-                    result.add(
-                        LegalAction(
-                            actionType = "CastWithDash",
-                            description = "Cast ${cardComponent.name} (Dash)",
-                            action = CastSpell(playerId, cardId, useAlternativeCost = true, alternativeCostType = AlternativeCostType.DASH),
-                            validTargets = firstInfo.validTargets,
-                            requiresTargets = true,
-                            targetCount = firstInfo.maxTargets,
-                            minTargets = firstReq.effectiveMinCount,
-                            targetDescription = firstReq.description,
-                            targetRequirements = targetInfos.surfacedRequirements(),
-                            manaCostString = costString,
-                            autoTapPreview = autoTapPreview,
-                            hasXCost = hasXCost,
-                            maxAffordableX = maxAffordableX,
-                            sourceZone = Zone.HAND.name
-                        )
-                    )
-                }
-            } else {
-                result.add(
-                    LegalAction(
-                        actionType = "CastWithDash",
-                        description = "Cast ${cardComponent.name} (Dash)",
-                        action = CastSpell(playerId, cardId, useAlternativeCost = true, alternativeCostType = AlternativeCostType.DASH),
+                        actionType = actionType,
+                        description = description,
+                        action = CastSpell(playerId, cardId, useAlternativeCost = true, alternativeCostType = alternativeCostType),
+                        validTargets = firstInfo.validTargets,
+                        requiresTargets = true,
+                        targetCount = firstInfo.maxTargets,
+                        minTargets = firstReq.effectiveMinCount,
+                        targetDescription = firstReq.description,
+                        targetRequirements = targetInfos.surfacedRequirements(),
                         manaCostString = costString,
                         autoTapPreview = autoTapPreview,
                         hasXCost = hasXCost,
                         maxAffordableX = maxAffordableX,
-                        sourceZone = Zone.HAND.name
+                        additionalCostInfo = bundledCostInfo,
+                        sourceZone = zone.name
                     )
                 )
             }
+        } else {
+            result.add(
+                LegalAction(
+                    actionType = actionType,
+                    description = description,
+                    action = CastSpell(playerId, cardId, useAlternativeCost = true, alternativeCostType = alternativeCostType),
+                    manaCostString = costString,
+                    autoTapPreview = autoTapPreview,
+                    hasXCost = hasXCost,
+                    maxAffordableX = maxAffordableX,
+                    additionalCostInfo = bundledCostInfo,
+                    sourceZone = zone.name
+                )
+            )
         }
     }
 

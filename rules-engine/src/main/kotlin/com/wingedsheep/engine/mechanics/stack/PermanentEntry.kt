@@ -180,6 +180,7 @@ internal class PermanentEntry(
         addCastFaceDoorUnlockedEvents(newState, spellId, cardComponent, controllerId, counterEvents)
         newState = scheduleWarpExile(newState, spellId, spellComponent, cardComponent, controllerId)
         newState = scheduleDashReturn(newState, spellId, spellComponent, cardComponent, controllerId)
+        newState = scheduleBlitzSacrifice(newState, spellId, spellComponent, cardComponent, controllerId)
         newState = enterPreparedIfKeyworded(newState, spellId, spellComponent, cardDef, controllerId)
         newState = grantEntryKeywords(newState, spellId, spellComponent, controllerId)
 
@@ -478,6 +479,12 @@ internal class PermanentEntry(
         // live off this marker; see DashedComponent's doc).
         if (spellComponent.wasDashed) {
             updated = updated.with(com.wingedsheep.engine.state.components.battlefield.DashedComponent)
+        }
+
+        // Track if this permanent's blitz cost was paid (CR 702.152a — haste and the dies-draw
+        // trigger live off this marker; see BlitzedComponent's doc).
+        if (spellComponent.wasBlitzed) {
+            updated = updated.with(com.wingedsheep.engine.state.components.battlefield.BlitzedComponent)
         }
 
         // Track if this permanent was cast for its evoke cost
@@ -985,6 +992,32 @@ internal class PermanentEntry(
             newState = allocatedState.addDelayedTrigger(delayedTrigger)
         }
         return newState
+    }
+
+    private fun scheduleBlitzSacrifice(
+        state: GameState,
+        spellId: EntityId,
+        spellComponent: SpellOnStackComponent,
+        cardComponent: CardComponent?,
+        controllerId: EntityId
+    ): GameState {
+        // Blitz (CR 702.152a): "sacrifice the permanent this spell becomes at the beginning of the
+        // next end step". The captured object reference scopes the sacrifice to this battlefield
+        // object, the same shape as the token-copy sacrifice rider above.
+        if (!spellComponent.wasBlitzed) return state
+        val (triggerId, allocatedState) = state.newRoutingId()
+        return allocatedState.addDelayedTrigger(
+            DelayedTriggeredAbility(
+                id = triggerId,
+                effect = com.wingedsheep.sdk.scripting.effects.SacrificeTargetEffect(EffectTarget.SpecificEntity(spellId)),
+                fireAtStep = Step.END,
+                sourceId = spellId,
+                objectReferences = com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(captured = true,
+                    origin = state.objectRef(spellId), source = state.objectRef(spellId)),
+                sourceName = cardComponent?.name ?: "Unknown",
+                controllerId = controllerId
+            )
+        )
     }
 
     private fun enterPreparedIfKeyworded(

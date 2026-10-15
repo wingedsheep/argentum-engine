@@ -313,6 +313,12 @@ enum class Keyword(val displayName: String) {
     DISTURB("Disturb"),
     EVOKE("Evoke"),
     BESTOW("Bestow"),
+    /**
+     * Blitz [cost] (CR 702.152) — see [com.wingedsheep.sdk.scripting.KeywordAbility.Blitz]. Named
+     * here so "cast this card from your graveyard using its blitz ability" can restrict a
+     * `MayCastSelfFromZones` permission to it (`castUsing = Keyword.BLITZ`).
+     */
+    BLITZ("Blitz"),
     /** Prototype (CR 702.160) — see [com.wingedsheep.sdk.scripting.KeywordAbility.Prototype]. */
     PROTOTYPE("Prototype"),
 

@@ -4806,6 +4806,52 @@
     ]
 }
 
+// Riveteers Requisitioner
+{
+    "name": "Riveteers Requisitioner",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Lizard Rogue",
+    "oracleText": "When this creature dies, create a Treasure token. (It's an artifact with \"{T}, Sacrifice this token: Add one mana of any color.\")\nBlitz {2}{R} (If you cast this spell for its blitz cost, it gains haste and \"When this creature dies, draw a card.\" Sacrifice it at the beginning of the next end step.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "keywords": [
+        "BLITZ"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Blitz",
+            "cost": "{2}{R}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Riveteers Requisitioner:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Treasure"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "121",
+        "rarity": "UNCOMMON",
+        "artist": "Mark Behm",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/a/8ab5152d-767a-47d5-acfc-f439810aaeea.jpg?1783923114"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Rob the Archives
 {
     "name": "Rob the Archives",
@@ -5073,6 +5119,57 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Tenacious Underdog
+{
+    "name": "Tenacious Underdog",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Human Warrior",
+    "oracleText": "Blitz—{2}{B}{B}, Pay 2 life. (If you cast this spell for its blitz cost, it gains haste and \"When this creature dies, draw a card.\" Sacrifice it at the beginning of the next end step.)\nYou may cast this card from your graveyard using its blitz ability.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "BLITZ"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Blitz",
+            "cost": "{2}{B}{B}",
+            "additionalCost": {
+                "type": "AdditionalAtom",
+                "atom": {
+                    "type": "AtomPayLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                }
+            }
+        }
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "MayCastSelfFromZones",
+                "zones": [
+                    "Graveyard"
+                ],
+                "castUsing": "BLITZ"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "97",
+        "rarity": "RARE",
+        "artist": "Zara Alfonso",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/b/9b6a6d00-3e00-4827-8420-13343ac3d0fd.jpg?1783923123"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 

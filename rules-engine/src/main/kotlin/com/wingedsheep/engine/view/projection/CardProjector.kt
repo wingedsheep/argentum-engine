@@ -539,6 +539,7 @@ internal class CardProjector(
             isPreparedSpell = zoneStatus.isPreparedSpell,
             isWarped = zoneStatus.isWarped,
             isDashed = zoneStatus.isDashed,
+            isBlitzed = zoneStatus.isBlitzed,
             morphCost = if (frame.isFaceDown) container.get<MorphDataComponent>()?.morphCost?.description else null,
             // Targets for spells/abilities on stack (for targeting arrows)
             targets = StackTextRenderer.toClientTargets(container.get<TargetsComponent>()),
@@ -836,6 +837,7 @@ internal class CardProjector(
         val isPreparedSpell: Boolean,
         val isWarped: Boolean,
         val isDashed: Boolean,
+        val isBlitzed: Boolean,
         val saddleRequirement: Int?,
         val isSaddled: Boolean,
     )
@@ -883,6 +885,9 @@ internal class CardProjector(
             // Dashed permanents (CR 702.109, Khans of Tarkir) carry a DashedComponent until they're
             // returned to hand at the next end step; surface a flag so the client can show a dash cue.
             isDashed = onBattlefield && container.has<DashedComponent>(),
+            // Blitzed permanents (CR 702.152, Streets of New Capenna) carry a BlitzedComponent until
+            // they're sacrificed at the next end step; surface a flag so the client can show a cue.
+            isBlitzed = onBattlefield && container.has<com.wingedsheep.engine.state.components.battlefield.BlitzedComponent>(),
             // Mounts (CR 702.171): surface the printed Saddle N and whether the permanent currently
             // carries the saddled designation, so the client can badge both states. Read from the card
             // definition for the same reason `SaddleEnumerator` does — the handler resolves the saddle

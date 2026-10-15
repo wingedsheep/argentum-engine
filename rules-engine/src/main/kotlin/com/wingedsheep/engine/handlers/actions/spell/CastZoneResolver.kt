@@ -190,6 +190,8 @@ class CastZoneResolver(
     private fun castsUsing(action: CastSpell?, keyword: Keyword?): Boolean = when (keyword) {
         null -> true
         Keyword.BESTOW -> action != null && BestowCasts.selected(action)
+        Keyword.BLITZ -> action != null && action.useAlternativeCost &&
+            action.alternativeCostType == AlternativeCostType.BLITZ
         else -> false
     }
 
@@ -669,6 +671,24 @@ class CastZoneResolver(
         val cardDef = cardRegistry.getCard(cardComponent.cardDefinitionId) ?: return false
         if (cardDef.keywordAbilities.none { it is KeywordAbility.Dash }) return false
         return cardId in state.getZone(ZoneKey(playerId, Zone.HAND))
+    }
+
+    /**
+     * Check if a card can be cast for its blitz cost (CR 702.152a) from its current zone: from the
+     * hand, or from wherever a `MayCastSelfFromZones(castUsing = Keyword.BLITZ)` permission reaches
+     * ("You may cast this card from your graveyard using its blitz ability", Tenacious Underdog).
+     */
+    fun hasBlitzPermission(
+        state: GameState,
+        playerId: EntityId,
+        cardId: EntityId
+    ): Boolean {
+        val cardComponent = state.getEntity(cardId)?.get<CardComponent>() ?: return false
+        val cardDef = cardRegistry.getCard(cardComponent.cardDefinitionId) ?: return false
+        if (cardDef.keywordAbilities.none { it is KeywordAbility.Blitz }) return false
+        if (cardId in state.getZone(ZoneKey(playerId, Zone.HAND))) return true
+        val blitzCast = CastSpell(playerId, cardId, useAlternativeCost = true, alternativeCostType = AlternativeCostType.BLITZ)
+        return findMayCastSelfFromZoneAbility(state, playerId, cardId, blitzCast)?.castUsing == Keyword.BLITZ
     }
 
     /**

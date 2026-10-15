@@ -8,6 +8,7 @@ import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.CantBeBlockedWhilePropertyAtMostComponent
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
+import com.wingedsheep.engine.state.components.battlefield.BlitzedComponent
 import com.wingedsheep.engine.state.components.battlefield.DashedComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
@@ -154,6 +155,8 @@ class StateProjector {
                         container.get<ToxicComponent>()?.let { add("TOXIC_${it.amount}") }
                         // Dash supplies haste from the live marker on every projection.
                         if (container.has<DashedComponent>()) add(Keyword.HASTE.name)
+                        // Blitz (CR 702.152a) likewise: haste for as long as its blitz cost was paid.
+                        if (container.has<BlitzedComponent>()) add(Keyword.HASTE.name)
                     },
                     colors = cardComponent.colors.mapTo(linkedSetOf()) { it.name },
                     types = extractTypes(cardComponent),

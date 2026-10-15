@@ -1759,6 +1759,15 @@ function GameCardImpl({
         </div>
       )}
 
+      {/* Blitz (CR 702.152, Streets of New Capenna): a permanent whose blitz cost was paid — hasty,
+          draws a card when it dies, sacrificed at the beginning of the next end step. */}
+      {battlefield && card.isBlitzed && !faceDown && (
+        <div style={styles.blitzedBadge} title="Blitzed (Streets of New Capenna) — has haste and &quot;when this dies, draw a card&quot;; sacrificed at the beginning of the next end step">
+          <span aria-hidden="true">⚡</span>
+          Blitzed
+        </div>
+      )}
+
       {/* Counter badge for creatures with +1/+1 or -1/-1 counters */}
       {battlefield && hasStatCounters(card) && (
         <div style={{

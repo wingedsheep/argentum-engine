@@ -690,6 +690,7 @@ class CastSpellHandler(
             giftRecipient = action.giftRecipient?.takeIf { cardDef?.giftKeyword() != null },
             wasWarped = marks.wasWarped,
             wasDashed = marks.wasDashed,
+            wasBlitzed = marks.wasBlitzed,
             wasEvoked = marks.wasEvoked,
             wasImpending = marks.wasImpending,
             wasCleaved = marks.wasCleaved,

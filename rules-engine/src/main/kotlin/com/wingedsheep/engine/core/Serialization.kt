@@ -612,6 +612,7 @@ val engineSerializersModule = SerializersModule {
         subclass(ChosenModesEverComponent::class)
         subclass(ChosenModesThisTurnComponent::class)
         subclass(DashedComponent::class)
+        subclass(BlitzedComponent::class)
         subclass(AbilityActivatedThisTurnComponent::class)
         subclass(AbilityResolutionCountThisTurnComponent::class)
         subclass(TokenReplacementOfferedThisTurnComponent::class)

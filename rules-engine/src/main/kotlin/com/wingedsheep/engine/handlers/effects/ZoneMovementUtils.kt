@@ -521,6 +521,7 @@ object ZoneMovementUtils {
             .without<com.wingedsheep.engine.state.components.battlefield.EnteredFromExileComponent>()
             .without<WarpedComponent>()
             .without<com.wingedsheep.engine.state.components.battlefield.DashedComponent>()
+            .without<com.wingedsheep.engine.state.components.battlefield.BlitzedComponent>()
             .without<EvokedComponent>()
             // Cast-time choices (DynamicAmount.CastX / CastChoice, chosen color/type/mode, kicked)
             // are forgotten when the object changes zones (CR 400.7). The cast X is captured as
