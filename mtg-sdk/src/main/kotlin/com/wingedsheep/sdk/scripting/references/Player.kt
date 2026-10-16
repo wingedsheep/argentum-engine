@@ -418,7 +418,7 @@ sealed interface Player {
     @SerialName("ControllerOfGrantingSource")
     @Serializable
     data object ControllerOfGrantingSource : Player {
-        override val description: String = "its controller"
+        override val description: String = "the granting permanent's controller"
     }
 
     // =============================================================================
@@ -456,6 +456,6 @@ sealed interface Player {
             OwnersOfLinkedExile -> "the exiled card's owner's"
             ControllerOfTargetingSource -> "that spell or ability's controller's"
             ControllerOfTriggeringEntity -> "that source's controller's"
-            ControllerOfGrantingSource -> "its controller's"
+            ControllerOfGrantingSource -> "the granting permanent's controller's"
         }
 }
