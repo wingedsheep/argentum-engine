@@ -50,6 +50,7 @@ val GatheringThrong = card("Gathering Throng") {
         rarity = Rarity.COMMON
         collectorNumber = "13"
         artist = "Randy Vargas"
+        flavorText = "A plus-one is simply not enough."
         imageUri = "https://cards.scryfall.io/normal/front/2/9/290347b9-d3cc-4882-8da6-9d8b8677f276.jpg?1783923158"
     }
 }
