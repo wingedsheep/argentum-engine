@@ -166,13 +166,8 @@ class TriggerMatcher(
                 if (!matchesPlayer(state, trigger.player, event.controllerId, controllerId)) return false
                 trigger.fromZoneOtherThan == null || event.fromZone != trigger.fromZoneOtherThan
             }
-            is EventPattern.CreaturesAttackYouEvent -> {
-                if (trigger.unblocked) {
-                    return unblockedAttackersAgainstYou(trigger, event, controllerId, state).size >= trigger.minAttackers
-                }
-                if (event !is AttackersDeclaredEvent) return false
-                event.attackers.count { attacksYou(trigger, it, controllerId, state) } >= trigger.minAttackers
-            }
+            is EventPattern.CreaturesAttackYouEvent ->
+                attackersAgainstYou(trigger, event, controllerId, state).size >= trigger.minAttackers
             is EventPattern.CreaturesAttackYourOpponentEvent -> {
                 if (event !is AttackersDeclaredEvent) return false
                 // Count attackers declared against an opponent *player* of the controller (not the
@@ -1018,6 +1013,28 @@ class TriggerMatcher(
                 ?.playerId == controllerId &&
                 state.projectedState.isPlaneswalker(defenderId)
         }
+    }
+
+    /**
+     * The attackers behind a [EventPattern.CreaturesAttackYouEvent] firing: on the declare-attackers
+     * event, the declared attackers aimed at the trigger's controller (or, with
+     * `includePlaneswalkersYouControl`, at their planeswalkers); for the `unblocked` form, the
+     * attackers left unblocked once the controller's team has declared blockers.
+     *
+     * The detector stores them as the trigger's captured collection, so "that many" (Struggle for
+     * Project Purity — "that player gets twice that many rad counters") is fixed at declaration:
+     * an attacker removed from combat before the trigger resolves still counts, and a creature put
+     * onto the battlefield attacking was never declared and never counts (CR 508.4).
+     */
+    fun attackersAgainstYou(
+        trigger: EventPattern.CreaturesAttackYouEvent,
+        event: EngineGameEvent,
+        controllerId: EntityId,
+        state: GameState
+    ): List<EntityId> = when {
+        trigger.unblocked -> unblockedAttackersAgainstYou(trigger, event, controllerId, state)
+        event is AttackersDeclaredEvent -> event.attackers.filter { attacksYou(trigger, it, controllerId, state) }
+        else -> emptyList()
     }
 
     /**

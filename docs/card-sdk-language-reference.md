@@ -7432,7 +7432,15 @@ The shapes in this family, with their engine notes.
 - `Triggers.you.isAttacked()` — defender side; fires once per `AttackersDeclaredEvent`,
   not per attacker. Excludes creatures attacking a planeswalker you control
   (CR 509.1b). Pair with `DynamicAmounts.creaturesAttackingYou()` for
-  attacker-count payoffs (e.g., Orim's Prayer).
+  attacker-count payoffs read live at resolution (e.g., Orim's Prayer). Every firing also
+  **captures the attackers behind it** as its captured collection — the creatures *declared*
+  attacking you (CR 508.1) — so "that many" fixed at declaration is
+  `DynamicAmounts.distinctEntitiesIn(CollectionSlot.TriggerCaptured)`: removing an attacker from
+  combat doesn't lower it, and a creature put onto the battlefield attacking never raises it.
+  The attacking player is the triggering player. Struggle for Project Purity's Enclave: "that
+  player gets twice that many rad counters" is
+  `Effects.AddDynamicCounters(CounterType.RAD, DynamicAmounts.distinctEntitiesIn(CollectionSlot.TriggerCaptured) * 2, EffectTarget.PlayerRef(Player.TriggeringPlayer))`.
+  The `unblocked` form captures, per triggering player, that player's unblocked attackers.
   The underlying `EventPattern.CreaturesAttackYouEvent(minAttackers, includePlaneswalkersYouControl)`
   exposes both knobs for cards that print them: `minAttackers` raises the batch threshold (there is no
   `Triggers.` constant for it — construct the pattern inline, as the `YouAttackEvent(minAttackers = n)`

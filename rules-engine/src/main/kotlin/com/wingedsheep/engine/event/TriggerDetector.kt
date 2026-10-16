@@ -1234,7 +1234,12 @@ class TriggerDetector(
                         controllerId = delayed.controllerId,
                         triggerContext = TriggerContext.fromEvent(event).copy(
                             triggeringEntityId = watchedTriggering
-                                ?: TriggerContext.fromEvent(event).triggeringEntityId
+                                ?: TriggerContext.fromEvent(event).triggeringEntityId,
+                            // "…attack you" delayed forms capture their attackers like the
+                            // battlefield path does.
+                            capturedEntityIds = (specEvent as? com.wingedsheep.sdk.scripting.EventPattern.CreaturesAttackYouEvent)
+                                ?.let { matcher.attackersAgainstYou(it, event, delayed.controllerId, state) }
+                                ?: TriggerContext.fromEvent(event).capturedEntityIds
                         ),
                         consumesDelayedTriggerId = if (delayed.fireOnce) delayed.id else null,
                         carriedPipeline = delayed.carriedPipelineFor(state)
@@ -1748,17 +1753,41 @@ class TriggerDetector(
                         val attackers = matcher.unblockedAttackersAgainstYou(
                             ability.trigger as EventPattern.CreaturesAttackYouEvent, event, controllerId, state
                         )
-                        for (attackingPlayer in attackers.mapNotNull { projected.getController(it) }.distinct()) {
+                        for ((attackingPlayer, theirs) in attackers.groupBy { projected.getController(it) }) {
+                            if (attackingPlayer == null) continue
                             triggers.add(
                                 PendingTrigger(
                                     ability = ability,
                                     sourceId = entityId,
                                     sourceName = cardComponent.name,
                                     controllerId = controllerId,
-                                    triggerContext = TriggerContext(triggeringPlayerId = attackingPlayer)
+                                    triggerContext = TriggerContext(
+                                        triggeringPlayerId = attackingPlayer,
+                                        capturedEntityIds = theirs
+                                    )
                                 )
                             )
                         }
+                    }
+                    // "Whenever a player attacks you with one or more creatures, that player gets
+                    // twice that many rad counters" (Struggle for Project Purity): capture the
+                    // attackers declared at you, so "that many" is fixed at declaration (CR 508.1)
+                    // rather than re-counted at resolution after removals from combat.
+                    else if (ability.trigger is EventPattern.CreaturesAttackYouEvent &&
+                        event is AttackersDeclaredEvent) {
+                        triggers.add(
+                            PendingTrigger(
+                                ability = ability,
+                                sourceId = entityId,
+                                sourceName = cardComponent.name,
+                                controllerId = controllerId,
+                                triggerContext = TriggerContext.fromEvent(event).copy(
+                                    capturedEntityIds = matcher.attackersAgainstYou(
+                                        ability.trigger as EventPattern.CreaturesAttackYouEvent, event, controllerId, state
+                                    )
+                                )
+                            )
+                        )
                     }
                     // "Whenever you attack a player" (CR 508.3e) fires once for each player
                     // attacked, binding that player as "that player" (Echoing Assault, Meriadoc

@@ -266,7 +266,7 @@
 - [ ] Strength Bobblehead
 - [ ] Strong Back
 - [ ] Strong, the Brutish Thespian
-- [ ] Struggle for Project Purity
+- [x] Struggle for Project Purity
 - [x] Sulfur Falls
 - [x] Sungrass Prairie
 - [x] Sunken Hollow
