@@ -139,7 +139,7 @@ internal class CastCostPayer(
             ) != null
         payAdditionalCosts(ledger, owedCosts)?.let { return CastPaymentOutcome.Failed(it) }
         payConspire(ledger)
-        payCasualty(ledger)
+        payCasualty(ledger, cardDef)
 
         // The X charged as mana (see CastCostTotaller.paymentXValue); action.xValue — the effect's
         // X — is untouched.
@@ -235,9 +235,17 @@ internal class CastCostPayer(
      * Casualty's optional additional cost: sacrifice the chosen creature (CR 702.153). Routes through
      * the shared cost sacrifice so the leave-the-battlefield events are emitted for dies/leaves
      * triggers; the pre-sacrifice snapshot feeds the spell's own effect context (CR 608.2h / 113.7a).
+     *
+     * Casualty X defines the spell's X as it's paid: the announced X, or — unannounced — the
+     * sacrificed creature's power, read before it leaves. Only a printed casualty can be X.
      */
-    private fun payCasualty(ledger: SpellCostLedger) {
+    private fun payCasualty(ledger: SpellCostLedger, cardDef: CardDefinition?) {
         val permId = ledger.action.casualtyCreature ?: return
+        val variable = cardDef?.keywordAbilities
+            ?.any { it is com.wingedsheep.sdk.scripting.KeywordAbility.Casualty && it.isVariable } == true
+        if (variable) {
+            ledger.costDefinedX = ledger.action.xValue ?: (ledger.state.projectedState.getPower(permId) ?: 0)
+        }
         ledger.sacrificedSnapshots.addAll(captureEntitySnapshots(listOf(permId), ledger.state.projectedState, ledger.state))
         if (ledger.state.getEntity(permId) != null) {
             ledger.sacrifice(permId)

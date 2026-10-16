@@ -12,6 +12,7 @@ import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.GrantKeywordToOwnSpells
+import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 
 /**
@@ -48,21 +49,21 @@ class GrantedKeywordResolver(
     }
 
     /**
-     * The effective numeric parameter for a parameterized keyword on [cardDef] when cast by
-     * [playerId] — e.g. the Casualty power threshold. Reads the printed [KeywordAbility]
-     * parameter first, then any granting source's [GrantKeywordToOwnSpells.keywordParameter].
-     * Returns null when the spell does not have the keyword.
+     * The casualty [cardDef] has when cast by [playerId] (CR 702.153): the printed
+     * [KeywordAbility.Casualty] first — which may be casualty X and carry copy riders — then a
+     * granting source's [GrantKeywordToOwnSpells.keywordParameter] as a plain casualty N.
+     * Returns null when the spell does not have casualty.
      */
-    fun casualtyThreshold(
+    fun casualty(
         state: GameState,
         playerId: EntityId,
         cardDef: CardDefinition,
         spellId: EntityId? = null
-    ): Int? {
+    ): KeywordAbility.Casualty? {
         val printed = cardDef.keywordAbilities
-            .filterIsInstance<com.wingedsheep.sdk.scripting.KeywordAbility.Casualty>()
+            .filterIsInstance<KeywordAbility.Casualty>()
             .firstOrNull()
-        if (printed != null) return printed.threshold
+        if (printed != null) return printed
         val grantSource = findGrant(state, playerId, cardDef, Keyword.CASUALTY, spellId) ?: return null
         val spellZone by lazy(LazyThreadSafetyMode.NONE) { castZone(state, spellId) }
         val sourceDef = state.getEntity(grantSource)?.get<CardComponent>()
@@ -71,6 +72,7 @@ class GrantedKeywordResolver(
             .filterIsInstance<GrantKeywordToOwnSpells>()
             .firstOrNull { it.keyword == Keyword.CASUALTY && grantApplies(it, cardDef) { spellZone } }
             ?.keywordParameter
+            ?.let { KeywordAbility.Casualty(it) }
     }
 
     /**

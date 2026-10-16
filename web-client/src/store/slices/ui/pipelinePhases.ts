@@ -985,6 +985,25 @@ export function enterPhase(
           flags.targetDescription = costInfo.description
           break
         }
+        // Casualty N / X (CR 702.153a) — optional: sacrifice one creature with power N (or the
+        // announced X) or greater, or none to cast without the copy.
+        case 'Casualty': {
+          const chosenX = action.type === 'CastSpell' ? action.xValue : undefined
+          const candidates = costInfo.validSacrificeTargets ?? []
+          validTargets =
+            costInfo.sacrificeMinPowerIsX && typeof chosenX === 'number' && gameState != null
+              ? candidates.filter((id) => (gameState.cards[id]?.power ?? -1) >= chosenX)
+              : [...candidates]
+          minTargets = 1
+          maxTargets = 1
+          flags.isSacrificeSelection = true
+          // Name the announced X in the prompt: "power 2 or greater", not "power X or greater".
+          flags.targetDescription =
+            costInfo.sacrificeMinPowerIsX && typeof chosenX === 'number'
+              ? costInfo.description.replace('power X', `power ${chosenX}`)
+              : costInfo.description
+          break
+        }
         case 'Conspire':
           validTargets = [...(costInfo.validTapTargets ?? [])]
           minTargets = costInfo.tapCount ?? 2

@@ -779,7 +779,7 @@ Families:
 - `CopyEachTargetSpellEffect(keywordsForCopy: List<String>, removeLegendary: Boolean)` — Copy each spell targeted by this effect (CR 707.10).
 - `CopyForEachOtherPossibleTargetEffect(target: EffectTarget, candidates: GameObjectFilter, copier: Player)` — Copy a spell or ability once **for each other object it could target** (CR 707.10d), auto-assigning every copy a distinct one of those objects as its target.
 - `CopyNextSpellCastEffect(copies: Int, spellFilter: GameObjectFilter)` — When you next cast a spell matching spellFilter this turn, copy that spell.
-- `CopyTargetSpellEffect(target: EffectTarget, keywordsForCopy: List<String>, removeLegendary: Boolean, addedTokenKeywords: Set<Keyword>, sacrificeTokenAtStep: Step?, sacrificeTokenOnlyOnControllersTurn: Boolean, copies: DynamicAmount, exceptions: CopyExceptions)`
+- `CopyTargetSpellEffect(target: EffectTarget, keywordsForCopy: List<String>, removeLegendary: Boolean, addedTokenKeywords: Set<Keyword>, sacrificeTokenAtStep: Step?, sacrificeTokenOnlyOnControllersTurn: Boolean, copies: DynamicAmount, exceptions: CopyExceptions, tokenStartingLoyalty: DynamicAmount?)`
 - `CopyTargetSpellOrAbilityEffect(target: EffectTarget, copies: DynamicAmount)` — Copy target spell **or** ability on the stack, dispatching at resolution on the chosen object's kind: an instant/sorcery spell copies via the spell-copy path; an activated or triggered ability copi…
 - `CopyTargetTriggeredAbilityEffect(target: EffectTarget)` — Copy target triggered ability on the stack.
 - `CounterAllOnStackEffect(spells: Boolean, abilities: Boolean, opponentsOnly: Boolean, storeCountAs: String?)` — Counter every spell and/or ability on the stack matching the controller filter.
@@ -1276,7 +1276,7 @@ Families:
 - `KeywordAbility.AffinityForSubtype(forSubtype: Subtype)` — Affinity for a creature subtype.
 - `KeywordAbility.Bestow(cost: ManaCost, additionalCost: AdditionalCost?)`
 - `KeywordAbility.Blitz(cost: ManaCost, additionalCost: AdditionalCost?)` — Blitz with a mana cost and an optional bundled non-mana cost (CR 702.152, Streets of New Capenna).
-- `KeywordAbility.Casualty(threshold: Int)` — Casualty N (CR 702.153).
+- `KeywordAbility.Casualty(threshold: Int?, copyExceptions: CopyExceptions, copyStartingLoyalty: DynamicAmount?)` — Casualty N (CR 702.153).
 - `KeywordAbility.Cleave(cost: ManaCost)` — Cleave cost (CR 702.148, Innistrad: Crimson Vow).
 - `KeywordAbility.CompanionAbility(condition: CompanionCondition)` — Companion—condition (CR 702.139) — a keyword ability that functions **outside the game**.
 - `KeywordAbility.Conspire` — Conspire.

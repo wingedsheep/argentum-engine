@@ -130,6 +130,11 @@ internal class PermanentEntry(
         newState = applyEntryCounterReplacements(
             newState, spellId, spellComponent, cardComponent, cardDef, controllerId, graveyardCastRider, counterEvents
         )
+        // The spell-copy riders have done their job (keywords, sacrifice, starting loyalty); strip
+        // them so they don't linger on the permanent.
+        newState = newState.updateEntity(spellId) { c ->
+            c.without<com.wingedsheep.engine.state.components.stack.SpellCopyTokenRidersComponent>()
+        }
         newState = applyEntryDesignations(newState, spellId, spellComponent, cardDef)
 
         // Add to battlefield — clean up any may-play permission first (mirrors the same
@@ -630,10 +635,6 @@ internal class PermanentEntry(
                     fireOnPlayerId = if (copyRiders.sacrificeOnlyOnControllersTurn) controllerId else null
                 )
             )
-            // The rider component has done its job; strip it so it doesn't linger on the permanent.
-            newState = newState.updateEntity(spellId) { c ->
-                c.without<com.wingedsheep.engine.state.components.stack.SpellCopyTokenRidersComponent>()
-            }
         }
         return newState
     }
@@ -746,13 +747,18 @@ internal class PermanentEntry(
         // because resolution places permanents via addToZone rather than
         // ZoneTransitionService.moveToZone. Every other entry reaches the same shared
         // placeEntryCounters call through ZoneMovementUtils.applyIntrinsicEntryCountersIfNeeded.
+        // A spell copy may enter with a starting loyalty other than the printed one (casualty X's
+        // "the copy has starting loyalty X", CR 707.10f).
+        val copyStartingLoyalty = newState.getEntity(spellId)
+            ?.get<com.wingedsheep.engine.state.components.stack.SpellCopyTokenRidersComponent>()?.startingLoyalty
         val intrinsicEntryCounters = if (cardDef != null && !spellComponent.castFaceDown) {
             when {
                 // Compleated (CR 702.150a): two fewer loyalty counters for each Phyrexian mana
                 // symbol the caster paid with life.
                 cardDef.startingLoyalty != null -> {
                     val lifePips = if (Keyword.COMPLEATED in cardDef.keywords) spellComponent.phyrexianLifePips else 0
-                    CounterType.LOYALTY to (cardDef.startingLoyalty!! - 2 * lifePips).coerceAtLeast(0)
+                    val printed = copyStartingLoyalty ?: cardDef.startingLoyalty!!
+                    CounterType.LOYALTY to (printed - 2 * lifePips).coerceAtLeast(0)
                 }
                 cardDef.startingDefense != null ->
                     com.wingedsheep.engine.mechanics.battle.Battles.DEFENSE_COUNTER to cardDef.startingDefense!!

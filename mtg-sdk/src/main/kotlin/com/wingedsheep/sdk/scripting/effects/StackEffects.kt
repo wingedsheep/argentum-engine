@@ -962,7 +962,16 @@ data class CopyTargetSpellEffect(
     /** Copiable characteristic exceptions, applied before the copy is put on the stack. */
     @OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
     @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
-    val exceptions: com.wingedsheep.sdk.scripting.effects.CopyExceptions = com.wingedsheep.sdk.scripting.effects.CopyExceptions.None
+    val exceptions: com.wingedsheep.sdk.scripting.effects.CopyExceptions = com.wingedsheep.sdk.scripting.effects.CopyExceptions.None,
+    /**
+     * The starting loyalty of the token the copy resolves into, replacing the printed one, when the
+     * copied spell is a planeswalker spell (CR 707.10f). Read against the copied spell's X, so
+     * [DynamicAmount.XValue] is "has starting loyalty X" — the rider casualty X puts on its copy
+     * (Ob Nixilis, the Adversary). Null keeps the printed loyalty; ignored for non-permanent copies.
+     */
+    @OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
+    @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
+    val tokenStartingLoyalty: DynamicAmount? = null
 ) : Effect {
     override val description: String = run {
         val main = if (copies == DynamicAmount.Fixed(1)) "Copy target spell"

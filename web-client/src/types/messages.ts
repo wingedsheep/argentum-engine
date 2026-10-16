@@ -1226,6 +1226,11 @@ export interface AdditionalCostInfo {
   readonly validSacrificeTargets?: readonly EntityId[]
   readonly sacrificeCount?: number
   /**
+   * Casualty X: once X is chosen, only sacrifice candidates with power X or greater can pay it
+   * (the server re-validates).
+   */
+  readonly sacrificeMinPowerIsX?: boolean
+  /**
    * Emerge (CR 702.119): the mana cost that remains after sacrificing each candidate, keyed by
    * that candidate. Emerge is the only cost whose mana half depends on which permanent pays its
    * non-mana half, so `manaCostString` alone can't say what a given choice costs — and the client

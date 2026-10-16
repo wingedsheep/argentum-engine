@@ -3823,6 +3823,205 @@
     ]
 }
 
+// Ob Nixilis, the Adversary
+{
+    "name": "Ob Nixilis, the Adversary",
+    "manaCost": "{1}{B}{R}",
+    "typeLine": "Legendary Planeswalker — Nixilis",
+    "oracleText": "Casualty X. The copy isn't legendary and has starting loyalty X. (As you cast this spell, you may sacrifice a creature with power X. When you do, copy this spell. The copy becomes a token.)\n+1: Each opponent loses 2 life unless they discard a card. If you control a Demon or Devil, you gain 2 life.\n−2: Create a 1/1 red Devil creature token with \"When this creature dies, it deals 1 damage to any target.\"\n−7: Target player draws seven cards and loses 7 life.",
+    "keywords": [
+        "CASUALTY"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Casualty",
+            "threshold": null,
+            "copyExceptions": {
+                "removedSupertypes": [
+                    "LEGENDARY"
+                ]
+            },
+            "copyStartingLoyalty": "XValue"
+        }
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Ob Nixilis, the Adversary:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Players",
+                                "players": "EachOpponent"
+                            },
+                            "body": {
+                                "type": "PayOrSuffer",
+                                "cost": {
+                                    "type": "PayAtom",
+                                    "atom": "AtomDiscard"
+                                },
+                                "suffer": {
+                                    "type": "LoseLife",
+                                    "amount": {
+                                        "type": "Fixed",
+                                        "amount": 2
+                                    },
+                                    "target": "Controller"
+                                }
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Exists",
+                                    "player": "You",
+                                    "zone": "Battlefield",
+                                    "filter": "permanent Demon|Devil"
+                                }
+                            },
+                            "then": {
+                                "type": "GainLife",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
+                            }
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Each opponent loses 2 life unless they discard a card. If you control a Demon or Devil, you gain 2 life."
+            },
+            {
+                "id": "Ob Nixilis, the Adversary:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -2
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "RED"
+                    ],
+                    "creatureTypes": [
+                        "Devil"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/e/c/ec75fdab-818c-4f3a-94c1-fd3f577a87f5.jpg?1783922960",
+                    "triggeredAbilities": [
+                        {
+                            "id": "Ob Nixilis, the Adversary:2",
+                            "trigger": {
+                                "type": "ZoneChangeEvent",
+                                "from": "Battlefield",
+                                "to": "Graveyard"
+                            },
+                            "effect": {
+                                "type": "DealDamage",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "targetRequirement": {
+                                "type": "AnyTarget",
+                                "id": "t0"
+                            },
+                            "descriptionOverride": "When this creature dies, it deals 1 damage to any target."
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Create a 1/1 red Devil creature token with \"When this creature dies, it deals 1 damage to any target.\""
+            },
+            {
+                "id": "Ob Nixilis, the Adversary:4",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -7
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 7
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t1"
+                            }
+                        },
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 7
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t1"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetPlayer",
+                        "id": "t1"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Target player draws seven cards and loses 7 life."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "206",
+        "rarity": "MYTHIC",
+        "artist": "Yongjae Choi",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/0/80226520-6b0a-48ea-a868-a29eb3fbd403.jpg?1783923077",
+        "rulings": [
+            {
+                "date": "2022-04-29",
+                "text": "As you cast a spell with casualty X, you choose whether to pay its casualty cost and what the value of X will be."
+            },
+            {
+                "date": "2022-04-29",
+                "text": "The copied spell from Ob Nixilis, the Adversary's triggered ability copies exactly what is printed on Ob Nixilis, except its starting loyalty is equal to the chosen value of X and it isn't legendary. The copy becomes a token as it resolves."
+            },
+            {
+                "date": "2022-04-29",
+                "text": "You can control exactly one legendary Ob Nixilis, the Adversary and any number of nonlegendary copies of Ob Nixilis, the Adversary."
+            }
+        ]
+    },
+    "startingLoyalty": 3,
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
+    ]
+}
+
 // Obscura Initiate
 {
     "name": "Obscura Initiate",

@@ -452,6 +452,12 @@ data class AdditionalCostData(
     val validSacrificeTargets: List<EntityId> = emptyList(),
     val sacrificeCount: Int = 1,
     /**
+     * Casualty X (CR 702.153a): the sacrifice must have power at least the X announced with the
+     * cast, so once X is chosen the picker offers only [validSacrificeTargets] whose power is X or
+     * greater (the server re-validates).
+     */
+    val sacrificeMinPowerIsX: Boolean = false,
+    /**
      * The spell's remaining mana cost after sacrificing each candidate in [validSacrificeTargets],
      * keyed by that candidate — emerge (CR 702.119), where the emerge cost is reduced by generic
      * mana equal to the sacrificed creature's mana value.

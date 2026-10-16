@@ -303,6 +303,9 @@ data class AdditionalCostInfo(
     val costType: String,
     val validSacrificeTargets: List<EntityId> = emptyList(),
     val sacrificeCount: Int = 1,
+    /** Casualty X: the sacrifice needs power at least the chosen X — see
+     *  [com.wingedsheep.engine.legalactions.AdditionalCostData.sacrificeMinPowerIsX]. */
+    val sacrificeMinPowerIsX: Boolean = false,
     /** Emerge (CR 702.119): the mana cost left after sacrificing each candidate — see
      *  [com.wingedsheep.engine.legalactions.AdditionalCostData.costAfterSacrifice]. Empty otherwise. */
     val costAfterSacrifice: Map<EntityId, String> = emptyMap(),

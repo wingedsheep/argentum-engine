@@ -1017,7 +1017,7 @@ internal class CastValidator(
         action: CastSpell,
         cardDef: com.wingedsheep.sdk.model.CardDefinition
     ): String? {
-        val threshold = grantedKeywordResolver.casualtyThreshold(state, action.playerId, cardDef, action.cardId)
+        val casualty = grantedKeywordResolver.casualty(state, action.playerId, cardDef, action.cardId)
             ?: return "This spell does not have casualty"
         val creatureId = action.casualtyCreature ?: return "Casualty requires a creature to sacrifice"
         val projected = state.projectedState
@@ -1028,6 +1028,10 @@ internal class CastValidator(
         }
         if (!projected.isCreature(creatureId)) return "Casualty requires a creature"
         val power = projected.getPower(creatureId) ?: 0
+        // Casualty X: the announced X (CR 601.2b) is the threshold; unannounced, X is the
+        // sacrificed creature's power — the largest X that creature pays for.
+        val threshold = casualty.threshold ?: (action.xValue ?: power)
+        if (casualty.isVariable && threshold < 0) return "Casualty X can't be negative"
         if (power < threshold) return "Casualty creature must have power $threshold or greater"
         return null
     }

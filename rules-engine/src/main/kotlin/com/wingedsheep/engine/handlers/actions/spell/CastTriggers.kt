@@ -31,6 +31,7 @@ import com.wingedsheep.sdk.scripting.ChoiceSlot
 import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.sdk.scripting.TriggeredAbility
 import com.wingedsheep.sdk.scripting.effects.CopyTargetSpellEffect
@@ -106,6 +107,22 @@ internal class CastTriggers(
     )
 
     /**
+     * Casualty's copy. A printed casualty may carry riders for its copy — "The copy isn't legendary
+     * and has starting loyalty X." (Ob Nixilis, the Adversary) — which the copy-target-spell path
+     * applies (copiable-value exceptions on the stack, starting loyalty on the token, CR 707.10f);
+     * a riderless casualty shares storm's copy.
+     */
+    private fun casualtyCopyEffect(spell: CastSpellOnStack, cardDef: CardDefinition, spellEffect: Effect?): Effect {
+        val printed = cardDef.keywordAbilities.filterIsInstance<KeywordAbility.Casualty>().firstOrNull()
+        if (printed == null || !printed.hasCopyRiders) return copyEffect(spell, spellEffect, 1)
+        return CopyTargetSpellEffect(
+            target = EffectTarget.TriggeringEntity,
+            exceptions = printed.copyExceptions,
+            tokenStartingLoyalty = printed.copyStartingLoyalty
+        )
+    }
+
+    /**
      * Storm, conspire and casualty — each "copy this spell" trigger, reusing [StormCopyEffect] so
      * the retargeting, modal-copy, and stack-object clone plumbing is shared. A face-down spell has
      * no abilities (CR 708.2), so it triggers none.
@@ -134,7 +151,7 @@ internal class CastTriggers(
             listOf(selfTrigger(state, spell, "conspire", copyEffect(spell, spellEffect, 1), "Conspire — copy $name"))
         } else emptyList()
         val casualty = if (action.casualtyCreature != null) {
-            listOf(selfTrigger(state, spell, "casualty", copyEffect(spell, spellEffect, 1), "Casualty — copy $name"))
+            listOf(selfTrigger(state, spell, "casualty", casualtyCopyEffect(spell, cardDef, spellEffect), "Casualty — copy $name"))
         } else emptyList()
         // Replicate (CR 702.56a): "When you cast this spell, if a replicate cost was paid for it,
         // copy it for each time its replicate cost was paid." One trigger making N copies, each

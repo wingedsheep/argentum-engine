@@ -1837,7 +1837,9 @@ class CastSpellEnumerator(
             if (cardComponent.typeLine.isLand) continue
 
             val cardDef = context.cardRegistry.getCard(cardComponent.name) ?: continue
-            val threshold = context.grantedKeywordResolver.casualtyThreshold(state, playerId, cardDef, cardId) ?: continue
+            val casualty = context.grantedKeywordResolver.casualty(state, playerId, cardDef, cardId) ?: continue
+            // Casualty X: any creature whose power is at least 0 can pay for some X.
+            val threshold = casualty.threshold ?: 0
             if (context.cantCastSpell(cardId)) continue
 
             // Timing (same rules as a normal cast).
@@ -1872,12 +1874,19 @@ class CastSpellEnumerator(
                 cardDef.script.castAuraTarget?.let { add(it) }
             }
 
+            val thresholdText = casualty.threshold?.toString() ?: "X"
             val casualtyCostInfo = AdditionalCostData(
-                description = "Sacrifice a creature with power $threshold or greater",
+                description = "Sacrifice a creature with power $thresholdText or greater",
                 costType = "Casualty",
                 validSacrificeTargets = eligibleSacrifices,
-                sacrificeCount = 1
+                sacrificeCount = 1,
+                sacrificeMinPowerIsX = casualty.isVariable
             )
+            // Casualty X announces X with the cast (CR 601.2b); the largest X any eligible
+            // creature pays for is the cap, and the sacrifice picker narrows to power >= X.
+            val maxCasualtyX = if (casualty.isVariable) {
+                eligibleSacrifices.maxOf { projected.getPower(it) ?: 0 }
+            } else null
 
             if (targetReqs.isNotEmpty()) {
                 val targetReqInfos = context.targetUtils.buildSpellTargetInfos(state, playerId, targetReqs, cardId)
@@ -1886,7 +1895,7 @@ class CastSpellEnumerator(
                 val firstReqInfo = targetReqInfos.first()
                 result.add(LegalAction(
                     actionType = "CastWithCasualty",
-                    description = "Cast ${cardComponent.name} (Casualty $threshold)",
+                    description = "Cast ${cardComponent.name} (Casualty $thresholdText)",
                     action = CastSpell(playerId, cardId),
                     validTargets = firstReqInfo.validTargets,
                     requiresTargets = true,
@@ -1897,17 +1906,21 @@ class CastSpellEnumerator(
                     affordable = canAfford,
                     manaCostString = baseCost.toString(),
                     autoTapPreview = autoTapPreview,
-                    additionalCostInfo = casualtyCostInfo
+                    additionalCostInfo = casualtyCostInfo,
+                    hasXCost = maxCasualtyX != null,
+                    maxAffordableX = maxCasualtyX
                 ))
             } else {
                 result.add(LegalAction(
                     actionType = "CastWithCasualty",
-                    description = "Cast ${cardComponent.name} (Casualty $threshold)",
+                    description = "Cast ${cardComponent.name} (Casualty $thresholdText)",
                     action = CastSpell(playerId, cardId),
                     affordable = canAfford,
                     manaCostString = baseCost.toString(),
                     autoTapPreview = autoTapPreview,
-                    additionalCostInfo = casualtyCostInfo
+                    additionalCostInfo = casualtyCostInfo,
+                    hasXCost = maxCasualtyX != null,
+                    maxAffordableX = maxCasualtyX
                 ))
             }
         }

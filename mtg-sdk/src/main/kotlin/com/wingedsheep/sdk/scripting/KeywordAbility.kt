@@ -962,12 +962,41 @@ sealed interface KeywordAbility {
      * creature's projected power, so the choose-the-creature payment is handled as a
      * Casualty-specific branch of the cast flow (the threshold is intrinsic to the spell) rather
      * than a generic [com.wingedsheep.sdk.scripting.AdditionalCost] subtype.
+     *
+     * **Casualty X** ([threshold] `null`): the caster announces X as they cast the spell (CR 601.2b,
+     * the Ob Nixilis, the Adversary ruling) and may sacrifice a creature with power X or greater. X
+     * becomes the spell's X value, so the copy shares it (CR 707.10) and [DynamicAmount.XValue]
+     * reads it.
+     *
+     * The copy may carry riders printed beside the keyword — "The copy isn't legendary and has
+     * starting loyalty X." (Ob Nixilis): [copyExceptions] are copiable-value exceptions applied as
+     * the copy is put on the stack, and [copyStartingLoyalty] is the loyalty the token the copy
+     * resolves into enters with (CR 707.10f) in place of the printed one, read against the spell's X.
+     *
+     * @property threshold The N in "casualty N"; `null` for "casualty X".
+     * @property copyExceptions "except" clauses for the copy, e.g. removing [com.wingedsheep.sdk.core.Supertype.LEGENDARY].
+     * @property copyStartingLoyalty The copy's starting loyalty, when the card overrides it.
      */
     @SerialName("Casualty")
     @Serializable
-    data class Casualty(val threshold: Int) : KeywordAbility {
+    data class Casualty(
+        val threshold: Int?,
+        @OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
+        @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
+        val copyExceptions: com.wingedsheep.sdk.scripting.effects.CopyExceptions =
+            com.wingedsheep.sdk.scripting.effects.CopyExceptions.None,
+        @OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
+        @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
+        val copyStartingLoyalty: DynamicAmount? = null,
+    ) : KeywordAbility {
         override val keyword: Keyword = Keyword.CASUALTY
-        override val description: String = "Casualty $threshold"
+        override val description: String = "Casualty ${threshold ?: "X"}"
+
+        /** True for "casualty X": the caster chooses the power threshold as they cast. */
+        val isVariable: Boolean get() = threshold == null
+
+        /** True when the copy carries a printed rider (an exception or a starting loyalty). */
+        val hasCopyRiders: Boolean get() = !copyExceptions.isEmpty || copyStartingLoyalty != null
     }
 
     // =========================================================================
@@ -1752,6 +1781,17 @@ sealed interface KeywordAbility {
          * Create Casualty N keyword ability.
          */
         fun casualty(threshold: Int): KeywordAbility = Casualty(threshold)
+
+        /**
+         * Create Casualty X — the caster chooses X as they cast — with the copy's printed riders:
+         * `casualtyX(CopyExceptions(removedSupertypes = setOf(Supertype.LEGENDARY)), DynamicAmount.XValue)`
+         * is Ob Nixilis, the Adversary's "The copy isn't legendary and has starting loyalty X."
+         */
+        fun casualtyX(
+            copyExceptions: com.wingedsheep.sdk.scripting.effects.CopyExceptions =
+                com.wingedsheep.sdk.scripting.effects.CopyExceptions.None,
+            copyStartingLoyalty: DynamicAmount? = null,
+        ): KeywordAbility = Casualty(null, copyExceptions, copyStartingLoyalty)
 
         /**
          * Create Miracle keyword ability with a miracle mana cost.

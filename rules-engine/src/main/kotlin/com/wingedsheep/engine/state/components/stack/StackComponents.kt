@@ -673,12 +673,15 @@ data class SpellGrantedKeywordsComponent(
  * controller's turn). The spell-copy sibling of the same fields on
  * `CreateTokenCopyOfTargetEffect`; used for "Copy target creature spell you control. The copy gains
  * haste and 'At the beginning of the end step, sacrifice this token.'" (Choreographed Sparks).
+ * [startingLoyalty], when set, is the loyalty a planeswalker token enters with in place of the
+ * printed one ("The copy … has starting loyalty X", casualty X on Ob Nixilis, the Adversary).
  */
 @Serializable
 data class SpellCopyTokenRidersComponent(
     val addedKeywords: Set<Keyword> = emptySet(),
     val sacrificeAtStep: Step? = null,
-    val sacrificeOnlyOnControllersTurn: Boolean = false
+    val sacrificeOnlyOnControllersTurn: Boolean = false,
+    val startingLoyalty: Int? = null
 ) : Component
 
 /**

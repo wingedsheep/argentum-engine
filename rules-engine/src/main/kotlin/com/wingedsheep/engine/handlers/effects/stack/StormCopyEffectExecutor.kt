@@ -328,7 +328,8 @@ class StormCopyEffectExecutor(
             tokenRiders: com.wingedsheep.engine.state.components.stack.SpellCopyTokenRidersComponent? = null
         ): GameState {
             val hasRiders = tokenRiders != null &&
-                (tokenRiders.addedKeywords.isNotEmpty() || tokenRiders.sacrificeAtStep != null)
+                (tokenRiders.addedKeywords.isNotEmpty() || tokenRiders.sacrificeAtStep != null ||
+                    tokenRiders.startingLoyalty != null)
             if (keywordsForCopy.isEmpty() && !removeLegendary && !hasRiders) return state
             val copyId = events.asReversed()
                 .firstNotNullOfOrNull { e ->

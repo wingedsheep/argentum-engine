@@ -502,7 +502,10 @@ object Keywords {
     private val casualty: Phrase<KeywordAbility> = phrase("casualty {n}", name = "casualty") {
         slot("n", Primitives.cardinal)
         build { KeywordAbility.casualty(it.int("n")) }
-        match { (it as? KeywordAbility.Casualty)?.let { c -> bind("n" to c.threshold) } }
+        match {
+            (it as? KeywordAbility.Casualty)?.takeIf { c -> !c.isVariable && !c.hasCopyRiders }
+                ?.let { c -> bind("n" to c.threshold!!) }
+        }
     }
 
     private val devour: Phrase<KeywordAbility> = phrase("devour {n}", name = "devour") {

@@ -69,11 +69,20 @@ class CopyTargetSpellExecutor(
         // Token-side riders (CR 707.10f): keywords baked onto, and a delayed sacrifice trigger for,
         // the token the copy resolves into when the copied spell is a permanent spell. Stamped on
         // the copy entity and consumed by StackResolver at resolution.
-        val tokenRiders = if (effect.addedTokenKeywords.isNotEmpty() || effect.sacrificeTokenAtStep != null) {
+        // "Has starting loyalty X" reads the copied spell's X — the copy shares it (CR 707.10).
+        val tokenStartingLoyalty = effect.tokenStartingLoyalty?.let { amount ->
+            val spellX = container.get<SpellOnStackComponent>()?.xValue
+            dynamicAmountEvaluator.evaluate(state, amount, context.copy(xValue = spellX ?: context.xValue))
+                .coerceAtLeast(0)
+        }
+        val tokenRiders = if (effect.addedTokenKeywords.isNotEmpty() || effect.sacrificeTokenAtStep != null ||
+            tokenStartingLoyalty != null
+        ) {
             com.wingedsheep.engine.state.components.stack.SpellCopyTokenRidersComponent(
                 addedKeywords = effect.addedTokenKeywords,
                 sacrificeAtStep = effect.sacrificeTokenAtStep,
-                sacrificeOnlyOnControllersTurn = effect.sacrificeTokenOnlyOnControllersTurn
+                sacrificeOnlyOnControllersTurn = effect.sacrificeTokenOnlyOnControllersTurn,
+                startingLoyalty = tokenStartingLoyalty
             )
         } else null
 
