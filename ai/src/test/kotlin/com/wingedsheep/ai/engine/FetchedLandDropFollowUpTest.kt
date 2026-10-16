@@ -90,5 +90,14 @@ class FetchedLandDropFollowUpTest : ScenarioTestBase() {
             action.shouldBeInstanceOf<PlayLand>()
             game.nameOf(action) shouldBe "Mountain"
         }
+
+        test("with the land drop already used, it does not cycle for a land it cannot play") {
+            val game = position(landInHand = true)
+            val mountain = game.findCardsInHand(1, "Mountain").single()
+            game.execute(PlayLand(game.player1Id, mountain)).error shouldBe null
+
+            val action = game.choice()
+            (action is TypecycleCard) shouldBe false
+        }
     }
 }

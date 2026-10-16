@@ -46,6 +46,7 @@ import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.TokenComponent
 import com.wingedsheep.engine.state.ZoneKey
+import com.wingedsheep.engine.state.components.player.LandDropsComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.CounterType
@@ -1333,20 +1334,25 @@ class Strategist(
     ): List<LandFollowUp> {
         if (!root.isActiveTurnFor(playerId) || root.stack.isNotEmpty()) return emptyList()
         if (root.step != Step.PRECOMBAT_MAIN && root.step != Step.POSTCOMBAT_MAIN) return emptyList()
+        // No land drop left: nothing a leaf fetches can be played this turn.
+        if ((root.getEntity(playerId)?.get<LandDropsComponent>()?.remaining ?: 0) <= 0) return emptyList()
         val hand = root.getZone(ZoneKey(playerId, Zone.HAND)).toSet()
         val followUps = mutableListOf<LandFollowUp>()
         for (i in leaves.indices) {
+            if (budget.expired()) return followUps
             val action = leaves[i].action
             if (action is PlayLand || action is PassPriority) continue
             val after = leafStates[i]
             if (after.pendingDecision != null || after.stack.isNotEmpty() ||
                 after.step != root.step || after.priorityPlayerId != playerId
             ) continue
-            val newInHand = after.getZone(ZoneKey(playerId, Zone.HAND)).filterTo(HashSet()) { it !in hand }
-            if (newInHand.isEmpty()) continue
+            val newLands = after.getZone(ZoneKey(playerId, Zone.HAND)).filterTo(HashSet()) {
+                it !in hand && after.getEntity(it)?.get<CardComponent>()?.typeLine?.isLand == true
+            }
+            if (newLands.isEmpty()) continue
             val fetched = simulator.getLegalActions(after, playerId).filter {
                 val play = it.action as? PlayLand
-                it.affordable && play != null && play.cardId in newInHand
+                it.affordable && play != null && play.cardId in newLands
             }
             for (land in fetched) {
                 if (budget.expired()) return followUps
