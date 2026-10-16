@@ -372,8 +372,10 @@ class ManaPaymentContinuationResumer(
             com.wingedsheep.sdk.dsl.Patterns.Hand.discardCards(continuation.count)
         }
 
+        // The ward permanent is the source of the card pick (so the prompt names it); who discards
+        // is controllerId — the paying player — which the discard pattern resolves independently.
         val discardContext = com.wingedsheep.engine.handlers.EffectContext(
-            sourceId = continuation.controllerId,
+            sourceId = continuation.wardSourceId,
             controllerId = continuation.payingPlayerId,
             discardIsCost = true,
         )

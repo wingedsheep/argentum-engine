@@ -206,4 +206,36 @@ class WardDiscardCounterTest : FunSpec({
         driver.findPermanent(opponent, "Random-Discard-Warded Bear") shouldBe null
         driver.getHand(activePlayer).size shouldBe (handBefore - 1)
     }
+    test("ward-discard card pick names the ward permanent as its source, while the caster discards") {
+        val driver = createDriver()
+        driver.initMirrorMatch(deck = Deck.of("Mountain" to 40))
+        val activePlayer = driver.activePlayer!!
+        val opponent = driver.getOpponent(activePlayer)
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+
+        driver.putCreatureOnBattlefield(opponent, "Discard-Warded Bear")
+        val spare = driver.putCardInHand(activePlayer, "Mountain")
+
+        driver.giveMana(activePlayer, Color.RED, 1)
+        val bolt = driver.putCardInHand(activePlayer, "Lightning Bolt")
+        val bear = driver.findPermanent(opponent, "Discard-Warded Bear")!!
+        driver.castSpellWithTargets(activePlayer, bolt, listOf(ChosenTarget.Permanent(bear)))
+
+        driver.bothPass()
+        driver.pendingDecision.shouldBeInstanceOf<YesNoDecision>()
+        driver.submitYesNo(activePlayer, true)
+
+        val pickDecision = driver.pendingDecision
+        pickDecision.shouldBeInstanceOf<SelectCardsDecision>()
+        // The pick is attributed to the ward permanent, not to a player.
+        pickDecision.context.sourceId shouldBe bear
+        pickDecision.context.sourceName shouldBe "Discard-Warded Bear"
+        // ...but the discarding player is still the spell's controller, choosing from their own hand.
+        pickDecision.playerId shouldBe activePlayer
+        pickDecision.options.contains(spare) shouldBe true
+        pickDecision.options.all { it in driver.getHand(activePlayer) } shouldBe true
+
+        driver.submitDecision(activePlayer, CardsSelectedResponse(pickDecision.id, listOf(spare)))
+        driver.state.getZone(activePlayer, Zone.GRAVEYARD).contains(spare) shouldBe true
+    }
 })
