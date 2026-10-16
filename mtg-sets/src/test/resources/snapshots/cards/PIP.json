@@ -4539,6 +4539,68 @@
     ]
 }
 
+// Strong, the Brutish Thespian
+{
+    "name": "Strong, the Brutish Thespian",
+    "manaCost": "{4}{G}{G}",
+    "typeLine": "Legendary Creature — Mutant Berserker",
+    "oracleText": "Ward {2}\nEnrage — Whenever Strong is dealt damage, you get three rad counters and put three +1/+1 counters on Strong.\nYou gain life rather than lose life from radiation.",
+    "creatureStats": {
+        "power": 7,
+        "toughness": 7
+    },
+    "keywords": [
+        "WARD"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Ward",
+            "cost": {
+                "type": "WardCost.Mana",
+                "manaCost": "{2}"
+            }
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Strong, the Brutish Thespian:1",
+                "trigger": "DamageReceivedEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "RAD",
+                            "count": 3,
+                            "target": "Controller"
+                        },
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 3,
+                            "target": "Self"
+                        }
+                    ]
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "GainLifeInsteadOfLosingLife",
+                "origin": "RADIATION"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "84",
+        "rarity": "RARE",
+        "artist": "Jason Rainville",
+        "flavorText": "\"Strong learn secret to human power from Mack Beth.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/b/2bc79ed6-057b-439f-b2cd-58d5bcd8b551.jpg?1783912395"
+    }
+}
+
 // Sunscorched Divide
 {
     "name": "Sunscorched Divide",
