@@ -541,7 +541,8 @@ data class AbilityOnStackComponent(
  * @property targetEntryStamps Object-identity stamps for the permanent targets (CR 400.7),
  *           captured when the targets were chosen — see [capture].
  * @property targetingAttachmentHost The permanent the source Aura/Equipment was attached to when
- *           the targets were chosen. A target requirement phrased relative to the source's host
+ *           the ability was put on the stack with its targets (after its costs were paid, so a
+ *           cost that sacrifices or unattaches the source leaves it null). A target requirement phrased relative to the source's host
  *           ("target creature that's blocking equipped creature", Plasma Caster) was satisfied
  *           against *that* creature, so the resolution re-check reads it too: the ability still
  *           resolves if the Equipment has since left or moved to another creature, and fizzles only
@@ -564,7 +565,8 @@ data class TargetsComponent(
     /**
      * The same requirements with [newTargets] chosen in place of the current ones (a retarget), each
      * stamped as it becomes a target. The attachment host the requirements were first satisfied
-     * against is kept.
+     * against is kept, though a retarget's own legality check reads the source's current host —
+     * the two differ only when the source was moved after the ability was put on the stack.
      */
     fun retargeted(state: GameState, newTargets: List<ChosenTarget>): TargetsComponent =
         capture(state, newTargets, targetRequirements).copy(targetingAttachmentHost = targetingAttachmentHost)
