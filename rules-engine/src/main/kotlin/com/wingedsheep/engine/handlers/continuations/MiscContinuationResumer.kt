@@ -856,7 +856,7 @@ class MiscContinuationResumer(
             if (amount > 0) {
                 val modifiedAmount = ReplacementEffectUtils.applyCounterPlacementModifiers(
                     newState, targetId, counterType, amount, placerId = continuation.controllerId,
-                    predicateEvaluator = services.predicateEvaluator
+                    predicateEvaluator = services.predicateEvaluator, byEffect = true
                 )
                 val targetCounters = newState.getEntity(targetId)
                     ?.get<com.wingedsheep.engine.state.components.battlefield.CountersComponent>()

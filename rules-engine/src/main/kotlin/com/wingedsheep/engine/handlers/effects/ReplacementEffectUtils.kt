@@ -59,7 +59,7 @@ object ReplacementEffectUtils {
      *  - for a counter kind its recipient wants (+1/+1, loyalty, lore, …) the largest result —
      *    positive additions first, then doublings, then negative additions;
      *  - for a [harmful kind][isHarmfulToRecipient] (-1/-1 and other minus stat counters, poison,
-     *    stun) the smallest — negative additions first, then doublings, then positive additions;
+     *    stun, rad) the smallest — negative additions first, then doublings, then positive additions;
      *  - caps last, which is the smallest result either way (Melira's ruling).
      * Once a step brings the count to zero the event no longer exists and nothing later applies.
      * This never depends on battlefield order. The one judgment call is a player who *wants* the
@@ -70,7 +70,7 @@ object ReplacementEffectUtils {
      *                 placer-gated effects do not apply.
      * @param byEffect Whether an *effect* is putting the counters. False for counters put on as a
      *                 cost (CR 118 — a [+N] loyalty cost, blight, "put a counter on this") and by a
-     *                 turn-based action (CR 714.3b); [DoubleCounterPlacement.effectsOnly] (Doubling
+     *                 turn-based action (CR 714.3c); [DoubleCounterPlacement.effectsOnly] (Doubling
      *                 Season's "if an effect would put") skips those.
      * @return The modified counter count, never negative.
      */
@@ -82,7 +82,7 @@ object ReplacementEffectUtils {
         placerId: EntityId? = null,
         predicateEvaluator: PredicateEvaluator,
         replacementSourceState: GameState? = null,
-        byEffect: Boolean = true
+        byEffect: Boolean
     ): Int {
         if (count <= 0) return count
         // A capped recipient can't get more of this kind this turn: the placement doesn't happen.
@@ -196,12 +196,13 @@ object ReplacementEffectUtils {
 
     /**
      * Counter kinds the recipient's controller is assumed not to want more of when ordering
-     * placement replacements: the minus stat counters (-1/-1, -1/-0, -2/-2, …), poison and stun.
+     * placement replacements: the minus stat counters (-1/-1, -1/-0, -2/-2, …), poison, stun and rad.
      */
     fun isHarmfulToRecipient(counterType: CounterType): Boolean =
         counterType.name.startsWith("MINUS_") ||
             counterType == CounterType.POISON ||
-            counterType == CounterType.STUN
+            counterType == CounterType.STUN ||
+            counterType == CounterType.RAD
 
     /** Whether [targetId] already took a [CapCounterPlacementThisTurn] lock on [counterType] this turn. */
     fun isCounterPlacementLocked(state: GameState, targetId: EntityId, counterType: CounterType): Boolean =

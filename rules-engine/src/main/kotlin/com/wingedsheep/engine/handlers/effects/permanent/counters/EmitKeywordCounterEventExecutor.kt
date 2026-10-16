@@ -64,7 +64,7 @@ class EmitKeywordCounterEventExecutor(
             CounterType.PLUS_ONE_PLUS_ONE,
             count = 1,
             placerId = context.controllerId,
-            predicateEvaluator = predicateEvaluator
+            predicateEvaluator = predicateEvaluator, byEffect = true
         )
         if (placed < 1) return EffectResult.success(state)
 

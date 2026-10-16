@@ -64,7 +64,7 @@ class MoveAllLastKnownCountersExecutor(
 
             val modifiedCount = ReplacementEffectUtils.applyCounterPlacementModifiers(
                 newState, targetId, counterType, count, placerId = context.controllerId,
-                predicateEvaluator = predicateEvaluator
+                predicateEvaluator = predicateEvaluator, byEffect = true
             )
             if (modifiedCount <= 0) continue
             // Per kind: each kind has its own first-this-turn window (Botanical Brawler).

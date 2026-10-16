@@ -5,7 +5,7 @@
 **Implemented:** 185 / 336
 | Section    | Total | Done |
 |------------|-------|------|
-| Extras     | 336   | 158  |
+| Extras     | 336   | 185  |
 
 > Verify status anytime with `scripts/card-status --set PIP` (and `--list`). That command's count is authoritative — keep this file's `Implemented:` line in sync (`just fix-backlog`) as boxes are checked. The set's mechanics are catalogued in [`mechanics.md`](mechanics.md).
 

@@ -71,7 +71,7 @@ class DoubleCountersExecutor(
             // Doubling places `existing` additional counters; honor placement replacements.
             val added = ReplacementEffectUtils.applyCounterPlacementModifiers(
                 newState, targetId, counterType, existing, placerId = context.controllerId,
-                predicateEvaluator = predicateEvaluator
+                predicateEvaluator = predicateEvaluator, byEffect = true
             )
             if (added <= 0) continue
             // Per kind: each kind has its own first-this-turn window (Botanical Brawler).

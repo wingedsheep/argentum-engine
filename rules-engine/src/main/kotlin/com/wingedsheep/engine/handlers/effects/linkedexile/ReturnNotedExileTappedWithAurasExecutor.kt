@@ -10,7 +10,6 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
 import com.wingedsheep.engine.state.components.battlefield.AttachmentsComponent
-import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.battlefield.LinkedExileComponent
 import com.wingedsheep.engine.state.components.battlefield.NotedExileComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
@@ -84,10 +83,20 @@ class ReturnNotedExileTappedWithAurasExecutor(private val zones: ZoneTransitionS
         newState = creatureReturn.state
         events.addAll(creatureReturn.events)
 
-        // Restore the noted counters once it's back on the battlefield (a new object).
+        // Restore the noted counters once it's back on the battlefield (a new object). It returns
+        // "with" them — counters given as it enters (CR 122.6) — so each kind is an entry-counter
+        // placement: the placement replacements apply, read against the battlefield before the
+        // return, and the creature's controller is the placer (CR 122.6a).
         if (creatureId in newState.getBattlefield() && noted.notedCounters.isNotEmpty()) {
-            newState = newState.updateEntity(creatureId) { c ->
-                c.with(CountersComponent(noted.notedCounters))
+            val name = newState.getEntity(creatureId)?.get<CardComponent>()?.name ?: ""
+            for ((kind, amount) in noted.notedCounters) {
+                val (placed, placedEvents) = com.wingedsheep.engine.handlers.effects.EntersWithReplacements
+                    .placeEntryCounters(
+                        newState, creatureId, kind, amount, creatureOwner, name,
+                        predicateEvaluator = zones.predicateEvaluator, replacementSourceState = state
+                    )
+                newState = placed
+                events.addAll(placedEvents)
             }
         }
 

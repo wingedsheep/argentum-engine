@@ -44,7 +44,7 @@ class AddDynamicCountersExecutor(
 
         val modifiedCount = ReplacementEffectUtils.applyCounterPlacementModifiers(
             state, targetId, counterType, count, placerId = context.controllerId,
-            predicateEvaluator = amountEvaluator.predicates
+            predicateEvaluator = amountEvaluator.predicates, byEffect = true
         )
 
         // Every placement was replaced away (a capped player already locked out this turn, or a

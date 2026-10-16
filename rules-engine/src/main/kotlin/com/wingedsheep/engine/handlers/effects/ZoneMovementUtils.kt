@@ -155,8 +155,10 @@ object ZoneMovementUtils {
 
         val current = container.get<CountersComponent>() ?: CountersComponent()
         val loreCount = sagaEntryLoreCount(container)
-        val sagaComponent = SagaComponent(triggeredChapters = (1..loreCount).toSet())
         if (counterTotals != null) {
+            // The collected entry counters are placed (and modified) later, as one placement per
+            // kind; the chapters marked here follow the unmodified count.
+            val sagaComponent = SagaComponent(triggeredChapters = (1..loreCount).toSet())
             counterTotals[CounterType.LORE] = (counterTotals[CounterType.LORE] ?: 0) + loreCount
             return state.updateEntity(entityId) { it.with(sagaComponent) } to emptyList()
         }
@@ -164,8 +166,10 @@ object ZoneMovementUtils {
         // totals branch above gets them when the collected entry counters are placed.
         val placed = ReplacementEffectUtils.applyCounterPlacementModifiers(
             state, entityId, CounterType.LORE, loreCount,
-            placerId = state.projectedState.getController(entityId), predicateEvaluator = predicateEvaluator
+            placerId = state.projectedState.getController(entityId), predicateEvaluator = predicateEvaluator, byEffect = true
         )
+        // The chapters the entry reaches follow what was actually put on it.
+        val sagaComponent = SagaComponent(triggeredChapters = (1..placed).toSet())
         if (placed <= 0) return state.updateEntity(entityId) { it.with(sagaComponent) } to emptyList()
         val newState = state.updateEntity(entityId) { c ->
             c.with(sagaComponent)

@@ -354,7 +354,7 @@ class CreateTokenExecutor(
                 for ((counterType, amount) in effect.initialCounters) {
                     val placed = ReplacementEffectUtils.applyCounterPlacementModifiers(
                         prospective, tokenId, counterType, amount, placerId = tokenControllerId,
-                        predicateEvaluator = amountEvaluator.predicates, replacementSourceState = state
+                        predicateEvaluator = amountEvaluator.predicates, replacementSourceState = state, byEffect = true
                     )
                     if (placed <= 0) continue
                     counters = counters.withAdded(counterType, placed)

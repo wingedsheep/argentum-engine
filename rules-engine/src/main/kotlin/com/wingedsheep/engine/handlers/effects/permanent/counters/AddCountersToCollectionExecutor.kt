@@ -49,7 +49,7 @@ class AddCountersToCollectionExecutor(
             val current = currentState.getEntity(entityId)?.get<CountersComponent>() ?: CountersComponent()
             val modifiedCount = ReplacementEffectUtils.applyCounterPlacementModifiers(
                 currentState, entityId, counterType, baseCount, placerId = context.controllerId,
-                predicateEvaluator = amountEvaluator.predicates
+                predicateEvaluator = amountEvaluator.predicates, byEffect = true
             )
 
             val firstThisTurn = DamageUtils.isFirstCounterThisTurn(currentState, entityId)

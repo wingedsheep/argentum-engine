@@ -95,7 +95,7 @@ class GrantCounterPlacementModifierTest : FunSpec({
             counterType = CounterType.PLUS_ONE_PLUS_ONE,
             count = 3,
             placerId = activePlayer,
-            predicateEvaluator = PredicateEvaluator(cardRegistry = null)
+            predicateEvaluator = PredicateEvaluator(cardRegistry = null), byEffect = true
         )
         modified shouldBe 4
     }
@@ -113,7 +113,7 @@ class GrantCounterPlacementModifierTest : FunSpec({
             counterType = CounterType.PLUS_ONE_PLUS_ONE,
             count = 3,
             placerId = activePlayer,
-            predicateEvaluator = PredicateEvaluator(cardRegistry = null)
+            predicateEvaluator = PredicateEvaluator(cardRegistry = null), byEffect = true
         )
         modified shouldBe 3
     }
@@ -129,7 +129,7 @@ class GrantCounterPlacementModifierTest : FunSpec({
             counterType = CounterType.PLUS_ONE_PLUS_ONE,
             count = 3,
             placerId = opponent,
-            predicateEvaluator = PredicateEvaluator(cardRegistry = null)
+            predicateEvaluator = PredicateEvaluator(cardRegistry = null), byEffect = true
         )
         modified shouldBe 3
     }
@@ -144,7 +144,7 @@ class GrantCounterPlacementModifierTest : FunSpec({
             counterType = CounterType.MINUS_ONE_MINUS_ONE,
             count = 3,
             placerId = activePlayer,
-            predicateEvaluator = PredicateEvaluator(cardRegistry = null)
+            predicateEvaluator = PredicateEvaluator(cardRegistry = null), byEffect = true
         )
         modified shouldBe 3
     }
@@ -156,7 +156,7 @@ class GrantCounterPlacementModifierTest : FunSpec({
         // Sanity: active while present.
         ReplacementEffectUtils.applyCounterPlacementModifiers(
             driver.state, myCreature, CounterType.PLUS_ONE_PLUS_ONE, 3, placerId = activePlayer,
-            predicateEvaluator = PredicateEvaluator(cardRegistry = null)
+            predicateEvaluator = PredicateEvaluator(cardRegistry = null), byEffect = true
         ) shouldBe 4
 
         // Run the real end-of-turn cleanup.
@@ -171,7 +171,7 @@ class GrantCounterPlacementModifierTest : FunSpec({
         }
         ReplacementEffectUtils.applyCounterPlacementModifiers(
             driver.state, myCreature, CounterType.PLUS_ONE_PLUS_ONE, 3, placerId = activePlayer,
-            predicateEvaluator = PredicateEvaluator(cardRegistry = null)
+            predicateEvaluator = PredicateEvaluator(cardRegistry = null), byEffect = true
         ) shouldBe 3
     }
 })

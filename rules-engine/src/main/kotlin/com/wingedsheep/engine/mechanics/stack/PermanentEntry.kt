@@ -173,11 +173,15 @@ internal class PermanentEntry(
         // emit the CountersAddedEvent chapter detection reads, from every entry path (including the
         // as-enters-choice resumers, which is where a read-ahead Saga enters).
         if (cardDef != null && !spellComponent.castFaceDown && cardDef.isSaga) {
+            // A placement replacement can cut the entry lore counters to none — then nothing was
+            // put on it and there's no event.
             val loreCount = newState.getEntity(spellId)?.get<CountersComponent>()
-                ?.getCount(CounterType.LORE)?.takeIf { it > 0 } ?: 1
-            newState = com.wingedsheep.engine.handlers.effects.DamageUtils
-                .markCounterOnControlledPermanent(newState, spellId, CounterType.LORE, entering = true)
-            counterEvents.add(CountersAddedEvent(spellId, CounterType.LORE, loreCount, cardDef.name))
+                ?.getCount(CounterType.LORE) ?: 0
+            if (loreCount > 0) {
+                newState = com.wingedsheep.engine.handlers.effects.DamageUtils
+                    .markCounterOnControlledPermanent(newState, spellId, CounterType.LORE, entering = true)
+                counterEvents.add(CountersAddedEvent(spellId, CounterType.LORE, loreCount, cardDef.name))
+            }
         }
 
         newState = applyGlobalEntersTapped(newState, spellId, spellComponent, cardDef, controllerId)
@@ -838,7 +842,10 @@ internal class PermanentEntry(
             val loreCount = com.wingedsheep.engine.handlers.effects.ReplacementEffectUtils.applyCounterPlacementModifiers(
                 newState, spellId, CounterType.LORE,
                 entering?.let { com.wingedsheep.engine.handlers.effects.ZoneMovementUtils.sagaEntryLoreCount(it) } ?: 1,
-                placerId = spellComponent.casterId, predicateEvaluator = conditionEvaluator.predicates
+                // CR 122.6a — the entering permanent's controller puts the counters on it.
+                placerId = entering?.get<com.wingedsheep.engine.state.components.identity.ControllerComponent>()?.playerId
+                    ?: spellComponent.casterId,
+                predicateEvaluator = conditionEvaluator.predicates, byEffect = true
             )
             val sagaComponent = SagaComponent(triggeredChapters = (1..loreCount).toSet())
             newState = newState.updateEntity(spellId) { c ->

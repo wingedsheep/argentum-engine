@@ -129,7 +129,7 @@ class ProjectedControllerInReplacementsTest : FunSpec({
             counterType = CounterType.PLUS_ONE_PLUS_ONE,
             count = 1,
             placerId = activePlayer,
-            predicateEvaluator = PredicateEvaluator(cardRegistry = null)
+            predicateEvaluator = PredicateEvaluator(cardRegistry = null), byEffect = true
         )
         modified shouldBe 2
     }

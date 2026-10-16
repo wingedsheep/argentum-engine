@@ -492,10 +492,11 @@ class SacrificeAndPayContinuationResumer(
         val counterType = continuation.counterType
             ?: return ExecutionResult.error(state, "Put-counters payment has no counter type")
 
-        // Counters put on to pay a cost are an ordinary counter placement (CR 121.6), so this runs
+        // Counters put on to pay a cost are an ordinary counter placement (CR 122.6), so this runs
         // the same four-step chokepoint as CostHandler's PutCountersOnSelf and AddCountersExecutor:
         // the "can't have counters put on it" gate (Solemnity), the placement replacements
-        // (Hardened Scales, Doubling Season), the first-placement-this-turn marker, and a
+        // (Hardened Scales — a cost isn't an effect, so not Doubling Season's "if an effect would
+        // put", CR 118.12), the first-placement-this-turn marker, and a
         // CountersAddedEvent that names its placer. Skipping any of them is silent — a placer-less
         // event makes every placer-restricted trigger decline, and nothing fails.
         val placerId = continuation.playerId
@@ -507,7 +508,7 @@ class SacrificeAndPayContinuationResumer(
             val counters = container.get<CountersComponent>() ?: CountersComponent()
             val modifiedCount = ReplacementEffectUtils.applyCounterPlacementModifiers(
                 newState, permanentId, counterType, continuation.requiredCounters, placerId = placerId,
-                predicateEvaluator = services.predicateEvaluator
+                predicateEvaluator = services.predicateEvaluator, byEffect = false
             )
             val firstThisTurn = DamageUtils.isFirstCounterThisTurn(newState, permanentId)
             val firstOfTypeThisTurn = DamageUtils.isFirstCounterOfTypeThisTurn(newState, permanentId, counterType)

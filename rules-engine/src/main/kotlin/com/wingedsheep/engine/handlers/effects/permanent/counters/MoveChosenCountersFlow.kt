@@ -163,7 +163,7 @@ object MoveChosenCountersFlow {
         val placed = ReplacementEffectUtils.applyCounterPlacementModifiers(
             newState, move.destinationId, kind, removable,
             placerId = move.controllerId,
-            predicateEvaluator = predicates
+            predicateEvaluator = predicates, byEffect = true
         )
         if (placed > 0) {
             val destCounters = newState.getEntity(move.destinationId)?.get<CountersComponent>() ?: CountersComponent()

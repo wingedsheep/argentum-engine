@@ -14,6 +14,9 @@ import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.DoubleCounterPlacement
+import com.wingedsheep.sdk.scripting.EntersWithDevour
+import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.ModifyCounterPlacement
 import com.wingedsheep.sdk.scripting.events.Recipient
@@ -33,6 +36,9 @@ import io.kotest.matchers.shouldBe
  * | CR 702.80a — wither's -1/-1 counters | "wither damage is a placement" |
  * | costs are placements, but not effects (Doubling Season's "if an effect would put") | the two cost tests |
  * | CR 606.4 — a [+1] loyalty cost is a placement | "a +1 loyalty cost is a placement too" |
+ * | CR 118.12 — a pay-or-suffer "put a counter" is a cost | "a pay-or-suffer counter cost…" |
+ * | CR 714.3c — the Saga turn-based lore counter isn't an effect | "the Saga turn-based lore counter…" |
+ * | CR 702.82a — devour's counters are entry counters | "devour's entry counters…" |
  */
 class CounterPlacementReplacementPathsTest : ScenarioTestBase() {
 
@@ -133,6 +139,31 @@ class CounterPlacementReplacementPathsTest : ScenarioTestBase() {
         loyaltyAbility(+1) { effect = Effects.GainLife(1) }
     }
 
+    private val toll = card("Test Counter Toll") {
+        manaCost = "{G}"
+        typeLine = "Sorcery"
+        spell {
+            effect = Effects.PayOrSuffer(
+                cost = Costs.pay.PutCountersOnPermanent(CounterType.PLUS_ONE_PLUS_ONE, filter = GameObjectFilter.Creature),
+                suffer = Effects.LoseLife(3, EffectTarget.Controller)
+            )
+        }
+    }
+
+    private val longSaga = card("Test Long Saga") {
+        manaCost = "{G}"
+        typeLine = "Enchantment — Saga"
+        for (chapter in 1..6) sagaChapter(chapter) { effect = Effects.GainLife(1) }
+    }
+
+    private val devourer = card("Test Counter Devourer") {
+        manaCost = "{G}"
+        typeLine = "Creature — Ooze"
+        power = 1
+        toughness = 1
+        replacementEffect(EntersWithDevour(multiplier = 1))
+    }
+
     private fun TestGame.countersOn(entityId: EntityId, type: CounterType): Int =
         state.getEntity(entityId)?.get<CountersComponent>()?.getCount(type) ?: 0
 
@@ -140,14 +171,14 @@ class CounterPlacementReplacementPathsTest : ScenarioTestBase() {
         .withPlayers("Player", "Opponent")
         .withLandsOnBattlefield(1, "Forest", 2)
         .withLandsOnBattlefield(1, "Swamp", 2)
-        .withCardInLibrary(1, "Forest")
-        .withCardInLibrary(2, "Forest")
+        .withCardInLibrary(1, "Forest").withCardInLibrary(1, "Forest").withCardInLibrary(1, "Forest")
+        .withCardInLibrary(2, "Forest").withCardInLibrary(2, "Forest").withCardInLibrary(2, "Forest")
         .withActivePlayer(1)
         .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
         .let { b -> permanents.fold(b) { acc, name -> acc.withCardOnBattlefield(1, name) } }
 
     init {
-        listOf(adder, doubler, season, grow, wilt, tokenMaker, wall, witherer, coster, walker)
+        listOf(adder, doubler, season, grow, wilt, tokenMaker, wall, witherer, coster, walker, toll, longSaga, devourer)
             .forEach { cardRegistry.register(it) }
 
         test("a wanted kind adds before doubling") {
@@ -252,6 +283,55 @@ class CounterPlacementReplacementPathsTest : ScenarioTestBase() {
             val seasonWalker = season.findPermanent("Test Counter Walker")!!
             season.execute(ActivateAbility(season.player1Id, seasonWalker, abilityId)).error shouldBe null
             withClue("a cost isn't an effect") { season.countersOn(seasonWalker, CounterType.LOYALTY) shouldBe 4 }
+        }
+        test("a pay-or-suffer counter cost passes an if-an-effect-would-put doubler by") {
+            for ((doublerName, expected) in listOf("Test Counter Season" to 1, "Test Counter Doubler" to 2)) {
+                val game = board(doublerName, "Test Thick Wall").withCardInHand(1, "Test Counter Toll").build()
+                val wallId = game.findPermanent("Test Thick Wall")!!
+                game.castSpell(1, "Test Counter Toll").error shouldBe null
+                game.resolveStack()
+                game.selectCards(listOf(wallId)).error shouldBe null
+                game.resolveStack()
+                withClue(doublerName) { game.countersOn(wallId, CounterType.PLUS_ONE_PLUS_ONE) shouldBe expected }
+            }
+        }
+
+        test("the Saga turn-based lore counter isn't an effect's placement") {
+            for ((doublerName, entry, afterTurn) in listOf(
+                Triple("Test Counter Season", 2, 3),
+                Triple("Test Counter Doubler", 2, 4),
+            )) {
+                val game = board(doublerName).withCardInHand(1, "Test Long Saga").build()
+                game.castSpell(1, "Test Long Saga").error shouldBe null
+                game.resolveStack()
+                val sagaId = game.findPermanent("Test Long Saga")!!
+                withClue("$doublerName: entering with a lore counter (CR 122.6)") {
+                    game.countersOn(sagaId, CounterType.LORE) shouldBe entry
+                }
+                // Around to the Saga controller's next precombat main phase (CR 714.3c).
+                game.passUntilPhase(Phase.ENDING, Step.END)
+                game.passUntilPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                game.passUntilPhase(Phase.ENDING, Step.END)
+                game.passUntilPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                game.state.activePlayerId shouldBe game.player1Id
+                withClue("$doublerName: the turn-based lore counter") {
+                    game.countersOn(sagaId, CounterType.LORE) shouldBe afterTurn
+                }
+            }
+        }
+
+        test("devour's entry counters run through the placement replacements") {
+            val game = board("Test Counter Adder", "Test Counter Doubler", "Test Thick Wall")
+                .withCardInHand(1, "Test Counter Devourer").build()
+            val wallId = game.findPermanent("Test Thick Wall")!!
+            game.castSpell(1, "Test Counter Devourer").error shouldBe null
+            game.resolveStack()
+            game.selectCards(listOf(wallId)).error shouldBe null
+            game.resolveStack()
+            val devourerId = game.findPermanent("Test Counter Devourer")!!
+            withClue("one devoured → 1 counter → (1 + 1) × 2") {
+                game.countersOn(devourerId, CounterType.PLUS_ONE_PLUS_ONE) shouldBe 4
+            }
         }
     }
 }

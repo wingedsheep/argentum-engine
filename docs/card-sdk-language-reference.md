@@ -16487,8 +16487,8 @@ The priority groups are (CR 616.1a–f):
   move/distribute, explore, adapt…), **entering with counters** (CR 122.6: printed and granted
   enters-with, starting loyalty/defense, devour, reveal-for-counters, impending's time counters, a
   Saga's entry lore counter(s), a graveyard-cast rider's finality counter, and tokens created "with a
-  counter on it"), **damage dealt as counters** (wither, `ReplaceDamageWithCounters`, toxic's poison),
-  **costs** (`Costs.PutCounterOnSelf`, `PutCountersOnPermanent`, blight, a [+N] loyalty cost) and the
+  counter on it", and a creature returned "with the noted counters" by Tawnos's Coffin), **damage dealt as counters** (wither, `ReplaceDamageWithCounters`, toxic's poison),
+  **costs** (`Costs.PutCounterOnSelf`, `PutCountersOnPermanent` — including as a pay-or-suffer cost — blight, a [+N] loyalty cost) and the
   Saga's precombat-main **turn-based** lore counter. Counters put on a card in a non-battlefield zone
   (suspend's time counters, exile-with-counters) are not on a permanent, so these never touch them.
   **`effectsOnly`** (`DoubleCounterPlacement`, default `false`) is Doubling Season's "if **an effect**
@@ -16498,7 +16498,7 @@ The priority groups are (CR 616.1a–f):
   affected player) picks the order; the engine applies the order they would pick, never battlefield
   order — for a counter kind the recipient wants, positive additions, then doublings, then negative
   additions (Winding Constrictor + Corpsejack Menace: 1 → (1 + 1) × 2 = 4); for a harmful kind (minus
-  stat counters such as -1/-1, poison, stun) the reverse (1 → 1 × 2 + 1 = 3). A step that empties the
+  stat counters such as -1/-1, poison, stun, rad) the reverse (1 → 1 × 2 + 1 = 3). A step that empties the
   placement ends it; caps (`CapCounterPlacementThisTurn`) apply last.
 - `CapCounterPlacementThisTurn(amount = 1, appliesTo = CounterPlacementEvent(POISON, Recipient.You))` —
   **static** cap-and-lock: "If you would get one or more poison counters, instead you get one poison

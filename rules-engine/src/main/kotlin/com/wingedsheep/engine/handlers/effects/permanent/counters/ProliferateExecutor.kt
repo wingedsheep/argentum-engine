@@ -213,7 +213,7 @@ class ProliferateExecutor(
                 for (counterType in kinds) {
                     val modifiedAmount = ReplacementEffectUtils.applyCounterPlacementModifiers(
                         newState, entityId, counterType, 1, placerId = controllerId,
-                        predicateEvaluator = predicateEvaluator
+                        predicateEvaluator = predicateEvaluator, byEffect = true
                     )
                     if (modifiedAmount <= 0) continue
 

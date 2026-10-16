@@ -65,7 +65,7 @@ class MoveAllCountersExecutor(
         for ((counterType, count) in moving) {
             val placed = ReplacementEffectUtils.applyCounterPlacementModifiers(
                 newState, destinationId, counterType, count, placerId = context.controllerId,
-                predicateEvaluator = predicateEvaluator
+                predicateEvaluator = predicateEvaluator, byEffect = true
             )
             if (placed <= 0) continue
             val firstOfTypeThisTurn = DamageUtils.isFirstCounterOfTypeThisTurn(newState, destinationId, counterType)

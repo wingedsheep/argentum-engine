@@ -464,7 +464,7 @@ class BeginningPhaseManager(
             val sagaComponent = container.get<SagaComponent>() ?: continue
 
             // This entity is a Saga — add a lore counter and mark newly triggered chapters. The
-            // lore counter is put on by a turn-based action (CR 714.3b): a placement, so the
+            // lore counter is put on by a turn-based action (CR 714.3c): a placement, so the
             // placement replacements see it (Innkeeper's Talent), but not an effect's, so
             // Doubling Season's "if an effect would put" doesn't.
             val counters = container.get<CountersComponent>() ?: CountersComponent()

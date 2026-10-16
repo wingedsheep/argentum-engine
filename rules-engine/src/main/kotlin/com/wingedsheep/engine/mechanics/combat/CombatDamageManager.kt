@@ -1630,7 +1630,7 @@ internal class CombatDamageManager(
                 // a counter placement the placement replacements see like any other.
                 val witherCounters = ReplacementEffectUtils.applyCounterPlacementModifiers(
                     newState, targetId, CounterType.MINUS_ONE_MINUS_ONE, amount,
-                    placerId = projected.getController(sourceId), predicateEvaluator = predicateEvaluator
+                    placerId = projected.getController(sourceId), predicateEvaluator = predicateEvaluator, byEffect = true
                 )
                 if (witherCounters > 0) {
                     val counters = newState.getEntity(targetId)?.get<CountersComponent>() ?: CountersComponent()
@@ -1723,7 +1723,7 @@ internal class CombatDamageManager(
         if (toxicAmount <= 0) return state
         val placed = ReplacementEffectUtils.applyCounterPlacementModifiers(
             state, targetId, CounterType.POISON, toxicAmount, placerId = placerId,
-            predicateEvaluator = predicateEvaluator
+            predicateEvaluator = predicateEvaluator, byEffect = true
         )
         if (placed <= 0) return state
         val counters = state.getEntity(targetId)?.get<CountersComponent>() ?: CountersComponent()

@@ -18,6 +18,9 @@ class WindingConstrictorScenarioTest : ScenarioTestBase() {
     private fun TestGame.plusOnes(entityId: EntityId): Int =
         state.getEntity(entityId)?.get<CountersComponent>()?.getCount(CounterType.PLUS_ONE_PLUS_ONE) ?: 0
 
+    private fun TestGame.rads(playerId: EntityId): Int =
+        state.getEntity(playerId)?.get<CountersComponent>()?.getCount(CounterType.RAD) ?: 0
+
     private fun board() = scenario()
         .withPlayers("Player", "Opponent")
         .withCardOnBattlefield(1, "Winding Constrictor")
@@ -52,18 +55,54 @@ class WindingConstrictorScenarioTest : ScenarioTestBase() {
             game.plusOnes(game.findPermanent("Otter Token")!!) shouldBe 2
         }
 
-        test("with Corpsejack Menace, the player adds before doubling") {
-            val game = board()
-                .withCardOnBattlefield(1, "Corpsejack Menace")
-                .withCardInHand(1, "Battlegrowth")
-                .build()
-            val mine = game.findAllPermanents("Grizzly Bears")
-                .single { game.state.projectedState.getController(it) == game.player1Id }
-            game.castSpell(1, "Battlegrowth", targetId = mine).error shouldBe null
-            game.resolveStack()
-            withClue("(1 + 1) × 2 = 4, the order the creature's controller picks (CR 616.1)") {
-                game.plusOnes(mine) shouldBe 4
+        test("with Corpsejack Menace, the player adds before doubling — whichever entered first") {
+            for (order in listOf(
+                listOf("Corpsejack Menace", "Winding Constrictor"),
+                listOf("Winding Constrictor", "Corpsejack Menace"),
+            )) {
+                val game = order.fold(scenario().withPlayers("Player", "Opponent")) { b, name ->
+                    b.withCardOnBattlefield(1, name)
+                }
+                    .withCardOnBattlefield(1, "Grizzly Bears")
+                    .withLandsOnBattlefield(1, "Forest", 1)
+                    .withCardInHand(1, "Battlegrowth")
+                    .withCardInLibrary(1, "Forest")
+                    .withCardInLibrary(2, "Forest")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+                val bears = game.findPermanent("Grizzly Bears")!!
+                game.castSpell(1, "Battlegrowth", targetId = bears).error shouldBe null
+                game.resolveStack()
+                withClue("battlefield order $order: (1 + 1) × 2 = 4, the order the creature's controller picks (CR 616.1)") {
+                    game.plusOnes(bears) shouldBe 4
+                }
             }
+        }
+
+        test("you getting counters get one more; an opponent getting them doesn't") {
+            fun drinkBoard(active: Int) = scenario()
+                .withPlayers("Player", "Opponent")
+                .withCardOnBattlefield(1, "Winding Constrictor")
+                .withCardInHand(active, "Contaminated Drink")
+                .withLandsOnBattlefield(active, "Island", 3)
+                .withLandsOnBattlefield(active, "Swamp", 1)
+                .withCardInLibrary(1, "Forest").withCardInLibrary(1, "Forest").withCardInLibrary(1, "Forest")
+                .withCardInLibrary(2, "Forest").withCardInLibrary(2, "Forest").withCardInLibrary(2, "Forest")
+                .withActivePlayer(active)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+
+            // Contaminated Drink with X = 2: draw two, then you get one rad counter.
+            val mine = drinkBoard(active = 1)
+            mine.castXSpell(1, "Contaminated Drink", xValue = 2).error shouldBe null
+            mine.resolveStack()
+            mine.rads(mine.player1Id) shouldBe 2
+
+            val theirs = drinkBoard(active = 2)
+            theirs.castXSpell(2, "Contaminated Drink", xValue = 2).error shouldBe null
+            theirs.resolveStack()
+            theirs.rads(theirs.player2Id) shouldBe 1
         }
     }
 }

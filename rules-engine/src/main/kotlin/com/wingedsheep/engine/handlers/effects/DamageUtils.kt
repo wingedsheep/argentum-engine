@@ -540,7 +540,7 @@ object DamageUtils {
                 val witherPlacer = newState.projectedState.getController(sourceId)
                 val witherCounters = ReplacementEffectUtils.applyCounterPlacementModifiers(
                     newState, targetId, CounterType.MINUS_ONE_MINUS_ONE, effectiveAmount,
-                    placerId = witherPlacer, predicateEvaluator = zones.predicateEvaluator
+                    placerId = witherPlacer, predicateEvaluator = zones.predicateEvaluator, byEffect = true
                 )
                 if (witherCounters > 0) {
                     val counters = newState.getEntity(targetId)?.get<CountersComponent>() ?: CountersComponent()
@@ -3208,7 +3208,7 @@ object DamageUtils {
                 val entityName = counterHolder.get<CardComponent>()?.name ?: ""
                 val placed = ReplacementEffectUtils.applyCounterPlacementModifiers(
                     state, counterHolderId, counterType, amount,
-                    placerId = sourceControllerId, predicateEvaluator = zones.predicateEvaluator
+                    placerId = sourceControllerId, predicateEvaluator = zones.predicateEvaluator, byEffect = true
                 )
                 val currentCounters = counterHolder.get<CountersComponent>() ?: CountersComponent()
                 val updatedCounters = if (placed > 0) currentCounters.withAdded(counterType, placed) else currentCounters

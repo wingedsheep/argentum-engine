@@ -115,7 +115,7 @@ class DistributeCountersAmongTargetsExecutor(
 
             val modifiedCount = ReplacementEffectUtils.applyCounterPlacementModifiers(
                 currentState, targetId, counterType, countersForTarget, placerId = context.controllerId,
-                predicateEvaluator = amountEvaluator.predicates
+                predicateEvaluator = amountEvaluator.predicates, byEffect = true
             )
 
             val current = currentState.getEntity(targetId)?.get<CountersComponent>() ?: CountersComponent()
