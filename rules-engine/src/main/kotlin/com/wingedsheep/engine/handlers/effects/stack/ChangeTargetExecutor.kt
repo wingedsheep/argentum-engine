@@ -327,7 +327,7 @@ class ChangeTargetExecutor(
             if (slot !in targets.indices) return state
             targets[slot] = ContestedRetargetLogic.rebuildTarget(state, newTargetId, targets[slot])
             return state.updateEntity(spellEntityId) { container ->
-                container.with(TargetsComponent.capture(state, targets, component.targetRequirements))
+                container.with(component.retargeted(state, targets))
             }
         }
     }

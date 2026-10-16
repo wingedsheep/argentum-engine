@@ -6720,6 +6720,13 @@ work for abilities-on-stack (which carry no `CardComponent`).
   Because it is live, a creature that has left combat has no blockers — gather the group *before* a
   removal in the same resolution, as above. A reference resolving to nothing matches nothing; inert in
   group/projection, untap, and trigger-gating contexts.
+  In a **target** filter, an attachment-host reference (`EquippedCreature`, `EnchantedCreature`,
+  `EnchantedPermanent`) is pinned to the creature the source was attached to when the target was
+  chosen: the resolution re-check (CR 608.2b) asks whether the target still blocks *that* creature,
+  so moving or losing the Equipment in response doesn't stop the ability. Plasma Caster's "Pay {E}{E}:
+  Choose target creature that's blocking equipped creature…" =
+  `target(TargetFilter(Creature.blockingEntity(EffectTarget.EquippedCreature)))`. The same pin applies
+  to every host-relative predicate in a target filter; retargets keep it.
 - `ControllerControls(filter)` (filter builder `controllerControls(subfilter)`) — the candidate's
   **controller** controls something matching `subfilter`: "target creature whose controller controls
   an Island" (Seasinger, FEM). The load-bearing detail is that the subfilter's `youControl()` is

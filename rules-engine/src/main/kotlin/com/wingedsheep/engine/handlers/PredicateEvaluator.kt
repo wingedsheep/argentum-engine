@@ -1706,7 +1706,11 @@ class PredicateEvaluator(
         context: PredicateContext?,
         projected: ProjectedState
     ): EntityId? = context?.let {
-        com.wingedsheep.engine.handlers.effects.TargetResolutionUtils
+        when (reference) {
+            EffectTarget.EquippedCreature, EffectTarget.EnchantedCreature, EffectTarget.EnchantedPermanent ->
+                it.targetingAttachmentHost
+            else -> null
+        } ?: com.wingedsheep.engine.handlers.effects.TargetResolutionUtils
             .resolveEntity(reference, it.toEffectContext(), state, projected)
     }
 
@@ -2792,6 +2796,15 @@ data class PredicateContext(
      * only the fields mirrored here. Null for a context built directly (targeting, projection).
      */
     val resolution: EffectContext? = null,
+    /**
+     * Set only for the resolution re-check of targets (CR 608.2b): the permanent the source
+     * Aura/Equipment was attached to when the targets were chosen
+     * ([com.wingedsheep.engine.state.components.stack.TargetsComponent.targetingAttachmentHost]).
+     * A filter naming the source's host — "creature that's blocking equipped creature" — reads
+     * this creature rather than wherever the attachment is now, so the target stays judged against
+     * the creature it was chosen for (Plasma Caster's rulings).
+     */
+    val targetingAttachmentHost: EntityId? = null,
 ) {
     /**
      * The entity an enclosing `ForEachInGroup` is currently iterating over, carried in

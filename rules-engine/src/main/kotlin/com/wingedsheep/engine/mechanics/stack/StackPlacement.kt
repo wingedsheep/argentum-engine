@@ -41,7 +41,7 @@ internal object StackPlacement {
 
         var container = ComponentContainer.of(ability)
         if (targets.isNotEmpty()) {
-            container = container.with(TargetsComponent.capture(state, targets, targetRequirements))
+            container = container.with(TargetsComponent.capture(state, targets, targetRequirements, ability.sourceId))
         }
 
         var newState = stateWithId.withEntity(abilityId, container)
@@ -294,7 +294,7 @@ internal object StackPlacement {
 
         var container = ComponentContainer.of(ability)
         if (targets.isNotEmpty()) {
-            container = container.with(TargetsComponent.capture(state, targets, targetRequirements))
+            container = container.with(TargetsComponent.capture(state, targets, targetRequirements, ability.sourceId))
         }
         // CR 707.10e — "This ability can't be copied": tag the ability instance on the stack so a
         // copy-ability effect (e.g. Gogo, Master of Mimicry) makes no copy of it.

@@ -166,10 +166,10 @@ object ContestedRetargetLogic {
         }
 
         // All slots resolved — write the (possibly unchanged) targets back onto the object.
-        val requirements = state.getEntity(stackObjectId)?.get<TargetsComponent>()?.targetRequirements
-            ?: emptyList()
+        val current = state.getEntity(stackObjectId)?.get<TargetsComponent>()
+            ?: TargetsComponent(emptyList())
         val updatedState = state.updateEntity(stackObjectId) { container ->
-            container.with(TargetsComponent.capture(state, acc, requirements))
+            container.with(current.retargeted(state, acc))
         }
         return EffectResult.success(updatedState)
     }

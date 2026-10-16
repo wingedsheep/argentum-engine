@@ -5508,6 +5508,143 @@
     "colorIdentityOverride": []
 }
 
+// Plasma Caster
+{
+    "name": "Plasma Caster",
+    "manaCost": "{1}{R}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Equipped creature gets +1/+1.\nWhenever equipped creature attacks, you get {E}{E} (two energy counters).\nPay {E}{E}: Choose target creature that's blocking equipped creature. Flip a coin. If you win the flip, exile the chosen creature. Otherwise, this Equipment deals 1 damage to it.\nEquip {2}",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Plasma Caster:1",
+                "trigger": "AttackEvent",
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "ENERGY",
+                    "count": 2,
+                    "target": "Controller"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Plasma Caster:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomPayPlayerCounters",
+                        "counterType": "ENERGY",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    }
+                },
+                "effect": {
+                    "type": "FlipCoin",
+                    "wonEffect": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "destination": "Exile"
+                    },
+                    "lostEffect": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "damageSource": "Self"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ],
+                                "statePredicates": [
+                                    {
+                                        "type": "IsBlockingEntity",
+                                        "reference": "EquippedCreature"
+                                    }
+                                ]
+                            }
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "Pay {E}{E}: Choose target creature blocking equipped creature. Flip a coin. Win: exile it. Lose: Plasma Caster deals 1 damage to it."
+            },
+            {
+                "id": "Plasma Caster:3",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1
+            }
+        ]
+    },
+    "equipCost": "{2}",
+    "metadata": {
+        "collectorNumber": "64",
+        "rarity": "RARE",
+        "artist": "Kekai Kotaki",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/1/c1654256-25ea-4467-812d-25f32fe65cdd.jpg?1783912403",
+        "rulings": [
+            {
+                "date": "2024-03-08",
+                "text": "If the target creature is no longer on the battlefield or no longer blocking the equipped creature when Plasma Caster's third ability tries to resolve, it won't resolve and none of its effects happen. You won't flip a coin."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "If Plasma Caster is no longer on the battlefield or no longer attached to the same creature when its third ability resolves, the ability will still resolve as normal."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Powder Ganger
 {
     "name": "Powder Ganger",

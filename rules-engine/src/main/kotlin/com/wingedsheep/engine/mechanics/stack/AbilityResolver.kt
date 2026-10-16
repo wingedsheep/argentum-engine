@@ -88,6 +88,7 @@ internal class AbilityResolver(
                 targetEntryStamps = targetsComponent.targetEntryStamps,
                 storedCollections = com.wingedsheep.engine.event.triggerStoredCollections(abilityComponent.triggerContext, abilityComponent.carriedPipeline),
                 resolution = context,
+                targetingAttachmentHost = targetsComponent.targetingAttachmentHost,
             )
             if (validTargets.isEmpty()) {
                 // Fizzle - remove ability entity
@@ -157,6 +158,7 @@ internal class AbilityResolver(
                 sourceBattlefieldTimestamp = abilityComponent.sourceBattlefieldTimestamp,
                 objectReferences = abilityComponent.objectReferences,
                 lastKnownSourceSnapshot = abilityComponent.lastKnownSourceSnapshot,
+                targetingAttachmentHost = targetsComponent.targetingAttachmentHost,
             )
             if (validTargets.isEmpty()) {
                 return abilityFizzled(

@@ -76,11 +76,7 @@ class ReselectTargetRandomlyExecutor(
             ?: return EffectResult.success(stateAfterPick)
 
         // 6. Update the target on the stack entity
-        val newTargetsComponent = TargetsComponent.capture(
-            stateAfterPick,
-            listOf(newTarget),
-            targetsComponent.targetRequirements
-        )
+        val newTargetsComponent = targetsComponent.retargeted(stateAfterPick, listOf(newTarget))
         val newState = stateAfterPick.updateEntity(triggeringEntityId) { container ->
             container.with(newTargetsComponent)
         }

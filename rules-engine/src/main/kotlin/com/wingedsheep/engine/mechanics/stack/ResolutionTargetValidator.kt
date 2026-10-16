@@ -73,6 +73,8 @@ internal class ResolutionTargetValidator(
             ObjectReferenceEnvironment(),
         lastKnownSourceSnapshot: EntitySnapshot? = null,
         resolution: EffectContext? = null,
+        /** [TargetsComponent.targetingAttachmentHost] — the source's host when these targets were chosen. */
+        targetingAttachmentHost: EntityId? = null,
     ): List<ChosenTarget> {
         // Always project state for shroud/hexproof checks (Rule 702.18, 702.11)
         val projected = state.projectedState
@@ -94,6 +96,7 @@ internal class ResolutionTargetValidator(
             targets = targets,
             namedTargets = (resolution?.pipeline?.namedTargets ?: emptyMap()) +
                 EffectContext.buildNamedTargets(targetRequirements, targets),
+            targetingAttachmentHost = targetingAttachmentHost,
         )
 
         val individuallyLegal = targets.indices.filter { index ->
