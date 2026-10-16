@@ -74,6 +74,9 @@ import { getRemainingCostAfterConvoke, parseManaCost, pickConvokeColor, totalMan
 /** Shared empty list for cards that can never be played from where they are — see GameCardImpl. */
 const NO_LEGAL_ACTIONS: readonly LegalActionInfo[] = Object.freeze([])
 
+/** A chip inside the bottom-right stat cluster: the cluster's column lays it out, not its own corner offsets. */
+const STAT_CLUSTER_ITEM: React.CSSProperties = { position: 'static', top: undefined, right: undefined, bottom: undefined, left: undefined }
+
 /** Soft halo colors for the chosen-color gem, keyed by MTG color (see grantedColors). */
 const COLOR_GLOW: Record<Color, string> = {
   [Color.WHITE]: 'rgba(245, 240, 210, 0.9)',
@@ -394,6 +397,12 @@ function GameCardImpl({
     return `${defense} — protected by ${nameOf(card.protectorId)}, controlled by ${nameOf(card.controllerId)}`
   })
   const needsLandscapeContainer = Math.abs(totalRotateDeg) % 180 === 90
+  // The bottom-right stat cluster's anchor counter-rotates, so on screen the cluster sits at the
+  // corner the card's printed bottom-right turned into; this slides it to the side that faces into
+  // the card from there (bottom-left when tapped, top-left upside-down, top-right at 270°).
+  const quarterTurns = (((totalRotateDeg / 90) % 4) + 4) % 4
+  const statClusterShift = ['', 'translate(100%, 0)', 'translate(100%, 100%)', 'translate(0, 100%)'][quarterTurns] || undefined
+  const statClusterOnLeft = quarterTurns === 1 || quarterTurns === 2
   // Emerge (CR 702.119a): while the sacrifice is being picked, the server has priced *every*
   // candidate — the reduction is that creature's mana value off the generic part of the emerge cost.
   // Showing each candidate's resulting cost on the card itself (`costIfSacrificed`) makes the choice
@@ -1410,54 +1419,129 @@ function GameCardImpl({
         <div style={styles.untapLockedOverlay} />
       )}
 
-      {/* P/T overlay for creatures on battlefield (server sends 2/2 for face-down creatures) */}
-      {battlefield && card.power !== null && card.toughness !== null && (
+      {/* Bottom-right stat cluster — P/T (or a planeswalker's loyalty) with the stat-changing counters
+          stacked above it. It stays upright when the permanent taps, like every other in-card chip,
+          but it can't simply counter-rotate in place: a pill that is wider than tall would poke out
+          of the card and onto the +1/+1 chip. So the cluster hangs off a zero-size anchor pinned at
+          the card's bottom-right corner; the anchor counter-rotates (net rotation zero on screen),
+          and the content slides to whichever side of the anchor faces into the card — on a tapped
+          card that corner is the visual bottom-left, where the badge already sat sideways. The
+          corner it leaves is the one the won't-untap lock and charge chips turn into when tapped,
+          so nothing new collides, and both legs ride the card's own turn curve. */}
+      {battlefield && (
+        (card.power !== null && card.toughness !== null) ||
+        (getLoyaltyCounters(card) > 0 && (card.power === null || card.power === undefined)) ||
+        hasStatCounters(card) ||
+        getPlagueCounters(card) > 0
+      ) && (
         <div style={{
-          ...styles.ptOverlay,
-          backgroundColor: faceDown
-            ? 'rgba(0, 0, 0, 0.7)'
-            : getPTColor(card.power, card.toughness, card.basePower, card.baseToughness) !== 'white'
-              ? 'rgba(0, 0, 0, 0.85)'
-              : 'rgba(0, 0, 0, 0.7)',
+          position: 'absolute',
+          right: 4,
+          bottom: 4,
+          width: 0,
+          height: 0,
+          zIndex: 5,
+          pointerEvents: 'none',
+          transform: totalRotateDeg ? `rotate(${-totalRotateDeg}deg)` : undefined,
+          transition: counterRotateTransition,
         }}>
-          <span style={{
-            color: faceDown ? 'white' : getPTColor(card.power, card.toughness, card.basePower, card.baseToughness),
-            fontWeight: 700,
-            fontSize: responsive.badges.ptFontSize,
+          <div style={{
+            position: 'absolute',
+            right: 0,
+            bottom: 0,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: statClusterOnLeft ? 'flex-start' : 'flex-end',
+            gap: 2,
+            // The anchor is zero-wide, so shrink-to-fit would squeeze every chip to min-content.
+            width: 'max-content',
+            transform: statClusterShift,
+            transition: counterRotateTransition,
           }}>
-            {card.power}/
-          </span>
-          <span style={{
-            color: faceDown
-              ? (card.damage != null && card.damage > 0 ? '#ff4444' : 'white')
-              : card.damage != null && card.damage > 0
-                ? '#ff4444'
-                : getPTColor(card.power, card.toughness, card.basePower, card.baseToughness),
-            fontWeight: 700,
-            fontSize: responsive.badges.ptFontSize,
-          }}>
-            {card.damage != null && card.damage > 0
-              ? card.toughness - card.damage
-              : card.toughness}
-          </span>
-        </div>
-      )}
+            {/* Plague counter badge */}
+            {battlefield && getPlagueCounters(card) > 0 && (
+              <div style={{
+                ...styles.plagueCounterBadge,
+                ...STAT_CLUSTER_ITEM,
+                fontSize: responsive.badges.counterTextFontSize,
+                padding: responsive.badges.badgePadding,
+              }}>
+                <i className={`ms ms-${counterManaClass.PLAGUE}`} style={{ fontSize: responsive.badges.counterIconFontSize }} />
+                <span style={{ fontWeight: 700 }}>
+                  {getPlagueCounters(card)}
+                </span>
+              </div>
+            )}
 
-      {/* Loyalty counter badge for planeswalkers */}
-      {battlefield && getLoyaltyCounters(card) > 0 && (card.power === null || card.power === undefined) && (
-        <div style={{
-          ...styles.ptOverlay,
-          backgroundColor: 'rgba(60, 60, 60, 0.9)',
-          border: '1px solid rgba(200, 160, 60, 0.6)',
-        }}>
-          <i className={`ms ms-${counterManaClass.LOYALTY}`} style={{ fontSize: responsive.badges.counterIconFontSize, color: '#e0c060', marginRight: 2 }} />
-          <span style={{
-            color: '#e0c060',
-            fontWeight: 700,
-            fontSize: responsive.badges.ptFontSize,
-          }}>
-            {getLoyaltyCounters(card)}
-          </span>
+            {/* Counter badge for creatures with +1/+1 or -1/-1 counters */}
+            {battlefield && hasStatCounters(card) && (
+              <div style={{
+                ...styles.counterBadge,
+                ...STAT_CLUSTER_ITEM,
+                fontSize: responsive.badges.counterTextFontSize,
+                padding: responsive.badges.badgePadding,
+              }}>
+                <i className={`ms ms-${getCounterStatModifier(card) >= 0 ? counterManaClass.PLUS_ONE_PLUS_ONE : counterManaClass.MINUS_ONE_MINUS_ONE}`} style={{ fontSize: responsive.badges.counterIconFontSize }} />
+                <span style={styles.counterBadgeText}>
+                  {getCounterStatModifier(card) >= 0 ? '+' : ''}{getCounterStatModifier(card)}
+                </span>
+              </div>
+            )}
+
+            {/* P/T overlay for creatures on battlefield (server sends 2/2 for face-down creatures) */}
+            {battlefield && card.power !== null && card.toughness !== null && (
+              <div style={{
+                ...styles.ptOverlay,
+                ...STAT_CLUSTER_ITEM,
+                backgroundColor: faceDown
+                  ? 'rgba(0, 0, 0, 0.7)'
+                  : getPTColor(card.power, card.toughness, card.basePower, card.baseToughness) !== 'white'
+                    ? 'rgba(0, 0, 0, 0.85)'
+                    : 'rgba(0, 0, 0, 0.7)',
+              }}>
+                <span style={{
+                  color: faceDown ? 'white' : getPTColor(card.power, card.toughness, card.basePower, card.baseToughness),
+                  fontWeight: 700,
+                  fontSize: responsive.badges.ptFontSize,
+                }}>
+                  {card.power}/
+                </span>
+                <span style={{
+                  color: faceDown
+                    ? (card.damage != null && card.damage > 0 ? '#ff4444' : 'white')
+                    : card.damage != null && card.damage > 0
+                      ? '#ff4444'
+                      : getPTColor(card.power, card.toughness, card.basePower, card.baseToughness),
+                  fontWeight: 700,
+                  fontSize: responsive.badges.ptFontSize,
+                }}>
+                  {card.damage != null && card.damage > 0
+                    ? card.toughness - card.damage
+                    : card.toughness}
+                </span>
+              </div>
+            )}
+
+            {/* Loyalty counter badge for planeswalkers */}
+            {battlefield && getLoyaltyCounters(card) > 0 && (card.power === null || card.power === undefined) && (
+              <div style={{
+                ...styles.ptOverlay,
+                ...STAT_CLUSTER_ITEM,
+                backgroundColor: 'rgba(60, 60, 60, 0.9)',
+                border: '1px solid rgba(200, 160, 60, 0.6)',
+              }}>
+                <i className={`ms ms-${counterManaClass.LOYALTY}`} style={{ fontSize: responsive.badges.counterIconFontSize, color: '#e0c060', marginRight: 2 }} />
+                <span style={{
+                  color: '#e0c060',
+                  fontWeight: 700,
+                  fontSize: responsive.badges.ptFontSize,
+                }}>
+                  {getLoyaltyCounters(card)}
+                </span>
+              </div>
+            )}
+
+          </div>
         </div>
       )}
 
@@ -1639,20 +1723,6 @@ function GameCardImpl({
         </div>
       )}
 
-      {/* Counter badge for creatures with +1/+1 or -1/-1 counters */}
-      {battlefield && hasStatCounters(card) && (
-        <div style={{
-          ...styles.counterBadge,
-          fontSize: responsive.badges.counterTextFontSize,
-          padding: responsive.badges.badgePadding,
-        }}>
-          <i className={`ms ms-${getCounterStatModifier(card) >= 0 ? counterManaClass.PLUS_ONE_PLUS_ONE : counterManaClass.MINUS_ONE_MINUS_ONE}`} style={{ fontSize: responsive.badges.counterIconFontSize }} />
-          <span style={styles.counterBadgeText}>
-            {getCounterStatModifier(card) >= 0 ? '+' : ''}{getCounterStatModifier(card)}
-          </span>
-        </div>
-      )}
-
       {/* Gold counter badge */}
       {battlefield && getGoldCounters(card) > 0 && (
         <div style={{
@@ -1663,20 +1733,6 @@ function GameCardImpl({
           <i className={`ms ms-${counterManaClass.GOLD}`} style={{ fontSize: responsive.badges.counterIconFontSize }} />
           <span style={{ fontWeight: 700 }}>
             {getGoldCounters(card)}
-          </span>
-        </div>
-      )}
-
-      {/* Plague counter badge */}
-      {battlefield && getPlagueCounters(card) > 0 && (
-        <div style={{
-          ...styles.plagueCounterBadge,
-          fontSize: responsive.badges.counterTextFontSize,
-          padding: responsive.badges.badgePadding,
-        }}>
-          <i className={`ms ms-${counterManaClass.PLAGUE}`} style={{ fontSize: responsive.badges.counterIconFontSize }} />
-          <span style={{ fontWeight: 700 }}>
-            {getPlagueCounters(card)}
           </span>
         </div>
       )}
