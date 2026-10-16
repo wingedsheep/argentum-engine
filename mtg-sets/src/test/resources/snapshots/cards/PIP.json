@@ -5885,6 +5885,137 @@
     }
 }
 
+// Struggle for Project Purity
+{
+    "name": "Struggle for Project Purity",
+    "manaCost": "{3}{U}",
+    "typeLine": "Enchantment",
+    "oracleText": "As this enchantment enters, choose Brotherhood or Enclave.\n• Brotherhood — At the beginning of your upkeep, each opponent draws a card. You draw a card for each card drawn this way.\n• Enclave — Whenever a player attacks you with one or more creatures, that player gets twice that many rad counters.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Struggle for Project Purity:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "StoreNumber",
+                            "name": "number0",
+                            "amount": {
+                                "type": "TurnTracking",
+                                "player": "EachOpponent",
+                                "tracker": "CARDS_DRAWN"
+                            }
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Players",
+                                "players": "EachOpponent"
+                            },
+                            "body": {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            }
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Subtract",
+                                "left": {
+                                    "type": "TurnTracking",
+                                    "player": "EachOpponent",
+                                    "tracker": "CARDS_DRAWN"
+                                },
+                                "right": {
+                                    "type": "VariableReference",
+                                    "variableName": "number0"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "triggerRestriction": {
+                    "type": "SourceChosenModeIs",
+                    "modeId": "brotherhood"
+                }
+            },
+            {
+                "id": "Struggle for Project Purity:2",
+                "trigger": "CreaturesAttackYouEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddDynamicCounters",
+                    "counterType": "RAD",
+                    "amount": {
+                        "type": "Multiply",
+                        "amount": {
+                            "type": "DistinctEntitiesInCollections",
+                            "collections": [
+                                "trigger.captured"
+                            ]
+                        },
+                        "multiplier": 2
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "TriggeringPlayer"
+                    }
+                },
+                "triggerRestriction": {
+                    "type": "SourceChosenModeIs",
+                    "modeId": "enclave"
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithChoice",
+                "choiceType": "MODE",
+                "modeOptions": [
+                    {
+                        "id": "brotherhood",
+                        "label": "Brotherhood",
+                        "description": "At your upkeep, each opponent draws a card; you draw that many."
+                    },
+                    {
+                        "id": "enclave",
+                        "label": "Enclave",
+                        "description": "A player attacking you gets two rad counters per attacker."
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "39",
+        "rarity": "RARE",
+        "artist": "Billy Christian",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/4/04c60155-9337-4ea2-b9a2-5b72d96743ff.jpg?1783912410",
+        "rulings": [
+            {
+                "date": "2024-03-08",
+                "text": "The number of rad counters the attacking player gets when the “Enclave” triggered ability resolves is based on the number of creatures they declared as attackers. Removing creatures from combat won’t reduce the number of rad counters they get. Similarly, creatures that enter the battlefield attacking but weren’t declared as attackers won’t increase the number of rad counters they get."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "If you somehow control Struggle for Project Purity and no choice was made for it (perhaps because another permanent on the battlefield became a copy of it), it has neither of the two triggered abilities."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Sunscorched Divide
 {
     "name": "Sunscorched Divide",
