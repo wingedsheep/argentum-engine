@@ -2237,6 +2237,23 @@ data class EntersWithChoice(
      * every other choice type.
      */
     val excludedColors: Set<Color> = emptySet(),
+    /**
+     * When [choiceType] is [ChoiceType.CREATURE_ON_BATTLEFIELD], which permanents on the battlefield
+     * may be chosen, matched from the entering permanent's controller's point of view (so
+     * `youControl()` means "you control"). The entering object itself is never a candidate. `null`
+     * is the default "another creature you control" (Dauntless Bodyguard); Scheming Fence's "a
+     * nonland permanent" is [GameObjectFilter.NonlandPermanent]. Whatever the filter, the pick is
+     * stored in [ChoiceSlot.CREATURE] and read back through
+     * [com.wingedsheep.sdk.scripting.predicates.CardPredicate.ChosenBySource] /
+     * [com.wingedsheep.sdk.scripting.targets.EffectTarget.ChosenCreature]. Ignored for every other
+     * choice type.
+     */
+    val permanentFilter: GameObjectFilter? = null,
+    /**
+     * When true, the chooser may decline — "you may choose …" (Scheming Fence) — and the permanent
+     * enters with no choice recorded. Only [ChoiceType.CREATURE_ON_BATTLEFIELD] honours it.
+     */
+    val mayChooseNothing: Boolean = false,
     override val appliesTo: EventPattern = EventPattern.ZoneChangeEvent(
         filter = GameObjectFilter.Any,
         to = Zone.BATTLEFIELD
@@ -2257,7 +2274,13 @@ data class EntersWithChoice(
         } else {
             "As this permanent enters, choose a creature type"
         }
-        ChoiceType.CREATURE_ON_BATTLEFIELD -> "As this creature enters, choose another creature you control"
+        ChoiceType.CREATURE_ON_BATTLEFIELD -> if (permanentFilter == null && !mayChooseNothing) {
+            "As this creature enters, choose another creature you control"
+        } else {
+            val verb = if (mayChooseNothing) "you may choose" else "choose"
+            val what = permanentFilter?.description ?: "another creature you control"
+            "As this permanent enters, $verb ${if (permanentFilter == null) what else "a $what"}"
+        }
         ChoiceType.MODE -> {
             val labels = modeOptions.joinToString(" or ") { it.label }
             if (chooser == Player.AnOpponent) {
@@ -2291,7 +2314,9 @@ data class EntersWithChoice(
 
     override fun applyTextReplacement(replacer: TextReplacer): ReplacementEffect {
         val newAppliesTo = appliesTo.applyTextReplacement(replacer)
-        return if (newAppliesTo !== appliesTo) copy(appliesTo = newAppliesTo) else this
+        val newFilter = permanentFilter?.applyTextReplacement(replacer)
+        return if (newAppliesTo !== appliesTo || newFilter !== permanentFilter)
+            copy(appliesTo = newAppliesTo, permanentFilter = newFilter) else this
     }
 }
 

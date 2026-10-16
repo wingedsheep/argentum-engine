@@ -26,12 +26,10 @@ import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
  * The gained copies use Drana and Linvala as their source (CR 113.7 — "{T}: This deals 2 damage"
  * taps and is dealt by Drana and Linvala).
  *
- * "Spend mana as though it were mana of any color" is modelled with the any-type relaxation
- * (`substituteColor = null`), which turns colored pips into generic — exactly "any color" for
- * colored requirements. Known caveat: that relaxation also treats a `{C}` pip as generic, which
- * "any color" strictly doesn't (CR 118.14: "any type" adds "as though it were colorless"); the SDK has no
- * "any mana as any color" strength yet. Drana and Linvala has no activated abilities of its own,
- * so scoping the relaxation to the source covers exactly "those abilities".
+ * "Spend mana as though it were mana of any color" is the `asThoughAnyColor` relaxation: colored
+ * pips accept any mana, while a `{C}` pip still demands colorless mana (colorless is a type, not a
+ * color — CR 118.14 is the broader "any type"). Drana and Linvala has no activated abilities of its
+ * own, so scoping the relaxation to the source covers exactly "those abilities".
  */
 val DranaAndLinvala = card("Drana and Linvala") {
     manaCost = "{1}{W}{W}{B}"
@@ -57,7 +55,7 @@ val DranaAndLinvala = card("Drana and Linvala") {
         )
     }
     staticAbility {
-        ability = SpendAnyManaTypeForActivatedAbilities(filter = GroupFilter.source())
+        ability = SpendAnyManaTypeForActivatedAbilities(filter = GroupFilter.source(), asThoughAnyColor = true)
     }
 
     metadata {

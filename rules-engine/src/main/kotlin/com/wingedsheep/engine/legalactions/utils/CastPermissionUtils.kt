@@ -1719,6 +1719,7 @@ class CastPermissionUtils(
                     for (copied in com.wingedsheep.engine.state.components.identity.ownActivatedAbilities(sourceCard, sourceDef, sourceClassLevel)) {
                         if (copied.activateFromZone != com.wingedsheep.sdk.core.Zone.BATTLEFIELD) continue
                         if (!gain.includeManaAbilities && copied.isManaAbility) continue
+                        if (!gain.includeLoyaltyAbilities && copied.isPlaneswalkerAbility) continue
                         result.add(StaticGrantedAbility(copied, granterId))
                     }
                 }
@@ -1833,11 +1834,17 @@ class CastPermissionUtils(
         // activator's, applied after the spend relaxations so a widened pip keeps its life option.
         val lifePayable = com.wingedsheep.engine.mechanics.mana.LifePayableMana.colors(state, cardRegistry, payerId)
         if (relaxations.isEmpty() && lifePayable.isEmpty()) return cost
-        val anyType = relaxations.any { it.substituteColor == null }
+        val anyType = relaxations.any { it.substituteColor == null && !it.asThoughAnyColor }
+        val anyColor = relaxations.any { it.substituteColor == null && it.asThoughAnyColor }
         val substitutes = relaxations.mapNotNull { it.substituteColor }.distinct()
         fun relax(mana: com.wingedsheep.sdk.core.ManaCost): com.wingedsheep.sdk.core.ManaCost {
-            val spendRelaxed = if (anyType) mana.relaxColors()
-                else substitutes.fold(mana) { acc, color -> acc.relaxColorsTo(color) }
+            // Strongest first: any type relaxes {C} too; any color leaves {C} (CR 609.4b) and
+            // already subsumes every single-color substitution.
+            val spendRelaxed = when {
+                anyType -> mana.relaxColors()
+                anyColor -> mana.relaxColoredRequirements()
+                else -> substitutes.fold(mana) { acc, color -> acc.relaxColorsTo(color) }
+            }
             return lifePayable.fold(spendRelaxed) { acc, color -> acc.withLifePayable(color) }
         }
         return when (cost) {

@@ -5427,6 +5427,77 @@
     ]
 }
 
+// Scheming Fence
+{
+    "name": "Scheming Fence",
+    "manaCost": "{W}{U}",
+    "typeLine": "Creature — Human Citizen",
+    "oracleText": "As this creature enters, you may choose a nonland permanent.\nActivated abilities of the chosen permanent can't be activated.\nThis creature has all activated abilities of the chosen permanent except for loyalty abilities. You may spend mana as though it were mana of any color to activate those abilities.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "PreventActivatedAbilities",
+                "filter": {
+                    "cardPredicates": [
+                        "IsPermanent",
+                        "ChosenBySource"
+                    ]
+                }
+            },
+            {
+                "type": "GainActivatedAbilitiesOfPermanents",
+                "grantedTo": {
+                    "baseFilter": "permanent",
+                    "scope": "Self"
+                },
+                "sourceFilter": {
+                    "cardPredicates": [
+                        "IsPermanent",
+                        "ChosenBySource"
+                    ]
+                },
+                "includeManaAbilities": true,
+                "includeLoyaltyAbilities": false
+            },
+            {
+                "type": "SpendAnyManaTypeForActivatedAbilities",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "Self"
+                },
+                "asThoughAnyColor": true
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithChoice",
+                "choiceType": "CREATURE_ON_BATTLEFIELD",
+                "permanentFilter": {
+                    "cardPredicates": [
+                        "IsNonland",
+                        "IsPermanent"
+                    ]
+                },
+                "mayChooseNothing": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "219",
+        "rarity": "RARE",
+        "artist": "Cristi Balanescu",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/f/af7ef030-7bae-4820-b51a-8fad57a8ff2f.jpg?1783923071"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
+    ]
+}
+
 // Sizzling Soloist
 {
     "name": "Sizzling Soloist",

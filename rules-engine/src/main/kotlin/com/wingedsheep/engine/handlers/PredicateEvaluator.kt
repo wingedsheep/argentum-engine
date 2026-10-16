@@ -2,6 +2,7 @@ package com.wingedsheep.engine.handlers
 
 import com.wingedsheep.engine.mechanics.layers.containsKeyword
 import com.wingedsheep.engine.state.components.battlefield.chosenCreatureType
+import com.wingedsheep.engine.state.components.battlefield.chosenCreatureOf
 import com.wingedsheep.sdk.scripting.ChoiceSlot
 import com.wingedsheep.engine.state.components.battlefield.entitiesChoice
 import com.wingedsheep.engine.state.components.battlefield.BattlefieldEntryTimestampComponent
@@ -458,6 +459,7 @@ class PredicateEvaluator(
             CardPredicate.SharesCreatureTypeWithSource,
             CardPredicate.SharesCreatureTypeWithTriggeringEntity,
             CardPredicate.ConvokedSource,
+            CardPredicate.ChosenBySource,
             is CardPredicate.SharesManaValueWith,
             is CardPredicate.SharesNameWith,
             CardPredicate.SharesNameWithLinkedExile,
@@ -1140,6 +1142,12 @@ class PredicateEvaluator(
                 val current = state.getEntity(entityId)
                     ?.get<BattlefieldEntryTimestampComponent>()?.timestamp ?: 0L
                 entityId in state.getBattlefield() && current == stamp
+            }
+
+            // "The chosen permanent" — the same object the source picked as it entered (CR 400.7).
+            CardPredicate.ChosenBySource -> {
+                val sourceId = context?.sourceId ?: return false
+                state.chosenCreatureOf(sourceId) == entityId
             }
 
             CardPredicate.SharesCreatureTypeWithSource -> {
@@ -2635,7 +2643,7 @@ class PredicateEvaluator(
             // Source-relative and context predicates — not applicable
             CardPredicate.NotOfSourceChosenType, CardPredicate.SharesCreatureTypeWithSource,
             CardPredicate.SharesCreatureTypeWithTriggeringEntity,
-            CardPredicate.ConvokedSource, CardPredicate.HasChosenSubtype,
+            CardPredicate.ConvokedSource, CardPredicate.ChosenBySource, CardPredicate.HasChosenSubtype,
             CardPredicate.HasChosenColor, CardPredicate.SharesChosenColorWithSource,
             CardPredicate.SharesColorWithRecipient,
             CardPredicate.SharesColorWithTriggeringMana,

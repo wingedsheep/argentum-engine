@@ -411,6 +411,9 @@ interface ObjectFilterBuilder<out Self> {
     /** Must have convoked the source object (CR 702.51c) — "each creature that convoked it" */
     fun thatConvokedSource() = withCardPredicate(CardPredicate.ConvokedSource)
 
+    /** Must be the permanent the source chose as it entered — "the chosen permanent" */
+    fun chosenBySource() = withCardPredicate(CardPredicate.ChosenBySource)
+
     /** Must share a creature type with the referenced entity */
     fun sharingCreatureTypeWith(entity: EffectTarget.SingleEntity) =
         withCardPredicate(CardPredicate.SharesCreatureTypeWith(entity))

@@ -1098,6 +1098,7 @@ internal class AffectsFilterResolver(
         CardPredicate.SharesCreatureTypeWithSource,
         CardPredicate.SharesCreatureTypeWithTriggeringEntity,
         CardPredicate.ConvokedSource,
+        CardPredicate.ChosenBySource,
         CardPredicate.HasChosenSubtype,
         CardPredicate.SharesChosenColorWithSource,
         CardPredicate.SharesColorWithRecipient,

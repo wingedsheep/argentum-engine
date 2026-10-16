@@ -6527,6 +6527,10 @@ relative to the static's source; `baseFilter` / `excludeSelf` are ignored for th
   and `Triggers.self.leaves()` → `Effects.SacrificeTarget(EffectTarget.ChosenCreature)` — the source's own
   leaves trigger reads the choice as it last existed, since the live choice went with the departed object.
 - `GroupFilter.specific(entityId)` (`Scope.Specific`) — a pre-bound entity.
+- `GameObjectFilter.Permanent.chosenBySource()` (`CardPredicate.ChosenBySource`) — the same "chosen permanent",
+  as a filter predicate, for abilities that take a `GameObjectFilter` rather than a `GroupFilter`
+  (`PreventActivatedAbilities`, `GainActivatedAbilitiesOfPermanents`). Same object-bound reading (CR 400.7);
+  fails closed with no source. Scheming Fence locks and copies the chosen permanent's activated abilities with it.
 
 ### Stack-object predicates
 
@@ -10277,13 +10281,16 @@ staticAbility {
   permanent matching it (projected, reference player = this ability's controller); a graveyard card's
   enters trigger is untouched. Elesh Norn, Mother of Machines → `SuppressEntersTriggers(GameObjectFilter.Permanent,
   abilitiesOf = GameObjectFilter.Permanent.opponentControls())`.
-- `GainActivatedAbilitiesOfPermanents(grantedTo, sourceFilter, includeManaAbilities = false)` —
+- `GainActivatedAbilitiesOfPermanents(grantedTo, sourceFilter, includeManaAbilities = false, includeLoyaltyAbilities = true)` —
   permanents matching `grantedTo` (a `GroupFilter`; use `GroupFilter.source()` for "this permanent")
   gain copies of the activated abilities of every permanent matching `sourceFilter`. The copy uses
   the gaining permanent as its source (CR 113.2), so a copied `SacrificeSelf`/`{T}` refers to the
   gainer. The dynamic, copy-from-other-permanents sibling of `GrantActivatedAbility`. Mana abilities
-  are excluded unless `includeManaAbilities = true`. (Sharkey, Tyrant of the Shire — "Sharkey has all
-  activated abilities of lands your opponents control except mana abilities")
+  are excluded unless `includeManaAbilities = true`; loyalty abilities are copied unless
+  `includeLoyaltyAbilities = false` ("except for loyalty abilities"). (Sharkey, Tyrant of the Shire — "Sharkey has all
+  activated abilities of lands your opponents control except mana abilities"; Scheming Fence —
+  `sourceFilter = GameObjectFilter.Permanent.chosenBySource()`, `includeManaAbilities = true`,
+  `includeLoyaltyAbilities = false`.)
 - `SpendManaAsColor(fromColor, toColor)` — the controller may spend mana of one color as though it were
   another for **any** mana payment (Sunglasses of Urza: `WHITE` → `RED`). This is directional:
   white remains usable for white or generic costs, while red gains no permission to pay white.
@@ -10300,16 +10307,20 @@ staticAbility {
   mana and sources, and greedy planning for sources with multiple mana, bonuses or activation costs.
   New Assay grammar vocabulary; no Oracle grammar band is introduced here.
 
-- `SpendAnyManaTypeForActivatedAbilities(filter, substituteColor = null)` — relaxes the mana portion
+- `SpendAnyManaTypeForActivatedAbilities(filter, substituteColor = null, asThoughAnyColor = false)` — relaxes the mana portion
   of the activated-ability costs of permanents matching `filter` (a `GroupFilter`; use
   `GroupFilter.source()` for "this permanent's abilities") per CR 118.14 / 609.4b. Non-mana cost
   components are untouched, and both affordability checks and the mana solver honor it through the
   single `relaxAbilityCostColorsIfAny` seam. `filter` is matched against the permanent whose ability
   is being activated, so a battlefield filter scopes the permission to a class of permanents.
-  **Two strengths, chosen by `substituteColor`:**
+  **Three strengths, chosen by `substituteColor` and `asThoughAnyColor`:**
     - `null` (default) — "**mana of any type can be spent**": colored/hybrid/Phyrexian/colorless pips
-      all become generic. (Sharkey, Tyrant of the Shire → `GroupFilter.source()`; Agatha's Soul
-      Cauldron → `GroupFilter.AllCreaturesYouControl`.)
+      all become generic. (Sharkey, Tyrant of the Shire → `GroupFilter.source()`.)
+    - `null` with `asThoughAnyColor = true` — "**you may spend mana as though it were mana of any
+      color**": colored/hybrid/Phyrexian pips become generic (`ManaCost.relaxColoredRequirements`),
+      but a `{C}` pip still demands colorless mana — colorless is a type, not a color. (Agatha's Soul
+      Cauldron → `GroupFilter.AllCreaturesYouControl`; Drana and Linvala and Scheming Fence →
+      `GroupFilter.source()`.)
     - a `Color` — "**you may spend [color] mana as though it were mana of any color**": only that
       color gains the substitution, and only for *colored* requirements. Lowered by rewriting each
       foreign colored pip into a hybrid with the substitute (`ManaCost.relaxColorsTo`), reusing the
@@ -13714,7 +13725,7 @@ answer it and would silently return `false`.
   gift was promised while casting. Gate a permanent's printed enters-abilities with it (Scrapshooter's
   destroy, Starforged Sword's attach) and with `Conditions.Not(GiftWasPromised)` for the "if the gift
   wasn't promised" riders (Kitnap's stun counters). See `gift(kind)` in § 11.
-- `WaterbendWasPaid` — the spell's optional spell-level **waterbend** additional cost (`waterbendCost(..., optional = true)`, Avatar: The Last Airbender) was paid. Reads the durable `ChoiceSlot.WATERBEND_PAID` flag on a resolved permanent, falling back to the resolution context for a non-permanent spell's own effect. The waterbend analogue of `BlightWasPaid`; backs "if this spell's additional cost was paid" on Ruinous Waterbending and Spirit Water Revival.
+- `WaterbendWasPaid` — the spell's optional spell-level **waterbend** additional cost (`waterbendCost(..., mayChooseNothing = true)`, Avatar: The Last Airbender) was paid. Reads the durable `ChoiceSlot.WATERBEND_PAID` flag on a resolved permanent, falling back to the resolution context for a non-permanent spell's own effect. The waterbend analogue of `BlightWasPaid`; backs "if this spell's additional cost was paid" on Ruinous Waterbending and Spirit Water Revival.
 - `NoManaSpentToCast` — "it wasn't cast or no mana was spent to cast it": the standard free-cast
   payoff clause (**Freestrider Commando**, **Satoru, the Infiltrator**). True when the *total* mana
   spent to put the source onto the battlefield was zero — it was put onto the battlefield without
@@ -15932,7 +15943,11 @@ EntersWithChoice(
 `GrantChosenColor`), and takes `excludedColors` for "choose a color other than red" (the Thriving lands — the
 `ChooseColorDecision` offers only the remaining colors and the validator rejects an excluded one),
 `ChoiceType.CREATURE_TYPE` writes `ChosenCreatureTypeComponent`,
-`ChoiceType.CREATURE_ON_BATTLEFIELD` writes `ChosenCreatureComponent`,
+`ChoiceType.CREATURE_ON_BATTLEFIELD` writes `ChosenCreatureComponent` — by default "another creature
+you control"; `permanentFilter` widens or narrows the pool (matched from the entering permanent's controller's
+view, never the entering object itself) and `mayChooseNothing = true` lets the chooser pick nothing ("you may choose" —
+the permanent then enters with no choice recorded). Scheming Fence: `EntersWithChoice(CREATURE_ON_BATTLEFIELD,
+permanentFilter = GameObjectFilter.NonlandPermanent, mayChooseNothing = true)`,
 `ChoiceType.BASIC_LAND_TYPE` writes `ChosenLandTypeComponent` (read by
 `SetEnchantedLandTypeFromChosen` and `GrantLandwalkOfChosenType`), and
 `ChoiceType.OPPONENT` writes an entity-id choice into the `CastChoicesComponent` under

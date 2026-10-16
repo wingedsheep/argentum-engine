@@ -4776,7 +4776,8 @@
                 "filter": {
                     "baseFilter": "permanent",
                     "scope": "Self"
-                }
+                },
+                "asThoughAnyColor": true
             }
         ]
     },

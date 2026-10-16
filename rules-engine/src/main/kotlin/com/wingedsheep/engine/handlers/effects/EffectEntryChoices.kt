@@ -146,6 +146,14 @@ object EffectEntryChoices {
         )))
     }
 
+    /** [context] with [entityId]'s optional [choiceType] question asked and declined — nothing recorded. */
+    fun declined(context: EffectContext, entityId: EntityId, choiceType: ChoiceType): EffectContext {
+        val prior = context.entryChoices[entityId] ?: EntryChoiceAnswers()
+        return context.copy(entryChoices = context.entryChoices + (entityId to prior.copy(
+            asked = prior.asked + choiceType,
+        )))
+    }
+
     /** [context] with one more granted-Riot answer ([modeId]: counter or haste) for [entityId]. */
     fun answeredRiot(context: EffectContext, entityId: EntityId, modeId: String): EffectContext {
         val prior = context.entryChoices[entityId] ?: EntryChoiceAnswers()

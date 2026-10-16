@@ -122,10 +122,18 @@ class ModalAndCloneContinuationResumer(
         response: DecisionResponse,
         checkForMore: CheckForMore,
     ): ExecutionResult {
-        val (slot, value) = com.wingedsheep.engine.handlers.effects.PermanentEntryReplacements
+        val decoded = com.wingedsheep.engine.handlers.effects.PermanentEntryReplacements
             .decodeEntersChoice(state, continuation.question, response)
-            ?: return ExecutionResult.error(state, "Unexpected response for ${continuation.question.choiceType} choice")
-        val context = if (continuation.question.syntheticRiot) {
+        if (decoded == null && !com.wingedsheep.engine.handlers.effects.PermanentEntryReplacements
+                .isDeclinedEntersChoice(continuation.question.choiceType, response)
+        ) {
+            return ExecutionResult.error(state, "Unexpected response for ${continuation.question.choiceType} choice")
+        }
+        val context = if (decoded == null) {
+            com.wingedsheep.engine.handlers.effects.EffectEntryChoices.declined(
+                continuation.context, continuation.entityId, continuation.question.choiceType)
+        } else if (continuation.question.syntheticRiot) {
+            val value = decoded.second
             // A granted-Riot answer (counter or haste) — recorded apart from the printed MODE slot.
             val modeId = (value as? com.wingedsheep.engine.state.components.battlefield.ChoiceValue.TextChoice)?.text
                 ?: return ExecutionResult.error(state, "Unexpected response for a riot choice")
@@ -133,7 +141,7 @@ class ModalAndCloneContinuationResumer(
                 continuation.context, continuation.entityId, modeId)
         } else {
             com.wingedsheep.engine.handlers.effects.EffectEntryChoices.answered(
-                continuation.context, continuation.entityId, continuation.question.choiceType, slot, value)
+                continuation.context, continuation.entityId, continuation.question.choiceType, decoded.first, decoded.second)
         }
         val result = services.effectExecutorRegistry.execute(state, continuation.effect, context)
         if (result.outcome !is Outcome.Done) return result.toExecutionResult()
@@ -739,9 +747,10 @@ class ModalAndCloneContinuationResumer(
                 if (response !is CardsSelectedResponse) {
                     return ExecutionResult.error(state, "Expected cards selected response for creature choice")
                 }
+                // An empty pick is an optional choice declined ("you may choose", Scheming Fence) —
+                // the minimum the decision allowed — so the permanent enters with nothing chosen.
                 val chosenCreatureId = response.selectedCards.firstOrNull()
-                    ?: return ExecutionResult.error(state, "No creature selected")
-                state.updateEntity(spellId) { c ->
+                if (chosenCreatureId == null) state else state.updateEntity(spellId) { c ->
                     c.withCastChoice(ChoiceSlot.CREATURE, ChoiceValue.EntityChoice(chosenCreatureId, state.objectRef(chosenCreatureId)?.generation))
                 }
             }
@@ -905,10 +914,16 @@ class ModalAndCloneContinuationResumer(
     ): ExecutionResult {
         val entityId = continuation.entityId
         // Store the chosen value into the unified cast-choices bag.
-        val (slot, value) = com.wingedsheep.engine.handlers.effects.PermanentEntryReplacements
+        val decoded = com.wingedsheep.engine.handlers.effects.PermanentEntryReplacements
             .decodeEntersChoice(state, continuation, response)
-            ?: return ExecutionResult.error(state, "Unexpected response for ${continuation.choiceType} choice")
-        var newState = state.updateEntity(entityId) { c ->
+        if (decoded == null && !com.wingedsheep.engine.handlers.effects.PermanentEntryReplacements
+                .isDeclinedEntersChoice(continuation.choiceType, response)
+        ) {
+            return ExecutionResult.error(state, "Unexpected response for ${continuation.choiceType} choice")
+        }
+        // A declined optional choice ("you may choose") records nothing.
+        var newState = if (decoded == null) state else state.updateEntity(entityId) { c ->
+            val (slot, value) = decoded
             val recorded = c.withCastChoice(slot, value)
             if (slot == ChoiceSlot.MODE && value is ChoiceValue.TextChoice) {
                 com.wingedsheep.engine.state.components.identity.EntryCharacteristicsBaking

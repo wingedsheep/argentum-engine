@@ -965,6 +965,26 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
         override val description: String = "that convoked it"
     }
 
+    /**
+     * Matches the permanent the source **chose as it entered** — "the chosen permanent" of an
+     * [com.wingedsheep.sdk.scripting.EntersWithChoice]`(ChoiceType.CREATURE_ON_BATTLEFIELD)`
+     * replacement (Scheming Fence's "Activated abilities of the chosen permanent can't be
+     * activated"), read from the source's [com.wingedsheep.sdk.scripting.ChoiceSlot.CREATURE] slot.
+     * Only the same object matches: once the chosen permanent leaves the battlefield, a later
+     * object the card becomes is a new one (CR 400.7) and no longer matches.
+     *
+     * The filter-shaped reader of the slot that
+     * [com.wingedsheep.sdk.scripting.targets.EffectTarget.ChosenCreature] (an effect target) and
+     * [com.wingedsheep.sdk.scripting.filters.unified.Scope.ChosenCreature] (a group scope) also read —
+     * needed where an ability takes a [com.wingedsheep.sdk.scripting.filters.unified.GameObjectFilter]
+     * (`PreventActivatedAbilities`, `GainActivatedAbilitiesOfPermanents`). Fails closed with no source.
+     */
+    @SerialName("ChosenBySource")
+    @Serializable
+    data object ChosenBySource : CardPredicate {
+        override val description: String = "the chosen permanent"
+    }
+
     /** Matches creatures that share a creature subtype with the triggering entity */
     @SerialName("SharesCreatureTypeWithTriggeringEntity")
     @Serializable

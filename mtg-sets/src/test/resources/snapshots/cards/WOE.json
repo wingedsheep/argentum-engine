@@ -309,7 +309,8 @@
                 "type": "SpendAnyManaTypeForActivatedAbilities",
                 "filter": {
                     "baseFilter": "creature ctrl:you"
-                }
+                },
+                "asThoughAnyColor": true
             },
             {
                 "type": "HasAllActivatedAbilitiesOfCards",

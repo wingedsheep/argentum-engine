@@ -27,10 +27,11 @@ import com.wingedsheep.sdk.scripting.targets.TargetObject
  *  counter on target creature you control."
  *
  * Implementation — three reusable static/activated pieces:
- *  - [SpendAnyManaTypeForActivatedAbilities] scoped to `AllCreaturesYouControl`: relaxes the
- *    colored/colorless requirements of the mana cost of any ability activated from a creature you
- *    control (CR 609.4b), so the granted (and printed) abilities of your creatures can be paid with
- *    mana of any type. Same engine seam as Sharkey, Tyrant of the Shire (there scoped to Self).
+ *  - [SpendAnyManaTypeForActivatedAbilities] scoped to `AllCreaturesYouControl` with
+ *    `asThoughAnyColor`: relaxes the colored requirements of the mana cost of any ability activated
+ *    from a creature you control (CR 609.4b), so the granted (and printed) abilities of your
+ *    creatures can be paid with mana of any color — a `{C}` pip still needs colorless mana. Same
+ *    engine seam as Sharkey, Tyrant of the Shire (there scoped to Self, "any type").
  *  - [HasAllActivatedAbilitiesOfCards] with a battlefield `receivedBy` filter ("creatures you control
  *    with a +1/+1 counter") and `cardFilter = Creature`: every creature card in the Cauldron's
  *    linked-exile pile lends its activated abilities to each such creature, with that creature as
@@ -58,7 +59,10 @@ val AgathasSoulCauldron = card("Agatha's Soul Cauldron") {
     // "You may spend mana as though it were mana of any color to activate abilities of creatures
     // you control."
     staticAbility {
-        ability = SpendAnyManaTypeForActivatedAbilities(filter = GroupFilter.AllCreaturesYouControl)
+        ability = SpendAnyManaTypeForActivatedAbilities(
+            filter = GroupFilter.AllCreaturesYouControl,
+            asThoughAnyColor = true
+        )
     }
 
     // "Creatures you control with +1/+1 counters on them have all activated abilities of all

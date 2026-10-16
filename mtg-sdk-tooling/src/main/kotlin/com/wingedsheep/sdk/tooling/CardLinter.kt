@@ -940,6 +940,7 @@ object CardLinter {
         "SourceChosenModeIs" to "MODE",
         "CardTypeEqualsChosenComponent" to "CARD_TYPE",
         "ConvokedSource" to "CONVOKED_CREATURES",
+        "ChosenBySource" to "CREATURE",
     )
 
     /**

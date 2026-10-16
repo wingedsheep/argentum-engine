@@ -407,6 +407,15 @@ object PermanentEntryReplacements {
     }
 
     /**
+     * True when [response] declines an optional [ChoiceType.CREATURE_ON_BATTLEFIELD] choice — an
+     * empty pick, which the decision only allows for "you may choose" ([EntersWithChoice.mayChooseNothing]).
+     * The permanent then enters with nothing recorded.
+     */
+    fun isDeclinedEntersChoice(choiceType: ChoiceType, response: DecisionResponse): Boolean =
+        choiceType == ChoiceType.CREATURE_ON_BATTLEFIELD &&
+            (response as? CardsSelectedResponse)?.selectedCards?.isEmpty() == true
+
+    /**
      * An [EntersWithChoice] question, not yet asked: the decision to present, and the answer frame
      * that knows how to read the response ([decodeEntersChoice]). [state] and [events] carry the
      * reveal a [EntersWithChoice.lookAtOpponentHand] choice makes before it is asked.
@@ -417,6 +426,48 @@ object PermanentEntryReplacements {
         val state: GameState,
         val events: List<GameEvent> = emptyList(),
     )
+
+    /** Registry-free: a [EntersWithChoice.permanentFilter] reads the board, never a printed script. */
+    private val permanentChoiceEvaluator = PredicateEvaluator(cardRegistry = null)
+
+    /**
+     * The permanents a [ChoiceType.CREATURE_ON_BATTLEFIELD] choice may pick for [entityId] entering
+     * under [controllerId]: its [EntersWithChoice.permanentFilter] (by default "another creature you
+     * control") over the battlefield, from the controller's point of view, never the entering object
+     * itself. Shared by the spell-resolution and on-battlefield prompts so both offer the same pool.
+     */
+    fun chosenPermanentCandidates(
+        state: GameState,
+        entityId: EntityId,
+        controllerId: EntityId,
+        choice: EntersWithChoice,
+    ): List<EntityId> {
+        val projected = state.projectedState
+        val filter = choice.permanentFilter
+        return state.getBattlefield().filter { eid ->
+            if (eid == entityId) return@filter false
+            if (filter == null) {
+                projected.getController(eid) == controllerId && projected.isCreature(eid)
+            } else {
+                permanentChoiceEvaluator.matches(
+                    state, projected, eid, filter,
+                    PredicateContext(controllerId = controllerId, sourceId = entityId)
+                )
+            }
+        }
+    }
+
+    /** The prompt for a [ChoiceType.CREATURE_ON_BATTLEFIELD] choice, shared by both entry paths. */
+    fun chosenPermanentPrompt(cardComponent: CardComponent, choice: EntersWithChoice): String {
+        val filter = choice.permanentFilter
+        if (filter != null) {
+            return (if (choice.mayChooseNothing) "You may choose a " else "Choose a ") + filter.description
+        }
+        // "Another" only reads right when the entering permanent is itself a creature (Dauntless
+        // Bodyguard). The pool excludes the entering object either way, so an Equipment or
+        // enchantment making this choice (Grifter's Blade) just says "a creature you control".
+        return if (cardComponent.isCreature) "Choose another creature you control" else "Choose a creature you control"
+    }
 
     /**
      * Build the question for one [EntersWithChoice] of [entityId] — shared by the post-entry pause
@@ -491,26 +542,16 @@ object PermanentEntryReplacements {
             }
 
             ChoiceType.CREATURE_ON_BATTLEFIELD -> {
-                val creatures = state.getBattlefield().filter { eid ->
-                    if (eid == entityId) return@filter false
-                    state.projectedState.getController(eid) == controllerId &&
-                        state.projectedState.isCreature(eid)
-                }
+                val creatures = chosenPermanentCandidates(state, entityId, controllerId, choice)
                 if (creatures.isEmpty()) return null
                 pause(
                     { id -> SelectCardsDecision(
                         id = id,
                         playerId = controllerId,
-                        // Same wording rule as the spell path: "another" only when the entering
-                        // permanent is itself a creature.
-                        prompt = if (cardComponent.isCreature) {
-                            "Choose another creature you control"
-                        } else {
-                            "Choose a creature you control"
-                        },
+                        prompt = chosenPermanentPrompt(cardComponent, choice),
                         context = context(),
                         options = creatures,
-                        minSelections = 1,
+                        minSelections = if (choice.mayChooseNothing) 0 else 1,
                         maxSelections = 1,
                         useTargetingUI = true
                     ) },

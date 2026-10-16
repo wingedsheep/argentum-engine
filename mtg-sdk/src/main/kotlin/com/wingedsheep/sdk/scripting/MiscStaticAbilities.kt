@@ -978,16 +978,22 @@ data class PreventActivatedAbilities(
  *   projected state).
  * @property includeManaAbilities When false (default), mana abilities are not copied — the
  *   "except mana abilities" clause. Set true to copy every activated ability.
+ * @property includeLoyaltyAbilities When false, loyalty abilities (CR 606) are not copied — the
+ *   "except for loyalty abilities" clause of Scheming Fence. Defaults to true: "all activated
+ *   abilities" includes them.
  */
 @SerialName("GainActivatedAbilitiesOfPermanents")
 @Serializable
 data class GainActivatedAbilitiesOfPermanents(
     val grantedTo: GroupFilter,
     val sourceFilter: GameObjectFilter,
-    val includeManaAbilities: Boolean = false
+    val includeManaAbilities: Boolean = false,
+    val includeLoyaltyAbilities: Boolean = true
 ) : StaticAbility {
     override val description: String =
-        "${grantedTo.description} ${if (grantedTo.scope is com.wingedsheep.sdk.scripting.filters.unified.Scope.Self) "has" else "have"} all activated abilities of ${sourceFilter.description}${if (!includeManaAbilities) " except mana abilities" else ""}"
+        "${grantedTo.description} ${if (grantedTo.scope is com.wingedsheep.sdk.scripting.filters.unified.Scope.Self) "has" else "have"} all activated abilities of ${sourceFilter.description}" +
+            listOfNotNull("mana".takeIf { !includeManaAbilities }, "loyalty".takeIf { !includeLoyaltyAbilities })
+                .takeIf { it.isNotEmpty() }?.joinToString(" or ", prefix = " except ", postfix = " abilities").orEmpty()
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
         val newGrantedTo = grantedTo.applyTextReplacement(replacer)
         val newSource = sourceFilter.applyTextReplacement(replacer)
@@ -1021,15 +1027,24 @@ data class GainActivatedAbilitiesOfPermanents(
  *   [GroupFilter.source] for "this permanent's abilities").
  * @property substituteColor When set, only mana of this color may be spent as though it were mana
  *   of any color. Null (the default) is the stronger "mana of any type can be spent".
+ * @property asThoughAnyColor With no [substituteColor]: true is the printed **"you may spend mana as
+ *   though it were mana of any color"** (Agatha's Soul Cauldron, Scheming Fence) — any mana pays a
+ *   colored, hybrid or Phyrexian requirement, but colorless is a type rather than a color, so a
+ *   `{C}` pip still demands colorless mana ([com.wingedsheep.sdk.core.ManaCost.relaxColoredRequirements],
+ *   the reading spell-side "as though any color" grants already use). False (the default) is
+ *   "mana of any type can be spent" (CR 118.14), which relaxes `{C}` too.
  */
 @SerialName("SpendAnyManaTypeForActivatedAbilities")
 @Serializable
 data class SpendAnyManaTypeForActivatedAbilities(
     val filter: GroupFilter,
-    val substituteColor: com.wingedsheep.sdk.core.Color? = null
+    val substituteColor: com.wingedsheep.sdk.core.Color? = null,
+    val asThoughAnyColor: Boolean = false
 ) : StaticAbility {
     override val description: String =
-        if (substituteColor == null)
+        if (substituteColor == null && asThoughAnyColor)
+            "You may spend mana as though it were mana of any color to activate ${filter.description}'s abilities"
+        else if (substituteColor == null)
             "Mana of any type can be spent to activate ${filter.description}'s abilities"
         else
             "You may spend ${substituteColor.name.lowercase()} mana as though it were mana of any " +
