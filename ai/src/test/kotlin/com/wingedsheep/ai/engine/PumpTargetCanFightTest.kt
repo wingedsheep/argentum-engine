@@ -7,6 +7,8 @@ import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.CounterType
+import com.wingedsheep.sdk.core.Phase
+import com.wingedsheep.sdk.core.Step
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 
@@ -69,6 +71,28 @@ class PumpTargetCanFightTest : ScenarioTestBase() {
             val decision = game.advanceToTargets()
 
             game.liveTarget(decision) shouldBe "Spider-Man, Brooklyn Visionary"
+        }
+
+        test("a mandatory -1/-1 on our own side is not steered onto the ready attacker") {
+            // The can-fight preference is for gifts only. Blister Beetle's "target creature gets
+            // -1/-1 until end of turn" must land on one of ours when the opponent has no creature.
+            // A summoning-sick creature scores at its settled stats, so the -1/-1 on the Bears and
+            // on the Hill Giant tie; the tie must not go to the Giant that is about to attack just
+            // because an end-of-turn effect there "can still be used". The harmful heuristic
+            // (our smallest surviving body) decides: the Bears.
+            val game = scenario().withPlayers()
+                .withCardInHand(1, "Blister Beetle")
+                .withCardOnBattlefield(1, "Hill Giant")
+                .withCardOnBattlefield(1, "Grizzly Bears", summoningSickness = true)
+                .withLandsOnBattlefield(1, "Swamp", 2)
+                .withActivePlayer(1)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+            game.castSpell(1, "Blister Beetle").error shouldBe null
+            game.resolveStack()
+            val decision = game.state.pendingDecision.shouldBeInstanceOf<ChooseTargetsDecision>()
+
+            game.liveTarget(decision) shouldBe "Grizzly Bears"
         }
     }
 }

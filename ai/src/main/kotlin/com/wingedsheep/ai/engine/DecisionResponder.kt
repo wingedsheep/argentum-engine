@@ -298,6 +298,7 @@ class DecisionResponder(
                 state, candidates, playerId,
                 reject = { optional && strandsALand(state, it.state, playerId) },
                 heuristic = heuristic,
+                beneficial = polarities[req.index] == TargetPolarity.BENEFICIAL,
             ) { target ->
                 TargetsResponse(decision.id, mapOf(req.index to listOf(target)))
             }
@@ -370,6 +371,7 @@ class DecisionResponder(
                     state, targets.take(maxCandidates), playerId,
                     reject = { req.minTargets == 0 && strandsALand(state, it.state, playerId) },
                     heuristic = heuristic,
+                    beneficial = polarities[req.index] == TargetPolarity.BENEFICIAL,
                 ) { target ->
                     probe(req.index, listOf(target))
                 }
@@ -1631,6 +1633,12 @@ class DecisionResponder(
         reject: (SimulationResult) -> Boolean = { false },
         /** The last tie-break between equally scored candidates. */
         heuristic: (EntityId) -> Double = { targetHeuristic(state, it, playerId) },
+        /**
+         * The slot hands its target a gift ([TargetPolarity.BENEFICIAL]): only then does the
+         * [wastesExpiringGrant] tie-break apply. A harmful or unknown end-of-turn effect (a -X/-X,
+         * a "can't block") is one we would rather land where no fight needs that creature.
+         */
+        beneficial: Boolean = false,
         buildResponse: (EntityId) -> DecisionResponse
     ): EntityId {
         val scored = candidates.map { candidate ->
@@ -1646,7 +1654,7 @@ class DecisionResponder(
         return tied.maxWith(
             compareBy<Triple<EntityId, SimulationResult, Double>>(
                 { libraryAndGraveyardPreference(state, it.second.state, playerId) },
-                { !wastesExpiringGrant(state, it.second.state, playerId) },
+                { !beneficial || !wastesExpiringGrant(state, it.second.state, playerId) },
                 { heuristic(it.first) },
             )
         ).first
