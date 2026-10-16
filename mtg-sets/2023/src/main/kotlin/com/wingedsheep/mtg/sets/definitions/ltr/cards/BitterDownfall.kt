@@ -37,7 +37,7 @@ val BitterDownfall = card("Bitter Downfall") {
                 CostReductionSource.FixedIfAnyTargetMatches(
                     amount = 3,
                     filter = GameObjectFilter.Creature.copy(
-                        statePredicates = listOf(StatePredicate.WasDealtDamageThisTurn),
+                        statePredicates = listOf(StatePredicate.WasDealtDamageThisTurn()),
                     ),
                 ),
             ),

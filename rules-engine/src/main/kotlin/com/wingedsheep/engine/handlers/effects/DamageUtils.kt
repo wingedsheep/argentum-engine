@@ -474,7 +474,7 @@ object DamageUtils {
             lifeLossAmount = applyLifeLossFloors(newState, targetId, currentLife, lifeLossAmount, predicateEvaluator = zones.predicateEvaluator)
             val newLife = currentLife - lifeLossAmount
             newState = newState.withLifeTotal(targetId, newLife)
-            newState = trackDamageReceivedByPlayer(newState, targetId, effectiveAmount, sourceId)
+            newState = trackDamageReceivedByPlayer(newState, targetId, effectiveAmount, sourceId, isCombatDamage)
             events.add(LifeChangedEvent(targetId, currentLife, newLife, LifeChangeReason.DAMAGE))
         } else if (projected.isPlaneswalker(targetId)) {
             // It's a planeswalker - remove loyalty counters equal to damage dealt
@@ -598,7 +598,7 @@ object DamageUtils {
             }
         }
 
-        newState = newState.updateEntity(targetId) { it.with(WasDealtDamageThisTurnComponent) }
+        newState = newState.updateEntity(targetId) { WasDealtDamageThisTurnComponent.markedOn(it, isCombatDamage) }
         newState = trackDamageDealt(newState, sourceId, effectiveAmount, isCombatDamage)
         // Record the source on its controller's per-turn set of damage sources. Unlike the stamp
         // above this is not battlefield-only: a resolving burn spell is a source that dealt damage
@@ -734,7 +734,13 @@ object DamageUtils {
      * Used for Final Punishment: "Target player loses life equal to the damage
      * already dealt to that player this turn."
      */
-    fun trackDamageReceivedByPlayer(state: GameState, playerId: EntityId, amount: Int, sourceId: EntityId? = null): GameState {
+    fun trackDamageReceivedByPlayer(
+        state: GameState,
+        playerId: EntityId,
+        amount: Int,
+        sourceId: EntityId? = null,
+        isCombatDamage: Boolean = false
+    ): GameState {
         if (amount <= 0) return state
         // Every path that deals damage to a player — combat and noncombat alike — funnels through
         // here, so it is the one place to record the source's "has dealt damage to this player this
@@ -758,8 +764,8 @@ object DamageUtils {
                 ?: com.wingedsheep.engine.state.components.player.DamageReceivedThisTurnComponent()
             val existingLifeLost = container.get<com.wingedsheep.engine.state.components.player.LifeLostAmountThisTurnComponent>()
                 ?: com.wingedsheep.engine.state.components.player.LifeLostAmountThisTurnComponent()
-            var updated = container.with(com.wingedsheep.engine.state.components.player.DamageReceivedThisTurnComponent(existing.amount + amount))
-                .with(WasDealtDamageThisTurnComponent)
+            var updated = WasDealtDamageThisTurnComponent.markedOn(container, isCombatDamage)
+                .with(com.wingedsheep.engine.state.components.player.DamageReceivedThisTurnComponent(existing.amount + amount))
                 .with(com.wingedsheep.engine.state.components.player.LifeLostThisTurnComponent)
                 .with(
                     com.wingedsheep.engine.state.components.player.LifeLostAmountThisTurnComponent(

@@ -47,7 +47,7 @@ val DownwindAmbusher = card("Downwind Ambusher") {
                 val creature = target(
                     TargetFilter(
                         GameObjectFilter.Creature.opponentControls().copy(
-                            statePredicates = listOf(StatePredicate.WasDealtDamageThisTurn)
+                            statePredicates = listOf(StatePredicate.WasDealtDamageThisTurn())
                         )
                     ),
                 )

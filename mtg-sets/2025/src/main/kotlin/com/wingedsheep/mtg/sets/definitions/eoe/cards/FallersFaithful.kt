@@ -39,7 +39,7 @@ val FallersFaithful = card("Faller's Faithful") {
         val creature = target(TargetFilter.OtherCreature, optional = true)
         effect = Effects.If(
             condition = Conditions.TargetMatchesFilter(GameObjectFilter.Creature.copy(
-                    statePredicates = listOf(StatePredicate.Not(StatePredicate.WasDealtDamageThisTurn))
+                    statePredicates = listOf(StatePredicate.Not(StatePredicate.WasDealtDamageThisTurn()))
                 ), creature),
             then = Effects.DrawCards(2, EffectTarget.TargetController)
         ) then Effects.Destroy(creature)

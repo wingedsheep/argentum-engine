@@ -10,6 +10,7 @@ import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.events.DamageType
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
 import com.wingedsheep.sdk.scripting.predicates.StatePredicate
@@ -463,6 +464,7 @@ object Filters {
             build { it.value<GameObjectFilter>("type").wasDealtDamageThisTurn() }
             match { filter ->
                 filter.stripTopState<StatePredicate.WasDealtDamageThisTurn>()
+                    ?.takeIf { (predicate, _) -> predicate.damageType == DamageType.Any }
                     ?.let { (_, rest) -> bind("type" to rest) }
             }
         }

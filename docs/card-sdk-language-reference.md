@@ -6296,10 +6296,14 @@ This is the player-arm prerequisite for the planned composable mixed `TargetUnio
   CounterType.PLUS_ONE_PLUS_ONE, placedByController = true) }` for "each creature you control that you've put
   one or more +1/+1 counters on this turn has hexproof". The source-scoped view of the same predicate is
   `Conditions.SourceReceivedCounterThisTurn(...)`, which is just `SourceMatches` over it.
-- `.wasDealtDamageThisTurn()` — **passive**: was dealt damage this turn (marked-damage *history*, not
-  current marked damage); backed by `StatePredicate.WasDealtDamageThisTurn`. Survives damage removal /
-  leaving combat; cleared at end-of-turn cleanup. For "...that **was** dealt damage this turn" (Rooftop
-  Assassin, Unsparing Boltcaster). Also on `TargetFilter`
+- `.wasDealtDamageThisTurn(damageType = DamageType.Any)` — **passive**: was dealt damage this turn
+  (marked-damage *history*, not current marked damage); backed by
+  `StatePredicate.WasDealtDamageThisTurn(damageType)`. Survives damage removal / leaving combat; cleared
+  at end-of-turn cleanup. For "...that **was** dealt damage this turn" (Rooftop Assassin, Unsparing
+  Boltcaster). `damageType` narrows the kind: `DamageType.NonCombat` for "if it was dealt **noncombat**
+  damage this turn" (Grisly Sigil — `Conditions.TargetMatchesFilter(Filters.Permanent
+  .wasDealtDamageThisTurn(DamageType.NonCombat), t)`), `DamageType.Combat` for combat damage only. The
+  engine marker records both kinds per object, so damage of both kinds in one turn satisfies all three. Also on `TargetFilter`
   (`TargetFilter.Creature.wasDealtDamageThisTurn()`). *Do not confuse with
   `.hasDealtDamageThisTurn()` below — the two mean opposite things.* The bare `.dealtDamageThisTurn()`
   that used to name this predicate is **retired**, so a stale caller fails to compile rather than

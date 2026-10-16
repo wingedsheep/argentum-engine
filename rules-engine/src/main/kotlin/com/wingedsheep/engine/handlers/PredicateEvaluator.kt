@@ -1972,9 +1972,8 @@ class PredicateEvaluator(
                 )
 
             // Damage state
-            StatePredicate.WasDealtDamageThisTurn -> {
-                container.has<WasDealtDamageThisTurnComponent>()
-            }
+            is StatePredicate.WasDealtDamageThisTurn ->
+                container.get<WasDealtDamageThisTurnComponent>()?.matches(predicate.damageType) == true
             // Damage history, active voice. One marker, two windows — presence for the lifetime
             // reading, its turn stamp against the current turn for "…this turn".
             is StatePredicate.HasDealtDamage ->

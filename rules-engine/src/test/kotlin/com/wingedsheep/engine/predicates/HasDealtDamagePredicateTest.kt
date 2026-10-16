@@ -88,7 +88,7 @@ class HasDealtDamagePredicateTest : ScenarioTestBase() {
             }
 
             test("the passive marker never satisfies the active predicate") {
-                val damaged = ComponentContainer().with(WasDealtDamageThisTurnComponent)
+                val damaged = ComponentContainer().with(WasDealtDamageThisTurnComponent(noncombat = true))
                 hasDealtDamage(damaged, currentTurn = 5, predicate = lifetime) shouldBe false
                 hasDealtDamage(damaged, currentTurn = 5, predicate = thisTurn) shouldBe false
             }

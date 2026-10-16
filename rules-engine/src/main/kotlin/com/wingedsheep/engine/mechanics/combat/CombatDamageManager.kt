@@ -1304,7 +1304,7 @@ internal class CombatDamageManager(
         lifeLossAmount = DamageUtils.applyLifeLossFloors(newState, targetId, currentLife, lifeLossAmount, predicateEvaluator = predicateEvaluator)
         val newLife = currentLife - lifeLossAmount
         newState = newState.withLifeTotal(targetId, newLife)
-        newState = DamageUtils.trackDamageReceivedByPlayer(newState, targetId, effectiveAmount, sourceId)
+        newState = DamageUtils.trackDamageReceivedByPlayer(newState, targetId, effectiveAmount, sourceId, isCombatDamage = true)
 
         // Track combat damage: source dealt damage + dealt combat damage to player
         newState = DamageUtils.trackDamageDealt(newState, sourceId, effectiveAmount, isCombatDamage = true)
@@ -1414,8 +1414,8 @@ internal class CombatDamageManager(
         val counters = newState.getEntity(targetId)?.get<CountersComponent>() ?: CountersComponent()
         val currentCount = counters.getCount(counterType)
         newState = newState.updateEntity(targetId) { container ->
-            container.with(counters.withRemoved(counterType, amount))
-                .with(WasDealtDamageThisTurnComponent)
+            WasDealtDamageThisTurnComponent.markedOn(container, isCombatDamage = true)
+                .with(counters.withRemoved(counterType, amount))
         }
 
         // Combat damage that takes a Siege's last defense counter defeats it (CR 310.12b). Arm the
@@ -1555,7 +1555,7 @@ internal class CombatDamageManager(
             // CR 119.8 — damage to a player who can't lose life leaves the total unchanged.
             val newLife = if (newState.isLifeLossLocked(targetId)) currentLife else currentLife - amount
             newState = newState.withLifeTotal(targetId, newLife)
-            newState = DamageUtils.trackDamageReceivedByPlayer(newState, targetId, amount, sourceId)
+            newState = DamageUtils.trackDamageReceivedByPlayer(newState, targetId, amount, sourceId, isCombatDamage = true)
             // Track combat damage: source dealt damage + dealt combat damage to player
             newState = DamageUtils.trackDamageDealt(newState, sourceId, amount, isCombatDamage = true)
             if (sourceId in newState.getBattlefield()) {
@@ -1672,7 +1672,7 @@ internal class CombatDamageManager(
             newState = DamageUtils.trackExcessDamageToPermanent(newState, projected, targetId, excess)
             // Mark creature as having been dealt damage this turn
             newState = newState.updateEntity(targetId) { container ->
-                container.with(WasDealtDamageThisTurnComponent)
+                WasDealtDamageThisTurnComponent.markedOn(container, isCombatDamage = true)
             }
             // Track that source dealt damage
             newState = DamageUtils.trackDamageDealt(newState, sourceId, amount, isCombatDamage = true)

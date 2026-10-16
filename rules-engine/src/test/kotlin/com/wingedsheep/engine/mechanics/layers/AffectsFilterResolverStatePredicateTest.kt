@@ -339,11 +339,11 @@ class AffectsFilterResolverStatePredicateTest : FunSpec({
         val healthy = EntityId.generate()
         val state = battlefield(
             listOf(
-                damaged to container(playerA, creature(playerA), WasDealtDamageThisTurnComponent),
+                damaged to container(playerA, creature(playerA), WasDealtDamageThisTurnComponent(noncombat = true)),
                 healthy to container(playerA, creature(playerA))
             )
         )
-        val matched = resolver.resolveAffectedEntities(state, damaged, filterWith(StatePredicate.WasDealtDamageThisTurn))
+        val matched = resolver.resolveAffectedEntities(state, damaged, filterWith(StatePredicate.WasDealtDamageThisTurn()))
         matched shouldContainExactlyInAnyOrder setOf(damaged)
     }
 

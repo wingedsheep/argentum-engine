@@ -32,7 +32,7 @@ val SoldOut = card("Sold Out") {
         val creature = target(TargetFilter.Creature)
         effect = Effects.If(
             condition = Conditions.TargetMatchesFilter(GameObjectFilter.Creature.copy(
-                    statePredicates = listOf(StatePredicate.WasDealtDamageThisTurn),
+                    statePredicates = listOf(StatePredicate.WasDealtDamageThisTurn()),
                 ), creature),
             then = Effects.CreateClue(),
         ) then Effects.Exile(creature)

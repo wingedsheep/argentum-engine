@@ -1704,7 +1704,7 @@ Families:
 - `StatePredicate.WasCastForWarp` — Permanent on the battlefield that was cast for its warp cost (CR 702.185).
 - `StatePredicate.WasCastFromZone(zone: Zone)` — A spell on the stack whose cast-origin zone is zone — reads the `SpellOnStackComponent.castFromZone` the engine stamps when the spell is put on the stack (HAND for a normal cast; GRAVEYARD/EXILE/CO…
 - `StatePredicate.WasDealtDamageBySourceThisTurn` — Was dealt damage this turn by the effect's *source* — the recipient-side view of the source's per-turn damaged-creature record (the same record `Triggers` "a creature dealt damage by this creature…
-- `StatePredicate.WasDealtDamageThisTurn` — Has been dealt damage this turn
+- `StatePredicate.WasDealtDamageThisTurn(damageType: DamageType)` — Has been dealt damage this turn.
 
 ## StaticAbility
 

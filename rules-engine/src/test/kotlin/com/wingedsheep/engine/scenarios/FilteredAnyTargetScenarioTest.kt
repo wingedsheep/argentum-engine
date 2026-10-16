@@ -144,7 +144,7 @@ class FilteredAnyTargetScenarioTest : ScenarioTestBase() {
                 .build()
             val forest = game.findPermanent("Forest")!!
             game.state = game.state.updateEntity(forest) {
-                it.with(com.wingedsheep.engine.state.components.battlefield.WasDealtDamageThisTurnComponent)
+                it.with(com.wingedsheep.engine.state.components.battlefield.WasDealtDamageThisTurnComponent(noncombat = true))
             }
             game.castSpell(1, "Filtered Test Bolt", forest).error shouldNotBe null
         }

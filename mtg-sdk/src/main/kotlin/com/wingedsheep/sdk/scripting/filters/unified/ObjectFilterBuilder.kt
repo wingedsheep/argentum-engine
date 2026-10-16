@@ -5,6 +5,7 @@ import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.core.Zone
+import com.wingedsheep.sdk.scripting.events.DamageType
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
 import com.wingedsheep.sdk.scripting.predicates.StatePredicate
@@ -668,9 +669,11 @@ interface ObjectFilterBuilder<out Self> {
      * Must have been dealt damage this turn — the **passive** voice (damage *received*), marked-damage
      * *history* rather than current marked damage. Survives damage removal / leaving combat; cleared at
      * end-of-turn cleanup. Used by "...that was dealt damage this turn" (Rooftop Assassin, Unsparing
-     * Boltcaster). The active-voice counterpart is [hasDealtDamageThisTurn].
+     * Boltcaster). [damageType] narrows it to one kind — `DamageType.NonCombat` for "was dealt noncombat
+     * damage this turn" (Grisly Sigil). The active-voice counterpart is [hasDealtDamageThisTurn].
      */
-    fun wasDealtDamageThisTurn() = withStatePredicate(StatePredicate.WasDealtDamageThisTurn)
+    fun wasDealtDamageThisTurn(damageType: DamageType = DamageType.Any) =
+        withStatePredicate(StatePredicate.WasDealtDamageThisTurn(damageType))
 
     /** Matches names recorded when a spell was cast this turn, regardless of its caster or current zone. */
     fun sharesNameWithSpellCastThisTurn() = withStatePredicate(StatePredicate.SharesNameWithSpellCastThisTurn)

@@ -2,12 +2,14 @@ package com.wingedsheep.engine.state.components.battlefield
 
 import com.wingedsheep.engine.mechanics.layers.AffectsFilter
 import com.wingedsheep.engine.state.Component
+import com.wingedsheep.engine.state.ComponentContainer
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AbilityId
 import com.wingedsheep.sdk.scripting.ProtectionScope
 import com.wingedsheep.sdk.scripting.ReplacementEffect
 import com.wingedsheep.sdk.scripting.conditions.Condition
+import com.wingedsheep.sdk.scripting.events.DamageType
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import kotlinx.serialization.Serializable
 
@@ -1357,12 +1359,31 @@ data class CraftedFromExiledComponent(
 ) : Component
 
 /**
- * Marks a permanent or player as having been dealt damage this turn.
- * Cleared at end of turn by CleanupPhaseManager.
- * Used for StatePredicate.WasDealtDamageThisTurn.
+ * Marks a permanent or player as having been dealt damage this turn, recording which kinds —
+ * [combat], [noncombat] or both — so `StatePredicate.WasDealtDamageThisTurn(damageType)` answers
+ * every window from one marker. Cleared at end of turn by CleanupPhaseManager.
  */
 @Serializable
-data object WasDealtDamageThisTurnComponent : Component
+data class WasDealtDamageThisTurnComponent(
+    val combat: Boolean = false,
+    val noncombat: Boolean = false
+) : Component {
+    fun matches(damageType: DamageType): Boolean = when (damageType) {
+        DamageType.Any -> combat || noncombat
+        DamageType.Combat -> combat
+        DamageType.NonCombat -> noncombat
+    }
+
+    companion object {
+        /** [container] with the marker set, adding [isCombatDamage]'s kind to any already recorded. */
+        fun markedOn(container: ComponentContainer, isCombatDamage: Boolean): ComponentContainer {
+            val existing = container.get<WasDealtDamageThisTurnComponent>() ?: WasDealtDamageThisTurnComponent()
+            return container.with(
+                if (isCombatDamage) existing.copy(combat = true) else existing.copy(noncombat = true)
+            )
+        }
+    }
+}
 
 /**
  * Damage dealt to this permanent for the rest of the turn can't be prevented, and can't be dealt to

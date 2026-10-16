@@ -3,6 +3,7 @@ package com.wingedsheep.sdk.scripting.predicates
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.CardType
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.events.DamageType
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -485,11 +486,23 @@ sealed interface StatePredicate {
         override val description: String = "with the same name as a spell cast this turn"
     }
 
-    /** Has been dealt damage this turn */
+    /**
+     * Has been dealt damage this turn. [damageType] narrows the kind: [DamageType.Any] (default) is
+     * the bare "was dealt damage this turn" (Rooftop Assassin); [DamageType.NonCombat] is "if it
+     * was dealt noncombat damage this turn" (Grisly Sigil); [DamageType.Combat] reads "was dealt
+     * combat damage this turn". One per-turn marker on the permanent records both kinds, so every
+     * window reads the same fact. Resets when the permanent changes zones (CR 400.7).
+     */
     @SerialName("WasDealtDamageThisTurn")
     @Serializable
-    data object WasDealtDamageThisTurn : History {
-        override val description: String = "was dealt damage this turn"
+    data class WasDealtDamageThisTurn(
+        val damageType: DamageType = DamageType.Any
+    ) : History {
+        override val description: String = buildString {
+            append("was dealt ")
+            if (damageType.description.isNotEmpty()) append(damageType.description).append(' ')
+            append("damage this turn")
+        }
     }
 
     /**
