@@ -490,6 +490,7 @@ class ZoneTransitionService(
                 toughness = lastKnownToughness,
                 basePower = state.projectedState.getBasePower(entityId),
                 baseToughness = state.projectedState.getBaseToughness(entityId),
+                colors = state.projectedState.getColors(entityId),
                 // Mirror the projected type line's subtypes into the snapshot's own `subtypes`
                 // field so it carries the same meaning here as on the `fromProjection` path.
                 // Read by `TriggeringEntityWas` ("if it wasn't a Demon" — Infernal Vessel),

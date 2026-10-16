@@ -62,10 +62,12 @@ interface ObjectFilterBuilder<out Self> {
 
     /**
      * Restrict to objects that are exactly [amount] colors, resolved when the filter is checked —
-     * "a creature card that's exactly that many colors plus one" (Evolving Door).
+     * "a creature card that's exactly that many colors plus one" (Evolving Door). A fixed amount
+     * collapses to the static [exactlyColors] so both spellings build the same predicate.
      */
     fun exactlyColors(amount: DynamicAmount) =
-        compareNumericProperty(CardNumericProperty.COLOR_COUNT, ComparisonOperator.EQ, amount)
+        if (amount is DynamicAmount.Fixed) exactlyColors(amount.amount)
+        else compareNumericProperty(CardNumericProperty.COLOR_COUNT, ComparisonOperator.EQ, amount)
 
     /** Restrict to objects that are *not* exactly [count] colors — "that isn't exactly two colors". */
     fun notExactlyColors(count: Int) =

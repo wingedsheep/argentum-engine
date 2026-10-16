@@ -67,6 +67,7 @@ val EvolvingDoor = card("Evolving Door") {
         rarity = Rarity.RARE
         collectorNumber = "144"
         artist = "Drew Baker"
+        flavorText = "In with the old, out with the new."
         imageUri = "https://cards.scryfall.io/normal/front/0/1/01bc3b04-46b7-43df-9b29-1502b9f18bbf.jpg?1783923104"
     }
 }

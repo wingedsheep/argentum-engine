@@ -176,6 +176,7 @@
                     "controllerId": "player-2",
                     "counters": {},
                     "keywords": [],
+                    "colors": [],
                     "lostAllAbilities": false,
                     "battlefieldEntryTimestamp": null,
                     "typeLine": "Artifact",

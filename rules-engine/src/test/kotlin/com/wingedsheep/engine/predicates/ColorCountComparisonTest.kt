@@ -2,11 +2,13 @@ package com.wingedsheep.engine.predicates
 
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.PredicateContext
+import com.wingedsheep.engine.state.components.battlefield.LastKnownPermanentComponent
 import com.wingedsheep.engine.state.components.stack.EntitySnapshot
 import com.wingedsheep.engine.state.components.stack.captureEntitySnapshots
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.DynamicAmounts
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.dsl.plus
@@ -54,7 +56,7 @@ class ColorCountComparisonTest : FunSpec({
         val bears = d.putCreatureOnBattlefield(me, "Grizzly Bears")
         val duo = d.putCreatureOnBattlefield(me, "Gold Duo")
         val context = PredicateContext(controllerId = me)
-        val two = GameObjectFilter.Creature.exactlyColors(DynamicAmount.Fixed(1) + 1)
+        val two = GameObjectFilter.Creature.exactlyColors(DynamicAmounts.colorCountOf(EffectTarget.SpecificEntity(bears)) + 1)
 
         d.matches(duo, two, context) shouldBe true
         d.matches(bears, two, context) shouldBe false
@@ -81,6 +83,13 @@ class ColorCountComparisonTest : FunSpec({
         val duo = d.putCreatureOnBattlefield(me, "Gold Duo")
         EntitySnapshot.fromProjection(duo, d.state).colors shouldBe setOf("RED", "WHITE")
         captureEntitySnapshots(listOf(duo), d.state).single().colors shouldBe setOf("RED", "WHITE")
+    }
+
+    test("a permanent that left the battlefield keeps its colors in its departure snapshot") {
+        val d = driver(); val me = d.activePlayer!!
+        val duo = d.putCreatureOnBattlefield(me, "Gold Duo")
+        val moved = d.services.zones.moveToZone(d.state, duo, Zone.GRAVEYARD).state
+        moved.getEntity(duo)?.get<LastKnownPermanentComponent>()?.snapshot?.colors shouldBe setOf("RED", "WHITE")
     }
 
     test("a sacrificed object that no longer exists is counted from its cost-time snapshot") {

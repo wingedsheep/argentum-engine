@@ -60,3 +60,9 @@ left — CR 608.2h). The one snapshot in these traces — Naturalize's Sol Ring 
 `free-cast-target/after-3.json` — now carries Sol Ring's `CardComponent` there, exactly the
 component the card keeps in the graveyard (it was no copy). No action or event payload changed,
 and no gameplay was rerun.
+
+Edited on 2026-10-16 when the battlefield-exit `EntitySnapshot` gained `colors` (the departed
+permanent's projected colors, read by a color count of a permanent that has left — CR 608.2h).
+The one snapshot in these traces — Naturalize's Sol Ring in `free-cast-target/after-3.json` —
+now carries `"colors": []`, Sol Ring being colorless. No action or event payload changed, and no
+gameplay was rerun.
