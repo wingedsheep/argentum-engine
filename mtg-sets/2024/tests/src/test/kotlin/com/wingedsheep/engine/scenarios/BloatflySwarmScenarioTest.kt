@@ -96,6 +96,30 @@ class BloatflySwarmScenarioTest : ScenarioTestBase() {
                 }
             }
 
+            test("damage that can't be prevented still removes that many counters and gives the rad counters") {
+                val game = scenario()
+                    .withPlayers("Player1", "Player2")
+                    .withCardOnBattlefield(2, "Bloatfly Swarm")
+                    .withCardInHand(1, "Pinpoint Avalanche")
+                    .withLandsOnBattlefield(1, "Mountain", 5)
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+                val swarm = game.findPermanent("Bloatfly Swarm")!!
+                seedPlusOnes(game, swarm, 5)
+
+                game.castSpell(1, "Pinpoint Avalanche", swarm).error shouldBe null
+                game.resolveStack()
+
+                withClue("4 unpreventable damage: four counters removed, four rad counters each (the ruling)") {
+                    count(game, game.player1Id, CounterType.RAD) shouldBe 4
+                    count(game, game.player2Id, CounterType.RAD) shouldBe 4
+                }
+                withClue("the damage is dealt to what is now a 1/1, so it dies") {
+                    game.isOnBattlefield("Bloatfly Swarm") shouldBe false
+                }
+            }
+
             test("combat damage is prevented the same way") {
                 val game = scenario()
                     .withPlayers("Player1", "Player2")

@@ -44,7 +44,7 @@
 - [ ] Biomass Mutation
 - [x] Black Market
 - [x] Blasphemous Act
-- [ ] Bloatfly Swarm
+- [x] Bloatfly Swarm
 - [ ] Bloodforged Battle-Axe
 - [ ] Boomer Scrapper
 - [ ] Bottle-Cap Blast
