@@ -1059,6 +1059,13 @@ interface ObjectFilterBuilder<out Self> {
     fun exiledWithSource() = withStatePredicate(StatePredicate.ExiledWithSource)
 
     /**
+     * Must be a card in exile that a spell or ability controlled by the evaluating player exiled —
+     * "if it was exiled by an ability you controlled" (Evelyn, the Covetous). Player-relative, where
+     * [exiledWithSource] is source-relative.
+     */
+    fun exiledByYou() = withStatePredicate(StatePredicate.ExiledByYou)
+
+    /**
      * Must be a permanent on the battlefield that was cast for its warp cost
      * (CR 702.185) — i.e., the engine wrote a `WarpedComponent` when the
      * warped spell resolved. Use this to gate effects on warp-cast permanents,

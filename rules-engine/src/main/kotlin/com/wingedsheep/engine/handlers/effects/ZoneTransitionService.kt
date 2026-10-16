@@ -102,6 +102,13 @@ data class ZoneEntryOptions(
     val entryCounterSourceId: EntityId? = null,
     val entryCounterEffectControllerId: EntityId? = null,
     val controllerId: EntityId? = null,
+    /**
+     * For a move into exile: the player who controlled the spell or ability doing the exiling,
+     * stamped onto the card's [com.wingedsheep.engine.state.components.identity.ExiledFromZoneComponent]
+     * for "if it was exiled by an ability you controlled" (Evelyn, the Covetous). Null when the
+     * move has no controlling effect behind it.
+     */
+    val exiledBy: EntityId? = null,
     val libraryPlacement: LibraryPlacement = LibraryPlacement.Top,
     val tapped: Boolean = false,
     val tappedAndAttacking: Boolean = false,
@@ -1048,7 +1055,13 @@ class ZoneTransitionService(
                 newState = newState.updateEntity(entityId) { c ->
                     c.with(
                         com.wingedsheep.engine.state.components.identity
-                            .ExiledFromZoneComponent(fromZone)
+                            .ExiledFromZoneComponent(
+                                fromZone,
+                                // A move redirected into exile (Rest in Peace) was exiled by the
+                                // replacement's controller, not by whoever was moving it elsewhere.
+                                exiledBy = if (destinationZone == Zone.EXILE) options.exiledBy
+                                else redirectResult.effectControllerId
+                            )
                     )
                 }
                 if (options.faceDownExile) {

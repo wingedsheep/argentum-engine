@@ -38,6 +38,8 @@ internal class CastAuthorization(
     val limitedTopLibraryCastSource: EntityId?,
     /** The Tomb of Aclazotz / Bilbo: the rider-bearing graveyard-cast grant that authorized this cast. */
     val graveyardCastRiderGrant: com.wingedsheep.sdk.scripting.MayCastFromGraveyard?,
+    /** A `MayPlayCardsFromExile(oncePerTurn)` granter (Evelyn, the Covetous) whose allowance this cast spends. */
+    val oncePerTurnExileGranter: EntityId?,
 )
 
 /**
@@ -79,6 +81,7 @@ internal class CastRecords(
         graveyardCastRiderGrant = zoneResolver.findMayCastFromGraveyardGrant(
             state, action.playerId, action.cardId, cardComponent, action.graveyardCastRider
         ),
+        oncePerTurnExileGranter = zoneResolver.findOncePerTurnExileGranter(state, action.playerId, action.cardId),
     )
 
     /**
@@ -246,7 +249,8 @@ internal class CastRecords(
      * the zone the permission was found through.
      *
      * - Muldrotha: one permanent type per turn, recorded when [castingFromGraveyardViaMuldrotha].
-     * - A once-per-turn linked-exile permission (Maralen, Fae Ascendant) marks its granter.
+     * - A once-per-turn linked-exile permission (Maralen, Fae Ascendant) marks its granter, and so
+ *   does a once-per-turn filter-defined exile grant (Evelyn, the Covetous).
      * - A limited top-of-library permission belongs to its granting permanent, not to the player: the
      *   source captured before the card left the library is marked; a source that leaves and returns
      *   is a new object with a fresh allowance, and an unlimited matching source consumes nothing.
@@ -276,6 +280,9 @@ internal class CastRecords(
         val linkedExileGranter = authorization.linkedExileGranter
         if (linkedExileGranter?.ability?.oncePerTurn == true) {
             newState = newState.updateEntity(linkedExileGranter.granterId) { c -> c.with(MayCastFromLinkedExileUsedThisTurnComponent) }
+        }
+        authorization.oncePerTurnExileGranter?.let { granter ->
+            newState = newState.updateEntity(granter) { c -> c.with(MayCastFromLinkedExileUsedThisTurnComponent) }
         }
 
         authorization.limitedTopLibraryCastSource?.let { source ->

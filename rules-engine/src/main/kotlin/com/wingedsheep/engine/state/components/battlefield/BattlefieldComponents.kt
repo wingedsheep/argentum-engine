@@ -1590,6 +1590,10 @@ data class ExileEntryTurnComponent(
  * to a kind of play: Hauken's Insight reads "Once during each of your turns, you may play a land
  * **or** cast a spell from among the cards exiled with this permanent". One marker is what makes
  * the "or" exclusive.
+ *
+ * The same marker spends a [com.wingedsheep.sdk.scripting.MayPlayCardsFromExile] `oncePerTurn`
+ * allowance (Evelyn, the Covetous) — the filter-defined sibling of the linked-exile grant, whose
+ * allowance likewise belongs to the granting permanent. No card carries both kinds of grant.
  */
 @Serializable
 data object MayCastFromLinkedExileUsedThisTurnComponent : Component

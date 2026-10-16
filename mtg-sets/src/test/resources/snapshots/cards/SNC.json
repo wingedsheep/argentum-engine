@@ -1852,6 +1852,87 @@
     ]
 }
 
+// Evelyn, the Covetous
+{
+    "name": "Evelyn, the Covetous",
+    "manaCost": "{2}{U/B}{B}{B/R}",
+    "typeLine": "Legendary Creature — Vampire Rogue",
+    "oracleText": "Flash\nWhenever Evelyn or another Vampire you control enters, exile the top card of each player's library with a collection counter on it.\nOnce each turn, you may play a card from exile with a collection counter on it if it was exiled by an ability you controlled, and you may spend mana as though it were mana of any color to cast it.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 5
+    },
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Evelyn, the Covetous:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature Vampire ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "player": "Each"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            },
+                            "addCounterType": "COLLECTION"
+                        }
+                    ]
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "MayPlayCardsFromExile",
+                "filter": {
+                    "statePredicates": [
+                        {
+                            "type": "HasCounter",
+                            "counterType": "COLLECTION"
+                        },
+                        "ExiledByYou"
+                    ]
+                },
+                "withAnyManaColor": true,
+                "oncePerTurn": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "184",
+        "rarity": "RARE",
+        "artist": "Marta Nael",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/0/c0dad61f-36cd-46af-82b7-a02e04efd676.jpg?1783923087"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK",
+        "RED"
+    ]
+}
+
 // Evolving Door
 {
     "name": "Evolving Door",

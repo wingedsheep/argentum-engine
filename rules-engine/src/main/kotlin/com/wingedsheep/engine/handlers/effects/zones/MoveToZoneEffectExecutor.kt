@@ -172,7 +172,8 @@ class MoveToZoneEffectExecutor(
                 entryCounterType = effect.addCounterType.takeIf { effect.destination == Zone.BATTLEFIELD },
                 entryCounterFilter = effect.addCounterIf,
                 entryCounterSourceId = context.sourceId,
-                entryCounterEffectControllerId = context.controllerId)
+                entryCounterEffectControllerId = context.controllerId,
+                exiledBy = context.controllerId)
 
         val transitionResult = zones.moveToZone(
             state, targetId, effect.destination, entryOptions, currentZone

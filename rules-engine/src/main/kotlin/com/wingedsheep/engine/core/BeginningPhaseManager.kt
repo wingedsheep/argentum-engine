@@ -674,6 +674,7 @@ class BeginningPhaseManager(
         StatePredicate.IsAttachedToBySource,
         StatePredicate.IsAttachedToSource,
         StatePredicate.ExiledWithSource,
+        StatePredicate.ExiledByYou,
         StatePredicate.WasCastForWarp -> true
         is StatePredicate.WasCast -> true
         StatePredicate.HasSingleTarget -> true

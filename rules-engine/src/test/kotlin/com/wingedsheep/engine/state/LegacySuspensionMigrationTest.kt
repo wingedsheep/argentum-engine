@@ -342,12 +342,14 @@ class LegacySuspensionMigrationTest : ScenarioTestBase() {
                 value.getValue("playedThisTurn") shouldBe JsonPrimitive(0)
                 value - "playedThisTurn"
             } else if ("colorlessAsAnyColor" in value && "singleUse" in value) {
-                // MayPlayPermission's any-color, colorless-as-any-color and face-down riders postdate the capture.
+                // MayPlayPermission's any-color, colorless-as-any-color, face-down and once-per-turn
+                // riders postdate the capture.
                 value.getValue("withAnyManaColor") shouldBe JsonPrimitive(false)
                 value.getValue("colorlessAsAnyColor") shouldBe JsonPrimitive(false)
                 value.getValue("castFaceDown") shouldBe JsonPrimitive(false)
                 value.getValue("turnsFaceUpInstead") shouldBe JsonPrimitive(false)
-                value - "withAnyManaColor" - "colorlessAsAnyColor" - "castFaceDown" - "turnsFaceUpInstead"
+                value.getValue("oncePerTurn") shouldBe JsonPrimitive(false)
+                value - "withAnyManaColor" - "colorlessAsAnyColor" - "castFaceDown" - "turnsFaceUpInstead" - "oncePerTurn"
             } else if (value["type"] == JsonPrimitive(
                     "com.wingedsheep.engine.state.components.stack.SpellOnStackComponent"
                 )) {

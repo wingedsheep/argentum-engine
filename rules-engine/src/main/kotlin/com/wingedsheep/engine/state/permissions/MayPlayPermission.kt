@@ -207,6 +207,13 @@ data class MayPlayPermission(
      * way only drops that card, as for an ordinary grant.
      */
     val singleUse: Boolean = false,
+    /**
+     * When true, this permission is a derived `MayPlayCardsFromExile(oncePerTurn = true)` grant
+     * (Evelyn, the Covetous): a play through it spends [sourceId]'s once-per-turn allowance, marked
+     * with `MayCastFromLinkedExileUsedThisTurnComponent`, and a spent granter derives no permission
+     * for the rest of the turn. See [oncePerTurnGranterToSpend].
+     */
+    val oncePerTurn: Boolean = false,
     val timestamp: Long
 ) {
     init {

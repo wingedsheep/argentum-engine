@@ -5,6 +5,7 @@ import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.ClassLevelComponent
+import com.wingedsheep.engine.state.components.battlefield.MayCastFromLinkedExileUsedThisTurnComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.sdk.model.EntityId
@@ -57,6 +58,11 @@ internal object StaticMayPlayGrants {
 
         val projected = state.projectedState
         return grants.mapNotNull { (granterId, ability) ->
+            // "Once each turn" (Evelyn, the Covetous): a granter whose allowance is spent offers
+            // nothing until its marker is cleared at end of turn.
+            if (ability.oncePerTurn &&
+                state.getEntity(granterId)?.has<MayCastFromLinkedExileUsedThisTurnComponent>() == true
+            ) return@mapNotNull null
             val matches = predicateEvaluator.matches(
                 state, projected, cardId, ability.filter,
                 PredicateContext(controllerId = playerId, sourceId = granterId),
@@ -72,6 +78,8 @@ internal object StaticMayPlayGrants {
                 // resolve against the granting permanent rather than the exiled card.
                 condition = ability.condition,
                 withAnyManaType = ability.withAnyManaType,
+                withAnyManaColor = ability.withAnyManaColor,
+                oncePerTurn = ability.oncePerTurn,
                 // Derived permissions are never stored, so end-of-turn cleanup never sees them;
                 // `permanent` keeps any code that inspects the flag from treating them as expiring.
                 permanent = true,

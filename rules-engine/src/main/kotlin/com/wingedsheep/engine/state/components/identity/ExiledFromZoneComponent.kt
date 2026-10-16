@@ -2,6 +2,7 @@ package com.wingedsheep.engine.state.components.identity
 
 import com.wingedsheep.engine.state.Component
 import com.wingedsheep.sdk.core.Zone
+import com.wingedsheep.sdk.model.EntityId
 import kotlinx.serialization.Serializable
 
 /**
@@ -48,8 +49,15 @@ import kotlinx.serialization.Serializable
  * Not last-known information: the object still exists, in exile, when this is read. It carries no
  * memory of the *object* across the zone change, only of where it came from — CR 400.7 still makes
  * the returned card a new object.
+ *
+ * [exiledBy] is the second fact the same stamp records: the player who controlled the spell or
+ * ability that exiled the object, for "if it was exiled by an ability you controlled" (Evelyn, the
+ * Covetous — read by `StatePredicate.ExiledByYou`). Only the effect-driven exile roads that know
+ * their controller pass it (`MoveCollectionExecutor`, `MoveToZoneEffectExecutor`, via
+ * `ZoneEntryOptions.exiledBy`); a null means "not attributable" and matches nobody.
  */
 @Serializable
 data class ExiledFromZoneComponent(
-    val zone: Zone
+    val zone: Zone,
+    val exiledBy: EntityId? = null
 ) : Component

@@ -2373,6 +2373,17 @@ class PredicateEvaluator(
                     ?.exiledIds?.contains(entityId) == true
             }
 
+            // Player-relative: the card sits in exile and the effect that put it there was
+            // controlled by the asking player (Evelyn, the Covetous). The stamp outlives the card's
+            // stay only in name — it is meaningful only while the card is actually in exile.
+            StatePredicate.ExiledByYou -> {
+                val playerId = context?.controllerId ?: return false
+                val exiledBy = container
+                    .get<com.wingedsheep.engine.state.components.identity.ExiledFromZoneComponent>()
+                    ?.exiledBy ?: return false
+                exiledBy == playerId && state.turnOrder.any { entityId in state.getExile(it) }
+            }
+
             // Saddled marker — set by BecomeSaddledExecutor when a Saddle ability resolves
             // (CR 702.171b). Cleared at end-of-turn cleanup or when the permanent leaves play.
             StatePredicate.IsSaddled -> container.has<SaddledComponent>()

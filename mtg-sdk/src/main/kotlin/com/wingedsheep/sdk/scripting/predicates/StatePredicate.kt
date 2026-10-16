@@ -1480,6 +1480,24 @@ sealed interface StatePredicate {
         override val description: String = "exiled with this permanent"
     }
 
+    /**
+     * The candidate card is in exile and was put there by a spell or ability controlled by the asking
+     * player (the evaluation context's controller) — "a card from exile … if it was exiled by an
+     * ability you controlled" (Evelyn, the Covetous). Unlike [ExiledWithSource] it doesn't care
+     * *which* permanent exiled the card, only whose effect it was, so the permission survives the
+     * exiling permanent leaving and covers cards exiled by other sources that player controlled.
+     *
+     * Reads the exiling controller the engine stamps on the card as it enters exile through an
+     * effect; an exile the engine can't attribute (a cost, a rules action) never matches. Not
+     * "ability"-only: no card yet distinguishes a spell from an ability here, and Evelyn's filter
+     * pairs this with a collection counter that only an ability places.
+     */
+    @SerialName("ExiledByYou")
+    @Serializable
+    data object ExiledByYou : Entity {
+        override val description: String = "exiled by an effect you controlled"
+    }
+
     // =============================================================================
     // Composite / Logical Combinators
     // =============================================================================

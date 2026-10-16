@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.handlers.actions.spell
 
+import com.wingedsheep.engine.state.permissions.oncePerTurnGranterToSpend
 import com.wingedsheep.engine.state.components.battlefield.liveStaticAbilities
 import com.wingedsheep.engine.legality.LegalityKernel
 import com.wingedsheep.engine.core.AlternativeCostType
@@ -946,6 +947,18 @@ class CastZoneResolver(
         playerId: EntityId,
         cardId: EntityId
     ): LegalityKernel.LinkedExileGranter? = legality.linkedExileGranterFor(state, playerId, cardId)
+
+    /**
+     * The permanent whose `MayPlayCardsFromExile(oncePerTurn = true)` allowance casting [cardId]
+     * from exile spends (Evelyn, the Covetous), or null. Read before the card leaves exile.
+     */
+    fun findOncePerTurnExileGranter(
+        state: GameState,
+        playerId: EntityId,
+        cardId: EntityId
+    ): EntityId? = if (state.turnOrder.any { cardId in state.getExile(it) }) {
+        state.oncePerTurnGranterToSpend(cardId, playerId, conditionEvaluator, cardRegistry)
+    } else null
 
     private fun findGraveyardPlayPermissionSource(
         state: GameState,

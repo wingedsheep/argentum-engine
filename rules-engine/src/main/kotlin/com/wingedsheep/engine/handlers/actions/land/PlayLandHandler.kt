@@ -20,6 +20,7 @@ import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.permissions.activeMayPlayFor
 import com.wingedsheep.engine.state.permissions.consumeSingleUseMayPlayFor
+import com.wingedsheep.engine.state.permissions.oncePerTurnGranterToSpend
 import com.wingedsheep.engine.state.permissions.hasMayPlayFor
 import com.wingedsheep.engine.state.permissions.removeMayPlayPermissionsForCard
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
@@ -392,6 +393,17 @@ class PlayLandHandler(
                     )
                 }
             }
+            // The filter-defined sibling (Evelyn, the Covetous): a land play spends the same
+            // once-each-turn allowance a cast would.
+            state.oncePerTurnGranterToSpend(action.cardId, action.playerId, conditionEvaluator, cardRegistry)
+                ?.let { granter ->
+                    newState = newState.updateEntity(granter) { c ->
+                        c.with(
+                            com.wingedsheep.engine.state.components.battlefield
+                                .MayCastFromLinkedExileUsedThisTurnComponent
+                        )
+                    }
+                }
             newState = newState.removeMayPlayPermissionsForCard(action.cardId)
             // Drop the card from any linked-exile granter (Valgavoth) now that it has left exile,
             // so the granter no longer lists it. (Lands bypass ZoneTransitionService, which would

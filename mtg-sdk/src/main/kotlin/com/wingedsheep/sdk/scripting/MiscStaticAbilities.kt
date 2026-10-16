@@ -873,18 +873,30 @@ data object MayPlayLandsFromGraveyard : StaticAbility {
  *   [SpendAnyManaTypeForSpells] precisely because CR 118.14 scopes the relaxation to spells cast
  *   *through* the permission; it is the same flag [GrantMayPlayFromExileEffect.withAnyManaType] and
  *   `MayPlayPermission.withAnyManaType` already spell, so it maps 1:1 onto engine vocabulary.
+ * @property withAnyManaColor The narrower CR 609.4b rider — "you may spend mana as though it were
+ *   mana of any color to cast it" (Evelyn, the Covetous): only the colored pips are relaxed, a `{C}`
+ *   pip still needs colorless mana. The same pair of flags `GrantMayPlayFromExileEffect` carries.
+ * @property oncePerTurn "Once each turn, you may play …" (Evelyn, the Covetous): the permission
+ *   authorizes one play per turn — a land or a spell, the player's choice. The allowance belongs to
+ *   the *granting permanent*, exactly as [GrantMayCastFromLinkedExile.oncePerTurn]'s does: two
+ *   granters are two allowances, and one that leaves and returns comes back with a fresh one. A
+ *   play is charged to it only when no unlimited grant also covered the card.
  */
 @SerialName("MayPlayCardsFromExile")
 @Serializable
 data class MayPlayCardsFromExile(
     val filter: GameObjectFilter,
     val condition: Condition? = null,
-    val withAnyManaType: Boolean = false
+    val withAnyManaType: Boolean = false,
+    val withAnyManaColor: Boolean = false,
+    val oncePerTurn: Boolean = false
 ) : StaticAbility {
     override val description: String = buildString {
-        append("You may play ${filter.description} from exile")
+        if (oncePerTurn) append("Once each turn, you may play a ${filter.description} from exile")
+        else append("You may play ${filter.description} from exile")
         if (condition != null) append(" ${condition.description}")
         if (withAnyManaType) append(", and mana of any type can be spent to cast those spells")
+        else if (withAnyManaColor) append(", and you may spend mana as though it were mana of any color to cast it")
     }
 
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {

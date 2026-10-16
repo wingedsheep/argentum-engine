@@ -1639,6 +1639,7 @@ Families:
 - `StatePredicate.DealtCombatDamageToSourceControllerThisTurn` — Dealt combat damage *this turn* to the player who controls the effect's source.
 - `StatePredicate.DealtDamageToSourceControllerThisTurn` — Dealt damage — combat or noncombat — *this turn* to the player who controls the effect's source: the any-damage sibling of DealtCombatDamageToSourceControllerThisTurn.
 - `StatePredicate.EnteredThisTurn` — Entered the battlefield this turn (has summoning sickness if creature)
+- `StatePredicate.ExiledByYou` — The candidate card is in exile and was put there by a spell or ability controlled by the asking player (the evaluation context's controller) — "a card from exile … if it was exiled by an ability yo…
 - `StatePredicate.ExiledWithSource` — The candidate card is one this effect's source permanent exiled — i.e. its entity id is recorded in the source's `LinkedExileComponent` (the same linkage set by `RedirectZoneChange(linkToSource = t…
 - `StatePredicate.HasAnyCounter` — Has any counter of any type
 - `StatePredicate.HasCounter(counterType: CounterType, minCount: Int)` — Has at least minCount counters of the specified type.
@@ -1845,7 +1846,7 @@ Families:
 - `MayCastFromGraveyard(filter: GameObjectFilter, lifeCost: Int, duringYourTurnOnly: Boolean, entersWithCounter: CounterType?, addedSubtypeOnEntry: String?, oncePerTurn: Boolean, exileInsteadOfGraveyard: Boolean, fromAnyGraveyard: Boolean, additionalCost: AdditionalCost?, playsLands: Boolean, grantedAbilityOnEntry: TriggeredAbility?)` — You may cast spells matching filter from your graveyard, optionally by paying lifeCost life in addition to their other costs.
 - `MayCastSelfFromZones(zones: List<Zone>, condition: Condition?, additionalCost: AdditionalCost?, castUsing: Keyword?)` — You may cast this card from specified zones (e.g., graveyard, exile).
 - `MayCastWithoutPayingManaCost(controllerOnly: Boolean, firstSpellOfTurnOnly: Boolean, spellFilter: GameObjectFilter, oncePerTurn: Boolean, fromZones: Set<Zone>?)` — Generic "may cast a spell without paying its mana cost" battlefield permission.
-- `MayPlayCardsFromExile(filter: GameObjectFilter, condition: Condition?, withAnyManaType: Boolean)` — You may play cards in exile matching filter — "play", so lands and spells alike (CR 601.3: a permission from an effect is what lets a player cast a card from a zone other than their hand).
+- `MayPlayCardsFromExile(filter: GameObjectFilter, condition: Condition?, withAnyManaType: Boolean, withAnyManaColor: Boolean, oncePerTurn: Boolean)` — You may play cards in exile matching filter — "play", so lands and spells alike (CR 601.3: a permission from an effect is what lets a player cast a card from a zone other than their hand).
 - `MayPlayLandsFromGraveyard` — You may play lands from your graveyard.
 - `MayPlayPermanentsFromGraveyard` — During each of your turns, you may play a land and cast a permanent spell of each permanent type from your graveyard.
 - `ModifyPlotCost(target: PlotCostTarget, modification: CostModification)` — Static ability that modifies the cost of the **Plot** special action (CR 718).

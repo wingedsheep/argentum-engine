@@ -984,6 +984,7 @@ class MoveCollectionExecutor(
             }
             val entryOptions = com.wingedsheep.engine.handlers.effects.ZoneEntryOptions(
                 controllerId = actualDestPlayerId,
+                exiledBy = context.controllerId,
                 simultaneousEntryGroup = entryGroup,
                 entryCounterType = entryCounterType.takeIf { destZone == Zone.BATTLEFIELD },
                 entryCounterReplacementState = replacementSourceState ?: state,

@@ -6960,6 +6960,14 @@ work for abilities-on-stack (which carry no `CardComponent`).
   Darkness Crystal: `TargetObject(filter = TargetFilter(GameObjectFilter.Creature.exiledWithSource(),
   zone = Zone.EXILE))`. Resolves against `PredicateContext.sourceId`; inert with no source, and never
   matches in group-static projection or trigger-gating contexts.
+- `ExiledByYou` (filter builder `exiledByYou()`) — player-relative: the candidate card is in exile and
+  the spell or ability that exiled it was controlled by the evaluating player
+  (`PredicateContext.controllerId`) — "if it was exiled by an ability you controlled" (Evelyn, the
+  Covetous). Reads `ExiledFromZoneComponent.exiledBy`, stamped from `ZoneEntryOptions.exiledBy` by the
+  two effect exile roads that know their controller (`MoveCollectionExecutor`,
+  `MoveToZoneEffectExecutor`); a move *redirected* into exile is attributed to the redirecting
+  replacement's controller when the engine knows it, never to the mover. Unattributed exiles (costs,
+  rules actions, other executors) match nobody. Never matches in group-static projection.
 - `IsWarpExiled` (filter builder `warpExiled()`) — card in exile via warp's
   end-of-turn delayed trigger (CR 702.185b).
 - `WasCastForWarp` (filter builder `castForWarp()`) — battlefield permanent that
@@ -11068,7 +11076,7 @@ riders, matching how the engine already treats e.g. City of Brass's damage durin
   `effectiveSneakCost` are read by `SneakCastEnumerator` (a graveyard loop) and four sites in
   `CastSpellHandler` (zone gate, both cost paths, the enters-tapped/bounce resolution). No
   exile-on-resolution (unlike flashback) — the creature simply moves graveyard → stack → battlefield.
-- `MayPlayCardsFromExile(filter, condition = null, withAnyManaType = false)` — "you may **play** cards
+- `MayPlayCardsFromExile(filter, condition = null, withAnyManaType = false, withAnyManaColor = false, oncePerTurn = false)` — "you may **play** cards
   in exile matching `filter`" (spells *and* lands, CR 601.3). The sibling of
   `GrantMayCastFromLinkedExile` for the case where the playable set is a **filter over every exile
   zone** rather than the cards linked to this permanent. Tinybones, Bauble Burglar = "During your turn,
@@ -11093,6 +11101,17 @@ riders, matching how the engine already treats e.g. City of Brass's damage durin
   exiling with `Effects.Exile(..., addCounterType = CounterType.CROAK)` off a per-card
   `LIBRARY -> GRAVEYARD` `EventPattern.ZoneChangeEvent`. `CounterType.CROAK` is a pure marker like
   `CounterType.STASH`: it grants nothing, it just gives the filter something to select on.
+  Evelyn, the Covetous uses the other two axes — "Once each turn, you may play a card from exile with a
+  collection counter on it if it was exiled by an ability you controlled, and you may spend mana as
+  though it were mana of any color to cast it" =
+  `MayPlayCardsFromExile(GameObjectFilter.Any.withCounter(CounterType.COLLECTION).exiledByYou(), withAnyManaColor = true, oncePerTurn = true)`.
+  `withAnyManaColor` is the narrower CR 609.4b rider: colored pips only, a `{C}` pip still needs
+  colorless mana. `oncePerTurn` gives the **granting permanent** one play per turn — a land or a spell,
+  sharing the `MayCastFromLinkedExileUsedThisTurnComponent` marker `GrantMayCastFromLinkedExile
+  .oncePerTurn` uses, stamped by the cast path (`CastRecords`) and the land path (`PlayLandHandler`);
+  a second granter is a second allowance, and a play an unlimited grant also covered spends nothing.
+  `CounterType.COLLECTION` (the same kind Charitable Levy tallies) carries no rule here; it is placed by a pipeline
+  `move(..., CardDestination.ToZone(Zone.EXILE), addCounterType = CounterType.COLLECTION)`.
 - `MayCastSelfFromZones(zones, condition = null, additionalCost = null, castUsing = null)` — intrinsic *self*
   permission: this card may be cast from any of `zones` (graveyard/exile) following normal timing
   and for its normal mana cost. Squee, the Immortal = `MayCastSelfFromZones(listOf(GRAVEYARD,

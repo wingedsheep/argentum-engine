@@ -612,6 +612,8 @@ internal class AffectsFilterResolver(
         // meaningful in target/gather-filter contexts via PredicateEvaluator; never match in
         // group-static projection.
         StatePredicate.ExiledWithSource -> false
+        // Exile-zone only; group statics project battlefield permanents.
+        StatePredicate.ExiledByYou -> false
         StatePredicate.EnteredThisTurn -> container.has<EnteredThisTurnComponent>()
         StatePredicate.ActivatedThisTurn -> container.get<AbilityActivatedThisTurnComponent>()?.anyActivated == true
         // Counter history — the per-permanent marker, so a group static gated on "each creature you
