@@ -200,7 +200,7 @@
 - [x] One with the Machine
 - [x] Open the Vaults
 - [x] Opulent Palace
-- [ ] Overencumbered
+- [x] Overencumbered
 - [x] Overflowing Basin
 - [x] Overseer of Vault 76
 - [x] Paladin Danse, Steel Maverick

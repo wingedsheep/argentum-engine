@@ -1626,16 +1626,16 @@ class PredicateEvaluator(
             // creature's — so the turn-order guard lives here.
             Player.TriggeringPlayer ->
                 context.triggeringEntityId?.takeIf { it in state.turnOrder }
-            // "creatures enchanted player controls" (Radiant Restraints) — the controller scope a
-            // Curse needs, and the only one that reads the *source's* attachment rather than the
-            // ability's controller. Same resolution as StatePredicate.IsAttackingEnchantedPlayer:
-            // the `in state.turnOrder` guard is what keeps a permanent host out, so an Aura on a
-            // creature can never make this match anything.
             // "the same owner as this" — the source card's immutable owner, in any zone.
             Player.OwnerOfSource -> context.sourceId?.let { state.getEntity(it) }?.let {
                 it.get<com.wingedsheep.engine.state.components.identity.OwnerComponent>()?.playerId
                     ?: it.get<CardComponent>()?.ownerId
             }
+            // "creatures enchanted player controls" (Radiant Restraints) — the controller scope a
+            // Curse needs, and the only one that reads the *source's* attachment rather than the
+            // ability's controller. The `in state.turnOrder` guard keeps a permanent host out, so
+            // an Aura on a creature never matches; a departed Aura answers with the player it was
+            // last attached to (CR 608.2h), the same resolver effect player references use.
             Player.EnchantedPlayer ->
                 TargetResolutionUtils.enchantedPlayer(context.sourceId, state)
             else -> null
