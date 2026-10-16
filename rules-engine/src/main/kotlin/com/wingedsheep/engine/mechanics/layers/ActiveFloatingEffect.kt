@@ -14,6 +14,7 @@ import com.wingedsheep.sdk.scripting.conditions.Condition
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.engine.replacement.ReplacementEffectProcessor
 import com.wingedsheep.sdk.scripting.EventPattern
+import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.ReplacementEffect
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -564,7 +565,14 @@ sealed interface SerializableModification {
          * still read `DynamicAmount.XValue` at draw time — the original activation context is gone
          * by then (Aladdin's Lamp: "look at the top X cards"). Null when no X was involved.
          */
-        val xValue: Int? = null
+        val xValue: Int? = null,
+        /**
+         * The player whose draw this shield replaces — the controller, or another player
+         * (Urabrask, Heretic Praetor: "the next time *they* would draw a card"). The replacement
+         * stays controlled by the shield's controller; its effect reads this player as
+         * `Player.TriggeringPlayer`. Null on shields that predate the field (the controller's draw).
+         */
+        val drawingPlayerId: EntityId? = null
     ) : SerializableModification {
         override val sourceEntityId: EntityId? get() = sourceId
 
@@ -573,13 +581,18 @@ sealed interface SerializableModification {
             sourceId = sourceId,
             targets = targets,
             xValue = xValue,
+            triggeringPlayerId = drawingPlayerId,
             pipeline = PipelineState(namedTargets = namedTargets)
         )
 
+        // The floating gather already restricts the shield to its affected player, so the
+        // pattern only has to stop "you" from re-narrowing it to the controller.
         override fun toReplacementEffect(controllerId: EntityId): ReplacementEffect =
             com.wingedsheep.sdk.scripting.ReplaceDrawWith(
                 replacementEffect = replacementEffect,
-                appliesTo = EventPattern.DrawEvent()
+                appliesTo = EventPattern.DrawEvent(
+                    player = if (drawingPlayerId == null || drawingPlayerId == controllerId) Player.You else Player.Any
+                )
             )
     }
 

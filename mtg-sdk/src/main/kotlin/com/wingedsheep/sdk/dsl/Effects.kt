@@ -847,10 +847,12 @@ object Effects {
         com.wingedsheep.sdk.scripting.effects.EachPlayerDrawsForDamageDealtToSourceEffect
 
     /**
-     * Replace the next draw this turn with the given effect instead.
-     * Used by the "Words of" enchantment cycle.
+     * Replace [player]'s next draw this turn with the given effect instead — the controller's by
+     * default (the "Words of" enchantment cycle). Aimed at another player, the replacement effect
+     * names that player as `Player.TriggeringPlayer` (Urabrask, Heretic Praetor).
      */
-    fun ReplaceNextDraw(effect: Effect): Effect = ReplaceNextDrawWithEffect(effect)
+    fun ReplaceNextDraw(effect: Effect, player: EffectTarget = EffectTarget.Controller): Effect =
+        ReplaceNextDrawWithEffect(effect, player)
 
     /**
      * Each player discards a card or loses [lifeLoss] life, their choice (Strongarm Tactics).

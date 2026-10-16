@@ -153,15 +153,28 @@ data object EachPlayerReturnsPermanentToHandEffect : Effect {
  * ReplaceNextDrawWithEffect(replacementEffect = Effects.CreateToken(2, 2, setOf(Color.GREEN), setOf("Bear")))
  * ```
  *
+ * The shield is aimed at [player]'s next draw — the controller by default. Aiming it at another
+ * player ("at the beginning of each opponent's upkeep, the next time **they** would draw a card
+ * this turn, instead they exile the top card of their library" — Urabrask, Heretic Praetor) leaves
+ * the replacement controlled by this effect's controller, and the replacement effect reads the
+ * player whose draw it replaced as [com.wingedsheep.sdk.scripting.references.Player.TriggeringPlayer]
+ * ("that player" / "they").
+ *
  * @property replacementEffect The effect executed instead of the draw
+ * @property player The player whose next draw is replaced, resolved when the shield is created
  */
 @SerialName("ReplaceNextDrawWith")
 @Serializable
 data class ReplaceNextDrawWithEffect(
-    val replacementEffect: Effect
+    val replacementEffect: Effect,
+    val player: EffectTarget = EffectTarget.Controller
 ) : Effect {
     override val description: String =
-        "The next time you would draw a card this turn, ${replacementEffect.description} instead"
+        if (player == EffectTarget.Controller) {
+            "The next time you would draw a card this turn, ${replacementEffect.description} instead"
+        } else {
+            "The next time ${player.description} would draw a card this turn, instead ${replacementEffect.description}"
+        }
 
     override fun applyTextReplacement(replacer: TextReplacer): Effect {
         val newReplacement = replacementEffect.applyTextReplacement(replacer)

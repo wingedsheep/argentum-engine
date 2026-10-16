@@ -18,6 +18,7 @@ import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.effects.ShuffleLibraryEffect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
+import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 
@@ -119,12 +120,17 @@ object ExilePatterns {
      *
      * Named MTG mechanic ("impulse draw") with multiple users — Irascible Wolverine (1),
      * Annie Flash, the Veteran (2), etc.
+     *
+     * [player] is whose library is exiled from and who may play the cards — "you" by default;
+     * `Player.TriggeringPlayer` for "*they* exile the top card of *their* library. *They* may play
+     * it this turn" (Urabrask, Heretic Praetor's replaced draw).
      */
     fun impulse(
         count: Int = 1,
         expiry: MayPlayExpiry = MayPlayExpiry.EndOfTurn,
-        storeAs: String = "impulseExiled"
-    ): Effect = impulse(DynamicAmount.Fixed(count), expiry, storeAs)
+        storeAs: String = "impulseExiled",
+        player: Player = Player.You
+    ): Effect = impulse(DynamicAmount.Fixed(count), expiry, storeAs, player)
 
     /**
      * Impulse draw whose card count is computed at resolution — "exile *that many* cards from the
@@ -133,17 +139,19 @@ object ExilePatterns {
     fun impulse(
         count: DynamicAmount,
         expiry: MayPlayExpiry = MayPlayExpiry.EndOfTurn,
-        storeAs: String = "impulseExiled"
+        storeAs: String = "impulseExiled",
+        player: Player = Player.You
     ): Effect = CompositeEffect(listOf(
         GatherCardsEffect(
-            source = CardSource.TopOfLibrary(count),
+            source = CardSource.TopOfLibrary(count, player),
             storeAs = storeAs
         ),
         MoveCollectionEffect(
             from = storeAs,
             destination = CardDestination.ToZone(Zone.EXILE)
         ),
-        GrantMayPlayFromExileEffect(storeAs, expiry)
+        if (player == Player.You) GrantMayPlayFromExileEffect(storeAs, expiry)
+        else GrantMayPlayFromExileEffect(storeAs, expiry, recipient = EffectTarget.PlayerRef(player))
     ))
 
     fun shuffleAndExileTopPlayFree(): Effect = CompositeEffect(listOf(

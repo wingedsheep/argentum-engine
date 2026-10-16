@@ -1008,7 +1008,7 @@ Families:
 - `RemoveSuspectedEffect(target: EffectTarget)` — "It's no longer suspected" (CR 701.60c) — the inverse of the whole suspect bundle.
 - `RepeatDynamicTimesEffect(amount: DynamicAmount, body: Effect)` — Repeat a body effect N times, where N is determined by a DynamicAmount.
 - `RepeatWhileEffect(body: Effect, repeatCondition: RepeatCondition, collectCollections: Map<String, String>)` — Repeat a body effect in a do-while loop controlled by a RepeatCondition.
-- `ReplaceNextDrawWithEffect(replacementEffect: Effect)` — Generic draw-replacement effect for the "Words of" cycle.
+- `ReplaceNextDrawWithEffect(replacementEffect: Effect, player: EffectTarget)` — Generic draw-replacement effect for the "Words of" cycle.
 - `ReselectTargetRandomlyEffect` — Reselect the target of the triggering spell or ability at random.
 - `RestartGameEffect(exempt: String?, afterRestart: Effect?)` — Restart the game (CR 727).
 - `RetainUnspentManaEffect(colors: Set<Color>)` — "Until end of turn, you don't lose unspent colors mana as steps and phases end." The colour-filtered, single-player, turn-scoped counterpart of the permanent-static com.wingedsheep.sdk.scripting.Pr…

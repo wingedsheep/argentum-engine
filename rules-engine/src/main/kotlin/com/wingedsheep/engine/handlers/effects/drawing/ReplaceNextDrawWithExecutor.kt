@@ -15,8 +15,8 @@ import kotlin.reflect.KClass
 /**
  * Executor for [ReplaceNextDrawWithEffect].
  *
- * Creates a floating replacement-effect shield that intercepts the controller's
- * next card draw this turn, replacing it with the stored [ReplaceNextDrawWithEffect.replacementEffect].
+ * Creates a floating replacement-effect shield that intercepts [ReplaceNextDrawWithEffect.player]'s
+ * (by default the controller's) next card draw this turn, replacing it with the stored [ReplaceNextDrawWithEffect.replacementEffect].
  *
  * The replacement effect is stored directly in the shield as a generic [SerializableModification.ReplaceDrawWith],
  * which is consumed at draw time by delegating to the effect execution pipeline.
@@ -31,6 +31,8 @@ class ReplaceNextDrawWithExecutor : EffectExecutor<ReplaceNextDrawWithEffect> {
         context: EffectContext
     ): EffectResult {
         val sourceName = context.sourceId?.let { state.getEntity(it)?.get<CardComponent>()?.name }
+        val drawingPlayerId = context.resolvePlayerTarget(effect.player, state)
+            ?: return EffectResult.success(state)
 
         val modification = SerializableModification.ReplaceDrawWith(
             replacementEffect = effect.replacementEffect,
@@ -39,14 +41,17 @@ class ReplaceNextDrawWithExecutor : EffectExecutor<ReplaceNextDrawWithEffect> {
             sourceId = context.sourceId,
             sourceName = sourceName,
             // Capture the activation-time {X} so the replacement effect can read it at draw time.
-            xValue = context.xValue
+            xValue = context.xValue,
+            drawingPlayerId = drawingPlayerId
         )
 
         val newState = state.addFloatingEffect(
             layer = Layer.ABILITY,
             modification = modification,
-            affectedEntities = setOf(context.controllerId),
-            duration = Duration.NextUse("you would draw a card"),
+            affectedEntities = setOf(drawingPlayerId),
+            duration = Duration.NextUse(
+                if (drawingPlayerId == context.controllerId) "you would draw a card" else "that player would draw a card"
+            ),
             context = context
         )
 

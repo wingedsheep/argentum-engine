@@ -6703,6 +6703,127 @@
     ]
 }
 
+// Urabrask, Heretic Praetor
+{
+    "name": "Urabrask, Heretic Praetor",
+    "manaCost": "{3}{R}{R}",
+    "typeLine": "Legendary Creature — Phyrexian Praetor",
+    "oracleText": "Haste\nAt the beginning of your upkeep, exile the top card of your library. You may play it this turn.\nAt the beginning of each opponent's upkeep, the next time they would draw a card this turn, instead they exile the top card of their library. They may play it this turn.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "HASTE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Urabrask, Heretic Praetor:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeAs": "impulseExiled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "impulseExiled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        },
+                        {
+                            "type": "GrantMayPlayFromExile",
+                            "from": "impulseExiled"
+                        }
+                    ]
+                },
+                "descriptionOverride": "At the beginning of your upkeep, exile the top card of your library. You may play it this turn."
+            },
+            {
+                "id": "Urabrask, Heretic Praetor:2",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP",
+                    "player": "EachOpponent"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ReplaceNextDrawWith",
+                    "replacementEffect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "TopOfLibrary",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    },
+                                    "player": "TriggeringPlayer"
+                                },
+                                "storeAs": "impulseExiled"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "impulseExiled",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Exile"
+                                }
+                            },
+                            {
+                                "type": "GrantMayPlayFromExile",
+                                "from": "impulseExiled",
+                                "recipient": {
+                                    "type": "PlayerRef",
+                                    "player": "TriggeringPlayer"
+                                }
+                            }
+                        ]
+                    },
+                    "player": {
+                        "type": "PlayerRef",
+                        "player": "TriggeringPlayer"
+                    }
+                },
+                "descriptionOverride": "At the beginning of each opponent's upkeep, the next time they would draw a card this turn, instead they exile the top card of their library. They may play it this turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "129",
+        "rarity": "MYTHIC",
+        "artist": "Simon Dominic",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/9/d9a4ec18-1da4-43c6-a79a-03fbd4aef3db.jpg?1783923111",
+        "rulings": [
+            {
+                "date": "2022-04-29",
+                "text": "Players must pay all costs and follow all normal timing rules for cards played this way. For example, players may play a land card this way only during a main phase of their own turn when the stack is empty, and only if they haven't yet played a land this turn."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Vampire Scrivener
 {
     "name": "Vampire Scrivener",
