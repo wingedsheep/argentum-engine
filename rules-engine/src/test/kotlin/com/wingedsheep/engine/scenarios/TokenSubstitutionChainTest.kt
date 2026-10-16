@@ -41,7 +41,7 @@ class TokenSubstitutionChainTest : FunSpec({
         typeLine = "Enchantment"
         replacementEffect(
             ReplaceTokenCreationWithToken(
-                token = creature(toPower, to),
+                tokens = listOf(creature(toPower, to)),
                 appliesTo = EventPattern.TokenCreationEvent(
                     controller = Player.You,
                     tokenFilter = GameObjectFilter.Any.withSubtype(from)
@@ -57,7 +57,7 @@ class TokenSubstitutionChainTest : FunSpec({
         typeLine = "Enchantment"
         replacementEffect(
             ReplaceTokenCreationWithToken(
-                token = creature(1, "Fish"),
+                tokens = listOf(creature(1, "Fish")),
                 appliesTo = EventPattern.TokenCreationEvent(Player.You, GameObjectFilter.Artifact)
             )
         )

@@ -16697,15 +16697,21 @@ The priority groups are (CR 616.1a–f):
   are declared outside the static-ability builder), so it takes `restrictions = listOf(Conditions.SourceIsSolved)`
   instead — Case of the Pilfered Proof's "Solved — If one or more tokens would be created under your
   control, those tokens plus a Clue token are created instead".
-- `ReplaceTokenCreationWithToken(token, appliesTo)` — "if one or more [filtered] tokens would be created
-  under your control, **that many** [other token] are created instead" (Draconic Visitor: `token =
-  Effects.CreateToken(5, 5, setOf(RED), setOf("Dragon"), setOf(FLYING))`, `appliesTo =
-  TokenCreationEvent(You, GameObjectFilter.Artifact)`). `token` must be built with `Effects.CreateToken`
-  (a `CreateTokenEffect`; enforced at construction). The whole matching batch is swapped one-for-one; the
-  substitute's own `count` / `controller` / `tapped` / `attacking` are ignored ("that many", under the
-  player the replaced tokens were for), and the replaced effect's riders (enters tapped, sacrifice at end
-  step, CREATED_TOKENS follow-ups now point at the substitutes) don't follow — they belonged to tokens that
-  are never created. `tokenFilter` is matched against the would-be token's characteristics before it
+- `ReplaceTokenCreationWithToken(tokens, appliesTo, optional = false)` — "if one or more [filtered] tokens
+  would be created under your control, **that many** [other token] are created instead" (Draconic Visitor:
+  `tokens = listOf(Effects.CreateToken(5, 5, setOf(RED), setOf("Dragon"), setOf(FLYING)))`, `appliesTo =
+  TokenCreationEvent(You, GameObjectFilter.Artifact)`). Each substitute must be built with
+  `Effects.CreateToken` (a `CreateTokenEffect`; enforced at construction). With several `tokens` the
+  replacement's controller picks one, and with `optional = true` may also keep the original tokens — "you
+  may instead create that many 2/2 green Cat creature tokens with haste or that many 3/1 green Dog creature
+  tokens with vigilance" (Jinnie Fay, Jetmir's Second: two `tokens`, `optional = true`). That question is a
+  `ChooseOptionDecision` asked once per creation event (a `Effects.CreateTokensTogether` batch of a Treasure
+  and a Soldier is one event, one answer), after count doublers; the creating effect then re-runs with the
+  answer (`TokenSubstitutionChoiceContinuation`), so nothing is created before it's answered. The whole
+  matching batch is swapped one-for-one; the substitute's own `count` / `controller` are ignored ("that
+  many", under the player the replaced tokens were for), while the replaced instruction's riders still
+  apply (the rulings on all three cards): enters tapped / attacking, exile or sacrifice at a step, and
+  CREATED_TOKENS follow-ups point at the substitutes. `tokenFilter` is matched against the would-be token's characteristics before it
   exists (`TokenCreationReplacementHelper.findTokenSubstitution` probes a scratch entity), so it sees an
   artifact creature token's type line, a Treasure's, or a token copy's copiable values *plus* its copy
   exceptions (Molten Duplication's "except it's an artifact"). Read by the three token executors that read

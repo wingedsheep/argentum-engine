@@ -114,14 +114,27 @@ class CreateTokenCopyOfTargetExecutor(
         // The copy's characteristics are the copiable values plus this effect's exceptions.
         val prospective = CopyExceptionApplier.apply(targetCard, resolvedExceptions(state, effect, context))
             .copy(ownerId = controllerId, isDoubleFaced = false)
-        TokenCreationReplacementHelper.findTokenSubstitution(state, controllerId, prospective, predicateEvaluator = amountEvaluator.predicates)
-            ?.let { substitute ->
-                return substituteExecutor.createSubstituteTokens(
-                    state, substitute, context,
-                    com.wingedsheep.engine.core.GameLimits.cappedTokenCount(count, "target-copy tokens"),
-                    controllerId
+        TokenCreationReplacementHelper.findTokenSubstitution(
+            state, controllerId, prospective,
+            predicateEvaluator = amountEvaluator.predicates,
+            choices = context.pipeline.chosenValues,
+        )?.let { lookup ->
+            val tokenCount = com.wingedsheep.engine.core.GameLimits.cappedTokenCount(count, "target-copy tokens")
+            return when (lookup) {
+                is TokenSubstitution -> substituteExecutor.createSubstituteTokens(
+                    state, lookup, context, tokenCount, controllerId,
+                    riders = TokenRiders(
+                        tapped = effect.tapped,
+                        attacking = effect.attacking,
+                        exileAtStep = effect.exileAtStep,
+                        sacrificeAtStep = effect.sacrificeAtStep
+                    ),
+                    rootEffect = effect
                 )
+                is TokenSubstitutionChoice ->
+                    TokenCreationReplacementHelper.askForSubstitution(state, lookup, effect, context, tokenCount)
             }
+        }
 
         // A prescribed host ("… attached to that creature") replaces the Aura host choice; the
         // per-token legality check happens in createTokens, once the token's characteristics exist.

@@ -90,24 +90,22 @@ class CreatePredefinedTokenExecutor(
         // "If one or more artifact tokens would be created under your control, that many 5/5 red
         // Dragon creature tokens with flying are created instead" (Draconic Visitor). Treasure,
         // Clue, Food, Map and the rest are artifact tokens, so this is the path it bites hardest.
-        val prospective = CardComponent(
-            cardDefinitionId = effect.tokenType,
-            name = effect.tokenType,
-            manaCost = cardDef.manaCost,
-            typeLine = cardDef.typeLine,
-            baseStats = cardDef.creatureStats,
-            baseKeywords = cardDef.keywords,
-            colors = cardDef.colorIdentityOverride ?: cardDef.colors,
-            ownerId = tokenControllerId
-        )
-        TokenCreationReplacementHelper.findTokenSubstitution(state, tokenControllerId, prospective, predicateEvaluator = amountEvaluator.predicates, eligibleSources = TokenCreationBatch.sources(context))
-            ?.let { substitute ->
-                return substituteExecutor.createSubstituteTokens(
-                    state, substitute, context,
-                    tokenCount,
-                    tokenControllerId
+        val prospective = prospectiveToken(cardDef, effect, tokenControllerId)
+        TokenCreationReplacementHelper.findTokenSubstitution(
+            state, tokenControllerId, prospective,
+            predicateEvaluator = amountEvaluator.predicates,
+            eligibleSources = TokenCreationBatch.sources(context),
+            choices = context.pipeline.chosenValues,
+        )?.let { lookup ->
+            return when (lookup) {
+                is TokenSubstitution -> substituteExecutor.createSubstituteTokens(
+                    state, lookup, context, tokenCount, tokenControllerId,
+                    riders = TokenRiders(tapped = effect.tapped), rootEffect = effect
                 )
+                is TokenSubstitutionChoice ->
+                    TokenCreationReplacementHelper.askForSubstitution(state, lookup, effect, context, tokenCount)
             }
+        }
 
         // Art: an explicit per-card override wins, then the art printed by the set the creating
         // card came from (so a reprint mints its own set's Treasure), then the one canonical
@@ -240,4 +238,20 @@ class CreatePredefinedTokenExecutor(
             updatedCollections = mapOf(CREATED_TOKENS to createdTokenIds)
         )
     }
+
+    /** The would-be predefined token, for the replacements that test a token before it exists. */
+    internal fun prospectiveToken(
+        cardDef: com.wingedsheep.sdk.model.CardDefinition,
+        effect: CreatePredefinedTokenEffect,
+        tokenControllerId: EntityId
+    ) = CardComponent(
+        cardDefinitionId = effect.tokenType,
+        name = effect.tokenType,
+        manaCost = cardDef.manaCost,
+        typeLine = cardDef.typeLine,
+        baseStats = cardDef.creatureStats,
+        baseKeywords = cardDef.keywords,
+        colors = cardDef.colorIdentityOverride ?: cardDef.colors,
+        ownerId = tokenControllerId
+    )
 }

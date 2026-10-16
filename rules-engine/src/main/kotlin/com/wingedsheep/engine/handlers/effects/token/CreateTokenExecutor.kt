@@ -81,8 +81,17 @@ class CreateTokenExecutor(
         var currentState = state
         val allEvents = mutableListOf<com.wingedsheep.engine.core.GameEvent>()
         val allCreatedTokens = mutableListOf<EntityId>()
+        // A player whose tokens already exist is skipped when the effect runs again after a later
+        // player's replacement question (see TokenCreationReplacementHelper.askForSubstitution).
+        val alreadyCreatedFor = context.pipeline.chosenValues[FAN_OUT_DONE_KEY]
+            ?.split(',')?.filter { it.isNotEmpty() }?.toSet().orEmpty()
         for (tokenControllerId in tokenControllerIds) {
-            val result = createTokensFor(currentState, effect, context, baseCount, tokenControllerId)
+            if (tokenControllerId.value in alreadyCreatedFor) continue
+            val done = tokenControllerIds.takeWhile { it != tokenControllerId }.joinToString(",") { it.value }
+            val playerContext = if (done.isEmpty()) context else context.copy(
+                pipeline = context.pipeline.copy(chosenValues = context.pipeline.chosenValues + (FAN_OUT_DONE_KEY to done))
+            )
+            val result = createTokensFor(currentState, effect, playerContext, baseCount, tokenControllerId, rootEffect = effect)
             // An error, or a CR 508.4 defender question raised before any token exists
             // (CONTROLLER_CHOOSES always has the effect's controller as its single token controller).
             if (result.error != null || result.outcome !is com.wingedsheep.engine.core.Outcome.Done) return result
@@ -108,10 +117,12 @@ class CreateTokenExecutor(
      * no count replacement runs again. The substitute tokens *are* checked for a further
      * substitution (CR 616.2 — Fisher's Talent's Fish → Shark → Octopus), skipping every
      * substitution already applied to this event (CR 614.5), so the chain can't loop. The
-     * substitute's own `count`, `controller`, `tapped` and `attacking` are ignored: "that many",
-     * under the player the replaced tokens were for, with none of the replaced effect's riders.
+     * substitute's own `count` and `controller` are ignored — "that many", under the player the
+     * replaced tokens were for — and its riders are the replaced instruction's [riders] (tapped,
+     * attacking, exile/sacrifice at a step), which still apply to the substitutes.
      *
      * @param alreadyApplied substitutions applied to this event before [substitution].
+     * @param rootEffect the effect being resolved, run again if a further substitution asks a question.
      */
     internal fun createSubstituteTokens(
         state: GameState,
@@ -119,18 +130,22 @@ class CreateTokenExecutor(
         context: EffectContext,
         count: Int,
         tokenControllerId: EntityId,
+        riders: TokenRiders,
+        rootEffect: com.wingedsheep.sdk.scripting.effects.Effect,
         alreadyApplied: Set<com.wingedsheep.engine.replacement.ActiveReplacement> = emptySet()
     ): EffectResult {
         if (count <= 0) return EffectResult.success(state)
         val normalized = substitution.token.copy(
             count = com.wingedsheep.sdk.scripting.values.DynamicAmount.Fixed(count),
             controller = null,
-            tapped = false,
-            attacking = false,
-            attackDefender = com.wingedsheep.sdk.scripting.effects.EnteringAttackDefender.JOIN_SOURCE
+            tapped = riders.tapped,
+            attacking = riders.attacking,
+            attackDefender = riders.attackDefender,
+            exileAtStep = riders.exileAtStep,
+            sacrificeAtStep = riders.sacrificeAtStep
         )
         return createTokensFor(
-            state, normalized, context, count, tokenControllerId,
+            state, normalized, context, count, tokenControllerId, rootEffect,
             appliedSubstitutions = alreadyApplied + substitution.applied
         )
     }
@@ -141,6 +156,7 @@ class CreateTokenExecutor(
      * @param appliedSubstitutions the [com.wingedsheep.sdk.scripting.ReplaceTokenCreationWithToken]s
      *   already applied to this event — non-empty when these tokens are themselves a substitute;
      *   see [createSubstituteTokens].
+     * @param rootEffect the effect being resolved — [effect] itself unless these are substitutes.
      */
     private fun createTokensFor(
         state: GameState,
@@ -148,6 +164,7 @@ class CreateTokenExecutor(
         context: EffectContext,
         baseCount: Int,
         tokenControllerId: EntityId,
+        rootEffect: com.wingedsheep.sdk.scripting.effects.Effect,
         appliedSubstitutions: Set<com.wingedsheep.engine.replacement.ActiveReplacement> = emptySet()
     ): EffectResult {
         val substituted = appliedSubstitutions.isNotEmpty()
@@ -171,56 +188,35 @@ class CreateTokenExecutor(
         )
         if (replacementResult != null) return replacementResult
 
-        // Resolve the token's color / creature type from the source's cast-choices bag when the
-        // effect sources them from a ChoiceSlot (Riptide Replicator "of the chosen color and type");
-        // otherwise use the fixed sets baked into the effect. Both slots live on the one source bag.
-        val sourceBag = (effect.colorsFromChoice ?: effect.creatureTypesFromChoice)
-            ?.let { context.sourceId }
-            ?.let { state.getEntity(it) }
-            ?.get<CastChoicesComponent>()
-        // Defensive fallbacks for a malformed state (a *FromChoice slot declared but never written):
-        // colorless for color, generic "Creature" for type — a token is always created.
-        val effectiveColors = effect.colorsFromChoice?.let { slot ->
-            (sourceBag?.chosen?.get(slot) as? ChoiceValue.ColorChoice)?.color?.let { setOf(it) } ?: emptySet()
-        } ?: effect.colors
-        val effectiveCreatureTypes = effect.creatureTypesFromChoice?.let { slot ->
-            (sourceBag?.chosen?.get(slot) as? ChoiceValue.TextChoice)?.text?.let { setOf(it) } ?: setOf("Creature")
-        } ?: effect.creatureTypes
-        // The token's identity is the same for every copy in this batch, so resolve it once rather
-        // than per iteration. Its art is the one thing that can differ between copies — see below.
-        val defaultName = "${effectiveCreatureTypes.joinToString(" ")} Token"
-        val tokenName = effect.name ?: defaultName
-        val tokenPower = effect.dynamicPower?.let { amountEvaluator.evaluate(state, it, context) } ?: effect.power
-        val tokenToughness = effect.dynamicToughness?.let { amountEvaluator.evaluate(state, it, context) } ?: effect.toughness
-        val typeLinePrefix = buildString {
-            if (effect.legendary) append("Legendary ")
-            if (effect.artifactToken) append("Artifact ")
-            if (effect.enchantmentToken) append("Enchantment ")
-            append("Creature")
-        }
-        val tokenTypeLine = TypeLine.parse("$typeLinePrefix - ${effectiveCreatureTypes.joinToString(" ")}")
-        val tokenCardDefinitionId = "token:${effectiveCreatureTypes.joinToString("-")}"
+        val identity = identity(state, effect, context)
+        val effectiveColors = identity.colors
+        val effectiveCreatureTypes = identity.creatureTypes
+        val tokenName = identity.name
+        val tokenPower = identity.power
+        val tokenToughness = identity.toughness
+        val tokenTypeLine = identity.typeLine
+        val tokenCardDefinitionId = identity.cardDefinitionId
 
         // "If one or more artifact tokens would be created under your control, that many 5/5 red
         // Dragon creature tokens with flying are created instead" (Draconic Visitor): swap the whole
         // batch for the substitute before any of it is created. A substitute is checked again, minus the
         // substitutions already applied (Fisher's Talent: Fish → Shark → Octopus).
-        val prospective = CardComponent(
-            cardDefinitionId = tokenCardDefinitionId,
-            name = tokenName,
-            manaCost = ManaCost.ZERO,
-            typeLine = tokenTypeLine,
-            baseStats = CreatureStats(tokenPower, tokenToughness),
-            baseKeywords = effect.keywords,
-            colors = effectiveColors,
-            ownerId = tokenControllerId
-        )
+        val prospective = identity.prospective(effect, tokenControllerId)
         TokenCreationReplacementHelper.findTokenSubstitution(
             state, tokenControllerId, prospective,
             predicateEvaluator = amountEvaluator.predicates,
             alreadyApplied = appliedSubstitutions,
             eligibleSources = TokenCreationBatch.sources(context),
-        )?.let { return createSubstituteTokens(state, it, context, count, tokenControllerId, appliedSubstitutions) }
+            choices = context.pipeline.chosenValues,
+        )?.let { lookup ->
+            return when (lookup) {
+                is TokenSubstitution -> createSubstituteTokens(
+                    state, lookup, context, count, tokenControllerId, TokenRiders.of(effect), rootEffect, appliedSubstitutions
+                )
+                is TokenSubstitutionChoice ->
+                    TokenCreationReplacementHelper.askForSubstitution(state, lookup, rootEffect, context, count)
+            }
+        }
 
         // Art: an explicit per-card override wins, then the art printed by the set the creating
         // card came from (so a reprint mints its own set's token), then the engine-wide generic
@@ -543,5 +539,67 @@ class CreateTokenExecutor(
             events = events + counterEvents + additionalEvents,
             updatedCollections = mapOf(CREATED_TOKENS to createdTokens)
         )
+    }
+
+    /** The characteristics a [CreateTokenEffect]'s tokens are created with, resolved once per batch. */
+    internal data class TokenIdentity(
+        val colors: Set<com.wingedsheep.sdk.core.Color>,
+        val creatureTypes: Set<String>,
+        val name: String,
+        val power: Int,
+        val toughness: Int,
+        val typeLine: TypeLine,
+        val cardDefinitionId: String
+    ) {
+        /** The would-be token, for the replacements that test a token before it exists. */
+        fun prospective(effect: CreateTokenEffect, tokenControllerId: EntityId) = CardComponent(
+            cardDefinitionId = cardDefinitionId,
+            name = name,
+            manaCost = ManaCost.ZERO,
+            typeLine = typeLine,
+            baseStats = CreatureStats(power, toughness),
+            baseKeywords = effect.keywords,
+            colors = colors,
+            ownerId = tokenControllerId
+        )
+    }
+
+    internal fun identity(state: GameState, effect: CreateTokenEffect, context: EffectContext): TokenIdentity {
+        // Resolve the token's color / creature type from the source's cast-choices bag when the
+        // effect sources them from a ChoiceSlot (Riptide Replicator "of the chosen color and type");
+        // otherwise use the fixed sets baked into the effect. Both slots live on the one source bag.
+        val sourceBag = (effect.colorsFromChoice ?: effect.creatureTypesFromChoice)
+            ?.let { context.sourceId }
+            ?.let { state.getEntity(it) }
+            ?.get<CastChoicesComponent>()
+        // Defensive fallbacks for a malformed state (a *FromChoice slot declared but never written):
+        // colorless for color, generic "Creature" for type — a token is always created.
+        val effectiveColors = effect.colorsFromChoice?.let { slot ->
+            (sourceBag?.chosen?.get(slot) as? ChoiceValue.ColorChoice)?.color?.let { setOf(it) } ?: emptySet()
+        } ?: effect.colors
+        val effectiveCreatureTypes = effect.creatureTypesFromChoice?.let { slot ->
+            (sourceBag?.chosen?.get(slot) as? ChoiceValue.TextChoice)?.text?.let { setOf(it) } ?: setOf("Creature")
+        } ?: effect.creatureTypes
+        val defaultName = "${effectiveCreatureTypes.joinToString(" ")} Token"
+        val typeLinePrefix = buildString {
+            if (effect.legendary) append("Legendary ")
+            if (effect.artifactToken) append("Artifact ")
+            if (effect.enchantmentToken) append("Enchantment ")
+            append("Creature")
+        }
+        return TokenIdentity(
+            colors = effectiveColors,
+            creatureTypes = effectiveCreatureTypes,
+            name = effect.name ?: defaultName,
+            power = effect.dynamicPower?.let { amountEvaluator.evaluate(state, it, context) } ?: effect.power,
+            toughness = effect.dynamicToughness?.let { amountEvaluator.evaluate(state, it, context) } ?: effect.toughness,
+            typeLine = TypeLine.parse("$typeLinePrefix - ${effectiveCreatureTypes.joinToString(" ")}"),
+            cardDefinitionId = "token:${effectiveCreatureTypes.joinToString("-")}"
+        )
+    }
+
+    private companion object {
+        /** Chosen-values key listing the players a fanned-out creation already made tokens for. */
+        const val FAN_OUT_DONE_KEY = "__tokenFanOutDone"
     }
 }

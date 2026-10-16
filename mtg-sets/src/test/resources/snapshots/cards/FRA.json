@@ -3855,21 +3855,23 @@
         "replacementEffects": [
             {
                 "type": "ReplaceTokenCreationWithToken",
-                "token": {
-                    "type": "CreateToken",
-                    "power": 5,
-                    "toughness": 5,
-                    "colors": [
-                        "RED"
-                    ],
-                    "creatureTypes": [
-                        "Dragon"
-                    ],
-                    "keywords": [
-                        "FLYING"
-                    ],
-                    "imageUri": "https://cards.scryfall.io/normal/front/9/9/991a5840-adc7-45b5-8d5f-b24dae384bab.jpg?1789734473"
-                },
+                "tokens": [
+                    {
+                        "type": "CreateToken",
+                        "power": 5,
+                        "toughness": 5,
+                        "colors": [
+                            "RED"
+                        ],
+                        "creatureTypes": [
+                            "Dragon"
+                        ],
+                        "keywords": [
+                            "FLYING"
+                        ],
+                        "imageUri": "https://cards.scryfall.io/normal/front/9/9/991a5840-adc7-45b5-8d5f-b24dae384bab.jpg?1789734473"
+                    }
+                ],
                 "appliesTo": {
                     "type": "TokenCreationEvent",
                     "tokenFilter": "artifact"

@@ -3807,6 +3807,70 @@
     ]
 }
 
+// Jinnie Fay, Jetmir's Second
+{
+    "name": "Jinnie Fay, Jetmir's Second",
+    "manaCost": "{R/G}{G}{G/W}",
+    "typeLine": "Legendary Creature — Elf Druid",
+    "oracleText": "If you would create one or more tokens, you may instead create that many 2/2 green Cat creature tokens with haste or that many 3/1 green Dog creature tokens with vigilance.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "ReplaceTokenCreationWithToken",
+                "tokens": [
+                    {
+                        "type": "CreateToken",
+                        "power": 2,
+                        "toughness": 2,
+                        "colors": [
+                            "GREEN"
+                        ],
+                        "creatureTypes": [
+                            "Cat"
+                        ],
+                        "keywords": [
+                            "HASTE"
+                        ],
+                        "imageUri": "https://cards.scryfall.io/normal/front/5/7/57bd0b29-0860-4ee3-832a-f62ba7bf4aac.jpg?1783922959"
+                    },
+                    {
+                        "type": "CreateToken",
+                        "power": 3,
+                        "toughness": 1,
+                        "colors": [
+                            "GREEN"
+                        ],
+                        "creatureTypes": [
+                            "Dog"
+                        ],
+                        "keywords": [
+                            "VIGILANCE"
+                        ],
+                        "imageUri": "https://cards.scryfall.io/normal/front/6/7/6736fe71-bd55-4602-b0aa-ece6193048a9.jpg?1783922959"
+                    }
+                ],
+                "optional": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "195",
+        "rarity": "RARE",
+        "artist": "David Gaillet",
+        "flavorText": "She watches Jetmir's back while her companions watch hers.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/5/c5f9326a-2a41-45b3-97c3-548f0bdc0882.jpg?1783923082"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN",
+        "WHITE"
+    ]
+}
+
 // Join the Maestros
 {
     "name": "Join the Maestros",

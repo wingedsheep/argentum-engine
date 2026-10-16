@@ -1539,7 +1539,7 @@ Families:
 - `ReplaceLifeGainWith(replacementEffect: Effect, appliesTo: EventPattern.LifeGainEvent, restrictions: List<Condition>)` — Replace a life-gain event with an effect, without gaining life or using the stack.
 - `ReplaceLifePaymentWithLibraryExile(appliesTo: EventPattern)` — A life *payment* becomes an exile of that many cards off the top of the payer's library, so long as the library is deep enough to cover it.
 - `ReplaceTokenCreationWithAttachedCopy(optional: Boolean, oncePerTurn: Boolean, attachmentVerb: String, appliesTo: EventPattern)` — Replace token creation with creating token copies of the permanent this source is attached to.
-- `ReplaceTokenCreationWithToken(token: Effect, appliesTo: EventPattern)` — "If one or more filtered tokens would be created under your control, that many token are created instead." Substitutes a *different* token for every token of the creation event the appliesTo filter…
+- `ReplaceTokenCreationWithToken(tokens: List<Effect>, appliesTo: EventPattern, optional: Boolean)` — "If one or more filtered tokens would be created under your control, that many token are created instead." Substitutes a *different* token for every token of the creation event the appliesTo filter…
 - `SetMinimumDamage(minAmount: Int, dynamicMinimum: DynamicAmount?, appliesTo: EventPattern)` — Raise damage to a minimum amount — the floor mirror of CapDamage.
 
 ## RetargetChooser

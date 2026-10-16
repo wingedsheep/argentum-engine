@@ -285,22 +285,32 @@ enum class AdditionalTokenScale {
  * "If one or more [filtered] tokens would be created under your control, that many [token] are
  * created instead." Substitutes a *different* token for every token of the creation event the
  * [appliesTo] filter matches — the count carries over ("that many"), the characteristics come from
- * [token] alone. Unlike [CreateAdditionalToken] nothing of the original batch survives, and unlike
- * [ReplaceTokenCreationWithAttachedCopy] the substitute is a fixed token spec rather than a copy.
+ * the substitute alone. Unlike [CreateAdditionalToken] nothing of the original batch survives, and
+ * unlike [ReplaceTokenCreationWithAttachedCopy] the substitute is a fixed token spec rather than a
+ * copy.
  *
- * Draconic Visitor: `ReplaceTokenCreationWithToken(token = Effects.CreateToken(5, 5, setOf(RED),
- * setOf("Dragon"), setOf(FLYING)), appliesTo = TokenCreationEvent(You, GameObjectFilter.Artifact))`
- * — a Treasure, a Clue, an artifact creature token or a token copy of an artifact all become 5/5
- * Dragons.
+ * Draconic Visitor: `ReplaceTokenCreationWithToken(tokens = listOf(Effects.CreateToken(5, 5,
+ * setOf(RED), setOf("Dragon"), setOf(FLYING))), appliesTo = TokenCreationEvent(You,
+ * GameObjectFilter.Artifact))` — a Treasure, a Clue, an artifact creature token or a token copy of
+ * an artifact all become 5/5 Dragons.
  *
- * [token] must be a `CreateTokenEffect` (build it with `Effects.CreateToken`); its `count`,
- * `controller`, `tapped` and `attacking` are ignored — "that many" comes from the replaced event,
- * the tokens enter under the player the original tokens were being created for, and the original
- * effect's riders ("tapped", "sacrifice it at end of turn") belonged to the tokens it no longer
- * creates. The substitute tokens are created without a second count-replacement pass (a doubler
- * already scaled "that many"). They are checked against this family again (CR 616.2), skipping
- * every substitution already applied to the event (CR 614.5): Fisher's Talent chains Fish → Shark
- * → Octopus, and a substitute that would itself match its own filter can't loop.
+ * [tokens] lists the substitutes. With one and [optional] false the substitution is mandatory and
+ * asks nothing. With several, the replacement's controller picks one of them for the event ("you
+ * may instead create that many 2/2 green Cat creature tokens with haste or that many 3/1 green Dog
+ * creature tokens with vigilance" — Jinnie Fay, Jetmir's Second); with [optional] they may also
+ * keep the original tokens. One answer covers the whole event, so a batch of a Treasure and a Clue
+ * becomes two Cats or two Dogs, never one of each.
+ *
+ * Each substitute must be a `CreateTokenEffect` (build it with `Effects.CreateToken`); only its
+ * characteristics are read. "That many" comes from the replaced event and the tokens enter under
+ * the player the original tokens were being created for. Everything else the creating effect
+ * specified — tapped, attacking, "sacrifice/exile it at the beginning of the next end step", and
+ * any follow-up instruction that reads the created tokens — still applies to the substitutes (the
+ * rulings on all of these cards). The substitute tokens are created without a second
+ * count-replacement pass (a doubler already scaled "that many"). They are checked against this
+ * family again (CR 616.2), skipping every substitution already applied to the event (CR 614.5):
+ * Fisher's Talent chains Fish → Shark → Octopus, and a substitute that would itself match its own
+ * filter can't loop.
  *
  * Read engine-side by `TokenCreationReplacementHelper.findTokenSubstitution` at the token-creation
  * executors that read the other token replacements (creature tokens, predefined tokens, token
@@ -309,30 +319,41 @@ enum class AdditionalTokenScale {
 @SerialName("ReplaceTokenCreationWithToken")
 @Serializable
 data class ReplaceTokenCreationWithToken(
-    val token: Effect,
-    override val appliesTo: EventPattern = EventPattern.TokenCreationEvent()
+    val tokens: List<Effect>,
+    override val appliesTo: EventPattern = EventPattern.TokenCreationEvent(),
+    /** "You may instead …": the replacement's controller may decline and keep the original tokens. */
+    override val optional: Boolean = false
 ) : ReplacementEffect {
     init {
-        require(token is com.wingedsheep.sdk.scripting.effects.CreateTokenEffect) {
-            "ReplaceTokenCreationWithToken.token must be a CreateTokenEffect (Effects.CreateToken), was ${token::class.simpleName}"
+        require(tokens.isNotEmpty()) { "ReplaceTokenCreationWithToken needs at least one substitute token" }
+        tokens.forEach { token ->
+            require(token is com.wingedsheep.sdk.scripting.effects.CreateTokenEffect) {
+                "ReplaceTokenCreationWithToken.tokens must be CreateTokenEffects (Effects.CreateToken), was ${token::class.simpleName}"
+            }
         }
     }
 
+    /** Whether applying this asks its controller anything (a "may", or a pick among substitutes). */
+    val asksForChoice: Boolean get() = optional || tokens.size > 1
+
     override val description: String = buildString {
-        append("If ${appliesTo.description}, that many ")
-        append(tokenNounPhrase(token as com.wingedsheep.sdk.scripting.effects.CreateTokenEffect))
-        append(" are created instead")
+        append("If ${appliesTo.description}, ")
+        if (optional) append("you may instead create ")
+        append(tokens.joinToString(" or ") {
+            "that many " + tokenNounPhrase(it as com.wingedsheep.sdk.scripting.effects.CreateTokenEffect)
+        })
+        if (!optional) append(" are created instead")
     }
 
     override fun applyTextReplacement(replacer: TextReplacer): ReplacementEffect {
         val newAppliesTo = appliesTo.applyTextReplacement(replacer)
-        val newToken = token.applyTextReplacement(replacer)
-        return if (newAppliesTo !== appliesTo || newToken !== token) {
-            copy(token = newToken, appliesTo = newAppliesTo)
+        val newTokens = tokens.map { it.applyTextReplacement(replacer) }
+        return if (newAppliesTo !== appliesTo || newTokens.indices.any { newTokens[it] !== tokens[it] }) {
+            copy(tokens = newTokens, appliesTo = newAppliesTo)
         } else this
     }
 
-    private companion object {
+    companion object {
         /** "5/5 red Dragon creature tokens with flying" — the plural noun phrase of [effect]. */
         fun tokenNounPhrase(effect: com.wingedsheep.sdk.scripting.effects.CreateTokenEffect): String = buildString {
             append("${effect.power}/${effect.toughness} ")

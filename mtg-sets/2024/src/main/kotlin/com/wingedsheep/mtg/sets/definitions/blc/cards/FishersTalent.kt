@@ -78,13 +78,13 @@ val FishersTalent = card("Fisher's Talent") {
     classLevel(2, "{G}{U}") {
         replacementEffect(
             ReplaceTokenCreationWithToken(
-                token = Effects.CreateToken(
+                tokens = listOf(Effects.CreateToken(
                     power = 3,
                     toughness = 3,
                     colors = setOf(Color.BLUE),
                     creatureTypes = setOf("Shark"),
                     imageUri = "https://cards.scryfall.io/normal/front/f/9/f9424ef2-d271-4929-83e0-12775420bac3.jpg?1783909757"
-                ),
+                )),
                 appliesTo = EventPattern.TokenCreationEvent(
                     controller = Player.You,
                     tokenFilter = GameObjectFilter.Any.withSubtype(Subtype.FISH)
@@ -96,13 +96,13 @@ val FishersTalent = card("Fisher's Talent") {
     classLevel(3, "{2}{G}{U}") {
         replacementEffect(
             ReplaceTokenCreationWithToken(
-                token = Effects.CreateToken(
+                tokens = listOf(Effects.CreateToken(
                     power = 8,
                     toughness = 8,
                     colors = setOf(Color.BLUE),
                     creatureTypes = setOf("Octopus"),
                     imageUri = "https://cards.scryfall.io/normal/front/9/f/9fc10475-5eaf-47ea-a45c-3948a632f365.jpg?1783909757"
-                ),
+                )),
                 appliesTo = EventPattern.TokenCreationEvent(
                     controller = Player.You,
                     tokenFilter = GameObjectFilter.Any.withSubtype(Subtype.SHARK)

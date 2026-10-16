@@ -1685,18 +1685,20 @@
                 "replacementEffects": [
                     {
                         "type": "ReplaceTokenCreationWithToken",
-                        "token": {
-                            "type": "CreateToken",
-                            "power": 3,
-                            "toughness": 3,
-                            "colors": [
-                                "BLUE"
-                            ],
-                            "creatureTypes": [
-                                "Shark"
-                            ],
-                            "imageUri": "https://cards.scryfall.io/normal/front/f/9/f9424ef2-d271-4929-83e0-12775420bac3.jpg?1783909757"
-                        },
+                        "tokens": [
+                            {
+                                "type": "CreateToken",
+                                "power": 3,
+                                "toughness": 3,
+                                "colors": [
+                                    "BLUE"
+                                ],
+                                "creatureTypes": [
+                                    "Shark"
+                                ],
+                                "imageUri": "https://cards.scryfall.io/normal/front/f/9/f9424ef2-d271-4929-83e0-12775420bac3.jpg?1783909757"
+                            }
+                        ],
                         "appliesTo": {
                             "type": "TokenCreationEvent",
                             "tokenFilter": "Fish"
@@ -1710,18 +1712,20 @@
                 "replacementEffects": [
                     {
                         "type": "ReplaceTokenCreationWithToken",
-                        "token": {
-                            "type": "CreateToken",
-                            "power": 8,
-                            "toughness": 8,
-                            "colors": [
-                                "BLUE"
-                            ],
-                            "creatureTypes": [
-                                "Octopus"
-                            ],
-                            "imageUri": "https://cards.scryfall.io/normal/front/9/f/9fc10475-5eaf-47ea-a45c-3948a632f365.jpg?1783909757"
-                        },
+                        "tokens": [
+                            {
+                                "type": "CreateToken",
+                                "power": 8,
+                                "toughness": 8,
+                                "colors": [
+                                    "BLUE"
+                                ],
+                                "creatureTypes": [
+                                    "Octopus"
+                                ],
+                                "imageUri": "https://cards.scryfall.io/normal/front/9/f/9fc10475-5eaf-47ea-a45c-3948a632f365.jpg?1783909757"
+                            }
+                        ],
                         "appliesTo": {
                             "type": "TokenCreationEvent",
                             "tokenFilter": "Shark"
