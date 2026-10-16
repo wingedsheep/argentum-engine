@@ -2076,7 +2076,11 @@ data class CopyEntryCounters(
                 val plural = if (countText == "1") "" else "s"
                 append("it enters with $article ${counterType.printed} counter$plural on it")
             }
-            if (ifCopiedMatches != null) append(" if the copied object is ${ifCopiedMatches.description}")
+            when (ifCopiedMatches) {
+                null -> {}
+                GameObjectFilter.Any.youControl() -> append(" if you control that creature")
+                else -> append(" if the copied object matches: ${ifCopiedMatches.description}")
+            }
         }
 }
 
