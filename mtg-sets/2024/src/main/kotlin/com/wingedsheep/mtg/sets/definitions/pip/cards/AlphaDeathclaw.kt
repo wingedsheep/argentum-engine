@@ -11,7 +11,7 @@ import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 /**
  * Alpha Deathclaw — "enters or becomes monstrous" is the two triggers, each destroying a target
  * permanent. The monstrous trigger only fires when the monstrosity ability actually makes it
- * monstrous (CR 701.37b), so a second activation does nothing.
+ * monstrous (CR 701.37a, 701.37b), so a second activation does nothing.
  */
 val AlphaDeathclaw = card("Alpha Deathclaw") {
     manaCost = "{4}{B}{G}"
