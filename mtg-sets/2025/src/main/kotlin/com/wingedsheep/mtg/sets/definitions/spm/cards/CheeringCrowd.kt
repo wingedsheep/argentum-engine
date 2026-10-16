@@ -7,6 +7,7 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.scripting.effects.SuccessCriterion
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
@@ -25,8 +26,13 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * effect is to bind `controllerId` to that player, so the default `Effects.May` decision-maker is
  * that player and the colorless mana lands in that player's pool. The +1/+1 counter always goes
  * on this creature ([EffectTarget.Self] is unaffected by the controller rebind), and the {C}
- * amount counts every counter on it (any kind, including the one just placed — the counter is
- * added before the mana in the same `then` sequence).
+ * amount counts every counter on it (any kind, including the one just placed).
+ *
+ * "If they do" is an [Effects.IfYouDo] gated on [SuccessCriterion.CountersAdded]: if the Crowd has
+ * left the battlefield by resolution, no counter can be placed, so no mana is added — without the
+ * gate the {C} count would fall back to the Crowd's last-known counters. The yes/no `prompt` is
+ * phrased to the deciding player; the ability's `description` keeps the Oracle wording for stack
+ * text (a `descriptionOverride` on the `May` would replace the prompt too).
  */
 val CheeringCrowd = card("Cheering Crowd") {
     manaCost = "{1}{R/G}"
@@ -39,16 +45,18 @@ val CheeringCrowd = card("Cheering Crowd") {
 
     triggeredAbility {
         trigger = Triggers.anyPlayer.beginningOf(Step.PRECOMBAT_MAIN)
+        description = "At the beginning of each player's first main phase, that player may put a +1/+1 " +
+            "counter on this creature. If they do, they add {C} for each counter on it."
         effect = Effects.ForEachPlayer(
             Player.TriggeringPlayer,
             listOf(
                 Effects.May(
-                    Effects.AddCounters(CounterType.PLUS_ONE_PLUS_ONE, 1, EffectTarget.Self)
-                        then Effects.AddColorlessMana(
-                            DynamicAmounts.countersOnSelf(null)
-                        ),
-                    descriptionOverride = "That player may put a +1/+1 counter on this creature. " +
-                        "If they do, they add {C} for each counter on it."
+                    Effects.IfYouDo(
+                        Effects.AddCounters(CounterType.PLUS_ONE_PLUS_ONE, 1, EffectTarget.Self),
+                        Effects.AddColorlessMana(DynamicAmounts.countersOnSelf(null)),
+                        successCriterion = SuccessCriterion.CountersAdded
+                    ),
+                    prompt = "Put a +1/+1 counter on Cheering Crowd? If you do, add {C} for each counter on it."
                 )
             )
         )

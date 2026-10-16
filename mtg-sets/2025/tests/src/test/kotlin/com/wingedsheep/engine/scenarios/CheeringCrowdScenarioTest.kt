@@ -6,6 +6,7 @@ import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.mtg.sets.definitions.spm.cards.CheeringCrowd
+import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.model.Deck
@@ -146,5 +147,63 @@ class CheeringCrowdScenarioTest : FunSpec({
         // Now two counters on it, so "add {C} for each counter" adds 2 {C}.
         counters(driver, crowd) shouldBe 2
         colorless(driver, me) shouldBe 2
+    }
+
+    test("the prompt asks the deciding player about the counter, and a counter already on it scales the mana") {
+        val driver = createDriver()
+        driver.initMirrorMatch(deck = Deck.of("Forest" to 40), startingLife = 20, startingPlayer = 0)
+
+        val me = driver.player1
+        val crowd = driver.putCreatureOnBattlefield(me, "Cheering Crowd")
+        driver.addComponent(crowd, CountersComponent(mapOf(CounterType.PLUS_ONE_PLUS_ONE to 1)))
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+
+        advanceToTriggerPrompt(driver)
+        val decision = driver.state.pendingDecision as YesNoDecision
+        decision.playerId shouldBe me
+        decision.prompt shouldBe
+            "Put a +1/+1 counter on Cheering Crowd? If you do, add {C} for each counter on it."
+        driver.submitYesNo(me, true)
+
+        counters(driver, crowd) shouldBe 2
+        colorless(driver, me) shouldBe 2
+    }
+
+    test("if the Crowd dies in response, no counter can be placed so no {C} is added") {
+        val driver = createDriver()
+        driver.initMirrorMatch(deck = Deck.of("Forest" to 40), startingLife = 20, startingPlayer = 0)
+
+        val controller = driver.player1
+        val opponent = driver.player2
+
+        // Mirrors the playtest: the Crowd's controller already has a counter on it, and on the
+        // opponent's turn the opponent kills it with its trigger on the stack.
+        while (driver.activePlayer != opponent) {
+            driver.passPriorityUntil(Step.END)
+            driver.bothPass()
+        }
+        val crowd = driver.putCreatureOnBattlefield(controller, "Cheering Crowd")
+        driver.addComponent(crowd, CountersComponent(mapOf(CounterType.PLUS_ONE_PLUS_ONE to 1)))
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+        driver.assertStackSize(1)
+
+        val bolt = driver.putCardInHand(opponent, "Lightning Bolt")
+        driver.giveMana(opponent, Color.RED, 1)
+        driver.castSpell(opponent, bolt, listOf(crowd)).error shouldBe null
+        driver.bothPass() // resolve the Bolt; the 3/3 Crowd dies
+        driver.findPermanent(controller, "Cheering Crowd") shouldBe null
+
+        // Resolve the trigger. Whether or not the player is still asked, saying yes can't put a
+        // counter on a creature that's gone — and "if they do" then adds nothing.
+        var guard = 0
+        while ((driver.state.stack.isNotEmpty() || driver.state.pendingDecision != null) && guard < 20) {
+            val pending = driver.state.pendingDecision
+            if (pending is YesNoDecision) driver.submitYesNo(pending.playerId, true) else driver.bothPass()
+            guard++
+        }
+
+        driver.state.stack.isEmpty() shouldBe true
+        colorless(driver, opponent) shouldBe 0
+        colorless(driver, controller) shouldBe 0
     }
 })

@@ -1165,32 +1165,37 @@
                     },
                     "body": {
                         "type": "Gated",
-                        "gate": "Gate.MayDecide",
+                        "gate": {
+                            "type": "Gate.MayDecide",
+                            "prompt": "Put a +1/+1 counter on Cheering Crowd? If you do, add {C} for each counter on it."
+                        },
                         "then": {
-                            "type": "Composite",
-                            "effects": [
-                                {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.DoAction",
+                                "action": {
                                     "type": "AddCounters",
                                     "counterType": "PLUS_ONE_PLUS_ONE",
                                     "count": 1,
                                     "target": "Self"
                                 },
-                                {
-                                    "type": "AddColorlessMana",
-                                    "amount": {
-                                        "type": "EntityProperty",
-                                        "entity": "Self",
-                                        "numericProperty": {
-                                            "type": "CounterCount",
-                                            "counterType": null
-                                        }
+                                "successCriterion": "SuccessCriterion.CountersAdded"
+                            },
+                            "then": {
+                                "type": "AddColorlessMana",
+                                "amount": {
+                                    "type": "EntityProperty",
+                                    "entity": "Self",
+                                    "numericProperty": {
+                                        "type": "CounterCount",
+                                        "counterType": null
                                     }
                                 }
-                            ]
-                        },
-                        "descriptionOverride": "That player may put a +1/+1 counter on this creature. If they do, they add {C} for each counter on it."
+                            }
+                        }
                     }
-                }
+                },
+                "descriptionOverride": "At the beginning of each player's first main phase, that player may put a +1/+1 counter on this creature. If they do, they add {C} for each counter on it."
             }
         ]
     },
