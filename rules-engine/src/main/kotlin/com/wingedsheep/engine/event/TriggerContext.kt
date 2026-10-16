@@ -160,7 +160,7 @@ data class TriggerContext(
      */
     val colorsSpentOnTriggeringSpell: Int? = null,
     /**
-     * For SpellCastEvent triggers — mana value (CR 202.3) of the triggering spell. `null` when
+     * For SpellCastEvent triggers — mana value (CR 202.3, its {X} counted per 202.3e) of the triggering spell. `null` when
      * the trigger was not driven by a spell cast. Read by
      * `ContextPropertyKey.TRIGGERING_SPELL_MANA_VALUE` so abilities like Kellan, the Kid can
      * gate "a permanent spell with equal or lesser mana value."

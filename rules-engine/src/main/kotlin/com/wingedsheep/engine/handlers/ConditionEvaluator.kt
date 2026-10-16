@@ -124,6 +124,7 @@ import com.wingedsheep.sdk.scripting.conditions.TargetIsTapped
 import com.wingedsheep.sdk.scripting.conditions.TargetIsSource
 import com.wingedsheep.sdk.scripting.conditions.TargetSharesMostCommonColor
 import com.wingedsheep.sdk.scripting.conditions.ColorIsMostCommon
+import com.wingedsheep.engine.mechanics.ManaValues
 import com.wingedsheep.engine.mechanics.layers.ProjectedState
 import com.wingedsheep.sdk.scripting.conditions.TriggeringEntityEnteredOrWasCastFromGraveyard
 import com.wingedsheep.sdk.scripting.conditions.TriggeringEntityHadCounters
@@ -2310,7 +2311,8 @@ class ConditionEvaluator(
         val card = entity.get<CardComponent>() ?: return false
         val triggeringRecord = CastSpellRecord(
             typeLine = card.typeLine,
-            manaValue = card.manaValue,
+            // On the stack an {X} counts as its chosen X (CR 202.3e), matching the SpellCastEvent.
+            manaValue = ManaValues.of(state, triggeringId, card),
             colors = card.colors,
             isFaceDown = entity.has<com.wingedsheep.engine.state.components.identity.FaceDownComponent>(),
             name = card.name
