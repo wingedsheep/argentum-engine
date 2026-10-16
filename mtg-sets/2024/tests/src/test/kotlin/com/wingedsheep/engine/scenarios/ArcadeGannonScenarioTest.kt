@@ -169,4 +169,26 @@ class ArcadeGannonScenarioTest : FunSpec({
         driver.giveColorlessMana(player, 2)
         graveyardCasts(driver, player, second) shouldHaveSize 1
     }
+
+    test("a new Arcade Gannon brings a new cast the same turn") {
+        val driver = newDriver()
+        val player = driver.activePlayer!!
+        val first = driver.putPermanentOnBattlefield(player, "Arcade Gannon")
+        setQuestCounters(driver, first, 2)
+        val castFirst = driver.putCardInGraveyard(player, "Two Gizmo")
+        val castSecond = driver.putCardInGraveyard(player, "Other Two Gizmo")
+        driver.giveColorlessMana(player, 4)
+
+        driver.submit(CastSpell(playerId = player, cardId = castFirst)).outcome shouldBe Outcome.Done
+        driver.bothPass()
+        graveyardCasts(driver, player, castSecond) shouldHaveSize 0
+
+        driver.moveToGraveyard(first)
+        val second = driver.putPermanentOnBattlefield(player, "Arcade Gannon")
+        withClue("the new Gannon has no quest counters yet, so its cap is 0") {
+            graveyardCasts(driver, player, castSecond) shouldHaveSize 0
+        }
+        setQuestCounters(driver, second, 2)
+        graveyardCasts(driver, player, castSecond) shouldHaveSize 1
+    }
 })
