@@ -60,6 +60,13 @@ interface ObjectFilterBuilder<out Self> {
     /** Restrict to objects that are exactly [count] colors (CR 105.2). */
     fun exactlyColors(count: Int) = withCardPredicate(CardPredicate.HasExactlyColors(count))
 
+    /**
+     * Restrict to objects that are exactly [amount] colors, resolved when the filter is checked —
+     * "a creature card that's exactly that many colors plus one" (Evolving Door).
+     */
+    fun exactlyColors(amount: DynamicAmount) =
+        compareNumericProperty(CardNumericProperty.COLOR_COUNT, ComparisonOperator.EQ, amount)
+
     /** Restrict to objects that are *not* exactly [count] colors — "that isn't exactly two colors". */
     fun notExactlyColors(count: Int) =
         withCardPredicate(CardPredicate.Not(CardPredicate.HasExactlyColors(count)))

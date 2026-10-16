@@ -1055,6 +1055,7 @@ class PredicateEvaluator(
                         if (projectedValues?.isFaceDown == true) 0 else card.manaValue
                     CardNumericProperty.COUNTERS ->
                         container.get<CountersComponent>()?.counters?.values?.sum() ?: 0
+                    CardNumericProperty.COLOR_COUNT -> colors.size
                 }
                 if (predicate.amount == DynamicAmount.XValue) {
                     // X still unbound outside a resolution is legal-action enumeration, which runs

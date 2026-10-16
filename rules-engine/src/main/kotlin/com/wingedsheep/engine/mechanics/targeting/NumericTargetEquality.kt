@@ -20,6 +20,8 @@ object NumericTargetEquality {
                 else amounts.offBattlefieldStat(state, id, false, projected)
             CardNumericProperty.MANA_VALUE -> if (projected.isFaceDown(id)) 0 else card.manaValue
             CardNumericProperty.COUNTERS -> state.getEntity(id)?.get<CountersComponent>()?.counters?.values?.sum() ?: 0
+            CardNumericProperty.COLOR_COUNT -> if (id in state.getBattlefield()) projected.getColors(id).size
+                else card.colors.size
         }
     }
 

@@ -109,7 +109,8 @@ internal enum class AmountSign {
 
         private fun ofCardProperty(property: CardNumericProperty?): AmountSign = when (property) {
             CardNumericProperty.POWER, CardNumericProperty.TOUGHNESS -> UNKNOWN
-            null, CardNumericProperty.MANA_VALUE, CardNumericProperty.COUNTERS -> GAIN
+            null, CardNumericProperty.MANA_VALUE, CardNumericProperty.COUNTERS,
+            CardNumericProperty.COLOR_COUNT -> GAIN
         }
 
         private fun sum(a: AmountSign, b: AmountSign): AmountSign = when {

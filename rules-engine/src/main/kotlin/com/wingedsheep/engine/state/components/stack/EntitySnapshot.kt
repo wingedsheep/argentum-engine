@@ -287,6 +287,15 @@ data class EntitySnapshot(
     @OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
     @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
     val baseToughness: Int? = null,
+    /**
+     * Projected colors at capture (CR 105.2), null when not captured. Frozen because a sacrificed
+     * token ceases to exist and a color-changing effect ends as the permanent leaves, yet "count
+     * the colors of the sacrificed creature" (Evolving Door) reads it as it last existed on the
+     * battlefield (CR 608.2h).
+     */
+    @OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
+    @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
+    val colors: Set<String>? = null,
 ) : EntityView {
     companion object {
         /**
@@ -308,6 +317,7 @@ data class EntitySnapshot(
                 toughness = projected.getToughness(entityId),
                 basePower = projected.getBasePower(entityId),
                 baseToughness = projected.getBaseToughness(entityId),
+                colors = projected.getColors(entityId),
                 subtypes = projected.getSubtypes(entityId),
                 supertypes = projected.getSupertypes(entityId),
                 controllerId = projected.getController(entityId),
@@ -346,6 +356,7 @@ fun captureEntitySnapshots(
         toughness = projected.getToughness(id),
         basePower = projected.getBasePower(id),
         baseToughness = projected.getBaseToughness(id),
+        colors = projected.getColors(id),
         subtypes = projected.getSubtypes(id),
         supertypes = projected.getSupertypes(id),
         controllerId = projected.getController(id),

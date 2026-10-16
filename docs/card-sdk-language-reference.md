@@ -6102,7 +6102,7 @@ This is the player-arm prerequisite for the planned composable mixed `TargetUnio
   Éowyn, Fearless Knight ("exile target creature an opponent controls with greater power") — combine
   with `EffectTarget.Self` to express "greater power than the ability's source".
 - `.compareNumericProperty(property, operator, amount)` — compares a candidate's `CardNumericProperty`
-  (`POWER`, `TOUGHNESS`, `MANA_VALUE`, or total `COUNTERS`) with any `DynamicAmount`, using any
+  (`POWER`, `TOUGHNESS`, `MANA_VALUE`, total `COUNTERS`, or `COLOR_COUNT`) with any `DynamicAmount`, using any
   `ComparisonOperator`. Reads the supplied projection on both sides; a noncreature permanent has
   no P/T and cannot match a P/T comparison. A referenced noncreature permanent's undefined P/T
   evaluates to zero, including its departure snapshot; a noncreature card outside the battlefield
@@ -6394,6 +6394,7 @@ This is the player-arm prerequisite for the planned composable mixed `TargetUnio
 - `.nontoken()` / `.token()` — token vs printed.
 - `.monocolored()` — restrict to monocolored objects (exactly one color, CR 105.2); colorless objects don't match. ("for each color among monocolored permanents you control" — Tarnation Vista.)
 - `.exactlyColors(n)` / `.notExactlyColors(n)` — objects that are (or aren't) exactly `n` colors (CR 105.2; `CardPredicate.HasExactlyColors(n)`). Colorless is zero colors, so it passes `notExactlyColors(2)`. ("a spell that's exactly two colors" — Guildpact Paragon; "target nonland permanent an opponent controls that isn't exactly two colors" — Invasion of Ravnica.) For one color prefer `.monocolored()`.
+- `.exactlyColors(amount: DynamicAmount)` — exactly `amount` colors, resolved when the filter is checked (`CompareNumericProperty(COLOR_COUNT, EQ, amount)`; projected colors on the battlefield, printed ones elsewhere). "a creature card that's exactly that many colors plus one" — Evolving Door: `GameObjectFilter.Creature.exactlyColors(DynamicAmounts.colorCountOf(EffectTarget.SacrificedAsCost(0)) + 1)`; the sacrificed creature's colors come from its cost-time snapshot, so a sacrificed token counts as it last existed.
 - `.withManaAbility()` — `StatePredicate.HasManaAbility`: current battlefield mana-ability
   presence, including projected basic land types, active printed abilities, triggered mana
   abilities, and runtime/static/emblem grants. Costs, tapped state, activation prohibitions,

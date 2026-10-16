@@ -687,6 +687,7 @@ class DynamicAmountEvaluator(
                             snapshot?.baseToughness?.let { return it }
                         }
                         is EntityNumericProperty.ManaValue -> snapshot?.manaValue?.let { return it }
+                        is EntityNumericProperty.ColorCount -> snapshot?.colors?.let { return it.size }
                         is EntityNumericProperty.CounterCount -> snapshot?.let {
                             return property.counterType?.let { type -> it.counters[type] ?: 0 } ?: it.totalCounters
                         }
@@ -1609,6 +1610,8 @@ class DynamicAmountEvaluator(
                     ?: 0
             }
             CardNumericProperty.COUNTERS -> counterCountOf(state, entityId, counterType = null)
+            CardNumericProperty.COLOR_COUNT ->
+                resolveColorCount(state, entityId, useProjected = projected != null, explicitProjected = projected)
         }
     }
 
