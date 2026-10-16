@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.handlers.effects.player
 
 import com.wingedsheep.engine.handlers.costs.CostAtomAmounts
+import com.wingedsheep.engine.mechanics.cost.CostPaymentService
 import com.wingedsheep.engine.state.LifePaymentPurpose
 
 import com.wingedsheep.engine.handlers.PredicateEvaluator
@@ -32,7 +33,8 @@ import kotlin.reflect.KClass
  *    ("…unless any player pays N life" — Aether Rift).
  *
  * Players are asked in APNAP order; players who can't pay are skipped. Supported costs are
- * [PayCost.Sacrifice] (card selection) and [PayCost.PayLife] (yes/no). The surrounding pipeline's
+ * [CostAtom.Sacrifice] and [CostAtom.TapPermanents] (card selection — "any opponent may tap an
+ * untapped creature they control", Reservoir Kraken) and [CostAtom.PayLife] (yes/no). The surrounding pipeline's
  * stored collections are threaded into whichever consequence fires so it can reference cards
  * gathered earlier in the same resolution.
  */
@@ -106,9 +108,15 @@ class AnyPlayerMayPayExecutor(
 
         val playerId = playerOrder[index]
         return when (val atom = (effect.cost as? PayCost.Atom)?.atom) {
-            is CostAtom.Sacrifice -> askPlayerToSacrifice(
-                state, effect, context, atom, sourceId, sourceName,
-                playerId, playerOrder, index
+            is CostAtom.Sacrifice -> askPlayerToSelect(
+                state, effect, context, atom, atom.count, atom.filter,
+                findValidPermanentsOnBattlefield(state, playerId, atom, sourceId),
+                sourceId, sourceName, playerId, playerOrder, index
+            )
+            is CostAtom.TapPermanents -> askPlayerToSelect(
+                state, effect, context, atom, atom.count, atom.filter,
+                tapCandidates(state, playerId, effect.cost, sourceId),
+                sourceId, sourceName, playerId, playerOrder, index
             )
             is CostAtom.PayLife -> askPlayerToPayLife(
                 state, effect, context, atom, sourceId, sourceName,
@@ -129,6 +137,7 @@ class AnyPlayerMayPayExecutor(
                 val validPermanents = findValidPermanentsOnBattlefield(state, playerId, atom, sourceId)
                 validPermanents.size >= atom.count
             }
+            is CostAtom.TapPermanents -> tapCandidates(state, playerId, cost, sourceId).size >= atom.count
             // CR 119.4: a player may pay life only if their life total is at least the amount.
             is CostAtom.PayLife -> {
                 CostAtomAmounts.canPayLife( // CR 810.9a / 119.8
@@ -139,20 +148,22 @@ class AnyPlayerMayPayExecutor(
         }
     }
 
-    private fun askPlayerToSacrifice(
+    /** Offer a permanent-selection cost (sacrifice / tap) to [playerId] over [validPermanents]. */
+    private fun askPlayerToSelect(
         state: GameState,
         effect: AnyPlayerMayPayEffect,
         context: EffectContext,
-        cost: CostAtom.Sacrifice,
+        cost: CostAtom,
+        count: Int,
+        filter: com.wingedsheep.sdk.scripting.GameObjectFilter,
+        validPermanents: List<EntityId>,
         sourceId: EntityId,
         sourceName: String,
         playerId: EntityId,
         playerOrder: List<EntityId>,
         currentIndex: Int
     ): EffectResult {
-        val validPermanents = findValidPermanentsOnBattlefield(state, playerId, cost, sourceId)
-
-        val prompt = AnyPlayerMayPayPrompt.sacrifice(cost, sourceName, effect.consequence, effect.consequenceIfNonePaid)
+        val prompt = AnyPlayerMayPayPrompt.selection(cost, sourceName, effect.consequence, effect.consequenceIfNonePaid)
 
         val continuation = anyPlayerMayPayContinuation(
             effect, context,
@@ -161,8 +172,8 @@ class AnyPlayerMayPayExecutor(
             remainingPlayers = playerOrder.drop(currentIndex + 1),
             sourceId = sourceId,
             sourceName = sourceName,
-            requiredCount = cost.count,
-            filter = cost.filter
+            requiredCount = count,
+            filter = filter
         )
 
         val decisionResult = decisionHandler.createCardSelectionDecision(
@@ -173,7 +184,7 @@ class AnyPlayerMayPayExecutor(
             prompt = prompt,
             options = validPermanents,
             minSelections = 0,
-            maxSelections = cost.count,
+            maxSelections = count,
             ordered = false,
             phase = DecisionPhase.RESOLUTION,
             useTargetingUI = true,
@@ -283,4 +294,12 @@ class AnyPlayerMayPayExecutor(
             excludeSelfId = if (cost.excludeSelf) sourceId else null,
             predicateEvaluator = predicateEvaluator
         )
+
+    /**
+     * The untapped permanents [playerId] may tap to pay a [CostAtom.TapPermanents] [cost] — the one
+     * pool the cost-payment service uses everywhere else, so the resumer's next-player prompt and
+     * this first prompt can't disagree.
+     */
+    private fun tapCandidates(state: GameState, playerId: EntityId, cost: PayCost, sourceId: EntityId): List<EntityId> =
+        CostPaymentService.selectionCandidates(state, playerId, cost, sourceId, predicateEvaluator).orEmpty()
 }

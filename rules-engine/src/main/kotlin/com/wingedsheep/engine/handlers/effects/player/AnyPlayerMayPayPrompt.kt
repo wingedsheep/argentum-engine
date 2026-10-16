@@ -15,11 +15,12 @@ import com.wingedsheep.sdk.scripting.targets.resolveSelfNoun
  *
  * - Innocent Traveler: "You may sacrifice a creature. If no one does, transform Innocent Traveler."
  * - Prowling Pangolin: "You may sacrifice two creatures. If you do, sacrifice Prowling Pangolin."
+ * - Reservoir Kraken: "You may tap an untapped creature you control. If you do, tap Reservoir Kraken and …"
  */
 object AnyPlayerMayPayPrompt {
 
-    fun sacrifice(
-        cost: CostAtom.Sacrifice,
+    fun selection(
+        cost: CostAtom,
         sourceName: String,
         consequence: Effect?,
         consequenceIfNonePaid: Effect?

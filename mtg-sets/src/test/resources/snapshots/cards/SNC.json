@@ -5220,6 +5220,93 @@
     ]
 }
 
+// Reservoir Kraken
+{
+    "name": "Reservoir Kraken",
+    "manaCost": "{2}{U}{U}",
+    "typeLine": "Creature — Kraken",
+    "oracleText": "Trample, ward {2}\nAt the beginning of each combat, if this creature is untapped, any opponent may tap an untapped creature they control. If they do, tap this creature and create a 1/1 blue Fish creature token with \"This token can't be blocked.\"",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "keywords": [
+        "TRAMPLE",
+        "WARD"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Ward",
+            "cost": {
+                "type": "WardCost.Mana",
+                "manaCost": "{2}"
+            }
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Reservoir Kraken:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "BEGIN_COMBAT",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AnyPlayerMayPay",
+                    "cost": {
+                        "type": "PayAtom",
+                        "atom": {
+                            "type": "AtomTapPermanents",
+                            "filter": "creature"
+                        }
+                    },
+                    "consequence": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "TapUntap",
+                                "target": "Self"
+                            },
+                            {
+                                "type": "CreateToken",
+                                "power": 1,
+                                "toughness": 1,
+                                "colors": [
+                                    "BLUE"
+                                ],
+                                "creatureTypes": [
+                                    "Fish"
+                                ],
+                                "imageUri": "https://cards.scryfall.io/normal/front/3/b/3b2e726b-f124-43f7-87e4-bb06bbe8e3d7.jpg?1783922964",
+                                "staticAbilities": [
+                                    "CantBeBlocked"
+                                ]
+                            }
+                        ]
+                    },
+                    "eligiblePlayers": "EachOpponent"
+                },
+                "interveningIf": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": "untapped"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "56",
+        "rarity": "RARE",
+        "artist": "Nicholas Gregory",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/3/53cf9152-da16-4289-9a2d-331e7b9cb839.jpg?1783923140"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Revel Ruiner
 {
     "name": "Revel Ruiner",

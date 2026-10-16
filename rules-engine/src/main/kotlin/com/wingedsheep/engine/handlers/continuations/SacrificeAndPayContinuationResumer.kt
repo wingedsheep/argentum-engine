@@ -3,6 +3,7 @@ package com.wingedsheep.engine.handlers.continuations
 import com.wingedsheep.engine.handlers.costs.CostAtomAmounts
 import com.wingedsheep.engine.state.LifePaymentPurpose
 
+import com.wingedsheep.engine.mechanics.cost.CostPaymentService
 import com.wingedsheep.engine.mechanics.cost.SharedCreatureTypeTapCost
 import com.wingedsheep.engine.mechanics.mana.withSpendingColors
 import com.wingedsheep.engine.core.*
@@ -836,8 +837,8 @@ class SacrificeAndPayContinuationResumer(
     /**
      * Resume after a player decides whether to pay for "any player may [cost]" effects.
      *
-     * Dispatches on the cost type: [PayCost.Sacrifice] expects a card selection, [PayCost.PayLife]
-     * a yes/no. If the current player pays, [AnyPlayerMayPayContinuation.consequence] runs. If they
+     * Dispatches on the cost type: [CostAtom.Sacrifice] and [CostAtom.TapPermanents] expect a card
+     * selection, [CostAtom.PayLife] a yes/no. If the current player pays, [AnyPlayerMayPayContinuation.consequence] runs. If they
      * decline, the next eligible player is asked; once none remain,
      * [AnyPlayerMayPayContinuation.consequenceIfNonePaid] runs.
      */
@@ -872,6 +873,22 @@ class SacrificeAndPayContinuationResumer(
                     events.addAll(transitionResult.events)
                 }
                 return runAnyPlayerMayPayConsequence(newState, continuation, continuation.consequence, events, checkForMore)
+            }
+
+            is CostAtom.TapPermanents -> {
+                if (response !is CardsSelectedResponse) {
+                    return ExecutionResult.error(state, "Expected card selection response for any player may pay")
+                }
+                if (response.selectedCards.size < continuation.requiredCount) {
+                    return askNextPlayerForAnyPlayerMayPay(state, continuation, checkForMore)
+                }
+                // The options were the payer's untapped matching permanents (validated against the
+                // decision), so the tap always completes.
+                val payment = services.costPaymentService.performPayment(
+                    state, playerId, continuation.cost, continuation.sourceId,
+                    response.selectedCards.associateWith { 1 }
+                )
+                return runAnyPlayerMayPayConsequence(payment.state, continuation, continuation.consequence, payment.events, checkForMore)
             }
 
             is CostAtom.PayLife -> {
@@ -963,12 +980,17 @@ class SacrificeAndPayContinuationResumer(
         for ((index, nextPlayerId) in continuation.remainingPlayers.withIndex()) {
             val remainingAfter = continuation.remainingPlayers.drop(index + 1)
             when (val atom = (cost as? PayCost.Atom)?.atom) {
-                is CostAtom.Sacrifice -> {
-                    val validPermanents = anyPlayerSacrificeCandidates(
-                        state, nextPlayerId, atom, continuation.sourceId
-                    )
-                    if (validPermanents.size >= atom.count) {
-                        val prompt = AnyPlayerMayPayPrompt.sacrifice(
+                is CostAtom.Sacrifice, is CostAtom.TapPermanents -> {
+                    val validPermanents = if (atom is CostAtom.Sacrifice) {
+                        anyPlayerSacrificeCandidates(state, nextPlayerId, atom, continuation.sourceId)
+                    } else {
+                        CostPaymentService.selectionCandidates(
+                            state, nextPlayerId, cost, continuation.sourceId, services.predicateEvaluator
+                        ).orEmpty()
+                    }
+                    val count = atom.selectionCount
+                    if (validPermanents.size >= count) {
+                        val prompt = AnyPlayerMayPayPrompt.selection(
                             atom, continuation.sourceName,
                             continuation.consequence, continuation.consequenceIfNonePaid
                         )
@@ -985,7 +1007,7 @@ class SacrificeAndPayContinuationResumer(
                             prompt = prompt,
                             options = validPermanents,
                             minSelections = 0,
-                            maxSelections = atom.count,
+                            maxSelections = count,
                             ordered = false,
                             phase = DecisionPhase.RESOLUTION,
                             useTargetingUI = true,
