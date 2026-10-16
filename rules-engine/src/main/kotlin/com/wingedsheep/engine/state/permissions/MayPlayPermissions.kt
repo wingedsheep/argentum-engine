@@ -80,7 +80,9 @@ fun GameState.consumeSingleUseMayPlayFor(cardId: EntityId, playerId: EntityId): 
  * As with [consumeSingleUseMayPlayFor], an unlimited grant covering the card wins: the player
  * chooses which permission they use, and burning the scarce one would never be their choice.
  * Unlike the stored grants there, every candidate here was already gate-checked by
- * [activeMayPlayFor], so a conditional unlimited grant shields the allowance too.
+ * [activeMayPlayFor], so a conditional unlimited grant shields the allowance too. A shield must
+ * offer the same mana relaxation, though: when the once-per-turn grant carries an any-color/any-type
+ * rider the cast may have leaned on, a rider-less unlimited grant couldn't have paid for it alone.
  */
 fun GameState.oncePerTurnGranterToSpend(
     cardId: EntityId,
@@ -89,8 +91,10 @@ fun GameState.oncePerTurnGranterToSpend(
     cardRegistry: CardRegistry
 ): EntityId? {
     val active = activeMayPlayFor(cardId, playerId, conditionEvaluator, cardRegistry)
-    if (active.any { !it.oncePerTurn }) return null
-    return active.firstOrNull { it.oncePerTurn }?.sourceId
+    val limited = active.firstOrNull { it.oncePerTurn } ?: return null
+    fun relaxesMana(p: MayPlayPermission) = p.withAnyManaType || p.withAnyManaColor || p.colorlessAsAnyColor
+    val shielded = active.any { !it.oncePerTurn && (!relaxesMana(limited) || relaxesMana(it)) }
+    return if (shielded) null else limited.sourceId
 }
 
 /**

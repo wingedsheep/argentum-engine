@@ -892,7 +892,7 @@ data class MayPlayCardsFromExile(
     val oncePerTurn: Boolean = false
 ) : StaticAbility {
     override val description: String = buildString {
-        if (oncePerTurn) append("Once each turn, you may play a ${filter.description} from exile")
+        if (oncePerTurn) append("Once each turn, you may play ${filter.description} from exile")
         else append("You may play ${filter.description} from exile")
         if (condition != null) append(" ${condition.description}")
         if (withAnyManaType) append(", and mana of any type can be spent to cast those spells")
