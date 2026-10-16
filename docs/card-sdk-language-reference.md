@@ -11142,7 +11142,7 @@ riders, matching how the engine already treats e.g. City of Brass's damage durin
   a second granter is a second allowance, and a play an unlimited grant also covered spends nothing.
   `CounterType.COLLECTION` (the same kind Charitable Levy tallies) carries no rule here; it is placed by a pipeline
   `move(..., CardDestination.ToZone(Zone.EXILE), addCounterType = CounterType.COLLECTION)`.
-- `MayCastSelfFromZones(zones, condition = null, additionalCost = null, castUsing = null)` — intrinsic *self*
+- `MayCastSelfFromZones(zones, condition = null, additionalCost = null, castUsing = null, alternativeManaCost = null)` — intrinsic *self*
   permission: this card may be cast from any of `zones` (graveyard/exile) following normal timing
   and for its normal mana cost. Squee, the Immortal = `MayCastSelfFromZones(listOf(GRAVEYARD,
   EXILE))`. When `condition` is non-null the permission is **gated**: it is available only while the
@@ -11165,6 +11165,16 @@ riders, matching how the engine already treats e.g. City of Brass's damage durin
   `Keyword.BLITZ` (Tenacious Underdog: "You may cast this card from your graveyard using its blitz
   ability") and `Keyword.MUTATE` ("cast it from your graveyard using its mutate ability"), and any other
   keyword fails closed (authorizes nothing) until it is wired in `CastZoneResolver`.
+  When `alternativeManaCost` (a `ManaCost`) is non-null the permission's cast pays it **rather than**
+  the mana cost — a keywordless alternative cost (CR 118.9): never combined with another alternative
+  cost, cost increases/reductions still apply on top, no "escaped" designation, and the card isn't
+  exiled on resolution. Raffine's Guidance (SNC) = `MayCastSelfFromZones(listOf(GRAVEYARD),
+  alternativeManaCost = ManaCost.parse("{2}{W}"))` for "You may cast this card from your graveyard
+  by paying {2}{W} rather than paying its mana cost"; a non-mana half goes in `additionalCost` —
+  Squee, Dubious Monarch = `alternativeManaCost = ManaCost.parse("{3}{R}"), additionalCost =
+  Costs.additional.ExileOtherCards(4)`. Exclusive with `castUsing`. The cast is priced by
+  `CastCostTotaller`'s ordinary base, since `CastValidator.castSource` tries the self-zone
+  permission before every other graveyard route.
   Wired through `CastZoneResolver.findMayCastSelfFromZoneAbility` (returns the applicable
   ability so callers can read its `additionalCost`), validated/collected in `CastSpellHandler`
   alongside the other additional-cost sources, and surfaced to legal-action enumeration in

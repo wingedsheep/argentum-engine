@@ -1089,7 +1089,7 @@ class CastFromZoneEnumerator(
                             description = "Cast ${cardComponent.name}",
                             action = CastSpell(playerId, cardId),
                             affordable = false,
-                            manaCostString = cardComponent.manaCost.toString(),
+                            manaCostString = (zoneCastAbility.alternativeManaCost ?: cardComponent.manaCost).toString(),
                             sourceZone = sourceZoneName,
                             additionalCostInfo = zoneAdditionalCostInfo
                         )
@@ -1099,7 +1099,11 @@ class CastFromZoneEnumerator(
                     val hasCorrectTiming = isInstant || context.canPlaySorcerySpeed
                     val castRestrictions = cardDef.script.castRestrictions
                     val meetsRestrictions = context.legality.castRestrictionsMet(state, playerId, castRestrictions)
-                    val effectiveCost = context.costCalculator.calculateEffectiveCost(state, cardDef, playerId, fromZone = zone)
+                    // A permission that names its own price pays it rather than the mana cost.
+                    val effectiveCost = context.costCalculator.calculateEffectiveCost(
+                        state, cardDef, playerId, fromZone = zone,
+                        baseCost = zoneCastAbility.alternativeManaCost ?: cardDef.manaCost
+                    )
                     val costString = effectiveCost.toString()
                     val canAfford = context.manaSolver.canPay(state, playerId, effectiveCost, precomputedSources = context.availableManaSources)
 

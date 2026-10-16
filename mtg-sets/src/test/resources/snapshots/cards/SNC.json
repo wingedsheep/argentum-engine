@@ -7339,6 +7339,44 @@
     ]
 }
 
+// Raffine's Guidance
+{
+    "name": "Raffine's Guidance",
+    "manaCost": "{W}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature gets +1/+1.\nYou may cast this card from your graveyard by paying {2}{W} rather than paying its mana cost.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1
+            },
+            {
+                "type": "MayCastSelfFromZones",
+                "zones": [
+                    "Graveyard"
+                ],
+                "alternativeManaCost": "{2}{W}"
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "25",
+        "artist": "Rémi Jacquot",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/3/f36e25fa-9ab4-4832-afb9-827c4b6ba732.jpg?1783923153"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Raffine's Informant
 {
     "name": "Raffine's Informant",

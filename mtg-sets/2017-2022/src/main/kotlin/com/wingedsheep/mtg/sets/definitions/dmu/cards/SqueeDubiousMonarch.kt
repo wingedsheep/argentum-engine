@@ -2,12 +2,14 @@ package com.wingedsheep.mtg.sets.definitions.dmu.cards
 
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Keyword
+import com.wingedsheep.sdk.core.ManaCost
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.KeywordAbility
+import com.wingedsheep.sdk.scripting.MayCastSelfFromZones
 
 /**
  * Squee, Dubious Monarch
@@ -19,11 +21,10 @@ import com.wingedsheep.sdk.scripting.KeywordAbility
  * You may cast this card from your graveyard by paying {3}{R} and exiling four other cards from
  * your graveyard rather than paying its mana cost.
  *
- * The graveyard clause is escape's own wording without the keyword, so it rides the escape
- * graveyard-alternative-cost rail ([KeywordAbility.escape]): sorcery timing, {3}{R} replacing the
- * mana cost, four *other* graveyard cards exiled as the non-mana half, and — per the rulings — a
- * countered or dead Squee lands back in the graveyard and can be cast this way again. The only
- * thing escape adds is the "escaped" designation, which nothing on Squee reads.
+ * The graveyard clause is a keywordless alternative cost, not escape: {3}{R} replaces the mana
+ * cost and the four *other* graveyard cards are its non-mana half. It confers no "escaped"
+ * designation, and — per the rulings — a countered or dead Squee lands back in the graveyard and
+ * can be cast this way again.
  */
 val SqueeDubiousMonarch = card("Squee, Dubious Monarch") {
     manaCost = "{2}{R}"
@@ -51,7 +52,13 @@ val SqueeDubiousMonarch = card("Squee, Dubious Monarch") {
         description = "Whenever Squee attacks, create a 1/1 red Goblin creature token that's tapped and attacking."
     }
 
-    keywordAbility(KeywordAbility.escape("{3}{R}", Costs.additional.ExileOtherCards(4)))
+    staticAbility {
+        ability = MayCastSelfFromZones(
+            zones = listOf(Zone.GRAVEYARD),
+            alternativeManaCost = ManaCost.parse("{3}{R}"),
+            additionalCost = Costs.additional.ExileOtherCards(4)
+        )
+    }
 
     metadata {
         rarity = Rarity.RARE

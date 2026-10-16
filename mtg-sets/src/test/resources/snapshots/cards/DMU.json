@@ -13816,23 +13816,7 @@
         "toughness": 2
     },
     "keywords": [
-        "HASTE",
-        "ESCAPE"
-    ],
-    "keywordAbilities": [
-        {
-            "type": "Escape",
-            "cost": "{3}{R}",
-            "additionalCost": {
-                "type": "AdditionalAtom",
-                "atom": {
-                    "type": "AtomExileFrom",
-                    "zone": "Graveyard",
-                    "count": 4,
-                    "excludeSelf": true
-                }
-            }
-        }
+        "HASTE"
     ],
     "script": {
         "triggeredAbilities": [
@@ -13854,6 +13838,24 @@
                     "attacking": true
                 },
                 "descriptionOverride": "Whenever Squee attacks, create a 1/1 red Goblin creature token that's tapped and attacking."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "MayCastSelfFromZones",
+                "zones": [
+                    "Graveyard"
+                ],
+                "additionalCost": {
+                    "type": "AdditionalAtom",
+                    "atom": {
+                        "type": "AtomExileFrom",
+                        "zone": "Graveyard",
+                        "count": 4,
+                        "excludeSelf": true
+                    }
+                },
+                "alternativeManaCost": "{3}{R}"
             }
         ]
     },
