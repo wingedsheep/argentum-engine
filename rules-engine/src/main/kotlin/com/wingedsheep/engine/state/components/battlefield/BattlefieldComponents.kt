@@ -561,11 +561,15 @@ data class AttachedToComponent(
  * it can't enchant (CR 400.7) — and only while that object matches [filter]. The printed
  * `auraTarget` is no longer consulted. A battlefield-scoped characteristic of this object, so it is
  * stripped when the Aura leaves the battlefield.
+ *
+ * [hosts] null is an enchant ability naming no particular objects — "It's an Aura enchantment with
+ * enchant Forest you control" (`PutOntoBattlefieldAsAuraEffect`, Harold and Bob): any permanent
+ * matching [filter] may be enchanted.
  */
 @Serializable
 data class GainedEnchantRestrictionComponent(
     val filter: com.wingedsheep.sdk.scripting.GameObjectFilter,
-    val hosts: Set<com.wingedsheep.engine.state.ObjectRef>
+    val hosts: Set<com.wingedsheep.engine.state.ObjectRef>? = null
 ) : Component
 
 /**

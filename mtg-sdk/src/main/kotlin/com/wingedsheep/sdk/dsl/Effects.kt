@@ -168,6 +168,7 @@ import com.wingedsheep.sdk.scripting.effects.ReturnFace
 import com.wingedsheep.sdk.scripting.effects.ReturnSelfFromExileTransformedEffect
 import com.wingedsheep.sdk.scripting.effects.ReturnSelfFromZoneTransformedEffect
 import com.wingedsheep.sdk.scripting.effects.ReturnSelfToBattlefieldAttachedEffect
+import com.wingedsheep.sdk.scripting.effects.PutOntoBattlefieldAsAuraEffect
 import com.wingedsheep.sdk.scripting.effects.DrawUpToEffect
 import com.wingedsheep.sdk.scripting.effects.RemoveFromCombatEffect
 import com.wingedsheep.sdk.scripting.effects.RepeatCondition
@@ -1826,6 +1827,20 @@ object Effects {
         target: EffectTarget = EffectTarget.TriggeringEntity,
         transformed: Boolean = false,
     ): Effect = ReturnSelfToBattlefieldAttachedEffect(target, transformed)
+
+    /**
+     * "Return it to the battlefield. It's an Aura enchantment with enchant [enchant] and \"…\", and
+     * it loses all other abilities" — the card enters already an Aura, its controller choosing what it
+     * enchants as it enters (Harold and Bob, First Numens; Bronzehide Lion). See
+     * [PutOntoBattlefieldAsAuraEffect].
+     */
+    fun PutOntoBattlefieldAsAura(
+        enchant: GameObjectFilter,
+        grantedStaticAbilities: List<com.wingedsheep.sdk.scripting.StaticAbility> = emptyList(),
+        grantedAbilities: List<com.wingedsheep.sdk.scripting.ActivatedAbility> = emptyList(),
+        target: EffectTarget = EffectTarget.Self,
+        fromZone: Zone? = Zone.GRAVEYARD,
+    ): Effect = PutOntoBattlefieldAsAuraEffect(enchant, grantedStaticAbilities, grantedAbilities, target, fromZone)
 
     /**
      * Take the top card from the source's linked exile pile and put it into your hand.

@@ -153,7 +153,13 @@ data class ZoneEntryOptions(
      * Internal card-arrival half of a melded or merged permanent's departure (CR 712.21, 730.3);
      * replacements already chose every component's destination.
      */
-    val meldedPermanent: com.wingedsheep.engine.state.ObjectRef? = null
+    val meldedPermanent: com.wingedsheep.engine.state.ObjectRef? = null,
+    /**
+     * Enter as an Aura the card isn't printed as (`PutOntoBattlefieldAsAuraEffect`): applied as the
+     * object arrives, before [auraHostId] attaches it or the entry is recorded, so "a creature
+     * entered" observers never see it as a creature.
+     */
+    val asAura: com.wingedsheep.engine.handlers.effects.zones.AuraEntry? = null
 )
 
 /**
@@ -890,6 +896,7 @@ class ZoneTransitionService(
                     options.copy(tapped = options.tapped ||
                         (options.entryCopy?.copiedCard != null && options.entryCopy.replacement.tappedIfCopied)), fromZone
                 )
+                if (!options.faceDown) options.asAura?.let { newState = it.apply(newState, entityId, destControllerId) }
                 if (!options.faceDown && options.entryChoices.isNotEmpty()) {
                     newState = newState.updateEntity(entityId) { c ->
                         val recorded = options.entryChoices.entries.fold(c) { acc, (slot, value) -> acc.withCastChoice(slot, value) }

@@ -81,8 +81,9 @@ object EnchantRestriction {
      * The verdict of an enchant ability the Aura *gained* in place of its printed one
      * ([GainedEnchantRestrictionComponent] — Animate Dead's "enchant creature put onto the
      * battlefield with this Aura"), or null when the Aura has none and its printed `auraTarget`
-     * still rules. The host must be the very object recorded (CR 400.7: one that left and returned
-     * is a new object), still on the battlefield, and still match the gained filter.
+     * still rules. The host must be on the battlefield and match the gained filter — and, when the
+     * ability names particular objects, be the very object recorded (CR 400.7: one that left and
+     * returned is a new object).
      */
     fun gainedRestrictionAdmits(
         state: GameState,
@@ -94,7 +95,7 @@ object EnchantRestriction {
     ): Boolean? {
         val gained = state.getEntity(auraId)?.get<GainedEnchantRestrictionComponent>() ?: return null
         if (hostId !in state.getBattlefield()) return false
-        if (gained.hosts.none { it.entityId == hostId && state.isCurrentObject(it) }) return false
+        if (gained.hosts != null && gained.hosts.none { it.entityId == hostId && state.isCurrentObject(it) }) return false
         return predicateEvaluator.matches(
             state, projected, hostId, gained.filter, PredicateContext(controllerId = controllerId, sourceId = auraId)
         )

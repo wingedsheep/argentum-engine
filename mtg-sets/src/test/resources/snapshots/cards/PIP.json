@@ -2305,6 +2305,108 @@
     }
 }
 
+// Harold and Bob, First Numens
+{
+    "name": "Harold and Bob, First Numens",
+    "manaCost": "{2}{G}",
+    "typeLine": "Legendary Creature — Treefolk Mutant",
+    "oracleText": "Reach, vigilance\nWhen Harold and Bob dies, if it was a creature, return it to the battlefield. It's an Aura enchantment with enchant Forest you control and \"Enchanted Forest has '{T}: Add three mana of any one color. You get two rad counters.'\" Harold and Bob loses all other abilities.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "REACH",
+        "VIGILANCE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Harold and Bob, First Numens:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "PutOntoBattlefieldAsAura",
+                    "enchant": {
+                        "cardPredicates": [
+                            "IsLand",
+                            {
+                                "type": "HasSubtype",
+                                "subtype": "Forest"
+                            }
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    },
+                    "grantedStaticAbilities": [
+                        {
+                            "type": "GrantActivatedAbility",
+                            "ability": {
+                                "id": "Harold and Bob, First Numens:1",
+                                "cost": "CostTap",
+                                "effect": {
+                                    "type": "Composite",
+                                    "effects": [
+                                        {
+                                            "type": "AddManaOfChoice",
+                                            "amount": {
+                                                "type": "Fixed",
+                                                "amount": 3
+                                            }
+                                        },
+                                        {
+                                            "type": "AddCounters",
+                                            "counterType": "RAD",
+                                            "count": 2,
+                                            "target": {
+                                                "type": "PlayerRef",
+                                                "player": "You"
+                                            }
+                                        }
+                                    ]
+                                },
+                                "timing": "ManaAbility",
+                                "isManaAbility": true,
+                                "descriptionOverride": "{T}: Add three mana of any one color. You get two rad counters."
+                            }
+                        }
+                    ]
+                },
+                "interveningIf": {
+                    "type": "TriggeringEntityWas",
+                    "filter": "creature"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "78",
+        "rarity": "RARE",
+        "artist": "Andrea Piparo",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/7/d730ac69-20ec-4ef3-85ee-a5fd24e5f277.jpg?1783912398",
+        "rulings": [
+            {
+                "date": "2024-03-08",
+                "text": "If you control Harold and Bob, you'll return it to the battlefield when it dies while it's a creature. It doesn't matter who owns the card. You'll choose which Forest you control it will enchant as it returns to the battlefield."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "If there's nothing for Harold and Bob to legally enchant, it remains in its owner's graveyard instead of returning to the battlefield."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "A token that's a copy of Harold and Bob won't return to the battlefield from its owner's graveyard."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "If a nontoken permanent that's a copy of Harold and Bob dies while it's a creature, it will return to the battlefield as an Aura with only the abilities granted by the effect that returned it to the battlefield. It will also retain its name, colors, and supertypes, but it will be an Aura enchantment with no other types or subtypes."
+            }
+        ]
+    }
+}
+
 // Jason Bright, Glowing Prophet
 {
     "name": "Jason Bright, Glowing Prophet",

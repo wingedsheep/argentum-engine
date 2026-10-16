@@ -108,7 +108,9 @@ class UnattachedAurasCheck(
                 continue
             }
 
-            val isAura = cardComponent.typeLine.isAura
+            // An Aura by its projected type line, not its printed one: a card returned "as an Aura
+            // enchantment" (Harold and Bob, First Numens) is held to its enchant ability too.
+            val isAura = projected.hasType(entityId, "ENCHANTMENT") && projected.hasSubtype(entityId, "Aura")
             val isEquipment = cardComponent.typeLine.isEquipment
             val isFortification = cardComponent.typeLine.isFortification
 

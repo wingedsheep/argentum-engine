@@ -1847,6 +1847,19 @@ uses `Patterns.Exile.impulse()`; playing the card follows ordinary costs and tim
   card is still in its old zone, so the entry registers the back face's statics and replacements.
   A single-faced card told to enter transformed doesn't move at all (standing ruling), so it is a
   quiet no-op. Radiant Grace: `ReturnSelfToBattlefieldAttached(target = cursed, transformed = true)`.
+- `PutOntoBattlefieldAsAura(enchant, grantedStaticAbilities = [], grantedAbilities = [], target = Self,
+  fromZone = GRAVEYARD)` — "return it to the battlefield. It's an Aura enchantment with enchant *X* and
+  \"…\", and it loses all other abilities." The card enters under the effect controller's control already
+  that Aura: layer 4 makes it Enchantment — Aura (supertypes, name and colors stay), layer 6 strips its
+  printed abilities, and it has exactly `enchant` (with "you" = the Aura's controller) plus the granted
+  static/activated abilities for as long as it stays on the battlefield. It is never a creature there, so
+  "a creature entered" observers miss it. Its controller chooses the host as it enters among the permanents
+  `enchant` admits (CR 303.4f — not targeted; protection from the Aura's new characteristics excludes a
+  host); with none it stays put (CR 303.4g). The state-based action holds it to that enchant ability
+  (CR 704.5m). Harold and Bob, First Numens:
+  `PutOntoBattlefieldAsAura(enchant = Land.withSubtype(FOREST).youControl(), grantedStaticAbilities =
+  listOf(GrantActivatedAbility(tapForThreeAndRads)))`; Bronzehide Lion's "{G}{W}: Enchanted creature gains
+  indestructible" goes in `grantedAbilities`.
 - `ReturnSelfFromExileTransformed` — Craft resolution (CR 702.167a). Returns the source from exile to the
   battlefield as its back face, under its owner's control, and re-attaches the source's
   `CraftedFromExiledComponent` recording the exiled materials. Pair with `AbilityCost.Craft`; see the `Craft`

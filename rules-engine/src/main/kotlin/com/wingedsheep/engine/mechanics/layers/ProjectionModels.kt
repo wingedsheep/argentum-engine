@@ -261,7 +261,16 @@ data class ContinuousEffect(
      * True for effects collected from a [ContinuousEffectSourceComponent]; false for floating
      * effects (Giant Growth, an activated pump, a lingering "until end of turn" grant).
      */
-    val fromStaticAbility: Boolean = true
+    val fromStaticAbility: Boolean = true,
+    /**
+     * For an effect of a static ability its source *gained* from a resolved effect (a
+     * `GrantedStaticAbility`), the timestamp of that gain. A lose-all-abilities effect older than
+     * the gain doesn't remove the gained ability (CR 613.7a — layer 6 applies in timestamp order),
+     * so such an effect keeps applying while its source has otherwise lost all abilities: "It's an
+     * Aura enchantment with enchant creature and 'Enchanted creature has flying,' and it loses all
+     * other abilities". Null for printed statics, which any ability loss removes.
+     */
+    val abilityGainedAt: Long? = null
 ) {
     val layer: Layer get() = modification.layer
     val sublayer: Sublayer? get() = modification.sublayer

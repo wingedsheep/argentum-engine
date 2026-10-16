@@ -470,6 +470,63 @@ data class ReturnSelfToBattlefieldAttachedEffect(
 }
 
 /**
+ * Put a card onto the battlefield **as an Aura** it isn't printed as: "return it to the
+ * battlefield. It's an Aura enchantment with enchant [enchant] and \"…\", and it loses all other
+ * abilities" (Harold and Bob, First Numens; Bronzehide Lion).
+ *
+ * The card enters under the effect controller's control already an Aura — layer 4 sets its card
+ * types to enchantment and its subtypes to Aura (supertypes, name and colors stay), layer 6 strips
+ * every printed ability, and it has exactly [enchant] as its enchant ability plus the granted
+ * abilities. Being an Aura from the moment it enters, it is never a creature on the battlefield:
+ * "a creature entered" observers don't see it, and its controller chooses what it enchants as it
+ * enters, among the permanents [enchant] admits (CR 303.4f — not targeted, so hexproof doesn't
+ * stop it, protection does). With nothing it could legally enchant it doesn't move (CR 303.4g;
+ * the Harold and Bob ruling: "it remains in its owner's graveyard"). The changes last for as long
+ * as the permanent stays on the battlefield.
+ *
+ * No neighbour takes this: [MoveToZoneEffect] moves a card with its printed characteristics and
+ * offers an Aura host only by the card's printed enchant ability; `PutOntoBattlefieldAttachedToChosenEffect`'s
+ * host filter only narrows a printed Aura's enchant ability and never becomes it; and
+ * [BecomeArtifactEffect] rewrites a permanent already on the battlefield — applied after the move,
+ * the card would enter as a creature first and pick no host at all.
+ *
+ * @property target The card to return — [EffectTarget.Self] for a dies trigger's own card.
+ * @property enchant The enchant ability it gains ("enchant Forest you control"), read with "you"
+ *   as the Aura's controller.
+ * @property grantedStaticAbilities Static abilities it has as that Aura ("Enchanted Forest has
+ *   '{T}: …'").
+ * @property grantedAbilities Activated abilities it has as that Aura (Bronzehide Lion's
+ *   "{G}{W}: Enchanted creature gains indestructible until end of turn").
+ * @property fromZone The zone the card must still be in; a card that has left it doesn't move.
+ */
+@SerialName("PutOntoBattlefieldAsAura")
+@Serializable
+data class PutOntoBattlefieldAsAuraEffect(
+    val enchant: GameObjectFilter,
+    val grantedStaticAbilities: List<com.wingedsheep.sdk.scripting.StaticAbility> = emptyList(),
+    val grantedAbilities: List<com.wingedsheep.sdk.scripting.ActivatedAbility> = emptyList(),
+    val target: EffectTarget = EffectTarget.Self,
+    val fromZone: Zone? = Zone.GRAVEYARD,
+) : Effect {
+    override val description: String = buildString {
+        append("Return ${target.description} to the battlefield. It's an Aura enchantment with enchant ")
+        append(enchant.description)
+        val gained = grantedStaticAbilities.map { it.description } + grantedAbilities.map { it.description }
+        if (gained.isNotEmpty()) append(" and ${gained.joinToString(" and ") { "\"$it\"" }}")
+        append(", and it loses all other abilities")
+    }
+
+    override fun applyTextReplacement(replacer: TextReplacer): Effect {
+        val newEnchant = enchant.applyTextReplacement(replacer)
+        val newStatics = grantedStaticAbilities.map { it.applyTextReplacement(replacer) }
+        val newAbilities = grantedAbilities.map { it.applyTextReplacement(replacer) }
+        return if (newEnchant != enchant || newStatics != grantedStaticAbilities || newAbilities != grantedAbilities) {
+            copy(enchant = newEnchant, grantedStaticAbilities = newStatics, grantedAbilities = newAbilities)
+        } else this
+    }
+}
+
+/**
  * Exile all permanents matching a filter that the controller controls, and link them
  * to the source permanent. The exiled entity IDs are stored on the source as a
  * LinkedExileComponent, and the count is stored in the effect context as a collection

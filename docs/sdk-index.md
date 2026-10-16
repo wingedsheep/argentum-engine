@@ -981,6 +981,7 @@ Families:
 - `ProliferateEffect(target: EffectTarget?)` — Give one additional counter of each kind already there to any number of permanents and/or players.
 - `ProvokeEffect(target: EffectTarget)` — Provoke effect: untap target creature and force it to block the source creature if able.
 - `PutOnLibraryPositionOfChoiceEffect(target: EffectTarget, positions: List<LibraryChoicePosition>)` — The target's owner puts it into their library at one of the offered positions.
+- `PutOntoBattlefieldAsAuraEffect(enchant: GameObjectFilter, grantedStaticAbilities: List<StaticAbility>, grantedAbilities: List<ActivatedAbility>, target: EffectTarget, fromZone: Zone?)` — Put a card onto the battlefield **as an Aura** it isn't printed as: "return it to the battlefield.
 - `PutOntoBattlefieldAttachedToChosenEffect(target: EffectTarget, hostFilter: GameObjectFilter)` — Put a targeted Aura or Equipment card onto the battlefield **attached to a permanent the effect's controller chooses** at resolution.
 - `RandomizedBlockerPilesEffect(duration: Duration)` — Replace blocker declarations with optional creature piles assigned randomly to attackers.
 - `RecordChosenLinkedExileEffect(from: String)` — Records the card most recently selected from the source's linked-exile pile as its "last chosen card", stamping a `ChosenLinkedExileComponent` on the source.
