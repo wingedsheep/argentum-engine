@@ -16,12 +16,12 @@
 > Not in boosters — starter decks, promos, bonus sheets. Counted separately by `scripts/card-status`.
 
 - [x] Abundant Growth
-- [ ] Acquired Mutation
-- [ ] Agent Frank Horrigan
+- [x] Acquired Mutation
+- [x] Agent Frank Horrigan
 - [ ] Agility Bobblehead
 - [ ] All That Glitters
 - [ ] Almost Perfect
-- [ ] Alpha Deathclaw
+- [x] Alpha Deathclaw
 - [x] Anguished Unmaking
 - [ ] Animal Friend
 - [x] Aradesh, the Founder
@@ -107,7 +107,7 @@
 - [x] Explorer's Scope
 - [x] Farewell
 - [x] Farseek
-- [ ] Feral Ghoul
+- [x] Feral Ghoul
 - [x] Ferrous Lake
 - [x] Fertile Ground
 - [x] Fervent Charge
@@ -121,7 +121,7 @@
 - [x] General's Enforcer
 - [x] Glacial Fortress
 - [x] Glimmer of Genius
-- [ ] Glowing One
+- [x] Glowing One
 - [x] Grave Titan
 - [ ] Grim Reaper's Sprint
 - [x] Guardian Project
@@ -141,7 +141,7 @@
 - [ ] Idolized
 - [x] Impassioned Orator
 - [ ] Inexorable Tide
-- [ ] Infesting Radroach
+- [x] Infesting Radroach
 - [x] Inspiring Call
 - [x] Intangible Virtue
 - [ ] Intelligence Bobblehead
@@ -168,12 +168,12 @@
 - [ ] MacCready, Lamplight Mayor
 - [ ] Mantle of the Ancients
 - [ ] Marcus, Mutant Mayor
-- [ ] Mariposa Military Base
+- [x] Mariposa Military Base
 - [x] Marshal's Anthem
 - [x] Martial Coup
 - [x] Masterwork of Ingenuity
 - [x] Mechanized Production
-- [ ] Megaton's Fate
+- [x] Megaton's Fate
 - [x] Memorial to Glory
 - [x] Mind Stone
 - [ ] Mirelurk Queen
@@ -192,9 +192,9 @@
 - [ ] Nerd Rage
 - [x] Nesting Grounds
 - [ ] Nick Valentine, Private Eye
-- [ ] Nightkin Ambusher
+- [x] Nightkin Ambusher
 - [x] Nomad Outpost
-- [ ] Nuclear Fallout
+- [x] Nuclear Fallout
 - [ ] Nuka-Cola Vending Machine
 - [x] Nuka-Nuke Launcher
 - [ ] One with the Machine
@@ -225,7 +225,7 @@
 - [ ] Rampaging Yao Guai
 - [x] Rampant Growth
 - [ ] Rancor
-- [ ] Raul, Trouble Shooter
+- [x] Raul, Trouble Shooter
 - [x] Ravages of War
 - [x] Razortide Bridge
 - [ ] Recon Craft Theta
@@ -241,7 +241,7 @@
 - [ ] Ruthless Radrat
 - [x] Scattered Groves
 - [x] Scavenger Grounds
-- [ ] Screeching Scorchbeast
+- [x] Screeching Scorchbeast
 - [x] Secure the Wastes
 - [x] Securitron Squadron
 - [ ] Sentinel Sarah Lyons
@@ -306,7 +306,7 @@
 - [x] Temple of Triumph
 - [x] Temple of the False God
 - [x] Terramorphic Expanse
-- [ ] The Master, Transcendent
+- [x] The Master, Transcendent
 - [ ] The Motherlode, Excavator
 - [ ] The Nipton Lottery
 - [ ] The Prydwen, Steel Flagship
@@ -324,13 +324,13 @@
 - [ ] Vault 101: Birthday Party
 - [ ] Vault 112: Sadistic Simulation
 - [x] Vault 11: Voter's Dilemma
-- [ ] Vault 12: The Necropolis
+- [x] Vault 12: The Necropolis
 - [ ] Vault 13: Dweller's Journey
 - [ ] Vault 21: House Gambit
 - [ ] Vault 75: Middle School
 - [ ] Vault 87: Forced Evolution
 - [ ] Veronica, Dissident Scribe
-- [ ] Vexing Radgull
+- [x] Vexing Radgull
 - [x] Vigor
 - [x] Viridescent Bog
 - [x] Wake the Past

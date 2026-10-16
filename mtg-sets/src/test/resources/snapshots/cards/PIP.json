@@ -1,3 +1,278 @@
+// Acquired Mutation
+{
+    "name": "Acquired Mutation",
+    "manaCost": "{2}{R}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature gets +2/+2 and is goaded. (It attacks each combat if able and attacks a player other than you if able.)\nWhenever enchanted creature attacks, defending player gets two rad counters.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Acquired Mutation:1",
+                "trigger": "AttackEvent",
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "RAD",
+                    "count": 2,
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "DefendingPlayer"
+                    }
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 2,
+                "toughnessBonus": 2
+            },
+            "Goaded"
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "53",
+        "rarity": "UNCOMMON",
+        "artist": "Xavier Ribeiro",
+        "flavorText": "The radiation of the wasteland has changed you!",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/9/19586946-a6a6-4154-a544-15a052483f96.jpg?1783912408",
+        "rulings": [
+            {
+                "date": "2024-03-08",
+                "text": "Being goaded isn't an ability the creature has. Once it's been goaded, it must attack as detailed above even if it loses all abilities."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "Attacking with a goaded creature doesn't cause it to stop being goaded. If there is an additional combat phase that turn, or if another player gains control of it before it stops being goaded, it must attack again if able."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Agent Frank Horrigan
+{
+    "name": "Agent Frank Horrigan",
+    "manaCost": "{5}{B}{G}",
+    "typeLine": "Legendary Creature — Mutant Warrior",
+    "oracleText": "Trample\nAgent Frank Horrigan has indestructible as long as it attacked this turn.\nWhenever Agent Frank Horrigan enters or attacks, proliferate twice. (To proliferate, choose any number of permanents and/or players, then give each another counter of each kind already there.)",
+    "creatureStats": {
+        "power": 8,
+        "toughness": 6
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Agent Frank Horrigan:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        "Proliferate",
+                        "Proliferate"
+                    ]
+                }
+            },
+            {
+                "id": "Agent Frank Horrigan:2",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        "Proliferate",
+                        "Proliferate"
+                    ]
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "INDESTRUCTIBLE",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": {
+                        "statePredicates": [
+                            "AttackedThisTurn"
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "89",
+        "rarity": "RARE",
+        "artist": "Wisnu Tan",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/1/91193a0b-9087-404f-b397-815e29d0fe12.jpg?1783912393",
+        "rulings": [
+            {
+                "date": "2024-03-08",
+                "text": "The ability that causes Agent Frank Horrigan to have indestructible starts to apply as soon as it's declared as an attacker. It applies for the remainder of the turn. It doesn't matter what happens to the player or permanent it attacked after that point."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "If Agent Frank Horrigan enters the battlefield attacking, it doesn't have indestructible since it was never declared as an attacker."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "If you proliferate twice, you don't have to choose the same set of players and/or permanents to get additional counters each time."
+            }
+        ]
+    }
+}
+
+// Alpha Deathclaw
+{
+    "name": "Alpha Deathclaw",
+    "manaCost": "{4}{B}{G}",
+    "typeLine": "Creature — Lizard Mutant",
+    "oracleText": "Menace, trample\nWhen this creature enters or becomes monstrous, destroy target permanent.\n{5}{B}{G}: Monstrosity 4. (If this creature isn't monstrous, put four +1/+1 counters on it and it becomes monstrous.)",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "keywords": [
+        "MENACE",
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Alpha Deathclaw:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "permanent"
+                    },
+                    "id": "t0"
+                }
+            },
+            {
+                "id": "Alpha Deathclaw:2",
+                "trigger": "BecameMonstrousEvent",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "permanent"
+                    },
+                    "id": "t1"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Alpha Deathclaw:3",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{5}{B}{G}"
+                    }
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Not",
+                            "condition": {
+                                "type": "EntityMatches",
+                                "entity": "Self",
+                                "filter": {
+                                    "statePredicates": [
+                                        "IsMonstrous"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "AddDynamicCounters",
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 4
+                                },
+                                "target": "Self"
+                            },
+                            "BecomeMonstrous"
+                        ]
+                    },
+                    "descriptionOverride": "Monstrosity 4. (If this creature isn't monstrous, put 4 +1/+1 counters on it and it becomes monstrous.)"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "91",
+        "rarity": "RARE",
+        "artist": "Daarken",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/a/ca4c8b04-66af-4cb3-8003-9088d8344b20.jpg?1783912392",
+        "rulings": [
+            {
+                "date": "2024-03-08",
+                "text": "Once a creature becomes monstrous, it can't become monstrous again. If the creature is already monstrous when the monstrosity ability resolves, nothing happens."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "Monstrous isn't an ability that a creature has. It's just something true about that creature. If the creature stops being a creature or loses its abilities, it will continue to be monstrous."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "An ability that triggers when a creature becomes monstrous won't trigger if that creature isn't on the battlefield when its monstrosity ability resolves."
+            }
+        ]
+    }
+}
+
 // Aradesh, the Founder
 {
     "name": "Aradesh, the Founder",
@@ -2264,6 +2539,79 @@
     "colorIdentityOverride": []
 }
 
+// Feral Ghoul
+{
+    "name": "Feral Ghoul",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Zombie Mutant",
+    "oracleText": "Menace\nWhenever another creature you control dies, put a +1/+1 counter on this creature.\nWhen this creature dies, each opponent gets a number of rad counters equal to its power.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "MENACE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Feral Ghoul:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:you",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                }
+            },
+            {
+                "id": "Feral Ghoul:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "EachOpponent"
+                    },
+                    "body": {
+                        "type": "AddDynamicCounters",
+                        "counterType": "RAD",
+                        "amount": {
+                            "type": "EntityProperty",
+                            "entity": "Self",
+                            "numericProperty": "Power"
+                        },
+                        "target": "Controller"
+                    }
+                },
+                "descriptionOverride": "When this creature dies, each opponent gets a number of rad counters equal to its power."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "44",
+        "rarity": "RARE",
+        "artist": "Sergio Cosmai",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/b/fbdef99d-6ce9-495d-a55b-e6ba799d3da7.jpg?1783912408",
+        "rulings": [
+            {
+                "date": "2024-03-08",
+                "text": "Use Feral Ghoul's power as it last existed on the battlefield to determine how many rad counters each opponent gets."
+            }
+        ]
+    }
+}
+
 // Ferrous Lake
 {
     "name": "Ferrous Lake",
@@ -2420,6 +2768,74 @@
     }
 }
 
+// Glowing One
+{
+    "name": "Glowing One",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Zombie Mutant",
+    "oracleText": "Deathtouch\nWhenever this creature deals combat damage to a player, they get four rad counters.\nWhenever a player mills a nonland card, you gain 1 life.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "DEATHTOUCH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Glowing One:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "RAD",
+                    "count": 4,
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "TriggeringPlayer"
+                    }
+                }
+            },
+            {
+                "id": "Glowing One:2",
+                "trigger": {
+                    "type": "MillEvent",
+                    "player": "Each",
+                    "cardFilter": "nonland"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "76",
+        "rarity": "UNCOMMON",
+        "artist": "Liiga Smilshkalne",
+        "flavorText": "The glowing one mumbles something and then falls silent. He drools uncontrollably.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/1/a1e36b92-aa88-4536-aebc-7e84a10d73fe.jpg?1783912398",
+        "rulings": [
+            {
+                "date": "2024-03-08",
+                "text": "If a player is instructed to mill more than one card, Glowing One's last ability will trigger once for each nonland card they mill during that instruction."
+            }
+        ]
+    }
+}
+
 // Harold and Bob, First Numens
 {
     "name": "Harold and Bob, First Numens",
@@ -2517,6 +2933,91 @@
             {
                 "date": "2024-03-08",
                 "text": "If a nontoken permanent that's a copy of Harold and Bob dies while it's a creature, it will return to the battlefield as an Aura with only the abilities granted by the effect that returned it to the battlefield. It will also retain its name, colors, and supertypes, but it will be an Aura enchantment with no other types or subtypes."
+            }
+        ]
+    }
+}
+
+// Infesting Radroach
+{
+    "name": "Infesting Radroach",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Insect Mutant",
+    "oracleText": "Flying\nThis creature can't block.\nWhenever this creature deals combat damage to a player, they get that many rad counters.\nWhenever an opponent mills a nonland card, if this creature is in your graveyard, you may return it to your hand.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Infesting Radroach:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": {
+                    "type": "AddDynamicCounters",
+                    "counterType": "RAD",
+                    "amount": {
+                        "type": "ContextProperty",
+                        "key": "TRIGGER_DAMAGE_AMOUNT"
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "TriggeringPlayer"
+                    }
+                }
+            },
+            {
+                "id": "Infesting Radroach:2",
+                "trigger": {
+                    "type": "MillEvent",
+                    "player": "EachOpponent",
+                    "cardFilter": "nonland"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "MoveToZone",
+                        "target": "Self",
+                        "destination": "Hand",
+                        "fromZone": "Graveyard"
+                    }
+                },
+                "activeZones": [
+                    "Graveyard"
+                ],
+                "interveningIf": {
+                    "type": "SourceInZone",
+                    "zones": [
+                        "Graveyard"
+                    ]
+                }
+            }
+        ],
+        "staticAbilities": [
+            "CantBlock"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "46",
+        "rarity": "UNCOMMON",
+        "artist": "Loïc Canavaggia",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/b/5b51b691-e226-44c9-b7cb-26f19c060597.jpg?1783912408",
+        "rulings": [
+            {
+                "date": "2024-03-08",
+                "text": "If Infesting Radroach is milled at the same time an opponent mills a nonland card (for example, because of the activated ability of Raul, Trouble Shooter), Infesting Radroach's ability will trigger."
             }
         ]
     }
@@ -3060,6 +3561,191 @@
     }
 }
 
+// Mariposa Military Base
+{
+    "name": "Mariposa Military Base",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "You may have this land enter tapped. If you do, you get two rad counters.\n{T}: Add {C}.\n{5}, {T}: Draw a card. This ability costs {1} less to activate for each rad counter you have.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Mariposa Military Base:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Mariposa Military Base:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{5}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "descriptionOverride": "{5}, {T}: Draw a card. This ability costs {1} less to activate for each rad counter you have.",
+                "genericCostReduction": {
+                    "type": "PlayerCounterCount",
+                    "counterType": "RAD"
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "OnEnterRunEffect",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayDecide",
+                        "prompt": "Have Mariposa Military Base enter tapped to get two rad counters?"
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "TapUntap",
+                                "target": "Self"
+                            },
+                            {
+                                "type": "AddCounters",
+                                "counterType": "RAD",
+                                "count": 2,
+                                "target": "Controller"
+                            }
+                        ]
+                    },
+                    "descriptionOverride": "have this land enter tapped. If you do, you get two rad counters"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "151",
+        "rarity": "RARE",
+        "artist": "Alexander Forssberg",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/d/cd7be9d4-f9fa-44a3-9902-7e9e226ccf56.jpg?1783912373"
+    }
+}
+
+// Megaton's Fate
+{
+    "name": "Megaton's Fate",
+    "manaCost": "{5}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Choose one —\n• Disarm — Destroy target artifact. Create four Treasure tokens.\n• Detonate — Megaton's Fate deals 8 damage to each creature. Each player gets four rad counters.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "MoveToZone",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "destination": "Graveyard",
+                                "byDestruction": true
+                            },
+                            {
+                                "type": "CreatePredefinedToken",
+                                "tokenType": "Treasure",
+                                "count": 4,
+                                "imageUri": "https://cards.scryfall.io/normal/front/1/d/1d74d012-66ca-4a0c-9e90-e31e96730d4d.jpg?1783912040"
+                            }
+                        ]
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "artifact"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "description": "Disarm — Destroy target artifact. Create four Treasure tokens."
+                },
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "ForEach",
+                                "space": {
+                                    "type": "IterationSpace.Group",
+                                    "filter": {
+                                        "baseFilter": "creature"
+                                    }
+                                },
+                                "body": {
+                                    "type": "DealDamage",
+                                    "amount": {
+                                        "type": "Fixed",
+                                        "amount": 8
+                                    },
+                                    "target": "IterationEntity"
+                                }
+                            },
+                            {
+                                "type": "ForEach",
+                                "space": {
+                                    "type": "IterationSpace.Players",
+                                    "players": "Each"
+                                },
+                                "body": {
+                                    "type": "AddCounters",
+                                    "counterType": "RAD",
+                                    "count": 4,
+                                    "target": "Controller"
+                                }
+                            }
+                        ]
+                    },
+                    "description": "Detonate — Megaton's Fate deals 8 damage to each creature. Each player gets four rad counters."
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "61",
+        "rarity": "RARE",
+        "artist": "Chris Cold",
+        "flavorText": "Do the right thing—or the wrong thing.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/8/e8492127-888d-4da0-b49f-fba6a356b0a9.jpg?1783912403",
+        "rulings": [
+            {
+                "date": "2024-03-08",
+                "text": "Rad counters are a kind of counter that a player may have. They're not associated with any specific permanents."
+            }
+        ]
+    }
+}
+
 // Mirelurk Queen
 {
     "name": "Mirelurk Queen",
@@ -3503,6 +4189,157 @@
     "colorIdentityOverride": [
         "BLUE"
     ]
+}
+
+// Nightkin Ambusher
+{
+    "name": "Nightkin Ambusher",
+    "manaCost": "{2}{U}{B}",
+    "typeLine": "Creature — Mutant Warrior",
+    "oracleText": "Ward {2} (Whenever this creature becomes the target of a spell or ability an opponent controls, counter it unless that player pays {2}.)\nWhen this creature enters, target player gets four rad counters.\nThis creature can't be blocked as long as defending player has a rad counter.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "WARD"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Ward",
+            "cost": {
+                "type": "WardCost.Mana",
+                "manaCost": "{2}"
+            }
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Nightkin Ambusher:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "RAD",
+                    "count": 4,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetPlayer",
+                    "id": "t0"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": "CantBeBlocked",
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "PlayerCounterCount",
+                        "counterType": "RAD",
+                        "player": "DefendingPlayer"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "112",
+        "rarity": "UNCOMMON",
+        "artist": "Antonio José Manzanedo",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/a/ca7cfcb2-83fb-41ad-ae31-9c32c942506c.jpg?1783912385",
+        "rulings": [
+            {
+                "date": "2024-03-08",
+                "text": "Once Nightkin Ambusher has been blocked, giving the defending player a rad counter won't cause Nightkin Ambusher to become unblocked."
+            }
+        ]
+    }
+}
+
+// Nuclear Fallout
+{
+    "name": "Nuclear Fallout",
+    "manaCost": "{X}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Each creature gets twice -X/-X until end of turn. Each player gets X rad counters.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature"
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Multiply",
+                            "amount": {
+                                "type": "Multiply",
+                                "amount": "XValue",
+                                "multiplier": 2
+                            },
+                            "multiplier": -1
+                        },
+                        "toughnessModifier": {
+                            "type": "Multiply",
+                            "amount": {
+                                "type": "Multiply",
+                                "amount": "XValue",
+                                "multiplier": 2
+                            },
+                            "multiplier": -1
+                        },
+                        "target": "IterationEntity"
+                    }
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "Each"
+                    },
+                    "body": {
+                        "type": "AddDynamicCounters",
+                        "counterType": "RAD",
+                        "amount": "XValue",
+                        "target": "Controller"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "47",
+        "rarity": "RARE",
+        "artist": "Jason Rainville",
+        "flavorText": "The end of the world occurred as predicted: too many humans, not enough space or resources to go around. The details are trivial and pointless. The reasons, as always, purely human ones.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/7/e717e4b0-a8c1-4411-b18a-1d17e7225503.jpg?1783912408",
+        "rulings": [
+            {
+                "date": "2024-03-08",
+                "text": "Rad counters are a kind of counter that a player may have. They're not associated with any specific permanents."
+            }
+        ]
+    }
 }
 
 // Nuka-Nuke Launcher
@@ -4066,6 +4903,90 @@
     ]
 }
 
+// Raul, Trouble Shooter
+{
+    "name": "Raul, Trouble Shooter",
+    "manaCost": "{1}{U}{B}",
+    "typeLine": "Legendary Creature — Zombie Mutant Rogue",
+    "oracleText": "Once during each of your turns, you may cast a spell from among cards in your graveyard that were milled this turn.\n{T}: Each player mills a card. (They each put the top card of their library into their graveyard.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 4
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Raul, Trouble Shooter:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "player": "Each",
+                                "isMill": true
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": "Each"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Each player mills a card."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "MayCastFromGraveyard",
+                "filter": {
+                    "cardPredicates": [
+                        "IsNonland"
+                    ],
+                    "statePredicates": [
+                        "MilledThisTurn"
+                    ]
+                },
+                "duringYourTurnOnly": true,
+                "oncePerTurn": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "115",
+        "rarity": "UNCOMMON",
+        "artist": "Irina Nordsol",
+        "flavorText": "\"Raul Alfonso Tejada, former gunslinger and sole survivor of Hidalgo Ranch, at your service.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/b/3b73a314-b197-4954-a242-7d9096a406c1.jpg?1783912385",
+        "rulings": [
+            {
+                "date": "2024-03-08",
+                "text": "If you are instructed to put a card into your graveyard from your library without using the word \"mill,\" Raul's first ability won't allow you to cast it."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "If you cast a spell from among cards in your graveyard that were milled this turn using another permission, Raul's effect doesn't apply. You can cast another spell among cards in your graveyard that were milled this turn using the permission granted by Raul's first ability."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "If you cast a spell from among cards in your graveyard that were milled this turn using the permission granted by Raul's first ability and then have a new Raul, Trouble Shooter come under your control in the same turn, you may cast another spell from among cards in your graveyard that were milled this turn."
+            }
+        ]
+    }
+}
+
 // Rex, Cyber-Hound
 {
     "name": "Rex, Cyber-Hound",
@@ -4372,6 +5293,95 @@
             {
                 "date": "2024-03-08",
                 "text": "If, for some reason, the creature doesn’t have the squad ability when it’s on the battlefield, the ability won’t trigger, even if you’ve paid the squad cost one or more times."
+            }
+        ]
+    }
+}
+
+// Screeching Scorchbeast
+{
+    "name": "Screeching Scorchbeast",
+    "manaCost": "{4}{B}{B}",
+    "typeLine": "Creature — Bat Mutant",
+    "oracleText": "Flying, menace\nWhenever this creature attacks, each player gets two rad counters.\nWhenever one or more nonland cards are milled, you may create that many 2/2 black Zombie Mutant creature tokens. Do this only once each turn.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "FLYING",
+        "MENACE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Screeching Scorchbeast:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "Each"
+                    },
+                    "body": {
+                        "type": "AddCounters",
+                        "counterType": "RAD",
+                        "count": 2,
+                        "target": "Controller"
+                    }
+                }
+            },
+            {
+                "id": "Screeching Scorchbeast:2",
+                "trigger": {
+                    "type": "MillEvent",
+                    "player": "Each",
+                    "cardFilter": "nonland",
+                    "batch": true
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "CreateToken",
+                        "count": {
+                            "type": "DistinctEntitiesInCollections",
+                            "collections": [
+                                "trigger.captured"
+                            ]
+                        },
+                        "power": 2,
+                        "toughness": 2,
+                        "colors": [
+                            "BLACK"
+                        ],
+                        "creatureTypes": [
+                            "Zombie",
+                            "Mutant"
+                        ],
+                        "imageUri": "https://cards.scryfall.io/normal/front/b/a/ba45bc9c-8257-43f8-9ba1-116b9fea90f4.jpg?1783912046"
+                    },
+                    "descriptionOverride": "Whenever one or more nonland cards are milled, you may create that many 2/2 black Zombie Mutant creature tokens. Do this only once each turn."
+                },
+                "effectOncePerTurn": true,
+                "descriptionOverride": "Whenever one or more nonland cards are milled, you may create that many 2/2 black Zombie Mutant creature tokens. Do this only once each turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "49",
+        "rarity": "RARE",
+        "artist": "Nino Is",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/6/967dbb24-3073-4c33-bfdf-b3eb9e8fe443.jpg?1783912407",
+        "rulings": [
+            {
+                "date": "2024-03-08",
+                "text": "If more than one player is instructed to mill at the same time (by the activated ability of Raul, Trouble Shooter, for example), as long as at least one nonland card is milled, Screeching Scorchbeast's last ability will trigger just once."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "\"Do this only once each turn\" lets you choose whether or not to create the appropriate number of 2/2 black Zombie Mutant creature tokens as the triggered ability resolves. If you choose not to create tokens, the ability will trigger again the next time the condition is met. Once you choose to do so, the ability will no longer trigger for the rest of the turn."
             }
         ]
     }
@@ -5132,6 +6142,137 @@
     }
 }
 
+// The Master, Transcendent
+{
+    "name": "The Master, Transcendent",
+    "manaCost": "{1}{B}{G}{U}",
+    "typeLine": "Legendary Artifact Creature — Mutant",
+    "oracleText": "When The Master enters, target player gets two rad counters.\n{T}: Put target creature card in a graveyard that was milled this turn onto the battlefield under your control. It's a green Mutant with base power and toughness 3/3. (It loses its other colors and creature types.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "The Master, Transcendent:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "RAD",
+                    "count": 2,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetPlayer",
+                    "id": "t0"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "The Master, Transcendent:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t1"
+                            },
+                            "destination": "Battlefield",
+                            "controllerOverride": "Controller",
+                            "fromZone": "Graveyard"
+                        },
+                        {
+                            "type": "ChangeColor",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t1"
+                            },
+                            "colors": [
+                                "GREEN"
+                            ],
+                            "duration": "Permanent"
+                        },
+                        {
+                            "type": "SetCreatureSubtypes",
+                            "subtypes": [
+                                "Mutant"
+                            ],
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t1"
+                            }
+                        },
+                        {
+                            "type": "SetBaseStats",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t1"
+                            },
+                            "power": {
+                                "type": "Fixed",
+                                "amount": 3
+                            },
+                            "toughness": {
+                                "type": "Fixed",
+                                "amount": 3
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ],
+                                "statePredicates": [
+                                    "MilledThisTurn"
+                                ]
+                            },
+                            "zone": "Graveyard"
+                        },
+                        "id": "t1"
+                    }
+                ],
+                "descriptionOverride": "Put target creature card in a graveyard that was milled this turn onto the battlefield under your control. It's a green Mutant with base power and toughness 3/3."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "6",
+        "rarity": "MYTHIC",
+        "artist": "Javier Charro",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/b/5b0497da-670a-405c-a39c-97cae7942836.jpg?1783912421",
+        "rulings": [
+            {
+                "date": "2024-03-08",
+                "text": "If a player is instructed to put a card into their graveyard from their library without using the word \"mill,\" (by the effect of Rowan's Grim Search from Wilds of Eldraine®, for example), that card isn't a legal target for The Master's last ability."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "The Master's last ability will override any characteristic-defining abilities the creature has that set its power and/or toughness. For example, if you put a Robobrain War Mind onto the battlefield with The Master's last ability, its base power and toughness will be 3/3, and the number of cards in your hand won't affect its power at all."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "Effects that modify a creature's power and/or toughness will still apply to the creature as normal. The same is true for any counters that change its power and/or toughness."
+            }
+        ]
+    }
+}
+
 // The Nipton Lottery
 {
     "name": "The Nipton Lottery",
@@ -5538,6 +6679,89 @@
     ]
 }
 
+// Vault 12: The Necropolis
+{
+    "name": "Vault 12: The Necropolis",
+    "manaCost": "{4}{B}{B}",
+    "typeLine": "Enchantment — Saga",
+    "oracleText": "(As this Saga enters and after your draw step, add a lore counter. Sacrifice after III.)\nI — Each player gets three rad counters.\nII — Create X 2/2 black Zombie Mutant creature tokens, where X is the total number of rad counters among players.\nIII — Put two +1/+1 counters on each creature you control that's a Zombie or Mutant.",
+    "script": {
+        "sagaChapters": [
+            {
+                "chapter": 1,
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "Each"
+                    },
+                    "body": {
+                        "type": "AddCounters",
+                        "counterType": "RAD",
+                        "count": 3,
+                        "target": "Controller"
+                    }
+                }
+            },
+            {
+                "chapter": 2,
+                "effect": {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "PlayerCounterCount",
+                        "counterType": "RAD",
+                        "player": "Each"
+                    },
+                    "power": 2,
+                    "toughness": 2,
+                    "colors": [
+                        "BLACK"
+                    ],
+                    "creatureTypes": [
+                        "Zombie",
+                        "Mutant"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/b/a/ba45bc9c-8257-43f8-9ba1-116b9fea90f4.jpg?1783912046"
+                }
+            },
+            {
+                "chapter": 3,
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature Zombie|Mutant ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 2,
+                        "target": "IterationEntity"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "51",
+        "rarity": "RARE",
+        "artist": "Nicholas Gregory",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/4/144cd9eb-9b15-40ce-8a48-919e72dbaa67.jpg?1783912407",
+        "rulings": [
+            {
+                "date": "2024-03-08",
+                "text": "Use the number of rad counters among all players still in the game when Vault 12's second chapter ability resolves to determine the value of X."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "A creature you control that's both a Zombie and a Mutant will get only two +1/+1 counters from Vault 12's last ability."
+            }
+        ]
+    }
+}
+
 // Vault 75: Middle School
 {
     "name": "Vault 75: Middle School",
@@ -5722,6 +6946,72 @@
                 "text": "Some spells and abilities that create Junk tokens may require targets. If each target chosen is illegal as that spell or ability tries to resolve, it won't resolve and none of its effects happen. You won't create any Junk tokens."
             }
         ]
+    }
+}
+
+// Vexing Radgull
+{
+    "name": "Vexing Radgull",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Bird Mutant",
+    "oracleText": "Flying\nWhenever this creature deals combat damage to a player, that player gets two rad counters if they don't have any rad counters. Otherwise, proliferate. (Choose any number of permanents and/or players, then give each another counter of each kind already there.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Vexing Radgull:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "PlayerCounterCount",
+                                "counterType": "RAD",
+                                "player": "TriggeringPlayer"
+                            },
+                            "operator": "EQ",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 0
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "AddCounters",
+                        "counterType": "RAD",
+                        "count": 2,
+                        "target": {
+                            "type": "PlayerRef",
+                            "player": "TriggeringPlayer"
+                        }
+                    },
+                    "otherwise": "Proliferate"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "41",
+        "rarity": "UNCOMMON",
+        "artist": "Josu Solano",
+        "flavorText": "Fighting one is a terrible experience.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/1/91580910-fe0e-4cd9-9e73-821af23abfe7.jpg?1783912410"
     }
 }
 
