@@ -79,11 +79,16 @@ data class TokenRiders(
     val attackDefender: com.wingedsheep.sdk.scripting.effects.EnteringAttackDefender =
         com.wingedsheep.sdk.scripting.effects.EnteringAttackDefender.JOIN_SOURCE,
     val exileAtStep: com.wingedsheep.sdk.core.Step? = null,
-    val sacrificeAtStep: com.wingedsheep.sdk.core.Step? = null
+    val sacrificeAtStep: com.wingedsheep.sdk.core.Step? = null,
+    /** "Tokens created with this creature" provenance (Tetravus). */
+    val stampCreator: Boolean = false,
+    /** "Create a token with a +1/+1 counter on it." */
+    val initialCounters: Map<com.wingedsheep.sdk.core.CounterType, Int> = emptyMap()
 ) {
     companion object {
         fun of(effect: CreateTokenEffect) = TokenRiders(
-            effect.tapped, effect.attacking, effect.attackDefender, effect.exileAtStep, effect.sacrificeAtStep
+            effect.tapped, effect.attacking, effect.attackDefender, effect.exileAtStep, effect.sacrificeAtStep,
+            effect.stampCreator, effect.initialCounters
         )
     }
 }

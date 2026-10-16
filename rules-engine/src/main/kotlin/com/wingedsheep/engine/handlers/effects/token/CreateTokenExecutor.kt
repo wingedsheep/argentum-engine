@@ -80,21 +80,30 @@ class CreateTokenExecutor(
 
         var currentState = state
         val allEvents = mutableListOf<com.wingedsheep.engine.core.GameEvent>()
-        val allCreatedTokens = mutableListOf<EntityId>()
         // A player whose tokens already exist is skipped when the effect runs again after a later
-        // player's replacement question (see TokenCreationReplacementHelper.askForSubstitution).
+        // player's replacement question (see TokenCreationReplacementHelper.askForSubstitution);
+        // the tokens they got still count as created by this effect.
         val alreadyCreatedFor = context.pipeline.chosenValues[FAN_OUT_DONE_KEY]
             ?.split(',')?.filter { it.isNotEmpty() }?.toSet().orEmpty()
+        val allCreatedTokens = context.pipeline.chosenValues[FAN_OUT_CREATED_KEY]
+            ?.split(',')?.filter { it.isNotEmpty() }?.map(::EntityId)?.toMutableList() ?: mutableListOf()
         for (tokenControllerId in tokenControllerIds) {
             if (tokenControllerId.value in alreadyCreatedFor) continue
             val done = tokenControllerIds.takeWhile { it != tokenControllerId }.joinToString(",") { it.value }
             val playerContext = if (done.isEmpty()) context else context.copy(
-                pipeline = context.pipeline.copy(chosenValues = context.pipeline.chosenValues + (FAN_OUT_DONE_KEY to done))
+                pipeline = context.pipeline.copy(
+                    chosenValues = context.pipeline.chosenValues + mapOf(
+                        FAN_OUT_DONE_KEY to done,
+                        FAN_OUT_CREATED_KEY to allCreatedTokens.joinToString(",") { it.value }
+                    )
+                )
             )
             val result = createTokensFor(currentState, effect, playerContext, baseCount, tokenControllerId, rootEffect = effect)
-            // An error, or a CR 508.4 defender question raised before any token exists
-            // (CONTROLLER_CHOOSES always has the effect's controller as its single token controller).
-            if (result.error != null || result.outcome !is com.wingedsheep.engine.core.Outcome.Done) return result
+            if (result.error != null) return result
+            // A question raised before this player's tokens exist (a CR 508.4 defender, a token
+            // substitution): the earlier players' tokens are already on the battlefield, so their
+            // events go out now; the re-run skips those players.
+            if (result.outcome !is com.wingedsheep.engine.core.Outcome.Done) return result.copy(events = allEvents + result.events)
             currentState = result.state
             allEvents.addAll(result.events)
             allCreatedTokens.addAll(result.updatedCollections[CREATED_TOKENS].orEmpty())
@@ -142,7 +151,9 @@ class CreateTokenExecutor(
             attacking = riders.attacking,
             attackDefender = riders.attackDefender,
             exileAtStep = riders.exileAtStep,
-            sacrificeAtStep = riders.sacrificeAtStep
+            sacrificeAtStep = riders.sacrificeAtStep,
+            stampCreator = riders.stampCreator,
+            initialCounters = riders.initialCounters
         )
         return createTokensFor(
             state, normalized, context, count, tokenControllerId, rootEffect,
@@ -247,7 +258,7 @@ class CreateTokenExecutor(
             effect.attackDefender == com.wingedsheep.sdk.scripting.effects.EnteringAttackDefender.CONTROLLER_CHOOSES
         ) {
             EnteringAttackDefenderChooser.defenders(state, context, tokenControllerId, count)
-                ?: return EnteringAttackDefenderChooser.pause(state, effect, context, tokenControllerId, count, tokenName)
+                ?: return EnteringAttackDefenderChooser.pause(state, rootEffect, context, tokenControllerId, count, tokenName)
         } else null
 
         var newState = state
@@ -601,5 +612,8 @@ class CreateTokenExecutor(
     private companion object {
         /** Chosen-values key listing the players a fanned-out creation already made tokens for. */
         const val FAN_OUT_DONE_KEY = "__tokenFanOutDone"
+
+        /** Chosen-values key listing the tokens those players got, so CREATED_TOKENS still holds them. */
+        const val FAN_OUT_CREATED_KEY = "__tokenFanOutCreated"
     }
 }

@@ -16710,8 +16710,11 @@ The priority groups are (CR 616.1a–f):
   answer (`TokenSubstitutionChoiceContinuation`), so nothing is created before it's answered. The whole
   matching batch is swapped one-for-one; the substitute's own `count` / `controller` are ignored ("that
   many", under the player the replaced tokens were for), while the replaced instruction's riders still
-  apply (the rulings on all three cards): enters tapped / attacking, exile or sacrifice at a step, and
-  CREATED_TOKENS follow-ups point at the substitutes. `tokenFilter` is matched against the would-be token's characteristics before it
+  apply (the rulings on all three cards): enters tapped / attacking (and the CR 508.4 defender choice),
+  exile or sacrifice at a step (a token copy's "your next end step" / "unless it's your Ring-bearer"
+  too), entry counters, creator provenance, and CREATED_TOKENS follow-ups point at the substitutes. Token
+  paths that read no token replacement at all — copies of the source / a chosen permanent / the equipped
+  creature, Role tokens, `TokenFromDefinition` mints — don't read this one either. `tokenFilter` is matched against the would-be token's characteristics before it
   exists (`TokenCreationReplacementHelper.findTokenSubstitution` probes a scratch entity), so it sees an
   artifact creature token's type line, a Treasure's, or a token copy's copiable values *plus* its copy
   exceptions (Molten Duplication's "except it's an artifact"). Read by the three token executors that read

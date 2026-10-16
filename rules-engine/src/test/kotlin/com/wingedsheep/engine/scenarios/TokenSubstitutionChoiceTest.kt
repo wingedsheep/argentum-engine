@@ -1,6 +1,13 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.ChooseOptionDecision
+import com.wingedsheep.engine.core.ChooseTargetsDecision
+import com.wingedsheep.engine.state.components.battlefield.CountersComponent
+import com.wingedsheep.engine.state.components.combat.AttackingComponent
+import com.wingedsheep.sdk.core.CounterType
+import com.wingedsheep.sdk.dsl.Triggers
+import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.effects.EnteringAttackDefender
 import com.wingedsheep.engine.core.OptionChosenResponse
 import com.wingedsheep.engine.core.engineSerializersModule
 import com.wingedsheep.engine.state.GameState
@@ -40,7 +47,10 @@ import io.kotest.matchers.types.shouldBeInstanceOf
  * - The substitutes keep the creating effect's riders (tapped) — the card's ruling.
  * - A batch creating several kinds of token at once is one event: one question, one answer.
  * - "Each player creates" fans out per player; only the replacement controller's tokens are asked
- *   about, and the players whose tokens already exist aren't given more on the re-run.
+ *   about, and the players whose tokens already exist aren't given more on the re-run (and their
+ *   tokens' enter events still go out).
+ * - A CR 508.4 defender question for attacking substitutes re-runs the whole event, so the
+ *   doubler and the substitution apply once.
  * - The question survives a paused game being serialized.
  */
 class TokenSubstitutionChoiceTest : FunSpec({
@@ -78,11 +88,41 @@ class TokenSubstitutionChoiceTest : FunSpec({
         soldier.copy(controller = EffectTarget.PlayerRef(Player.Each))
     )
 
+    val warden = card("Test Arrival Warden") {
+        typeLine = "Enchantment"
+        triggeredAbility {
+            trigger = Triggers.another(GameObjectFilter.Creature).enters()
+            effect = Effects.GainLife(1)
+        }
+    }
+    val captain = card("Test Choosing Captain") {
+        manaCost = "{2}{R}"
+        typeLine = "Creature — Human Soldier"
+        power = 2
+        toughness = 2
+        triggeredAbility {
+            trigger = Triggers.self.attacks()
+            effect = Effects.CreateToken(
+                power = 1, toughness = 1, colors = setOf(Color.RED), creatureTypes = setOf("Soldier"),
+                tapped = true, attacking = true, attackDefender = EnteringAttackDefender.CONTROLLER_CHOOSES,
+            )
+        }
+    }
+    val walker = card("Test Defending Walker") {
+        manaCost = "{3}"
+        typeLine = "Legendary Planeswalker — Test"
+        startingLoyalty = 3
+        oracleText = ""
+    }
+
     fun driver(vararg permanents: String): GameTestDriver = GameTestDriver().also { d ->
         d.registerCards(
-            TestCards.all + listOf(catOrDog, doubler, twoSoldiers, tappedSoldier, treasure, treasureAndSoldier, eachPlayerSoldier, PredefinedTokens.Treasure)
+            TestCards.all + listOf(
+                catOrDog, doubler, twoSoldiers, tappedSoldier, treasure, treasureAndSoldier, eachPlayerSoldier,
+                warden, captain, walker, PredefinedTokens.Treasure
+            )
         )
-        d.initMirrorMatch(Deck.of("Plains" to 40))
+        d.initMirrorMatch(Deck.of("Plains" to 40), skipMulligans = true, startingPlayer = 0)
         permanents.forEach { d.putPermanentOnBattlefield(d.player1, it) }
         d.passPriorityUntil(Step.PRECOMBAT_MAIN)
     }
@@ -202,6 +242,49 @@ class TokenSubstitutionChoiceTest : FunSpec({
         d.pendingDecision.shouldBeNull()
         d.state.tokenTypes(d.player1) shouldBe listOf("Soldier")
         d.state.tokenTypes(d.player2) shouldBe listOf("Cat")
+    }
+
+    test("the tokens made before another player's question still announce they entered") {
+        val d = driver(warden.name)
+        d.putPermanentOnBattlefield(d.player2, catOrDog.name)
+        d.castAndResolve(eachPlayerSoldier.name)
+        d.choose(0)
+        var guard = 0
+        while (d.state.stack.isNotEmpty() && d.pendingDecision == null && guard++ < 20) {
+            d.passPriority(d.state.priorityPlayerId!!).error.shouldBeNull()
+        }
+        withClue("the warden sees player 1's Soldier (made before the question) and player 2's Cat") {
+            d.getLifeTotal(d.player1) shouldBe 22
+        }
+    }
+
+    test("a defender question for attacking substitutes re-runs the event once: doubled once, asked once") {
+        val d = driver(doubler.name, catOrDog.name)
+        val walkerId = d.putPermanentOnBattlefield(d.player2, walker.name).also { pw ->
+            d.replaceState(d.state.updateEntity(pw) { it.with(CountersComponent().withAdded(CounterType.LOYALTY, 3)) })
+        }
+        val attacker = d.putCreatureOnBattlefield(d.player1, captain.name).also { d.removeSummoningSickness(it) }
+        d.passPriorityUntil(Step.DECLARE_ATTACKERS)
+        d.declareAttackers(d.player1, listOf(attacker), d.player2).error.shouldBeNull()
+        var guard = 0
+        while (d.pendingDecision == null && d.state.stack.isNotEmpty() && guard++ < 20) {
+            d.passPriority(d.state.priorityPlayerId!!).error.shouldBeNull()
+        }
+        d.pendingDecision.shouldBeInstanceOf<ChooseOptionDecision>().options.first() shouldBe
+            "Create 2 2/2 green Cat creature tokens with haste"
+        d.choose(0)
+        val defenders = listOf(d.player2, walkerId)
+        repeat(2) { i ->
+            val question = d.pendingDecision.shouldBeInstanceOf<ChooseTargetsDecision>()
+            d.submitTargetSelection(question.playerId, listOf(defenders[i])).error.shouldBeNull()
+        }
+        withClue("no second substitution question and no further defender questions") {
+            d.pendingDecision.shouldBeNull()
+        }
+        val cats = d.state.tokensOf(d.player1)
+        d.state.tokenTypes(d.player1) shouldBe listOf("Cat", "Cat")
+        cats.map { d.state.getEntity(it)!!.get<AttackingComponent>()?.defenderId } shouldBe defenders
+        cats.all { d.state.getEntity(it)!!.has<TappedComponent>() } shouldBe true
     }
 
     test("the paused question round-trips through serialization") {

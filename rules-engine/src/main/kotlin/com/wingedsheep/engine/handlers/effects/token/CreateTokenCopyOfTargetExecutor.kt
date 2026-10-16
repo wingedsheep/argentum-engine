@@ -121,16 +121,20 @@ class CreateTokenCopyOfTargetExecutor(
         )?.let { lookup ->
             val tokenCount = com.wingedsheep.engine.core.GameLimits.cappedTokenCount(count, "target-copy tokens")
             return when (lookup) {
-                is TokenSubstitution -> substituteExecutor.createSubstituteTokens(
-                    state, lookup, context, tokenCount, controllerId,
-                    riders = TokenRiders(
-                        tapped = effect.tapped,
-                        attacking = effect.attacking,
-                        exileAtStep = effect.exileAtStep,
-                        sacrificeAtStep = effect.sacrificeAtStep
-                    ),
-                    rootEffect = effect
-                )
+                is TokenSubstitution -> {
+                    // The end-step riders go on through this executor's own path, which also
+                    // carries "your next end step" and "unless it's your Ring-bearer".
+                    val created = substituteExecutor.createSubstituteTokens(
+                        state, lookup, context, tokenCount, controllerId,
+                        riders = TokenRiders(tapped = effect.tapped, attacking = effect.attacking),
+                        rootEffect = effect
+                    )
+                    if (created.outcome !is com.wingedsheep.engine.core.Outcome.Done) created
+                    else created.copy(state = installEndStepRiders(
+                        created.state, state, effect, context, controllerId,
+                        created.updatedCollections[com.wingedsheep.sdk.scripting.effects.CREATED_TOKENS].orEmpty()
+                    ))
+                }
                 is TokenSubstitutionChoice ->
                     TokenCreationReplacementHelper.askForSubstitution(state, lookup, effect, context, tokenCount)
             }
@@ -549,13 +553,42 @@ class CreateTokenCopyOfTargetExecutor(
             createdTokens.add(tokenId)
         }
 
+        newState = installEndStepRiders(newState, state, effect, context, controllerId, createdTokens)
+
+        // Publish the created token ids into the shared CREATED_TOKENS pipeline collection so a
+        // following composite step can reference them — e.g. "Create a token that's a copy of
+        // target permanent ... Put six +1/+1 counters on it" composes this with
+        // AddCountersToCollection(CREATED_TOKENS, ...). Mirrors CreateTokenExecutor /
+        // CreateTokenCopyOfSourceExecutor, which expose their tokens the same way.
+        return EffectResult(
+            state = newState,
+            events = events,
+            updatedCollections = mapOf(com.wingedsheep.sdk.scripting.effects.CREATED_TOKENS to createdTokens.toList())
+        )
+    }
+
+    /**
+     * The copy's "sacrifice / exile it at the beginning of the next end step" riders: a delayed
+     * trigger per token in [createdTokens]. Also installed on the substitutes when a
+     * `ReplaceTokenCreationWithToken` replaced the copies — the riders still apply to them.
+     * [sourceState] is the state the effect started resolving in (for the source's name).
+     */
+    private fun installEndStepRiders(
+        state: GameState,
+        sourceState: GameState,
+        effect: CreateTokenCopyOfTargetEffect,
+        context: EffectContext,
+        controllerId: EntityId,
+        createdTokens: List<EntityId>
+    ): GameState {
+        var newState = state
         // If sacrificeAtStep is set, create a delayed trigger to sacrifice each created token
         // copy at that step (e.g. Mardu Siegebreaker: "at the beginning of your next end step,
         // sacrifice those tokens"). Mirrors CreateTokenExecutor's sacrificeAtStep handling.
         val sacrificeStep = effect.sacrificeAtStep
         if (sacrificeStep != null && createdTokens.isNotEmpty()) {
             val sourceId = context.sourceId ?: controllerId
-            val sourceName = state.getEntity(sourceId)?.get<CardComponent>()?.name ?: "Unknown"
+            val sourceName = sourceState.getEntity(sourceId)?.get<CardComponent>()?.name ?: "Unknown"
             for (tokenId in createdTokens) {
                 val (delayedTriggerId, stateWithRoutingId) = newState.newRoutingId()
                 newState = stateWithRoutingId
@@ -585,7 +618,7 @@ class CreateTokenCopyOfTargetExecutor(
         val exileStep = effect.exileAtStep
         if (exileStep != null && createdTokens.isNotEmpty()) {
             val sourceId = context.sourceId ?: controllerId
-            val sourceName = state.getEntity(sourceId)?.get<CardComponent>()?.name ?: "Unknown"
+            val sourceName = sourceState.getEntity(sourceId)?.get<CardComponent>()?.name ?: "Unknown"
             for (tokenId in createdTokens) {
                 val exileEffect = MoveToZoneEffect(EffectTarget.SpecificEntity(tokenId), Zone.EXILE)
                 val delayedEffect = if (effect.exileUnlessSourceIsRingBearer) {
@@ -612,16 +645,7 @@ class CreateTokenCopyOfTargetExecutor(
             }
         }
 
-        // Publish the created token ids into the shared CREATED_TOKENS pipeline collection so a
-        // following composite step can reference them — e.g. "Create a token that's a copy of
-        // target permanent ... Put six +1/+1 counters on it" composes this with
-        // AddCountersToCollection(CREATED_TOKENS, ...). Mirrors CreateTokenExecutor /
-        // CreateTokenCopyOfSourceExecutor, which expose their tokens the same way.
-        return EffectResult(
-            state = newState,
-            events = events,
-            updatedCollections = mapOf(com.wingedsheep.sdk.scripting.effects.CREATED_TOKENS to createdTokens.toList())
-        )
+        return newState
     }
 
     /**
