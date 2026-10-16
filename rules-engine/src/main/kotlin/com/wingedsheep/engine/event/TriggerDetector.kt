@@ -277,8 +277,8 @@ class TriggerDetector(
             // DrawEvent firing counts are derived from CardsDrawnThisTurnComponent, which `state`
             // holds at its POST-batch value. When one execution emits several CardsDrawnEvents for
             // the same player, each event needs to know how many of those draws happened after it
-            // so the matcher can reconstruct the count as of that event (exceptFirstInDrawStep
-            // exemption boundary).
+            // so the matcher can reconstruct the count as of that event (firstInDrawStep
+            // boundary).
             val samePlayerDrawsLaterInBatch = if (event is CardsDrawnEvent) {
                 events.subList(eventIndex + 1, events.size)
                     .filterIsInstance<CardsDrawnEvent>()
@@ -1784,8 +1784,9 @@ class TriggerDetector(
                     // For "whenever [a player] draws a card" (DrawEvent), drawing N cards via a
                     // single effect creates N separate trigger firings — one per card drawn
                     // (CR 121.2 + 603.2). The engine emits a single aggregate CardsDrawnEvent, so
-                    // expand it here. `exceptFirstInDrawStep` (Orcish Bowmasters) subtracts the one
-                    // card exempted by CR 504.1 — the matcher computes the final firing count.
+                    // expand it here. `firstInDrawStep` singles out the first card of the drawer's
+                    // draw step (CR 504.1) to skip (Orcish Bowmasters) or keep alone (Wiretapping)
+                    // — the matcher computes the final firing count.
                     else if (ability.trigger is EventPattern.DrawEvent && event is CardsDrawnEvent) {
                         val firings = matcher.drawTriggerFiringCount(
                             ability.trigger as EventPattern.DrawEvent, event, controllerId, state,
