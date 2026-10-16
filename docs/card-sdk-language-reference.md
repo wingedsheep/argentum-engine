@@ -12371,7 +12371,7 @@ composite abilities).
   - **Fierce Retribution** ({1}{W}, Cleave {5}{W}) — target only: base `TargetObject(filter = TargetFilter.AttackingCreature)`,
     `cleaveTarget` `TargetObject(filter = TargetFilter.Creature)`; both `Effects.Destroy` the chosen target.
   - **Wash Away** ({U}, Cleave {1}{U}{U}) — target only: base
-    `TargetObject(filter = TargetFilter.SpellOnStack, count = TargetFilter.SpellOnStack.notCastFromZone(Zone.HAND))` (the bracketed "that wasn't
+    `TargetObject(filter = TargetFilter.SpellOnStack.notCast(Zone.HAND))` (the bracketed "that wasn't
     cast from its owner's hand"), `cleaveTarget` `Targets.Spell`; both `Effects.CounterSpell()`.
   - **Path of Peril** ({1}{B}{B}, Cleave {4}{W}{B}) — effect only (mass-destroy has no target):
     base `Effects.DestroyAll(Creature.manaValueAtMost(2))`, `cleaveEffect` `Effects.DestroyAll(Creature)`.
