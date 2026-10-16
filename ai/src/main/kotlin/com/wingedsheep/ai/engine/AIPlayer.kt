@@ -352,6 +352,7 @@ class AIPlayer(
                     landDropUnlocksSpells = profile.landDropUnlocksSpells,
                     activatedPumpsNeedAPlannedAttack = profile.activatedPumpsNeedAPlannedAttack,
                     enablersFirst = profile.enablersFirst,
+                    fetchedLandDropFollowUp = profile.fetchedLandDropFollowUp,
                     precombatPumpsForThePlan = profile.precombatPumpsForThePlan,
                     holdInstantSpeedDeploys = profile.holdInstantSpeedDeploys,
                     taxCountersReadTheirMana = profile.taxCountersReadTheirMana,

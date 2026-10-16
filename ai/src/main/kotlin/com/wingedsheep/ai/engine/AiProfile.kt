@@ -950,6 +950,24 @@ data class AiProfile(
      */
     val enablersFirst: Boolean = false,
     /**
+     * Credit a line that **puts a land in hand with the land drop unused** with playing that land
+     * the same turn — the same follow-up credit [landDropUnlocksSpells] gives a land drop, chained
+     * one step further back.
+     *
+     * 2026-10-16 AI self-play (2p game 03, turns 7 and 11): stuck on three lands with no land in
+     * hand and a hand of four-to-six drops, the AI passed both main phases with Plainscycling
+     * Noble Templar on offer. The search is one action deep, so the cycle was scored as "a Plains
+     * in hand, a Templar gone" — and a land in hand is priced well below a business card — never as
+     * the fourth land on the battlefield it becomes a moment later.
+     *
+     * With this on, `Strategist` looks at every non-land leaf in our own main phase that comes to
+     * rest quietly (no pending decision, empty stack, same step, our priority) with a land in our
+     * hand that was not there at the root, and simulates playing it. The land play is a follow-up
+     * of that leaf, adjusted as its own decision would be; a leaf that stops on a decision (the
+     * cycle's library search) has it answered with the AI's own choice first.
+     */
+    val fetchedLandDropFollowUp: Boolean = false,
+    /**
      * In our own precombat main, price a **pump that changes who attacks** by the attack it buys.
      *
      * PR #3211's known gap. [HoldPolicy] holds a combat trick out of the main phase and
@@ -2073,6 +2091,7 @@ data class AiProfile(
             defendPlaneswalkers = true,
             holdInstantSpeedDeploys = true,
             enablersFirst = true,
+            fetchedLandDropFollowUp = true,
             precombatPumpsForThePlan = true,
             spendFuelWalkers = true,
             walkersPricedAsEngines = true,

@@ -33,6 +33,7 @@ import com.wingedsheep.engine.core.DeclareAttackers
 import com.wingedsheep.engine.core.DeclareBlockers
 import com.wingedsheep.engine.core.GameAction
 import com.wingedsheep.engine.core.PaymentStrategy
+import com.wingedsheep.engine.core.PassPriority
 import com.wingedsheep.engine.core.PlayLand
 import com.wingedsheep.engine.handlers.costs.GraveyardTotalExileResolver
 import com.wingedsheep.engine.legalactions.LegalAction
@@ -201,6 +202,11 @@ class Strategist(
      * [enablerFollowUps].
      */
     private val enablersFirst: Boolean = false,
+    /**
+     * [AiProfile.fetchedLandDropFollowUp] — a line that puts a land in hand with the land drop
+     * unused scores as at least playing that land. See [fetchedLandFollowUps].
+     */
+    private val fetchedLandDropFollowUp: Boolean = false,
     /**
      * [AiProfile.precombatPumpsForThePlan] — in our precombat main, a pump that changes who the
      * attack plan sends is priced by the attack it buys. See [pumpThatBuysTheAttack].
@@ -424,6 +430,10 @@ class Strategist(
             if (enablersFirst && !forcedPlay) {
                 addAll(enablerFollowUps(evaluationState, legalActions, leaves, leafStates, playerId, budget))
             }
+            // ── Pass 1d: the land drop a line puts in hand — see [fetchedLandFollowUps] ──
+            if (fetchedLandDropFollowUp && !forcedPlay) {
+                addAll(fetchedLandFollowUps(evaluationState, leaves, leafStates, playerId, budget))
+            }
         }
 
         // ── Pass 2: score every leaf at once ──
@@ -473,7 +483,11 @@ class Strategist(
             }.maxByOrNull { it.second.score }
             val adjustment = if (unlocked != null && unlocked.second.score > own.score) {
                 val name = resolveCardName(leafStates[i], unlocked.first.action) ?: "a spell"
-                val why = if (leaves[i].action is PlayLand) "land first: unlocks" else "first: discounts"
+                val why = when {
+                    leaves[i].action is PlayLand -> "land first: unlocks"
+                    unlocked.first.action.action is PlayLand -> "then plays"
+                    else -> "first: discounts"
+                }
                 AdjustedScore(
                     unlocked.second.score,
                     listOfNotNull(own.note, "$why $name %.2f".format(unlocked.second.score))
@@ -1289,6 +1303,56 @@ class Strategist(
                 val cardId = (action.action as CastSpell).cardId
                 val sibling = leaves.indices.firstOrNull { j -> (leaves[j].action as? CastSpell)?.cardId == cardId }
                 followUps += LandFollowUp(i, action.copy(action = materialized), simulation.state, sibling)
+            }
+        }
+        return followUps
+    }
+
+    /**
+     * For each non-land leaf, the land drops it puts in our hand — [AiProfile.fetchedLandDropFollowUp].
+     *
+     * The search is one action deep, so a landcycle, a land tutor or a draw that finds a land is
+     * scored as "a land in hand" — and a land in hand is priced well below the business card it
+     * cost — never as the land on the battlefield it becomes a moment later when our land drop is
+     * still unused. The misplay (2026-10-16 AI self-play, 2p game 03, turns 7 and 11): stuck on
+     * three lands with only four-to-six drops in hand, the AI passed both main phases rather than
+     * Plainscycling Noble Templar for the fourth land.
+     *
+     * Only lands that were not in our hand at the root: a land already there is a root candidate of
+     * its own, and crediting it to an unrelated spell would argue for that spell on the land's
+     * merits. The leaf must be quiet — no pending decision (the simulator's decision resolver has
+     * already answered the search with the AI's own pick), empty stack, the same main step, our
+     * priority — so the land play is legal and the next decision is ours. Stops when the budget does.
+     */
+    private fun fetchedLandFollowUps(
+        root: GameState,
+        leaves: List<LegalAction>,
+        leafStates: List<GameState>,
+        playerId: EntityId,
+        budget: DecisionBudget,
+    ): List<LandFollowUp> {
+        if (!root.isActiveTurnFor(playerId) || root.stack.isNotEmpty()) return emptyList()
+        if (root.step != Step.PRECOMBAT_MAIN && root.step != Step.POSTCOMBAT_MAIN) return emptyList()
+        val hand = root.getZone(ZoneKey(playerId, Zone.HAND)).toSet()
+        val followUps = mutableListOf<LandFollowUp>()
+        for (i in leaves.indices) {
+            val action = leaves[i].action
+            if (action is PlayLand || action is PassPriority) continue
+            val after = leafStates[i]
+            if (after.pendingDecision != null || after.stack.isNotEmpty() ||
+                after.step != root.step || after.priorityPlayerId != playerId
+            ) continue
+            val newInHand = after.getZone(ZoneKey(playerId, Zone.HAND)).filterTo(HashSet()) { it !in hand }
+            if (newInHand.isEmpty()) continue
+            val fetched = simulator.getLegalActions(after, playerId).filter {
+                val play = it.action as? PlayLand
+                it.affordable && play != null && play.cardId in newInHand
+            }
+            for (land in fetched) {
+                if (budget.expired()) return followUps
+                val simulation = simulator.simulate(after, land.action)
+                if (simulation is SimulationResult.Illegal || simulation is SimulationResult.StoppedAtLimit) continue
+                followUps += LandFollowUp(i, land, simulation.state)
             }
         }
         return followUps
