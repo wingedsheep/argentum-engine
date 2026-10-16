@@ -164,7 +164,7 @@ internal class PermanentSpellResolver(
                     powerOverride = entersAsCopy.powerOverride,
                     toughnessOverride = entersAsCopy.toughnessOverride,
                     exileCopiedCard = entersAsCopy.exileCopiedCard,
-                    additionalCounters = entersAsCopy.additionalCounters,
+                    entersWithCounters = entersAsCopy.entersWithCounters,
                     duration = entersAsCopy.duration
                 )
                 return state.suspendForDecision(

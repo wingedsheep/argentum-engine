@@ -3,6 +3,7 @@ package com.wingedsheep.mtg.sets.definitions.soi.cards
 import com.wingedsheep.sdk.dsl.DynamicAmounts
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.scripting.CopyEntryCounters
 import com.wingedsheep.sdk.scripting.EntersAsCopy
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 
@@ -20,7 +21,7 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
  *  - "This spell can't be countered" is the `cantBeCountered` card flag (stamped on the spell at
  *    cast time), not a granted static — it protects only this spell.
  *  - The copy is a plain [EntersAsCopy] over creatures on the battlefield, with the "except it
- *    enters with X additional +1/+1 counters" rider carried by `additionalCounters` =
+ *    enters with X additional +1/+1 counters" rider carried by `entersWithCounters` =
  *    [DynamicAmount.XValue]. The rider belongs to the copy effect rather than a separate
  *    enters-with-counters replacement, which is what makes the printed rulings fall out for free:
  *    declining the copy also declines the counters ("It won't have +1/+1 counters placed on it by
@@ -42,7 +43,7 @@ val AlteredEgo = card("Altered Ego") {
         EntersAsCopy(
             optional = true,
             copyFilter = GameObjectFilter.Creature,
-            additionalCounters = DynamicAmounts.xValue(),
+            entersWithCounters = CopyEntryCounters(DynamicAmounts.xValue()),
         )
     )
 

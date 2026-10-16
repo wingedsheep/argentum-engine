@@ -10,8 +10,10 @@ import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.sdk.core.*
 import com.wingedsheep.sdk.dsl.*
 import com.wingedsheep.sdk.model.Deck
+import com.wingedsheep.sdk.scripting.CopyEntryCounters
 import com.wingedsheep.sdk.scripting.EntersAsCopy
 import com.wingedsheep.sdk.scripting.EntersWithCounters
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.*
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import kotlinx.serialization.encodeToString
@@ -24,7 +26,12 @@ import io.kotest.matchers.types.shouldBeInstanceOf
 class EffectCopyEntryTest : FunSpec({
     val copier = card("Entry Copier") {
         manaCost = "{U}"; typeLine = "Creature — Shapeshifter"; power = 1; toughness = 1
-        replacementEffect(EntersAsCopy(tappedIfCopied = true, additionalCounters = DynamicAmount.Fixed(1)))
+        replacementEffect(EntersAsCopy(tappedIfCopied = true, entersWithCounters = CopyEntryCounters(DynamicAmount.Fixed(1))))
+    }
+    val shieldCopier = card("Entry Shield Copier") {
+        manaCost = "{U}"; typeLine = "Creature — Shapeshifter"; power = 0; toughness = 0
+        replacementEffect(EntersAsCopy(entersWithCounters = CopyEntryCounters(
+            DynamicAmount.Fixed(1), CounterType.SHIELD, ifCopiedMatches = GameObjectFilter.Any.youControl())))
     }
     val subject = card("Entry Subject") {
         manaCost = "{G}"; typeLine = "Creature — Bear"; power = 2; toughness = 2
@@ -47,7 +54,7 @@ class EffectCopyEntryTest : FunSpec({
         }
     }
     fun driver() = GameTestDriver().also {
-        it.registerCards(TestCards.all + listOf(copier, subject, returnOne, returnAll))
+        it.registerCards(TestCards.all + listOf(copier, shieldCopier, subject, returnOne, returnAll))
         it.initMirrorMatch(Deck.of("Island" to 40), skipMulligans = true, startingPlayer = 0)
         it.passPriorityUntil(Step.PRECOMBAT_MAIN)
     }
@@ -73,6 +80,24 @@ class EffectCopyEntryTest : FunSpec({
         d.getLifeTotal(d.player1) shouldBe 21
         d.bothPass()
         d.getLifeTotal(d.player1) shouldBe 24
+    }
+    test("conditional copy counters follow the copied object's controller on effect entry") {
+        val d = driver()
+        val mine = d.putPermanentOnBattlefield(d.player1, subject.name)
+        val theirs = d.putPermanentOnBattlefield(d.player2, "Grizzly Bears")
+        val first = d.putCardInGraveyard(d.player1, shieldCopier.name)
+        d.castReturn(returnOne.name, first)
+        d.submitCardSelection(d.player1, listOf(mine)).error shouldBe null
+        // Copying a creature you control: the shield counter joins the copied +1/+1 entry counters.
+        val firstCounters = d.state.getEntity(first)!!.get<CountersComponent>()!!
+        firstCounters.getCount(CounterType.SHIELD) shouldBe 1
+        firstCounters.getCount(CounterType.PLUS_ONE_PLUS_ONE) shouldBe 2
+        d.bothPass()
+        val second = d.putCardInGraveyard(d.player1, shieldCopier.name)
+        d.castReturn(returnOne.name, second)
+        d.submitCardSelection(d.player1, listOf(theirs)).error shouldBe null
+        d.state.getEntity(second)!!.get<CardComponent>()!!.name shouldBe "Grizzly Bears"
+        (d.state.getEntity(second)!!.get<CountersComponent>()?.getCount(CounterType.SHIELD) ?: 0) shouldBe 0
     }
     test("simultaneous entrants cannot copy each other and nothing moves between choices") {
         val d = driver()

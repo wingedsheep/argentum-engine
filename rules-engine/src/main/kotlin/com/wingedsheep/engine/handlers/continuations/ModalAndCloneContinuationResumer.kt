@@ -417,13 +417,15 @@ class ModalAndCloneContinuationResumer(
     }
 
     /**
-     * Apply an `EntersAsCopy.additionalCounters` rider — "except it enters with N additional +1/+1
-     * counters on it" (Altered Ego, Spark Double). Only ever called when a copy was actually made:
+     * Apply an `EntersAsCopy.entersWithCounters` rider — "except it enters with N additional +1/+1
+     * counters on it" (Altered Ego), "… with a shield counter on it if you control that creature"
+     * (Undercover Operative). Only ever called when a copy was actually made:
      * the rider is part of the copy effect, so declining the copy declines the counters (printed
      * ruling). Routes through [EntersWithReplacements.placeEntryCounters] so Hardened Scales-style
      * counter-placement modifiers and the "counter placed this turn" tracker behave exactly as they
      * do for a printed "enters with counters".
      *
+     * @param copiedId the object that was copied, for the rider's `ifCopiedMatches` condition.
      * @param xValue the value chosen for X while casting, for a [DynamicAmount.XValue] amount; null
      *   on the non-spell entry path (a land/token copy has no cast X).
      */
@@ -431,14 +433,16 @@ class ModalAndCloneContinuationResumer(
         state: GameState,
         entityId: EntityId,
         controllerId: EntityId,
-        amount: DynamicAmount,
+        rider: com.wingedsheep.sdk.scripting.CopyEntryCounters,
+        copiedId: EntityId,
         xValue: Int?,
     ): Pair<GameState, List<GameEvent>> {
-        val context = EffectContext(sourceId = entityId, controllerId = controllerId, xValue = xValue)
-        val count = dynamicAmountEvaluator.evaluate(state, amount, context)
+        val count = EntersWithReplacements.copyEntryCounterCount(
+            state, rider, entityId, copiedId, controllerId, xValue, services.predicateEvaluator
+        )
         val entityName = state.getEntity(entityId)?.get<CardComponent>()?.name ?: ""
         return EntersWithReplacements.placeEntryCounters(
-            state, entityId, CounterType.PLUS_ONE_PLUS_ONE, count, controllerId, entityName,
+            state, entityId, rider.counterType, count, controllerId, entityName,
             predicateEvaluator = services.predicateEvaluator
         )
     }
@@ -528,10 +532,10 @@ class ModalAndCloneContinuationResumer(
                 // the copy effect, so it only applies when a copy was actually made. Stamped before
                 // the permanent enters so it is genuinely *entering* with them: state-based actions
                 // never see the 0/0, and enters-with-counters triggers read the final total.
-                val extraCounters = continuation.additionalCounters
+                val extraCounters = continuation.entersWithCounters
                 if (extraCounters != null) {
                     val (afterCounters, counterEvents) = applyCopyEntryCounters(
-                        newState, spellId, controllerId, extraCounters, spellComponent.xValue
+                        newState, spellId, controllerId, extraCounters, selectedCreatureId, spellComponent.xValue
                     )
                     newState = afterCounters
                     events.addAll(counterEvents)
@@ -647,10 +651,10 @@ class ModalAndCloneContinuationResumer(
 
         // "except it enters with N additional +1/+1 counters on it" — likewise only when a copy
         // was actually made.
-        val bfExtraCounters = continuation.additionalCounters
-        if (copyApplied && bfExtraCounters != null) {
+        val bfExtraCounters = continuation.entersWithCounters
+        if (copyApplied && bfExtraCounters != null && selectedId != null) {
             val (afterCounters, counterEvents) = applyCopyEntryCounters(
-                newState, entityId, continuation.controllerId, bfExtraCounters, xValue = null
+                newState, entityId, continuation.controllerId, bfExtraCounters, selectedId, xValue = null
             )
             newState = afterCounters
             outEvents.addAll(counterEvents)

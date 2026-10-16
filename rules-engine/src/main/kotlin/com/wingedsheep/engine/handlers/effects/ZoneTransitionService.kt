@@ -966,15 +966,16 @@ class ZoneTransitionService(
                     if (matches) entryCounterTotals!![kind] = (entryCounterTotals[kind] ?: 0) + 1
                 }
                 val entryCopy = options.entryCopy?.takeIf { it.copiedCard != null && !options.faceDown }
-                entryCopy?.replacement?.additionalCounters?.let { amount ->
-                    val count = predicateEvaluator.amounts.evaluate(newState, amount,
-                        com.wingedsheep.engine.handlers.EffectContext(entityId, destControllerId))
+                entryCopy?.replacement?.entersWithCounters?.let { rider ->
+                    val count = EntersWithReplacements.copyEntryCounterCount(
+                        newState, rider, entityId, entryCopy.copiedEntity, destControllerId, xValue = null,
+                        predicateEvaluator = predicateEvaluator)
                     if (entryCounterTotals != null) {
-                        val kind = com.wingedsheep.sdk.core.CounterType.PLUS_ONE_PLUS_ONE
+                        val kind = rider.counterType
                         entryCounterTotals[kind] = (entryCounterTotals[kind] ?: 0) + count
                     } else {
                         val (afterCounters, counterEvents) = EntersWithReplacements.placeEntryCounters(
-                            newState, entityId, com.wingedsheep.sdk.core.CounterType.PLUS_ONE_PLUS_ONE,
+                            newState, entityId, rider.counterType,
                             count, destControllerId, newState.getEntity(entityId)?.get<CardComponent>()?.name ?: "",
                             predicateEvaluator = predicateEvaluator)
                         newState = afterCounters

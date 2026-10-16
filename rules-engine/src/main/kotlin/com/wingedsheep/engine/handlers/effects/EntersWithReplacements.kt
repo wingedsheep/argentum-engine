@@ -310,7 +310,7 @@ object EntersWithReplacements {
      *
      * Shared by the enters-with replacement branches above and by the copy path
      * ([com.wingedsheep.engine.handlers.continuations.ModalAndCloneContinuationResumer]), where
-     * `EntersAsCopy.additionalCounters` carries the "except it enters with N additional +1/+1
+     * `EntersAsCopy.entersWithCounters` carries the "except it enters with N additional +1/+1
      * counters on it" rider — the copy replaces the permanent's own text, so those counters can't
      * come from a self-targeted [EntersWithCounters]. A non-positive [count] is a no-op.
      */
@@ -349,6 +349,31 @@ object EntersWithReplacements {
                 placedBy = controllerId
             )
         )
+    }
+
+    /**
+     * How many counters an `EntersAsCopy.entersWithCounters` rider puts on [entityId], which entered
+     * as a copy of [copiedId]: zero when the rider's `ifCopiedMatches` filter doesn't match the
+     * copied object (read against [controllerId] — "if you control that creature"), else its count.
+     * Shared by the cast, direct-entry and effect-entry copy paths.
+     */
+    fun copyEntryCounterCount(
+        state: GameState,
+        rider: com.wingedsheep.sdk.scripting.CopyEntryCounters,
+        entityId: EntityId,
+        copiedId: EntityId?,
+        controllerId: EntityId,
+        xValue: Int?,
+        predicateEvaluator: PredicateEvaluator,
+    ): Int {
+        rider.ifCopiedMatches?.let { filter ->
+            if (copiedId == null) return 0
+            val context = com.wingedsheep.engine.handlers.PredicateContext(controllerId = controllerId, sourceId = entityId)
+            if (!predicateEvaluator.matches(state, state.projectedState, copiedId, filter, context)) return 0
+        }
+        val context = com.wingedsheep.engine.handlers.EffectContext(
+            sourceId = entityId, controllerId = controllerId, xValue = xValue)
+        return predicateEvaluator.amounts.evaluate(state, rider.count, context)
     }
 
     /** The current entrant's own prospective statics plus only pre-event battlefield sources. */

@@ -26,7 +26,7 @@ import io.kotest.matchers.types.shouldBeInstanceOf
  *   You may have this creature enter as a copy of any creature on the battlefield, except it
  *   enters with X additional +1/+1 counters on it.
  *
- * These cover the `EntersAsCopy.additionalCounters` rider specifically — that the counters ride on
+ * These cover the `EntersAsCopy.entersWithCounters` rider specifically — that the counters ride on
  * the *copy* effect rather than on a separate enters-with-counters replacement. The three printed
  * rulings that distinguishes: X counters land on top of the copied base P/T, X = 0 is a plain copy,
  * and declining the copy also declines the counters.

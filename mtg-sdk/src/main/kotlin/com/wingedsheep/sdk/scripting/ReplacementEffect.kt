@@ -1951,16 +1951,16 @@ data class ReplaceLifePaymentWithLibraryExile(
  *                   copy — the "enter tapped as a copy" rider on the land-copy cycle (Vesuva,
  *                   Thespian's Stage, Echoing Deeps). If the copy is declined (or no candidate
  *                   exists) the permanent enters untapped as its printed self.
- * @param additionalCounters When non-null, the permanent enters with this many **additional +1/+1
- *                   counters** if (and only if) it enters as a copy — the "except it enters with N
- *                   additional +1/+1 counters on it" rider (Altered Ego with
- *                   [com.wingedsheep.sdk.scripting.values.DynamicAmount.XValue], Spark Double with
- *                   `Fixed(1)`). It belongs to the *copy* effect, not to a separate
- *                   [EntersWithCounters]: copying replaces the permanent's own copiable text, so a
- *                   self-targeted enters-with-counters replacement would be gone by the time the
- *                   copy applies. Declining the copy therefore also declines the counters, which is
- *                   the printed ruling ("You can choose not to copy anything. … It won't have +1/+1
- *                   counters placed on it by its ability.").
+ * @param entersWithCounters When non-null, the permanent enters with these counters if (and only if)
+ *                   it enters as a copy — the "except it enters with N additional +1/+1 counters on
+ *                   it" rider (Altered Ego with [com.wingedsheep.sdk.scripting.values.DynamicAmount.XValue])
+ *                   and "except it enters with a shield counter on it if you control that creature"
+ *                   (Undercover Operative). See [CopyEntryCounters]. It belongs to the *copy*
+ *                   effect, not to a separate [EntersWithCounters]: copying replaces the permanent's
+ *                   own copiable text, so a self-targeted enters-with-counters replacement would be
+ *                   gone by the time the copy applies. Declining the copy therefore also declines
+ *                   the counters, which is the printed ruling ("You can choose not to copy anything.
+ *                   … It won't have +1/+1 counters placed on it by its ability.").
  * @param duration How long the copy lasts. [Duration.Permanent] (default) is every Clone;
  *                   [Duration.EndOfTurn] is "you may have it become a copy of any creature on the
  *                   battlefield until end of turn" (Cursed Mirror) — at cleanup the permanent reverts
@@ -1982,7 +1982,7 @@ data class EntersAsCopy(
     val toughnessOverride: Int? = null,
     val exileCopiedCard: Boolean = false,
     val tappedIfCopied: Boolean = false,
-    val additionalCounters: DynamicAmount? = null,
+    val entersWithCounters: CopyEntryCounters? = null,
     val exceptions: com.wingedsheep.sdk.scripting.effects.CopyExceptions =
         com.wingedsheep.sdk.scripting.effects.CopyExceptions.None,
     val duration: Duration = Duration.Permanent,
@@ -2031,9 +2031,7 @@ data class EntersAsCopy(
                 if (additionalKeywords.isNotEmpty()) {
                     add("it has ${additionalKeywords.joinToString(", ") { it.name.lowercase() }}")
                 }
-                if (additionalCounters != null) {
-                    add("it enters with ${additionalCounters.description} additional +1/+1 counters on it")
-                }
+                entersWithCounters?.let { add(it.description) }
             }
             val allExceptions = exceptions + this@EntersAsCopy.exceptions.clauses()
             if (allExceptions.isNotEmpty()) append(", except ${allExceptions.joinToString(" and ")}")
@@ -2047,6 +2045,39 @@ data class EntersAsCopy(
         return if (newAppliesTo !== appliesTo || newExceptions !== exceptions)
             copy(appliesTo = newAppliesTo, exceptions = newExceptions) else this
     }
+}
+
+/**
+ * The counters an [EntersAsCopy] permanent enters with when — and only when — it actually enters as
+ * a copy ("except it enters with …").
+ *
+ * @property count How many counters: `Fixed(1)`, or `DynamicAmount.XValue` for Altered Ego's X.
+ * @property counterType Which counter. Defaults to +1/+1, the "additional +1/+1 counters" rider;
+ *   [CounterType.SHIELD] is Undercover Operative's.
+ * @property ifCopiedMatches When non-null, the counters are placed only if the copied object matches
+ *   this filter as the permanent enters, read against the entrant's controller — "if you control that
+ *   creature" is `GameObjectFilter.Any.youControl()`. A copied object that has left the battlefield
+ *   by then no longer matches a battlefield filter, so no counters.
+ */
+@Serializable
+data class CopyEntryCounters(
+    val count: DynamicAmount,
+    val counterType: CounterType = CounterType.PLUS_ONE_PLUS_ONE,
+    val ifCopiedMatches: GameObjectFilter? = null,
+) {
+    val description: String
+        get() = buildString {
+            val plusOne = counterType == CounterType.PLUS_ONE_PLUS_ONE
+            val countText = count.description
+            if (plusOne) {
+                append("it enters with $countText additional +1/+1 counters on it")
+            } else {
+                val article = if (countText == "1") "a" else countText
+                val plural = if (countText == "1") "" else "s"
+                append("it enters with $article ${counterType.printed} counter$plural on it")
+            }
+            if (ifCopiedMatches != null) append(" if the copied object is ${ifCopiedMatches.description}")
+        }
 }
 
 // =============================================================================

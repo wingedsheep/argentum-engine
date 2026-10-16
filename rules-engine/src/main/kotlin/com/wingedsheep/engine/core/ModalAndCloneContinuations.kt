@@ -261,9 +261,10 @@ data class ModalTargetContinuation(
  * @property toughnessOverride When non-null, overrides the copy's base toughness (Superior Spider-Man: 4)
  * @property exileCopiedCard When true, exile the copied card after copying it (Superior Spider-Man:
  *   "When you do, exile that card"). Used for graveyard copies.
- * @property additionalCounters When non-null, the number of additional +1/+1 counters the copy
- *   enters with (Altered Ego's "except it enters with X additional +1/+1 counters on it"). Applied
- *   only when a copy was actually made — declining the copy declines the counters too.
+ * @property entersWithCounters When non-null, the counters the copy enters with (Altered Ego's
+ *   "except it enters with X additional +1/+1 counters on it", Undercover Operative's conditional
+ *   shield counter). Applied only when a copy was actually made — declining the copy declines the
+ *   counters too.
  */
 /**
  * Resume a resolving mutating creature spell once its controller has chosen over or under
@@ -291,7 +292,7 @@ data class CloneEntersContinuation(
     val powerOverride: Int? = null,
     val toughnessOverride: Int? = null,
     val exileCopiedCard: Boolean = false,
-    val additionalCounters: DynamicAmount? = null,
+    val entersWithCounters: com.wingedsheep.sdk.scripting.CopyEntryCounters? = null,
     /** [com.wingedsheep.sdk.scripting.EntersAsCopy.duration] — `EndOfTurn` tags the copy to revert at cleanup. */
     val duration: com.wingedsheep.sdk.scripting.Duration = com.wingedsheep.sdk.scripting.Duration.Permanent
 ) : AnswerContinuation
@@ -314,8 +315,8 @@ data class CloneEntersContinuation(
  * @property controllerId Its controller (also the copy chooser).
  * @property fromZone The zone the permanent came from, used to synthesize the entry event.
  * @property tappedIfCopied Tap the permanent iff it entered as a copy ("enter tapped as a copy").
- * @property additionalCounters Additional +1/+1 counters the permanent enters with iff it entered
- *   as a copy. See [CloneEntersContinuation.additionalCounters].
+ * @property entersWithCounters Counters the permanent enters with iff it entered as a copy. See
+ *   [CloneEntersContinuation.entersWithCounters].
  */
 @Serializable
 data class CloneEntersOnBattlefieldContinuation(
@@ -332,7 +333,7 @@ data class CloneEntersOnBattlefieldContinuation(
     val toughnessOverride: Int? = null,
     val exileCopiedCard: Boolean = false,
     val tappedIfCopied: Boolean = false,
-    val additionalCounters: DynamicAmount? = null,
+    val entersWithCounters: com.wingedsheep.sdk.scripting.CopyEntryCounters? = null,
     /** See [CloneEntersContinuation.duration]. */
     val duration: com.wingedsheep.sdk.scripting.Duration = com.wingedsheep.sdk.scripting.Duration.Permanent,
     /** Actual entry refs, retained across every as-enters decision. */

@@ -318,7 +318,7 @@ object PermanentEntryReplacements {
             toughnessOverride = effect.toughnessOverride,
             exileCopiedCard = effect.exileCopiedCard,
             tappedIfCopied = effect.tappedIfCopied,
-            additionalCounters = effect.additionalCounters,
+            entersWithCounters = effect.entersWithCounters,
             duration = effect.duration,
             entryOldObject = entryOldObject,
             entryNewObject = entryNewObject,

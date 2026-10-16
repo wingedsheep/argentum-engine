@@ -16631,7 +16631,7 @@ both frozen from the public face-down values; transforming it cannot reveal the 
 adds its upkeep ability to that otherwise anonymous identity. Turning the original face up does
 not update an existing copy.
 
-- `EntersAsCopy(optional, copyFilter, copyFromZone, filterByTotalManaSpent, additionalSubtypes, additionalColors, additionalKeywords, nameOverride, powerOverride, toughnessOverride, exileCopiedCard, tappedIfCopied, additionalCounters, exceptions, duration)` —
+- `EntersAsCopy(optional, copyFilter, copyFromZone, filterByTotalManaSpent, additionalSubtypes, additionalColors, additionalKeywords, nameOverride, powerOverride, toughnessOverride, exileCopiedCard, tappedIfCopied, entersWithCounters, exceptions, duration)` —
   "enter as a copy of …". As the permanent enters, the controller picks an object matching
   `copyFilter` and the permanent enters as a copy (Rule 707 copiable values), with any overrides
   applied. `copyFromZone` selects the candidate pool: `Zone.BATTLEFIELD` (default — Clone, Clever
@@ -16645,9 +16645,14 @@ not update an existing copy.
   value ≤ total mana spent (Mockingbird). `tappedIfCopied` makes the permanent enter **tapped** only
   when it actually enters as a copy — the "enter tapped as a copy" rider on the land-copy cycle
   (Echoing Deeps; Vesuva / Thespian's Stage copying a land on the battlefield); declining the copy
-  enters it untapped as its printed self. `additionalCounters: DynamicAmount?` is the sibling rider
-  "except it enters with N additional +1/+1 counters on it" — `DynamicAmount.XValue` for Altered
-  Ego, `Fixed(1)` for a Spark Double shape. It lives on the copy effect rather than on a separate
+  enters it untapped as its printed self. `entersWithCounters: CopyEntryCounters?` is the sibling
+  rider "except it enters with …": `CopyEntryCounters(count, counterType = PLUS_ONE_PLUS_ONE,
+  ifCopiedMatches = null)`. `CopyEntryCounters(DynamicAmounts.xValue())` is Altered Ego's "X
+  additional +1/+1 counters"; `CopyEntryCounters(Fixed(1), CounterType.SHIELD,
+  ifCopiedMatches = GameObjectFilter.Any.youControl())` is Undercover Operative's "a shield counter
+  on it if you control that creature" — the filter is read against the copied object as the
+  permanent enters, from the entrant's controller's point of view, so copying an opponent's
+  creature (or one that left the battlefield before the entry) places nothing. It lives on the copy effect rather than on a separate
   `EntersWithCounters`, because copying replaces the permanent's own copiable text: a self-targeted
   enters-with-counters replacement would be gone by the time the copy applies. It follows the same
   "only if a copy was actually made" rule as `tappedIfCopied`, which is the printed ruling

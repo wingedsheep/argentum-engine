@@ -188,7 +188,9 @@
         "replacementEffects": [
             {
                 "type": "EntersAsCopy",
-                "additionalCounters": "XValue"
+                "entersWithCounters": {
+                    "count": "XValue"
+                }
             }
         ],
         "cantBeCountered": true
