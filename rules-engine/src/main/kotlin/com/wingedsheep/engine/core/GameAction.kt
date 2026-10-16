@@ -377,6 +377,13 @@ enum class AlternativeCostType {
     SELF_ALTERNATIVE,
     /** A battlefield-granted alternative cost (e.g. Jodah's {W}{U}{B}{R}{G}) — `GrantAlternativeCastingCost`. */
     GRANTED,
+    /**
+     * A card's own priced cast-from-zone permission — `MayCastSelfFromZones.alternativeManaCost`
+     * ("You may cast this card from your graveyard by paying {2}{W} rather than paying its mana
+     * cost", Raffine's Guidance; Squee, Dubious Monarch) — graveyard/exile. Announced so a plain
+     * cast from the same zone still reaches another permission (Muldrotha, Lurrus) at the printed cost.
+     */
+    SELF_ZONE,
 
     /**
      * The **back face** of a modal double-faced card whose back is a permanent

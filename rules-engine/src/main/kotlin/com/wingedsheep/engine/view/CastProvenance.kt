@@ -137,6 +137,7 @@ object CastProvenance {
         AlternativeCostType.MODAL_BACK_FACE -> "back face"
         // Neither of these names a printed keyword the opponent could look up, so they read as the
         // generic fact: this spell was not paid for with its mana cost.
-        AlternativeCostType.SELF_ALTERNATIVE, AlternativeCostType.GRANTED -> "alternative cost"
+        AlternativeCostType.SELF_ALTERNATIVE, AlternativeCostType.GRANTED,
+        AlternativeCostType.SELF_ZONE -> "alternative cost"
     }
 }

@@ -174,9 +174,11 @@ class CastZoneResolver(
                     cardId in state.getZone(ZoneKey(playerId, zone))
                 }
                 inNamedZone && castsUsing(action, ability.castUsing) &&
-                    // A permission priced as an alternative cost can't carry a cast that announces
-                    // another one (CR 118.9a: only one alternative cost per spell).
-                    (ability.alternativeManaCost == null || action?.useAlternativeCost != true) &&
+                    // A permission priced as an alternative cost carries only a cast that announces
+                    // it, so a plain cast from the same zone can still go through another permission
+                    // (Muldrotha) at the printed cost — and never one announcing a different
+                    // alternative cost (only one alternative cost per spell).
+                    (ability.alternativeManaCost == null || announcesSelfZoneCost(action)) &&
                     (ability.condition == null ||
                     conditionEvaluator.evaluate(
                         state,
@@ -185,6 +187,9 @@ class CastZoneResolver(
                     ))
             }
     }
+
+    private fun announcesSelfZoneCost(action: CastSpell?): Boolean =
+        action != null && action.useAlternativeCost && action.altAllows(AlternativeCostType.SELF_ZONE)
 
     /**
      * Whether [action] casts the card using the [keyword] casting ability a

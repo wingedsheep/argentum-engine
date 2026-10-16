@@ -1082,12 +1082,19 @@ class CastFromZoneEnumerator(
                 )
 
                 val sourceZoneName = zone.name
+                // A priced permission is announced as its own alternative cost, so the same card
+                // keeps any plain-cast route another permission (Muldrotha) gives it.
+                val zoneCast = if (zoneCastAbility.alternativeManaCost != null) {
+                    CastSpell(playerId, cardId, useAlternativeCost = true, alternativeCostType = AlternativeCostType.SELF_ZONE)
+                } else {
+                    CastSpell(playerId, cardId)
+                }
                 if (context.cantCastSpell(cardId)) {
                     result.add(
                         LegalAction(
                             actionType = "CastSpell",
                             description = "Cast ${cardComponent.name}",
-                            action = CastSpell(playerId, cardId),
+                            action = zoneCast,
                             affordable = false,
                             manaCostString = (zoneCastAbility.alternativeManaCost ?: cardComponent.manaCost).toString(),
                             sourceZone = sourceZoneName,
@@ -1100,10 +1107,9 @@ class CastFromZoneEnumerator(
                     val castRestrictions = cardDef.script.castRestrictions
                     val meetsRestrictions = context.legality.castRestrictionsMet(state, playerId, castRestrictions)
                     // A permission that names its own price pays it rather than the mana cost.
-                    val effectiveCost = context.costCalculator.calculateEffectiveCost(
-                        state, cardDef, playerId, fromZone = zone,
-                        baseCost = zoneCastAbility.alternativeManaCost ?: cardDef.manaCost
-                    )
+                    val effectiveCost = zoneCastAbility.alternativeManaCost
+                        ?.let { context.costCalculator.calculateEffectiveCostWithAlternativeBase(state, cardDef, it, playerId) }
+                        ?: context.costCalculator.calculateEffectiveCost(state, cardDef, playerId, fromZone = zone)
                     val costString = effectiveCost.toString()
                     val canAfford = context.manaSolver.canPay(state, playerId, effectiveCost, precomputedSources = context.availableManaSources)
 
@@ -1123,7 +1129,7 @@ class CastFromZoneEnumerator(
                                     LegalAction(
                                         actionType = "CastSpell",
                                         description = "Cast ${cardComponent.name}",
-                                        action = CastSpell(playerId, cardId),
+                                        action = zoneCast,
                                         validTargets = firstInfo.validTargets,
                                         requiresTargets = true,
                                         targetCount = firstInfo.maxTargets,
@@ -1146,7 +1152,7 @@ class CastFromZoneEnumerator(
                                 LegalAction(
                                     actionType = "CastSpell",
                                     description = "Cast ${cardComponent.name}",
-                                    action = CastSpell(playerId, cardId),
+                                    action = zoneCast,
                                     manaCostString = costString,
                                     sourceZone = sourceZoneName,
                                     additionalCostInfo = zoneAdditionalCostInfo
@@ -1158,7 +1164,7 @@ class CastFromZoneEnumerator(
                             LegalAction(
                                 actionType = "CastSpell",
                                 description = "Cast ${cardComponent.name}",
-                                action = CastSpell(playerId, cardId),
+                                action = zoneCast,
                                 affordable = false,
                                 manaCostString = costString,
                                 sourceZone = sourceZoneName,

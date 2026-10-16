@@ -1,6 +1,8 @@
 package com.wingedsheep.engine.scenarios
 
+import com.wingedsheep.engine.core.AlternativeCostType
 import com.wingedsheep.engine.core.CastSpell
+import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.support.ScenarioTestBase
@@ -33,6 +35,10 @@ class RaffinesGuidanceScenarioTest : ScenarioTestBase() {
     private fun TestGame.graveyardCast(guidance: EntityId) =
         getLegalActions(1).single { (it.action as? CastSpell)?.cardId == guidance }
 
+    /** The graveyard cast as the engine offers it — announced as the card's own alternative cost. */
+    private fun TestGame.castFromGraveyard(guidance: EntityId, bears: EntityId) =
+        execute((graveyardCast(guidance).action as CastSpell).copy(targets = listOf(ChosenTarget.Permanent(bears))))
+
     private fun TestGame.tappedPlains() =
         state.getBattlefield().count { id ->
             state.getEntity(id)?.let { it.has<TappedComponent>() && it.get<CardComponent>()?.name == "Plains" } == true
@@ -47,8 +53,9 @@ class RaffinesGuidanceScenarioTest : ScenarioTestBase() {
             val offered = game.graveyardCast(guidance)
             offered.manaCostString shouldBe "{2}{W}"
             offered.isAffordable shouldBe true
+            (offered.action as CastSpell).alternativeCostType shouldBe AlternativeCostType.SELF_ZONE
 
-            game.castSpellFromGraveyard(1, "Raffine's Guidance", bears).error shouldBe null
+            game.castFromGraveyard(guidance, bears).error shouldBe null
             game.resolveStack()
 
             game.findPermanent("Raffine's Guidance") shouldNotBe null
@@ -63,6 +70,14 @@ class RaffinesGuidanceScenarioTest : ScenarioTestBase() {
             val guidance = game.findCardsInGraveyard(1, "Raffine's Guidance").single()
 
             game.graveyardCast(guidance).isAffordable shouldBe false
+            game.castFromGraveyard(guidance, bears).error shouldNotBe null
+            game.isInGraveyard(1, "Raffine's Guidance") shouldBe true
+        }
+
+        test("a plain cast from the graveyard isn't authorized — only the {2}{W} alternative cost is") {
+            val game = game(plains = 3)
+            val bears = game.findPermanent("Grizzly Bears")!!
+
             game.castSpellFromGraveyard(1, "Raffine's Guidance", bears).error shouldNotBe null
             game.isInGraveyard(1, "Raffine's Guidance") shouldBe true
         }
@@ -84,7 +99,17 @@ class RaffinesGuidanceScenarioTest : ScenarioTestBase() {
             val guidance = game.findCardsInGraveyard(1, "Raffine's Guidance").single()
 
             game.graveyardCast(guidance).isAffordable shouldBe false
-            game.castSpellFromGraveyard(1, "Raffine's Guidance", bears).error shouldNotBe null
+            game.castFromGraveyard(guidance, bears).error shouldNotBe null
+        }
+
+        test("with the cost increase paid, the graveyard cast taps four lands") {
+            val game = game(plains = 4, extraBattlefield = "Thalia, Guardian of Thraben")
+            val bears = game.findPermanent("Grizzly Bears")!!
+            val guidance = game.findCardsInGraveyard(1, "Raffine's Guidance").single()
+
+            game.graveyardCast(guidance).isAffordable shouldBe true
+            game.castFromGraveyard(guidance, bears).error shouldBe null
+            game.tappedPlains() shouldBe 4
         }
     }
 }

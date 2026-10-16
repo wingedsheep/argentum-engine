@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.scenarios
 
+import com.wingedsheep.engine.core.AlternativeCostType
 import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.Phase
@@ -16,8 +17,9 @@ import io.kotest.matchers.shouldNotBe
  */
 class SqueeDubiousMonarchScenarioTest : ScenarioTestBase() {
 
-    private fun game(mountains: Int, otherCards: Int) = scenario()
+    private fun game(mountains: Int, otherCards: Int, muldrotha: Boolean = false) = scenario()
         .withPlayers()
+        .let { if (muldrotha) it.withCardOnBattlefield(1, "Muldrotha, the Gravetide") else it }
         .withLandsOnBattlefield(1, "Mountain", mountains)
         .withCardInGraveyard(1, "Squee, Dubious Monarch")
         .let { (1..otherCards).fold(it) { b, _ -> b.withCardInGraveyard(1, "Grizzly Bears") } }
@@ -31,7 +33,10 @@ class SqueeDubiousMonarchScenarioTest : ScenarioTestBase() {
         val squee = findCardsInGraveyard(1, "Squee, Dubious Monarch").single()
         val fodder = findCardsInGraveyard(1, "Grizzly Bears").take(4)
         return execute(
-            CastSpell(player1Id, squee, additionalCostPayment = AdditionalCostPayment(exiledCards = fodder))
+            CastSpell(
+                player1Id, squee, useAlternativeCost = true, alternativeCostType = AlternativeCostType.SELF_ZONE,
+                additionalCostPayment = AdditionalCostPayment(exiledCards = fodder)
+            )
         )
     }
 
@@ -43,6 +48,7 @@ class SqueeDubiousMonarchScenarioTest : ScenarioTestBase() {
             val offered = game.getLegalActions(1).single { (it.action as? CastSpell)?.cardId == squee }
             offered.manaCostString shouldBe "{3}{R}"
             offered.isAffordable shouldBe true
+            (offered.action as CastSpell).alternativeCostType shouldBe AlternativeCostType.SELF_ZONE
 
             game.castSquee().error shouldBe null
             game.resolveStack()
@@ -65,6 +71,19 @@ class SqueeDubiousMonarchScenarioTest : ScenarioTestBase() {
 
             game.getLegalActions(1).single { (it.action as? CastSpell)?.cardId == squee }.isAffordable shouldBe false
             game.castSquee().error shouldNotBe null
+        }
+
+        test("another graveyard permission still casts it for its printed {2}{R}, exiling nothing") {
+            val game = game(mountains = 3, otherCards = 0, muldrotha = true)
+            val squee = game.findCardsInGraveyard(1, "Squee, Dubious Monarch").single()
+
+            val offers = game.getLegalActions(1).filter { (it.action as? CastSpell)?.cardId == squee }
+            offers.any { (it.action as CastSpell).alternativeCostType == null && it.isAffordable } shouldBe true
+
+            game.execute(CastSpell(game.player1Id, squee)).error shouldBe null
+            game.resolveStack()
+
+            game.findPermanent("Squee, Dubious Monarch") shouldNotBe null
         }
     }
 }

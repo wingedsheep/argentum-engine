@@ -320,20 +320,13 @@ internal class CastCostTotaller(
             // CR 708.4 — a face-down spell costs {3} (morph / disguise), before modifiers.
             action.castFaceDown -> costCalculator.calculateFaceDownCost(state, action.playerId)
             cardDef != null -> {
-                // A keywordless self-zone permission that names its own price ("You may cast this
-                // card from your graveyard by paying {2}{W} rather than paying its mana cost",
-                // Raffine's Guidance) replaces the mana cost when it is the route this cast goes
-                // through — `CastValidator.castSource` tries it before every other graveyard route.
-                val zoneAlternative = zoneResolver.findMayCastSelfFromZoneAbility(
-                    state, action.playerId, action.cardId, action
-                )?.alternativeManaCost
                 // CR 202.1b/118.6: a card printed with genuinely no mana cost (Ancestral Vision)
                 // represents an unpayable cost and can't be cast this way — the bases above already
                 // cover the alternative costs and free-cast permissions that CAN play it (Suspend
                 // routes through a completely separate free-cast pipeline). `hasNoManaCost` (not
                 // `manaCost` itself) is the DSL-authored signal — a printed {0} stays normally
                 // castable, and test fixtures often build `ManaCost.ZERO` directly to mean "free".
-                if (cardDef.hasNoManaCost && zoneAlternative == null) return null
+                if (cardDef.hasNoManaCost) return null
                 costCalculator.calculateEffectiveCost(
                     state,
                     cardDef,
@@ -343,7 +336,6 @@ internal class CastCostTotaller(
                     // Price the branch the player actually announced — a "costs {2} less to cast if
                     // it's bargained" reduction is gated on the declaration (CR 702.166).
                     declaredCostSlot = action.declaredCostSlot,
-                    baseCost = zoneAlternative ?: cardDef.manaCost,
                 )
             }
             else -> cardComponent.manaCost
@@ -500,6 +492,13 @@ internal class CastCostTotaller(
             } else null
         },
         // A card's own alternative cost (e.g., Zahid's {3}{U} + tap an artifact).
+        // A card's own priced cast-from-zone permission ("You may cast this card from your
+        // graveyard by paying {2}{W} rather than paying its mana cost", Raffine's Guidance).
+        AlternativeCostType.SELF_ZONE to {
+            zoneResolver.findMayCastSelfFromZoneAbility(state, playerId, cardId, action)
+                ?.alternativeManaCost
+                ?.let { priced(it) }
+        },
         AlternativeCostType.SELF_ALTERNATIVE to {
             cardDef.script.selfAlternativeCost?.let { priced(it.manaCost) }
         },

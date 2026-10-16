@@ -818,11 +818,12 @@ data class MayCastSelfFromZones(
         append("You may cast this card from ${zones.joinToString(" or ") { it.displayName }}")
         if (castUsing != null) append(" using its ${castUsing.displayName.lowercase()} ability")
         if (alternativeManaCost != null) {
+            if (condition != null) append(" ${condition.description}")
             append(" by paying $alternativeManaCost")
             if (additionalCost != null) append(" and ${additionalCost.description.lowercase()}")
             append(" rather than paying its mana cost")
         } else if (additionalCost != null) append(" by ${additionalCost.description.lowercase()} in addition to paying its other costs")
-        if (condition != null) append(" ${condition.description}")
+        if (condition != null && alternativeManaCost == null) append(" ${condition.description}")
         append(".")
     }
 

@@ -11172,9 +11172,9 @@ riders, matching how the engine already treats e.g. City of Brass's damage durin
   alternativeManaCost = ManaCost.parse("{2}{W}"))` for "You may cast this card from your graveyard
   by paying {2}{W} rather than paying its mana cost"; a non-mana half goes in `additionalCost` —
   Squee, Dubious Monarch = `alternativeManaCost = ManaCost.parse("{3}{R}"), additionalCost =
-  Costs.additional.ExileOtherCards(4)`. Exclusive with `castUsing`. The cast is priced by
-  `CastCostTotaller`'s ordinary base, since `CastValidator.castSource` tries the self-zone
-  permission before every other graveyard route.
+  Costs.additional.ExileOtherCards(4)`. Exclusive with `castUsing`. The cast is announced as
+  `AlternativeCostType.SELF_ZONE` (the enumerator offers it that way), so a plain cast from the
+  same zone still goes through any other permission (Muldrotha, Lurrus) at the printed cost.
   Wired through `CastZoneResolver.findMayCastSelfFromZoneAbility` (returns the applicable
   ability so callers can read its `additionalCost`), validated/collected in `CastSpellHandler`
   alongside the other additional-cost sources, and surfaced to legal-action enumeration in
