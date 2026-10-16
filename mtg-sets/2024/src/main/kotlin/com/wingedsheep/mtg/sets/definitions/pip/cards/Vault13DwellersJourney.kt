@@ -89,5 +89,16 @@ val Vault13DwellersJourney = card("Vault 13: Dweller's Journey") {
         collectorNumber = "26"
         artist = "Gaboleps"
         imageUri = "https://cards.scryfall.io/normal/front/a/2/a22ad436-215a-4da1-b12e-1faac474f948.jpg?1783912414"
+        ruling(
+            "2024-03-08",
+            "If Vault 13 leaves the battlefield before its first chapter ability resolves, the target " +
+                "permanents won't be exiled at all."
+        )
+        ruling(
+            "2024-03-08",
+            "In the unusual case where one player owns multiple cards exiled with Vault 13 that are being " +
+                "put on the bottom of their library with its third chapter ability, the owner of those cards " +
+                "chooses the order in which they are put on the bottom of their library."
+        )
     }
 }
