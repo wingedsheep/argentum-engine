@@ -3163,6 +3163,64 @@
     ]
 }
 
+// Electrosiphon
+{
+    "name": "Electrosiphon",
+    "manaCost": "{U}{U}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Counter target spell. You get an amount of {E} (energy counters) equal to its mana value.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "StoreNumber",
+                    "name": "electrosiphonManaValue",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "numericProperty": "ManaValue"
+                    }
+                },
+                "Counter",
+                {
+                    "type": "AddDynamicCounters",
+                    "counterType": "ENERGY",
+                    "amount": {
+                        "type": "VariableReference",
+                        "variableName": "electrosiphonManaValue"
+                    },
+                    "target": "Controller"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {},
+                    "zone": "Stack"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "104",
+        "rarity": "RARE",
+        "artist": "Antonio José Manzanedo",
+        "flavorText": "\"I calculate your chance of success to be . . . well, I don't want to be morbid . . .\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/3/8377fce8-edc8-4926-bf75-57162ff6df9f.jpg?1783912388"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
+    ]
+}
+
 // Endurance Bobblehead
 {
     "name": "Endurance Bobblehead",

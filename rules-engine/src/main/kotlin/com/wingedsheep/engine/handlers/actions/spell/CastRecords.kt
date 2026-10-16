@@ -157,7 +157,11 @@ internal class CastRecords(
                     .mapNotNull { name -> CardType.entries.firstOrNull { it.name == name } }
                 if (granted.isEmpty()) printed else printed.copy(cardTypes = printed.cardTypes + granted)
             },
-            manaValue = modalBackFace?.manaCost?.cmc ?: cardComponent.manaValue,
+            // Each {X} counts as the announced X on the stack (CR 202.3e), as SpellCaster stamps
+            // it on the SpellCastEvent; a disturb cast keeps the front's X-free reading.
+            manaValue = (modalBackFace?.manaCost?.cmc ?: cardComponent.manaValue) +
+                if (transformedFace != null && modalBackFace == null) 0
+                else (action.xValue ?: 0) * (modalBackFace?.manaCost ?: cardComponent.manaCost).xCount,
             colors = transformedFace?.colors ?: cardComponent.colors,
             isFaceDown = action.castFaceDown,
             spentManaSubtypes = payment.spentManaProvenance.spentSubtypes,

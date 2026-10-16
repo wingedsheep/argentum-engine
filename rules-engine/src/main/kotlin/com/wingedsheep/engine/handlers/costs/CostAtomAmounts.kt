@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.handlers.costs
 
 import com.wingedsheep.engine.handlers.PredicateEvaluator
+import com.wingedsheep.engine.mechanics.ManaValues
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.LifePaymentPurpose
 import com.wingedsheep.engine.state.components.identity.CardComponent
@@ -150,6 +151,6 @@ object CostAtomAmounts {
             is ChosenTarget.Spell -> target.spellEntityId
             is ChosenTarget.Player -> return 0
         }
-        return state.getEntity(entityId)?.get<CardComponent>()?.manaValue ?: 0
+        return ManaValues.of(state, entityId)
     }
 }

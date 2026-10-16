@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.handlers
 
+import com.wingedsheep.engine.mechanics.ManaValues
 import com.wingedsheep.engine.mechanics.layers.containsKeyword
 import com.wingedsheep.engine.state.components.battlefield.chosenCreatureType
 import com.wingedsheep.engine.state.components.battlefield.chosenCreatureOf
@@ -905,33 +906,33 @@ class PredicateEvaluator(
 
             // Mana value predicates - face-down has CMC 0 (Rule 708.2)
             is CardPredicate.ManaValueEquals -> {
-                val cmc = if (projectedValues?.isFaceDown == true) 0 else card.manaValue
+                val cmc = if (projectedValues?.isFaceDown == true) 0 else ManaValues.of(state, entityId, card)
                 cmc == predicate.value
             }
             is CardPredicate.ManaValueAtMost -> {
-                val cmc = if (projectedValues?.isFaceDown == true) 0 else card.manaValue
+                val cmc = if (projectedValues?.isFaceDown == true) 0 else ManaValues.of(state, entityId, card)
                 cmc <= predicate.max
             }
             is CardPredicate.ManaValueAtLeast -> {
-                val cmc = if (projectedValues?.isFaceDown == true) 0 else card.manaValue
+                val cmc = if (projectedValues?.isFaceDown == true) 0 else ManaValues.of(state, entityId, card)
                 cmc >= predicate.min
             }
             is CardPredicate.ManaValueAtMostEntity -> {
                 val refEntityId = resolveEntity(state, predicate.reference, context, projected) ?: return false
-                val refManaValue = state.getEntity(refEntityId)?.get<CardComponent>()?.manaValue ?: return false
-                val cmc = if (projectedValues?.isFaceDown == true) 0 else card.manaValue
+                val refManaValue = state.getEntity(refEntityId)?.get<CardComponent>()?.let { ManaValues.of(state, refEntityId, it) } ?: return false
+                val cmc = if (projectedValues?.isFaceDown == true) 0 else ManaValues.of(state, entityId, card)
                 cmc <= refManaValue
             }
             is CardPredicate.ManaValueAtMostEntityManaSpent -> {
                 val refEntityId = resolveEntity(state, predicate.reference, context, projected) ?: return false
                 val manaSpent = ManaSpentReader.totalSpent(state, refEntityId)
-                val cmc = if (projectedValues?.isFaceDown == true) 0 else card.manaValue
+                val cmc = if (projectedValues?.isFaceDown == true) 0 else ManaValues.of(state, entityId, card)
                 cmc <= manaSpent
             }
             is CardPredicate.ManaValueAtMostColorsSpent -> {
                 val refEntityId = resolveEntity(state, predicate.reference, context, projected) ?: return false
                 val colorsSpent = ManaSpentReader.distinctColorsSpent(state, refEntityId)
-                val cmc = if (projectedValues?.isFaceDown == true) 0 else card.manaValue
+                val cmc = if (projectedValues?.isFaceDown == true) 0 else ManaValues.of(state, entityId, card)
                 cmc <= colorsSpent
             }
             // Illusionary Mask: the resolving ability's recorded payment, allocated exactly against
@@ -944,12 +945,12 @@ class PredicateEvaluator(
             }
             is CardPredicate.ManaValueAtMostDynamic -> {
                 val cap = evaluateDynamicCap(state, predicate.amount, context) ?: return false
-                val cmc = if (projectedValues?.isFaceDown == true) 0 else card.manaValue
+                val cmc = if (projectedValues?.isFaceDown == true) 0 else ManaValues.of(state, entityId, card)
                 cmc <= cap
             }
             is CardPredicate.ManaValueEqualsDynamic -> {
                 val want = evaluateDynamicCap(state, predicate.amount, context) ?: return false
-                val cmc = if (projectedValues?.isFaceDown == true) 0 else card.manaValue
+                val cmc = if (projectedValues?.isFaceDown == true) 0 else ManaValues.of(state, entityId, card)
                 cmc == want
             }
             is CardPredicate.PowerEqualsDynamic -> {
@@ -968,11 +969,11 @@ class PredicateEvaluator(
                 (projectedValues?.toughness ?: amounts.offBattlefieldStat(state, entityId, isPower = false, projected)) == want
             }
             CardPredicate.ManaValueIsEven -> {
-                val cmc = if (projectedValues?.isFaceDown == true) 0 else card.manaValue
+                val cmc = if (projectedValues?.isFaceDown == true) 0 else ManaValues.of(state, entityId, card)
                 cmc % 2 == 0
             }
             CardPredicate.ManaValueIsOdd -> {
-                val cmc = if (projectedValues?.isFaceDown == true) 0 else card.manaValue
+                val cmc = if (projectedValues?.isFaceDown == true) 0 else ManaValues.of(state, entityId, card)
                 cmc % 2 != 0
             }
             CardPredicate.HasXInManaCost -> {
@@ -1054,7 +1055,7 @@ class PredicateEvaluator(
                         projectedValues?.toughness ?: amounts.offBattlefieldStat(state, entityId, isPower = false, projected) ?: return false
                     }
                     CardNumericProperty.MANA_VALUE ->
-                        if (projectedValues?.isFaceDown == true) 0 else card.manaValue
+                        if (projectedValues?.isFaceDown == true) 0 else ManaValues.of(state, entityId, card)
                     CardNumericProperty.COUNTERS ->
                         container.get<CountersComponent>()?.counters?.values?.sum() ?: 0
                     CardNumericProperty.COLOR_COUNT -> colors.size
@@ -1286,10 +1287,12 @@ class PredicateEvaluator(
                 val referenceId = resolveEntity(state, predicate.entity, context, projected) ?: return false
                 // Mana value is not a projected characteristic — no layer changes it — so both sides
                 // read their card component directly. That is also what lets the reference be a card
-                // outside the battlefield (an Imprint pile's exiled card).
-                val referenceManaValue = state.getEntity(referenceId)?.get<CardComponent>()?.manaValue
+                // outside the battlefield (an Imprint pile's exiled card), and a spell on the stack
+                // counts its chosen X (CR 202.3e).
+                val referenceManaValue = state.getEntity(referenceId)?.get<CardComponent>()
+                    ?.let { ManaValues.of(state, referenceId, it) }
                     ?: return false
-                card.manaValue == referenceManaValue
+                ManaValues.of(state, entityId, card) == referenceManaValue
             }
 
             is CardPredicate.SharesColorWithPermanentYouControl -> {

@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.mechanics.stack
 
+import com.wingedsheep.engine.mechanics.ManaValues
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.state.ComponentContainer
 import com.wingedsheep.engine.state.GameState
@@ -255,7 +256,8 @@ internal object StackPlacement {
                 originalSpellId = sourceSpellId,
                 copyIndex = copyIndex,
                 copyTotal = copyTotal,
-                manaValue = copiedCardComp.manaValue
+                // The copy is on the stack with the original's X (CR 707.10), which counts (CR 202.3e).
+                manaValue = ManaValues.of(newState, copyId, copiedCardComp)
             )
         )
 

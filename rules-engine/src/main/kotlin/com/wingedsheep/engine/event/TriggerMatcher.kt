@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.event
 
+import com.wingedsheep.engine.mechanics.ManaValues
 import com.wingedsheep.engine.mechanics.layers.containsKeyword
 import com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComponent
 import com.wingedsheep.engine.state.components.battlefield.AttachmentsComponent
@@ -1628,11 +1629,11 @@ class TriggerMatcher(
             is com.wingedsheep.sdk.scripting.predicates.CardPredicate.NotSubtype ->
                 !cardComponent.typeLine.hasSubtype(predicate.subtype)
             is com.wingedsheep.sdk.scripting.predicates.CardPredicate.ManaValueAtLeast -> {
-                val cmc = if (isFaceDown) 0 else cardComponent.manaValue
+                val cmc = if (isFaceDown) 0 else ManaValues.of(projected.getBaseState(), entityId, cardComponent)
                 cmc >= predicate.min
             }
             is com.wingedsheep.sdk.scripting.predicates.CardPredicate.ManaValueAtMost -> {
-                val cmc = if (isFaceDown) 0 else cardComponent.manaValue
+                val cmc = if (isFaceDown) 0 else ManaValues.of(projected.getBaseState(), entityId, cardComponent)
                 cmc <= predicate.max
             }
             // Entity-relative — TriggerMatcher has no entity context; predicate doesn't apply here.
@@ -1644,15 +1645,15 @@ class TriggerMatcher(
             is com.wingedsheep.sdk.scripting.predicates.CardPredicate.CompareNumericProperty -> false
             is com.wingedsheep.sdk.scripting.predicates.CardPredicate.SharesColorWithPermanentYouControl -> false
             is com.wingedsheep.sdk.scripting.predicates.CardPredicate.ManaValueEquals -> {
-                val cmc = if (isFaceDown) 0 else cardComponent.manaValue
+                val cmc = if (isFaceDown) 0 else ManaValues.of(projected.getBaseState(), entityId, cardComponent)
                 cmc == predicate.value
             }
             com.wingedsheep.sdk.scripting.predicates.CardPredicate.ManaValueIsEven -> {
-                val cmc = if (isFaceDown) 0 else cardComponent.manaValue
+                val cmc = if (isFaceDown) 0 else ManaValues.of(projected.getBaseState(), entityId, cardComponent)
                 cmc % 2 == 0
             }
             com.wingedsheep.sdk.scripting.predicates.CardPredicate.ManaValueIsOdd -> {
-                val cmc = if (isFaceDown) 0 else cardComponent.manaValue
+                val cmc = if (isFaceDown) 0 else ManaValues.of(projected.getBaseState(), entityId, cardComponent)
                 cmc % 2 != 0
             }
             com.wingedsheep.sdk.scripting.predicates.CardPredicate.HasXInManaCost ->

@@ -6,6 +6,7 @@ import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils
 import com.wingedsheep.engine.handlers.effects.lkiPolicyFor
 import com.wingedsheep.engine.handlers.effects.lkiSnapshotFor
 import com.wingedsheep.engine.mechanics.ControllerGrants
+import com.wingedsheep.engine.mechanics.ManaValues
 import com.wingedsheep.engine.mechanics.layers.ProjectedState
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
@@ -1602,7 +1603,7 @@ class DynamicAmountEvaluator(
                 val entity = state.getEntity(entityId)
                 // Rule 202.3b: face-down permanents have mana value 0
                 if (entity?.has<FaceDownComponent>() == true) 0
-                else entity?.get<CardComponent>()?.manaValue ?: 0
+                else ManaValues.of(state, entityId)
             }
             CardNumericProperty.POWER -> {
                 projected?.getPower(entityId)
@@ -1679,8 +1680,8 @@ class DynamicAmountEvaluator(
             is EntityNumericProperty.BaseToughness ->
                 resolveBaseStat(state, entityId, isPower = false, useProjected, explicitProjected)
 
-            is EntityNumericProperty.ManaValue ->
-                state.getEntity(entityId)?.get<CardComponent>()?.manaValue ?: 0
+            // A spell on the stack counts its chosen X (CR 202.3e) — see [ManaValues].
+            is EntityNumericProperty.ManaValue -> ManaValues.of(state, entityId)
 
             is EntityNumericProperty.ManaSpent -> {
                 val spell = state.getEntity(entityId)?.get<SpellOnStackComponent>() ?: return 0

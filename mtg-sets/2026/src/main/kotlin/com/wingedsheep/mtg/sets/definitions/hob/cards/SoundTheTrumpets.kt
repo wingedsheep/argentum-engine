@@ -18,7 +18,7 @@ import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
  * The mana-value test is deliberately hoisted *above* the counter rather than sequenced after it
  * ([Effects.If] wrapping both branches, Prohibit's shape) so it reads the spell while it is
  * still on the stack. Two things would go wrong reading it afterwards: an X spell's mana value
- * counts its chosen X only on the stack (CR 202.3b) and drops to X=0 once the card is in the
+ * counts its chosen X only on the stack (CR 202.3e) and drops to X=0 once the card is in the
  * graveyard, and the check would then be evaluating a card, not the spell the oracle text refers to
  * in the past tense ("was 2 or less"). Ordering is unchanged from the printed text — the counter
  * still happens before the recruit, and no player gets priority in between.

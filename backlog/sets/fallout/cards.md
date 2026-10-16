@@ -97,7 +97,7 @@
 - [x] ED-E, Lonesome Eyebot
 - [x] Elder Arthur Maxson
 - [x] Elder Owyn Lyons
-- [ ] Electrosiphon
+- [x] Electrosiphon
 - [x] Endurance Bobblehead
 - [x] Entrapment Maneuver
 - [x] Everflowing Chalice

@@ -171,12 +171,16 @@ internal class SpellCaster(
         // decision: a disturb cast keeps the front's (CR 712.8c, `backFaceManaValue` non-null),
         // while a modal DFC cast as its back face has that face's own — The Sensational She-Hulk is
         // 6, not Jennifer Walters' 2. CastSpellHandler mirrors this for its CastSpellRecord.
-        val spellManaValue = backFaceManaValue
-            ?: transformedBackDef?.manaCost?.cmc
-            ?: cardComponent.manaValue
 
         // CR 601.2b — X is announced as the spell is cast; see [bindAnnouncedX].
         val boundXValue = bindAnnouncedX(xValue, faceIndex, cardComponent, transformedBackDef)
+
+        // On the stack each {X} counts as the announced X (CR 202.3e), so a Fireball cast for X=4
+        // is a mana-value-5 spell to "whenever you cast a spell with mana value 5 or greater". The
+        // disturb front-face reading carries no X of its own.
+        val spellManaValue = backFaceManaValue
+            ?: ((transformedBackDef?.manaCost?.cmc ?: cardComponent.manaValue) +
+                (boundXValue ?: 0) * (transformedBackDef?.manaCost ?: cardComponent.manaCost).xCount)
 
         // Build the flat target union for choose-N modal spells (Rule 700.2 / 601.2c).
         // TargetsComponent holds the union so existing target-arrow rendering and resolution-time
