@@ -45,7 +45,9 @@ object ManaProvenanceTracker {
         } else {
             typeLine?.cardTypes ?: emptySet()
         }
-        return ManaSourceTag(sourceId, if (projectedTypes.isNotEmpty()) state.projectedState.getSubtypes(sourceId).mapTo(mutableSetOf()) { com.wingedsheep.sdk.core.Subtype(it) } else typeLine?.subtypes?.toSet() ?: emptySet(), cardTypes, isSnowSource(state, sourceId))
+        val supertypes = if (projectedTypes.isNotEmpty()) Supertype.fromProjectedTypes(projectedTypes).toSet()
+            else typeLine?.supertypes ?: emptySet()
+        return ManaSourceTag(sourceId, if (projectedTypes.isNotEmpty()) state.projectedState.getSubtypes(sourceId).mapTo(mutableSetOf()) { com.wingedsheep.sdk.core.Subtype(it) } else typeLine?.subtypes?.toSet() ?: emptySet(), cardTypes, isSnowSource(state, sourceId), supertypes)
     }
 
     private fun sourceTag(state: GameState, sourceId: EntityId,
@@ -55,7 +57,10 @@ object ManaProvenanceTracker {
         return ManaSourceTag(sourceId,
             snapshot.subtypes.mapTo(mutableSetOf()) { com.wingedsheep.sdk.core.Subtype(it) },
             snapshot.typeLine?.cardTypes.orEmpty(),
-            snapshot.supertypes.any { it.equals("Snow", ignoreCase = true) })
+            snapshot.supertypes.any { it.equals("Snow", ignoreCase = true) },
+            snapshot.supertypes.mapNotNullTo(mutableSetOf()) { name ->
+                Supertype.entries.find { it.name.equals(name, ignoreCase = true) } ?: Supertype.fromString(name)
+            })
     }
 
     /**

@@ -5489,6 +5489,43 @@
     ]
 }
 
+// Security Rhox
+{
+    "name": "Security Rhox",
+    "manaCost": "{2}{R}{G}",
+    "typeLine": "Creature — Rhino Warrior",
+    "oracleText": "You may pay {R}{G} rather than pay this spell's mana cost. Spend only mana produced by Treasures to cast it this way.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 4
+    },
+    "script": {
+        "selfAlternativeCost": {
+            "manaCost": "{R}{G}",
+            "manaSources": {
+                "cardPredicates": [
+                    "IsArtifact",
+                    {
+                        "type": "HasSubtype",
+                        "subtype": "Treasure"
+                    }
+                ]
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "220",
+        "rarity": "UNCOMMON",
+        "artist": "Lie Setiawan",
+        "flavorText": "Unlucky assassins find out why he's called \"Brick Wall\" Balzano.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/0/0050dd40-9a18-41e4-97e6-fce5bf220ccf.jpg?1783923072"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN"
+    ]
+}
+
 // Sizzling Soloist
 {
     "name": "Sizzling Soloist",

@@ -30,6 +30,7 @@ import com.wingedsheep.engine.mechanics.mana.CostCalculator
 import com.wingedsheep.engine.mechanics.mana.LifePayableMana
 import com.wingedsheep.engine.mechanics.mana.ManaPool
 import com.wingedsheep.engine.mechanics.mana.ManaSolver
+import com.wingedsheep.engine.mechanics.mana.ManaSourceRestrictedPayment
 import com.wingedsheep.engine.mechanics.mana.SpellPaymentContext
 import com.wingedsheep.engine.mechanics.mana.spellPaymentContextFor
 import com.wingedsheep.engine.registry.CardRegistry
@@ -155,13 +156,18 @@ internal class CastCostPayer(
         val substitutedPips = LifePayableMana.substitutedPipCount(
             ledger.state, cardRegistry, action.playerId, cardComponent.manaCost
         )
-        val processed = paymentProcessor.processPayment(
-            ledger.state, action, cost, cardComponent.name, paymentXValue,
+        // "Spend only mana produced by <sources> to cast it this way" (Security Rhox): pay inside
+        // the restricted view, then hand the mana it couldn't touch back to the pool.
+        val restricted = manaSourceRestriction(ledger.state, action, cardDef)
+        val rawProcessed = paymentProcessor.processPayment(
+            restricted?.state ?: ledger.state, action, cost, cardComponent.name, paymentXValue,
             spellPaymentContext(ledger.state, action, cardComponent), xManaRestriction(action, cardDef)
         )
-        if (processed.error != null) {
-            return CastPaymentOutcome.Failed(processed.error)
+        if (rawProcessed.error != null) {
+            return CastPaymentOutcome.Failed(rawProcessed.error)
         }
+        val processed = if (restricted == null) rawProcessed
+            else rawProcessed.copy(state = restricted.restore(rawProcessed.state))
         // Compleated (CR 702.150a) counts only *Phyrexian* symbols paid with life. A pip that is
         // life-payable only through a substitution isn't one, and the payer chooses which pip each
         // life payment covers, so those absorb the life payments first.
@@ -554,10 +560,33 @@ internal class CastCostPayer(
         state.turnOrder.any { ownerId -> cardId in state.getZone(ZoneKey(ownerId, zone)) }
 
     /**
+     * The restricted payment a cast opens when it is paying a `selfAlternativeCost` that says
+     * "spend only mana produced by <sources> to cast it this way" (Security Rhox), or null when
+     * mana from any source may pay. Gated exactly like that alternative's bundled additional costs
+     * in [owedAdditionalCosts], so the mana restriction and the rest of the cost travel together.
+     */
+    fun manaSourceRestriction(state: GameState, action: CastSpell, cardDef: CardDefinition?): ManaSourceRestrictedPayment? {
+        if (!action.useAlternativeCost || !action.altAllows(AlternativeCostType.SELF_ALTERNATIVE)) return null
+        val sources = cardDef?.script?.selfAlternativeCost?.manaSources ?: return null
+        return ManaSourceRestrictedPayment.open(
+            state, action.playerId, sources,
+            com.wingedsheep.engine.handlers.EffectContext(sourceId = action.cardId, controllerId = action.playerId),
+            predicateEvaluator,
+        )
+    }
+
+    /**
      * Whether the caster can pay [cost] (with [paymentXValue] as the X paid in mana) the way their
-     * [CastSpell.paymentStrategy] says they will; null when they can.
+     * [CastSpell.paymentStrategy] says they will; null when they can. A cast restricted to mana from
+     * certain sources ([manaSourceRestriction]) is judged inside that restriction.
      */
     fun validateManaPayment(state: GameState, action: CastSpell, cost: ManaCost, paymentXValue: Int = action.xValue ?: 0): String? {
+        val cardDef = state.getEntity(action.cardId)?.get<CardComponent>()?.let { cardRegistry.getCard(it.cardDefinitionId) }
+        val restricted = manaSourceRestriction(state, action, cardDef)
+        return validateManaPaymentIn(restricted?.state ?: state, action, cost, paymentXValue)
+    }
+
+    private fun validateManaPaymentIn(state: GameState, action: CastSpell, cost: ManaCost, paymentXValue: Int): String? {
         val xValue = paymentXValue
         val cardComponent = state.getEntity(action.cardId)?.get<CardComponent>()
         val spellCtx = spellPaymentContext(state, action, cardComponent)

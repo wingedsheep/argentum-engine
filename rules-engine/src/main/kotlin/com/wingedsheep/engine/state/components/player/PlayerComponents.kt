@@ -382,7 +382,14 @@ data class ManaSourceTag(
     val subtypes: Set<com.wingedsheep.sdk.core.Subtype> = emptySet(),
     val cardTypes: Set<com.wingedsheep.sdk.core.CardType> = emptySet(),
     /** The source was a snow permanent, so this mana pays `{S}` and counts as "{S} spent" (CR 107.4h). */
-    val isSnow: Boolean = false
+    val isSnow: Boolean = false,
+    /**
+     * The source's supertypes (basic, legendary, snow, …), so a "spend only mana produced by basic
+     * lands" restriction reads the whole type line the source had when it made the mana.
+     */
+    @OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
+    @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
+    val supertypes: Set<com.wingedsheep.sdk.core.Supertype> = emptySet(),
 )
 
 /**

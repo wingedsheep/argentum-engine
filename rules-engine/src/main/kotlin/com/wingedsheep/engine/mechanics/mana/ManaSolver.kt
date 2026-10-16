@@ -2953,6 +2953,9 @@ class ManaSolver private constructor(
         val life = (state.lifeTotal(playerId) - committedLife - reservedLife).coerceAtLeast(0)
         for (permission in state.playerActionPermissions) {
             if (permission.playerId != playerId || permission.action.timing != com.wingedsheep.sdk.scripting.effects.PlayerActionTiming.ManaAbility) continue
+            // A payment scoped to certain sources' mana (ManaAbilitySourcesContinuation) only
+            // admits this mana when what grants the action is such a source.
+            if (!state.manaAbilitySourceAllowed(playerId, permission.context.sourceId ?: playerId, predicateEvaluator)) continue
             val cost = (permission.action.cost as? com.wingedsheep.sdk.scripting.costs.PayCost.Atom)?.atom as? CostAtom.PayLife ?: continue
             val effect = permission.action.effect as? AddColorlessManaEffect ?: continue
             if (effect.restriction != null || effect.riders.isNotEmpty()) continue

@@ -437,10 +437,20 @@ class CastSpellEnumerator(
                         )
                     )
                 }
+            // "Spend only mana produced by <sources> to cast it this way" (Security Rhox): judge the
+            // mana half — and its auto-tap preview below — inside the same restricted view the
+            // handler validates and pays in (CastCostPayer.manaSourceRestriction).
+            val selfAltPayState = selfAltCost?.manaSources?.let { sources ->
+                com.wingedsheep.engine.mechanics.mana.ManaSourceRestrictedPayment.open(
+                    state, playerId, sources,
+                    com.wingedsheep.engine.handlers.EffectContext(sourceId = cardId, controllerId = playerId),
+                    context.predicateEvaluator,
+                ).state
+            } ?: state
             val canAffordSelfAlternative = if (selfAltCost != null) {
                 val selfAltMana = selfAltCost.manaCost
                 val selfAltEffective = context.costCalculator.calculateEffectiveCostWithAlternativeBase(state, cardDef, selfAltMana, playerId)
-                val canPayMana = context.manaSolver.canPay(state, playerId, selfAltEffective, precomputedSources = cachedSources)
+                val canPayMana = context.manaSolver.canPay(selfAltPayState, playerId, selfAltEffective, precomputedSources = cachedSources)
                 val canPayAdditional = selfAltCost.additionalCosts.all { cost ->
                     canPayAdditionalCostForAlternative(context, state, playerId, cardId, cost)
                 }
@@ -716,7 +726,7 @@ class CastSpellEnumerator(
                 val selfAltMana = selfAltCost.manaCost
                 val selfAltEffective = context.costCalculator.calculateEffectiveCostWithAlternativeBase(state, cardDef, selfAltMana, playerId)
                 val selfAltPreview = if (context.skipAutoTapPreview) null else {
-                    context.manaSolver.solve(state, playerId, selfAltEffective, precomputedSources = cachedSources)
+                    context.manaSolver.solve(selfAltPayState, playerId, selfAltEffective, precomputedSources = cachedSources)
                         ?.sources?.map { it.entityId }
                 }
                 val addlCostInfo = selfAltCost.additionalCosts.firstNotNullOfOrNull { cost ->
@@ -725,7 +735,9 @@ class CastSpellEnumerator(
                 SelfAltCostResult(
                     manaCostString = selfAltEffective.toString(),
                     autoTapPreview = selfAltPreview,
-                    additionalCostInfo = addlCostInfo
+                    additionalCostInfo = addlCostInfo,
+                    label = selfAltCost.manaSources?.let { "$selfAltEffective, ${it.description} mana only" }
+                        ?: selfAltEffective.toString(),
                 )
             } else null
 
@@ -1081,7 +1093,7 @@ class CastSpellEnumerator(
                         if (selfAltCostResult != null) {
                             result.add(LegalAction(
                                 actionType = "CastWithAlternativeCost",
-                                description = "Cast ${cardComponent.name} (${selfAltCostResult.manaCostString})",
+                                description = "Cast ${cardComponent.name} (${selfAltCostResult.label})",
                                 action = CastSpell(playerId, cardId, targets = listOf(autoSelectedTarget), useAlternativeCost = true, alternativeCostType = AlternativeCostType.SELF_ALTERNATIVE),
                                 manaCostString = selfAltCostResult.manaCostString,
                                 additionalCostInfo = selfAltCostResult.additionalCostInfo,
@@ -1203,7 +1215,7 @@ class CastSpellEnumerator(
                         if (selfAltCostResult != null) {
                             result.add(LegalAction(
                                 actionType = "CastWithAlternativeCost",
-                                description = "Cast ${cardComponent.name} (${selfAltCostResult.manaCostString})",
+                                description = "Cast ${cardComponent.name} (${selfAltCostResult.label})",
                                 action = CastSpell(playerId, cardId, useAlternativeCost = true, alternativeCostType = AlternativeCostType.SELF_ALTERNATIVE),
                                 validTargets = firstReqInfo.validTargets,
                                 requiresTargets = true,
@@ -1365,7 +1377,7 @@ class CastSpellEnumerator(
                 if (selfAltCostResult != null) {
                     result.add(LegalAction(
                         actionType = "CastWithAlternativeCost",
-                        description = "Cast ${cardComponent.name} (${selfAltCostResult.manaCostString})",
+                        description = "Cast ${cardComponent.name} (${selfAltCostResult.label})",
                         action = CastSpell(playerId, cardId, useAlternativeCost = true, alternativeCostType = AlternativeCostType.SELF_ALTERNATIVE),
                         manaCostString = selfAltCostResult.manaCostString,
                         additionalCostInfo = selfAltCostResult.additionalCostInfo,
@@ -2768,7 +2780,9 @@ class CastSpellEnumerator(
     private data class SelfAltCostResult(
         val manaCostString: String,
         val autoTapPreview: List<EntityId>?,
-        val additionalCostInfo: AdditionalCostData?
+        val additionalCostInfo: AdditionalCostData?,
+        /** Button text: the cost, plus whose mana pays it when the alternative restricts that. */
+        val label: String = manaCostString,
     )
 
     /**

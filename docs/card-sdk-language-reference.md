@@ -930,6 +930,15 @@ counts a hybrid Phyrexian pip paid with life like any other Phyrexian pip.
   `CastSpellEnumerator` (so the action isn't offered) and `CastSpellHandler.validate` (so an
   authorization can't outlive the enumeration that offered it). Omit for an unconditional
   alternative (Zahid, Djinn of the Lamp).
+  Optional `manaSources: GameObjectFilter` is "spend only mana produced by <sources> to cast it
+  this way" (Security Rhox: `manaSources = GameObjectFilter.Artifact.withSubtype("Treasure")`).
+  The alternative's payment only activates mana abilities of matching permanents, and floating
+  mana counts only if its recorded source matched when it made the mana — judged on the type line
+  that source had then (card types, subtypes, supertypes), so a sacrificed Treasure's mana is still
+  Treasure mana, and mana with no recorded source never pays. Enumeration (offer + auto-tap
+  preview), validation, auto/explicit/pool payment and the mana window all run inside the same
+  restricted view (`ManaSourceRestrictedPayment`); mana it can't touch stays in the pool. Keep the
+  filter to type-line predicates. Omit (null) for mana from any source.
 - `evoke` — pay evoke cost; creature is sacrificed at ETB.
 - `keywordAbility(KeywordAbility.bestow(cost, additionalCost = null))` — cast as an Aura for the
   bestow price, or normally as a creature. See the parameterized keyword entry below.

@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.handlers.actions.spell
 
+import com.wingedsheep.engine.state.manaAbilitySourceAllowed
 import com.wingedsheep.engine.mechanics.targeting.withTargetConstraints
 import com.wingedsheep.engine.handlers.TargetFinder
 import com.wingedsheep.engine.handlers.TargetingSourceType
@@ -350,11 +351,19 @@ class CastSpellHandler(
                 if (castCostPayer.validateManaPayment(announcedState, explicit, computed.cost, computed.paymentXValue) != null) {
                     val cost = castCostPayer.relaxForCastPermission(announcedState, action, computed.cost)
                         .withXAs(computed.paymentXValue)
+                    // A cast restricted to certain sources' mana (Security Rhox) offers only those
+                    // sources and counts only their floating mana.
+                    val restricted = castCostPayer.manaSourceRestriction(announcedState, action, cardDef)
+                    val windowState = restricted?.state ?: announcedState
+                    val refused = if (restricted == null) emptySet() else sources.filterNot {
+                        windowState.manaAbilitySourceAllowed(action.playerId, it, predicateEvaluator)
+                    }.toSet()
                     return announcedState.suspendForDecision(
                         question = { id -> com.wingedsheep.engine.mechanics.mana.ManaPaymentWindow.buildDecision(
-                            announcedState, action.playerId, cost, id, "Produce mana for ${cardComponent.name}",
+                            windowState, action.playerId, cost, id, "Produce mana for ${cardComponent.name}",
                             DecisionContext(sourceId = action.cardId, sourceName = cardComponent.name, phase = DecisionPhase.CASTING),
-                            true, manaSolver, spellContext = castCostPayer.spellPaymentContext(announcedState, action, cardComponent),
+                            true, manaSolver, excludeSources = refused,
+                            spellContext = castCostPayer.spellPaymentContext(announcedState, action, cardComponent),
                         ) },
                         answer = com.wingedsheep.engine.core.ManaActionPaymentContinuation(action, cost, lockedCastCost = totalCost, lockedAdditionalCosts = owedCosts,
                             paymentContext = castCostPayer.spellPaymentContext(announcedState, action, cardComponent)),
