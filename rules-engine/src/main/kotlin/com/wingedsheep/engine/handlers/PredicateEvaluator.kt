@@ -1530,7 +1530,7 @@ class PredicateEvaluator(
      * the battle" ([StatePredicate.IsProtectedBy]). Combinators recurse; owner-based leaves say
      * nothing about a player standing in for a controller and never match.
      */
-    private fun playerMatchesControlLeaf(
+    internal fun playerMatchesControlLeaf(
         state: GameState,
         projected: ProjectedState,
         playerId: EntityId,

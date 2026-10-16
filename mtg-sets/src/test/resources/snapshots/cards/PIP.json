@@ -8945,6 +8945,148 @@
     }
 }
 
+// The Motherlode, Excavator
+{
+    "name": "The Motherlode, Excavator",
+    "manaCost": "{3}{R}{R}",
+    "typeLine": "Legendary Artifact Creature — Robot",
+    "oracleText": "When The Motherlode enters, choose target opponent. You get an amount of {E} (energy counters) equal to the number of nonbasic lands that player controls.\nWhenever The Motherlode attacks, you may pay {E}{E}{E}{E}. When you do, destroy target nonbasic land defending player controls, and creatures that player controls without flying can't block this turn.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "The Motherlode, Excavator:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "AddDynamicCounters",
+                    "counterType": "ENERGY",
+                    "amount": {
+                        "type": "AggregateBattlefield",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "filter": {
+                            "cardPredicates": [
+                                "IsLand",
+                                {
+                                    "type": "Not",
+                                    "predicate": "IsBasicLand"
+                                }
+                            ]
+                        }
+                    },
+                    "target": "Controller"
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponent",
+                    "id": "t0"
+                },
+                "descriptionOverride": "When The Motherlode enters, choose target opponent. You get an amount of {E} equal to the number of nonbasic lands that player controls."
+            },
+            {
+                "id": "The Motherlode, Excavator:2",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "ReflexiveTrigger",
+                    "action": {
+                        "type": "PayExactCounters",
+                        "counterType": "ENERGY",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 4
+                        }
+                    },
+                    "reflexiveEffect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "MoveToZone",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t1"
+                                },
+                                "destination": "Graveyard",
+                                "byDestruction": true
+                            },
+                            {
+                                "type": "CantBlockGroup",
+                                "filter": {
+                                    "baseFilter": {
+                                        "cardPredicates": [
+                                            "IsCreature",
+                                            {
+                                                "type": "NotKeyword",
+                                                "keyword": "FLYING"
+                                            }
+                                        ],
+                                        "controllerPredicate": {
+                                            "type": "ControlledByReferencedPlayer",
+                                            "target": {
+                                                "type": "PlayerRef",
+                                                "player": "DefendingPlayer"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    "reflexiveTargetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": {
+                                    "cardPredicates": [
+                                        "IsLand",
+                                        {
+                                            "type": "Not",
+                                            "predicate": "IsBasicLand"
+                                        }
+                                    ],
+                                    "controllerPredicate": "ControlledByDefendingPlayer"
+                                }
+                            },
+                            "id": "t1"
+                        }
+                    ],
+                    "descriptionOverride": "You may pay {E}{E}{E}{E}. When you do, destroy target nonbasic land defending player controls, and creatures that player controls without flying can't block this turn."
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "62",
+        "rarity": "RARE",
+        "artist": "Josu Solano",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/b/3b9df394-522c-4458-bc36-cf24ad763718.jpg?1783912403",
+        "rulings": [
+            {
+                "date": "2024-03-08",
+                "text": "Use the number of nonbasic lands the target opponent controls when The Motherlode's first ability resolves to determine the number of energy counters you get."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "You don't choose a target nonbasic land at the time The Motherlode's last ability triggers. Rather, a second \"reflexive\" ability triggers when you pay {E}{E}{E}{E} this way. You choose a target for that ability as it goes on the stack. Each player may respond to this triggered ability as normal."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "The Motherlode's reflexive triggered ability prevents all creatures without flying that player controls from blocking that turn, including creatures that lose flying after the ability resolves as well as creatures without flying that enter the battlefield or come under that player's control later in the turn."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "If the target nonbasic land is an illegal target as The Motherlode's reflexive triggered ability tries to resolve, it won't resolve and none of its effects happen. Creatures defending player controls without flying will still be able to block this turn."
+            }
+        ]
+    }
+}
+
 // The Nipton Lottery
 {
     "name": "The Nipton Lottery",

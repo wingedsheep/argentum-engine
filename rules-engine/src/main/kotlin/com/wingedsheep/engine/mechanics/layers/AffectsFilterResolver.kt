@@ -39,6 +39,7 @@ import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.predicates.evaluateWith
 import com.wingedsheep.sdk.scripting.predicates.StatePredicate
 
@@ -361,6 +362,20 @@ internal class AffectsFilterResolver(
                         // controller (Laughing Jasper Flint: "creatures you control but don't own").
                         ControllerPredicate.OwnedByYou -> card.ownerId != null && card.ownerId == controller
                         ControllerPredicate.OwnedByOpponent -> card.ownerId != null && card.ownerId != controller
+                        // "creatures that player controls" — a player pinned when a floating group
+                        // restriction resolved (ResolutionPlayerBaker), or a state-relative reference.
+                        // Answered by the evaluator's shared player leaf; it must never fail open, or
+                        // a one-player restriction would bind every controller's creatures.
+                        is ControllerPredicate.ControlledByReferencedPlayer -> when {
+                            entityController == null -> false
+                            leaf.target is EffectTarget.SpecificEntity ->
+                                entityController == (leaf.target as EffectTarget.SpecificEntity).entityId
+                            else -> relationalContext?.let { ctx ->
+                                relationalEvaluator.playerMatchesControlLeaf(
+                                    state, relationalProjection, entityController, leaf, ctx
+                                )
+                            } ?: false
+                        }
                         else -> null // other predicates not applicable in static ability context
                     }
                 }

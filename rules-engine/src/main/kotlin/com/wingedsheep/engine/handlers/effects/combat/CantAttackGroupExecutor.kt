@@ -3,6 +3,7 @@ package com.wingedsheep.engine.handlers.effects.combat
 import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
+import com.wingedsheep.engine.handlers.effects.ResolutionPlayerBaker
 import com.wingedsheep.engine.mechanics.layers.Layer
 import com.wingedsheep.engine.mechanics.layers.SerializableModification
 import com.wingedsheep.engine.mechanics.layers.addFloatingEffect
@@ -33,7 +34,7 @@ class CantAttackGroupExecutor : EffectExecutor<CantAttackGroupEffect> {
             affectedEntities = emptySet(),
             duration = effect.duration,
             context = context,
-            dynamicGroupFilter = effect.filter
+            dynamicGroupFilter = ResolutionPlayerBaker.bake(effect.filter, context, state)
         )
 
         return EffectResult.success(newState)

@@ -3027,6 +3027,13 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   spell this sentence `ForEachInGroup` + `GrantKeyword(CANT_BE_BLOCKED)` — that snapshots the
   group. For all three group effects, "you" in the filter is the controller of the resolved
   spell or ability, fixed at resolution, so the effect outlives its source leaving the battlefield.
+  Every other player the filter names through the resolving context — `targetPlayerControls()`,
+  `targetOpponentControls()`, the triggering player, or `targetPlayerControls(ref)` over a
+  positional / pipeline / bound target or `Player.DefendingPlayer` — is likewise pinned to that
+  player when the effect resolves (`ResolutionPlayerBaker`, shared with `GrantStaticAbility`'s
+  `CantBeBlockedBy`), while the set of their creatures stays live. The Motherlode, Excavator:
+  `CantBlockGroup(GroupFilter(Creature.withoutKeyword(FLYING).targetPlayerControls(PlayerRef(Player.DefendingPlayer))))`
+  keeps binding the defending player after The Motherlode leaves combat.
 - `GrantCantBeBlockedExceptByCollection(target, collection, alternativeFilter, duration)` — restrict
   the named attacker to blockers that were in a pipeline collection at resolution, **or** match
   `alternativeFilter` when blocking. Cards use the `Effects` facade with a `CollectionSlot`.
