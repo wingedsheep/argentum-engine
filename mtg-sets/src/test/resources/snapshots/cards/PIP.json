@@ -4439,6 +4439,106 @@
     }
 }
 
+// Strong Back
+{
+    "name": "Strong Back",
+    "manaCost": "{2}{G}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEquip abilities you activate that target enchanted creature cost {3} less to activate.\nAura spells you cast that target enchanted creature cost {3} less to cast.\nEnchanted creature gets +2/+2 for each Aura and Equipment attached to it.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ReduceEquipCost",
+                "amount": 3,
+                "targetFilter": {
+                    "cardPredicates": [
+                        "IsCreature"
+                    ],
+                    "statePredicates": [
+                        "IsAttachedToBySource"
+                    ]
+                }
+            },
+            {
+                "type": "ModifySpellCost",
+                "target": {
+                    "type": "YouCast",
+                    "filter": "enchantment Aura"
+                },
+                "modification": {
+                    "type": "ReduceGenericBy",
+                    "source": {
+                        "type": "FixedIfAnyTargetMatches",
+                        "amount": 3,
+                        "filter": {
+                            "cardPredicates": [
+                                "IsCreature"
+                            ],
+                            "statePredicates": [
+                                "IsAttachedToBySource"
+                            ]
+                        }
+                    }
+                }
+            },
+            {
+                "type": "GrantDynamicStats",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                },
+                "powerBonus": {
+                    "type": "Multiply",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": "EnchantedCreature",
+                        "numericProperty": "AttachmentCount"
+                    },
+                    "multiplier": 2
+                },
+                "toughnessBonus": {
+                    "type": "Multiply",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": "EnchantedCreature",
+                        "numericProperty": "AttachmentCount"
+                    },
+                    "multiplier": 2
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "83",
+        "rarity": "RARE",
+        "artist": "Elizabeth Peiró",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/f/3f65afa5-e4f7-49c2-97f9-47ad5dbcacfa.jpg?1783912396",
+        "rulings": [
+            {
+                "date": "2024-03-08",
+                "text": "Strong Back’s abilities reduce only the amount of generic mana in equip abilities that target the enchanted creature and in the total cost of Aura spells that target the enchanted creature. For example, it will reduce the total cost of Animal Friend from {1}{G} to {G}."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "Strong Back’s third ability won’t reduce its own cost."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "Some Equipment creature cards in other sets have reconfigure, a different ability that attaches them to a creature. Reconfigure is not an equip ability, and reconfigure costs are not reduced by Strong Back’s second ability. Equip variants or equip abilities with restrictions, like the “equip Citizen” ability of Ceremonial Groundbreaker from the Streets of New Capenna® set, are still equip abilities, and their costs will be reduced by Strong Back’s second ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Sunscorched Divide
 {
     "name": "Sunscorched Divide",

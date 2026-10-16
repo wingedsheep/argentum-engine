@@ -24,7 +24,7 @@ import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
  * (`GameObjectFilter.Any.equipped()`), evaluated in static-ability projection.
  *
  * Ability 2 is the target-restricted form of the controller-scoped [ReduceEquipCost]
- * (Éowyn, Lady of Rohan): with [ReduceEquipCost.onlyIfTargetIsSource] the {2} reduction applies
+ * (Éowyn, Lady of Rohan): with [ReduceEquipCost.targetFilter] = `sourceItself()` the {2} reduction applies
  * only to equip abilities whose chosen target is Cloud itself.
  */
 val CloudPlanetsChampion = card("Cloud, Planet's Champion") {
@@ -54,7 +54,7 @@ val CloudPlanetsChampion = card("Cloud, Planet's Champion") {
 
     // "Equip abilities you activate that target Cloud cost {2} less to activate."
     staticAbility {
-        ability = ReduceEquipCost(amount = 2, onlyIfTargetIsSource = true)
+        ability = ReduceEquipCost(amount = 2, targetFilter = GameObjectFilter.Any.sourceItself())
     }
 
     metadata {

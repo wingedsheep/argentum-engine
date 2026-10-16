@@ -23,7 +23,7 @@ import io.kotest.matchers.shouldNotBe
  *   (conditional keyword grant: [com.wingedsheep.sdk.dsl.Conditions.IsYourTurn] AND source equipped).
  * - "Equip abilities you activate that target Cloud cost {2} less to activate."
  *   (the target-restricted form of [com.wingedsheep.sdk.scripting.ReduceEquipCost],
- *   `onlyIfTargetIsSource = true`).
+ *   `targetFilter = GameObjectFilter.Any.sourceItself()`).
  *
  * The discount is pinned with an inline Equip {3} equipment: equipping Cloud is payable with only
  * {1} ({3} − {2}), while equipping any other creature still costs the full {3}.
