@@ -64,7 +64,7 @@
 - [x] Captain of the Watch
 - [x] Cass, Hand of Vengeance
 - [x] Casualties of War
-- [ ] Cathedral Acolyte
+- [x] Cathedral Acolyte
 - [x] Champion's Helm
 - [x] Chaos Warp
 - [x] Charisma Bobblehead
@@ -78,7 +78,7 @@
 - [x] Contaminated Drink
 - [x] Corpsejack Menace
 - [x] Craig Boone, Novac Guard
-- [ ] Crimson Caravaneer
+- [x] Crimson Caravaneer
 - [x] Crucible of Worlds
 - [x] Crush Contraband
 - [x] Cultivate
@@ -89,11 +89,11 @@
 - [x] Desolate Mire
 - [x] Diamond City
 - [x] Dispatch
-- [ ] Dogmeat, Ever Loyal
+- [x] Dogmeat, Ever Loyal
 - [x] Dr. Madison Li
 - [x] Dragonskull Summit
 - [x] Drowned Catacomb
-- [ ] Duchess, Wayward Tavernkeep
+- [x] Duchess, Wayward Tavernkeep
 - [x] ED-E, Lonesome Eyebot
 - [x] Elder Arthur Maxson
 - [x] Elder Owyn Lyons
@@ -127,7 +127,7 @@
 - [x] Guardian Project
 - [ ] Gunner Conscript
 - [x] HELIOS One
-- [ ] Hancock, Ghoulish Mayor
+- [x] Hancock, Ghoulish Mayor
 - [x] Hardened Scales
 - [x] Harmonize
 - [x] Harold and Bob, First Numens
@@ -153,7 +153,7 @@
 - [x] Jason Bright, Glowing Prophet
 - [x] Jungle Shrine
 - [x] Junk Jet
-- [ ] Junktown
+- [x] Junktown
 - [x] Keeper of the Accord
 - [x] Kellogg, Dangerous Mind
 - [x] Legate Lanius, Caesar's Ace
@@ -167,7 +167,7 @@
 - [x] Lumbering Megasloth
 - [x] MacCready, Lamplight Mayor
 - [ ] Mantle of the Ancients
-- [ ] Marcus, Mutant Mayor
+- [x] Marcus, Mutant Mayor
 - [x] Mariposa Military Base
 - [x] Marshal's Anthem
 - [x] Martial Coup
@@ -177,7 +177,7 @@
 - [x] Memorial to Glory
 - [x] Mind Stone
 - [x] Mirelurk Queen
-- [ ] Mister Gutsy
+- [x] Mister Gutsy
 - [ ] Moira Brown, Guide Author
 - [x] Morbid Opportunist
 - [x] Mortuary Mire
@@ -195,7 +195,7 @@
 - [x] Nightkin Ambusher
 - [x] Nomad Outpost
 - [x] Nuclear Fallout
-- [ ] Nuka-Cola Vending Machine
+- [x] Nuka-Cola Vending Machine
 - [x] Nuka-Nuke Launcher
 - [x] One with the Machine
 - [x] Open the Vaults
@@ -203,14 +203,14 @@
 - [ ] Overencumbered
 - [x] Overflowing Basin
 - [x] Overseer of Vault 76
-- [ ] Paladin Danse, Steel Maverick
+- [x] Paladin Danse, Steel Maverick
 - [x] Paladin Elizabeth Taggerdy
 - [x] Panharmonicon
 - [x] Path of Ancestry
 - [x] Path to Exile
 - [x] Perception Bobblehead
 - [x] Pip-Boy 3000
-- [ ] Piper Wright, Publick Reporter
+- [x] Piper Wright, Publick Reporter
 - [x] Pitiless Plunderer
 - [ ] Plains
 - [x] Plasma Caster
@@ -229,7 +229,7 @@
 - [x] Ravages of War
 - [x] Razortide Bridge
 - [x] Recon Craft Theta
-- [ ] Red Death, Shipwrecker
+- [x] Red Death, Shipwrecker
 - [x] Rex, Cyber-Hound
 - [x] Roadside Reliquary
 - [x] Robobrain War Mind

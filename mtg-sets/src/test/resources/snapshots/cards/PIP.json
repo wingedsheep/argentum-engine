@@ -1307,6 +1307,67 @@
     }
 }
 
+// Break Down
+{
+    "name": "Break Down",
+    "manaCost": "{2}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Destroy target artifact or enchantment. Create a Junk token. (It's an artifact with \"{T}, Sacrifice this token: Exile the top card of your library. You may play that card this turn. Activate only as a sorcery.\")",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Junk"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "artifact|enchantment"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "74",
+        "rarity": "UNCOMMON",
+        "artist": "Fesbra",
+        "flavorText": "\"Old human junk. Worst kind of human junk.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/3/3389f9d7-b8ae-4c51-90f9-b6385517914a.jpg?1783912399",
+        "rulings": [
+            {
+                "date": "2024-03-08",
+                "text": "You can't sacrifice a Junk token to pay multiple costs. For example, you can't sacrifice a Junk token to activate its own ability and also to activate the second ability of Junk Jet."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "You pay all costs and follow all normal timing rules for the card played from exile with a Junk token's ability. For example, if the exiled card is a land card, you may play it only during your main phase while the stack is empty."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "Some spells and abilities that create Junk tokens may require targets. If each target chosen is illegal as that spell or ability tries to resolve, it won't resolve and none of its effects happen. You won't create any Junk tokens."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Brotherhood Scribe
 {
     "name": "Brotherhood Scribe",
@@ -1920,6 +1981,80 @@
     ]
 }
 
+// Cathedral Acolyte
+{
+    "name": "Cathedral Acolyte",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Human Cleric",
+    "oracleText": "Each creature you control with a counter on it has ward {1}. (Whenever it becomes the target of a spell or ability an opponent controls, counter it unless that player pays {1}.)\n{T}: Put a +1/+1 counter on target creature that entered this turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Cathedral Acolyte:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ],
+                                "statePredicates": [
+                                    "EnteredThisTurn"
+                                ]
+                            }
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantWard",
+                "cost": {
+                    "type": "WardCost.Mana",
+                    "manaCost": "{1}"
+                },
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "statePredicates": [
+                            "HasAnyCounter"
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "75",
+        "rarity": "UNCOMMON",
+        "artist": "Jeremy Paillotin",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/4/84118221-20a3-46a9-9e6e-a928b46a8633.jpg?1783912398"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Charisma Bobblehead
 {
     "name": "Charisma Bobblehead",
@@ -2133,6 +2268,91 @@
             }
         ]
     }
+}
+
+// Commander Sofia Daguerre
+{
+    "name": "Commander Sofia Daguerre",
+    "manaCost": "{3}{W}",
+    "typeLine": "Legendary Creature — Human Pilot",
+    "oracleText": "Flash\nCrash Landing — When Commander Sofia Daguerre enters, destroy up to one target legendary permanent. That permanent's controller creates a Junk token. (It's an artifact with \"{T}, Sacrifice this token: Exile the top card of your library. You may play that card this turn. Activate only as a sorcery.\")",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Commander Sofia Daguerre:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": "IterationSpace.Targets",
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "MoveToZone",
+                                "target": {
+                                    "type": "ContextTarget",
+                                    "index": 0
+                                },
+                                "destination": "Graveyard",
+                                "byDestruction": true
+                            },
+                            {
+                                "type": "CreatePredefinedToken",
+                                "tokenType": "Junk",
+                                "controller": "TargetController"
+                            }
+                        ]
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsPermanent",
+                                "IsLegendary"
+                            ]
+                        }
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "15",
+        "rarity": "UNCOMMON",
+        "artist": "Craig Elliott",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/1/712697a4-69b4-4237-9340-96f0e5a32229.jpg?1783912418",
+        "rulings": [
+            {
+                "date": "2024-03-08",
+                "text": "You can't sacrifice a Junk token to pay multiple costs. For example, you can't sacrifice a Junk token to activate its own ability and also to activate the second ability of Junk Jet."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "You pay all costs and follow all normal timing rules for the card played from exile with a Junk token's ability. For example, if the exiled card is a land card, you may play it only during your main phase while the stack is empty."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "Some spells and abilities that create Junk tokens may require targets. If each target chosen is illegal as that spell or ability tries to resolve, it won't resolve and none of its effects happen. You won't create any Junk tokens."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
 }
 
 // Contaminated Drink
@@ -2357,6 +2577,64 @@
             }
         ]
     }
+}
+
+// Crimson Caravaneer
+{
+    "name": "Crimson Caravaneer",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Human Scout",
+    "oracleText": "Double strike, trample\nWhenever this creature deals combat damage to a player, create a Junk token. (It's an artifact with \"{T}, Sacrifice this token: Exile the top card of your library. You may play that card this turn. Activate only as a sorcery.\")",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "keywords": [
+        "DOUBLE_STRIKE",
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Crimson Caravaneer:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Junk"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "56",
+        "rarity": "UNCOMMON",
+        "artist": "Nicholas Gregory",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/a/3acc522b-6297-455e-8bb5-6187061496d0.jpg?1783912404",
+        "rulings": [
+            {
+                "date": "2024-03-08",
+                "text": "You can't sacrifice a Junk token to pay multiple costs. For example, you can't sacrifice a Junk token to activate its own ability and also to activate the second ability of Junk Jet."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "You pay all costs and follow all normal timing rules for the card played from exile with a Junk token's ability. For example, if the exiled card is a land card, you may play it only during your main phase while the stack is empty."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "Some spells and abilities that create Junk tokens may require targets. If each target chosen is illegal as that spell or ability tries to resolve, it won't resolve and none of its effects happen. You won't create any Junk tokens."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
 }
 
 // Curie, Emergent Intelligence
@@ -2712,6 +2990,140 @@
     }
 }
 
+// Dogmeat, Ever Loyal
+{
+    "name": "Dogmeat, Ever Loyal",
+    "manaCost": "{R}{G}{W}",
+    "typeLine": "Legendary Creature — Dog",
+    "oracleText": "When Dogmeat enters, mill five cards, then return an Aura or Equipment card from your graveyard to your hand.\nWhenever a creature you control that's enchanted or equipped attacks, create a Junk token. (It's an artifact with \"{T}, Sacrifice this token: Exile the top card of your library. You may play that card this turn. Activate only as a sorcery.\")",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Dogmeat, Ever Loyal:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 5
+                                },
+                                "isMill": true
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            }
+                        },
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Graveyard",
+                                "filter": "Aura|Equipment"
+                            },
+                            "storeAs": "gathered2"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered2",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected3",
+                            "prompt": "Return an Aura or Equipment card from your graveyard to your hand",
+                            "selectedLabel": "Return to hand"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected3",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "id": "Dogmeat, Ever Loyal:2",
+                "trigger": {
+                    "type": "AttackEvent",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "statePredicates": [
+                            {
+                                "type": "StateOr",
+                                "predicates": [
+                                    "IsEnchanted",
+                                    "IsEquipped"
+                                ]
+                            }
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Junk"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "2",
+        "rarity": "MYTHIC",
+        "artist": "Kieran Yanner",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/6/86b45e3e-8460-4678-87d1-d74479936c83.jpg?1783912422",
+        "rulings": [
+            {
+                "date": "2024-03-08",
+                "text": "The card you return with Dogmeat's first ability doesn't have to be one of the cards you milled with that ability."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "You can't sacrifice a Junk token to pay multiple costs. For example, you can't sacrifice a Junk token to activate its own ability and also to activate the second ability of Junk Jet."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "You pay all costs and follow all normal timing rules for the card played from exile with a Junk token's ability. For example, if the exiled card is a land card, you may play it only during your main phase while the stack is empty."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "Some spells and abilities that create Junk tokens may require targets. If each target chosen is illegal as that spell or ability tries to resolve, it won't resolve and none of its effects happen. You won't create any Junk tokens."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN",
+        "WHITE"
+    ]
+}
+
 // Dr. Madison Li
 {
     "name": "Dr. Madison Li",
@@ -2892,6 +3304,88 @@
     "colorIdentityOverride": [
         "WHITE",
         "BLUE",
+        "RED"
+    ]
+}
+
+// Duchess, Wayward Tavernkeep
+{
+    "name": "Duchess, Wayward Tavernkeep",
+    "manaCost": "{3}{R}",
+    "typeLine": "Legendary Creature — Human Citizen",
+    "oracleText": "Hunters for Hire — Whenever a creature you control deals combat damage to a player, put a quest counter on it.\n{1}, Remove a quest counter from a permanent you control: Create a Junk token. (It's an artifact with \"{T}, Sacrifice this token: Exile the top card of your library. You may play that card this turn. Activate only as a sorcery.\")",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Duchess, Wayward Tavernkeep:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    },
+                    "sourceFilter": "creature ctrl:you"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "QUEST",
+                    "count": 1,
+                    "target": "TriggeringEntity"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Duchess, Wayward Tavernkeep:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomRemoveCounters",
+                                "counterType": "QUEST"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Junk"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "57",
+        "rarity": "RARE",
+        "artist": "Kieran Yanner",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/8/38c0a17f-787b-41ac-8375-d9532dce1f4f.jpg?1783912405",
+        "rulings": [
+            {
+                "date": "2024-03-08",
+                "text": "You can't sacrifice a Junk token to pay multiple costs. For example, you can't sacrifice a Junk token to activate its own ability and also to activate the second ability of Junk Jet."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "You pay all costs and follow all normal timing rules for the card played from exile with a Junk token's ability. For example, if the exiled card is a land card, you may play it only during your main phase while the stack is empty."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
         "RED"
     ]
 }
@@ -3889,6 +4383,66 @@
     }
 }
 
+// Hancock, Ghoulish Mayor
+{
+    "name": "Hancock, Ghoulish Mayor",
+    "manaCost": "{2}{B}",
+    "typeLine": "Legendary Creature — Zombie Mutant Advisor",
+    "oracleText": "Each other creature you control that's a Zombie or Mutant gets +X/+X, where X is the number of counters on Hancock.\nUndying (When this creature dies, if it had no +1/+1 counters on it, return it to the battlefield under its owner's control with a +1/+1 counter on it.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "UNDYING"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantDynamicStats",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "HasAnyOfSubtypes",
+                                "subtypes": [
+                                    "Zombie",
+                                    "Mutant"
+                                ]
+                            }
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    },
+                    "excludeSelf": true
+                },
+                "powerBonus": {
+                    "type": "EntityProperty",
+                    "entity": "Self",
+                    "numericProperty": {
+                        "type": "CounterCount",
+                        "counterType": null
+                    }
+                },
+                "toughnessBonus": {
+                    "type": "EntityProperty",
+                    "entity": "Self",
+                    "numericProperty": {
+                        "type": "CounterCount",
+                        "counterType": null
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "45",
+        "rarity": "RARE",
+        "artist": "Wonchun Choi",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/9/39bda1b4-3f02-4cbc-9573-f5b6e6c991d5.jpg?1783912408"
+    }
+}
+
 // Harold and Bob, First Numens
 {
     "name": "Harold and Bob, First Numens",
@@ -4366,6 +4920,77 @@
             {
                 "date": "2024-03-08",
                 "text": "You can't sacrifice a Junk token to pay multiple costs. For example, you can't sacrifice a Junk token to activate its own ability and also to activate the second ability of Junk Jet."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Junktown
+{
+    "name": "Junktown",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "{T}: Add {C}.\n{4}{R}, {T}, Sacrifice this land: Create three Junk tokens. (They're artifacts with \"{T}, Sacrifice this token: Exile the top card of your library. You may play that card this turn. Activate only as a sorcery.\")",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Junktown:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Junktown:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{4}{R}"
+                            }
+                        },
+                        "CostTap",
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Junk",
+                    "count": 3
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "150",
+        "rarity": "RARE",
+        "artist": "Calder Moore",
+        "flavorText": "It's not much, but it's home.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/e/5e24c687-f070-469d-a09d-acf4ac6ed374.jpg?1783912373",
+        "rulings": [
+            {
+                "date": "2024-03-08",
+                "text": "You can't sacrifice a Junk token to pay multiple costs. For example, you can't sacrifice a Junk token to activate its own ability and also to activate the second ability of Junk Jet."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "You pay all costs and follow all normal timing rules for the card played from exile with a Junk token's ability. For example, if the exiled card is a land card, you may play it only during your main phase while the stack is empty."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "Some spells and abilities that create Junk tokens may require targets. If each target chosen is illegal as that spell or ability tries to resolve, it won't resolve and none of its effects happen. You won't create any Junk tokens."
             }
         ]
     },
@@ -4903,6 +5528,85 @@
     }
 }
 
+// Marcus, Mutant Mayor
+{
+    "name": "Marcus, Mutant Mayor",
+    "manaCost": "{3}{G}{U}",
+    "typeLine": "Legendary Creature — Mutant Advisor",
+    "oracleText": "Vigilance, trample\nWhenever a creature you control deals combat damage to a player, draw a card if that creature has a +1/+1 counter on it. If it doesn't, put a +1/+1 counter on it.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "VIGILANCE",
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Marcus, Mutant Mayor:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    },
+                    "sourceFilter": "creature ctrl:you"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "EntityProperty",
+                                "entity": "TriggeringEntity",
+                                "numericProperty": {
+                                    "type": "CounterCount",
+                                    "counterType": "PLUS_ONE_PLUS_ONE"
+                                }
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "otherwise": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": "TriggeringEntity"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "109",
+        "rarity": "RARE",
+        "artist": "Josu Hernaiz",
+        "flavorText": "\"Welcome to Jacobstown, human. You're free to walk around. Just don't stare at the nightkin.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/5/15db5769-af10-4369-ab4c-db25adb22223.jpg?1783912387"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ]
+}
+
 // Mariposa Military Base
 {
     "name": "Mariposa Military Base",
@@ -5159,6 +5863,88 @@
         "rarity": "RARE",
         "artist": "Nicholas Gregory",
         "imageUri": "https://cards.scryfall.io/normal/front/6/e/6e6d1843-9e05-4cdd-ad4e-15d7913d87f7.jpg?1783912412"
+    }
+}
+
+// Mister Gutsy
+{
+    "name": "Mister Gutsy",
+    "manaCost": "{2}",
+    "typeLine": "Artifact Creature — Robot Soldier",
+    "oracleText": "Whenever you cast an Aura or Equipment spell, put a +1/+1 counter on this creature.\nWhen this creature dies, create X Junk tokens, where X is the number of +1/+1 counters on it. (They're artifacts with \"{T}, Sacrifice this token: Exile the top card of your library. You may play that card this turn. Activate only as a sorcery.\")",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Mister Gutsy:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    {
+                                        "type": "HasSubtype",
+                                        "subtype": "Aura"
+                                    },
+                                    {
+                                        "type": "HasSubtype",
+                                        "subtype": "Equipment"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                }
+            },
+            {
+                "id": "Mister Gutsy:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Junk",
+                    "dynamicCount": {
+                        "type": "ContextProperty",
+                        "key": "LAST_KNOWN_PLUS_ONE_COUNTER_COUNT"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "136",
+        "rarity": "RARE",
+        "artist": "Zezhou Chen",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/f/9f09166a-78de-4136-8a3c-034e1ef73ede.jpg?1783912378",
+        "rulings": [
+            {
+                "date": "2024-03-08",
+                "text": "You can't sacrifice a Junk token to pay multiple costs. For example, you can't sacrifice a Junk token to activate its own ability and also to activate the second ability of Junk Jet."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "You pay all costs and follow all normal timing rules for the card played from exile with a Junk token's ability. For example, if the exiled card is a land card, you may play it only during your main phase while the stack is empty."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "Some spells and abilities that create Junk tokens may require targets. If each target chosen is illegal as that spell or ability tries to resolve, it won't resolve and none of its effects happen. You won't create any Junk tokens."
+            }
+        ]
     }
 }
 
@@ -5684,6 +6470,60 @@
     }
 }
 
+// Nuka-Cola Vending Machine
+{
+    "name": "Nuka-Cola Vending Machine",
+    "manaCost": "{3}",
+    "typeLine": "Artifact",
+    "oracleText": "{1}, {T}: Create a Food token.\nWhenever you sacrifice a Food, create a tapped Treasure token.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Nuka-Cola Vending Machine:2",
+                "trigger": {
+                    "type": "PermanentsSacrificedEvent",
+                    "filter": "artifact Food",
+                    "perPermanent": true
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Treasure",
+                    "tapped": true
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Nuka-Cola Vending Machine:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Food"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "137",
+        "rarity": "RARE",
+        "artist": "Anthony Devine",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/0/405df7c7-0e37-499e-9826-6bf9f5db7a40.jpg?1783912378"
+    }
+}
+
 // Nuka-Nuke Launcher
 {
     "name": "Nuka-Nuke Launcher",
@@ -6000,6 +6840,55 @@
             }
         ]
     }
+}
+
+// Paladin Danse, Steel Maverick
+{
+    "name": "Paladin Danse, Steel Maverick",
+    "manaCost": "{2}{W}",
+    "typeLine": "Legendary Artifact Creature — Synth Knight",
+    "oracleText": "Vigilance, lifelink\nExile Paladin Danse: Each creature you control that's an artifact or Human gains indestructible until end of turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "VIGILANCE",
+        "LIFELINK"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Paladin Danse, Steel Maverick:1",
+                "cost": "CostExileSelf",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature artifact|Human ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "GrantKeyword",
+                        "keyword": "INDESTRUCTIBLE",
+                        "target": "IterationEntity"
+                    }
+                },
+                "descriptionOverride": "Exile Paladin Danse: Each creature you control that's an artifact or Human gains indestructible until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "20",
+        "rarity": "UNCOMMON",
+        "artist": "Dan Murayama Scott",
+        "flavorText": "\"I need to be the example, not the exception.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/0/f0e7ee3a-18f1-4771-86d6-db1e0b2aa542.jpg?1783912417"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
 }
 
 // Paladin Elizabeth Taggerdy
@@ -6372,6 +7261,86 @@
         "imageUri": "https://cards.scryfall.io/normal/front/c/2/c2248694-aab0-47a8-ae8b-8d5283075e10.jpg?1783912377"
     },
     "colorIdentityOverride": []
+}
+
+// Piper Wright, Publick Reporter
+{
+    "name": "Piper Wright, Publick Reporter",
+    "manaCost": "{1}{U}",
+    "typeLine": "Legendary Creature — Human Detective",
+    "oracleText": "Whenever Piper Wright deals combat damage to a player, investigate that many times. (To investigate, create a Clue token. It's an artifact with \"{2}, Sacrifice this token: Draw a card.\")\nWhenever you sacrifice a Clue, put a +1/+1 counter on target creature you control.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Piper Wright, Publick Reporter:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": {
+                    "type": "Investigate",
+                    "count": {
+                        "type": "ContextProperty",
+                        "key": "TRIGGER_DAMAGE_AMOUNT"
+                    }
+                },
+                "descriptionOverride": "Whenever Piper Wright deals combat damage to a player, investigate that many times."
+            },
+            {
+                "id": "Piper Wright, Publick Reporter:2",
+                "trigger": {
+                    "type": "PermanentsSacrificedEvent",
+                    "filter": "artifact Clue",
+                    "perPermanent": true
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Whenever you sacrifice a Clue, put a +1/+1 counter on target creature you control."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "36",
+        "rarity": "RARE",
+        "artist": "Rafater",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/1/916bf331-455a-4694-93d3-15dcf6971072.jpg?1783912412",
+        "rulings": [
+            {
+                "date": "2024-03-08",
+                "text": "If an effect refers to a Clue, it means any Clue artifact, not just a Clue artifact token. For example, if you sacrifice a nontoken Clue artifact, such as Candy Trail from the Wilds of Eldraine set, Piper Wright's last ability will trigger."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "Piper Wright's last ability triggers whenever you sacrifice a Clue for any reason, not just to activate a Clue's activated ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
 }
 
 // Plasma Caster
@@ -6969,6 +7938,96 @@
         "artist": "Jarel Threat",
         "imageUri": "https://cards.scryfall.io/normal/front/2/1/21aa59d3-e786-4ba0-9802-01b57597cda2.jpg?1783912376"
     }
+}
+
+// Red Death, Shipwrecker
+{
+    "name": "Red Death, Shipwrecker",
+    "manaCost": "{U}{R}",
+    "typeLine": "Legendary Creature — Crab Mutant",
+    "oracleText": "Alluring Eyes — {T}: Goad target creature an opponent controls. That player draws a card. You add {R}. (Until your next turn, that creature attacks each combat if able and attacks a player other than you if able.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Red Death, Shipwrecker:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "Goad",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": "TargetController"
+                        },
+                        {
+                            "type": "AddMana",
+                            "color": "RED"
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:opponent"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "116",
+        "rarity": "RARE",
+        "artist": "Jeremy Paillotin",
+        "flavorText": "\"That little fella is deadly in his own fashion.\"\n—The Mariner",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/d/edf616fa-b9a0-4f7a-b7ee-32ce3a08d466.jpg?1783912387",
+        "rulings": [
+            {
+                "date": "2024-03-08",
+                "text": "If the target creature is an illegal target as Red Death’s ability tries to resolve, it won’t resolve and none of its effects happen. You won’t add any mana, and the creature’s controller won’t draw a card."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "Red Death’s ability isn’t a mana ability even though it causes you to add mana. It uses the stack and can be responded to."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "If, during a player’s declare attackers step, a creature that player controls that’s been goaded is tapped, is affected by a spell or ability that says it can’t attack, or hasn’t been under that player’s control continuously since the turn began (and doesn’t have haste), then it doesn’t attack. If there’s a cost associated with having a creature attack a player, its controller isn’t forced to pay that cost, so it doesn’t have to attack that player."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "If the creature doesn’t meet any of the above exceptions and can attack, it must attack a player other than the controller of the spell or ability that goaded it if able. If the creature can’t attack any of those players but could otherwise attack, it must attack a planeswalker an opponent controls, a battle an opponent protects, or the player that goaded it."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "Being goaded isn’t an ability the creature has. Once it’s been goaded, it must attack as detailed above even if it loses all abilities."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "Attacking with a goaded creature doesn’t cause it to stop being goaded. If there is an additional combat phase that turn, or if another player gains control of it before it stops being goaded, it must attack again if able."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
+    ]
 }
 
 // Rex, Cyber-Hound
