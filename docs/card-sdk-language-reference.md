@@ -5199,6 +5199,16 @@ A resolving nonpermanent spell retains its stack instance through serialized eff
   `Patterns.Library.mill(DynamicAmount.ContextProperty(TRIGGER_DAMAGE_AMOUNT),
   EffectTarget.ControllerOfTriggeringEntity)`; Mesmeric Orb is the same shape on
   `Triggers.<subject>.becomesUntapped()`.
+- `Player.ControllerOfGrantingSource` — the controller of the **granting permanent**: the `Player`
+  half of `EffectTarget.GrantingSource`. A granted ability's source is the permanent it was granted
+  *to*, so `Player.You` / `Player.ControllerOfSource` name the bearer's controller — the player who
+  activated it. This one names the Aura's / Equipment's controller instead, who differs whenever an
+  Aura sits on an opponent's creature. Resolves through the controller ladder (projected → last-known
+  → this resolution's departed snapshot), so an earlier "sacrifice it" step doesn't lose the player;
+  null outside a granted ability. Hold for Ransom's granted "{7}: Hold for Ransom's controller
+  sacrifices it and draws a card" = `Effects.SacrificeTarget(EffectTarget.GrantingSource,
+  sacrificedByItsController = true) then Effects.DrawCards(1,
+  EffectTarget.PlayerRef(Player.ControllerOfGrantingSource))`.
 - `handle.asPlayer` (`Player.BoundVariable(name)`) — the player chosen for a named target, read in a
   player-typed slot: `CardSource.FromZone(Zone.HAND, opponent.asPlayer)`,
   `DynamicAmounts.damageReceivedThisTurn(opponent.asPlayer)`. It shares `EffectTarget.BoundVariable`'s

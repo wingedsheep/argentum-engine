@@ -399,6 +399,28 @@ sealed interface Player {
         override val description: String = "that spell or ability's controller"
     }
 
+    /**
+     * The controller of the **granting permanent** — the player half of
+     * [com.wingedsheep.sdk.scripting.targets.EffectTarget.GrantingSource]: the Aura, Equipment or
+     * other permanent whose static ability granted the currently-resolving ability.
+     *
+     * [You] / [ControllerOfSource] cannot name this player: a granted ability's source is the
+     * permanent it was granted *to*, so both read the bearer's controller — who activated it. The
+     * granter's controller is a different person whenever an Aura sits on an opponent's creature:
+     * Hold for Ransom's *"{7}: Hold for Ransom's controller sacrifices it and draws a card"* is
+     * activated by the enchanted creature's controller, but the draw goes to the Aura's.
+     *
+     * Resolution walks the usual controller ladder — projected controller, then last-known
+     * controller, then owner (CR 608.2h) — so the granter having been sacrificed by an earlier step
+     * of the same ability, or having left in response, still names the player who controlled it.
+     * Null outside a granted ability.
+     */
+    @SerialName("ControllerOfGrantingSource")
+    @Serializable
+    data object ControllerOfGrantingSource : Player {
+        override val description: String = "its controller"
+    }
+
     // =============================================================================
     // Possessive Forms (for descriptions)
     // =============================================================================
@@ -434,5 +456,6 @@ sealed interface Player {
             OwnersOfLinkedExile -> "the exiled card's owner's"
             ControllerOfTargetingSource -> "that spell or ability's controller's"
             ControllerOfTriggeringEntity -> "that source's controller's"
+            ControllerOfGrantingSource -> "its controller's"
         }
 }

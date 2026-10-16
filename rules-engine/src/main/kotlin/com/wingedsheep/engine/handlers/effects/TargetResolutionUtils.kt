@@ -346,6 +346,14 @@ object TargetResolutionUtils {
                 ?: context.controllerId
             is Player.ControllerOf -> context.targets.firstOrNull()?.toEntityId()
                 ?.let { controllerOf(state, it) }
+            // The controller of the Aura/Equipment that granted the resolving ability — not the
+            // bearer's controller, who activated it (Hold for Ransom). [controllerOf]'s ladder ends
+            // in last-known controller, so an earlier "sacrifice it" step doesn't lose the player
+            // (a token granter has ceased to exist: the departed snapshot answers).
+            Player.ControllerOfGrantingSource -> context.granterId?.let { id ->
+                controllerOf(state, id)
+                    ?: context.departedPermanents.lastOrNull { it.entityId == id }?.controllerId
+            }
             // "its controller", inside a ForEach over entities — the loop's current entity, not the
             // effect's source or its chosen target.
             // A loop's object this resolution moved off the battlefield answers with the controller
