@@ -140,21 +140,7 @@ class TriggerMatcher(
                 if (trigger.perAttackedPlayer) {
                     return attackedPlayersFor(trigger, event, sourceId, controllerId, state).isNotEmpty()
                 }
-                val filter = trigger.attackerFilter
-                if (filter != null) {
-                    // Count attackers matching the filter
-                    val projected = state.projectedState
-                    val predicateContext = com.wingedsheep.engine.handlers.PredicateContext(
-                        controllerId = controllerId,
-                        sourceId = sourceId
-                    )
-                    val matchingCount = event.attackers.count { attackerId ->
-                        predicateEvaluator.matches(state, projected, attackerId, filter, predicateContext)
-                    }
-                    matchingCount >= trigger.minAttackers
-                } else {
-                    event.attackers.size >= trigger.minAttackers
-                }
+                youAttackAttackers(trigger, event, sourceId, controllerId, state).size >= trigger.minAttackers
             }
             is EventPattern.LandPlayedEvent -> {
                 // "Whenever you play a land …" (Shadow of the Goblin) / "whenever a player plays a
@@ -1035,6 +1021,27 @@ class TriggerMatcher(
         trigger.unblocked -> unblockedAttackersAgainstYou(trigger, event, controllerId, state)
         event is AttackersDeclaredEvent -> event.attackers.filter { attacksYou(trigger, it, controllerId, state) }
         else -> emptyList()
+    }
+
+    /**
+     * The declared attackers a [EventPattern.YouAttackEvent] counts — every creature in [event]
+     * matching [EventPattern.YouAttackEvent.attackerFilter] (all of them when it is null). The
+     * matcher compares their number with `minAttackers`; the detector freezes them as the firing's
+     * captured collection, so "whenever you attack with one or more creatures, create **that
+     * many** …" (Rabble Rousing) counts the creatures you attacked with even if some leave combat
+     * before the trigger resolves. Only declared attackers count (CR 508.4).
+     */
+    fun youAttackAttackers(
+        trigger: EventPattern.YouAttackEvent,
+        event: AttackersDeclaredEvent,
+        sourceId: EntityId,
+        controllerId: EntityId,
+        state: GameState
+    ): List<EntityId> {
+        val filter = trigger.attackerFilter ?: return event.attackers
+        val projected = state.projectedState
+        val predicateContext = PredicateContext(controllerId = controllerId, sourceId = sourceId)
+        return event.attackers.filter { predicateEvaluator.matches(state, projected, it, filter, predicateContext) }
     }
 
     /**

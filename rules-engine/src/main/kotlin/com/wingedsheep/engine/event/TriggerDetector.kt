@@ -1923,6 +1923,13 @@ class TriggerDetector(
                         val capturedTargets = (event as? SpellCastEvent)?.let {
                             matcher.capturedCastTargets(ability.trigger, it, state, entityId, controllerId)
                         }
+                        // "Whenever you attack with one or more creatures, create that many …"
+                        // (Rabble Rousing): the creatures the trigger counted, frozen at declaration.
+                        val capturedAttackers = (ability.trigger as? EventPattern.YouAttackEvent)?.let { trigger ->
+                            (event as? AttackersDeclaredEvent)?.let {
+                                matcher.youAttackAttackers(trigger, it, entityId, controllerId, state)
+                            }
+                        }
 
                         triggers.add(
                             PendingTrigger(
@@ -1935,7 +1942,7 @@ class TriggerDetector(
                                         enchantedCreatureLastKnownPower = enchantedPower,
                                         // Never clobber a capture the event itself carries
                                         // (manifest dread's graveyard cards).
-                                        capturedEntityIds = capturedTargets ?: ctx.capturedEntityIds,
+                                        capturedEntityIds = capturedTargets ?: capturedAttackers ?: ctx.capturedEntityIds,
                                         capturedEntitySnapshots = capturedTargets?.let { copiableSnapshots(state, it) }
                                     )
                                 }

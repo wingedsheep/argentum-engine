@@ -1068,6 +1068,10 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
      * or battle — and [minAttackers] / [attackerFilter] are counted per attacked player. It fires
      * once for each player attacked that way, binding that player as the triggering player
      * ("that player", `Player.TriggeringPlayer`), per the cards' rulings.
+     *
+     * Without [perAttackedPlayer], a battlefield firing captures the declared attackers it counted
+     * as its trigger-captured collection, so "create that many …" (Rabble Rousing) reads how many
+     * creatures you attacked with, even after one leaves combat.
      */
     @SerialName("YouAttackEvent")
     @Serializable

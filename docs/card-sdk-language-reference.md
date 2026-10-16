@@ -7427,6 +7427,11 @@ The shapes in this family, with their engine notes.
 
 - `Triggers.you.attacks()` — when you declare attackers (player-level, ANY binding).
 - `Triggers.you.attacks(with)` — when you attack with ≥1 matching attacker.
+  Either form (not `attacksAPlayer`) captures the declared attackers it counted as the firing's
+  `CollectionSlot.TriggerCaptured`, frozen at declaration (CR 508.4: a creature put onto the battlefield
+  attacking was never declared). "Create **that many** …" is
+  `DynamicAmounts.distinctEntitiesIn(CollectionSlot.TriggerCaptured)`; it still counts an attacker
+  removed before the trigger resolves (Rabble Rousing). Battlefield trigger path only.
 - `Triggers.you.attacksAPlayer(with?, minAttackers?)` — "whenever you attack **a player**" /
   "whenever one or more [with] you control attack a player" / "two or more creatures you control
   attack a player" (CR 508.3e). `YouAttackEvent(perAttackedPlayer = true)`: fires **once per player
