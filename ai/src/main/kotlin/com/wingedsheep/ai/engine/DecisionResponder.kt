@@ -13,6 +13,7 @@ import com.wingedsheep.ai.engine.knowledge.GraveyardSynergy
 import com.wingedsheep.ai.engine.knowledge.IntentCatalog
 import com.wingedsheep.ai.engine.knowledge.TargetPolarity
 import com.wingedsheep.engine.core.*
+import com.wingedsheep.engine.mechanics.layers.ActiveFloatingEffect
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
@@ -806,17 +807,7 @@ class DecisionResponder(
         if (yesResult !is SimulationResult.Terminal && yesResult !is SimulationResult.NeedsDecision) return false
         val yesState = yesResult.state
         if (yesState.gameOver) return false
-        val before = state.floatingEffects.mapTo(HashSet()) { it.id }
-        val projected = state.projectedState
-        val grants = yesState.floatingEffects.filter { effect ->
-            effect.id !in before &&
-                effect.duration == Duration.EndOfTurn &&
-                effect.effect.dynamicGroupFilter == null &&
-                effect.effect.affectedEntities.isNotEmpty() &&
-                effect.effect.affectedEntities.all { id ->
-                    projected.isCreature(id) && projected.getController(id) == playerId
-                }
-        }
+        val grants = newExpiringCreatureGrants(state, yesState, playerId)
         val idle: (EntityId) -> Boolean = { id -> !ExpiringGrantWindow.creatureCanStillFight(state, playerId, id) }
         var unspendable = grants.filter { effect -> effect.effect.affectedEntities.all(idle) }
         if (unspendable.size < grants.size) {
@@ -835,6 +826,44 @@ class DecisionResponder(
         val stripped = yesState.copy(floatingEffects = yesState.floatingEffects - unspendable.toSet())
         val strippedScore = evaluateChoice(state, SimulationResult.Terminal(stripped, yesResult.events), playerId)
         return strippedScore <= noScore
+    }
+
+    /**
+     * The until-end-of-turn effects [result] created that land only on [playerId]'s creatures —
+     * the grants whose whole value has to be spent in a fight this turn.
+     */
+    private fun newExpiringCreatureGrants(root: GameState, result: GameState, playerId: EntityId): List<ActiveFloatingEffect> {
+        val before = root.floatingEffects.mapTo(HashSet()) { it.id }
+        val projected = root.projectedState
+        return result.floatingEffects.filter { effect ->
+            effect.id !in before &&
+                effect.duration == Duration.EndOfTurn &&
+                effect.effect.dynamicGroupFilter == null &&
+                effect.effect.affectedEntities.isNotEmpty() &&
+                effect.effect.affectedEntities.all { id ->
+                    projected.isCreature(id) && projected.getController(id) == playerId
+                }
+        }
+    }
+
+    /**
+     * Whether [result] spent an until-end-of-turn grant where no fight this turn can use it: it
+     * made at least one such grant on our creatures, and none of them lands on a creature that
+     * can still attack or block ([ExpiringGrantWindow.creatureCanStillFight]). A permanent
+     * payoff — a counter, a token — makes no floating effect, so it never reads as wasted.
+     *
+     * [pickBestBySimulation]'s tie-break ahead of the target heuristic: under
+     * [com.wingedsheep.ai.engine.evaluation.CreatureValuation.expiringStatsNeedAFight] a pump on
+     * a creature that is not yet attacking scores at its settled stats, so every pick ties and
+     * the heuristic's bigger body won.
+     * 2026-10-16 AI-vs-AI logs, game 2 turn 11: Ezekiel Sims's beginning-of-combat +2/+2 went to a
+     * Spider-Man cast that main phase, and Ezekiel attacked unpumped.
+     */
+    private fun wastesExpiringGrant(root: GameState, result: GameState, playerId: EntityId): Boolean {
+        val grants = newExpiringCreatureGrants(root, result, playerId)
+        return grants.isNotEmpty() && grants.none { grant ->
+            grant.effect.affectedEntities.any { ExpiringGrantWindow.creatureCanStillFight(root, playerId, it) }
+        }
     }
 
     /**
@@ -1617,6 +1646,7 @@ class DecisionResponder(
         return tied.maxWith(
             compareBy<Triple<EntityId, SimulationResult, Double>>(
                 { libraryAndGraveyardPreference(state, it.second.state, playerId) },
+                { !wastesExpiringGrant(state, it.second.state, playerId) },
                 { heuristic(it.first) },
             )
         ).first
