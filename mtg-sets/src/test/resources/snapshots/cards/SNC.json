@@ -287,6 +287,100 @@
     ]
 }
 
+// Ballroom Brawlers
+{
+    "name": "Ballroom Brawlers",
+    "manaCost": "{3}{W}{W}",
+    "typeLine": "Creature — Human Warrior",
+    "oracleText": "Whenever this creature attacks, this creature and up to one other target creature you control both gain your choice of first strike or lifelink until end of turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ballroom Brawlers:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GrantKeyword",
+                                        "keyword": "FIRST_STRIKE",
+                                        "target": "Self"
+                                    },
+                                    {
+                                        "type": "GrantKeyword",
+                                        "keyword": "FIRST_STRIKE",
+                                        "target": {
+                                            "type": "BoundVariable",
+                                            "name": "t0"
+                                        }
+                                    }
+                                ]
+                            },
+                            "description": "First strike"
+                        },
+                        {
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GrantKeyword",
+                                        "keyword": "LIFELINK",
+                                        "target": "Self"
+                                    },
+                                    {
+                                        "type": "GrantKeyword",
+                                        "keyword": "LIFELINK",
+                                        "target": {
+                                            "type": "BoundVariable",
+                                            "name": "t0"
+                                        }
+                                    }
+                                ]
+                            },
+                            "description": "Lifelink"
+                        }
+                    ],
+                    "countsAsModalSpell": false
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "creature ctrl:you",
+                        "excludeSelf": true
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Whenever this creature attacks, this creature and up to one other target creature you control both gain your choice of first strike or lifelink until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "3",
+        "rarity": "UNCOMMON",
+        "artist": "John Stanko",
+        "flavorText": "Don't try to cut in. They'll cut back.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/f/bf5615a2-03a2-41f4-ab3b-de5e60d1504e.jpg?1783923164",
+        "rulings": [
+            {
+                "date": "2022-04-29",
+                "text": "You make the choice of first strike or lifelink only once, as Ballroom Brawlers's triggered ability resolves. Both creatures gain the chosen ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Big Score
 {
     "name": "Big Score",
@@ -541,6 +635,52 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Boon of Safety
+{
+    "name": "Boon of Safety",
+    "manaCost": "{W}",
+    "typeLine": "Instant",
+    "oracleText": "Put a shield counter on target creature. (If it would be dealt damage or destroyed, remove a shield counter from it instead.)\nScry 1.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "AddCounters",
+                    "counterType": "SHIELD",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "Scry",
+                    "count": 1
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "4",
+        "artist": "Robin Olausson",
+        "flavorText": "\"Saving a stranger's life is an excellent recruitment method. Luckily, peril is so easy to come by.\"\n—Falco Spara",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/0/2069310a-9fb6-41b7-bbd5-849e3df05632.jpg?1783923162"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -825,6 +965,209 @@
     "colorIdentityOverride": [
         "GREEN",
         "RED",
+        "WHITE"
+    ]
+}
+
+// Brokers Ascendancy
+{
+    "name": "Brokers Ascendancy",
+    "manaCost": "{G}{W}{U}",
+    "typeLine": "Enchantment",
+    "oracleText": "At the beginning of your end step, put a +1/+1 counter on each creature you control and a loyalty counter on each planeswalker you control.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Brokers Ascendancy:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Group",
+                                "filter": {
+                                    "baseFilter": "creature ctrl:you"
+                                }
+                            },
+                            "body": {
+                                "type": "AddCounters",
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "count": 1,
+                                "target": "IterationEntity"
+                            }
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Group",
+                                "filter": {
+                                    "baseFilter": "planeswalker ctrl:you"
+                                }
+                            },
+                            "body": {
+                                "type": "AddCounters",
+                                "counterType": "LOYALTY",
+                                "count": 1,
+                                "target": "IterationEntity"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "At the beginning of your end step, put a +1/+1 counter on each creature you control and a loyalty counter on each planeswalker you control."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "170",
+        "rarity": "RARE",
+        "artist": "Dallas Williams",
+        "flavorText": "\"This is the beginning of a beautiful friendship. And more importantly, a profitable one. Now sign here.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/9/799de0f1-6bf2-4158-8a4f-bedc3d2f6578.jpg?1783923093",
+        "rulings": [
+            {
+                "date": "2022-04-29",
+                "text": "A permanent that is somehow both a creature and a planeswalker as Brokers Ascendancy's ability resolves will get both a +1/+1 counter and a loyalty counter."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE",
+        "BLUE"
+    ]
+}
+
+// Brokers Charm
+{
+    "name": "Brokers Charm",
+    "manaCost": "{G}{W}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Choose one —\n• Target creature you control gets +1/+0 until end of turn. It deals damage equal to its power to target creature or planeswalker an opponent controls.\n• Destroy target enchantment.\n• Draw two cards.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "ModifyStats",
+                                "powerModifier": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "toughnessModifier": {
+                                    "type": "Fixed",
+                                    "amount": 0
+                                },
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            {
+                                "type": "DealDamage",
+                                "amount": {
+                                    "type": "EntityProperty",
+                                    "entity": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    },
+                                    "numericProperty": "Power"
+                                },
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t1"
+                                },
+                                "damageSource": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        ]
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature ctrl:you"
+                            },
+                            "id": "t0"
+                        },
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature|planeswalker ctrl:opponent"
+                            },
+                            "id": "t1"
+                        }
+                    ],
+                    "description": "Your creature gets +1/+0, then deals damage equal to its power to a creature or planeswalker an opponent controls"
+                },
+                {
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t2"
+                        },
+                        "destination": "Graveyard",
+                        "byDestruction": true
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "enchantment"
+                            },
+                            "id": "t2"
+                        }
+                    ],
+                    "description": "Destroy target enchantment"
+                },
+                {
+                    "effect": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    },
+                    "description": "Draw two cards"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "171",
+        "rarity": "UNCOMMON",
+        "artist": "Steve Argyle",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/4/74c9c315-1cf4-468e-a74a-b5f3be4a63a1.jpg?1783923094",
+        "rulings": [
+            {
+                "date": "2022-04-29",
+                "text": "You can't choose the first mode for Brokers Charm unless your opponent has a creature or planeswalker to target."
+            },
+            {
+                "date": "2022-04-29",
+                "text": "If you choose the first mode and your creature is not a legal target as Brokers Charm resolves, no damage will be dealt."
+            },
+            {
+                "date": "2022-04-29",
+                "text": "If you choose the first mode and your opponent's creature or planeswalker is not a legal target as Brokers Charm resolves, your creature will still get +1/+0 until end of turn."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE",
         "WHITE"
     ]
 }
@@ -1531,6 +1874,142 @@
     }
 }
 
+// Citizen's Crowbar
+{
+    "name": "Citizen's Crowbar",
+    "manaCost": "{1}{W}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "When this Equipment enters, create a 1/1 green and white Citizen creature token, then attach this Equipment to it.\nEquipped creature gets +1/+1 and has \"{W}, {T}, Sacrifice Citizen's Crowbar: Destroy target artifact or enchantment.\"\nEquip {2} ({2}: Attach to target creature you control. Equip only as a sorcery.)",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Citizen's Crowbar:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CreateToken",
+                            "power": 1,
+                            "toughness": 1,
+                            "colors": [
+                                "GREEN",
+                                "WHITE"
+                            ],
+                            "creatureTypes": [
+                                "Citizen"
+                            ]
+                        },
+                        {
+                            "type": "AttachEquipment",
+                            "target": {
+                                "type": "PipelineTarget",
+                                "collectionName": "createdTokens"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "When this Equipment enters, create a 1/1 green and white Citizen creature token, then attach this Equipment to it."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Citizen's Crowbar:3",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1
+            },
+            {
+                "type": "GrantActivatedAbility",
+                "ability": {
+                    "id": "Citizen's Crowbar:2",
+                    "cost": {
+                        "type": "CostComposite",
+                        "costs": [
+                            {
+                                "type": "CostAtomWrapper",
+                                "atom": {
+                                    "type": "AtomMana",
+                                    "cost": "{W}"
+                                }
+                            },
+                            "CostTap",
+                            "CostSacrificeGrantingPermanent"
+                        ]
+                    },
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "destination": "Graveyard",
+                        "byDestruction": true
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "artifact|enchantment"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "descriptionOverride": "{W}, {T}, Sacrifice Citizen's Crowbar: Destroy target artifact or enchantment."
+                }
+            }
+        ]
+    },
+    "equipCost": "{2}",
+    "metadata": {
+        "collectorNumber": "8",
+        "rarity": "UNCOMMON",
+        "artist": "Slawomir Maniak",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/6/b68896f5-1e13-400a-a327-b6c6f00858b7.jpg?1783923162",
+        "rulings": [
+            {
+                "date": "2022-04-29",
+                "text": "If another player gains control of the equipped creature but doesn't gain control of the Equipment, they will not be able to activate the ability the Equipment grants because they can't pay a cost that includes sacrificing a permanent they don't control."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Civic Gardener
 {
     "name": "Civic Gardener",
@@ -1849,6 +2328,52 @@
     ]
 }
 
+// Dapper Shieldmate
+{
+    "name": "Dapper Shieldmate",
+    "manaCost": "{3}{W}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "This creature enters with a shield counter on it. (If it would be dealt damage or destroyed, remove a shield counter from it instead.)\nDuring your turn, this creature gets +2/+0.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "ModifyStats",
+                    "powerBonus": 2,
+                    "toughnessBonus": 0,
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": "IsYourTurn"
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "counterType": "SHIELD",
+                "count": 1,
+                "selfOnly": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "9",
+        "artist": "Greg Opalinski",
+        "flavorText": "Descended from Old Capenna's paladins, the Brokers are masters of defensive combat.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/6/d6ce9c33-4ab3-43c9-b6bc-ee2d40d8f9b6.jpg?1783923160"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Daring Escape
 {
     "name": "Daring Escape",
@@ -2089,6 +2614,84 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Depopulate
+{
+    "name": "Depopulate",
+    "manaCost": "{2}{W}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Each player who controls a multicolored creature draws a card. Then destroy all creatures.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "Each"
+                    },
+                    "body": {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.WhenCondition",
+                            "condition": {
+                                "type": "Exists",
+                                "player": "You",
+                                "zone": "Battlefield",
+                                "filter": {
+                                    "cardPredicates": [
+                                        "IsCreature",
+                                        "IsMulticolored"
+                                    ]
+                                }
+                            }
+                        },
+                        "then": {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    }
+                },
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "BattlefieldMatching",
+                                "filter": "creature"
+                            },
+                            "storeAs": "destroyAll_gathered"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "destroyAll_gathered",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Destroy"
+                        }
+                    ]
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "10",
+        "rarity": "RARE",
+        "artist": "Jokubas Uogintas",
+        "flavorText": "No screams rang out. No blood stained the streets. In an instant, the bustling metropolis simply fell silent.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/5/c53c1898-9107-4bf8-b249-d0502fb9596d.jpg?1783923159"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -2692,6 +3295,101 @@
     ]
 }
 
+// Extraction Specialist
+{
+    "name": "Extraction Specialist",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Human Rogue",
+    "oracleText": "Lifelink\nWhen this creature enters, return target creature card with mana value 2 or less from your graveyard to the battlefield. That creature can't attack or block for as long as you control this creature.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "LIFELINK"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Extraction Specialist:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "ChosenTargets",
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            },
+                            "storeMovedAs": "moved1"
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "CantAttack",
+                                    "target": {
+                                        "type": "PipelineTarget",
+                                        "collectionName": "moved1"
+                                    },
+                                    "duration": {
+                                        "type": "WhileYouControlSource",
+                                        "sourceDescription": "Extraction Specialist"
+                                    }
+                                },
+                                {
+                                    "type": "CantBlockTargetCreatures",
+                                    "target": {
+                                        "type": "PipelineTarget",
+                                        "collectionName": "moved1"
+                                    },
+                                    "duration": {
+                                        "type": "WhileYouControlSource",
+                                        "sourceDescription": "Extraction Specialist"
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature mv<=2 own:you",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "12",
+        "rarity": "RARE",
+        "artist": "Irina Nordsol",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/4/b404d6c7-0b65-4c6a-b141-9dffbeb120db.jpg?1783923159",
+        "rulings": [
+            {
+                "date": "2022-04-29",
+                "text": "Once Extraction Specialist leaves the battlefield, the creature that is returned can attack and block as normal. If Extraction Specialist leaves the battlefield before its ability resolves, the creature that is returned will be able to attack and block as normal right away."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Fake Your Own Death
 {
     "name": "Fake Your Own Death",
@@ -2967,6 +3665,72 @@
     "colorIdentityOverride": [
         "GREEN",
         "RED",
+        "WHITE"
+    ]
+}
+
+// Gathering Throng
+{
+    "name": "Gathering Throng",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Human Citizen",
+    "oracleText": "When this creature enters, you may search your library for any number of cards named Gathering Throng, reveal them, put them into your hand, then shuffle.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Gathering Throng:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Library",
+                                    "filter": "name:Gathering Throng"
+                                },
+                                "storeAs": "gathered0"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "gathered0",
+                                "selection": "ChooseAnyNumber",
+                                "storeSelected": "selected1",
+                                "prompt": "Search your library for any number of cards named Gathering Throng"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "selected1",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Hand"
+                                },
+                                "revealed": true
+                            },
+                            "ShuffleLibrary"
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "13",
+        "artist": "Randy Vargas",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/9/290347b9-d3cc-4882-8da6-9d8b8677f276.jpg?1783923158"
+    },
+    "colorIdentityOverride": [
         "WHITE"
     ]
 }
@@ -5124,6 +5888,88 @@
     }
 }
 
+// Mage's Attendant
+{
+    "name": "Mage's Attendant",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Cat Rogue",
+    "oracleText": "When this creature enters, create a 1/1 blue Wizard creature token with \"{1}, Sacrifice this token: Counter target noncreature spell unless its controller pays {1}.\"",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Mage's Attendant:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "BLUE"
+                    ],
+                    "creatureTypes": [
+                        "Wizard"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/7/f/7f3edaf7-0ebd-4a8b-9954-dd91bb797744.jpg?1783922964",
+                    "activatedAbilities": [
+                        {
+                            "id": "Mage's Attendant:1",
+                            "cost": {
+                                "type": "CostComposite",
+                                "costs": [
+                                    {
+                                        "type": "CostAtomWrapper",
+                                        "atom": {
+                                            "type": "AtomMana",
+                                            "cost": "{1}"
+                                        }
+                                    },
+                                    "CostSacrificeSelf"
+                                ]
+                            },
+                            "effect": {
+                                "type": "Counter",
+                                "condition": {
+                                    "type": "CounterCondition.UnlessPaysMana",
+                                    "cost": "{1}"
+                                }
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": "noncreature",
+                                        "zone": "Stack"
+                                    },
+                                    "id": "t0"
+                                }
+                            ],
+                            "descriptionOverride": "{1}, Sacrifice this token: Counter target noncreature spell unless its controller pays {1}."
+                        }
+                    ]
+                },
+                "descriptionOverride": "When this creature enters, create a 1/1 blue Wizard creature token with \"{1}, Sacrifice this token: Counter target noncreature spell unless its controller pays {1}.\""
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "21",
+        "rarity": "UNCOMMON",
+        "artist": "Igor Kieryluk",
+        "flavorText": "Crime sometimes makes unlikely allies into lifelong friends.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/c/0cce08e8-340b-4a67-9884-4cbf01d63790.jpg?1783923155"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Make Disappear
 {
     "name": "Make Disappear",
@@ -5360,6 +6206,65 @@
         "BLACK",
         "RED",
         "GREEN"
+    ]
+}
+
+// Metropolis Angel
+{
+    "name": "Metropolis Angel",
+    "manaCost": "{2}{W}{U}",
+    "typeLine": "Creature — Angel Soldier",
+    "oracleText": "Flying\nWhenever you attack with one or more creatures with counters on them, draw a card.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Metropolis Angel:1",
+                "trigger": {
+                    "type": "YouAttackEvent",
+                    "attackerFilter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "statePredicates": [
+                            "HasAnyCounter"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "descriptionOverride": "Whenever you attack with one or more creatures with counters on them, draw a card."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "203",
+        "rarity": "UNCOMMON",
+        "artist": "Lie Setiawan",
+        "flavorText": "\"Angels are living proof that power does not always lead to corruption.\"\n—Elspeth",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/3/633c7e38-fdad-461c-9ecb-3e89d5b80f24.jpg?1783923079",
+        "rulings": [
+            {
+                "date": "2022-04-29",
+                "text": "Metropolis Angel's last ability triggers whenever you attack with at least one creature that has at least one counter on it. You draw exactly one card as it resolves, no matter how many attacking creatures had counters on them."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
     ]
 }
 
@@ -6411,6 +7316,60 @@
             }
         ]
     }
+}
+
+// Patch Up
+{
+    "name": "Patch Up",
+    "manaCost": "{2}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Return up to three target creature cards with total mana value 3 or less from your graveyard to the battlefield.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": "ChosenTargets",
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "gathered0",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Battlefield"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "count": 3,
+                "optional": true,
+                "filter": {
+                    "baseFilter": "creature own:you",
+                    "zone": "Graveyard"
+                },
+                "id": "t0",
+                "totalManaValueAtMost": {
+                    "type": "Fixed",
+                    "amount": 3
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "23",
+        "rarity": "UNCOMMON",
+        "artist": "Scott Murphy",
+        "flavorText": "\"Don't tell me who sent you or who you work for. The less I know, the better.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/c/2ce30c92-c5f2-45d2-819e-177390bc26f5.jpg?1783923158"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
 }
 
 // Plasma Jockey
@@ -8076,6 +9035,93 @@
     ]
 }
 
+// Revelation of Power
+{
+    "name": "Revelation of Power",
+    "manaCost": "{1}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature gets +2/+2 until end of turn. If it has a counter on it, it also gains flying and lifelink until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "filter": {
+                                "statePredicates": [
+                                    "HasAnyCounter"
+                                ]
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "FLYING",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "LIFELINK",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "28",
+        "artist": "Eric Deschamps",
+        "flavorText": "As Ob Nixilis closed in, Halo swept through Giada like an electrical current, and inside her, something long dormant unfurled its wings.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/e/7e010b11-8f3e-4792-afe4-0a376650b6c4.jpg?1783923152"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Riveteers Ascendancy
 {
     "name": "Riveteers Ascendancy",
@@ -8720,6 +9766,265 @@
     ]
 }
 
+// Sanctuary Warden
+{
+    "name": "Sanctuary Warden",
+    "manaCost": "{4}{W}{W}",
+    "typeLine": "Creature — Angel Soldier",
+    "oracleText": "Flying\nThis creature enters with two shield counters on it.\nWhenever this creature enters or attacks, you may remove a counter from a creature or planeswalker you control. If you do, draw a card and create a 1/1 green and white Citizen creature token.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sanctuary Warden:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayDecide",
+                        "prompt": "Remove a counter from a creature or planeswalker you control to draw a card and create a Citizen?",
+                        "feasibility": {
+                            "type": "ControlsPermanentMatching",
+                            "filter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "Or",
+                                        "predicates": [
+                                            "IsCreature",
+                                            "IsPlaneswalker"
+                                        ]
+                                    }
+                                ],
+                                "statePredicates": [
+                                    "HasAnyCounter"
+                                ],
+                                "controllerPredicate": "ControlledByYou"
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "SelectTarget",
+                                "requirement": {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": {
+                                            "cardPredicates": [
+                                                {
+                                                    "type": "Or",
+                                                    "predicates": [
+                                                        "IsCreature",
+                                                        "IsPlaneswalker"
+                                                    ]
+                                                }
+                                            ],
+                                            "statePredicates": [
+                                                "HasAnyCounter"
+                                            ],
+                                            "controllerPredicate": "ControlledByYou"
+                                        }
+                                    }
+                                },
+                                "storeAs": "target0",
+                                "nonTargeting": true,
+                                "prompt": "Choose a creature or planeswalker you control to remove a counter from"
+                            },
+                            {
+                                "type": "Gated",
+                                "gate": {
+                                    "type": "Gate.DoAction",
+                                    "action": {
+                                        "type": "RemoveAnyNumberOfCounters",
+                                        "target": {
+                                            "type": "PipelineTarget",
+                                            "collectionName": "target0"
+                                        },
+                                        "maxTotal": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        },
+                                        "minTotal": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "successCriterion": "SuccessCriterion.CountersRemoved"
+                                },
+                                "then": {
+                                    "type": "Composite",
+                                    "effects": [
+                                        {
+                                            "type": "DrawCards",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        {
+                                            "type": "CreateToken",
+                                            "power": 1,
+                                            "toughness": 1,
+                                            "colors": [
+                                                "GREEN",
+                                                "WHITE"
+                                            ],
+                                            "creatureTypes": [
+                                                "Citizen"
+                                            ]
+                                        }
+                                    ]
+                                }
+                            }
+                        ]
+                    }
+                },
+                "descriptionOverride": "Whenever this creature enters or attacks, you may remove a counter from a creature or planeswalker you control. If you do, draw a card and create a 1/1 green and white Citizen creature token."
+            },
+            {
+                "id": "Sanctuary Warden:2",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayDecide",
+                        "prompt": "Remove a counter from a creature or planeswalker you control to draw a card and create a Citizen?",
+                        "feasibility": {
+                            "type": "ControlsPermanentMatching",
+                            "filter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "Or",
+                                        "predicates": [
+                                            "IsCreature",
+                                            "IsPlaneswalker"
+                                        ]
+                                    }
+                                ],
+                                "statePredicates": [
+                                    "HasAnyCounter"
+                                ],
+                                "controllerPredicate": "ControlledByYou"
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "SelectTarget",
+                                "requirement": {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": {
+                                            "cardPredicates": [
+                                                {
+                                                    "type": "Or",
+                                                    "predicates": [
+                                                        "IsCreature",
+                                                        "IsPlaneswalker"
+                                                    ]
+                                                }
+                                            ],
+                                            "statePredicates": [
+                                                "HasAnyCounter"
+                                            ],
+                                            "controllerPredicate": "ControlledByYou"
+                                        }
+                                    }
+                                },
+                                "storeAs": "target0",
+                                "nonTargeting": true,
+                                "prompt": "Choose a creature or planeswalker you control to remove a counter from"
+                            },
+                            {
+                                "type": "Gated",
+                                "gate": {
+                                    "type": "Gate.DoAction",
+                                    "action": {
+                                        "type": "RemoveAnyNumberOfCounters",
+                                        "target": {
+                                            "type": "PipelineTarget",
+                                            "collectionName": "target0"
+                                        },
+                                        "maxTotal": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        },
+                                        "minTotal": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "successCriterion": "SuccessCriterion.CountersRemoved"
+                                },
+                                "then": {
+                                    "type": "Composite",
+                                    "effects": [
+                                        {
+                                            "type": "DrawCards",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        {
+                                            "type": "CreateToken",
+                                            "power": 1,
+                                            "toughness": 1,
+                                            "colors": [
+                                                "GREEN",
+                                                "WHITE"
+                                            ],
+                                            "creatureTypes": [
+                                                "Citizen"
+                                            ]
+                                        }
+                                    ]
+                                }
+                            }
+                        ]
+                    }
+                },
+                "descriptionOverride": "Whenever this creature enters or attacks, you may remove a counter from a creature or planeswalker you control. If you do, draw a card and create a 1/1 green and white Citizen creature token."
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "counterType": "SHIELD",
+                "count": 2,
+                "selfOnly": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "30",
+        "rarity": "MYTHIC",
+        "artist": "Johannes Voss",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/d/4dfdab77-d7c3-4e6a-bb4b-55153bd2fd4d.jpg?1783923151",
+        "rulings": [
+            {
+                "date": "2022-04-29",
+                "text": "Sanctuary Warden's triggered ability allows you to remove any kind of counter, not just a shield counter."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Scheming Fence
 {
     "name": "Scheming Fence",
@@ -9328,6 +10633,50 @@
     "colorIdentityOverride": [
         "GREEN",
         "BLUE",
+        "WHITE"
+    ]
+}
+
+// Speakeasy Server
+{
+    "name": "Speakeasy Server",
+    "manaCost": "{4}{W}",
+    "typeLine": "Creature — Bird Citizen",
+    "oracleText": "Flying\nWhen this creature enters, you gain 1 life for each other creature you control.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Speakeasy Server:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "creature",
+                        "excludeSelf": true
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "32",
+        "artist": "Scott Murphy",
+        "flavorText": "\"Whatever ails you, friends, this will cure it for tonight! And leave you with a little inspiration for tomorrow.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/0/e014d9d0-e6e1-4afb-b94f-b927a09b76c1.jpg?1783923151"
+    },
+    "colorIdentityOverride": [
         "WHITE"
     ]
 }
