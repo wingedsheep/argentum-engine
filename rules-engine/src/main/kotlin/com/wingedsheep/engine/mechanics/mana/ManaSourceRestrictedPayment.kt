@@ -121,9 +121,19 @@ class ManaSourceRestrictedPayment private constructor(
                 snowColorless = admittedSnow(null),
             )
             for (unit in unitsIn) eligible = eligible.withProvenance(unit.source, 1)
+            // The pool's provenance counters are consumed proportionally, so they can sit below
+            // what the surviving units would rebuild; never hand the admitted half more than the
+            // pool had, and never leave the remainder negative.
+            fun <K> capped(rebuilt: Map<K, Int>, original: Map<K, Int>): Map<K, Int> =
+                rebuilt.mapValues { (k, n) -> minOf(n, original[k] ?: 0) }.filterValues { it > 0 }
+            eligible = eligible.copy(
+                manaBySubtype = capped(eligible.manaBySubtype, manaBySubtype),
+                manaBySource = capped(eligible.manaBySource, manaBySource),
+                manaByCardType = capped(eligible.manaByCardType, manaByCardType),
+            )
 
             fun <K> minus(all: Map<K, Int>, taken: Map<K, Int>): Map<K, Int> =
-                all.mapValues { (k, n) -> n - (taken[k] ?: 0) }.filterValues { it > 0 }
+                all.mapValues { (k, n) -> (n - (taken[k] ?: 0)).coerceAtLeast(0) }.filterValues { it > 0 }
             val rest = ManaPoolComponent(
                 white = white - eligible.white,
                 blue = blue - eligible.blue,

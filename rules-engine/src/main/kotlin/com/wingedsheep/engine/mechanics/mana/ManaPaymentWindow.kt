@@ -1,6 +1,9 @@
 package com.wingedsheep.engine.mechanics.mana
 
 import com.wingedsheep.engine.mechanics.mana.withSpendingColors
+import com.wingedsheep.sdk.core.Color
+import com.wingedsheep.engine.state.components.player.ManaSourceTag
+import com.wingedsheep.engine.handlers.effects.mana.ManaProvenanceTracker
 import com.wingedsheep.engine.core.Suspension
 import com.wingedsheep.engine.core.restoreSuspension
 import com.wingedsheep.engine.core.ExecutionResult
@@ -160,10 +163,20 @@ object ManaPaymentWindow {
         var current = state
         val events = mutableListOf<GameEvent>()
         var produced = ManaPool()
+        // What produced each floated unit, snapshotted before the source is tapped or sacrificed,
+        // so the floated mana remembers its source like mana from an activated ability does
+        // ("mana from a Treasure", "spend only mana produced by Treasures").
+        val unitTags = mutableListOf<ManaUnit>()
+        val restrictedTags = mutableListOf<ManaSourceTag>()
+        fun record(tag: ManaSourceTag, color: Color?, amount: Int, restricted: Boolean) {
+            if (restricted) repeat(amount) { restrictedTags.add(tag) }
+            else repeat(amount) { unitTags.add(ManaUnit(color, tag)) }
+        }
 
         if (response.autoPay) {
             val solution = services.manaSolver.solve(current, playerId, remaining, excludeSources = excludeSources, spellContext = spellContext)
                 ?: return FloatResult(state, emptyList(), paid = false)
+            val tags = solution.manaProduced.keys.associateWith { ManaProvenanceTracker.sourceTag(current, it) }
             val (afterTaps, tapEvents) = services.manaAbilitySideEffectExecutor
                 .tapSourcesWithSideEffects(current, solution, playerId)
             current = afterTaps
@@ -171,8 +184,10 @@ object ManaPaymentWindow {
             for ((sourceId, p) in solution.manaProduced) {
                 val source = solution.sources.firstOrNull { it.entityId == sourceId }
                 val restriction = p.color?.let { source?.colorRestrictions?.get(it) } ?: source?.restriction
-                produced = if (restriction != null) produced.addRestricted(p.color, if (p.color != null) p.amount else p.colorless, restriction)
+                val amount = if (p.color != null) p.amount else p.colorless
+                produced = if (restriction != null) produced.addRestricted(p.color, amount, restriction)
                     else produced.addProduction(p)
+                record(tags.getValue(sourceId), p.color, amount, restriction != null)
             }
             // Bonus mana from mana auras / "whenever you tap for mana" riders isn't in
             // manaProduced; credit it or the cost comes up short (mirrors CostPaymentService.payMana).
@@ -183,31 +198,59 @@ object ManaPaymentWindow {
             val byId = availableSources.filter { it.entityId !in excludeSources }.associateBy { it.entityId }
             val actualSources = services.manaSolver.findAvailableManaSources(state, playerId, spellContext).associateBy { it.entityId }
             if (response.selectedSources.distinct().size != response.selectedSources.size) return FloatResult(state, emptyList(), paid = false)
+            // The part of the cost the mana floated so far hasn't covered, so a source that can
+            // make several colors (a Treasure) makes the one the cost still needs.
+            var stillNeeded = remaining
             for (sourceId in response.selectedSources) {
                 val source = byId[sourceId] ?: return FloatResult(state, emptyList(), paid = false)
                 val actual = actualSources[sourceId] ?: return FloatResult(state, emptyList(), paid = false)
                 if (spellContext != null && actual.restriction?.isSatisfiedBy(spellContext) == false) return FloatResult(state, emptyList(), paid = false)
+                val tag = ManaProvenanceTracker.sourceTag(current, sourceId)
                 val tapped = tapOrSacrifice(zones, current, sourceId, source, playerId)
                 current = tapped.first
                 events.addAll(tapped.second)
-                val color = source.producesColors.firstOrNull()
+                val color = neededColor(source.producesColors, source.manaAmount, stillNeeded, spellContext)
                 val restriction = color?.let { actual.colorRestrictions[it] } ?: actual.restriction
+                val unit = when {
+                    color != null -> ManaPool().add(color, source.manaAmount)
+                    source.producesColorless -> ManaPool().addColorless(source.manaAmount)
+                    else -> ManaPool()
+                }
+                stillNeeded = unit.payPartial(stillNeeded, spellContext).remainingCost
                 produced = when {
                     restriction != null -> produced.addRestricted(color, source.manaAmount, restriction)
                     color != null -> produced.add(color, source.manaAmount)
                     source.producesColorless -> produced.addColorless(source.manaAmount)
                     else -> produced
                 }.let { if (actual.isSnow && restriction == null) it.markSnow(color, source.manaAmount) else it }
+                if (color != null || source.producesColorless) record(tag, color, source.manaAmount, restriction != null)
                 // A composite tap ("{T}: Add {W}{U}{B}{R}{G}") adds its extra fixed colors too.
                 for ((extraColor, amount) in actual.compositeBonusMana) {
                     val extraRestriction = actual.colorRestrictions[extraColor] ?: actual.restriction
                     produced = if (extraRestriction != null) produced.addRestricted(extraColor, amount, extraRestriction)
                         else produced.add(extraColor, amount)
+                    record(tag, extraColor, amount, extraRestriction != null)
                 }
             }
         }
 
-        return FloatResult(current.addToManaPool(playerId, produced), events, paid = true)
+        return FloatResult(current.addToManaPool(playerId, produced, unitTags, restrictedTags), events, paid = true)
+    }
+
+    /**
+     * The color a source able to make any of [colors] makes for this payment: the first one that
+     * pays the most of [stillNeeded], falling back to the first color it can make.
+     */
+    private fun neededColor(
+        colors: Set<Color>,
+        amount: Int,
+        stillNeeded: com.wingedsheep.sdk.core.ManaCost,
+        spellContext: SpellPaymentContext?,
+    ): Color? {
+        if (colors.size <= 1) return colors.firstOrNull()
+        return colors.minByOrNull { color ->
+            ManaPool().add(color, amount).payPartial(stillNeeded, spellContext).remainingCost.cmc
+        }
     }
 
     /**
@@ -257,24 +300,37 @@ object ManaPaymentWindow {
             .payPartial(cost, spellContext).remainingCost
     }
 
-    /** Adds [produced] to [playerId]'s pool, preserving restricted mana and provenance. */
-    private fun GameState.addToManaPool(playerId: EntityId, produced: ManaPool): GameState =
+    /**
+     * Adds [produced] to [playerId]'s pool, preserving restricted mana and provenance: [units] are
+     * the floated unrestricted units with their sources, [restrictedTags] the sources of the floated
+     * restricted entries in the order they were added.
+     */
+    private fun GameState.addToManaPool(
+        playerId: EntityId,
+        produced: ManaPool,
+        units: List<ManaUnit> = emptyList(),
+        restrictedTags: List<ManaSourceTag> = emptyList(),
+    ): GameState =
         updateEntity(playerId) { container ->
             val pool = container.get<com.wingedsheep.engine.state.components.player.ManaPoolComponent>()
                 ?: com.wingedsheep.engine.state.components.player.ManaPoolComponent()
+            val taggedRestricted = produced.restrictedMana.mapIndexed { i, entry ->
+                restrictedTags.getOrNull(i)?.let { entry.copy(source = it) } ?: entry
+            }
+            val withProvenance = units.fold(pool) { acc, unit -> acc.withProvenance(unit.source, 1) }
             container.with(
-                pool.copy(
+                withProvenance.copy(
                     white = pool.white + produced.white,
                     blue = pool.blue + produced.blue,
                     black = pool.black + produced.black,
                     red = pool.red + produced.red,
                     green = pool.green + produced.green,
                     colorless = pool.colorless + produced.colorless,
-                    restrictedMana = pool.restrictedMana + produced.restrictedMana,
+                    restrictedMana = pool.restrictedMana + taggedRestricted,
                     snowMana = (pool.snowMana.keys + produced.snowMana.keys).associateWith {
                         (pool.snowMana[it] ?: 0) + (produced.snowMana[it] ?: 0)
                     },
-                    manaUnits = pool.manaUnits,
+                    manaUnits = pool.manaUnits + units,
                     snowColorless = pool.snowColorless + produced.snowColorless
                 )
             )

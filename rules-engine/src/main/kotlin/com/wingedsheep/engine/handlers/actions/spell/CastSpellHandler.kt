@@ -352,12 +352,15 @@ class CastSpellHandler(
                     val cost = castCostPayer.relaxForCastPermission(announcedState, action, computed.cost)
                         .withXAs(computed.paymentXValue)
                     // A cast restricted to certain sources' mana (Security Rhox) offers only those
-                    // sources and counts only their floating mana.
+                    // sources and counts only their floating mana — when the window opens and when
+                    // its answer floats the chosen mana, so every non-matching source (sacrifice
+                    // sources included) is refused on both sides.
                     val restricted = castCostPayer.manaSourceRestriction(announcedState, action, cardDef)
                     val windowState = restricted?.state ?: announcedState
-                    val refused = if (restricted == null) emptySet() else sources.filterNot {
-                        windowState.manaAbilitySourceAllowed(action.playerId, it, predicateEvaluator)
-                    }.toSet()
+                    val refused = if (restricted == null) emptySet() else manaSolver
+                        .findAvailableManaSources(announcedState, action.playerId).map { it.entityId }
+                        .filterNot { windowState.manaAbilitySourceAllowed(action.playerId, it, predicateEvaluator) }
+                        .toSet()
                     return announcedState.suspendForDecision(
                         question = { id -> com.wingedsheep.engine.mechanics.mana.ManaPaymentWindow.buildDecision(
                             windowState, action.playerId, cost, id, "Produce mana for ${cardComponent.name}",
@@ -366,6 +369,7 @@ class CastSpellHandler(
                             spellContext = castCostPayer.spellPaymentContext(announcedState, action, cardComponent),
                         ) },
                         answer = com.wingedsheep.engine.core.ManaActionPaymentContinuation(action, cost, lockedCastCost = totalCost, lockedAdditionalCosts = owedCosts,
+                            excludedSources = refused,
                             paymentContext = castCostPayer.spellPaymentContext(announcedState, action, cardComponent)),
                     )
                 }

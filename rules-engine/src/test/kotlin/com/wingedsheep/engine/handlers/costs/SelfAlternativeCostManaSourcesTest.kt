@@ -27,10 +27,10 @@ import io.kotest.matchers.shouldNotBe
  * [SelfAlternativeCost.manaSources] — "You may pay {R}{G} rather than pay this spell's mana cost.
  * Spend only mana produced by Treasures to cast it this way." (Security Rhox).
  *
- * The restriction scopes *which mana* may pay the alternative (CR 601.2h — the player pays the
- * total cost in any order, but only with mana the spell allows): mana abilities of other sources
- * can't be used, and floating mana counts only when a matching source produced it. The normal
- * mana cost is untouched.
+ * The player still pays the total cost as CR 601.2h describes; the card's own text limits *which
+ * mana* may pay it when cast this way: mana abilities of other sources can't be used, and
+ * floating mana counts only when a matching source produced it. The normal mana cost is
+ * untouched.
  */
 class SelfAlternativeCostManaSourcesTest : FunSpec({
 
@@ -223,5 +223,70 @@ class SelfAlternativeCostManaSourcesTest : FunSpec({
         alt.shouldNotBeNull()
         d.submit(altCast(you, spell)).error shouldBe null
         d.stackSize shouldBe 1
+    }
+    context("the mana-payment window a hand mana ability opens (CR 605.3a)") {
+        // Simian Spirit Guide's hand mana ability is mana auto-pay never spends, so a cast auto-pay
+        // can't cover opens the window instead of failing.
+        fun windowGame(): Triple<GameTestDriver, EntityId, List<EntityId>> {
+            val d = driver()
+            val you = d.activePlayer!!
+            val spell = d.putCardInHand(you, "Treasure-Bought Rhino")
+            d.putCardInHand(you, "Simian Spirit Guide")
+            val lands = listOf(
+                d.putPermanentOnBattlefield(you, "Restricted Red Land"),
+                d.putPermanentOnBattlefield(you, "Restricted Green Land"),
+            )
+            d.putPermanentOnBattlefield(you, "Treasure")
+            d.putPermanentOnBattlefield(you, "Treasure")
+            d.submit(altCast(you, spell)).error shouldBe null
+            return Triple(d, spell, lands)
+        }
+
+        fun treasures(d: GameTestDriver, player: EntityId) = d.state.getBattlefield(player).filter {
+            d.state.getEntity(it)?.get<com.wingedsheep.engine.state.components.identity.CardComponent>()?.name == "Treasure"
+        }
+
+        fun untapped(d: GameTestDriver, lands: List<EntityId>) = lands.none {
+            d.state.getEntity(it)?.has<com.wingedsheep.engine.state.components.battlefield.TappedComponent>() == true
+        }
+
+        test("choosing the Treasures in the window casts it, the lands untouched") {
+            val (d, _, lands) = windowGame()
+            val you = d.activePlayer!!
+            val window = d.pendingDecision as com.wingedsheep.engine.core.SelectManaSourcesDecision
+            window.availableSources.map { it.entityId }.toSet() shouldBe treasures(d, you).toSet()
+
+            d.submitDecision(you, com.wingedsheep.engine.core.ManaSourcesSelectedResponse(
+                decisionId = window.id, selectedSources = treasures(d, you))).error shouldBe null
+            d.stackSize shouldBe 1
+            treasures(d, you) shouldBe emptyList()
+            untapped(d, lands) shouldBe true
+        }
+
+        test("cracking the Treasures inside the window, then Auto-pay, casts it from their mana") {
+            val (d, _, lands) = windowGame()
+            val you = d.activePlayer!!
+            for ((t, color) in treasures(d, you).zip(listOf(Color.RED, Color.GREEN))) {
+                d.submit(ActivateAbility(you, t, treasureAbility, manaColorChoice = color)).error shouldBe null
+            }
+            val window = d.pendingDecision as com.wingedsheep.engine.core.SelectManaSourcesDecision
+            d.submitDecision(you, com.wingedsheep.engine.core.ManaSourcesSelectedResponse(
+                decisionId = window.id, autoPay = true)).error shouldBe null
+            d.stackSize shouldBe 1
+            untapped(d, lands) shouldBe true
+        }
+
+        test("choosing a land is rejected, and Auto-pay never taps the lands for it") {
+            val (d, _, lands) = windowGame()
+            val you = d.activePlayer!!
+            val window = d.pendingDecision as com.wingedsheep.engine.core.SelectManaSourcesDecision
+            d.submitDecision(you, com.wingedsheep.engine.core.ManaSourcesSelectedResponse(
+                decisionId = window.id, selectedSources = listOf(lands.first()))).error shouldNotBe null
+            // Auto-pay doesn't sacrifice uncracked Treasures, and may not use the lands.
+            d.submitDecision(you, com.wingedsheep.engine.core.ManaSourcesSelectedResponse(
+                decisionId = window.id, autoPay = true)).error shouldNotBe null
+            d.stackSize shouldBe 0
+            untapped(d, lands) shouldBe true
+        }
     }
 })
