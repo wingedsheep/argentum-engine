@@ -206,4 +206,27 @@ class FilteredCastRestrictionTest : FunSpec({
             d.submitSuccess(CastSpell(me, spell))
         }
     }
+    test("an end-of-your-next-turn ban outlives the opponent's turn and lifts after the controller's next one") {
+        val d = setup(); val me = d.activePlayer!!; val opp = d.getOpponent(me)
+        val result = CantCastSpellsExecutor().execute(d.state,
+            CantCastSpellsEffect(EffectTarget.PlayerRef(Player.Each), Duration.EndOfYourNextTurn,
+                GameObjectFilter.Creature),
+            EffectContext(sourceId = null, controllerId = me))
+        d.replaceState(result.state)
+        fun banned(p: EntityId) = d.state.getEntity(p)?.get<CantCastSpellsComponent>() != null
+
+        // The opponent's turn: still banned for both players, keyed to the caster's turn.
+        d.passPriorityUntil(Step.PRECOMBAT_MAIN, opp)
+        banned(me) shouldBe true
+        banned(opp) shouldBe true
+        // The caster's next turn: still in force until its cleanup.
+        d.passPriorityUntil(Step.PRECOMBAT_MAIN, me)
+        banned(me) shouldBe true
+        val body = d.putCardInHand(me, creature.name)
+        offers(d, body).isEmpty() shouldBe true
+        // Past that cleanup, both bans are gone.
+        d.passPriorityUntil(Step.UPKEEP, opp)
+        banned(me) shouldBe false
+        banned(opp) shouldBe false
+    }
 })

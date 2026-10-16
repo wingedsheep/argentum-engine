@@ -624,8 +624,8 @@ class CastPermissionUtils(
      * so the two always agree. Applied before [applyFreeFirstEquipDiscount].
      *
      * [equipTargetId] is the creature the equip ability targets, when known. A target-restricted
-     * grant ([ReduceEquipCost.onlyIfTargetIsSource]) only reduces the cost when the equip targets
-     * the permanent bearing the grant. Pass the chosen target at payment time so the paid cost is
+     * grant ([ReduceEquipCost.targetFilter]) only reduces the cost when the equip's target matches
+     * its filter. Pass the chosen target at payment time so the paid cost is
      * exact; pass `null` at enumeration (before the target is chosen) to offer the discount
      * optimistically.
      *
@@ -755,7 +755,7 @@ class CastPermissionUtils(
                     is com.wingedsheep.sdk.scripting.ConditionalStaticAbility -> {
                         val inner = ability.ability as? com.wingedsheep.sdk.scripting.ReduceEquipCost ?: continue
                         if (!countsForSource(inner)) continue
-                        if (!equipReductionApplies(state, entityId, inner, equipTargetId)) continue
+                        if (!equipReductionApplies(state, playerId, entityId, inner, equipTargetId)) continue
                         val context = com.wingedsheep.engine.handlers.EffectContext(
                             sourceId = entityId,
                             controllerId = playerId
@@ -764,7 +764,7 @@ class CastPermissionUtils(
                     }
                     is com.wingedsheep.sdk.scripting.ReduceEquipCost ->
                         if (countsForSource(ability) &&
-                            equipReductionApplies(state, entityId, ability, equipTargetId)) total += ability.amount
+                            equipReductionApplies(state, playerId, entityId, ability, equipTargetId)) total += ability.amount
                     else -> {}
                 }
             }
@@ -775,21 +775,26 @@ class CastPermissionUtils(
     /**
      * Whether a [ReduceEquipCost] grant borne by [sourceId] applies to an equip activation.
      * Unrestricted grants (Éowyn) always apply. A target-restricted grant
-     * ([ReduceEquipCost.onlyIfTargetIsSource], Cloud) applies only when the equip targets the
-     * source permanent: at payment ([equipTargetId] known) the ids must match; at enumeration
-     * ([equipTargetId] null) it applies optimistically whenever the source is currently a
-     * creature — i.e. a permanent the controller could legally choose as the equip's target — so
-     * the discounted cost is never withheld before the target is chosen.
+     * ([ReduceEquipCost.targetFilter] — Cloud's "that target ~", Strong Back's "that target
+     * enchanted creature") applies only when the equip's target matches the filter, evaluated
+     * relative to the grant's bearer: at payment ([equipTargetId] known) the chosen target must
+     * match; at enumeration ([equipTargetId] null) it applies optimistically whenever some creature
+     * [playerId] controls — a permanent they could choose as the equip's target — matches, so the
+     * discounted cost is never withheld before the target is chosen.
      */
     private fun equipReductionApplies(
         state: GameState,
+        playerId: EntityId,
         sourceId: EntityId,
         grant: com.wingedsheep.sdk.scripting.ReduceEquipCost,
         equipTargetId: EntityId?
     ): Boolean {
-        if (!grant.onlyIfTargetIsSource) return true
-        return if (equipTargetId != null) equipTargetId == sourceId
-        else state.projectedState.isCreature(sourceId)
+        val filter = grant.targetFilter ?: return true
+        val projected = state.projectedState
+        val context = PredicateContext(controllerId = playerId, sourceId = sourceId)
+        fun matches(id: EntityId) = predicateEvaluator.matches(state, projected, id, filter, context)
+        return if (equipTargetId != null) matches(equipTargetId)
+        else state.controlledBattlefield(playerId).any { projected.isCreature(it) && matches(it) }
     }
 
     /**

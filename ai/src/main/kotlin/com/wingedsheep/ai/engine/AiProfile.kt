@@ -1092,6 +1092,45 @@ data class AiProfile(
      *   for the swing back — and counts at the worse of the two.
      */
     val attacksReadTheRace: Boolean = false,
+    /**
+     * Read a **tax counter** ("counter target spell unless its controller pays {N}") against the
+     * mana its target's caster has left — the caster's whole mana, read by the engine's own solver.
+     *
+     * 2026-10-15 logs, `LIVE`, game `2f830698`: the AI held two Divert Disasters ("unless its
+     * controller pays {2}") from turn 9 to turn 21. On turns 13 and 15 the opponent cast Tannuk and
+     * Nova Hellkite with exactly two mana left, and the AI had four Islands open: one Divert alone
+     * gets paid, so the leaf scored each as a card spent for a Lander and passed — and never saw the
+     * line where the first Divert drains their two mana and the second is a hard counter, because it
+     * scores one cast at a time. On turn 21 it threw both at a Bombard cast off ten lands, and the
+     * opponent paid both taxes.
+     *
+     * With this on, [com.wingedsheep.ai.engine.knowledge.CounterTax] stacks the taxes of the tax
+     * counters in hand that our mana can still cast behind this one: when the caster can pay the
+     * whole stack the counter is floored below passing (it cannot counter); when it can pay this tax
+     * but not the stack, the cast is credited with the spell's worth on the board-value scale, so the
+     * first counter of the line is cast and the second one's own leaf finishes it.
+     */
+    val taxCountersReadTheirMana: Boolean = false,
+    /**
+     * Refuse two more shapes of a payoff that provably lands on nothing — the cast and the
+     * activation siblings of [refuseEmptyPayoffs].
+     *
+     * 2026-10-15 logs, `LIVE`:
+     *
+     * - **A permanent whose entry has nothing to target.** `cfe8d858` turn 5: Banishing Light cast
+     *   into a human with no nonland permanent, so its exile trigger left the stack for want of a
+     *   target and the enchantment did nothing all game — it was the AI's only answer to the
+     *   Thrumming Hivepool that came down later. A noncreature permanent carries a board prior of its
+     *   own, which is all the leaf saw. [com.wingedsheep.ai.engine.knowledge.TargetlessEntry] floors
+     *   a noncreature, nonland permanent whose only abilities are a targeted entry trigger (and the
+     *   linked-exile return that undoes it) when a required target slot has no legal target.
+     * - **An end-of-turn shrink with no fight to shrink.** `3f847e6d` turn 8: Proft, Sinister
+     *   Mastermind discarded from hand in our own declare-attackers step after we declared no attack,
+     *   to give an opposing 2/4 -3/-1 until end of turn. [com.wingedsheep.ai.engine.knowledge.ExpiringGrantWindow]
+     *   now reads a fixed stat loss that kills nothing as a payoff [refuseUnspendableGrants]' floor can
+     *   judge: refused when the creature it lands on can no longer attack or block this turn.
+     */
+    val refuseWastedPayoffs: Boolean = false,
     /** Non-null profiles may only be selected automatically for this set. Arena selection stays explicit. */
     val restrictedToSet: String? = null,
 ) {
@@ -2042,6 +2081,8 @@ data class AiProfile(
             selectionSeesWhoseCards = true,
             topOrBottomWeighsTheDraw = true,
             attacksReadTheRace = true,
+            taxCountersReadTheirMana = true,
+            refuseWastedPayoffs = true,
         )
 
         /**

@@ -2,6 +2,7 @@ package com.wingedsheep.mtg.sets.definitions.hob.cards
 
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.ReduceEquipCost
 
 /**
@@ -12,7 +13,7 @@ import com.wingedsheep.sdk.scripting.ReduceEquipCost
  * Equip abilities you activate that target this creature cost {2} less to activate.
  *
  * The target-restricted form of the controller-scoped [ReduceEquipCost] (Cloud, Planet's Champion):
- * with `onlyIfTargetIsSource` the {2} reduction applies only to equip abilities whose chosen target
+ * with `targetFilter = sourceItself()` the {2} reduction applies only to equip abilities whose chosen target
  * is this creature, and only to the generic portion of the cost, floored at {0}.
  */
 val DwarvenMauler = card("Dwarven Mauler") {
@@ -24,7 +25,7 @@ val DwarvenMauler = card("Dwarven Mauler") {
     oracleText = "Equip abilities you activate that target this creature cost {2} less to activate."
 
     staticAbility {
-        ability = ReduceEquipCost(amount = 2, onlyIfTargetIsSource = true)
+        ability = ReduceEquipCost(amount = 2, targetFilter = GameObjectFilter.Any.sourceItself())
     }
 
     metadata {

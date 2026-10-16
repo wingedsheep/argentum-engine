@@ -111,7 +111,13 @@ class HoldInstantSpeedDeploysTest : ScenarioTestBase() {
         // ── Game 2e28f192, turn 6: Jace's Machinations ──
 
         test("T6: an instant whose Jace it lets act at instant speed is held in our own main phase") {
+            // Seeded: with the Jace token priced at what its loyalty buys
+            // ([AiProfile.walkersPricedAsEngines]), the profile without the hold scores the cast
+            // and passing within rollout noise of each other here, so an entropy-seeded build
+            // flipped `before`'s answer from run to run. The hold's own answer never moved — the
+            // floor puts the cast below passing whatever the rollouts say.
             val game = scenario().withPlayers()
+                .withRngSeed(1L)
                 .withTurnNumber(6)
                 .withLandsOnBattlefield(1, "Island", 3)
                 .withCardInHand(1, "Jace's Machinations")

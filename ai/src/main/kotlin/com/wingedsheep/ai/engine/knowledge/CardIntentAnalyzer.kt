@@ -243,8 +243,21 @@ object CardIntentAnalyzer {
             wishFilters = if (movesToHand) wishFilters else emptyList(),
             arrivalTags = arrivalTags.takeIf { it != tags },
             grantsInstantSpeedLoyalty = leaves.any { it is GrantLoyaltyActivationPermissionEffect && it.instantSpeed },
+            counterTax = counterTaxOf(leaves),
         )
         return intent.copy(staticPriorValue = priorValueOf(card, intent))
+    }
+
+    /**
+     * [CardIntent.counterTax]: the generic mana every counter among [leaves] asks for, when each one
+     * is a fixed "unless its controller pays {N}". Null when there is no counter, or when any of
+     * them is a hard counter or a dynamic tax — a card this cannot read whole is not a tax counter.
+     */
+    private fun counterTaxOf(leaves: List<Effect>): Int? {
+        val counters = leaves.filterIsInstance<CounterEffect>()
+        if (counters.isEmpty()) return null
+        val taxes = counters.map { (it.condition as? CounterCondition.UnlessPaysMana)?.cost?.cmc ?: return null }
+        return taxes.max()
     }
 
     /**

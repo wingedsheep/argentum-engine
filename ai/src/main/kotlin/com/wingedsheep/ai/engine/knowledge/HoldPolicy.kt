@@ -114,6 +114,18 @@ class HoldPolicy(
      */
     private val holdInstantSpeedDeploys: Boolean = false,
     /**
+     * [AiProfile.taxCountersReadTheirMana][com.wingedsheep.ai.engine.AiProfile.taxCountersReadTheirMana]
+     * — read a "counter unless they pay {N}" against the mana its target's caster has left. See
+     * [CounterTax], which is where the whole idea lives.
+     */
+    private val taxCountersReadTheirMana: Boolean = false,
+    /**
+     * [AiProfile.refuseWastedPayoffs][com.wingedsheep.ai.engine.AiProfile.refuseWastedPayoffs] —
+     * refuse a permanent whose entry trigger has nothing to target ([TargetlessEntry]) and an
+     * end-of-turn shrink on a creature with no fight left ([ExpiringGrantWindow]).
+     */
+    private val refuseWastedPayoffs: Boolean = false,
+    /**
      * The profile's `EvaluationWeights.boardPresence`, so [RemovalPatience] can quote its discount
      * in the same currency as the board value it compares against. The default is the compiled
      * fallback's, which is what every profile that does not opt in would have used anyway.
@@ -160,16 +172,41 @@ class HoldPolicy(
 
         val intent = intents.forName(cardName) ?: return TimingVerdict.Neutral
 
+        // A permanent whose entry has nothing to point at does nothing in any window.
+        if (refuseWastedPayoffs && cast != null) {
+            val definition = intents.definition(cardName)
+            val predicates = intents.predicates
+            if (definition != null && predicates != null &&
+                TargetlessEntry.holds(state, playerId, definition, cast.cardId, predicates)
+            ) {
+                return TimingVerdict.NoWindow
+            }
+        }
+
         val window = windowVerdictFor(state, playerId, intent, cast, leaf)
         // A card that accomplishes nothing here is already floored below passing; there is no
         // target trade left to price on top of that.
         if (window is TimingVerdict.NoWindow) return window
 
+        // A tax counter is read against the mana they have left: futile, or the first of a stack.
+        val stackCredit = if (taxCountersReadTheirMana && cast != null) {
+            when (val reading = CounterTax.read(state, playerId, intent, cast, intents)) {
+                CounterTax.Reading.Futile -> return TimingVerdict.NoWindow
+                is CounterTax.Reading.FirstOfAStack -> boardPresenceWeight * reading.spellWorth
+                CounterTax.Reading.Silent -> 0.0
+            }
+        } else {
+            0.0
+        }
+
         val patience = patienceFor(state, playerId, intent, cast)
-        if (patience <= 0.0) return window
+        if (patience <= 0.0 && stackCredit == 0.0) return window
 
         val windowDelta = (window as? TimingVerdict.Adjust)?.delta ?: 0.0
-        return TimingVerdict.Adjust(windowDelta - patience, reason = "patience")
+        return TimingVerdict.Adjust(
+            windowDelta + stackCredit - patience.coerceAtLeast(0.0),
+            reason = if (stackCredit > 0.0) "first of stacked tax counters" else "patience",
+        )
     }
 
     /**
@@ -223,7 +260,7 @@ class HoldPolicy(
     ): TimingVerdict {
         if (activation == null) return TimingVerdict.Neutral
         if (!(holdExpiringGrantsForCombat || refuseUnspendableGrants || refuseDeadSearches ||
-                refuseEmptyPayoffs || drawWithIdleMana)
+                refuseEmptyPayoffs || drawWithIdleMana || refuseWastedPayoffs)
         ) {
             return TimingVerdict.Neutral
         }
@@ -241,12 +278,15 @@ class HoldPolicy(
             return TimingVerdict.NoWindow
         }
         if (drawWithIdleMana) drawActivationVerdict(state, playerId, ability)?.let { return it }
-        if (!(holdExpiringGrantsForCombat || refuseUnspendableGrants)) return TimingVerdict.Neutral
+        if (!(holdExpiringGrantsForCombat || refuseUnspendableGrants || refuseWastedPayoffs)) {
+            return TimingVerdict.Neutral
+        }
         val holds = ExpiringGrantWindow.holds(
             state, playerId, ability, intents,
             activation = activation,
             deferToLaterWindow = holdExpiringGrantsForCombat,
             refuseUnspendable = refuseUnspendableGrants,
+            readShrinks = refuseWastedPayoffs,
         )
         return if (holds) TimingVerdict.NoWindow else TimingVerdict.Neutral
     }

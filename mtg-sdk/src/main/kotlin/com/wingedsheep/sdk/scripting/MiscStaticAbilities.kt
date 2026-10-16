@@ -1860,19 +1860,21 @@ data object FreeFirstEquipEachTurn : StaticAbility {
  * activates, regardless of which permanent bears the equip ability. Gate it with a
  * [ConditionalStaticAbility] for a "during your turn"-style restriction.
  *
- * When [onlyIfTargetIsSource] is true, the reduction applies only to equip abilities that target
- * the permanent bearing this static ability — i.e. "Equip abilities you activate **that target
- * ~** cost {N} less to activate" (Cloud, Planet's Champion). The engine matches the equip's chosen
- * target against the source permanent: at payment time the exact target is known and the reduction
- * applies only when they match; at enumeration time (before the target is chosen) the discounted
- * cost is offered optimistically whenever the source is a creature the controller could equip, so
+ * When [targetFilter] is set, the reduction applies only to equip abilities whose target matches
+ * it, evaluated relative to the permanent bearing this static ability — "Equip abilities you
+ * activate **that target ~** cost {N} less" (Cloud, Planet's Champion:
+ * `GameObjectFilter.Any.sourceItself()`) or "**that target enchanted creature**" (Strong Back:
+ * `GameObjectFilter.Creature.attachedToBySource()`). At payment time the exact target is known and
+ * the reduction applies only when it matches; at enumeration time (before the target is chosen) the
+ * discounted cost is offered optimistically whenever a creature the controller controls matches, so
  * the ability is never withheld for want of the discount.
  */
 @SerialName("ReduceEquipCost")
 @Serializable
 data class ReduceEquipCost(
     val amount: Int,
-    val onlyIfTargetIsSource: Boolean = false,
+    /** Only equip abilities targeting a permanent matching this filter (relative to the bearer); null = any. */
+    val targetFilter: GameObjectFilter? = null,
     /**
      * When true, the reduction applies only to the equip abilities of the permanent bearing this
      * static — "This Equipment's equip abilities cost {amount} less to activate" (Firion, Wild Rose
@@ -1894,9 +1896,14 @@ data class ReduceEquipCost(
     override val description: String = when {
         onlyOwnEquip -> "This permanent's equip abilities cost {$amount} less to activate"
         onlyOtherEquip -> "Equip abilities you activate of other Equipment cost {$amount} less to activate"
-        onlyIfTargetIsSource -> "Equip abilities you activate that target this permanent cost {$amount} less to activate"
+        targetFilter != null ->
+            "Equip abilities you activate that target ${describeTarget(targetFilter)} cost {$amount} less to activate"
         else -> "Equip abilities you activate cost {$amount} less to activate"
     }
+
+    // `sourceItself()` describes as a bare predicate ("this"); name the bearer instead.
+    private fun describeTarget(filter: GameObjectFilter): String =
+        if (filter == GameObjectFilter.Any.sourceItself()) "this permanent" else filter.description
 }
 
 /**

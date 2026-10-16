@@ -744,7 +744,21 @@ class CleanupPhaseManager(
                 }
                 val cantCast = result.get<CantCastSpellsComponent>()
                 if (cantCast != null) {
-                    val remaining = cantCast.restrictions.filter { it.removeOn != PlayerEffectRemoval.EndOfTurn }
+                    val remaining = cantCast.restrictions.filter { ban ->
+                        when (ban.removeOn) {
+                            PlayerEffectRemoval.EndOfTurn -> false
+                            // "Until the end of your next turn" (Single Combat): ends at the cleanup
+                            // of the ban controller's first turn at or after its floor. Fail closed
+                            // when assembled without the executor's floor or controller.
+                            PlayerEffectRemoval.EndOfYourNextTurn -> {
+                                val floor = ban.expiresAfterTurn
+                                val owner = ban.controllerId
+                                floor != null && owner != null &&
+                                    !(newState.turnNumber >= floor && newState.isActiveTurnFor(owner))
+                            }
+                            else -> true
+                        }
+                    }
                     result = if (remaining.isEmpty()) result.without<CantCastSpellsComponent>()
                         else result.with(cantCast.copy(restrictions = remaining))
                 }

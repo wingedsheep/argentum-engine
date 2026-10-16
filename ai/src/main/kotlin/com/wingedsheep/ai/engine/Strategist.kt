@@ -212,6 +212,17 @@ class Strategist(
      */
     private val holdInstantSpeedDeploys: Boolean = false,
     /**
+     * [AiProfile.taxCountersReadTheirMana] — passed straight through to [HoldPolicy], which hands
+     * it to [com.wingedsheep.ai.engine.knowledge.CounterTax].
+     */
+    private val taxCountersReadTheirMana: Boolean = false,
+    /**
+     * [AiProfile.refuseWastedPayoffs] — passed straight through to [HoldPolicy], which hands it to
+     * [com.wingedsheep.ai.engine.knowledge.TargetlessEntry] and
+     * [com.wingedsheep.ai.engine.knowledge.ExpiringGrantWindow].
+     */
+    private val refuseWastedPayoffs: Boolean = false,
+    /**
      * [AiProfile.convokeLandsFirst] — a convoke spell taps creatures only for what mana cannot
      * pay, cheapest creatures first. See [withAutomaticConvoke].
      */
@@ -249,6 +260,8 @@ class Strategist(
         holdUnusablePumps = holdUnusablePumps,
         drawWithIdleMana = drawWithIdleMana,
         holdInstantSpeedDeploys = holdInstantSpeedDeploys,
+        taxCountersReadTheirMana = taxCountersReadTheirMana,
+        refuseWastedPayoffs = refuseWastedPayoffs,
         boardPresenceWeight = boardPresenceWeight,
     )
 

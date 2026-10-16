@@ -362,6 +362,46 @@ class LeaveTheGameTest : FunSpec({
         state.floatingEffects.any { it.id == fx } shouldBe false
     }
 
+    test("a departed player's 'until the end of your next turn' cast ban ends when that turn would have begun (CR 800.4m)") {
+        val (base, players) = initGame(4)
+        val processor = ActionProcessor(registry())
+        val ban = com.wingedsheep.engine.state.components.player.SpellCastRestriction(
+            removeOn = com.wingedsheep.engine.state.components.player.PlayerEffectRemoval.EndOfYourNextTurn,
+            controllerId = players[1],
+            expiresAfterTurn = base.turnNumber + 1
+        )
+        val armed = base.updateEntity(players[2]) {
+            it.with(com.wingedsheep.engine.state.components.player.CantCastSpellsComponent(listOf(ban)))
+        }
+        fun banned(s: GameState) =
+            s.getEntity(players[2])?.has<com.wingedsheep.engine.state.components.player.CantCastSpellsComponent>() == true
+
+        // The ban's controller concedes; the turn they would have taken next never comes, so the
+        // ban ends when it would have begun rather than lasting forever.
+        var state = processor.process(armed, Concede(players[1])).result.newState
+        banned(state) shouldBe true
+        var safety = 0
+        while (state.activePlayerId == players[0]) {
+            check(++safety < 500) { "stuck at ${state.step}" }
+            val prio = state.priorityPlayerId ?: break
+            val pending = state.pendingDecision
+            if (pending is com.wingedsheep.engine.core.SelectCardsDecision) {
+                val resp = com.wingedsheep.engine.core.CardsSelectedResponse(pending.id, pending.options.take(pending.minSelections))
+                state = processor.process(state, com.wingedsheep.engine.core.SubmitDecision(pending.playerId, resp)).result.newState
+                continue
+            }
+            if (state.step == com.wingedsheep.sdk.core.Step.DECLARE_ATTACKERS && state.isActiveTurnFor(prio) &&
+                state.getEntity(prio)?.has<com.wingedsheep.engine.state.components.combat.AttackersDeclaredThisCombatComponent>() != true
+            ) {
+                state = processor.process(state, com.wingedsheep.engine.core.DeclareAttackers(prio, emptyMap())).result.newState
+                continue
+            }
+            state = processor.process(state, PassPriority(prio)).result.newState
+        }
+        state.activePlayerId shouldBe players[2]
+        banned(state) shouldBe false
+    }
+
     test("priority held by the leaver passes to the next player still in the game (CR 800.4a)") {
         val (base, players) = initGame(4)
         // Give players[1] priority, then mark them lost (priority is still on them at this point).

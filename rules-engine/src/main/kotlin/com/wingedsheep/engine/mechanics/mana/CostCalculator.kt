@@ -132,6 +132,8 @@ class CostCalculator(
         declaredCostSlot: ChoiceSlot? = null,
         baseCost: ManaCost = cardDef.manaCost,
         card: CardDefinition = cardDef,
+        // Pre-scanned battlefield/emblem modifiers, so a caller that already scanned doesn't twice.
+        modifiers: List<Pair<EntityId, ModifySpellCost>> = scanModifySpellCost(state),
     ): ManaCost {
         var totalReduction = 0
         var totalIncrease = 0
@@ -188,7 +190,7 @@ class CostCalculator(
         }
 
         // ModifySpellCost abilities on battlefield permanents and emblems.
-        for ((sourceId, ability) in scanModifySpellCost(state)) {
+        for ((sourceId, ability) in modifiers) {
             if (ability.optionalLifePayment != null) continue
             if (!targetMatchesSpell(ability.target, cardDef, casterId, sourceId, state, chosenTargets, fromZone)) continue
             if (!gatingApplies(state, casterId, cardDef, ability, declaredCostSlot)) continue
@@ -553,7 +555,7 @@ class CostCalculator(
             }
             is CostModification.ReduceColoredIfAnyTargetMatches -> {
                 if (chosenTargets.isNotEmpty() &&
-                    anyTargetMatchesFilter(state, casterId, chosenTargets, modification.filter)
+                    anyTargetMatchesFilter(state, casterId, chosenTargets, modification.filter, abilitySourceId)
                 ) {
                     ManaCost.parse(modification.symbols).symbols
                         .filterIsInstance<ManaSymbol.Colored>()
@@ -583,7 +585,7 @@ class CostCalculator(
             }
             is CostModification.IncreaseGenericIfAnyTargetMatches -> {
                 if (chosenTargets.isNotEmpty() &&
-                    anyTargetMatchesFilter(state, casterId, chosenTargets, modification.filter)
+                    anyTargetMatchesFilter(state, casterId, chosenTargets, modification.filter, abilitySourceId)
                 ) {
                     addGenericIncrease(modification.amount)
                 }
@@ -640,7 +642,7 @@ class CostCalculator(
             }
             is CostReductionSource.FixedIfAnyTargetMatches -> {
                 if (chosenTargets.isEmpty()) 0
-                else if (anyTargetMatchesFilter(state, playerId, chosenTargets, source.filter)) source.amount
+                else if (anyTargetMatchesFilter(state, playerId, chosenTargets, source.filter, abilitySourceId)) source.amount
                 else 0
             }
             // "for each target beyond the first" — 0 while targets are still unchosen, which is
@@ -997,22 +999,32 @@ class CostCalculator(
     ): ManaCost {
         val optimisticTargets = mutableListOf<EntityId>()
         var legalTargets: List<EntityId>? = null
+        fun addOptimisticMatch(src: CostReductionSource.FixedIfAnyTargetMatches, modifierSourceId: EntityId?) {
+            val match = if (cardDef.script.targetRequirements.isEmpty() && cardDef.script.castAuraTarget == null) {
+                findAnyBattlefieldMatch(state, casterId, src.filter, modifierSourceId)
+            } else {
+                val candidates = legalTargets ?: spellLegalTargets(state, cardDef, casterId, spellId)
+                    .also { legalTargets = it }
+                findAnyMatch(state, casterId, candidates, src.filter, modifierSourceId)
+            }
+            if (match != null) optimisticTargets += match
+        }
         for (ability in cardDef.script.staticAbilities) {
             if (ability !is ModifySpellCost) continue
             if (ability.target != SpellCostTarget.SelfCast) continue
             val src = sourceFromModification(ability.modification)
-            if (src is CostReductionSource.FixedIfAnyTargetMatches) {
-                val match = if (cardDef.script.targetRequirements.isEmpty()) {
-                    findAnyBattlefieldMatch(state, casterId, src.filter)
-                } else {
-                    val candidates = legalTargets ?: spellLegalTargets(state, cardDef, casterId, spellId)
-                        .also { legalTargets = it }
-                    findAnyMatch(state, casterId, candidates, src.filter)
-                }
-                if (match != null) optimisticTargets += match
-            }
+            if (src is CostReductionSource.FixedIfAnyTargetMatches) addOptimisticMatch(src, null)
         }
-        return calculateEffectiveCost(state, cardDef, casterId, optimisticTargets)
+        // A permanent's target-conditional discount (Strong Back: "Aura spells you cast that target
+        // enchanted creature cost {3} less") is just as unknowable before targets are chosen.
+        val modifiers = scanModifySpellCost(state)
+        for ((sourceId, ability) in modifiers) {
+            val src = sourceFromModification(ability.modification) as? CostReductionSource.FixedIfAnyTargetMatches
+                ?: continue
+            if (!targetMatchesSpell(ability.target, cardDef, casterId, sourceId, state)) continue
+            addOptimisticMatch(src, sourceId)
+        }
+        return calculateEffectiveCost(state, cardDef, casterId, optimisticTargets, modifiers = modifiers)
     }
 
     /** Every legal target of any of the spell's declared target requirements, in any zone. */
@@ -1022,7 +1034,10 @@ class CostCalculator(
         casterId: EntityId,
         spellId: EntityId
     ): List<EntityId> =
-        cardDef.script.targetRequirements.flatMap { targetFinder.findLegalTargets(state, it, casterId, sourceId = spellId) }
+        // An Aura's enchant target is declared apart from its other requirements; include it so a
+        // discount for "Aura spells that target X" is only offered when the Aura can target X.
+        (cardDef.script.targetRequirements + listOfNotNull(cardDef.script.castAuraTarget))
+            .flatMap { targetFinder.findLegalTargets(state, it, casterId, sourceId = spellId) }
 
     private fun sourceFromModification(modification: CostModification): CostReductionSource? = when (modification) {
         is CostModification.ReduceGenericBy -> modification.source
@@ -1079,10 +1094,12 @@ class CostCalculator(
         state: GameState,
         playerId: EntityId,
         targets: List<EntityId>,
-        filter: GameObjectFilter
+        filter: GameObjectFilter,
+        sourceId: EntityId? = null,
     ): Boolean {
         val projected = state.projectedState
-        val context = PredicateContext(controllerId = playerId)
+        // The modifier's permanent, so source-relative filters ("enchanted creature") resolve.
+        val context = PredicateContext(controllerId = playerId, sourceId = sourceId)
         return targets.any { entityId ->
             predicateEvaluator.matches(state, projected, entityId, filter, context)
         }
@@ -1093,10 +1110,11 @@ class CostCalculator(
         state: GameState,
         playerId: EntityId,
         candidates: List<EntityId>,
-        filter: GameObjectFilter
+        filter: GameObjectFilter,
+        sourceId: EntityId? = null,
     ): EntityId? {
         val projected = state.projectedState
-        val context = PredicateContext(controllerId = playerId)
+        val context = PredicateContext(controllerId = playerId, sourceId = sourceId)
         return candidates.firstOrNull { predicateEvaluator.matches(state, projected, it, filter, context) }
     }
 
@@ -1107,10 +1125,11 @@ class CostCalculator(
     private fun findAnyBattlefieldMatch(
         state: GameState,
         playerId: EntityId,
-        filter: GameObjectFilter
+        filter: GameObjectFilter,
+        sourceId: EntityId? = null,
     ): EntityId? {
         val projected = state.projectedState
-        val context = PredicateContext(controllerId = playerId)
+        val context = PredicateContext(controllerId = playerId, sourceId = sourceId)
         for (entityId in state.getBattlefield()) {
             if (predicateEvaluator.matches(state, projected, entityId, filter, context)) {
                 return entityId

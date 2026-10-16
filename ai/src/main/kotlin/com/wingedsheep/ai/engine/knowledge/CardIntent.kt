@@ -203,6 +203,14 @@ data class CardIntent(
      * Read by [AmbushWindow].
      */
     val grantsInstantSpeedLoyalty: Boolean = false,
+    /**
+     * The generic mana a **tax counter** asks for — Divert Disaster's "counter target spell unless
+     * its controller pays {2}" reads `2`. Null for a hard counter, a dynamic tax, or a card that
+     * counters nothing: the field is set only when every counter the card carries is a fixed
+     * "unless pays". Read by [CounterTax], behind
+     * [com.wingedsheep.ai.engine.AiProfile.taxCountersReadTheirMana].
+     */
+    val counterTax: Int? = null,
 ) {
     /** [arrivalTags], falling back to [tags] where the analyzer did not split them. */
     val tagsOnArrival: Set<IntentTag> get() = arrivalTags ?: tags

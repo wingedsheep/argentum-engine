@@ -4518,6 +4518,100 @@
     ]
 }
 
+// Single Combat
+{
+    "name": "Single Combat",
+    "manaCost": "{3}{W}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Each player chooses a creature or planeswalker they control, then sacrifices the rest. Players can't cast creature or planeswalker spells until the end of your next turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "ActivePlayerFirst"
+                    },
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "ControlledPermanents",
+                                    "filter": "creature|planeswalker"
+                                },
+                                "storeAs": "gathered1"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "gathered1",
+                                "selection": {
+                                    "type": "ChooseExactly",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "selected2",
+                                "storeRemainder": "remainder2",
+                                "prompt": "Choose a creature or planeswalker to keep. The rest are sacrificed.",
+                                "selectedLabel": "Keep",
+                                "remainderLabel": "Sacrifice",
+                                "useTargetingUI": true
+                            }
+                        ]
+                    },
+                    "collectCollections": {
+                        "selected2": "collected3",
+                        "remainder2": "collected4"
+                    }
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "collected4",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard"
+                    },
+                    "moveType": "Sacrifice"
+                },
+                {
+                    "type": "CantCastSpells",
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "Each"
+                    },
+                    "duration": "EndOfYourNextTurn",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    "IsCreature",
+                                    "IsPlaneswalker"
+                                ]
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "30",
+        "rarity": "RARE",
+        "artist": "Livia Prima",
+        "flavorText": "Not even a threat to the entire Multiverse could persuade them to put aside their feud.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/e/ce0e7c6a-e628-4327-a16f-2062c5a662df.jpg?1783933474"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Sky Theater Strix
 {
     "name": "Sky Theater Strix",

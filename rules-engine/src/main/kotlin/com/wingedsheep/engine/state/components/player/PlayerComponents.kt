@@ -1038,6 +1038,13 @@ enum class PlayerEffectRemoval {
      * `UntilYourNextTurn` effects.
      */
     UntilYourNextTurn,
+    /**
+     * Removed at the cleanup of the effect controller's next turn — the player-component analogue
+     * of [com.wingedsheep.sdk.scripting.Duration.EndOfYourNextTurn] (Single Combat). Pair it with a
+     * turn-number floor and the controller, as [SpellCastRestriction] does; only
+     * [CantCastSpellsComponent] honours it so far.
+     */
+    EndOfYourNextTurn,
     /** Never removed automatically — must be explicitly cleared */
     Permanent
 }
@@ -1109,13 +1116,20 @@ data class CantCastSpellsComponent(
     val restrictions: List<SpellCastRestriction> = listOf(SpellCastRestriction())
 ) : Component
 
-/** A resolved ban retains the granting context for source- and controller-relative filters. */
+/**
+ * A resolved ban retains the granting context for source- and controller-relative filters.
+ *
+ * @property expiresAfterTurn For [PlayerEffectRemoval.EndOfYourNextTurn]: the ban ends at the
+ *   cleanup of the first turn of [controllerId] numbered at or after this floor (the
+ *   `Duration.EndOfYourNextTurn` mechanism). Null for every other removal.
+ */
 @Serializable
 data class SpellCastRestriction(
     val spellFilter: GameObjectFilter = GameObjectFilter.Any,
     val removeOn: PlayerEffectRemoval = PlayerEffectRemoval.EndOfTurn,
     val sourceId: EntityId? = null,
-    val controllerId: EntityId? = null
+    val controllerId: EntityId? = null,
+    val expiresAfterTurn: Int? = null
 )
 
 /**

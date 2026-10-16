@@ -61,6 +61,13 @@ class IntentCatalog private constructor(private val registry: CardRegistry?) {
         manaSolver?.getAvailableManaCount(state, playerId)
 
     /**
+     * The definition of the card called [name], for a reader that needs the script itself rather
+     * than its [CardIntent] ([TargetlessEntry]). Null when the catalog is off or the name is not a
+     * real card — "no information", as everywhere here.
+     */
+    fun definition(name: String): CardDefinition? = registry?.getCard(name)
+
+    /**
      * The intent of the card called [name], or null when the catalog is off or the name is not a
      * real card (a token, or a card from a set this registry never loaded).
      *

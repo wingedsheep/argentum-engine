@@ -4,6 +4,7 @@ import com.wingedsheep.ai.engine.CombatMath
 import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.mechanics.layers.ProjectedState
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.components.battlefield.DamageComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.combat.AttackingComponent
 import com.wingedsheep.engine.state.components.combat.BlockedComponent
@@ -29,6 +30,7 @@ import com.wingedsheep.sdk.scripting.effects.ModifyStatsEffect
 import com.wingedsheep.sdk.scripting.effects.SetLandTypeEffect
 import com.wingedsheep.sdk.scripting.effects.TapUntapEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.scripting.values.DynamicAmount
 
 /**
  * "Why are you paying for that now?" — the **activated ability** half of [HoldPolicy].
@@ -118,11 +120,17 @@ internal object ExpiringGrantWindow {
          * long-game release on it.
          */
         refuseUnspendable: Boolean = false,
+        /**
+         * [com.wingedsheep.ai.engine.AiProfile.refuseWastedPayoffs]: read an end-of-turn **shrink**
+         * ("target creature gets -3/-1 until end of turn") that kills nothing as a payoff
+         * [nothingCanSpend] can judge — see [PayoffKind.SHRINK].
+         */
+        readShrinks: Boolean = false,
     ): Boolean {
         if (ability.isManaAbility) return false
 
-        if (refuseUnspendable && activation != null &&
-            nothingCanSpend(state, playerId, ability, activation, intents)
+        if ((refuseUnspendable || readShrinks) && activation != null &&
+            nothingCanSpend(state, playerId, ability, activation, intents, refuseUnspendable, readShrinks)
         ) {
             return true
         }
@@ -200,8 +208,12 @@ internal object ExpiringGrantWindow {
         ability: ActivatedAbility,
         activation: ActivateAbility,
         intents: IntentCatalog,
+        readGrants: Boolean = true,
+        readShrinks: Boolean = false,
     ): Boolean {
-        val payoffs = expiringPayoffs(ability.effect) ?: return false
+        val payoffs = expiringPayoffs(ability.effect, readShrinks) ?: return false
+        // Without [readGrants] only the shrink half is asked about; a grant is left to the leaf.
+        if (!readGrants && payoffs.any { it.kind != PayoffKind.SHRINK }) return false
         if (somethingOnTheStackThreatensUs(state, playerId, intents)) return false
 
         val projected = state.projectedState
@@ -233,6 +245,14 @@ internal object ExpiringGrantWindow {
                     }
                 }
                 PayoffKind.LAND -> affected.any { canStillMatter(state, projected, playerId, it) }
+                PayoffKind.SHRINK -> affected.any { id ->
+                    killedBy(state, projected, id, payoff.toughnessLoss) ||
+                        if (projected.getController(id) == playerId) {
+                            canStillFight(state, projected, playerId, id, activation.sourceId, sourceTaps)
+                        } else {
+                            opposingCanStillFight(state, projected, playerId, id)
+                        }
+                }
             }
         }
     }
@@ -390,11 +410,79 @@ internal object ExpiringGrantWindow {
         }
     }
 
+    /**
+     * Whether a shrink that takes [toughnessLoss] toughness off [creature] kills it — the one way a
+     * shrink buys something that outlives the turn. Marked damage counts, as the state-based action
+     * will count it (CR 704.5g).
+     */
+    private fun killedBy(state: GameState, projected: ProjectedState, creature: EntityId, toughnessLoss: Int): Boolean {
+        val toughness = projected.getToughness(creature) ?: return false
+        val damage = state.getEntity(creature)?.get<DamageComponent>()?.amount ?: 0
+        return toughness - damage - toughnessLoss <= 0
+    }
+
+    /**
+     * Whether an **opposing** creature can still be in a fight this turn that a shrink on it would
+     * change — [canStillFight] from the other side of the table.
+     *
+     *  - **Our turn**: it can block. Before our attack that is any untapped creature of theirs; once
+     *    attackers are declared it needs an attacker to block, and once blocks are in it must be
+     *    blocking.
+     *  - **Their turn**: it can attack. Before their attack that is any untapped creature; once
+     *    attackers are declared it must be attacking.
+     *
+     * The position that asked for it (2026-10-15, game `3f847e6d`, turn 8): Proft, Sinister
+     * Mastermind discarded from hand in our own declare-attackers step, after we declared no attack,
+     * to give an opposing 2/4 -3/-1 that wore off in cleanup.
+     */
+    private fun opposingCanStillFight(
+        state: GameState,
+        projected: ProjectedState,
+        playerId: EntityId,
+        creature: EntityId,
+    ): Boolean {
+        if (!projected.isCreature(creature)) return false
+        val entity = state.getEntity(creature) ?: return false
+        val untapped = !entity.has<TappedComponent>()
+        return if (state.isActiveTurnFor(playerId)) {
+            when (state.step) {
+                in UNTIL_ATTACKERS_DECLARED -> untapped
+                Step.DECLARE_ATTACKERS -> untapped &&
+                    state.getBattlefield().any { state.getEntity(it)?.has<AttackingComponent>() == true }
+                in FIGHT_STILL_AHEAD -> entity.has<BlockingComponent>()
+                else -> false
+            }
+        } else {
+            when (state.step) {
+                in UNTIL_ATTACKERS_DECLARED -> untapped
+                in FIGHT_STILL_AHEAD -> entity.has<AttackingComponent>()
+                else -> false
+            }
+        }
+    }
+
     /** What an end-of-turn payoff is bought for — see [nothingCanSpend]. */
-    private enum class PayoffKind { CREATURE, LAND }
+    private enum class PayoffKind {
+        CREATURE,
+        LAND,
+
+        /**
+         * A stat loss on a creature that is not the source — "target creature gets -3/-1 until end
+         * of turn". It buys something only if it kills ([killedBy]) or if the creature it shrinks
+         * still has a fight to shrink it in ([opposingCanStillFight]). Read only under
+         * [com.wingedsheep.ai.engine.AiProfile.refuseWastedPayoffs].
+         */
+        SHRINK,
+    }
 
     /** One leaf of an ability whose payoff ends at cleanup, and where it lands. */
-    private data class Payoff(val kind: PayoffKind, val target: EffectTarget?, val keyword: String? = null)
+    private data class Payoff(
+        val kind: PayoffKind,
+        val target: EffectTarget?,
+        val keyword: String? = null,
+        /** For a [PayoffKind.SHRINK]: the toughness it takes away. */
+        val toughnessLoss: Int = 0,
+    )
 
     /**
      * The payoffs of [effect] when **every** one of them is gone at cleanup, or null when any part
@@ -416,14 +504,14 @@ internal object ExpiringGrantWindow {
      *
      * An effect with no payoff left once those are skipped is not this shape either.
      */
-    private fun expiringPayoffs(effect: Effect): List<Payoff>? {
+    private fun expiringPayoffs(effect: Effect, readShrinks: Boolean = false): List<Payoff>? {
         val payoffs = mutableListOf<Payoff>()
         for (leaf in EffectWalker.leaves(effect)) {
             when {
                 leaf is TapUntapEffect && leaf.tap && leaf.target == EffectTarget.Self -> Unit
                 leaf is ChooseOptionEffect -> Unit
                 leaf is ForEachEffect && leaf.space is IterationSpace.Group -> {
-                    val body = expiringPayoffs(leaf.body) ?: return null
+                    val body = expiringPayoffs(leaf.body, readShrinks) ?: return null
                     if (body.any { it.target != EffectTarget.IterationEntity }) return null
                     payoffs += body
                 }
@@ -436,6 +524,13 @@ internal object ExpiringGrantWindow {
                 leaf is ModifyStatsEffect && leaf.duration == Duration.EndOfTurn &&
                     (isPump(leaf) || leaf.target == EffectTarget.Self) ->
                     payoffs += Payoff(PayoffKind.CREATURE, leaf.target)
+                readShrinks && leaf is ModifyStatsEffect && leaf.duration == Duration.EndOfTurn &&
+                    statsSign(leaf.powerModifier, leaf.toughnessModifier) == AmountSign.LOSS -> {
+                    // The loss has to be a number to tell a shrink from removal; anything else is
+                    // left to the leaf, which is the fail-safe direction.
+                    val toughness = leaf.toughnessModifier as? DynamicAmount.Fixed ?: return null
+                    payoffs += Payoff(PayoffKind.SHRINK, leaf.target, toughnessLoss = -toughness.amount)
+                }
                 else -> return null
             }
         }

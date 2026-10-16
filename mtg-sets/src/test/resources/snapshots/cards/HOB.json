@@ -3508,7 +3508,11 @@
             {
                 "type": "ReduceEquipCost",
                 "amount": 2,
-                "onlyIfTargetIsSource": true
+                "targetFilter": {
+                    "statePredicates": [
+                        "IsSource"
+                    ]
+                }
             }
         ]
     },

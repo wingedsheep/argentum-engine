@@ -3178,7 +3178,8 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   `PlayerRef(Player.Each)` + `GameObjectFilter.Noncreature` models **Calamity's Wake**.
   The filter checks the spell's announced characteristics (including alternative faces, bestow and
   face-down casting), not a fixed list of cards at resolution. Independent bans accumulate and
-  expire separately; supported durations are `EndOfTurn` and `Permanent`. Existing spells on the
+  expire separately; supported durations are `EndOfTurn`, `EndOfYourNextTurn` (lifts at the cleanup of the
+  effect controller's next turn, for every affected player — **Single Combat**) and `Permanent`. Existing spells on the
   stack, land plays and activated abilities are unaffected. The default still forbids every spell.
   Use characteristic filters independent of the casting process, such as type, subtype or color.
   X-dependent mana-value filters, caster-relative controller filters and stack-state predicates
@@ -10037,7 +10038,11 @@ staticAbility {
   correctly reduces by 0), `FixedIfAnyTargetMatches` ("costs {N} less if it targets …"; priced
   from the chosen targets at cast time. Affordability enumeration offers the discount when any of
   the spell's legal targets matches, in whatever zone it targets — No One Left Behind's discounted
-  creature card is found in the caster's graveyard),
+  creature card is found in the caster's graveyard. On a permanent's modifier the filter is evaluated
+  relative to that permanent, so source-relative predicates resolve — Strong Back's "Aura spells you
+  cast that target enchanted creature cost {3} less" is `ModifySpellCost(YouCast(Aura),
+  ReduceGenericBy(FixedIfAnyTargetMatches(3, GameObjectFilter.Creature.attachedToBySource())))`, and
+  enumeration offers it whenever a legal target matches),
   `ChosenTargetsBeyondTheFirst` (the count of the spell's chosen targets minus one — "for each
   target beyond the first". Only meaningful on a `SelfCast` modifier, since only that path is priced
   with the caster's own chosen targets; before targets are chosen it reads 0, which is also the right
@@ -10634,7 +10639,7 @@ riders, matching how the engine already treats e.g. City of Brass's damage durin
   nonmana parts such as paying life, while the per-player
   `EquipActivationsThisTurnComponent.count == 0`, and increments that counter on every equip
   activation (reset at turn start by `TurnManager`).
-- `ReduceEquipCost(amount, onlyIfTargetIsSource = false, onlyOwnEquip = false, onlyOtherEquip = false)` — the controller's equip abilities cost
+- `ReduceEquipCost(amount, targetFilter = null, onlyOwnEquip = false, onlyOtherEquip = false)` — the controller's equip abilities cost
   `{amount}` generic mana less to activate (Éowyn, Lady of Rohan: "Equip abilities you activate cost
   {1} less to activate"). The engine reduces only the generic portion of the equip cost (floored at
   {0}); colored pips are untouched, and multiple sources stack additively. Controller-scoped — it
@@ -10642,13 +10647,15 @@ riders, matching how the engine already treats e.g. City of Brass's damage durin
   equip ability. Consulted by `CastPermissionUtils.applyEquipCostReduction` from both the enumerator
   (displayed cost) and `ActivateAbilityHandler` (paid cost), keyed on
   `ActivatedAbility.isEquipAbility` and applied before the `FreeFirstEquipEachTurn` discount. Wrap in
-  a `ConditionalStaticAbility` for a "during your turn"-style gate. Set `onlyIfTargetIsSource = true`
+  a `ConditionalStaticAbility` for a "during your turn"-style gate. Set `targetFilter`
   for the target-restricted form — "Equip abilities you activate **that target ~** cost `{amount}`
-  less to activate" (Cloud, Planet's Champion): the reduction applies only when the equip's chosen
-  target is the permanent bearing this static. The exact per-target cost is enforced at payment
-  (the chosen target is threaded into `applyEquipCostReduction`); at enumeration, before a target is
-  chosen, the discount is offered optimistically whenever the source is currently a creature, so the
-  ability is never withheld for want of the discount.
+  less to activate" (Cloud, Planet's Champion: `GameObjectFilter.Any.sourceItself()`), "**that target
+  enchanted creature**" (Strong Back: `GameObjectFilter.Creature.attachedToBySource()`): the reduction
+  applies only when the equip's chosen target matches the filter, evaluated relative to the permanent
+  bearing this static. The exact per-target cost is enforced at payment (the chosen target is
+  threaded into `applyEquipCostReduction`); at enumeration, before a target is chosen, the discount is
+  offered optimistically whenever a creature the player controls matches, so the ability is never
+  withheld for want of the discount.
   Set `onlyOwnEquip = true` for the self-restricted form — "**This permanent's** equip abilities cost
   `{amount}` less to activate" (Firion, Wild Rose Warrior's token copy): the reduction applies only to
   the equip abilities of the permanent bearing this static, matched at the reduction site against the
@@ -10699,7 +10706,7 @@ riders, matching how the engine already treats e.g. City of Brass's damage durin
   prices it against the chosen targets exactly; the enumerator, running before targets exist,
   offers it optimistically for any *targeted* ability while the source is a creature (an untargeted
   ability is never reduced). It covers every activated ability of a matching source, equip
-  included — `ReduceEquipCost.onlyIfTargetIsSource` is the equip-only sibling keyed on the player.
+  included — `ReduceEquipCost.targetFilter` is the equip-only sibling keyed on the player.
   `reach` says which activations it sees. The default `MATCHING_PERMANENTS` covers abilities of
   permanents **on the battlefield** only (Training Grounds' ruling: cycling and unearth aren't
   reduced). `ActivatedAbilityReach.ACTIVATED_BY_YOU` covers every ability the static's controller
