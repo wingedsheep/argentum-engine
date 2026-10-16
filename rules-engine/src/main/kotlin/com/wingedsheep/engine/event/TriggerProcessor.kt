@@ -530,7 +530,7 @@ class TriggerProcessor(
                 triggeringEntityId = trigger.triggerContext.triggeringEntityId,
                 triggeringPlayerId = trigger.triggerContext.triggeringPlayerId,
                 triggerContext = trigger.triggerContext,
-                pipeline = trigger.carriedPipeline ?: com.wingedsheep.engine.handlers.PipelineState.EMPTY
+                pipeline = targetingPipeline(trigger)
             )
             ability.effect.runtimeDescription { amount -> evaluator.evaluateForDisplay(state, amount, context) }
         } catch (_: Exception) {
@@ -1250,6 +1250,14 @@ class TriggerProcessor(
      * is only the no-dynamic-cap default. [TargetOther] is unwrapped, snapshotted, and re-wrapped
      * so "another target" wording stays intact.
      */
+    /**
+     * The pipeline a pending trigger's target-time amounts read: a reflexive trigger's carried
+     * action-half state plus the batch the trigger captured ([triggerStoredCollections]).
+     */
+    private fun targetingPipeline(trigger: PendingTrigger): com.wingedsheep.engine.handlers.PipelineState =
+        (trigger.carriedPipeline ?: com.wingedsheep.engine.handlers.PipelineState.EMPTY)
+            .copy(storedCollections = triggerStoredCollections(trigger.triggerContext, trigger.carriedPipeline))
+
     private fun snapshotDynamicCount(
         state: GameState,
         trigger: PendingTrigger,
@@ -1280,8 +1288,7 @@ class TriggerProcessor(
                     // (e.g. `VariableReference("discarded_count")`, Amass's army reference), and a
                     // batch trigger's cap may count what it captured (The Wise Mothman's "up to X
                     // target creatures, where X is the number of nonland cards milled this way").
-                    pipeline = (trigger.carriedPipeline ?: com.wingedsheep.engine.handlers.PipelineState.EMPTY)
-                        .copy(storedCollections = triggerStoredCollections(trigger.triggerContext, trigger.carriedPipeline)),
+                    pipeline = targetingPipeline(trigger),
                 )
                 val bounds = DynamicTargetCount.bounds(requirement, trigger.triggerContext.xValue) { amount ->
                     amountEvaluator.evaluate(state, amount, context)
@@ -1330,7 +1337,7 @@ class TriggerProcessor(
                 triggeringPlayerId = trigger.triggerContext.triggeringPlayerId,
                 xValue = trigger.triggerContext.xValue,
                 triggerContext = trigger.triggerContext,
-                pipeline = trigger.carriedPipeline ?: com.wingedsheep.engine.handlers.PipelineState.EMPTY,
+                pipeline = targetingPipeline(trigger),
             )
             amountEvaluator.evaluate(state, dyn, context).coerceAtLeast(0)
         } catch (_: Exception) {
