@@ -49,9 +49,16 @@ class StrongBackScenarioTest : FunSpec({
         auraTarget = TargetObject(filter = TargetFilter.Creature)
     }
 
+    val testHex = card("Test Hex") {
+        manaCost = "{3}{G}"
+        typeLine = "Enchantment — Aura"
+        oracleText = "Enchant creature an opponent controls"
+        auraTarget = TargetObject(filter = TargetFilter.CreatureOpponentControls)
+    }
+
     fun newGame(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(StrongBack, testBlade, testAura))
+        driver.registerCards(TestCards.all + listOf(StrongBack, testBlade, testAura, testHex))
         driver.initMirrorMatch(deck = Deck.of("Forest" to 40), skipMulligans = true)
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
         return driver
@@ -113,7 +120,7 @@ class StrongBackScenarioTest : FunSpec({
             .shouldNotBeNull()
         cast.affordable shouldBe true
 
-        driver.giveMana(me, Color.GREEN, 1)
+        // The lone Forest pays the {G} that is still owed.
         driver.castSpell(me, charm, listOf(bear)).outcome shouldBe Outcome.Done
         driver.bothPass()
         driver.state.getEntity(charm)?.get<AttachedToComponent>()?.targetId shouldBe bear
@@ -130,6 +137,18 @@ class StrongBackScenarioTest : FunSpec({
 
         driver.giveMana(me, Color.GREEN, 1)
         driver.castSpell(me, charm, listOf(other)).outcome shouldNotBe Outcome.Done
+    }
+
+    test("an Aura that can't enchant the enchanted creature isn't offered at the discount") {
+        val driver = newGame()
+        val me = driver.activePlayer!!
+        val bear = driver.putCreatureOnBattlefield(me, "Grizzly Bears")
+        driver.enchant(me, bear)
+        driver.putLandOnBattlefield(me, "Forest")
+        val hex = driver.putCardInHand(me, "Test Hex")
+
+        val cast = driver.legalActions(me).firstOrNull { (it.action as? CastSpell)?.cardId == hex }
+        (cast == null || !cast.affordable) shouldBe true
     }
 
     test("an unattached Strong Back offers no discount") {
@@ -152,8 +171,16 @@ class StrongBackScenarioTest : FunSpec({
         driver.enchant(me, bear)
         val charm = driver.putCardInHand(opp, "Test Charm")
 
-        driver.passPriority(me)
+        // Hand the turn to the opponent so a sorcery-speed Aura is castable at all.
+        var safety = 0
+        do {
+            driver.bothPass()
+            driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+        } while (driver.activePlayer != opp && ++safety < 50)
+
         driver.giveMana(opp, Color.GREEN, 1)
         driver.castSpell(opp, charm, listOf(bear)).outcome shouldNotBe Outcome.Done
+        driver.giveColorlessMana(opp, 3)
+        driver.castSpell(opp, charm, listOf(bear)).outcome shouldBe Outcome.Done
     }
 })

@@ -132,6 +132,8 @@ class CostCalculator(
         declaredCostSlot: ChoiceSlot? = null,
         baseCost: ManaCost = cardDef.manaCost,
         card: CardDefinition = cardDef,
+        // Pre-scanned battlefield/emblem modifiers, so a caller that already scanned doesn't twice.
+        modifiers: List<Pair<EntityId, ModifySpellCost>> = scanModifySpellCost(state),
     ): ManaCost {
         var totalReduction = 0
         var totalIncrease = 0
@@ -188,7 +190,7 @@ class CostCalculator(
         }
 
         // ModifySpellCost abilities on battlefield permanents and emblems.
-        for ((sourceId, ability) in scanModifySpellCost(state)) {
+        for ((sourceId, ability) in modifiers) {
             if (ability.optionalLifePayment != null) continue
             if (!targetMatchesSpell(ability.target, cardDef, casterId, sourceId, state, chosenTargets, fromZone)) continue
             if (!gatingApplies(state, casterId, cardDef, ability, declaredCostSlot)) continue
@@ -998,7 +1000,7 @@ class CostCalculator(
         val optimisticTargets = mutableListOf<EntityId>()
         var legalTargets: List<EntityId>? = null
         fun addOptimisticMatch(src: CostReductionSource.FixedIfAnyTargetMatches, modifierSourceId: EntityId?) {
-            val match = if (cardDef.script.targetRequirements.isEmpty()) {
+            val match = if (cardDef.script.targetRequirements.isEmpty() && cardDef.script.castAuraTarget == null) {
                 findAnyBattlefieldMatch(state, casterId, src.filter, modifierSourceId)
             } else {
                 val candidates = legalTargets ?: spellLegalTargets(state, cardDef, casterId, spellId)
@@ -1015,13 +1017,14 @@ class CostCalculator(
         }
         // A permanent's target-conditional discount (Strong Back: "Aura spells you cast that target
         // enchanted creature cost {3} less") is just as unknowable before targets are chosen.
-        for ((sourceId, ability) in scanModifySpellCost(state)) {
+        val modifiers = scanModifySpellCost(state)
+        for ((sourceId, ability) in modifiers) {
             val src = sourceFromModification(ability.modification) as? CostReductionSource.FixedIfAnyTargetMatches
                 ?: continue
             if (!targetMatchesSpell(ability.target, cardDef, casterId, sourceId, state)) continue
             addOptimisticMatch(src, sourceId)
         }
-        return calculateEffectiveCost(state, cardDef, casterId, optimisticTargets)
+        return calculateEffectiveCost(state, cardDef, casterId, optimisticTargets, modifiers = modifiers)
     }
 
     /** Every legal target of any of the spell's declared target requirements, in any zone. */
@@ -1031,7 +1034,10 @@ class CostCalculator(
         casterId: EntityId,
         spellId: EntityId
     ): List<EntityId> =
-        cardDef.script.targetRequirements.flatMap { targetFinder.findLegalTargets(state, it, casterId, sourceId = spellId) }
+        // An Aura's enchant target is declared apart from its other requirements; include it so a
+        // discount for "Aura spells that target X" is only offered when the Aura can target X.
+        (cardDef.script.targetRequirements + listOfNotNull(cardDef.script.castAuraTarget))
+            .flatMap { targetFinder.findLegalTargets(state, it, casterId, sourceId = spellId) }
 
     private fun sourceFromModification(modification: CostModification): CostReductionSource? = when (modification) {
         is CostModification.ReduceGenericBy -> modification.source

@@ -1897,9 +1897,13 @@ data class ReduceEquipCost(
         onlyOwnEquip -> "This permanent's equip abilities cost {$amount} less to activate"
         onlyOtherEquip -> "Equip abilities you activate of other Equipment cost {$amount} less to activate"
         targetFilter != null ->
-            "Equip abilities you activate that target ${targetFilter.description} cost {$amount} less to activate"
+            "Equip abilities you activate that target ${describeTarget(targetFilter)} cost {$amount} less to activate"
         else -> "Equip abilities you activate cost {$amount} less to activate"
     }
+
+    // `sourceItself()` describes as a bare predicate ("this"); name the bearer instead.
+    private fun describeTarget(filter: GameObjectFilter): String =
+        if (filter == GameObjectFilter.Any.sourceItself()) "this permanent" else filter.description
 }
 
 /**

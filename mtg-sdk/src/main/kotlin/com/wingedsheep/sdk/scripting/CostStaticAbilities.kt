@@ -1122,7 +1122,7 @@ sealed interface UnlockCostTarget {
  * Targets are chosen before the total cost is determined (CR 601.2c before 601.2f, via CR 602.2b),
  * so at payment the reduction is exact; at enumeration (targets not yet chosen) it is offered
  * optimistically for any targeted ability while the source is a creature. The activated-ability
- * sibling of [ReduceEquipCost.onlyIfTargetIsSource], which covers *equip* abilities whatever their
+ * sibling of [ReduceEquipCost.targetFilter], which covers *equip* abilities whatever their
  * source.
  *
  * [reach] widens *which activations* the reduction sees. The default,
