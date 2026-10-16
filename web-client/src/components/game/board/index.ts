@@ -1,5 +1,5 @@
 export { Battlefield } from './Battlefield'
-export { OpponentBoardArea, BoardNamePlate, CollapsedBoardTab, COLLAPSED_TAB_WIDTH, CELL_PLATE_BAND, useCellHandMetrics } from './OpponentBoardArea'
+export { OpponentBoardArea, BoardNamePlate, HandCountBadge, CollapsedBoardTab, COLLAPSED_TAB_WIDTH, CELL_PLATE_BAND, useCellHandMetrics } from './OpponentBoardArea'
 export { CardRow, HandFan } from './HandZone'
 export { CommandZone } from './CommandZone'
 export { StackDisplay } from './StackZone'

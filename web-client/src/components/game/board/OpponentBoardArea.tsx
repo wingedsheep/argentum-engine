@@ -614,9 +614,10 @@ export const COLLAPSED_TAB_WIDTH = 30
  * All you can learn from a fully face-down fan is how many cards the seat is holding, and a
  * nine-card arc spends a whole band of cell height saying it. On the plate it costs nothing: the
  * plate is already there, and in a shared-life team game it has room going spare where the life
- * total used to be.
+ * total used to be. A 1v1 spectator's corner name labels carry it too: both hands are face-down
+ * fans there, and the number is the only thing in them a spectator can read.
  */
-function HandCountBadge({ count }: { count: number }) {
+export function HandCountBadge({ count }: { count: number }) {
   return (
     <span
       style={{

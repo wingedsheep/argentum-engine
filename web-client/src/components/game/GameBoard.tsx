@@ -30,7 +30,7 @@ import { computeCoverage } from '../decisions/manaCoverage'
 // Import extracted components
 import { SeatPortrait, useHasSeatPortrait } from './SeatPortrait'
 import { useResponsiveContext } from './board/shared'
-import { Battlefield, CardRow, CommandZone, OpponentBoardArea, BoardNamePlate, CollapsedBoardTab, COLLAPSED_TAB_WIDTH, CELL_PLATE_BAND, useCellHandMetrics, StackDisplay, ZonePile, ResponsiveContext } from './board'
+import { Battlefield, CardRow, CommandZone, OpponentBoardArea, BoardNamePlate, HandCountBadge, CollapsedBoardTab, COLLAPSED_TAB_WIDTH, CELL_PLATE_BAND, useCellHandMetrics, StackDisplay, ZonePile, ResponsiveContext } from './board'
 import { RenderProfiler } from '@/utils/renderProfiler'
 import { PooledBattlefieldLayoutContext } from './board/shared'
 import { useBoardGroups } from './board/useBoardGroups'
@@ -2511,7 +2511,9 @@ const OPPONENT_RING = 'rgba(255, 158, 70, 0.85)'
 /**
  * The floating name label a spectator (or replay viewer) sees in the corner of each half of the
  * table. With a portrait the seat's face leads the name, ringed in the seat's colour, so the label
- * reads as a person rather than a caption; without one it stays the plain text pill.
+ * reads as a person rather than a caption; without one it stays the plain text pill. The seat's
+ * hand size trails the name: a spectator sees both hands as face-down fans, and counting
+ * overlapped card backs is the only other way to learn how many cards each player holds.
  */
 function SpectatorNameLabel({
   player,
@@ -2527,9 +2529,11 @@ function SpectatorNameLabel({
   const hasPortrait = useHasSeatPortrait(player.playerId)
   // Phones: a smaller face keeps the label its text-only height, clear of the chrome buttons above.
   const compact = useResponsiveContext().isMobile
+  const handSize = player.handSize ?? 0
   return (
     <div
       data-spectator-name-label={player.playerId}
+      title={`${player.name} — ${handSize} ${handSize === 1 ? 'card' : 'cards'} in hand`}
       style={{
         ...styles.spectatorNameLabel,
         ...(hasPortrait
@@ -2540,12 +2544,18 @@ function SpectatorNameLabel({
               padding: compact ? '3px 12px 3px 3px' : '5px 16px 5px 5px',
               borderRadius: 999,
             }
-          : {}),
+          : { display: 'inline-flex', alignItems: 'center', gap: 10 }),
         ...style,
       }}
     >
       <SeatPortrait playerId={player.playerId} size={compact ? 24 : 32} ringColor={ringColor ?? seat.base} ringWidth={2} />
       {player.name}
+      <span
+        data-spectator-hand-count={player.playerId}
+        style={{ display: 'inline-flex', fontSize: compact ? 12 : 13 }}
+      >
+        <HandCountBadge count={handSize} />
+      </span>
     </div>
   )
 }
