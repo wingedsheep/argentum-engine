@@ -929,7 +929,27 @@ export function createGameplayHandlers(set: SetState, get: GetState): Pick<Messa
     },
 
     onGameOver: (msg) => {
-      const { playerId, sessionId } = get()
+      const { playerId, sessionId, spectatingState } = get()
+      // A spectator watching the game that just ended: keep the final board up and show who won.
+      // Leaving stays the spectator's call (or the banner's auto-return) via stopSpectating.
+      if (!sessionId && spectatingState && !spectatingState.isReplay && msg.gameId === spectatingState.gameSessionId) {
+        set({
+          spectatingState: {
+            ...spectatingState,
+            decisionStatus: null,
+            gameOver: {
+              winnerIds: msg.winnerIds && msg.winnerIds.length > 0 ? msg.winnerIds : msg.winnerId ? [msg.winnerId] : [],
+              reason: msg.reason,
+              message: msg.message ?? null,
+            },
+          },
+          // The fight is over; drop the declaration previews. Animations are left to play out:
+          // the lethal hit is what the spectator came to see.
+          opponentAttackerTargets: null,
+          opponentBlockerAssignments: null,
+        })
+        return
+      }
       // Ignore a game-over for a game we already left — e.g. an eliminated FFA player who
       // returned to the lobby still holds a seat server-side and receives the final GameOver.
       if (msg.gameId && sessionId !== msg.gameId) return

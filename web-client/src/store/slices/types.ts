@@ -759,6 +759,20 @@ export interface SpectatingState {
   decisionStatus: SpectatorDecisionStatus | null
   /** When true, `ReplayPlayer` handles its own UI — SpectatorGameBoard should not render */
   isReplay?: boolean
+  /**
+   * Set when the server reports the watched game has ended. The board stays up behind a result
+   * banner until the spectator goes back to the overview (or the banner's auto-return fires).
+   */
+  gameOver?: SpectatorGameOver | null
+}
+
+/** How a spectated game ended — the public `gameOver` payload, seen from outside the game. */
+export interface SpectatorGameOver {
+  /** Every seat that won (the whole team in Two-Headed Giant). Empty for a draw. */
+  winnerIds: readonly EntityId[]
+  reason: GameOverReason
+  /** Server-written end-of-game text (e.g. a stalled game's explanation), preferred when present. */
+  message: string | null
 }
 
 /**

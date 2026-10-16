@@ -1585,6 +1585,7 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
       'Live games are listed on the home screen and inside tournaments. A spectator sees both boards and steers the same camera a player does — but never sees a hidden zone.',
     body: [
       { kind: 'p', text: 'Press Spectate on a Live Games row, or ▶ Watch beside a running match on a tournament’s standings. “View: <name> ⟳” switches whose side of the table you sit on; Back to Overview returns to the list.' },
+      { kind: 'p', text: 'When the game ends, the final board stays up with the winner and how the game was won. You go back to the overview after a few seconds, or straight away with Back to Overview; Stay on this board keeps you there to look it over.' },
       { kind: 'p', text: 'Players see how many people are watching, and hovering the eye badge lists them.' },
     ],
     related: ['multiplayer-camera', 'tournament-flow', 'replays'],

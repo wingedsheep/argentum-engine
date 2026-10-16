@@ -4,6 +4,7 @@ import { GameBoard } from '../game/GameBoard'
 import { CombatArrows } from '../combat/CombatArrows'
 import { DecisionSourceThumbnail } from '../ui/DecisionSourceThumbnail'
 import { SeatPortrait, useHasSeatPortrait } from '../game/SeatPortrait'
+import { SpectatorGameOverBanner } from './SpectatorGameOverBanner'
 import type { SpectatorDecisionStatus } from '@/types'
 
 // ============================================================================
@@ -110,16 +111,27 @@ export function SpectatorGameBoard() {
         />
         <div style={styles.gameBoardContainer}>
           <GameBoard spectatorMode topOffset={HEADER_HEIGHT} />
+          {/* The game ended: the final board stays up under the result until the spectator
+              leaves (or the banner's countdown takes them back to the overview). */}
+          {spectatingState.gameOver && (
+            <SpectatorGameOverBanner
+              key={spectatingState.gameSessionId}
+              gameOver={spectatingState.gameOver}
+              seats={players}
+              onBack={stopSpectating}
+            />
+          )}
         </div>
         {/* Decision indicator for spectators */}
-        {spectatingState.decisionStatus && (
+        {spectatingState.decisionStatus && !spectatingState.gameOver && (
           <SpectatorDecisionIndicator
             decisionStatus={spectatingState.decisionStatus}
           />
         )}
       </div>
-      {/* Combat arrows rendered at top level to ensure visibility above all containers */}
-      <CombatArrows />
+      {/* Combat arrows rendered at top level to ensure visibility above all containers. Once the
+          game is over they would draw across the result banner, and the fight they show is done. */}
+      {!spectatingState.gameOver && <CombatArrows />}
     </SpectatorContext.Provider>
   )
 }

@@ -688,12 +688,16 @@ class GamePlayHandler(
             .filterNot { it.playerId in gameSession.departedForMatch }
             .forEach { sender.send(it.webSocketSession, message) }
 
-        // Notify spectators that the game has ended and return them to tournament overview
+        // Spectators get the same result the players do — winner, reason and the public end-of-game
+        // message carry nothing hidden — so they see the game end on the final board instead of
+        // being dropped back to the overview mid-combat. They leave with StopSpectating (the
+        // client's "Back to Overview" button, or its auto-return), which answers SpectatingStopped
+        // and the active matches as it always has.
         for (spectator in gameSession.getSpectators()) {
             if (spectator.webSocketSession.isOpen) {
-                sender.send(spectator.webSocketSession, ServerMessage.SpectatingStopped)
+                sender.send(spectator.webSocketSession, message)
             }
-            // Clear their spectating state
+            // The game is over: a reconnect/refresh goes to the overview, not back into this game.
             sessionRegistry.getIdentityByWsId(spectator.webSocketSession.id)?.let { identity ->
                 identity.currentSpectatingGameId = null
             }
