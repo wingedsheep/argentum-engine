@@ -2,10 +2,12 @@ package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.core.SelectCardsDecision
+import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.mtg.sets.definitions.war.cards.SingleCombat
 import com.wingedsheep.sdk.core.Color
+import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Deck
@@ -49,6 +51,11 @@ class SingleCombatScenarioTest : FunSpec({
         }
     }
 
+    fun GameTestDriver.putWalker(player: EntityId): EntityId =
+        putPermanentOnBattlefield(player, "Test Walker").also {
+            addComponent(it, CountersComponent().withAdded(CounterType.LOYALTY, 3))
+        }
+
     fun GameTestDriver.castOffered(player: EntityId, cardId: EntityId): Boolean =
         legalActions(player).any { (it.action as? CastSpell)?.cardId == cardId }
 
@@ -57,12 +64,12 @@ class SingleCombatScenarioTest : FunSpec({
         val caster = d.activePlayer!!
         val opp = d.getOpponent(caster)
 
-        val myKeeper = d.putPermanentOnBattlefield(caster, "Test Walker")
+        val myKeeper = d.putWalker(caster)
         val myBear = d.putCreatureOnBattlefield(caster, "Grizzly Bears")
         val myTrinket = d.putPermanentOnBattlefield(caster, "Test Trinket")
         val theirKeeper = d.putCreatureOnBattlefield(opp, "Hill Giant")
         val theirBear = d.putCreatureOnBattlefield(opp, "Grizzly Bears")
-        val theirWalker = d.putPermanentOnBattlefield(opp, "Test Walker")
+        val theirWalker = d.putWalker(opp)
 
         val spell = d.putCardInHand(caster, "Single Combat")
         d.giveMana(caster, Color.WHITE, 5)
