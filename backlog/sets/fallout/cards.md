@@ -2,7 +2,7 @@
 
 **Set Size:** 336 cards
 **Release Date:** March 8, 2024
-**Implemented:** 217 / 336
+**Implemented:** 216 / 336
 | Section    | Total | Done |
 |------------|-------|------|
 | Extras     | 336   | 185  |
@@ -213,7 +213,7 @@
 - [ ] Piper Wright, Publick Reporter
 - [ ] Pitiless Plunderer
 - [ ] Plains
-- [x] Plasma Caster
+- [ ] Plasma Caster
 - [x] Powder Ganger
 - [x] Power Fist
 - [x] Prairie Stream
