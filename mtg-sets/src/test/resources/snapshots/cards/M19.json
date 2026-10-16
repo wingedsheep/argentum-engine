@@ -3065,6 +3065,42 @@
     ]
 }
 
+// One with the Machine
+{
+    "name": "One with the Machine",
+    "manaCost": "{3}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Draw cards equal to the greatest mana value among artifacts you control.",
+    "script": {
+        "spellEffect": {
+            "type": "DrawCards",
+            "count": {
+                "type": "AggregateBattlefield",
+                "player": "You",
+                "filter": "artifact",
+                "aggregation": "MAX",
+                "property": "MANA_VALUE"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "66",
+        "rarity": "RARE",
+        "artist": "Chase Stone",
+        "flavorText": "\"When I grafted the Planar Bridge into myself I felt my Planeswalker spark flare beyond my body. The Multiverse was my plaything. It felt . . . incredible.\"\n—Tezzeret",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/7/17f2aaf5-6c1f-4663-865f-6cdd5640485a.jpg?1783934583",
+        "rulings": [
+            {
+                "date": "2018-07-13",
+                "text": "If a permanent has {X} in its mana cost, X is considered to be 0."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Poison-Tip Archer
 {
     "name": "Poison-Tip Archer",

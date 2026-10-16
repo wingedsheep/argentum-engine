@@ -731,6 +731,105 @@
     ]
 }
 
+// Assaultron Dominator
+{
+    "name": "Assaultron Dominator",
+    "manaCost": "{1}{R}",
+    "typeLine": "Artifact Creature — Robot",
+    "oracleText": "When this creature enters, you get {E}{E} (two energy counters).\nWhenever an artifact creature you control attacks, you may pay {E}. If you do, put your choice of a +1/+1, first strike, or trample counter on that creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Assaultron Dominator:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "ENERGY",
+                    "count": 2,
+                    "target": "Controller"
+                }
+            },
+            {
+                "id": "Assaultron Dominator:2",
+                "trigger": {
+                    "type": "AttackEvent",
+                    "filter": "artifact creature ctrl:you"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayExactCounters",
+                            "counterType": "ENERGY",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "ChooseAction",
+                        "choices": [
+                            {
+                                "label": "+1/+1 counter",
+                                "effect": {
+                                    "type": "AddCounters",
+                                    "counterType": "PLUS_ONE_PLUS_ONE",
+                                    "count": 1,
+                                    "target": "TriggeringEntity"
+                                }
+                            },
+                            {
+                                "label": "First strike counter",
+                                "effect": {
+                                    "type": "AddCounters",
+                                    "counterType": "FIRST_STRIKE",
+                                    "count": 1,
+                                    "target": "TriggeringEntity"
+                                }
+                            },
+                            {
+                                "label": "Trample counter",
+                                "effect": {
+                                    "type": "AddCounters",
+                                    "counterType": "TRAMPLE",
+                                    "count": 1,
+                                    "target": "TriggeringEntity"
+                                }
+                            }
+                        ]
+                    }
+                },
+                "descriptionOverride": "Whenever an artifact creature you control attacks, you may pay {E}. If you do, put your choice of a +1/+1, first strike, or trample counter on that creature."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "54",
+        "rarity": "RARE",
+        "artist": "Viko Menezes",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/1/4112fadb-da03-441a-beeb-1dc90425e3f3.jpg?1783912406",
+        "rulings": [
+            {
+                "date": "2024-03-08",
+                "text": "If multiple artifact creatures you control attack, Assaultron Dominator's last ability triggers for each of them."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Atomize
 {
     "name": "Atomize",
@@ -774,6 +873,68 @@
         "BLACK",
         "GREEN"
     ]
+}
+
+// Automated Assembly Line
+{
+    "name": "Automated Assembly Line",
+    "manaCost": "{1}{W}",
+    "typeLine": "Artifact",
+    "oracleText": "Whenever one or more artifact creatures you control deal combat damage to a player, you get {E} (an energy counter).\nPay {E}{E}{E}: Create a tapped 3/3 colorless Robot artifact creature token.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Automated Assembly Line:1",
+                "trigger": {
+                    "type": "OneOrMoreDealCombatDamageToPlayerEvent",
+                    "sourceFilter": "artifact creature"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "ENERGY",
+                    "count": 1,
+                    "target": "Controller"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Automated Assembly Line:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomPayPlayerCounters",
+                        "counterType": "ENERGY",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 3
+                        }
+                    }
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 3,
+                    "toughness": 3,
+                    "colors": [],
+                    "creatureTypes": [
+                        "Robot"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/7/6/76cde21f-2f01-4560-972b-7ecd6740d6de.jpg?1783912042",
+                    "tapped": true,
+                    "artifactToken": true
+                },
+                "descriptionOverride": "Pay {E}{E}{E}: Create a tapped 3/3 colorless Robot artifact creature token."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "10",
+        "rarity": "RARE",
+        "artist": "David Álvarez",
+        "flavorText": "\"You needn't be afraid of me. It's my securitrons that are going to kill you.\"\n—Mr. House",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/e/fe9e2a76-1324-4b8e-b23c-10c04aca1870.jpg?1783912419"
+    }
 }
 
 // Battle of Hoover Dam
@@ -895,6 +1056,106 @@
     "colorIdentityOverride": [
         "WHITE"
     ]
+}
+
+// Behemoth of Vault 0
+{
+    "name": "Behemoth of Vault 0",
+    "manaCost": "{6}",
+    "typeLine": "Artifact Creature — Robot",
+    "oracleText": "Trample\nWhen this creature enters, you get {E}{E}{E}{E} (four energy counters).\nWhen this creature dies, you may pay an amount of {E} equal to target nonland permanent's mana value. When you do, destroy that permanent.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Behemoth of Vault 0:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "ENERGY",
+                    "count": 4,
+                    "target": "Controller"
+                }
+            },
+            {
+                "id": "Behemoth of Vault 0:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "ChosenTargets",
+                            "storeAs": "behemothTarget"
+                        },
+                        {
+                            "type": "ReflexiveTrigger",
+                            "action": {
+                                "type": "PayExactCounters",
+                                "counterType": "ENERGY",
+                                "amount": {
+                                    "type": "EntityProperty",
+                                    "entity": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    },
+                                    "numericProperty": "ManaValue"
+                                }
+                            },
+                            "reflexiveEffect": {
+                                "type": "MoveToZone",
+                                "target": {
+                                    "type": "PipelineTarget",
+                                    "collectionName": "behemothTarget"
+                                },
+                                "destination": "Graveyard",
+                                "byDestruction": true
+                            },
+                            "descriptionOverride": "When you do, destroy that permanent."
+                        }
+                    ],
+                    "descriptionOverride": "You may pay an amount of {E} equal to target nonland permanent's mana value. When you do, destroy that permanent."
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "nonland permanent"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this creature dies, you may pay an amount of {E} equal to target nonland permanent's mana value. When you do, destroy that permanent."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "127",
+        "rarity": "UNCOMMON",
+        "artist": "Eddie Mendoza",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/9/592d6e5b-a94e-460c-ab2f-21fd842c3d9a.jpg?1783912381",
+        "rulings": [
+            {
+                "date": "2024-03-08",
+                "text": "You choose the target of Behemoth of Vault 0's last ability when it triggers, but you don't have to decide whether or not to pay until the ability resolves."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "When you pay {E} equal to the target nonland permanent's mana value during the resolution of Behemoth of Vault 0's last ability, a second \"reflexive\" ability triggers and is put onto the stack. This ability does not have a target. Each player may respond to this triggered ability as normal."
+            }
+        ]
+    }
 }
 
 // Bloatfly Swarm
@@ -1041,6 +1302,137 @@
             {
                 "date": "2024-03-08",
                 "text": "You pay all costs and follow all normal timing rules for the card played from exile with a Junk token's ability. For example, if the exiled card is a land card, you may play it only during your main phase while the stack is empty."
+            }
+        ]
+    }
+}
+
+// Brotherhood Scribe
+{
+    "name": "Brotherhood Scribe",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Human Artificer",
+    "oracleText": "Metalcraft — {T}: You get {E} (an energy counter). Activate only if you control three or more artifacts.\nWhenever you get one or more {E} during your turn, creatures you control get +1/+1 until end of turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Brotherhood Scribe:2",
+                "trigger": {
+                    "type": "CountersPlacedEvent",
+                    "counterType": "ENERGY",
+                    "recipient": "You"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": "IterationEntity"
+                    }
+                },
+                "triggerRestriction": "IsYourTurn",
+                "descriptionOverride": "Whenever you get one or more {E} during your turn, creatures you control get +1/+1 until end of turn."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Brotherhood Scribe:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "ENERGY",
+                    "count": 1,
+                    "target": "Controller"
+                },
+                "restrictions": [
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "AggregateBattlefield",
+                                "player": "You",
+                                "filter": "artifact"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 3
+                            }
+                        }
+                    }
+                ],
+                "descriptionOverride": "Metalcraft — {T}: You get {E}. Activate only if you control three or more artifacts."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "13",
+        "rarity": "RARE",
+        "artist": "Jarel Threat",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/7/b751250e-ebf2-42b1-9a45-779b39974ba7.jpg?1783912418"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Brotherhood Vertibird
+{
+    "name": "Brotherhood Vertibird",
+    "manaCost": "{3}",
+    "typeLine": "Artifact — Vehicle",
+    "oracleText": "Flying\nBrotherhood Vertibird's power is equal to the number of artifacts you control.\nCrew 2 (Tap any number of creatures you control with total power 2 or greater: This Vehicle becomes an artifact creature until end of turn.)",
+    "creatureStats": {
+        "power": {
+            "type": "Dynamic",
+            "source": {
+                "type": "AggregateBattlefield",
+                "player": "You",
+                "filter": "artifact"
+            }
+        },
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING",
+        "CREW"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "CREW",
+            "n": 2
+        }
+    ],
+    "metadata": {
+        "collectorNumber": "128",
+        "rarity": "RARE",
+        "artist": "Daarken",
+        "flavorText": "As tough as the armored troops it carries.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/2/c207c76d-5f10-4fd9-9826-cf0611bfa2d0.jpg?1783912380",
+        "rulings": [
+            {
+                "date": "2024-03-08",
+                "text": "The ability that defines Brotherhood Vertibird's power works in all zones, not just the battlefield. As long as Brotherhood Vertibird is on the battlefield (and still an artifact), that ability will count Brotherhood Vertibird itself."
             }
         ]
     }
@@ -2320,6 +2712,190 @@
     }
 }
 
+// Dr. Madison Li
+{
+    "name": "Dr. Madison Li",
+    "manaCost": "{U}{R}{W}",
+    "typeLine": "Legendary Creature — Human Scientist",
+    "oracleText": "Whenever you cast an artifact spell, you get {E} (an energy counter).\n{T}, Pay {E}: Target creature gets +1/+0 and gains trample and haste until end of turn.\n{T}, Pay {E}{E}{E}: Draw a card.\n{T}, Pay {E}{E}{E}{E}{E}: Return target artifact card from your graveyard to the battlefield tapped.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Dr. Madison Li:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsArtifact"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "ENERGY",
+                    "count": 1,
+                    "target": "Controller"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Dr. Madison Li:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomPayPlayerCounters",
+                                "counterType": "ENERGY"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 0
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "TRAMPLE",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "HASTE",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{T}, Pay {E}: Target creature gets +1/+0 and gains trample and haste until end of turn."
+            },
+            {
+                "id": "Dr. Madison Li:3",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomPayPlayerCounters",
+                                "counterType": "ENERGY",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                }
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "descriptionOverride": "{T}, Pay {E}{E}{E}: Draw a card."
+            },
+            {
+                "id": "Dr. Madison Li:4",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomPayPlayerCounters",
+                                "counterType": "ENERGY",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 5
+                                }
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    },
+                    "destination": "Battlefield",
+                    "placement": "Tapped",
+                    "fromZone": "Graveyard"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "artifact own:you",
+                            "zone": "Graveyard"
+                        },
+                        "id": "t1"
+                    }
+                ],
+                "descriptionOverride": "{T}, Pay {E}{E}{E}{E}{E}: Return target artifact card from your graveyard to the battlefield tapped."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "3",
+        "rarity": "MYTHIC",
+        "artist": "Zuzanna Wużyk",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/5/95af426d-a8af-4314-9ad0-ac61935e8e8e.jpg?1783912422",
+        "rulings": [
+            {
+                "date": "2024-03-08",
+                "text": "Dr. Madison Li's first ability resolves before the spell that caused it to trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE",
+        "RED"
+    ]
+}
+
 // ED-E, Lonesome Eyebot
 {
     "name": "ED-E, Lonesome Eyebot",
@@ -3137,6 +3713,124 @@
     }
 }
 
+// HELIOS One
+{
+    "name": "HELIOS One",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "{T}: Add {C}.\n{1}, {T}: You get {E} (an energy counter).\n{3}, {T}, Pay X {E}, Sacrifice this land: Destroy target nonland permanent with mana value X. Activate only as a sorcery.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "HELIOS One:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "HELIOS One:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "ENERGY",
+                    "count": 1,
+                    "target": "Controller"
+                }
+            },
+            {
+                "id": "HELIOS One:3",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{3}"
+                            }
+                        },
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomPayPlayerCounters",
+                                "counterType": "ENERGY",
+                                "amount": "XValue"
+                            }
+                        },
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsNonland",
+                                    "IsPermanent",
+                                    {
+                                        "type": "CompareNumericProperty",
+                                        "property": "MANA_VALUE",
+                                        "operator": "EQ",
+                                        "amount": "XValue"
+                                    }
+                                ]
+                            }
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "149",
+        "rarity": "RARE",
+        "artist": "Brian Valeza",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/1/4102d28e-437b-440b-bf9b-8b4f6fb85a6c.jpg?1783912373",
+        "rulings": [
+            {
+                "date": "2024-03-08",
+                "text": "If a permanent has {X} in its mana cost, X is 0 when determining its mana value."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "A token that's not a copy of something else normally won't have a mana cost. Anything without a mana cost normally has a mana value of 0."
+            }
+        ]
+    }
+}
+
 // Harold and Bob, First Numens
 {
     "name": "Harold and Bob, First Numens",
@@ -3776,6 +4470,120 @@
             }
         ]
     }
+}
+
+// Liberty Prime, Recharged
+{
+    "name": "Liberty Prime, Recharged",
+    "manaCost": "{2}{U}{R}{W}",
+    "typeLine": "Legendary Artifact Creature — Robot",
+    "oracleText": "Vigilance, trample, haste\nWhenever Liberty Prime attacks or blocks, sacrifice it unless you pay {E}{E} (two energy counters).\n{2}, {T}, Sacrifice an artifact: You get {E}{E} and draw a card.",
+    "creatureStats": {
+        "power": 8,
+        "toughness": 8
+    },
+    "keywords": [
+        "VIGILANCE",
+        "TRAMPLE",
+        "HASTE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Liberty Prime, Recharged:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "PayOrSuffer",
+                    "cost": {
+                        "type": "PayAtom",
+                        "atom": {
+                            "type": "AtomPayPlayerCounters",
+                            "counterType": "ENERGY",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        }
+                    },
+                    "suffer": "SacrificeSelf"
+                }
+            },
+            {
+                "id": "Liberty Prime, Recharged:2",
+                "trigger": "BlockEvent",
+                "effect": {
+                    "type": "PayOrSuffer",
+                    "cost": {
+                        "type": "PayAtom",
+                        "atom": {
+                            "type": "AtomPayPlayerCounters",
+                            "counterType": "ENERGY",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        }
+                    },
+                    "suffer": "SacrificeSelf"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Liberty Prime, Recharged:3",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}"
+                            }
+                        },
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "artifact"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "ENERGY",
+                            "count": 2,
+                            "target": "Controller"
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "5",
+        "rarity": "MYTHIC",
+        "artist": "Pascal Quidault",
+        "flavorText": "\"Democracy is nonnegotiable.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/d/2da11337-ceb2-4744-9696-c06fec2f2daa.jpg?1783912422"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE",
+        "RED"
+    ]
 }
 
 // Luck Bobblehead
@@ -6038,6 +6846,73 @@
     }
 }
 
+// Recon Craft Theta
+{
+    "name": "Recon Craft Theta",
+    "manaCost": "{4}",
+    "typeLine": "Artifact — Vehicle",
+    "oracleText": "Flying\nWhen this Vehicle enters, create a 0/0 blue Alien creature token. Put a +1/+1 counter on it.\nWhenever this Vehicle attacks, proliferate. (Choose any number of permanents and/or players, then give each another counter of each kind already there.)\nCrew 2 (Tap any number of creatures you control with total power 2 or more: This Vehicle becomes an artifact creature until end of turn.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING",
+        "CREW"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "CREW",
+            "n": 2
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Recon Craft Theta:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CreateToken",
+                            "power": 0,
+                            "toughness": 0,
+                            "colors": [
+                                "BLUE"
+                            ],
+                            "creatureTypes": [
+                                "Alien"
+                            ],
+                            "imageUri": "https://cards.scryfall.io/normal/front/c/d/cd66f10d-6fc4-4510-818c-96d29b425052.jpg?1783912045"
+                        },
+                        {
+                            "type": "AddCountersToCollection",
+                            "collectionName": "createdTokens",
+                            "counterType": "PLUS_ONE_PLUS_ONE"
+                        }
+                    ]
+                }
+            },
+            {
+                "id": "Recon Craft Theta:2",
+                "trigger": "AttackEvent",
+                "effect": "Proliferate"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "141",
+        "rarity": "RARE",
+        "artist": "Jarel Threat",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/1/21aa59d3-e786-4ba0-9802-01b57597cda2.jpg?1783912376"
+    }
+}
+
 // Rex, Cyber-Hound
 {
     "name": "Rex, Cyber-Hound",
@@ -6166,6 +7041,92 @@
     },
     "colorIdentityOverride": [
         "WHITE",
+        "BLUE"
+    ]
+}
+
+// Robobrain War Mind
+{
+    "name": "Robobrain War Mind",
+    "manaCost": "{3}{U}",
+    "typeLine": "Artifact Creature — Robot",
+    "oracleText": "Robobrain War Mind's power is equal to the number of cards in your hand.\nWhen this creature enters, you get an amount of {E} (energy counters) equal to the number of artifact creatures you control.\nWhenever this creature attacks, you may pay {E}{E}{E}. If you do, draw a card.",
+    "creatureStats": {
+        "power": {
+            "type": "Dynamic",
+            "source": {
+                "type": "Count",
+                "player": "You",
+                "zone": "Hand"
+            }
+        },
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Robobrain War Mind:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "AddDynamicCounters",
+                    "counterType": "ENERGY",
+                    "amount": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "artifact creature"
+                    },
+                    "target": "Controller"
+                },
+                "descriptionOverride": "When this creature enters, you get an amount of {E} equal to the number of artifact creatures you control."
+            },
+            {
+                "id": "Robobrain War Mind:2",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayExactCounters",
+                            "counterType": "ENERGY",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 3
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    }
+                },
+                "descriptionOverride": "Whenever this creature attacks, you may pay {E}{E}{E}. If you do, draw a card."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "38",
+        "rarity": "UNCOMMON",
+        "artist": "Leonardo Borazio",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/9/19c0791d-f0c5-4673-a0c5-40540c1e6d8c.jpg?1783912411",
+        "rulings": [
+            {
+                "date": "2024-03-08",
+                "text": "The ability that defines Robobrain War Mind's power functions in all zones, not just the battlefield."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "Use the number of artifact creatures you control when Robobrain War Mind's second ability resolves, including Robobrain War Mind itself if it's still on the battlefield, to determine the number of energy counters you get."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
         "BLUE"
     ]
 }
@@ -6529,6 +7490,141 @@
             }
         ]
     }
+}
+
+// Sentry Bot
+{
+    "name": "Sentry Bot",
+    "manaCost": "{4}{W}",
+    "typeLine": "Artifact Creature — Robot",
+    "oracleText": "Flash\nThis spell costs {1} less to cast for each creature attacking you.\nWhen this creature enters, you get {E} for each creature attacking you.\nAt the beginning of combat on your turn, you may pay {E}{E}{E}. If you do, put a +1/+1 counter on each creature you control.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 5
+    },
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sentry Bot:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "AddDynamicCounters",
+                    "counterType": "ENERGY",
+                    "amount": {
+                        "type": "AggregateBattlefield",
+                        "player": "Each",
+                        "filter": {
+                            "cardPredicates": [
+                                "IsCreature"
+                            ],
+                            "statePredicates": [
+                                {
+                                    "type": "IsAttackingPlayer",
+                                    "player": "Controller"
+                                }
+                            ]
+                        }
+                    },
+                    "target": "Controller"
+                },
+                "descriptionOverride": "When this creature enters, you get {E} for each creature attacking you."
+            },
+            {
+                "id": "Sentry Bot:2",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "BEGIN_COMBAT"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayExactCounters",
+                            "counterType": "ENERGY",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 3
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Group",
+                            "filter": {
+                                "baseFilter": "creature ctrl:you"
+                            }
+                        },
+                        "body": {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 1,
+                            "target": "IterationEntity"
+                        }
+                    }
+                },
+                "descriptionOverride": "At the beginning of combat on your turn, you may pay {E}{E}{E}. If you do, put a +1/+1 counter on each creature you control."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "ReduceGenericBy",
+                    "source": {
+                        "type": "Dynamic",
+                        "amount": {
+                            "type": "AggregateBattlefield",
+                            "player": "Each",
+                            "filter": {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ],
+                                "statePredicates": [
+                                    {
+                                        "type": "IsAttackingPlayer",
+                                        "player": "Controller"
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "24",
+        "rarity": "RARE",
+        "artist": "Anthony Devine",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/1/b16b0143-3511-4f79-bdb1-1ff7af55f051.jpg?1783912415",
+        "rulings": [
+            {
+                "date": "2024-03-08",
+                "text": "The cost-reduction ability of Sentry Bot doesn't change its mana cost or mana value, only the total cost you pay. Specifically, the mana value of Sentry Bot is always 5."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "Once you announce that you're casting Sentry Bot, no player may take actions until you're done casting it. Notably, opponents can't remove creatures from combat to try to change Sentry Bot's total cost."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "Use the number of creatures attacking you as Sentry Bot's third ability resolves to determine the number of energy counters you get."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
 }
 
 // Sierra, Nuka's Biggest Fan
@@ -7319,6 +8415,271 @@
     }
 }
 
+// Synth Eradicator
+{
+    "name": "Synth Eradicator",
+    "manaCost": "{2}{R}",
+    "typeLine": "Artifact Creature — Synth Soldier",
+    "oracleText": "Haste\nWhenever this creature attacks, exile the top card of your library. You may get {E}{E} (two energy counters). If you don't, you may play that card this turn.\n{T}, Pay {E}{E}{E}: This creature deals 3 damage to any target.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "HASTE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Synth Eradicator:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.MayDecide",
+                                "prompt": "Get {E}{E}? (If you don't, you may play the exiled card this turn.)"
+                            },
+                            "then": {
+                                "type": "AddCounters",
+                                "counterType": "ENERGY",
+                                "count": 2,
+                                "target": "Controller"
+                            },
+                            "otherwise": {
+                                "type": "GrantMayPlayFromExile",
+                                "from": "gathered0"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever this creature attacks, exile the top card of your library. You may get {E}{E}. If you don't, you may play that card this turn."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Synth Eradicator:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomPayPlayerCounters",
+                                "counterType": "ENERGY",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                }
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "AnyTarget",
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{T}, Pay {E}{E}{E}: This creature deals 3 damage to any target."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "67",
+        "rarity": "RARE",
+        "artist": "Kekai Kotaki",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/7/87fc7b54-26e5-4b0d-b2bb-be8f977f752b.jpg?1783912401",
+        "rulings": [
+            {
+                "date": "2024-03-08",
+                "text": "You pay all costs and follow all normal timing rules for the card played from exile with Synth Eradicator's second ability. For example, if the exiled card is a land card, you may play it only during your main phase while the stack is empty."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// T-45 Power Armor
+{
+    "name": "T-45 Power Armor",
+    "manaCost": "{2}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "When this Equipment enters, you get {E}{E} (two energy counters).\nEquipped creature gets +3/+3 and doesn't untap during its controller's untap step.\nAt the beginning of your upkeep, you may pay {E}. If you do, untap equipped creature, then put your choice of a menace, trample, or lifelink counter on it.\nEquip {3}",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "T-45 Power Armor:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "ENERGY",
+                    "count": 2,
+                    "target": "Controller"
+                }
+            },
+            {
+                "id": "T-45 Power Armor:2",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayExactCounters",
+                            "counterType": "ENERGY",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "TapUntap",
+                                "target": "EquippedCreature",
+                                "tap": false
+                            },
+                            {
+                                "type": "ChooseAction",
+                                "choices": [
+                                    {
+                                        "label": "Menace counter",
+                                        "effect": {
+                                            "type": "AddCounters",
+                                            "counterType": "MENACE",
+                                            "count": 1,
+                                            "target": "EquippedCreature"
+                                        }
+                                    },
+                                    {
+                                        "label": "Trample counter",
+                                        "effect": {
+                                            "type": "AddCounters",
+                                            "counterType": "TRAMPLE",
+                                            "count": 1,
+                                            "target": "EquippedCreature"
+                                        }
+                                    },
+                                    {
+                                        "label": "Lifelink counter",
+                                        "effect": {
+                                            "type": "AddCounters",
+                                            "counterType": "LIFELINK",
+                                            "count": 1,
+                                            "target": "EquippedCreature"
+                                        }
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                },
+                "descriptionOverride": "At the beginning of your upkeep, you may pay {E}. If you do, untap equipped creature, then put your choice of a menace, trample, or lifelink counter on it."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "T-45 Power Armor:3",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 3,
+                "toughnessBonus": 3
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "DOESNT_UNTAP"
+            }
+        ]
+    },
+    "equipCost": "{3}",
+    "metadata": {
+        "collectorNumber": "145",
+        "rarity": "RARE",
+        "artist": "Diego Gisbert",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/0/203b1cb3-5eae-469a-8a5a-2e56dc859f78.jpg?1783912374",
+        "rulings": [
+            {
+                "date": "2024-03-08",
+                "text": "Multiple instances of menace are redundant. The same is true for trample and lifelink."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Tato Farmer
 {
     "name": "Tato Farmer",
@@ -7886,6 +9247,185 @@
             }
         ]
     }
+}
+
+// Vault 112: Sadistic Simulation
+{
+    "name": "Vault 112: Sadistic Simulation",
+    "manaCost": "{2}{U}{R}",
+    "typeLine": "Enchantment — Saga",
+    "oracleText": "(As this Saga enters and after your draw step, add a lore counter. Sacrifice after III.)\nI, II — Tap up to one target creature and put a stun counter on it. You get {E}{E} (two energy counters).\nIII — Pay any amount of {E}. If you paid one or more {E} this way, shuffle your library, then exile that many cards from the top. You may play one of those cards without paying its mana cost.",
+    "script": {
+        "sagaChapters": [
+            {
+                "chapter": 1,
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "TapUntap",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "AddCounters",
+                            "counterType": "STUN",
+                            "count": 1,
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "AddCounters",
+                            "counterType": "ENERGY",
+                            "count": 2,
+                            "target": "Controller"
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                }
+            },
+            {
+                "chapter": 2,
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "TapUntap",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t1"
+                            }
+                        },
+                        {
+                            "type": "AddCounters",
+                            "counterType": "STUN",
+                            "count": 1,
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t1"
+                            }
+                        },
+                        {
+                            "type": "AddCounters",
+                            "counterType": "ENERGY",
+                            "count": 2,
+                            "target": "Controller"
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t1"
+                }
+            },
+            {
+                "chapter": 3,
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "PayCounters",
+                            "counterType": "ENERGY",
+                            "storeAmountAs": "paid"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "VariableReference",
+                                        "variableName": "paid"
+                                    },
+                                    "operator": "GTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                }
+                            },
+                            "then": {
+                                "type": "Composite",
+                                "effects": [
+                                    "ShuffleLibrary",
+                                    {
+                                        "type": "Composite",
+                                        "effects": [
+                                            {
+                                                "type": "GatherCards",
+                                                "source": {
+                                                    "type": "TopOfLibrary",
+                                                    "count": {
+                                                        "type": "VariableReference",
+                                                        "variableName": "paid"
+                                                    }
+                                                },
+                                                "storeAs": "gathered0"
+                                            },
+                                            {
+                                                "type": "MoveCollection",
+                                                "from": "gathered0",
+                                                "destination": {
+                                                    "type": "ToZone",
+                                                    "zone": "Exile"
+                                                }
+                                            },
+                                            {
+                                                "type": "SelectFromCollection",
+                                                "from": "gathered0",
+                                                "selection": {
+                                                    "type": "ChooseUpTo",
+                                                    "count": {
+                                                        "type": "Fixed",
+                                                        "amount": 1
+                                                    }
+                                                },
+                                                "storeSelected": "selected2",
+                                                "prompt": "You may play one of the exiled cards without paying its mana cost.",
+                                                "selectedLabel": "Play for free",
+                                                "remainderLabel": "Leave in exile",
+                                                "showAllCards": true
+                                            },
+                                            {
+                                                "type": "PlayFromCollectionWithoutPayingCost",
+                                                "from": "selected2"
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "123",
+        "rarity": "RARE",
+        "artist": "Anton Solovianchyk",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/a/0a0acee2-f6dc-4e92-937b-01e2c07adc55.jpg?1783912382"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
+    ]
 }
 
 // Vault 11: Voter's Dilemma
