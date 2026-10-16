@@ -105,9 +105,11 @@ enum class MustAttackDefender(
      * is attached to, read whenever attackers are declared. A creature that player controls can't
      * attack them, so it is under no requirement; neither is a creature that can't legally attack
      * that player. Unlike [Any] and [APlayer], the requirement is enforced at declaration rather
-     * than projected, because whether it binds a creature depends on who is declaring.
+     * than projected, because whether it binds a creature depends on who is declaring. It means
+     * something only on an attached source: granted to a creature attached to nothing, it names
+     * nobody.
      */
-    AttachedPermanentController(" enchanted creature's controller")
+    EnchantedCreatureController(" enchanted creature's controller")
 }
 
 /**

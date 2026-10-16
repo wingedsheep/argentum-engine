@@ -4180,7 +4180,7 @@
                 "filter": {
                     "baseFilter": "creature"
                 },
-                "defender": "AttachedPermanentController"
+                "defender": "EnchantedCreatureController"
             }
         ],
         "auraTarget": {

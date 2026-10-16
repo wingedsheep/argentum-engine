@@ -940,14 +940,7 @@ internal class AttackPhaseManager(
         projected: ProjectedState,
         opponents: List<EntityId>
     ): String? {
-        val directed = DirectedAttackRequirements(state, cardRegistry, predicateEvaluator)
-        val validAttackers by lazy { getValidAttackers(state, attackingPlayer) }
-        val goadRules by lazy { GoadRules(state, cardRegistry, predicateEvaluator) }
-        for (attackerId in getValidAttackers(state, attackingPlayer)) {
-            val bound = bindingDirectedDefenders(
-                state, projected, attackingPlayer, attackerId, directed, opponents, validAttackers, goadRules
-            )
-            if (bound.isEmpty()) continue
+        for ((attackerId, bound) in boundAttackDefenders(state, attackingPlayer, projected, opponents)) {
             if (attackers[attackerId] in bound) continue
             val cardName = state.getEntity(attackerId)?.get<CardComponent>()?.name ?: "Creature"
             val playerName = bound.singleOrNull()?.let { state.getEntity(it)?.get<PlayerComponent>()?.name }
@@ -958,25 +951,45 @@ internal class AttackPhaseManager(
     }
 
     /**
-     * The players a directed requirement names for [attackerId] that it could attack at no cost
-     * and without breaking its goad ([canAttackFreely]) — the "if able" of CR 508.1d. Empty means
-     * no directed requirement binds it: none names an opponent, or it can't attack the one named
-     * (a creature the named player controls is never bound — that player isn't its opponent).
+     * Each creature [attackingPlayer] could attack with that a directed requirement binds, mapped
+     * to the players it must attack one of (Public Enemy) — empty in the overwhelmingly common
+     * case. A creature is bound to a named opponent it could attack at no cost and without
+     * breaking its goad ([canAttackFreely]) — the "if able" of CR 508.1d; it is never bound by a
+     * player who controls it, nor one it can't attack. An active Taunt aimed at another player
+     * wins, as it does over Trove of Temptation in [validateOpponentsMustAttackYou]: every creature
+     * attacking the taunter already obeys as many requirements as any declaration can.
      */
-    private fun bindingDirectedDefenders(
+    fun boundAttackDefenders(
         state: GameState,
-        projected: ProjectedState,
         attackingPlayer: EntityId,
-        attackerId: EntityId,
-        directed: DirectedAttackRequirements,
-        opponents: List<EntityId>,
-        validAttackers: List<EntityId>,
-        goadRules: GoadRules
-    ): Set<EntityId> = directed.namedDefendersOf(attackerId).filterTo(mutableSetOf()) { player ->
-        player in opponents && canAttackFreely(
-            state, projected, attackingPlayer, attackerId, listOf(player), player, opponents, validAttackers, goadRules
-        )
+        projected: ProjectedState = state.projectedState,
+        opponents: List<EntityId> = state.getOpponents(attackingPlayer),
+        goadRules: GoadRules? = null,
+    ): Map<EntityId, Set<EntityId>> {
+        val directed = DirectedAttackRequirements(state, cardRegistry, predicateEvaluator)
+        if (directed.isEmpty) return emptyMap()
+        val taunted = activeTaunt(state, attackingPlayer)?.defenderId
+        val validAttackers = getValidAttackers(state, attackingPlayer)
+        val goad = goadRules ?: GoadRules(state, cardRegistry, predicateEvaluator)
+        val bound = mutableMapOf<EntityId, Set<EntityId>>()
+        for (attackerId in validAttackers) {
+            val named = directed.namedDefendersOf(attackerId)
+            if (named.isEmpty() || (taunted != null && taunted !in named)) continue
+            val players = named.filterTo(mutableSetOf()) { player ->
+                player in opponents && canAttackFreely(
+                    state, projected, attackingPlayer, attackerId, listOf(player), player, opponents, validAttackers, goad
+                )
+            }
+            if (players.isNotEmpty()) bound[attackerId] = players
+        }
+        return bound
     }
+
+    /** The Taunt requirement on [attackingPlayer]'s team this turn, if one is active. */
+    private fun activeTaunt(state: GameState, attackingPlayer: EntityId): MustAttackPlayerComponent? =
+        state.sharedTurnTeam(attackingPlayer)
+            .firstNotNullOfOrNull { member -> state.getEntity(member)?.get<MustAttackPlayerComponent>() }
+            ?.takeIf { it.activeThisTurn }
 
     /**
      * Validate goaded-creature requirements (CR 701.15b–c).
@@ -1065,20 +1078,22 @@ internal class AttackPhaseManager(
             state, cardRegistry, predicateEvaluator, attackingPlayer
         )
         if (requiring.isEmpty()) return null
-        val taunt = state.sharedTurnTeam(attackingPlayer)
-            .firstNotNullOfOrNull { member -> state.getEntity(member)?.get<MustAttackPlayerComponent>() }
-            ?.takeIf { it.activeThisTurn }
+        val taunt = activeTaunt(state, attackingPlayer)
         val opponents = state.getOpponents(attackingPlayer)
         val validAttackers by lazy { getValidAttackers(state, attackingPlayer) }
         val goadRules by lazy { GoadRules(state, cardRegistry, predicateEvaluator) }
+        val directed by lazy { boundAttackDefenders(state, attackingPlayer, projected, opponents, goadRules) }
         for (player in requiring) {
             if (attackers.values.any { OpponentsMustAttackYouRequirement.isAttackOn(state, projected, it, player) }) {
                 continue
             }
             if (taunt != null && taunt.defenderId != player) continue
             val defenders = OpponentsMustAttackYouRequirement.defendersOf(state, projected, player)
+            // A creature a directed requirement binds to someone else isn't free to come here:
+            // obeying one requirement by breaking another gains nothing, as with goad.
             val able = validAttackers.any { attackerId ->
-                canAttackFreely(state, projected, attackingPlayer, attackerId, defenders, player, opponents, validAttackers, goadRules)
+                directed[attackerId].let { it == null || player in it } &&
+                    canAttackFreely(state, projected, attackingPlayer, attackerId, defenders, player, opponents, validAttackers, goadRules)
             }
             if (able) {
                 val name = state.getEntity(player)?.get<PlayerComponent>()?.name ?: "that player"
@@ -1150,7 +1165,7 @@ internal class AttackPhaseManager(
         if (state.projectedState.mustAttack(attackerId)) return true
         return state.grantedStaticAbilities.any {
             it.entityId == attackerId && it.ability is MustAttack &&
-                it.ability.defender != MustAttackDefender.AttachedPermanentController &&
+                it.ability.defender != MustAttackDefender.EnchantedCreatureController &&
                 it.ability.filter.scope is Scope.Self
         }
     }
@@ -1280,16 +1295,7 @@ internal class AttackPhaseManager(
         }
 
         // 5. A requirement naming the player to attack (Public Enemy), where it binds
-        val directed = DirectedAttackRequirements(state, cardRegistry, predicateEvaluator)
-        val opponents = state.getOpponents(attackingPlayer)
-        for (attackerId in validAttackers) {
-            if (attackerId in mandatory) continue
-            if (bindingDirectedDefenders(
-                    state, state.projectedState, attackingPlayer, attackerId, directed, opponents, validAttackers, goadRules
-                ).isNotEmpty()) {
-                mandatory.add(attackerId)
-            }
-        }
+        mandatory.addAll(boundAttackDefenders(state, attackingPlayer, goadRules = goadRules).keys)
 
         return mandatory.toList()
     }

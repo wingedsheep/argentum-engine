@@ -29,7 +29,7 @@ val PublicEnemy = card("Public Enemy") {
     auraTarget = TargetObject(filter = TargetFilter.Creature)
 
     staticAbility {
-        ability = MustAttack(GroupFilter.AllCreatures, defender = MustAttackDefender.AttachedPermanentController)
+        ability = MustAttack(GroupFilter.AllCreatures, defender = MustAttackDefender.EnchantedCreatureController)
     }
 
     triggeredAbility {

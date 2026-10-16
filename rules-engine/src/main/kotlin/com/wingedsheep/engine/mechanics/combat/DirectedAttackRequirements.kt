@@ -11,7 +11,7 @@ import com.wingedsheep.sdk.scripting.MustAttackDefender
 /**
  * The players a [MustAttack] naming a specific defender tells each creature to attack — "All
  * creatures attack enchanted creature's controller each combat if able" (Public Enemy,
- * [MustAttackDefender.AttachedPermanentController]). The named player is read live: the projected
+ * [MustAttackDefender.EnchantedCreatureController]). The named player is read live: the projected
  * controller of whatever the ability's holder is attached to. A holder attached to nothing names
  * nobody.
  *
@@ -25,10 +25,13 @@ class DirectedAttackRequirements(
     private val predicates: PredicateEvaluator,
 ) {
     private val entries = CombatStaticScan.collect(state, registry, predicates) { ability ->
-        (ability as? MustAttack)?.takeIf { it.defender == MustAttackDefender.AttachedPermanentController }
+        (ability as? MustAttack)?.takeIf { it.defender == MustAttackDefender.EnchantedCreatureController }
     }
 
-    /** Players [creatureId] is told to attack; empty in the overwhelmingly common case. */
+    /** No such requirement is in play — the overwhelmingly common case. */
+    val isEmpty: Boolean get() = entries.isEmpty()
+
+    /** Players [creatureId] is told to attack. */
     fun namedDefendersOf(creatureId: EntityId): Set<EntityId> {
         if (entries.isEmpty()) return emptySet()
         return entries.mapNotNullTo(mutableSetOf()) { entry ->

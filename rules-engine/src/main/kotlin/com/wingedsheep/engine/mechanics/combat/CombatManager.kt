@@ -2,6 +2,7 @@ package com.wingedsheep.engine.mechanics.combat
 
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.effects.ZoneTransitionService
+import com.wingedsheep.engine.mechanics.layers.ProjectedState
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.combat.*
@@ -67,6 +68,9 @@ class CombatManager(
         attackingPlayer: EntityId,
         candidates: List<EntityId>,
     ): List<EntityId> = attackPhase.legalDefendersFor(state, attackerId, attackingPlayer, candidates)
+
+    fun boundAttackDefenders(state: GameState, attackingPlayer: EntityId): Map<EntityId, Set<EntityId>> =
+        attackPhase.boundAttackDefenders(state, attackingPlayer)
 
     // =========================================================================
     // Declare Blockers
@@ -155,12 +159,13 @@ class CombatManager(
      * "Attacks during its controller's next combat phase if able" ends with that combat phase
      * ([MustAttackNextCombatComponent]): drop it from creatures whose controller's turn this is,
      * or — for one marked after this combat's attackers were declared — arm it for the next one.
+     * [projected] is read for control only, so the pre-cleanup projection serves.
      */
-    private fun endNextCombatAttackRequirements(state: GameState): GameState {
+    private fun endNextCombatAttackRequirements(state: GameState, projected: ProjectedState): GameState {
         var newState = state
         for ((entityId, container) in state.entities) {
             val mark = container.get<MustAttackNextCombatComponent>() ?: continue
-            val controller = state.projectedState.getController(entityId) ?: continue
+            val controller = projected.getController(entityId) ?: continue
             if (!state.isActiveTurnFor(controller)) continue
             newState = newState.updateEntity(entityId) {
                 if (mark.waitsOutCurrentCombat) it.with(MustAttackNextCombatComponent(waitsOutCurrentCombat = false))
@@ -170,7 +175,12 @@ class CombatManager(
         return newState
     }
 
-    fun endCombat(state: GameState): ExecutionResult {
+    /**
+     * [combatPhaseRan] is false when the turn skipped every step of this combat phase (Fatespinner):
+     * nothing is in combat, but no combat phase happened either, so "its controller's next combat
+     * phase" is still to come.
+     */
+    fun endCombat(state: GameState, combatPhaseRan: Boolean = true): ExecutionResult {
         var newState = if (state.entities.isEmpty()) state else state.copy(
             entities = state.entities.mapValues { (_, container) ->
                 container
@@ -193,7 +203,7 @@ class CombatManager(
 
         if (newState.enlistmentsThisCombat.isNotEmpty()) newState = newState.copy(enlistmentsThisCombat = emptyList())
 
-        newState = endNextCombatAttackRequirements(newState)
+        if (combatPhaseRan) newState = endNextCombatAttackRequirements(newState, state.projectedState)
 
         // Expire "until end of combat" effects (CR 511.2: they expire at the end of the combat
         // phase, which per CR 511.3 is once the end of combat step has ended — i.e. here, the same

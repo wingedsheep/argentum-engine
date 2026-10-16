@@ -21,7 +21,7 @@ import kotlin.reflect.KClass
  * `BlockPhaseManager.validateProjectedMustBlockRequirements` enforces it with no further wiring:
  * if the creature can legally block at least one attacker, declaring no block is rejected.
  *
- * A floating effect rather than a component (the shape [MarkMustAttackThisTurnExecutor] uses)
+ * A floating effect rather than a component (the shape [MarkMustAttackExecutor] uses)
  * precisely because the "must block" reading already flows through projection — reusing it keeps
  * one enforcement path instead of two, and the `Duration.EndOfTurn` cleanup is the generic one.
  *

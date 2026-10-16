@@ -873,7 +873,7 @@ class StaticAbilityHandler(
                 )
                 // Whether it binds a creature depends on who is declaring attackers, so it is
                 // enforced at declaration (DirectedAttackRequirements), never projected.
-                MustAttackDefender.AttachedPermanentController -> null
+                MustAttackDefender.EnchantedCreatureController -> null
             }
             is ControlEnchantedPermanent -> {
                 // "You control enchanted permanent" - Layer 2 control-changing effect

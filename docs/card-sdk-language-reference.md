@@ -9442,11 +9442,12 @@ staticAbility {
   if able (Valley Dasher, Grand Melee). `defender` names whom the requirement points at:
   `MustAttackDefender.APlayer` is "attacks **a player** each combat if able": attacking
   a planeswalker or battle is rejected while some player is a legal defender for it.
-  `MustAttackDefender.AttachedPermanentController` is "All creatures attack **enchanted creature's
+  `MustAttackDefender.EnchantedCreatureController` is "All creatures attack **enchanted creature's
   controller** each combat if able" (Public Enemy, `MustAttack(GroupFilter.AllCreatures, defender =
-  MustAttackDefender.AttachedPermanentController)`): the player is the host's projected controller, read at
+  MustAttackDefender.EnchantedCreatureController)`): the player is the host's projected controller, read at
   declaration; only attacking that player (not their planeswalker) obeys it, and a creature that player
-  controls, or one that can't attack them at no cost, is under no requirement. Grant it for a
+  controls, or one that can't attack them at no cost, is under no requirement; it means something only on
+  an attached source (granted to a creature attached to nothing, it names nobody). Grant it for a
   duration with `Effects.GrantStaticAbility(MustAttack(defender = MustAttackDefender.APlayer), creature, Duration.UntilYourNextTurn)`
   (Nahiri, the Unforgiving) — a granted static's `UntilYourNextTurn` ends at the start of the *granting*
   player's next turn, even when an opponent controls the creature.

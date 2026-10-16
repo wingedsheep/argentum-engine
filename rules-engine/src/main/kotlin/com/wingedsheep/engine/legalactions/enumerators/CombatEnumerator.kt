@@ -76,9 +76,13 @@ class CombatEnumerator : ActionEnumerator {
                 // same rules the declaration enforces, per attacker, and publish only the narrowed
                 // ones. A creature left with no legal defender at all can't attack, even when no
                 // single rule restricts it from every defender (two restrictions, one per seat).
+                // A creature a directed requirement binds (Public Enemy) may only attack the
+                // players it names, so its list narrows to them.
                 val narrowedTargets = mutableMapOf<EntityId, List<EntityId>>()
+                val boundDefenders = context.turnManager.boundAttackDefenders(state, playerId)
                 val attackers = validAttackers.filter { attackerId ->
                     val legal = context.turnManager.legalDefendersFor(state, attackerId, playerId, validAttackTargets)
+                        .let { all -> boundDefenders[attackerId]?.let { bound -> all.filter { it in bound } } ?: all }
                     if (legal.size < validAttackTargets.size) narrowedTargets[attackerId] = legal
                     legal.isNotEmpty() || validAttackTargets.isEmpty()
                 }

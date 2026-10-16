@@ -3,9 +3,11 @@ package com.wingedsheep.engine.mechanics.combat
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.combat.MarkMustAttackExecutor
 import com.wingedsheep.engine.state.components.combat.MustAttackNextCombatComponent
+import com.wingedsheep.engine.state.components.player.SkippedTurnPartsComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.core.TurnPart
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.effects.MarkMustAttackEffect
@@ -104,6 +106,19 @@ class MustAttackNextCombatTest : FunSpec({
         driver.mark(mine, by = driver.player2)
         driver.passPriorityUntil(Step.DECLARE_ATTACKERS)
         driver.declareAttackers(driver.player1, emptyMap()).error shouldNotBe null
+    }
+
+    test("a combat phase its controller skips doesn't use the requirement up") {
+        val driver = newDriver()
+        val mine = driver.putCreatureOnBattlefield(driver.player1, "Centaur Courser")
+        driver.removeSummoningSickness(mine)
+        driver.mark(mine, by = driver.player2)
+        driver.replaceState(driver.state.updateEntity(driver.player1) {
+            it.with(SkippedTurnPartsComponent(setOf(TurnPart.COMBAT_PHASE)))
+        })
+
+        driver.passPriorityUntil(Step.POSTCOMBAT_MAIN)
+        driver.state.getEntity(mine)?.get<MustAttackNextCombatComponent>() shouldNotBe null
     }
 
     test("this-turn marks are unchanged by the window axis") {
