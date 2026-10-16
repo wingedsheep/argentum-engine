@@ -18,6 +18,8 @@ import com.wingedsheep.engine.state.components.combat.AttackingComponent
 import com.wingedsheep.engine.state.components.combat.BlockingComponent
 import com.wingedsheep.engine.state.components.combat.MustAttackPlayerComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.player.CantCastSpellsComponent
+import com.wingedsheep.engine.state.components.player.PlayerEffectRemoval
 import com.wingedsheep.engine.state.components.player.AdditionalPhasesComponent
 import com.wingedsheep.engine.state.components.player.ExtraPhaseKind
 import com.wingedsheep.engine.state.components.player.InAdditionalCombatPhaseComponent
@@ -1245,6 +1247,18 @@ class TurnManager(
                 },
                 delayedTriggers = s.delayedTriggers.filterNot { it.expiryPlayerId == leaver }
             )
+            // The same floor-plus-controller window on a player's cast ban (Single Combat).
+            for (playerId in s.turnOrder) {
+                val bans = s.getEntity(playerId)?.get<CantCastSpellsComponent>() ?: continue
+                val remaining = bans.restrictions.filterNot {
+                    it.removeOn == PlayerEffectRemoval.EndOfYourNextTurn && it.controllerId == leaver
+                }
+                if (remaining.size == bans.restrictions.size) continue
+                s = s.updateEntity(playerId) {
+                    if (remaining.isEmpty()) it.without<CantCastSpellsComponent>()
+                    else it.with(CantCastSpellsComponent(remaining))
+                }
+            }
         }
         return s
     }
