@@ -3178,7 +3178,8 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   `PlayerRef(Player.Each)` + `GameObjectFilter.Noncreature` models **Calamity's Wake**.
   The filter checks the spell's announced characteristics (including alternative faces, bestow and
   face-down casting), not a fixed list of cards at resolution. Independent bans accumulate and
-  expire separately; supported durations are `EndOfTurn` and `Permanent`. Existing spells on the
+  expire separately; supported durations are `EndOfTurn`, `EndOfYourNextTurn` (lifts at the cleanup of the
+  effect controller's next turn, for every affected player — **Single Combat**) and `Permanent`. Existing spells on the
   stack, land plays and activated abilities are unaffected. The default still forbids every spell.
   Use characteristic filters independent of the casting process, such as type, subtype or color.
   X-dependent mana-value filters, caster-relative controller filters and stack-state predicates

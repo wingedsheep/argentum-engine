@@ -549,7 +549,8 @@ enum class HijackScope {
  * Used for cards like Xantid Swarm: "Whenever this creature attacks, defending player can't cast spells this turn."
  *
  * @param target The player(s) who can't cast matching spells
- * @param duration EndOfTurn (default) or Permanent
+ * @param duration EndOfTurn (default), EndOfYourNextTurn (the effect controller's next turn —
+ *   Single Combat), or Permanent
  * @param spellFilter Which announced spells are prohibited; Any preserves the blanket ban.
  */
 @SerialName("CantCastSpells")

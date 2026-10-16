@@ -65,8 +65,9 @@ sealed interface Duration {
      * `MayPlayPermission.expiresAfterTurn` uses for the "you may play it until the end of your next
      * turn" wording.
      *
-     * Only the **floating-effect** path honours this duration (control changes, P/T, keyword and
-     * type grants, and everything else that lands in `GameState.floatingEffects`). The separate
+     * The **floating-effect** path honours this duration (control changes, P/T, keyword and
+     * type grants, and everything else that lands in `GameState.floatingEffects`), and so does
+     * `CantCastSpellsEffect`, whose per-player ban records the same floor (Single Combat). The separate
      * granted-ability records (`grantedTriggeredAbilities`, `grantedStaticAbilities`, …) have no
      * expiry hook for it yet — exactly as they have none for [UntilYourNextTurn] — so don't reach
      * for it there without wiring the matching cleanup first.
