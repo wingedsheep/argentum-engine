@@ -5159,7 +5159,9 @@ A resolving nonpermanent spell retains its stack instance through serialized eff
   read from the source's `AttachedToComponent` when its target is a player. Use it both for the payoff
   (`DynamicAmount.LifeTotal(EnchantedPlayer)`, `EffectTarget.PlayerRef(EnchantedPlayer)`) and to scope a
   `PreventLifeGain` (`LifeGainEvent(player = EnchantedPlayer)`). Resolves to nothing if the source isn't
-  an Aura attached to a player. (Grievous Wound.)
+  an Aura attached to a player. Once the Aura has left the battlefield, effects and group filters
+  (`controlledByEnchantedPlayer()`) read the player it was last attached to (CR 608.2h), so an
+  enters trigger still pays off when the Aura is destroyed in response. (Grievous Wound, Overencumbered.)
 - `Player.ControllerOf(desc)` / `Player.OwnerOf(desc)` — controller/owner of the first chosen target.
 - `Player.OwnerOfSource` — the owner of the effect's **source**, read from the source card's
   `CardComponent.ownerId`, falling back to its captured source/leave-event snapshot when the

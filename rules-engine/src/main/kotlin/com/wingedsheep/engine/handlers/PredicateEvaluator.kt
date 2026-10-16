@@ -1636,11 +1636,8 @@ class PredicateEvaluator(
                 it.get<com.wingedsheep.engine.state.components.identity.OwnerComponent>()?.playerId
                     ?: it.get<CardComponent>()?.ownerId
             }
-            Player.EnchantedPlayer -> context.sourceId
-                ?.let { state.getEntity(it) }
-                ?.get<com.wingedsheep.engine.state.components.battlefield.AttachedToComponent>()
-                ?.targetId
-                ?.takeIf { it in state.turnOrder }
+            Player.EnchantedPlayer ->
+                TargetResolutionUtils.enchantedPlayer(context.sourceId, state)
             else -> null
         }
         else -> null

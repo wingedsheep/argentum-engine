@@ -7478,6 +7478,106 @@
     }
 }
 
+// Overencumbered
+{
+    "name": "Overencumbered",
+    "manaCost": "{1}{W}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant opponent\nWhen this Aura enters, enchanted opponent creates a Clue token, a Food token, and a Junk token.\nAt the beginning of combat on enchanted opponent's turn, that player may pay {1} for each artifact they control. If they don't, creatures can't attack this combat.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Overencumbered:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CreatePredefinedToken",
+                            "tokenType": "Clue",
+                            "controller": {
+                                "type": "PlayerRef",
+                                "player": "EnchantedPlayer"
+                            }
+                        },
+                        {
+                            "type": "CreatePredefinedToken",
+                            "tokenType": "Food",
+                            "controller": {
+                                "type": "PlayerRef",
+                                "player": "EnchantedPlayer"
+                            }
+                        },
+                        {
+                            "type": "CreatePredefinedToken",
+                            "tokenType": "Junk",
+                            "controller": {
+                                "type": "PlayerRef",
+                                "player": "EnchantedPlayer"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "When this Aura enters, enchanted opponent creates a Clue token, a Food token, and a Junk token."
+            },
+            {
+                "id": "Overencumbered:2",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "BEGIN_COMBAT",
+                    "player": "EnchantedPlayer"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayDynamicManaCost",
+                            "amount": {
+                                "type": "AggregateBattlefield",
+                                "player": "TriggeringPlayer",
+                                "filter": "artifact"
+                            },
+                            "payer": "TriggeringPlayer"
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": []
+                    },
+                    "otherwise": {
+                        "type": "CantAttackGroup",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "duration": "EndOfCombat"
+                    },
+                    "decisionMaker": {
+                        "type": "PlayerRef",
+                        "player": "TriggeringPlayer"
+                    },
+                    "descriptionOverride": "Pay {1} for each artifact you control? If you don't, creatures can't attack this combat."
+                },
+                "descriptionOverride": "At the beginning of combat on enchanted opponent's turn, that player may pay {1} for each artifact they control. If they don't, creatures can't attack this combat."
+            }
+        ],
+        "auraTarget": "TargetOpponent"
+    },
+    "metadata": {
+        "collectorNumber": "18",
+        "rarity": "RARE",
+        "artist": "Elizabeth Peiró",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/7/47058eaa-348d-4bbb-8df5-b931eba067f3.jpg?1783912418"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Overflowing Basin
 {
     "name": "Overflowing Basin",

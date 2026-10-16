@@ -10,6 +10,7 @@ import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.OwnerComponent
 import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
 import com.wingedsheep.engine.state.components.battlefield.LastKnownPermanentComponent
+import com.wingedsheep.engine.state.components.stack.EntitySnapshot
 import com.wingedsheep.engine.state.components.combat.AttackingComponent
 import com.wingedsheep.engine.state.components.stack.ActivatedAbilityOnStackComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
@@ -453,10 +454,23 @@ object TargetResolutionUtils {
      * isn't attached to a player. Reads the source's [AttachedToComponent] target and confirms it
      * is a player (in [GameState.turnOrder]). Used to resolve [Player.EnchantedPlayer].
      */
-    fun enchantedPlayer(context: EffectContext, state: GameState): EntityId? {
-        val sourceId = context.sourceId ?: return null
-        val targetId = state.getEntity(sourceId)?.get<AttachedToComponent>()?.targetId ?: return null
-        return targetId.takeIf { it in state.turnOrder }
+    fun enchantedPlayer(context: EffectContext, state: GameState): EntityId? =
+        enchantedPlayer(context.sourceId, state, context.lastKnownSourceSnapshot)
+
+    /**
+     * [enchantedPlayer] by source id. Once the Aura has left the battlefield, "enchanted player" is
+     * the player it was attached to as it last existed there (CR 608.2h): Overencumbered's ETB
+     * still hands its tokens to the remembered opponent when the Aura is destroyed in response.
+     * The battlefield-exit snapshot is per-object, so a re-entered Aura never answers with its
+     * previous incarnation's player.
+     */
+    fun enchantedPlayer(sourceId: EntityId?, state: GameState, lastKnownSource: EntitySnapshot? = null): EntityId? {
+        if (sourceId == null) return null
+        val container = state.getEntity(sourceId)
+        val hostId = container?.get<AttachedToComponent>()?.targetId
+            ?: container?.get<LastKnownPermanentComponent>()?.snapshot?.attachedTo
+            ?: lastKnownSource?.takeIf { it.entityId == sourceId }?.attachedTo
+        return hostId?.takeIf { it in state.turnOrder }
     }
 
     /**
