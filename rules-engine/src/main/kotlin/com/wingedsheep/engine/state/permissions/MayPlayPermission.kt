@@ -171,6 +171,13 @@ data class MayPlayPermission(
      */
     val castColorRestriction: com.wingedsheep.sdk.core.Color? = null,
     /**
+     * When set, this permission authorizes casting only spells with exactly this many colors,
+     * checked against the face being cast like [castColorRestriction]. Mirrors
+     * [com.wingedsheep.sdk.scripting.effects.GrantMayPlayFromExileEffect.castColorCount]
+     * (Meeting of the Five).
+     */
+    val castColorCount: Int? = null,
+    /**
      * When true, a cast authorized by this permission puts the card on the stack **transformed** —
      * back face up (CR 712.8c), so the back face supplies the spell's characteristics, targets, and
      * the permanent it becomes. The front face still supplies nothing but the card's identity.
@@ -216,6 +223,15 @@ data class MayPlayPermission(
     val oncePerTurn: Boolean = false,
     val timestamp: Long
 ) {
+    /**
+     * Whether this permission's spell-color riders ([castColorRestriction], [castColorCount])
+     * allow casting a face whose colors are [castColors]. Both the from-zone enumerator and the
+     * authoritative cast validator ask this, with the colors of the face actually being cast.
+     */
+    fun authorizesSpellColors(castColors: Set<com.wingedsheep.sdk.core.Color>): Boolean =
+        (castColorRestriction == null || castColorRestriction in castColors) &&
+            (castColorCount == null || castColors.size == castColorCount)
+
     init {
         // gateOpen falls back sourceId ?: cardId when building the EffectContext, which would
         // make SourceHas* / SourceIs* conditions silently misfire (they'd read the exiled card

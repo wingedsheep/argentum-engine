@@ -457,9 +457,10 @@ internal class CastValidator(
             ?.let { cardDef?.cardFaces?.getOrNull(it)?.manaCost?.colors }
             ?: cardDef?.colors
             ?: cardComponent.manaCost.colors
-        if (permissions.none { it.castColorRestriction == null || it.castColorRestriction in castColors }) {
-            val required = permissions.firstNotNullOfOrNull { it.castColorRestriction }
-            return "You may only cast ${required?.name?.lowercase()} spells from there"
+        if (permissions.none { it.authorizesSpellColors(castColors) }) {
+            val required = permissions.firstNotNullOfOrNull { it.castColorRestriction }?.name?.lowercase()?.let { "$it spells" }
+                ?: permissions.firstNotNullOfOrNull { it.castColorCount }?.let { "spells with exactly $it colors" }
+            return "You may only cast $required from there"
         }
         return null
     }

@@ -537,7 +537,7 @@ class CastFromZoneEnumerator(
                     // permission with no restriction authorizes any colour, and only *one* of the
                     // applicable permissions needs to authorize the cast.
                     val castColors = prepareFace?.manaCost?.colors ?: cardDef?.colors ?: cardComponent.manaCost.colors
-                    if (permissions.none { it.castColorRestriction == null || it.castColorRestriction in castColors }) {
+                    if (permissions.none { it.authorizesSpellColors(castColors) }) {
                         continue
                     }
                     val castName = prepareFace?.name ?: cardComponent.name

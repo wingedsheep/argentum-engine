@@ -1577,7 +1577,8 @@ object Effects {
      * Set [ownerControls] for "its owner may cast/play that card" (each card's owner is the
      * grantee, and a turn-keyed [expiry] follows that owner's turns), and [castColorRestriction]
      * for "you may cast red spells from among them" — a cast-time check on the face being cast,
-     * not a filter over the exiled cards. Set [singleUse] for "you may cast **a** spell from among
+     * not a filter over the exiled cards ([castColorCount] is the same check for "spells with
+     * exactly three colors", Meeting of the Five). Set [singleUse] for "you may cast **a** spell from among
      * them" — one play spends the grant for the whole group (Chandra, Hope's Beacon).
      *
      * Set [landEntersTapped] for "each land played this way enters tapped" clauses
@@ -1606,6 +1607,7 @@ object Effects {
         castFaceIndex: Int? = null,
         ownerControls: Boolean = false,
         castColorRestriction: Color? = null,
+        castColorCount: Int? = null,
         singleUse: Boolean = false,
         colorlessAsAnyColor: Boolean = false,
         withAnyManaColor: Boolean = false
@@ -1623,6 +1625,7 @@ object Effects {
         castFaceIndex = castFaceIndex,
         ownerControls = ownerControls,
         castColorRestriction = castColorRestriction,
+        castColorCount = castColorCount,
         singleUse = singleUse
     )
 
@@ -4692,6 +4695,7 @@ object Effects {
         castFaceIndex: Int? = null,
         ownerControls: Boolean = false,
         castColorRestriction: Color? = null,
+        castColorCount: Int? = null,
         recipient: EffectTarget = EffectTarget.Controller,
         asThoughFlash: Boolean = false,
         singleUse: Boolean = false,
@@ -4713,6 +4717,7 @@ object Effects {
         nonLandOnly = nonLandOnly,
         castFaceIndex = castFaceIndex,
         castColorRestriction = castColorRestriction,
+        castColorCount = castColorCount,
         singleUse = singleUse
     )
 

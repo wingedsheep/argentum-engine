@@ -112,6 +112,23 @@ sealed interface ManaRestriction {
     }
 
     /**
+     * "Spend this mana only to cast spells with exactly [count] colors." Matches a spell whose
+     * colors (CR 105.2) number exactly [count], read off the spell being cast — a hybrid pip
+     * counts both its colors. Meeting of the Five (`count = 3`). A colorless spell has zero
+     * colors, but "spend this mana only to cast colorless spells" is [ColorlessSpellsOnly].
+     */
+    @SerialName("SpellsWithExactColorCount")
+    @Serializable
+    data class SpellsWithExactColorCount(val count: Int) : ManaRestriction {
+        init {
+            require(count in 1..5) { "a spell has 1 to 5 colors; use ColorlessSpellsOnly for none" }
+        }
+        override val description: String =
+            "Spend this mana only to cast spells with exactly ${listOf("one", "two", "three", "four", "five")[count - 1]} " +
+                if (count == 1) "color" else "colors"
+    }
+
+    /**
      * "Spend this mana only to cast legendary spells." Matches spells with the Legendary supertype
      * (Great Hall of the Citadel, Delighted Halfling).
      */

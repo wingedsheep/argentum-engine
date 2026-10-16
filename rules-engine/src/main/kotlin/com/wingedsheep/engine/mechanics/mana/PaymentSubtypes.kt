@@ -45,6 +45,7 @@ internal fun spellPaymentContextFor(
     manaValue = cardComponent.manaCost.cmc,
     hasXInCost = cardComponent.manaCost.hasX,
     isColorless = cardComponent.colors.isEmpty(),
+    colorCount = cardComponent.colors.size,
     subtypes = paymentSubtypesOf(cardComponent),
     isFromExile = isFromExile,
     isFromHand = isFromHand,

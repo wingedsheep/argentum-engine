@@ -4395,6 +4395,130 @@
     ]
 }
 
+// Meeting of the Five
+{
+    "name": "Meeting of the Five",
+    "manaCost": "{3}{W}{U}{B}{R}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Exile the top ten cards of your library. You may cast spells with exactly three colors from among them this turn. Add {W}{W}{U}{U}{B}{B}{R}{R}{G}{G}. Spend this mana only to cast spells with exactly three colors.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "TopOfLibrary",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 10
+                        }
+                    },
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "gathered0",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Exile"
+                    }
+                },
+                {
+                    "type": "GrantMayPlayFromExile",
+                    "from": "gathered0",
+                    "nonLandOnly": true,
+                    "castColorCount": 3
+                },
+                {
+                    "type": "AddMana",
+                    "color": "WHITE",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "restriction": {
+                        "type": "SpellsWithExactColorCount",
+                        "count": 3
+                    }
+                },
+                {
+                    "type": "AddMana",
+                    "color": "BLUE",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "restriction": {
+                        "type": "SpellsWithExactColorCount",
+                        "count": 3
+                    }
+                },
+                {
+                    "type": "AddMana",
+                    "color": "BLACK",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "restriction": {
+                        "type": "SpellsWithExactColorCount",
+                        "count": 3
+                    }
+                },
+                {
+                    "type": "AddMana",
+                    "color": "RED",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "restriction": {
+                        "type": "SpellsWithExactColorCount",
+                        "count": 3
+                    }
+                },
+                {
+                    "type": "AddMana",
+                    "color": "GREEN",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "restriction": {
+                        "type": "SpellsWithExactColorCount",
+                        "count": 3
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "202",
+        "rarity": "MYTHIC",
+        "artist": "Dominik Mayer",
+        "flavorText": "For years, the five families ruled New Capenna in uneasy peace, and the city prospered.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/6/d6c3c08f-ae9d-4932-ba0e-65652b8b318b.jpg?1783923081",
+        "rulings": [
+            {
+                "date": "2022-04-29",
+                "text": "You may cast any spells that have exactly three colors from among the cards exiled this way, even if they aren't the same three colors. For example, you could cast a spell that is white, blue, and black, then cast a spell that is black, red, and green."
+            },
+            {
+                "date": "2022-04-29",
+                "text": "The mana created by Meeting of the Five can be spent on any portion of the cost for a spell with exactly three colors, including any generic cost component or additional costs it has."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE",
+        "BLACK",
+        "RED",
+        "GREEN"
+    ]
+}
+
 // Midnight Assassin
 {
     "name": "Midnight Assassin",

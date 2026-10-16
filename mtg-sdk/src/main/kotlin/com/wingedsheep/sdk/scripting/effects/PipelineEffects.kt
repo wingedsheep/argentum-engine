@@ -1830,6 +1830,13 @@ data class GrantMayPlayFromExileEffect(
      */
     val castColorRestriction: com.wingedsheep.sdk.core.Color? = null,
     /**
+     * When set, the permission authorizes casting only spells with exactly this many **colors**,
+     * checked — like [castColorRestriction] — against the face actually being cast. Models "You
+     * may cast spells with exactly three colors from among them this turn" (Meeting of the Five).
+     * Pair with `nonLandOnly = true`: the count is a cast-time check, it does not stop a land play.
+     */
+    val castColorCount: Int? = null,
+    /**
      * When true, the permission over the whole collection is **used up by one play**: casting (or
      * playing, for a land) any one granted card revokes it for every other card in the group.
      * Models "you may cast **an** instant or sorcery spell from among those cards" (Chandra, Hope's
@@ -1851,6 +1858,7 @@ data class GrantMayPlayFromExileEffect(
         val what = when {
             castColorRestriction != null && singleUse -> "a ${castColorRestriction.name.lowercase()} spell from among them"
             castColorRestriction != null -> "${castColorRestriction.name.lowercase()} spells among them"
+            castColorCount != null -> "spells with exactly $castColorCount colors from among them"
             singleUse && nonLandOnly -> "a spell from among those cards"
             singleUse -> "one of those cards"
             nonLandOnly -> "that card"

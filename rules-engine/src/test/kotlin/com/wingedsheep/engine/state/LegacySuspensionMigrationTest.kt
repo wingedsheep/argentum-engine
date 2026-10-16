@@ -309,7 +309,7 @@ class LegacySuspensionMigrationTest : ScenarioTestBase() {
 
     /**
      * Added copiable rules data postdates the capture; old identities must default those lists empty.
-     * Likewise a may-play permission's later `colorlessAsAnyColor` / `withAnyManaColor` riders and the card's later
+     * Likewise a may-play permission's later `colorlessAsAnyColor` / `withAnyManaColor` / `castColorCount` riders and the card's later
      * `hasCycling` flag must default false.
      */
     private fun withoutPostCaptureCardDefaults(value: JsonElement): JsonElement = when (value) {
@@ -342,14 +342,16 @@ class LegacySuspensionMigrationTest : ScenarioTestBase() {
                 value.getValue("playedThisTurn") shouldBe JsonPrimitive(0)
                 value - "playedThisTurn"
             } else if ("colorlessAsAnyColor" in value && "singleUse" in value) {
-                // MayPlayPermission's any-color, colorless-as-any-color, face-down and once-per-turn
-                // riders postdate the capture.
+                // MayPlayPermission's any-color, colorless-as-any-color, face-down, once-per-turn and
+                // color-count riders postdate the capture.
                 value.getValue("withAnyManaColor") shouldBe JsonPrimitive(false)
                 value.getValue("colorlessAsAnyColor") shouldBe JsonPrimitive(false)
                 value.getValue("castFaceDown") shouldBe JsonPrimitive(false)
                 value.getValue("turnsFaceUpInstead") shouldBe JsonPrimitive(false)
                 value.getValue("oncePerTurn") shouldBe JsonPrimitive(false)
-                value - "withAnyManaColor" - "colorlessAsAnyColor" - "castFaceDown" - "turnsFaceUpInstead" - "oncePerTurn"
+                value.getValue("castColorCount") shouldBe JsonNull
+                value - "withAnyManaColor" - "colorlessAsAnyColor" - "castFaceDown" - "turnsFaceUpInstead" - "oncePerTurn" -
+                    "castColorCount"
             } else if (value["type"] == JsonPrimitive(
                     "com.wingedsheep.engine.state.components.stack.SpellOnStackComponent"
                 )) {

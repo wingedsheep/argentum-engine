@@ -1127,6 +1127,7 @@ ManaRestriction.InstantOrSorceryOnly — ManaRestriction
 ManaRestriction.KickedSpellsOnly — ManaRestriction
 ManaRestriction.LegendarySpellsOnly — ManaRestriction
 ManaRestriction.SpellsOnly — ManaRestriction
+ManaRestriction.SpellsWithExactColorCount — ManaRestriction
 ManaRestriction.SpellsWithManaValueAtLeast — ManaRestriction
 ManaRestriction.SubtypeSpellsOnly — ManaRestriction
 ManaRestriction.SubtypeSpellsOrAbilitiesOnly — ManaRestriction

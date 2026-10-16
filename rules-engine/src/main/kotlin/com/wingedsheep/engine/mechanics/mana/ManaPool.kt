@@ -42,6 +42,13 @@ data class SpellPaymentContext(
      * letting it pay for a colored spell.
      */
     val isColorless: Boolean = false,
+    /**
+     * How many colors the spell being cast has (CR 105.2), or `null` when the context doesn't
+     * describe a spell's characteristics — which refuses
+     * [ManaRestriction.SpellsWithExactColorCount] mana, the same fail-closed default as
+     * [isColorless].
+     */
+    val colorCount: Int? = null,
     val subtypes: Set<String> = emptySet(),
     val isFromExile: Boolean = false,
     /** True when the spell being cast is legendary (has the Legendary supertype). */
@@ -124,6 +131,7 @@ data class SpellPaymentContext(
             isCreature = true,
             manaValue = 0,
             isColorless = true,
+            colorCount = 0,
             cardTypes = setOf(com.wingedsheep.sdk.core.CardType.CREATURE),
             isFromHand = isFromHand,
             isFaceDownCast = true,
@@ -158,6 +166,7 @@ fun ManaRestriction.isSatisfiedBy(context: SpellPaymentContext): Boolean = when 
     is ManaRestriction.CreatureSpellsOnly -> !context.isAbilityActivation && context.isCreature
     is ManaRestriction.LegendarySpellsOnly -> !context.isAbilityActivation && context.isLegendary
     is ManaRestriction.ColorlessSpellsOnly -> context.isSpellCast && context.isColorless
+    is ManaRestriction.SpellsWithExactColorCount -> context.isSpellCast && context.colorCount == count
     is ManaRestriction.CostsContainingXOnly -> (context.isSpellCast || context.isAbilityActivation) && context.hasXInCost
     is ManaRestriction.SubtypeSpellsOrAbilitiesOnly ->
         (!creatureOnly || (!context.isAbilityActivation && context.isCreature)) &&
