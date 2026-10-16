@@ -7752,7 +7752,8 @@ trigger can find the new object a card became in a public zone). Tinybones, Baub
 "exile **it** from their graveyard with a stash counter on it" =
 `Effects.Exile(EffectTarget.TriggeringEntity, fromZone = Zone.GRAVEYARD, addCounterType = CounterType.STASH)`.
 Batch wording (`batch = true`) collapses the event to a single firing and binds no card — there is no
-single "it" for "one or more cards".
+single "it" for "one or more cards"; the discarded cards matching `card` are instead the trigger's
+captured collection (`CollectionSlot.TriggerCaptured`), the "them" of the payoff.
 
 - `Triggers.anOpponent.discards()` — whenever an opponent discards a card. (Entropic Battlecruiser.)
 - `Triggers.you.discards()` — whenever you discard a card.
@@ -7768,6 +7769,10 @@ single "it" for "one or more cards".
   card, then discard a card") are separate `CardsDiscardedEvent`s and fire separately.
   Read the batch size ("that much" / "that many") via
   `DynamicAmount.ContextProperty(ContextPropertyKey.TRIGGER_DISCARD_COUNT)` — Magmakin Artillerist.
+  The discarded cards themselves are `triggerCaptured` in an `Effects.Pipeline { }` — "exile **them**
+  from your graveyard" (Toluz, Clever Conductor) =
+  `exile(filter(triggerCaptured, GameObjectFilter.Any.currentlyIn(Zone.GRAVEYARD)), linkToSource = true)`;
+  the `currentlyIn` narrowing drops a card a madness discard exiled or one moved out in response.
 - `Triggers.you.discards(GameObjectFilter.Nonland, batch = true, firstTimeEachTurn = true)` — "whenever
   you discard one or more nonland cards **for the first time each turn**" (Veronica, Dissident Scribe).
   Fires only for the discard event carrying the player's first `card`-matching discard of the turn. It is

@@ -1811,7 +1811,7 @@ class TriggerDetector(
                     // Batch wording ("whenever you discard one or more cards", CR 603.2c) collapses
                     // the whole event to a single firing — CardsDiscardedEvent is already one event
                     // per discard action, so the cap is exactly the printed once-per-event — and has
-                    // no single "it" to bind.
+                    // no single "it" to bind; it carries the matching cards as its captured collection.
                     // A mill trigger fires once per matching milled card, or once per mill
                     // instruction for "one or more" (batch) — see TriggerMatcher.millTriggerContexts.
                     else if (ability.trigger is EventPattern.MillEvent &&
@@ -1846,14 +1846,20 @@ class TriggerDetector(
                             matchingCards
                         }
                         for (discardedCardId in boundCards) {
+                            // A batch firing carries the matching discarded cards as its captured
+                            // collection — the "them" of "exile them from your graveyard" (Toluz,
+                            // Clever Conductor).
+                            val context = TriggerContext.fromEvent(event).let {
+                                if (discardTrigger.batch) it.copy(capturedEntityIds = matchingCards)
+                                else it.copy(triggeringEntityId = discardedCardId)
+                            }
                             triggers.add(
                                 PendingTrigger(
                                     ability = ability,
                                     sourceId = entityId,
                                     sourceName = cardComponent.name,
                                     controllerId = controllerId,
-                                    triggerContext = TriggerContext.fromEvent(event)
-                                        .copy(triggeringEntityId = discardedCardId)
+                                    triggerContext = context
                                 )
                             )
                         }

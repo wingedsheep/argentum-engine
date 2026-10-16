@@ -5863,6 +5863,158 @@
     ]
 }
 
+// Toluz, Clever Conductor
+{
+    "name": "Toluz, Clever Conductor",
+    "manaCost": "{W/U}{U}{U/B}",
+    "typeLine": "Legendary Creature — Human Rogue",
+    "oracleText": "When Toluz enters, it connives. (Draw a card, then discard a card. If you discarded a nonland card, put a +1/+1 counter on this creature.)\nWhenever you discard one or more cards, exile them from your graveyard.\nWhen Toluz dies, put the cards exiled with it into their owner's hand.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Toluz, Clever Conductor:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Connive",
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand"
+                                },
+                                "storeAs": "connive_hand"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "connive_hand",
+                                "selection": {
+                                    "type": "ChooseExactly",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "connive_discarded",
+                                "prompt": "Choose a card to discard"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "connive_discarded",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                },
+                                "moveType": "Discard"
+                            },
+                            {
+                                "type": "ConditionalOnCollection",
+                                "collection": "connive_discarded",
+                                "ifNotEmpty": {
+                                    "type": "AddCounters",
+                                    "counterType": "PLUS_ONE_PLUS_ONE",
+                                    "count": 1,
+                                    "target": "Self"
+                                },
+                                "filter": "nonland"
+                            }
+                        ],
+                        "descriptionOverride": "Connive"
+                    }
+                }
+            },
+            {
+                "id": "Toluz, Clever Conductor:2",
+                "trigger": {
+                    "type": "DiscardEvent",
+                    "batch": true
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "FilterCollection",
+                            "from": "trigger.captured",
+                            "filter": {
+                                "statePredicates": [
+                                    {
+                                        "type": "InZone",
+                                        "zone": "Graveyard"
+                                    }
+                                ]
+                            },
+                            "storeMatching": "matching0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "matching0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            },
+                            "linkToSource": true
+                        }
+                    ]
+                }
+            },
+            {
+                "id": "Toluz, Clever Conductor:3",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "FromLinkedExile",
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "228",
+        "rarity": "RARE",
+        "artist": "Donato Giancola",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/0/f01f12e0-f354-43aa-9e2d-b59a99571a5f.jpg?1783923066"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE",
+        "BLACK"
+    ]
+}
+
 // Topiary Stomper
 {
     "name": "Topiary Stomper",
