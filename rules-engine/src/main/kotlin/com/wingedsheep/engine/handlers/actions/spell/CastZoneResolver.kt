@@ -461,7 +461,7 @@ class CastZoneResolver(
         }
         return predicateEvaluator.matches(
             state, state.projectedState, cardId, sa.filter,
-            PredicateContext(controllerId = playerId)
+            graveyardGrantFilterContext(playerId, grantSourceId)
         )
     }
 
@@ -966,6 +966,19 @@ class CastZoneResolver(
     }
 
     companion object {
+        /**
+         * The predicate context a [MayCastFromGraveyard] grant's filter is judged in: "you" is the
+         * caster, and the grant's own source — the permanent printing it, the emblem holding it, or
+         * the anchor of a durational grant — is the filter's `Self`. That makes source-relative caps
+         * read the granting object, not nothing: Arcade Gannon's "mana value less than or equal to
+         * the number of quest counters on Arcade Gannon" is
+         * `manaValueAtMost(DynamicAmounts.countersOnSelf(QUEST))`. A grant anchored to the player
+         * (The Great Work) has no object to be `Self`, so source-relative predicates fail closed.
+         * Shared by the handler-side resolver and `CastFromZoneEnumerator` so the two stay in step.
+         */
+        fun graveyardGrantFilterContext(playerId: EntityId, grantSourceId: EntityId): PredicateContext =
+            PredicateContext(controllerId = playerId, sourceId = grantSourceId.takeIf { it != playerId })
+
         /**
          * @param state the game state, and [grantingSourceId] the permanent whose static ability
          *   supplies the filter. Both are optional and only

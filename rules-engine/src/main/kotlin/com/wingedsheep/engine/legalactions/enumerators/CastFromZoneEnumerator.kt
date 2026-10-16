@@ -47,6 +47,7 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.costs.CostAtom
 import com.wingedsheep.sdk.scripting.ChoiceSlot
 import com.wingedsheep.sdk.scripting.KeywordAbility
+import com.wingedsheep.engine.handlers.actions.spell.CastZoneResolver
 import com.wingedsheep.sdk.scripting.MayCastFromGraveyard
 import com.wingedsheep.engine.state.components.identity.emblemStaticAbilitiesOf
 import com.wingedsheep.sdk.scripting.MayCastSelfFromZones
@@ -2500,7 +2501,7 @@ class CastFromZoneEnumerator(
         // graveyard gain 'You may cast this card from your graveyard'" (Case of the Uneaten Feast),
         // where the set of cards is fixed when the ability resolves (CR 611.2c) rather than being a
         // standing player-wide permission that later arrivals would also enjoy.
-        val permissions = mutableListOf<Pair<MayCastFromGraveyard, EntityId?>>()
+        val permissions = mutableListOf<GraveyardCastPermission>()
         for (permId in state.getBattlefield()) {
             val container = state.getEntity(permId) ?: continue
             val controller = container.get<com.wingedsheep.engine.state.components.identity.ControllerComponent>()?.playerId
@@ -2509,7 +2510,7 @@ class CastFromZoneEnumerator(
             val cardDef = context.cardRegistry.getCard(cardComp.cardDefinitionId) ?: continue
             for (sa in cardDef.liveStaticAbilities(state, permId)) {
                 if (sa is MayCastFromGraveyard && !grantIsSpent(permId, sa)) {
-                    permissions.add(sa to null)
+                    permissions.add(GraveyardCastPermission(sa, permId, scopedCardId = null))
                 }
             }
         }
@@ -2517,7 +2518,7 @@ class CastFromZoneEnumerator(
         // outside every zone. Kept in step with `CastZoneResolver.mayCastFromGraveyardGrantsWithSources`.
         for ((emblemId, sa) in state.emblemStaticAbilitiesOf(playerId)) {
             if (sa is MayCastFromGraveyard && !grantIsSpent(emblemId, sa)) {
-                permissions.add(sa to null)
+                permissions.add(GraveyardCastPermission(sa, emblemId, scopedCardId = null))
             }
         }
         // Durational grants recorded in grantedStaticAbilities, in their two anchorings:
@@ -2542,9 +2543,10 @@ class CastFromZoneEnumerator(
             when {
                 // Anchored to the player (The Great Work's chapter III): player-wide, and it outlives
                 // the permanent whose ability created it.
-                grant.entityId == playerId -> permissions.add(ability to null)
-                grant.entityId in battlefield && controller == playerId -> permissions.add(ability to null)
-                grant.entityId in graveyard -> permissions.add(ability to grant.entityId)
+                grant.entityId == playerId -> permissions.add(GraveyardCastPermission(ability, grant.entityId, null))
+                grant.entityId in battlefield && controller == playerId ->
+                    permissions.add(GraveyardCastPermission(ability, grant.entityId, null))
+                grant.entityId in graveyard -> permissions.add(GraveyardCastPermission(ability, grant.entityId, grant.entityId))
             }
         }
 
@@ -2558,7 +2560,7 @@ class CastFromZoneEnumerator(
         val emitted = HashSet<String>()
 
         // Check timing restrictions
-        for ((permission, scopedCardId) in permissions) {
+        for ((permission, grantSourceId, scopedCardId) in permissions) {
             if (permission.duringYourTurnOnly && !state.isActiveTurnFor(playerId)) continue
             val lifeCost = permission.lifeCost
             val lifeSuffix = if (lifeCost > 0) " (pay $lifeCost life)" else ""
@@ -2591,7 +2593,7 @@ class CastFromZoneEnumerator(
                 // Check if card matches filter
                 if (!context.predicateEvaluator.matches(
                         state, state.projectedState, cardId, permission.filter,
-                        PredicateContext(controllerId = playerId)
+                        CastZoneResolver.graveyardGrantFilterContext(playerId, grantSourceId)
                     )
                 ) continue
 
@@ -3011,3 +3013,14 @@ class CastFromZoneEnumerator(
         return true
     }
 }
+
+/**
+ * One [MayCastFromGraveyard] permission the graveyard-cast scan offers: the grant, the object it
+ * comes from (the filter's `Self` — see `CastZoneResolver.graveyardGrantFilterContext`), and the one
+ * graveyard card it is scoped to (null = every card its filter admits).
+ */
+private data class GraveyardCastPermission(
+    val grant: MayCastFromGraveyard,
+    val sourceId: EntityId,
+    val scopedCardId: EntityId?,
+)

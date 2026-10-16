@@ -10780,6 +10780,11 @@ riders, matching how the engine already treats e.g. City of Brass's damage durin
   and a use is only consumed when no unlimited grant could have authorized the same cast. Pair with
   `duringYourTurnOnly` for "once during each of your turns": Gisa and Geralf =
   `MayCastFromGraveyard(Creature.withSubtype(Subtype.ZOMBIE), duringYourTurnOnly = true, oncePerTurn = true)`.
+  **The filter is judged with the grant's source as `Self`** (`CastZoneResolver.graveyardGrantFilterContext`):
+  the permanent printing it, the emblem holding it, or the anchor of a durational grant (a player-anchored
+  grant has no `Self`, so source-relative predicates fail closed). A source-relative cap therefore reads
+  the granting object live, when the cast is offered and when it is made — Arcade Gannon =
+  `MayCastFromGraveyard((Artifact or Any.withSubtype("Human")).manaValueAtMostDynamic(DynamicAmounts.countersOnSelf(CounterType.QUEST)), duringYourTurnOnly = true, oncePerTurn = true)`.
   The spent-grant gate lives in two places that must stay in step — `CastFromZoneEnumerator`
   (which offers the action) and `CastZoneResolver.mayCastFromGraveyardGrantApplies` (which authorizes
   it) — with `CastSpellHandler` marking the source via
