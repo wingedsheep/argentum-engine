@@ -49,6 +49,7 @@ val PiperWrightPublickReporter = card("Piper Wright, Publick Reporter") {
         rarity = Rarity.RARE
         collectorNumber = "36"
         artist = "Rafater"
+        flavorText = "\"You can't stop the press.\""
         imageUri = "https://cards.scryfall.io/normal/front/9/1/916bf331-455a-4694-93d3-15dcf6971072.jpg?1783912412"
 
         ruling(

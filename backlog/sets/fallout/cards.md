@@ -50,7 +50,7 @@
 - [ ] Bottle-Cap Blast
 - [x] Branching Evolution
 - [ ] Brass Knuckles
-- [ ] Break Down
+- [x] Break Down
 - [ ] Brotherhood Outcast
 - [x] Brotherhood Scribe
 - [x] Brotherhood Vertibird
@@ -73,7 +73,7 @@
 - [ ] Codsworth, Handy Helper
 - [x] Colonel Autumn
 - [x] Command Tower
-- [ ] Commander Sofia Daguerre
+- [x] Commander Sofia Daguerre
 - [x] Contagion Clasp
 - [x] Contaminated Drink
 - [x] Corpsejack Menace

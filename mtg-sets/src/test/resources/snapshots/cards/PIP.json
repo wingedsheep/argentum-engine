@@ -2048,6 +2048,7 @@
         "collectorNumber": "75",
         "rarity": "UNCOMMON",
         "artist": "Jeremy Paillotin",
+        "flavorText": "\"Master, evolve me to perfection!\"",
         "imageUri": "https://cards.scryfall.io/normal/front/8/4/84118221-20a3-46a9-9e6e-a928b46a8633.jpg?1783912398"
     },
     "colorIdentityOverride": [
@@ -6475,7 +6476,7 @@
     "name": "Nuka-Cola Vending Machine",
     "manaCost": "{3}",
     "typeLine": "Artifact",
-    "oracleText": "{1}, {T}: Create a Food token.\nWhenever you sacrifice a Food, create a tapped Treasure token.",
+    "oracleText": "{1}, {T}: Create a Food token. (It's an artifact with \"{2}, {T}, Sacrifice this token: You gain 3 life.\")\nWhenever you sacrifice a Food, create a tapped Treasure token. (It's an artifact with \"{T}, Sacrifice this token: Add one mana of any color.\")",
     "script": {
         "triggeredAbilities": [
             {
@@ -6518,7 +6519,7 @@
     },
     "metadata": {
         "collectorNumber": "137",
-        "rarity": "RARE",
+        "rarity": "UNCOMMON",
         "artist": "Anthony Devine",
         "imageUri": "https://cards.scryfall.io/normal/front/4/0/405df7c7-0e37-499e-9826-6bf9f5db7a40.jpg?1783912378"
     }
@@ -7326,6 +7327,7 @@
         "collectorNumber": "36",
         "rarity": "RARE",
         "artist": "Rafater",
+        "flavorText": "\"You can't stop the press.\"",
         "imageUri": "https://cards.scryfall.io/normal/front/9/1/916bf331-455a-4694-93d3-15dcf6971072.jpg?1783912412",
         "rulings": [
             {

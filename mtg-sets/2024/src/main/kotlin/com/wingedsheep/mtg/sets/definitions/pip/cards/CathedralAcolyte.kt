@@ -48,6 +48,7 @@ val CathedralAcolyte = card("Cathedral Acolyte") {
         rarity = Rarity.UNCOMMON
         collectorNumber = "75"
         artist = "Jeremy Paillotin"
+        flavorText = "\"Master, evolve me to perfection!\""
         imageUri = "https://cards.scryfall.io/normal/front/8/4/84118221-20a3-46a9-9e6e-a928b46a8633.jpg?1783912398"
     }
 }
