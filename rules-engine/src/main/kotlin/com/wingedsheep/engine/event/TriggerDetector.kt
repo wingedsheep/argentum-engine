@@ -1234,13 +1234,8 @@ class TriggerDetector(
                         controllerId = delayed.controllerId,
                         triggerContext = TriggerContext.fromEvent(event).copy(
                             triggeringEntityId = watchedTriggering
-                                ?: TriggerContext.fromEvent(event).triggeringEntityId,
-                            // "…attack you" delayed forms capture their attackers like the
-                            // battlefield path does.
-                            capturedEntityIds = (specEvent as? com.wingedsheep.sdk.scripting.EventPattern.CreaturesAttackYouEvent)
-                                ?.let { matcher.attackersAgainstYou(it, event, delayed.controllerId, state) }
-                                ?: TriggerContext.fromEvent(event).capturedEntityIds
-                        ),
+                                ?: TriggerContext.fromEvent(event).triggeringEntityId
+                        ).withAttackersAgainstYou(specEvent, event, delayed.controllerId, state),
                         consumesDelayedTriggerId = if (delayed.fireOnce) delayed.id else null,
                         carriedPipeline = delayed.carriedPipelineFor(state)
                     )
@@ -2003,7 +1998,7 @@ class TriggerDetector(
                                     sourceName = cardComponent.name,
                                     controllerId = ownerId,
                                     triggerContext = TriggerContext.fromEvent(event).let { ctx ->
-                                        if (capturedTargets == null) ctx
+                                        if (capturedTargets == null) ctx.withAttackersAgainstYou(ability.trigger, event, ownerId, state)
                                         else ctx.copy(
                                             capturedEntityIds = capturedTargets,
                                             capturedEntitySnapshots = copiableSnapshots(state, capturedTargets)
@@ -2310,6 +2305,21 @@ class TriggerDetector(
     }
 
     /**
+     * "…attack you" triggers detected off the battlefield scan (delayed, graveyard/command zone,
+     * global grants) capture their attackers the way the battlefield path does, so "that many"
+     * reads the declared attackers there too ([TriggerMatcher.attackersAgainstYou]).
+     */
+    private fun TriggerContext.withAttackersAgainstYou(
+        trigger: EventPattern,
+        event: EngineGameEvent,
+        controllerId: EntityId,
+        state: GameState
+    ): TriggerContext {
+        val attackTrigger = trigger as? EventPattern.CreaturesAttackYouEvent ?: return this
+        return copy(capturedEntityIds = matcher.attackersAgainstYou(attackTrigger, event, controllerId, state))
+    }
+
+    /**
      * Detect triggers from global granted triggered abilities (e.g., False Cure).
      * These are triggered abilities not attached to any permanent, created by
      * spell effects and stored in GameState.globalGrantedTriggeredAbilities.
@@ -2332,6 +2342,7 @@ class TriggerDetector(
                         sourceName = global.sourceName,
                         controllerId = global.controllerId,
                         triggerContext = TriggerContext.fromEvent(event)
+                            .withAttackersAgainstYou(ability.trigger, event, global.controllerId, state)
                     )
                 )
             }

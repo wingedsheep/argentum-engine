@@ -2,6 +2,7 @@ package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
+import com.wingedsheep.engine.state.components.combat.AttackingComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.mtg.sets.definitions.pip.cards.StruggleForProjectPurity
@@ -70,7 +71,7 @@ class StruggleForProjectPurityScenarioTest : FunSpec({
         val removal = d.putCardInHand(d.player1, removeFromCombat.name)
         d.castSpell(d.player1, removal, listOf(bears.first())).error shouldBe null
         d.bothPass()
-        d.state.getEntity(bears.first())?.has<com.wingedsheep.engine.state.components.combat.AttackingComponent>() shouldBe false
+        d.state.getEntity(bears.first())?.has<AttackingComponent>() shouldBe false
         d.bothPass()
         d.rad(d.player2) shouldBe 4
     }
