@@ -637,3 +637,59 @@
         "RED"
     ]
 }
+
+// Wake the Past
+{
+    "name": "Wake the Past",
+    "manaCost": "{5}{R}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Return all artifact cards from your graveyard to the battlefield. They gain haste until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Graveyard",
+                        "filter": "artifact"
+                    },
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "gathered0",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Battlefield"
+                    },
+                    "storeMovedAs": "moved1"
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Collection",
+                        "collection": "moved1"
+                    },
+                    "body": {
+                        "type": "GrantKeyword",
+                        "keyword": "HASTE",
+                        "target": "IterationEntity"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "75",
+        "rarity": "RARE",
+        "artist": "Yeong-Hao Han",
+        "flavorText": "\"Belong in a museum? I think we should let relics belong wherever they please!\"\n—Quintorius, Lorehold mage-student",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/e/aeae7fda-05f5-40af-90cc-b80521ee0521.jpg?1783927584"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
+    ]
+}

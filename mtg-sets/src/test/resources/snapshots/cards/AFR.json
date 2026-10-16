@@ -634,6 +634,62 @@
     ]
 }
 
+// Treasure Vault
+{
+    "name": "Treasure Vault",
+    "manaCost": "",
+    "typeLine": "Artifact Land",
+    "oracleText": "{T}: Add {C}.\n{X}{X}, {T}, Sacrifice this land: Create X Treasure tokens.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Treasure Vault:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Treasure Vault:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{X}{X}"
+                            }
+                        },
+                        "CostTap",
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Treasure",
+                    "dynamicCount": "XValue"
+                },
+                "descriptionOverride": "{X}{X}, {T}, Sacrifice this land: Create X Treasure tokens."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "261",
+        "rarity": "RARE",
+        "artist": "Johannes Voss",
+        "flavorText": "There is wealth enough inside to cause the rise and the ruin of dynasties.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/0/a0931eb3-b403-4b1a-ad46-a7b0a51bb9a4.jpg?1783926431"
+    },
+    "colorIdentityOverride": []
+}
+
 // Unexpected Windfall
 {
     "name": "Unexpected Windfall",

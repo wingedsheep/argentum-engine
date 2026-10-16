@@ -590,6 +590,37 @@
     ]
 }
 
+// Crucible of Worlds
+{
+    "name": "Crucible of Worlds",
+    "manaCost": "{3}",
+    "typeLine": "Artifact",
+    "oracleText": "You may play lands from your graveyard.",
+    "script": {
+        "staticAbilities": [
+            "MayPlayLandsFromGraveyard"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "114",
+        "rarity": "RARE",
+        "artist": "Ron Spencer",
+        "flavorText": "Amidst the darkest ashes grow the strongest seeds.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/1/312a6058-de08-487d-95bd-b3c56807fdd6.jpg?1783944383",
+        "rulings": [
+            {
+                "date": "2018-07-13",
+                "text": "Crucible of Worlds doesn't change the times when you can play those land cards. You can still play only one land per turn, and only during your main phase when you have priority and the stack is empty."
+            },
+            {
+                "date": "2018-07-13",
+                "text": "Crucible of Worlds doesn't allow you to activate abilities (such as cycling) of land cards in your graveyard."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Desecration Elemental
 {
     "name": "Desecration Elemental",

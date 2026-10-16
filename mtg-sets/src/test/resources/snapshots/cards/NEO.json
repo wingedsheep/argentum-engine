@@ -951,6 +951,135 @@
     ]
 }
 
+// Farewell
+{
+    "name": "Farewell",
+    "manaCost": "{4}{W}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Choose one or more —\n• Exile all artifacts.\n• Exile all creatures.\n• Exile all enchantments.\n• Exile all graveyards.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "BattlefieldMatching",
+                                    "filter": "artifact"
+                                },
+                                "storeAs": "gathered0"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "gathered0",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Exile"
+                                }
+                            }
+                        ]
+                    },
+                    "description": "Exile all artifacts."
+                },
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "BattlefieldMatching",
+                                    "filter": "creature"
+                                },
+                                "storeAs": "gathered0"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "gathered0",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Exile"
+                                }
+                            }
+                        ]
+                    },
+                    "description": "Exile all creatures."
+                },
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "BattlefieldMatching",
+                                    "filter": "enchantment"
+                                },
+                                "storeAs": "gathered0"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "gathered0",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Exile"
+                                }
+                            }
+                        ]
+                    },
+                    "description": "Exile all enchantments."
+                },
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Graveyard",
+                                    "player": "Each"
+                                },
+                                "storeAs": "gathered0"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "gathered0",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Exile"
+                                }
+                            }
+                        ]
+                    },
+                    "description": "Exile all graveyards."
+                }
+            ],
+            "chooseCount": 4,
+            "minChooseCount": 1
+        }
+    },
+    "metadata": {
+        "collectorNumber": "13",
+        "rarity": "RARE",
+        "artist": "Seb McKinnon",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/1/e1068723-d1ef-4007-97d9-b10dccdbade4.jpg?1783923923",
+        "rulings": [
+            {
+                "date": "2022-02-18",
+                "text": "If you choose more than one mode for Farewell, you perform the actions in the order written."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Futurist Sentinel
 {
     "name": "Futurist Sentinel",
@@ -2207,6 +2336,99 @@
     "colorIdentityOverride": [
         "WHITE"
     ]
+}
+
+// Roadside Reliquary
+{
+    "name": "Roadside Reliquary",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "{T}: Add {C}.\n{2}, {T}, Sacrifice this land: Draw a card if you control an artifact. Draw a card if you control an enchantment.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Roadside Reliquary:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Roadside Reliquary:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}"
+                            }
+                        },
+                        "CostTap",
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Exists",
+                                    "player": "You",
+                                    "zone": "Battlefield",
+                                    "filter": "artifact"
+                                }
+                            },
+                            "then": {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Exists",
+                                    "player": "You",
+                                    "zone": "Battlefield",
+                                    "filter": "enchantment"
+                                }
+                            },
+                            "then": {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "{2}, {T}, Sacrifice this land: Draw a card if you control an artifact. Draw a card if you control an enchantment."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "272",
+        "rarity": "UNCOMMON",
+        "artist": "Robin Olausson",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/0/8002de90-93fb-48ea-a849-40fdad0aef5a.jpg?1783923816"
+    },
+    "colorIdentityOverride": []
 }
 
 // Scrapyard Steelbreaker

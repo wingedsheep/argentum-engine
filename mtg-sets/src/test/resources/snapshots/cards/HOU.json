@@ -613,6 +613,98 @@
     ]
 }
 
+// Scavenger Grounds
+{
+    "name": "Scavenger Grounds",
+    "manaCost": "",
+    "typeLine": "Land — Desert",
+    "oracleText": "{T}: Add {C}.\n{2}, {T}, Sacrifice a Desert: Exile all graveyards.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Scavenger Grounds:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Scavenger Grounds:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}"
+                            }
+                        },
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "land Desert"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Graveyard",
+                                "player": "Each"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "182",
+        "rarity": "RARE",
+        "artist": "Steven Belledin",
+        "flavorText": "When the last scrap of flesh is scoured away, the Curse of Wandering ends. Then the dead may sleep.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/c/6cd91eeb-7abf-4538-91dc-47c736dfc237.jpg?1783935994",
+        "rulings": [
+            {
+                "date": "2017-07-14",
+                "text": "If a Desert has an ability with a cost of \"Sacrifice a Desert,\" you can sacrifice that Desert to pay the cost for its own ability."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "The sacrificed Desert will be in your graveyard to be exiled by the last ability of Scavenger Grounds."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "Desert is a land subtype with no special meaning. It doesn't grant the land an intrinsic mana ability. Other cards may care about which lands are Deserts."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Tragic Lesson
 {
     "name": "Tragic Lesson",

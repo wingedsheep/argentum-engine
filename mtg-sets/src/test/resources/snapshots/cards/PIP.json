@@ -4872,6 +4872,106 @@
     ]
 }
 
+// Super Mutant Scavenger
+{
+    "name": "Super Mutant Scavenger",
+    "manaCost": "{4}{G}",
+    "typeLine": "Creature — Mutant Warrior",
+    "oracleText": "Trample\nWhen this creature enters or dies, return up to one target Aura or Equipment card from your graveyard to your hand.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Super Mutant Scavenger:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Hand"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                {
+                                    "type": "HasAnyOfSubtypes",
+                                    "subtypes": [
+                                        "Aura",
+                                        "Equipment"
+                                    ]
+                                }
+                            ],
+                            "controllerPredicate": "OwnedByYou"
+                        },
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                }
+            },
+            {
+                "id": "Super Mutant Scavenger:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    },
+                    "destination": "Hand"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                {
+                                    "type": "HasAnyOfSubtypes",
+                                    "subtypes": [
+                                        "Aura",
+                                        "Equipment"
+                                    ]
+                                }
+                            ],
+                            "controllerPredicate": "OwnedByYou"
+                        },
+                        "zone": "Graveyard"
+                    },
+                    "id": "t1"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "85",
+        "rarity": "UNCOMMON",
+        "artist": "David Astruga",
+        "flavorText": "Out in the wastelands, everything's a steal.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/1/41f48a99-eaf7-42ec-bab3-9ebbc735a82a.jpg?1783912394"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Survivor's Med Kit
 {
     "name": "Survivor's Med Kit",

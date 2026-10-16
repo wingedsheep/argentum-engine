@@ -79,7 +79,7 @@
 - [ ] Corpsejack Menace
 - [ ] Craig Boone, Novac Guard
 - [ ] Crimson Caravaneer
-- [ ] Crucible of Worlds
+- [x] Crucible of Worlds
 - [x] Crush Contraband
 - [x] Cultivate
 - [x] Curie, Emergent Intelligence
@@ -88,7 +88,7 @@
 - [x] Desdemona, Freedom's Edge
 - [ ] Desolate Mire
 - [ ] Diamond City
-- [ ] Dispatch
+- [x] Dispatch
 - [ ] Dogmeat, Ever Loyal
 - [ ] Dr. Madison Li
 - [x] Dragonskull Summit
@@ -100,12 +100,12 @@
 - [ ] Electrosiphon
 - [ ] Endurance Bobblehead
 - [x] Entrapment Maneuver
-- [ ] Everflowing Chalice
+- [x] Everflowing Chalice
 - [x] Evolving Wilds
 - [x] Exotic Orchard
 - [x] Expert-Level Safe
 - [x] Explorer's Scope
-- [ ] Farewell
+- [x] Farewell
 - [x] Farseek
 - [ ] Feral Ghoul
 - [x] Ferrous Lake
@@ -120,7 +120,7 @@
 - [ ] Gemrazer
 - [x] General's Enforcer
 - [x] Glacial Fortress
-- [ ] Glimmer of Genius
+- [x] Glimmer of Genius
 - [ ] Glowing One
 - [x] Grave Titan
 - [ ] Grim Reaper's Sprint
@@ -171,7 +171,7 @@
 - [ ] Mariposa Military Base
 - [x] Marshal's Anthem
 - [x] Martial Coup
-- [ ] Masterwork of Ingenuity
+- [x] Masterwork of Ingenuity
 - [x] Mechanized Production
 - [ ] Megaton's Fate
 - [x] Memorial to Glory
@@ -187,7 +187,7 @@
 - [ ] Mutational Advantage
 - [x] Myriad Landscape
 - [x] Mysterious Stranger
-- [ ] Mystic Forge
+- [x] Mystic Forge
 - [x] Mystic Monastery
 - [ ] Nerd Rage
 - [x] Nesting Grounds
@@ -198,7 +198,7 @@
 - [ ] Nuka-Cola Vending Machine
 - [x] Nuka-Nuke Launcher
 - [ ] One with the Machine
-- [ ] Open the Vaults
+- [x] Open the Vaults
 - [x] Opulent Palace
 - [ ] Overencumbered
 - [x] Overflowing Basin
@@ -219,7 +219,7 @@
 - [x] Prairie Stream
 - [ ] Pre-War Formalwear
 - [ ] Preston Garvey, Minuteman
-- [ ] Puresteel Paladin
+- [x] Puresteel Paladin
 - [x] Putrefy
 - [ ] Radstorm
 - [ ] Rampaging Yao Guai
@@ -231,7 +231,7 @@
 - [ ] Recon Craft Theta
 - [ ] Red Death, Shipwrecker
 - [ ] Rex, Cyber-Hound
-- [ ] Roadside Reliquary
+- [x] Roadside Reliquary
 - [ ] Robobrain War Mind
 - [x] Rogue's Passage
 - [x] Rootbound Crag
@@ -240,7 +240,7 @@
 - [x] Rustvale Bridge
 - [ ] Ruthless Radrat
 - [x] Scattered Groves
-- [ ] Scavenger Grounds
+- [x] Scavenger Grounds
 - [ ] Screeching Scorchbeast
 - [x] Secure the Wastes
 - [x] Securitron Squadron
@@ -272,7 +272,7 @@
 - [x] Sunken Hollow
 - [x] Sunpetal Grove
 - [x] Sunscorched Divide
-- [ ] Super Mutant Scavenger
+- [x] Super Mutant Scavenger
 - [x] Survivor's Med Kit
 - [ ] Swamp
 - [x] Swiftfoot Boots
@@ -281,7 +281,7 @@
 - [ ] Synth Infiltrator
 - [ ] T-45 Power Armor
 - [x] Tainted Field
-- [ ] Tainted Isle
+- [x] Tainted Isle
 - [x] Tainted Peak
 - [x] Tainted Wood
 - [ ] Talisman of Conviction
@@ -316,7 +316,7 @@
 - [ ] Three Dog, Galaxy News DJ
 - [x] Thrill-Kill Disciple
 - [x] Tireless Tracker
-- [ ] Treasure Vault
+- [x] Treasure Vault
 - [x] Unexpected Windfall
 - [x] V.A.T.S.
 - [x] Valorous Stance
@@ -333,7 +333,7 @@
 - [ ] Vexing Radgull
 - [x] Vigor
 - [x] Viridescent Bog
-- [ ] Wake the Past
+- [x] Wake the Past
 - [x] Walking Ballista
 - [x] War Room
 - [x] Wasteland

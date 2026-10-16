@@ -1958,6 +1958,95 @@
     ]
 }
 
+// Mystic Forge
+{
+    "name": "Mystic Forge",
+    "manaCost": "{4}",
+    "typeLine": "Artifact",
+    "oracleText": "You may look at the top card of your library any time.\nYou may cast artifact spells and colorless spells from the top of your library.\n{T}, Pay 1 life: Exile the top card of your library.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Mystic Forge:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomPayLife",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "staticAbilities": [
+            "LookAtTopOfLibrary",
+            {
+                "type": "CastSpellTypesFromTopOfLibrary",
+                "filter": {
+                    "cardPredicates": [
+                        {
+                            "type": "Or",
+                            "predicates": [
+                                "IsArtifact",
+                                "IsColorless"
+                            ]
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "233",
+        "rarity": "RARE",
+        "artist": "Titus Lunter",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/2/924a24e7-91b8-4ceb-a136-7a765d98c994.jpg?1783932941",
+        "rulings": [
+            {
+                "date": "2019-07-12",
+                "text": "Because you never \"cast\" a land card, Mystic Forge doesn't allow you to play an artifact land from the top of your library."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "You still pay all costs for a spell you cast from your library, including additional costs. You may also pay alternative costs."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Nightpack Ambusher
 {
     "name": "Nightpack Ambusher",

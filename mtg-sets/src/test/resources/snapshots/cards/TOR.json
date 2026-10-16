@@ -1538,6 +1538,83 @@
     ]
 }
 
+// Tainted Isle
+{
+    "name": "Tainted Isle",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "{T}: Add {C}.\n{T}: Add {U} or {B}. Activate only if you control a Swamp.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Tainted Isle:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Tainted Isle:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "BLUE"
+                },
+                "timing": "ManaAbility",
+                "restrictions": [
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "Exists",
+                            "player": "You",
+                            "zone": "Battlefield",
+                            "filter": "permanent Swamp"
+                        }
+                    }
+                ],
+                "isManaAbility": true
+            },
+            {
+                "id": "Tainted Isle:3",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "BLACK"
+                },
+                "timing": "ManaAbility",
+                "restrictions": [
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "Exists",
+                            "player": "You",
+                            "zone": "Battlefield",
+                            "filter": "permanent Swamp"
+                        }
+                    }
+                ],
+                "isManaAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "141",
+        "rarity": "UNCOMMON",
+        "artist": "Alan Pollack",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/4/b462e121-015c-49c4-838a-ab788f213322.jpg?1783945139"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
+    ]
+}
+
 // Tainted Peak
 {
     "name": "Tainted Peak",

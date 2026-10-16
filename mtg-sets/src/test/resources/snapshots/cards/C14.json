@@ -360,6 +360,44 @@
     ]
 }
 
+// Masterwork of Ingenuity
+{
+    "name": "Masterwork of Ingenuity",
+    "manaCost": "{1}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "You may have this Equipment enter as a copy of any Equipment on the battlefield.",
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "EntersAsCopy",
+                "copyFilter": {
+                    "cardPredicates": [
+                        "IsArtifact",
+                        {
+                            "type": "HasSubtype",
+                            "subtype": "Equipment"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "57",
+        "rarity": "RARE",
+        "artist": "Ulrich Brunin",
+        "flavorText": "\"The crucible yields what you have forged in your mind. You need only reach in and draw the masterwork forth.\"\n—Wahara, Keeper of the Crucible",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/9/09686fb3-ae0f-481a-aee6-3fd75fa43557.jpg?1783938862",
+        "rulings": [
+            {
+                "date": "2020-08-07",
+                "text": "Masterwork of Ingenuity enters the battlefield unattached. It doesn't enter attached to the same creature as the Equipment it copies."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Myriad Landscape
 {
     "name": "Myriad Landscape",

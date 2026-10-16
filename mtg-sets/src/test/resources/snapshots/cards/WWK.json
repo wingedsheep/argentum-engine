@@ -299,6 +299,71 @@
     ]
 }
 
+// Everflowing Chalice
+{
+    "name": "Everflowing Chalice",
+    "manaCost": "{0}",
+    "typeLine": "Artifact",
+    "oracleText": "Multikicker {2} (You may pay an additional {2} any number of times as you cast this spell.)\nThis artifact enters with a charge counter on it for each time it was kicked.\n{T}: Add {C} for each charge counter on this artifact.",
+    "keywordAbilities": [
+        {
+            "type": "Kicker",
+            "manaCost": "{2}",
+            "multi": true,
+            "displayPrefix": "Multikicker"
+        }
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Everflowing Chalice:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": {
+                            "type": "CounterCount",
+                            "counterType": "CHARGE"
+                        }
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true,
+                "descriptionOverride": "{T}: Add {C} for each charge counter on this artifact."
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithDynamicCounters",
+                "counterType": "CHARGE",
+                "count": {
+                    "type": "CastChoice",
+                    "slot": "KICKED"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "123",
+        "rarity": "UNCOMMON",
+        "artist": "Steve Argyle",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/f/1fdcc0c3-4029-4fc3-a486-5d7f45c910bd.jpg?1783942040",
+        "rulings": [
+            {
+                "date": "2021-03-19",
+                "text": "You can cast Everflowing Chalice without kicking it at all if you wish. However, if Everflowing Chalice has no charge counters on it, activating its last ability won't produce any mana."
+            },
+            {
+                "date": "2024-11-08",
+                "text": "If you put a permanent with a kicker ability onto the battlefield without casting it, you can't kick it."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Goblin Roughrider
 {
     "name": "Goblin Roughrider",

@@ -2727,6 +2727,58 @@
     ]
 }
 
+// Glimmer of Genius
+{
+    "name": "Glimmer of Genius",
+    "manaCost": "{3}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Scry 2, then draw two cards. You get {E}{E} (two energy counters).",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "Scry",
+                    "count": 2
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                },
+                {
+                    "type": "AddCounters",
+                    "counterType": "ENERGY",
+                    "count": 2,
+                    "target": "Controller"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "49",
+        "rarity": "UNCOMMON",
+        "artist": "Tommy Arnold",
+        "flavorText": "Creators live for that moment of inspiration: precious, profound, perfect.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/9/19f1673d-c92c-43be-8648-af7fbc790421.jpg?1783937220",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "If an effect says you get one or more {E}, you get that many energy counters. To pay one or more {E}, you lose that many energy counters. You can't pay more energy counters than you have. Any effects that interact with counters a player gets, has, or loses can interact with energy counters."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "Energy counters aren't mana. They don't go away as steps, phases, and turns end, and effects that add mana \"of any type\" can't give you energy counters."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Glint-Nest Crane
 {
     "name": "Glint-Nest Crane",
