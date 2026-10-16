@@ -39,12 +39,14 @@ class ReservoirKrakenScenarioTest : FunSpec({
         val controller = driver.activePlayer!!
         val opponent = driver.getOpponent(controller)
         val kraken = driver.putCreatureOnBattlefield(controller, "Reservoir Kraken")
+        driver.putCreatureOnBattlefield(controller, "Centaur Courser") // never offered: only opponents may pay
         val oppCreature = driver.putCreatureOnBattlefield(opponent, "Centaur Courser")
         val tappedOppCreature = driver.putCreatureOnBattlefield(opponent, "Centaur Courser")
         driver.tapPermanent(tappedOppCreature)
 
         driver.passPriorityUntil(Step.BEGIN_COMBAT)
-        if (driver.stackSize > 0) driver.bothPass()
+        driver.stackSize shouldBe 1
+        driver.bothPass()
 
         val decision = driver.pendingDecision.shouldBeInstanceOf<SelectCardsDecision>()
         decision.playerId shouldBe opponent
@@ -69,7 +71,8 @@ class ReservoirKrakenScenarioTest : FunSpec({
         val oppCreature = driver.putCreatureOnBattlefield(opponent, "Centaur Courser")
 
         driver.passPriorityUntil(Step.BEGIN_COMBAT)
-        if (driver.stackSize > 0) driver.bothPass()
+        driver.stackSize shouldBe 1
+        driver.bothPass()
 
         driver.pendingDecision.shouldBeInstanceOf<SelectCardsDecision>().playerId shouldBe opponent
         driver.submitCardSelection(opponent, emptyList())
@@ -79,7 +82,7 @@ class ReservoirKrakenScenarioTest : FunSpec({
         driver.fishTokens(controller) shouldHaveSize 0
     }
 
-    test("a tapped Kraken doesn't trigger, and the controller's own creatures are never offered") {
+    test("a tapped Kraken doesn't trigger") {
         val driver = createDriver()
         val controller = driver.activePlayer!!
         val opponent = driver.getOpponent(controller)

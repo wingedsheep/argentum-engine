@@ -850,7 +850,7 @@ class SacrificeAndPayContinuationResumer(
     ): ExecutionResult {
         val playerId = continuation.currentPlayerId
 
-        when ((continuation.cost as? PayCost.Atom)?.atom) {
+        when (val atom = (continuation.cost as? PayCost.Atom)?.atom) {
             is CostAtom.Sacrifice -> {
                 if (response !is CardsSelectedResponse) {
                     return ExecutionResult.error(state, "Expected card selection response for any player may pay")
@@ -879,15 +879,18 @@ class SacrificeAndPayContinuationResumer(
                 if (response !is CardsSelectedResponse) {
                     return ExecutionResult.error(state, "Expected card selection response for any player may pay")
                 }
-                if (response.selectedCards.size < continuation.requiredCount) {
+                // Too few picks, or picks that don't share the creature type the cost demands, are
+                // a decline — the same rule every other tap-cost payment path applies.
+                if (response.selectedCards.size < continuation.requiredCount ||
+                    !SharedCreatureTypeTapCost.satisfiedBy(state, atom, response.selectedCards)
+                ) {
                     return askNextPlayerForAnyPlayerMayPay(state, continuation, checkForMore)
                 }
-                // The options were the payer's untapped matching permanents (validated against the
-                // decision), so the tap always completes.
                 val payment = services.costPaymentService.performPayment(
                     state, playerId, continuation.cost, continuation.sourceId,
                     response.selectedCards.associateWith { 1 }
                 )
+                if (!payment.success) return askNextPlayerForAnyPlayerMayPay(state, continuation, checkForMore)
                 return runAnyPlayerMayPayConsequence(payment.state, continuation, continuation.consequence, payment.events, checkForMore)
             }
 

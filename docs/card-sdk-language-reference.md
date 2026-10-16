@@ -4010,9 +4010,10 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   the loop; if no one pays, `consequenceIfNonePaid` runs. `AnyPlayerMayPay` reads the
   "if a player does, X" direction (Prowling Pangolin); `UnlessAnyPlayerPays` reads the inverse
   "X unless any player pays" direction (Aether Rift: "return it… unless any player pays 5 life").
-  Supported costs: `Costs.pay.Sacrifice` and `Costs.pay.Tap(filter, count)` (card
-  selection over the payer's matching / untapped matching permanents — "any opponent may tap an
-  untapped creature they control", Reservoir Kraken) and `Costs.pay.PayLife` (yes/no). The
+  Supported costs: `Costs.pay.Sacrifice` (card selection over the payer's matching permanents),
+  `Costs.pay.Tap(filter, count)` (card selection over the payer's untapped matching permanents —
+  "any opponent may tap an untapped creature they control", Reservoir Kraken) and
+  `Costs.pay.PayLife` (yes/no). The
   surrounding pipeline's stored collections are carried into whichever consequence fires, so the
   consequence can reference cards gathered earlier in the same resolution (e.g. the discarded card,
   via `MoveCollection(from = "discarded", …)`). The optional `eligiblePlayers: Player` field scopes
