@@ -387,7 +387,7 @@ function GraveyardCardSelection({
       onSelectedCardsChange(selectedCards.filter((id) => id !== cardId))
       return
     }
-    if (maxSelections > 1 && !compatibleSelectionPool(cards.map((c) => c.id), selectionGroups, selectedCards, exclusiveGroups, distinctCategories).includes(cardId)) return
+    if ((maxSelections > 1 || distinctCategories) && !compatibleSelectionPool(cards.map((c) => c.id), selectionGroups, maxSelections > 1 ? selectedCards : [], exclusiveGroups, distinctCategories).includes(cardId)) return
     if (selectedCards.length >= maxSelections) {
       // Single-select slot at its cap: clicking a different card replaces the pick, the same rule
       // the board path uses (toggleDecisionSelection). It also unblocks a mixed

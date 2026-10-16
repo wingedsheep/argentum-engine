@@ -392,8 +392,9 @@ class TargetEnumerationUtils(
                 // legal division.
                 maxTargets = when {
                     (req as? TargetObject)?.ownerDistribution != null -> bounds.max ?: 0
-                    distinctCategories != null -> com.wingedsheep.engine.mechanics.targeting.OnePerCategoryTargets
-                        .maxTargets(distinctCategories)
+                    distinctCategories != null -> minOf(bounds.max ?: Int.MAX_VALUE,
+                        com.wingedsheep.engine.mechanics.targeting.OnePerCategoryTargets
+                            .maxTargets(distinctCategories.filterKeys { it in validTargets }))
                     req.unlimited -> minOf(validTargets.size, bounds.max ?: validTargets.size)
                     else -> bounds.max ?: req.count
                 },

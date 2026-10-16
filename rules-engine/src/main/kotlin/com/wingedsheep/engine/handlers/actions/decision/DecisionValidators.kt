@@ -270,7 +270,7 @@ object DecisionValidators {
                     selectedIds.map { categories[it].orEmpty().toSet() }
                 )
             ) {
-                return "Targets for requirement $reqIndex must each claim a different category"
+                return "Targets for requirement $reqIndex must each be of a different color or card type, as the ability says"
             }
         }
         return null
