@@ -867,8 +867,13 @@ object DamageUtils {
         if (applyLifeLossModification && amount > 0 &&
             lifeLossBecomesGain(state, playerId, reason, predicateEvaluator)) {
             // GainLifeInsteadOfLosingLife (Strong, the Brutish Thespian): the affected player orders
-            // it against ModifyLifeLoss (CR 616.1), so take whichever order gains more life.
-            return gainLife(state, playerId, maxOf(amount, lossAmount), predicateEvaluator = predicateEvaluator)
+            // it against ModifyLifeLoss (CR 616.1) — the increases first, then the conversion, which
+            // leaves every reduction with no loss to modify.
+            var gain = amount
+            forEachLifeLossReplacement<ModifyLifeLoss>(state, playerId, predicateEvaluator, { it.restrictions }) {
+                if (it.multiplier >= 1 && it.modifier >= 0) gain = gain * it.multiplier + it.modifier
+            }
+            return gainLife(state, playerId, gain, predicateEvaluator = predicateEvaluator)
         }
         val newLife = currentLife - lossAmount
         var newState = state.withLifeTotal(playerId, newLife)

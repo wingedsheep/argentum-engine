@@ -16726,8 +16726,8 @@ not update an existing copy.
   The gain is an ordinary life-gain event (life-gain modifiers, "can't gain life" and gain triggers all
   apply); the rest of the losing effect still happens (radiation still removes its rad counters), and a
   drain whose victim converts gives the drainer nothing. Against `ModifyLifeLoss` the affected player's
-  order (CR 616.1) is taken as the one that gains more: an increase applies first, a reduction is
-  skipped. **Scope:** applied in `DamageUtils.loseLife` (the `LoseLife` effect and its siblings);
+  order (CR 616.1) is taken as the one that gains the most: every increase applies first, every
+  reduction is left with no loss to modify. **Scope:** applied in `DamageUtils.loseLife` (the `LoseLife` effect and its siblings);
   `origin = EFFECT` matches every non-radiation `LoseLife`. Damage-caused loss and life payments are
   never converted.
 - `ReplaceLifePaymentWithLibraryExile(appliesTo)` — a life **payment** becomes an exile of that many cards

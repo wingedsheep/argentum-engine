@@ -112,6 +112,12 @@ class GainLifeInsteadOfLosingLifeTest : ScenarioTestBase() {
             g.getLifeTotal(1) shouldBe 22
         }
 
+        test("with both an increase and a reduction, the increase applies and the reduction is skipped") {
+            val g = radiation(2, radConverter.name, doubleLoss.name, lessLoss.name)
+            g.resolveStack()
+            g.getLifeTotal(1) shouldBe 24
+        }
+
         test("the gain is ordinary life gain: modifiers and gain triggers see it") {
             val g = radiation(2, radConverter.name, doubleGain.name, gainWatcher.name)
             val hand = g.handSize(1)

@@ -1830,8 +1830,8 @@ data class LifeLossFloor(
  * (radiation still removes its rad counters).
  *
  * When `ModifyLifeLoss` replacements also apply, the affected player orders them (CR 616.1) and
- * the engine takes the order that gains more life: an increase applies before the conversion, a
- * reduction is skipped by converting first.
+ * the engine takes the order that gains the most life: every increase applies before the
+ * conversion, and every reduction is left with no loss to modify.
  *
  * Scope: non-damage life loss from a `LoseLife` effect of the given [origin]
  * (`LifeLossOrigin.RADIATION` is the inherent radiation trigger's). Damage-caused loss and life
