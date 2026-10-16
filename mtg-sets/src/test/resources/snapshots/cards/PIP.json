@@ -6362,6 +6362,115 @@
     }
 }
 
+// The Wise Mothman
+{
+    "name": "The Wise Mothman",
+    "manaCost": "{1}{B}{G}{U}",
+    "typeLine": "Legendary Creature — Insect Mutant",
+    "oracleText": "Flying\nWhenever The Wise Mothman enters or attacks, each player gets a rad counter.\nWhenever one or more nonland cards are milled, put a +1/+1 counter on each of up to X target creatures, where X is the number of nonland cards milled this way.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "The Wise Mothman:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "Each"
+                    },
+                    "body": {
+                        "type": "AddCounters",
+                        "counterType": "RAD",
+                        "count": 1,
+                        "target": "Controller"
+                    }
+                }
+            },
+            {
+                "id": "The Wise Mothman:2",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "Each"
+                    },
+                    "body": {
+                        "type": "AddCounters",
+                        "counterType": "RAD",
+                        "count": 1,
+                        "target": "Controller"
+                    }
+                }
+            },
+            {
+                "id": "The Wise Mothman:3",
+                "trigger": {
+                    "type": "MillEvent",
+                    "player": "Each",
+                    "cardFilter": "nonland",
+                    "batch": true
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ForEach",
+                    "space": "IterationSpace.Targets",
+                    "body": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        }
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0",
+                    "dynamicMaxCount": {
+                        "type": "DistinctEntitiesInCollections",
+                        "collections": [
+                            "trigger.captured"
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "4",
+        "rarity": "MYTHIC",
+        "artist": "Sergei Leoluch Panin",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/d/3d6d6944-a364-41c2-b824-7a1bf6ad0d1e.jpg?1783912422",
+        "rulings": [
+            {
+                "date": "2024-03-08",
+                "text": "If more than one player is instructed to mill at the same time (by the activated ability of Raul, Trouble Shooter, for example), as long as at least one nonland card is milled, The Wise Mothman's last ability will trigger just once."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "The cards are milled all at once, which means abilities that trigger \"whenever one or more nonland cards are milled\" will trigger exactly once as long as at least one nonland card was milled."
+            }
+        ]
+    }
+}
+
 // Thrill-Kill Disciple
 {
     "name": "Thrill-Kill Disciple",

@@ -8,6 +8,7 @@ import com.wingedsheep.sdk.dsl.*
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.dsl.CollectionSlot
 import io.kotest.matchers.shouldBe
@@ -46,6 +47,27 @@ class MillTriggerScenarioTest : ScenarioTestBase() {
             trigger = Triggers.anOpponent.mills(GameObjectFilter.Nonland)
             triggerZone = Zone.GRAVEYARD
             effect = Effects.GainLife(1)
+        }
+    }
+    // The trigger's captured batch sizes its target count when the trigger goes on the stack
+    // (CR 603.3d applying 601.2c) — "up to X target creatures, where X is the number of nonland
+    // cards milled this way" and the "exactly X" shape.
+    private val batchUpToX = card("Mill Batch Up-To-X Targeter") {
+        manaCost = "{0}"; typeLine = "Artifact"
+        triggeredAbility {
+            trigger = Triggers.anyPlayer.mills(GameObjectFilter.Nonland, batch = true)
+            targets(TargetFilter.Creature, optional = true,
+                dynamicMaxCount = DynamicAmounts.distinctEntitiesIn(CollectionSlot.TriggerCaptured))
+            effect = Effects.ForEachTarget(Effects.Tap(com.wingedsheep.sdk.scripting.targets.EffectTarget.ContextTarget(0)))
+        }
+    }
+    private val batchExactlyX = card("Mill Batch Exactly-X Targeter") {
+        manaCost = "{0}"; typeLine = "Artifact"
+        triggeredAbility {
+            trigger = Triggers.anyPlayer.mills(GameObjectFilter.Nonland, batch = true)
+            targets(TargetFilter.Creature,
+                exactly = DynamicAmounts.distinctEntitiesIn(CollectionSlot.TriggerCaptured))
+            effect = Effects.ForEachTarget(Effects.Tap(com.wingedsheep.sdk.scripting.targets.EffectTarget.ContextTarget(0)))
         }
     }
     private val millTwo = card("Mill Two Probe") {
@@ -119,7 +141,7 @@ class MillTriggerScenarioTest : ScenarioTestBase() {
         )
 
     init {
-        listOf(perCard, opponentOnly, batch, graveyardWatcher, millTwo, millOneTwice, millSelfThree, surveil, putTop, millCost, damageMiller, payOrMill)
+        listOf(perCard, opponentOnly, batch, batchUpToX, batchExactlyX, graveyardWatcher, millTwo, millOneTwice, millSelfThree, surveil, putTop, millCost, damageMiller, payOrMill)
             .forEach { cardRegistry.register(it) }
 
         test("a per-card mill trigger fires once for each nonland card milled, binding that card") {
@@ -157,6 +179,46 @@ class MillTriggerScenarioTest : ScenarioTestBase() {
             g.resolveStack()
             // One trigger; three nonland cards captured.
             g.getLifeTotal(1) shouldBe 23
+        }
+
+        test("a batch trigger's captured cards size its target count when targets are chosen") {
+            val g = scenario().withPlayers().withCardOnBattlefield(1, batchUpToX.name)
+                .withCardOnBattlefield(1, "Grizzly Bears").withCardOnBattlefield(2, "Hill Giant")
+                .withCardOnBattlefield(2, "Savannah Lions")
+                .withCardInHand(1, millSelfThree.name)
+                .withCardInLibrary(1, "Grizzly Bears").withCardInLibrary(1, "Lightning Bolt")
+                .withCardInLibrary(1, "Forest").withCardInLibrary(2, "Forest").build()
+            g.castSpell(1, millSelfThree.name).error shouldBe null
+            g.resolveStack()
+            val info = (g.state.pendingDecision as ChooseTargetsDecision).targetRequirements.single()
+            info.maxTargets shouldBe 2
+            info.minTargets shouldBe 0
+            val creatures = listOf("Grizzly Bears", "Hill Giant", "Savannah Lions").map { g.findPermanent(it)!! }
+            (g.selectTargets(creatures).error != null) shouldBe true
+            g.selectTargets(creatures.take(2)).error shouldBe null
+            g.resolveStack()
+            creatures.map { g.state.getEntity(it)!!.has<com.wingedsheep.engine.state.components.battlefield.TappedComponent>() } shouldBe
+                listOf(true, true, false)
+        }
+
+        test("\"exactly X targets\" over a batch trigger's captured cards requires all X") {
+            val g = scenario().withPlayers().withCardOnBattlefield(1, batchExactlyX.name)
+                .withCardOnBattlefield(1, "Grizzly Bears").withCardOnBattlefield(2, "Hill Giant")
+                .withCardOnBattlefield(2, "Savannah Lions")
+                .withCardInHand(1, millTwo.name)
+                .withCardInLibrary(1, "Grizzly Bears").withCardInLibrary(1, "Forest")
+                .withCardInLibrary(2, "Lightning Bolt").withCardInLibrary(2, "Forest").build()
+            g.castSpell(1, millTwo.name).error shouldBe null
+            g.resolveStack()
+            val info = (g.state.pendingDecision as ChooseTargetsDecision).targetRequirements.single()
+            info.minTargets shouldBe 2
+            info.maxTargets shouldBe 2
+            val bears = g.findPermanent("Grizzly Bears")!!
+            val giant = g.findPermanent("Hill Giant")!!
+            (g.selectTargets(listOf(bears)).error != null) shouldBe true
+            g.selectTargets(listOf(bears, giant)).error shouldBe null
+            g.resolveStack()
+            g.state.getEntity(giant)!!.has<com.wingedsheep.engine.state.components.battlefield.TappedComponent>() shouldBe true
         }
 
         test("two mill instructions in one resolution are two batch events") {

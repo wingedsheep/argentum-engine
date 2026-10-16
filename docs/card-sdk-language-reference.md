@@ -4662,7 +4662,11 @@ e.g. `Effects.DrawCards(Patterns.Hand.discardedHand.count)`,
 Two collections are seeded by the engine rather than by a step, so they have well-known slots usable
 outside a pipeline too: `CollectionSlot.CreatedTokens` (the tokens the last token-creating effect in
 this resolution made — "they gain haste") and `CollectionSlot.TriggerCaptured` (what a batch trigger
-captured; `triggerCaptured` inside `Effects.Pipeline { }`).
+captured; `triggerCaptured` inside `Effects.Pipeline { }`). `TriggerCaptured` is already visible when
+the trigger's targets are chosen and re-checked, so a target cap or filter may read it: "up to X
+target creatures, where X is the number of nonland cards milled this way" is
+`targets(TargetFilter.Creature, optional = true, dynamicMaxCount =
+DynamicAmounts.distinctEntitiesIn(CollectionSlot.TriggerCaptured))` (The Wise Mothman).
 
 Collection-reading effects take the handle directly: `Effects.ForEachInCollection(slot, effect)`,
 `Effects.GrantMayPlayFromExile(slot, …)`, `Effects.CastFromCollection(WithoutPayingCost)(slot, …)`,

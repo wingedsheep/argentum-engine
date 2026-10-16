@@ -86,7 +86,7 @@ internal class AbilityResolver(
                 triggeringEntityId = abilityComponent.triggerContext?.triggeringEntityId,
                 triggeringPlayerId = abilityComponent.triggerContext?.triggeringPlayerId,
                 targetEntryStamps = targetsComponent.targetEntryStamps,
-                storedCollections = abilityComponent.carriedPipeline?.storedCollections ?: emptyMap(),
+                storedCollections = com.wingedsheep.engine.event.triggerStoredCollections(abilityComponent.triggerContext, abilityComponent.carriedPipeline),
                 resolution = context,
             )
             if (validTargets.isEmpty()) {

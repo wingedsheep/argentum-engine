@@ -604,3 +604,19 @@ data class TriggerContext(
         }
     }
 }
+
+/**
+ * The named collections a triggered ability sees — when its targets are chosen (CR 603.3d), when
+ * they are re-checked on resolution, and as it resolves: the batch its trigger captured under
+ * [com.wingedsheep.engine.handlers.PipelineState.TRIGGER_CAPTURED_COLLECTION], plus whatever a
+ * reflexive trigger's action half carried across the stack (CR 603.12). One builder, so "up to X
+ * target creatures, where X is the number of nonland cards milled this way" (The Wise Mothman)
+ * reads the same X at every stage.
+ */
+internal fun triggerStoredCollections(
+    triggerContext: TriggerContext?,
+    carried: com.wingedsheep.engine.handlers.PipelineState?
+): Map<String, List<EntityId>> =
+    (triggerContext?.capturedEntityIds?.takeIf { it.isNotEmpty() }
+        ?.let { mapOf(com.wingedsheep.engine.handlers.PipelineState.TRIGGER_CAPTURED_COLLECTION to it) }
+        ?: emptyMap()) + (carried?.storedCollections ?: emptyMap())

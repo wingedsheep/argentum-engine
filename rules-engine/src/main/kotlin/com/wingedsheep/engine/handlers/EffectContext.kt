@@ -628,9 +628,9 @@ data class EffectContext(
                 // PermanentsEnteredEvent batch) so a ForEachInCollectionEffect payoff can iterate
                 // them — "for each of them, create a tapped copy of it" (Kambal). The copy executor
                 // reads each entity at resolution, so any that left the battlefield meanwhile no-op.
-                storedCollections = (ability.triggerContext?.capturedEntityIds?.takeIf { it.isNotEmpty() }
-                    ?.let { mapOf(PipelineState.TRIGGER_CAPTURED_COLLECTION to it) }
-                    ?: emptyMap()) + (ability.carriedPipeline?.storedCollections ?: emptyMap()),
+                storedCollections = com.wingedsheep.engine.event.triggerStoredCollections(
+                    ability.triggerContext, ability.carriedPipeline
+                ),
                 // A `ReflexiveTriggerEffect`'s action half (e.g. `Amass`, a discard) may have stashed
                 // subtype groups or scalar values the reflexive effect reads (CR 603.12) — carried
                 // across the stack round-trip since this ability builds a fresh context on resolve.
