@@ -981,6 +981,11 @@ data class PreventActivatedAbilities(
  * @property includeLoyaltyAbilities When false, loyalty abilities (CR 606) are not copied — the
  *   "except for loyalty abilities" clause of Scheming Fence. Defaults to true: "all activated
  *   abilities" includes them.
+ * @property spendAsThoughAnyColor When true, "you may spend mana as though it were mana of any color
+ *   to activate those abilities" (Drana and Linvala, Scheming Fence): the copies' colored, hybrid and
+ *   Phyrexian requirements accept any mana, while a `{C}` pip still demands colorless mana. Scoped to
+ *   the copies — unlike a [SpendAnyManaTypeForActivatedAbilities] on the gainer, it doesn't reach
+ *   abilities an Equipment or Aura grants the same permanent.
  */
 @SerialName("GainActivatedAbilitiesOfPermanents")
 @Serializable
@@ -988,12 +993,14 @@ data class GainActivatedAbilitiesOfPermanents(
     val grantedTo: GroupFilter,
     val sourceFilter: GameObjectFilter,
     val includeManaAbilities: Boolean = false,
-    val includeLoyaltyAbilities: Boolean = true
+    val includeLoyaltyAbilities: Boolean = true,
+    val spendAsThoughAnyColor: Boolean = false
 ) : StaticAbility {
     override val description: String =
         "${grantedTo.description} ${if (grantedTo.scope is com.wingedsheep.sdk.scripting.filters.unified.Scope.Self) "has" else "have"} all activated abilities of ${sourceFilter.description}" +
             listOfNotNull("mana".takeIf { !includeManaAbilities }, "loyalty".takeIf { !includeLoyaltyAbilities })
-                .takeIf { it.isNotEmpty() }?.joinToString(" or ", prefix = " except ", postfix = " abilities").orEmpty()
+                .takeIf { it.isNotEmpty() }?.joinToString(" or ", prefix = " except ", postfix = " abilities").orEmpty() +
+            if (spendAsThoughAnyColor) ". You may spend mana as though it were mana of any color to activate those abilities" else ""
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
         val newGrantedTo = grantedTo.applyTextReplacement(replacer)
         val newSource = sourceFilter.applyTextReplacement(replacer)
@@ -1041,6 +1048,11 @@ data class SpendAnyManaTypeForActivatedAbilities(
     val substituteColor: com.wingedsheep.sdk.core.Color? = null,
     val asThoughAnyColor: Boolean = false
 ) : StaticAbility {
+    init {
+        require(substituteColor == null || !asThoughAnyColor) {
+            "asThoughAnyColor already lets every color pay; it can't be combined with substituteColor"
+        }
+    }
     override val description: String =
         if (substituteColor == null && asThoughAnyColor)
             "You may spend mana as though it were mana of any color to activate ${filter.description}'s abilities"

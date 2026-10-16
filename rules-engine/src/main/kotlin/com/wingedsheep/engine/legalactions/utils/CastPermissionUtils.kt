@@ -1662,7 +1662,9 @@ class CastPermissionUtils(
      * Resolve [com.wingedsheep.sdk.scripting.GainActivatedAbilitiesOfPermanents] grants for
      * [entityId]: for every battlefield permanent bearing this static whose `grantedTo` filter
      * matches [entityId], copy the printed activated abilities of every permanent matching its
-     * `sourceFilter` (dropping mana abilities unless `includeManaAbilities`). The granter is the
+     * `sourceFilter` (dropping mana abilities unless `includeManaAbilities`, and loyalty abilities
+     * when `includeLoyaltyAbilities` is off; with `spendAsThoughAnyColor`, each copy's colored mana
+     * requirements are relaxed so any mana pays them — `{C}` stays strict). The granter is the
      * permanent bearing the static (e.g., Sharkey), so a copied ability's `SacrificeSelf` / `{T}`
      * refers to the gainer — CR 113.7 (the source of an ability is the object that generated it).
      */
@@ -1720,7 +1722,12 @@ class CastPermissionUtils(
                         if (copied.activateFromZone != com.wingedsheep.sdk.core.Zone.BATTLEFIELD) continue
                         if (!gain.includeManaAbilities && copied.isManaAbility) continue
                         if (!gain.includeLoyaltyAbilities && copied.isPlaneswalkerAbility) continue
-                        result.add(StaticGrantedAbility(copied, granterId))
+                        // "You may spend mana as though it were mana of any color to activate those
+                        // abilities" reaches only these copies, not other abilities of the gainer.
+                        val granted = if (gain.spendAsThoughAnyColor) {
+                            copied.copy(cost = mapAbilityMana(copied.cost) { it.relaxColoredRequirements() })
+                        } else copied
+                        result.add(StaticGrantedAbility(granted, granterId))
                     }
                 }
             }
@@ -1732,9 +1739,11 @@ class CastPermissionUtils(
      * Every [com.wingedsheep.sdk.scripting.SpendAnyManaTypeForActivatedAbilities] static on the
      * battlefield that applies to [sourceId] — i.e. that relaxes the mana portion of [sourceId]'s
      * activated-ability costs (CR 118.14 / 609.4b). The list, rather than a boolean, because the
-     * static has two strengths: `substituteColor == null` is Sharkey's "mana of any type can be
-     * spent", and a color is Quicksilver Elemental's narrower "you may spend blue mana as though it
-     * were mana of any color". [relaxAbilityCostColorsIfAny] picks the strongest that applies.
+     * static has three strengths: `substituteColor == null` is Sharkey's "mana of any type can be
+     * spent", the same with `asThoughAnyColor` is Agatha's Soul Cauldron's "as though it were mana
+     * of any color" (`{C}` stays strict), and a color is Quicksilver Elemental's narrower "you may
+     * spend blue mana as though it were mana of any color". [relaxAbilityCostColorsIfAny] picks the
+     * strongest that applies.
      */
     fun spendRelaxationsForAbilities(
         state: GameState,
@@ -1838,8 +1847,9 @@ class CastPermissionUtils(
         val anyColor = relaxations.any { it.substituteColor == null && it.asThoughAnyColor }
         val substitutes = relaxations.mapNotNull { it.substituteColor }.distinct()
         fun relax(mana: com.wingedsheep.sdk.core.ManaCost): com.wingedsheep.sdk.core.ManaCost {
-            // Strongest first: any type relaxes {C} too; any color leaves {C} (CR 609.4b) and
-            // already subsumes every single-color substitution.
+            // Strongest first: any type relaxes {C} too; any color leaves {C} — colorless is a
+            // type, not one of the five colors of mana (CR 106.1a, 106.1b) — and already subsumes every
+            // single-color substitution.
             val spendRelaxed = when {
                 anyType -> mana.relaxColors()
                 anyColor -> mana.relaxColoredRequirements()
@@ -1847,17 +1857,23 @@ class CastPermissionUtils(
             }
             return lifePayable.fold(spendRelaxed) { acc, color -> acc.withLifePayable(color) }
         }
-        return when (cost) {
-            is AbilityCost.Atom -> {
-                val mana = cost.manaCostOrNull ?: return cost
-                AbilityCost.Atom(CostAtom.Mana(relax(mana)))
-            }
-            is AbilityCost.Composite -> AbilityCost.Composite(cost.costs.map { sub ->
-                val mana = sub.manaCostOrNull
-                if (mana != null) AbilityCost.Atom(CostAtom.Mana(relax(mana))) else sub
-            })
-            else -> cost
+        return mapAbilityMana(cost, ::relax)
+    }
+
+    /** [cost] with its mana portion (a lone mana atom or each one in a composite) rewritten by [f]. */
+    private fun mapAbilityMana(
+        cost: AbilityCost,
+        f: (com.wingedsheep.sdk.core.ManaCost) -> com.wingedsheep.sdk.core.ManaCost,
+    ): AbilityCost = when (cost) {
+        is AbilityCost.Atom -> {
+            val mana = cost.manaCostOrNull
+            if (mana == null) cost else AbilityCost.Atom(CostAtom.Mana(f(mana)))
         }
+        is AbilityCost.Composite -> AbilityCost.Composite(cost.costs.map { sub ->
+            val mana = sub.manaCostOrNull
+            if (mana != null) AbilityCost.Atom(CostAtom.Mana(f(mana))) else sub
+        })
+        else -> cost
     }
 
     /**

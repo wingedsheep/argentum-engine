@@ -6,7 +6,6 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GainActivatedAbilitiesOfPermanents
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.PreventActivatedAbilities
-import com.wingedsheep.sdk.scripting.SpendAnyManaTypeForActivatedAbilities
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 
 /**
@@ -26,10 +25,10 @@ import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
  * The gained copies use Drana and Linvala as their source (CR 113.7 — "{T}: This deals 2 damage"
  * taps and is dealt by Drana and Linvala).
  *
- * "Spend mana as though it were mana of any color" is the `asThoughAnyColor` relaxation: colored
- * pips accept any mana, while a `{C}` pip still demands colorless mana (colorless is a type, not a
- * color — CR 118.14 is the broader "any type"). Drana and Linvala has no activated abilities of its
- * own, so scoping the relaxation to the source covers exactly "those abilities".
+ * "Spend mana as though it were mana of any color to activate those abilities" is the gain's
+ * `spendAsThoughAnyColor`: the copies' colored pips accept any mana, while a `{C}` pip still demands
+ * colorless mana (colorless is a type, not a color — CR 118.14 is the broader "any type"). It is
+ * scoped to the copied abilities, so an ability an Equipment grants Drana and Linvala isn't relaxed.
  */
 val DranaAndLinvala = card("Drana and Linvala") {
     manaCost = "{1}{W}{W}{B}"
@@ -51,11 +50,9 @@ val DranaAndLinvala = card("Drana and Linvala") {
         ability = GainActivatedAbilitiesOfPermanents(
             grantedTo = GroupFilter.source(),
             sourceFilter = GameObjectFilter.Creature.opponentControls(),
-            includeManaAbilities = true
+            includeManaAbilities = true,
+            spendAsThoughAnyColor = true
         )
-    }
-    staticAbility {
-        ability = SpendAnyManaTypeForActivatedAbilities(filter = GroupFilter.source(), asThoughAnyColor = true)
     }
 
     metadata {

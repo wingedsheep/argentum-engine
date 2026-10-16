@@ -5443,7 +5443,6 @@
                 "type": "PreventActivatedAbilities",
                 "filter": {
                     "cardPredicates": [
-                        "IsPermanent",
                         "ChosenBySource"
                     ]
                 }
@@ -5456,20 +5455,12 @@
                 },
                 "sourceFilter": {
                     "cardPredicates": [
-                        "IsPermanent",
                         "ChosenBySource"
                     ]
                 },
                 "includeManaAbilities": true,
-                "includeLoyaltyAbilities": false
-            },
-            {
-                "type": "SpendAnyManaTypeForActivatedAbilities",
-                "filter": {
-                    "baseFilter": "permanent",
-                    "scope": "Self"
-                },
-                "asThoughAnyColor": true
+                "includeLoyaltyAbilities": false,
+                "spendAsThoughAnyColor": true
             }
         ],
         "replacementEffects": [

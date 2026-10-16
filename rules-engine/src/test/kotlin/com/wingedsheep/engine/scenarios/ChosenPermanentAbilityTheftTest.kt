@@ -17,14 +17,17 @@ import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.ChoiceType
 import com.wingedsheep.sdk.scripting.EntersWithChoice
+import com.wingedsheep.sdk.scripting.ActivatedAbility
 import com.wingedsheep.sdk.scripting.GainActivatedAbilitiesOfPermanents
+import com.wingedsheep.sdk.scripting.GrantActivatedAbility
+import com.wingedsheep.sdk.scripting.AbilityId
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.PreventActivatedAbilities
-import com.wingedsheep.sdk.scripting.SpendAnyManaTypeForActivatedAbilities
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.FunSpec
+import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.collections.shouldNotContain
 import io.kotest.matchers.shouldBe
@@ -38,9 +41,11 @@ import io.kotest.matchers.types.shouldBeInstanceOf
  *  - `PreventActivatedAbilities(chosenBySource())` locks only the chosen permanent's abilities;
  *  - `GainActivatedAbilitiesOfPermanents(…, includeLoyaltyAbilities = false)` copies its
  *    activated abilities except loyalty abilities (CR 606), with the gainer as their source;
- *  - `SpendAnyManaTypeForActivatedAbilities(asThoughAnyColor = true)` lets any mana pay a colored
- *    pip, but a `{C}` pip still needs colorless mana (colorless is a type, not a color — CR 609.4b
- *    changes how a cost is paid, not the cost);
+ *  - its `spendAsThoughAnyColor` lets any mana pay a copied colored pip, but a `{C}` pip still needs
+ *    colorless mana (colorless is a type, not a color — CR 106.1a/b), and an ability another source
+ *    grants the thief isn't relaxed;
+ *  - once the chosen permanent leaves the battlefield it is a new object (CR 400.7): nothing stays
+ *    locked or gained;
  *  - declining the "you may choose" records nothing, so nothing is locked or gained.
  */
 class ChosenPermanentAbilityTheftTest : FunSpec({
@@ -61,17 +66,15 @@ class ChosenPermanentAbilityTheftTest : FunSpec({
                 mayChooseNothing = true
             )
         )
-        staticAbility { ability = PreventActivatedAbilities(filter = GameObjectFilter.Permanent.chosenBySource()) }
+        staticAbility { ability = PreventActivatedAbilities(filter = GameObjectFilter.ChosenBySource) }
         staticAbility {
             ability = GainActivatedAbilitiesOfPermanents(
                 grantedTo = GroupFilter.source(),
-                sourceFilter = GameObjectFilter.Permanent.chosenBySource(),
+                sourceFilter = GameObjectFilter.ChosenBySource,
                 includeManaAbilities = true,
-                includeLoyaltyAbilities = false
+                includeLoyaltyAbilities = false,
+                spendAsThoughAnyColor = true
             )
-        }
-        staticAbility {
-            ability = SpendAnyManaTypeForActivatedAbilities(filter = GroupFilter.source(), asThoughAnyColor = true)
         }
     }
 
@@ -101,9 +104,25 @@ class ChosenPermanentAbilityTheftTest : FunSpec({
         }
     }
 
+    // Grants every creature you control "{R}: +1/+0" — an ability the thief has from another source.
+    val banner = card("Red Banner") {
+        manaCost = "{2}"
+        typeLine = "Artifact"
+        staticAbility {
+            ability = GrantActivatedAbility(
+                ability = ActivatedAbility(
+                    id = AbilityId.next(),
+                    cost = Costs.Mana("{R}"),
+                    effect = Effects.ModifyStats(1, 0, EffectTarget.Self)
+                ),
+                filter = GroupFilter.AllCreaturesYouControl
+            )
+        }
+    }
+
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(thief, pumper, walker))
+        driver.registerCards(TestCards.all + listOf(thief, pumper, walker, banner))
         driver.initMirrorMatch(deck = Deck.of("Forest" to 20), skipMulligans = true)
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
         return driver
@@ -224,5 +243,62 @@ class ChosenPermanentAbilityTheftTest : FunSpec({
         driver.offered(me, thiefId) shouldBe emptyList()
         driver.giveMana(me, Color.BLACK, 1)
         driver.submit(ActivateAbility(me, mine, pumpB, paymentStrategy = PaymentStrategy.FromPool)).error shouldBe null
+    }
+
+    test("an ability another source grants the thief isn't relaxed — only the copies are") {
+        val driver = createDriver()
+        val me = driver.activePlayer!!
+        val chosen = driver.putCreatureOnBattlefield(me, "Two-Pip Pumper")
+        driver.putPermanentOnBattlefield(me, "Red Banner")
+        val bannerPump = banner.script.staticAbilities.filterIsInstance<GrantActivatedAbility>().single().ability.id
+
+        driver.castThief(me)
+        driver.submitCardSelection(me, listOf(chosen)).error shouldBe null
+        val thiefId = driver.thiefId(me)
+
+        driver.giveMana(me, Color.WHITE, 1)
+        withClue("white mana can't pay the banner's {R}") {
+            driver.submit(ActivateAbility(me, thiefId, bannerPump, paymentStrategy = PaymentStrategy.FromPool)).error shouldNotBe null
+        }
+        driver.submit(ActivateAbility(me, thiefId, pumpB, paymentStrategy = PaymentStrategy.FromPool)).error shouldBe null
+    }
+
+    test("a chosen mana creature's mana ability is locked; the thief's copy taps the thief") {
+        val driver = createDriver()
+        val me = driver.activePlayer!!
+        val elves = driver.putCreatureOnBattlefield(me, "Llanowar Elves")
+        driver.removeSummoningSickness(elves)
+        val elvesMana = TestCards.LlanowarElves.script.activatedAbilities.single().id
+
+        driver.castThief(me)
+        driver.submitCardSelection(me, listOf(elves)).error shouldBe null
+        val thiefId = driver.thiefId(me)
+        driver.removeSummoningSickness(thiefId)
+
+        driver.offered(me, elves) shouldNotContain elvesMana
+        driver.offered(me, thiefId) shouldContain elvesMana
+        driver.submit(ActivateAbility(me, thiefId, elvesMana)).error shouldBe null
+        driver.isTapped(thiefId) shouldBe true
+        driver.isTapped(elves) shouldBe false
+    }
+
+    test("once the chosen permanent leaves the battlefield nothing is gained — the returned card is a new object") {
+        val driver = createDriver()
+        val me = driver.activePlayer!!
+        val chosen = driver.putCreatureOnBattlefield(me, "Two-Pip Pumper")
+
+        driver.castThief(me)
+        driver.submitCardSelection(me, listOf(chosen)).error shouldBe null
+        val thiefId = driver.thiefId(me)
+        driver.offered(me, thiefId).isNotEmpty() shouldBe true
+
+        driver.moveToGraveyard(chosen)
+        driver.state.chosenCreatureOf(thiefId) shouldBe null
+        driver.offered(me, thiefId) shouldBe emptyList()
+
+        val returned = driver.putCreatureOnBattlefield(me, "Two-Pip Pumper")
+        driver.offered(me, thiefId) shouldBe emptyList()
+        driver.giveMana(me, Color.BLACK, 1)
+        driver.submit(ActivateAbility(me, returned, pumpB, paymentStrategy = PaymentStrategy.FromPool)).error shouldBe null
     }
 })

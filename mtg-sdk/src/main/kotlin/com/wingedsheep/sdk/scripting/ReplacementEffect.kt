@@ -2054,7 +2054,11 @@ enum class ChoiceType {
     COLOR,
     /** Choose a creature type (e.g., Doom Cannon, Cover of Darkness) */
     CREATURE_TYPE,
-    /** Choose another creature you control (e.g., Dauntless Bodyguard) */
+    /**
+     * Choose a permanent on the battlefield — by default another creature you control (Dauntless
+     * Bodyguard); [EntersWithChoice.permanentFilter] widens it (Scheming Fence's "a nonland
+     * permanent"). Stored in [ChoiceSlot.CREATURE] whatever its type.
+     */
     CREATURE_ON_BATTLEFIELD,
     /**
      * Choose one of a card-defined set of named [ModeOption]s. Used for cards
@@ -2251,7 +2255,9 @@ data class EntersWithChoice(
     val permanentFilter: GameObjectFilter? = null,
     /**
      * When true, the chooser may decline — "you may choose …" (Scheming Fence) — and the permanent
-     * enters with no choice recorded. Only [ChoiceType.CREATURE_ON_BATTLEFIELD] honours it.
+     * enters with no choice recorded. Only [ChoiceType.CREATURE_ON_BATTLEFIELD] honours it. Not
+     * [ReplacementEffect.optional]: that one asks whether to apply the replacement at all, while
+     * the permanent enters either way and only the pick may be empty.
      */
     val mayChooseNothing: Boolean = false,
     override val appliesTo: EventPattern = EventPattern.ZoneChangeEvent(
@@ -2259,6 +2265,12 @@ data class EntersWithChoice(
         to = Zone.BATTLEFIELD
     )
 ) : ReplacementEffect {
+    init {
+        require(choiceType == ChoiceType.CREATURE_ON_BATTLEFIELD || (permanentFilter == null && !mayChooseNothing)) {
+            "permanentFilter and mayChooseNothing apply only to ChoiceType.CREATURE_ON_BATTLEFIELD"
+        }
+    }
+
     override val description: String = when (choiceType) {
         ChoiceType.COLOR -> {
             val otherThan = if (excludedColors.isEmpty()) "" else
@@ -2278,8 +2290,9 @@ data class EntersWithChoice(
             "As this creature enters, choose another creature you control"
         } else {
             val verb = if (mayChooseNothing) "you may choose" else "choose"
-            val what = permanentFilter?.description ?: "another creature you control"
-            "As this permanent enters, $verb ${if (permanentFilter == null) what else "a $what"}"
+            val what = permanentFilter?.let { "${it.indefiniteArticle} ${it.description}" }
+                ?: "another creature you control"
+            "As this permanent enters, $verb $what"
         }
         ChoiceType.MODE -> {
             val labels = modeOptions.joinToString(" or ") { it.label }

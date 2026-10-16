@@ -7,7 +7,6 @@ import com.wingedsheep.sdk.scripting.EntersWithChoice
 import com.wingedsheep.sdk.scripting.GainActivatedAbilitiesOfPermanents
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.PreventActivatedAbilities
-import com.wingedsheep.sdk.scripting.SpendAnyManaTypeForActivatedAbilities
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 
 /**
@@ -16,9 +15,9 @@ import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
  * The single-permanent sibling of Drana and Linvala: an optional "as this enters" pick of any
  * nonland permanent, read back by [com.wingedsheep.sdk.scripting.predicates.CardPredicate.ChosenBySource]
  * to lock that permanent's activated abilities and to copy them (mana abilities included, loyalty
- * abilities not) onto the Fence. If the chosen permanent leaves the battlefield, nothing is locked
- * or gained any more. The Fence has no activated abilities of its own, so relaxing the colour
- * requirements of all its abilities is relaxing "those abilities".
+ * abilities not) onto the Fence, where `spendAsThoughAnyColor` relaxes the copies' colour
+ * requirements — only "those abilities", not ones an Equipment or Aura grants the Fence. If the
+ * chosen permanent leaves the battlefield, nothing is locked or gained any more.
  */
 val SchemingFence = card("Scheming Fence") {
     manaCost = "{W}{U}"
@@ -40,18 +39,16 @@ val SchemingFence = card("Scheming Fence") {
     )
 
     staticAbility {
-        ability = PreventActivatedAbilities(filter = GameObjectFilter.Permanent.chosenBySource())
+        ability = PreventActivatedAbilities(filter = GameObjectFilter.ChosenBySource)
     }
     staticAbility {
         ability = GainActivatedAbilitiesOfPermanents(
             grantedTo = GroupFilter.source(),
-            sourceFilter = GameObjectFilter.Permanent.chosenBySource(),
+            sourceFilter = GameObjectFilter.ChosenBySource,
             includeManaAbilities = true,
-            includeLoyaltyAbilities = false
+            includeLoyaltyAbilities = false,
+            spendAsThoughAnyColor = true
         )
-    }
-    staticAbility {
-        ability = SpendAnyManaTypeForActivatedAbilities(filter = GroupFilter.source(), asThoughAnyColor = true)
     }
 
     metadata {

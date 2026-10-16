@@ -241,6 +241,11 @@ data class GameObjectFilter(
         val Nonland = GameObjectFilter(cardPredicates = listOf(CardPredicate.IsNonland))
         /** An instant, a sorcery or any other card that isn't a permanent card (CR 110.4a's complement). */
         val Nonpermanent = GameObjectFilter(cardPredicates = listOf(CardPredicate.Not(CardPredicate.IsPermanent)))
+        /**
+         * "The chosen permanent" — the permanent the source chose as it entered
+         * ([CardPredicate.ChosenBySource]); no type word, so it reads as just that.
+         */
+        val ChosenBySource = GameObjectFilter(cardPredicates = listOf(CardPredicate.ChosenBySource))
         val NonlandPermanent = GameObjectFilter(
             cardPredicates = listOf(CardPredicate.IsNonland, CardPredicate.IsPermanent)
         )

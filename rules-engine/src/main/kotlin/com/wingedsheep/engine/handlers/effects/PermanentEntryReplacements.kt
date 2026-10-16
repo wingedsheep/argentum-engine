@@ -461,7 +461,8 @@ object PermanentEntryReplacements {
     fun chosenPermanentPrompt(cardComponent: CardComponent, choice: EntersWithChoice): String {
         val filter = choice.permanentFilter
         if (filter != null) {
-            return (if (choice.mayChooseNothing) "You may choose a " else "Choose a ") + filter.description
+            return (if (choice.mayChooseNothing) "You may choose " else "Choose ") +
+                "${filter.indefiniteArticle} ${filter.description}"
         }
         // "Another" only reads right when the entering permanent is itself a creature (Dauntless
         // Bodyguard). The pool excludes the entering object either way, so an Equipment or
