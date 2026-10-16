@@ -882,6 +882,62 @@
     ]
 }
 
+// Caldaia Strongarm
+{
+    "name": "Caldaia Strongarm",
+    "manaCost": "{4}{G}",
+    "typeLine": "Creature — Human Warrior",
+    "oracleText": "When this creature enters, put two +1/+1 counters on target creature.\nBlitz {3}{G} (If you cast this spell for its blitz cost, it gains haste and \"When this creature dies, draw a card.\" Sacrifice it at the beginning of the next end step.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "BLITZ"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Blitz",
+            "cost": "{3}{G}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Caldaia Strongarm:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 2,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "138",
+        "artist": "Randy Vargas",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/8/58b431d2-33c1-49d8-b45d-690c174bb456.jpg?1783923106"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Celebrity Fencer
 {
     "name": "Celebrity Fencer",
@@ -2606,6 +2662,60 @@
     }
 }
 
+// Girder Goons
+{
+    "name": "Girder Goons",
+    "manaCost": "{4}{B}",
+    "typeLine": "Creature — Ogre Warrior",
+    "oracleText": "When this creature dies, create a tapped 2/2 black Rogue creature token.\nBlitz {3}{B} (If you cast this spell for its blitz cost, it gains haste and \"When this creature dies, draw a card.\" Sacrifice it at the beginning of the next end step.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "BLITZ"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Blitz",
+            "cost": "{3}{B}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Girder Goons:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 2,
+                    "toughness": 2,
+                    "colors": [
+                        "BLACK"
+                    ],
+                    "creatureTypes": [
+                        "Rogue"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/0/6/06e503b9-a822-4c42-b478-1f598bc5941d.jpg?1783922961",
+                    "tapped": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "80",
+        "artist": "Andrew Mar",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/b/4bfd6449-31a1-4572-8f9c-3f6f4670dc9d.jpg?1783923130"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Glittering Stockpile
 {
     "name": "Glittering Stockpile",
@@ -3561,6 +3671,130 @@
     ]
 }
 
+// Jaxis, the Troublemaker
+{
+    "name": "Jaxis, the Troublemaker",
+    "manaCost": "{3}{R}",
+    "typeLine": "Legendary Creature — Human Warrior",
+    "oracleText": "{R}, {T}, Discard a card: Create a token that's a copy of another target creature you control. It gains haste and \"When this token dies, draw a card.\" Sacrifice it at the beginning of the next end step. Activate only as a sorcery.\nBlitz {1}{R} (If you cast this spell for its blitz cost, it gains haste and \"When this creature dies, draw a card.\" Sacrifice it at the beginning of the next end step.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "BLITZ"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Blitz",
+            "cost": "{1}{R}"
+        }
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Jaxis, the Troublemaker:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{R}"
+                            }
+                        },
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": "AtomDiscard"
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CreateTokenCopyOfTarget",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "triggeredAbilities": [
+                                {
+                                    "id": "Jaxis, the Troublemaker:1",
+                                    "trigger": {
+                                        "type": "ZoneChangeEvent",
+                                        "from": "Battlefield",
+                                        "to": "Graveyard"
+                                    },
+                                    "effect": {
+                                        "type": "DrawCards",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "descriptionOverride": "When this token dies, draw a card."
+                                }
+                            ],
+                            "sacrificeAtStep": "END"
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Collection",
+                                "collection": "createdTokens"
+                            },
+                            "body": {
+                                "type": "GrantKeyword",
+                                "keyword": "HASTE",
+                                "target": "IterationEntity",
+                                "duration": "Permanent"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you",
+                            "excludeSelf": true
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "descriptionOverride": "{R}, {T}, Discard a card: Create a token that's a copy of another target creature you control. It gains haste and \"When this token dies, draw a card.\" Sacrifice it at the beginning of the next end step. Activate only as a sorcery."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "112",
+        "rarity": "RARE",
+        "artist": "Zoltan Boros",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/8/78127c0c-672f-4e4b-9c23-6a5f237228fd.jpg?1783923117",
+        "rulings": [
+            {
+                "date": "2022-04-29",
+                "text": "The token copies exactly what was printed on the original creature and nothing else (unless it's copying a creature that's a token or that's copying something else). It doesn't copy whether the creature is tapped or untapped, whether it has any counters on it or Auras and/or Equipment attached to it, or any non-copy effects that changed its power, toughness, types, color, and so on. Most notably, if the target creature isn't normally a creature, the copy won't be a creature."
+            },
+            {
+                "date": "2022-04-29",
+                "text": "If another creature becomes a copy of, or enters the battlefield as a copy of, the token, that creature will copy the creature card the token is copying. However, it won't have either haste or \"When this creature dies, draw a card,\" and you won't sacrifice the new copy at the beginning of the next end step."
+            },
+            {
+                "date": "2022-04-29",
+                "text": "If Jaxis, the Troublemaker's ability creates multiple tokens due to a replacement effect (such as the one Doubling Season creates), you'll sacrifice each of them at the beginning of the next end step."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Jetmir's Garden
 {
     "name": "Jetmir's Garden",
@@ -4395,6 +4629,67 @@
     ]
 }
 
+// Mayhem Patrol
+{
+    "name": "Mayhem Patrol",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Devil Warrior",
+    "oracleText": "Menace (This creature can't be blocked except by two or more creatures.)\nWhenever this creature attacks, target creature gets +1/+0 until end of turn.\nBlitz {1}{R} (If you cast this spell for its blitz cost, it gains haste and \"When this creature dies, draw a card.\" Sacrifice it at the beginning of the next end step.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "keywords": [
+        "MENACE",
+        "BLITZ"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Blitz",
+            "cost": "{1}{R}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Mayhem Patrol:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Whenever this creature attacks, target creature gets +1/+0 until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "114",
+        "artist": "Johan Grenier",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/0/50162cdd-ba30-48df-93ff-197c7f4a2913.jpg?1783923117"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Meeting of the Five
 {
     "name": "Meeting of the Five",
@@ -4538,6 +4833,68 @@
         "artist": "Christina Davis",
         "flavorText": "The broad avenues and graceful spires of Park Heights are the playground of the affluent. After nightfall, they also make a fine hunting ground.",
         "imageUri": "https://cards.scryfall.io/normal/front/0/2/02a4a5b3-0477-4709-8bce-3e01f54001b6.jpg?1783923128"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Night Clubber
+{
+    "name": "Night Clubber",
+    "manaCost": "{1}{B}{B}",
+    "typeLine": "Creature — Human Warrior",
+    "oracleText": "When this creature enters, creatures your opponents control get -1/-1 until end of turn.\nBlitz {2}{B} (If you cast this spell for its blitz cost, it gains haste and \"When this creature dies, draw a card.\" Sacrifice it at the beginning of the next end step.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "BLITZ"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Blitz",
+            "cost": "{2}{B}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Night Clubber:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:opponent"
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": -1
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": -1
+                        },
+                        "target": "IterationEntity"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "89",
+        "rarity": "UNCOMMON",
+        "artist": "Joshua Raphael",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/9/59fd3f8a-a13b-4a0a-bb27-b9246949ea7b.jpg?1783923126"
     },
     "colorIdentityOverride": [
         "BLACK"
@@ -4976,6 +5333,58 @@
     }
 }
 
+// Plasma Jockey
+{
+    "name": "Plasma Jockey",
+    "manaCost": "{3}{R}",
+    "typeLine": "Creature — Lizard Warrior",
+    "oracleText": "Whenever this creature attacks, target creature an opponent controls can't block this turn.\nBlitz {2}{R} (If you cast this spell for its blitz cost, it gains haste and \"When this creature dies, draw a card.\" Sacrifice it at the beginning of the next end step.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "keywords": [
+        "BLITZ"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Blitz",
+            "cost": "{2}{R}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Plasma Jockey:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "CantBlockTargetCreatures",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:opponent"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Whenever this creature attacks, target creature an opponent controls can't block this turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "115",
+        "artist": "Andrew Mar",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/4/741ed811-cbcd-4178-a874-dc79d2a5d6f1.jpg?1783923117"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Professional Face-Breaker
 {
     "name": "Professional Face-Breaker",
@@ -5195,6 +5604,84 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Pugnacious Pugilist
+{
+    "name": "Pugnacious Pugilist",
+    "manaCost": "{3}{R}{R}",
+    "typeLine": "Creature — Ogre Warrior",
+    "oracleText": "Whenever this creature attacks, create a tapped and attacking 1/1 red Devil creature token with \"When this token dies, it deals 1 damage to any target.\"\nBlitz {3}{R} (If you cast this spell for its blitz cost, it gains haste and \"When this creature dies, draw a card.\" Sacrifice it at the beginning of the next end step.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "BLITZ"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Blitz",
+            "cost": "{3}{R}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Pugnacious Pugilist:2",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "RED"
+                    ],
+                    "creatureTypes": [
+                        "Devil"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/e/c/ec75fdab-818c-4f3a-94c1-fd3f577a87f5.jpg?1783922960",
+                    "tapped": true,
+                    "attacking": true,
+                    "triggeredAbilities": [
+                        {
+                            "id": "Pugnacious Pugilist:1",
+                            "trigger": {
+                                "type": "ZoneChangeEvent",
+                                "from": "Battlefield",
+                                "to": "Graveyard"
+                            },
+                            "effect": {
+                                "type": "DealDamage",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "targetRequirement": {
+                                "type": "AnyTarget",
+                                "id": "t0"
+                            },
+                            "descriptionOverride": "When this token dies, it deals 1 damage to any target."
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "117",
+        "rarity": "UNCOMMON",
+        "artist": "Justine Cruz",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/9/d98022d2-3b46-41f4-8f31-0a238d881ac6.jpg?1783923117"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -6071,6 +6558,294 @@
     ]
 }
 
+// Riveteers Ascendancy
+{
+    "name": "Riveteers Ascendancy",
+    "manaCost": "{B}{R}{G}",
+    "typeLine": "Enchantment",
+    "oracleText": "Whenever you sacrifice a creature, you may return target creature card with lesser mana value from your graveyard to the battlefield tapped. Do this only once each turn.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Riveteers Ascendancy:1",
+                "trigger": {
+                    "type": "PermanentsSacrificedEvent",
+                    "filter": "creature",
+                    "perPermanent": true
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "destination": "Battlefield",
+                        "placement": "Tapped",
+                        "fromZone": "Graveyard"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                {
+                                    "type": "ManaValueAtMostDynamic",
+                                    "amount": {
+                                        "type": "Subtract",
+                                        "left": {
+                                            "type": "EntityProperty",
+                                            "entity": "TriggeringEntity",
+                                            "numericProperty": "ManaValue"
+                                        },
+                                        "right": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    }
+                                }
+                            ],
+                            "controllerPredicate": "OwnedByYou"
+                        },
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                },
+                "effectOncePerTurn": true,
+                "descriptionOverride": "Whenever you sacrifice a creature, you may return target creature card with lesser mana value from your graveyard to the battlefield tapped. Do this only once each turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "216",
+        "rarity": "RARE",
+        "artist": "Svetlin Velinov",
+        "flavorText": "\"We are this city, down to its bones.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/1/21235916-2379-470c-b9ee-84246043d703.jpg?1783923073",
+        "rulings": [
+            {
+                "date": "2022-04-29",
+                "text": "\"Do this only once each turn\" refers only to the ability it is attached to, not other instances of the same ability. In other words, if you control multiple copies of Riveteers Ascendancy, you will be able to do this once for each of them."
+            },
+            {
+                "date": "2022-04-29",
+                "text": "Once you have chosen to return a creature to the battlefield, further instances of sacrificing creatures the same turn will not cause the ability to trigger."
+            },
+            {
+                "date": "2022-04-29",
+                "text": "If multiple instances of the ability are on the stack, you will be able to return a creature to the battlefield for only one of those instances. Once you do that, other instances will do nothing as they resolve."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED",
+        "GREEN"
+    ]
+}
+
+// Riveteers Charm
+{
+    "name": "Riveteers Charm",
+    "manaCost": "{B}{R}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Choose one —\n• Target opponent sacrifices a creature or planeswalker they control with the greatest mana value among creatures and planeswalkers they control.\n• Exile the top three cards of your library. Until your next end step, you may play those cards.\n• Exile target player's graveyard.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "ControlledPermanents",
+                                    "player": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    },
+                                    "filter": "creature|planeswalker"
+                                },
+                                "storeAs": "gathered0"
+                            },
+                            {
+                                "type": "FilterCollection",
+                                "from": "gathered0",
+                                "collectionFilter": "GreatestManaValue",
+                                "storeMatching": "matching1"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "matching1",
+                                "selection": {
+                                    "type": "ChooseExactly",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "chooser": "TargetPlayer",
+                                "storeSelected": "selected2",
+                                "prompt": "Choose a creature or planeswalker with the greatest mana value to sacrifice",
+                                "useTargetingUI": true
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "selected2",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                },
+                                "moveType": "Sacrifice"
+                            }
+                        ]
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetOpponent",
+                            "id": "t0"
+                        }
+                    ],
+                    "description": "Target opponent sacrifices a creature or planeswalker with the greatest mana value among those they control"
+                },
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "TopOfLibrary",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 3
+                                    }
+                                },
+                                "storeAs": "impulseExiled"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "impulseExiled",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Exile"
+                                }
+                            },
+                            {
+                                "type": "GrantMayPlayFromExile",
+                                "from": "impulseExiled",
+                                "expiry": {
+                                    "type": "UntilControllerStep",
+                                    "step": "END"
+                                }
+                            }
+                        ]
+                    },
+                    "description": "Exile the top three cards of your library. Until your next end step, you may play those cards"
+                },
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Graveyard",
+                                    "player": {
+                                        "type": "BoundVariable",
+                                        "name": "t1"
+                                    }
+                                },
+                                "storeAs": "gathered0"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "gathered0",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Exile",
+                                    "player": {
+                                        "type": "BoundVariable",
+                                        "name": "t1"
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetPlayer",
+                            "id": "t1"
+                        }
+                    ],
+                    "description": "Exile target player's graveyard"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "217",
+        "rarity": "UNCOMMON",
+        "artist": "Steve Argyle",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/8/784a5915-bc42-49d6-8a1b-45da7749f03a.jpg?1783923074",
+        "rulings": [
+            {
+                "date": "2022-04-29",
+                "text": "For Riveteers Charm's first mode, if the target opponent controls more than one creature or planeswalker with the highest mana value among creatures and planeswalkers they control, that player chooses which one to sacrifice as Riveteers Charm resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED",
+        "GREEN"
+    ]
+}
+
+// Riveteers Decoy
+{
+    "name": "Riveteers Decoy",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Human Warrior",
+    "oracleText": "This creature must be blocked if able.\nBlitz {3}{G} (If you cast this spell for its blitz cost, it gains haste and \"When this creature dies, draw a card.\" Sacrifice it at the beginning of the next end step.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "keywords": [
+        "BLITZ"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Blitz",
+            "cost": "{3}{G}"
+        }
+    ],
+    "script": {
+        "staticAbilities": [
+            "MustBeBlockedStatic"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "156",
+        "rarity": "UNCOMMON",
+        "artist": "Inka Schulz",
+        "flavorText": "He keeps the heat off his allies—by drawing it all to himself.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/d/2d21701b-6a99-4e1c-82b2-0219f170b09f.jpg?1783923100"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Riveteers Initiate
 {
     "name": "Riveteers Initiate",
@@ -6111,6 +6886,111 @@
         "GREEN",
         "RED"
     ]
+}
+
+// Riveteers Overlook
+{
+    "name": "Riveteers Overlook",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "When this land enters, sacrifice it. When you do, search your library for a basic Swamp, Mountain, or Forest card, put it onto the battlefield tapped, then shuffle and you gain 1 life.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Riveteers Overlook:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "SourceInZone",
+                            "zones": [
+                                "Battlefield"
+                            ]
+                        }
+                    },
+                    "then": {
+                        "type": "ReflexiveTrigger",
+                        "action": {
+                            "type": "SacrificeTarget",
+                            "target": "Self"
+                        },
+                        "optional": false,
+                        "reflexiveEffect": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Library",
+                                        "filter": {
+                                            "cardPredicates": [
+                                                "IsBasicLand",
+                                                {
+                                                    "type": "HasAnyOfSubtypes",
+                                                    "subtypes": [
+                                                        "Swamp",
+                                                        "Mountain",
+                                                        "Forest"
+                                                    ]
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "storeAs": "searchable",
+                                    "search": true
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "searchable",
+                                    "selection": {
+                                        "type": "ChooseUpTo",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeSelected": "found",
+                                    "prompt": "Search your library for a basic Swamp, Mountain, or Forest card to put onto the battlefield tapped",
+                                    "selectedLabel": "Put onto the battlefield tapped"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "found",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Battlefield",
+                                        "placement": "Tapped"
+                                    }
+                                },
+                                "ShuffleLibrary",
+                                "EmitLibrarySearchedEvent",
+                                {
+                                    "type": "GainLife",
+                                    "amount": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                }
+                            ]
+                        },
+                        "descriptionOverride": "Sacrifice this land. When you do, search your library for a basic Swamp, Mountain, or Forest card, put it onto the battlefield tapped, then shuffle and you gain 1 life."
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "255",
+        "artist": "Lucas Staniec",
+        "flavorText": "Along the outer girders, in gold filigree, are inscribed the names of all those who fell to their deaths during construction.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/d/1d161f81-c01a-4c91-b025-52dcb1881638.jpg?1783923054"
+    }
 }
 
 // Riveteers Requisitioner
@@ -6669,6 +7549,76 @@
         "artist": "Vincent Proce",
         "flavorText": "They'd warned him greed would be the death of him. He never thought to take it literally.",
         "imageUri": "https://cards.scryfall.io/normal/front/4/b/4b91d727-c0ee-4bf0-8c7d-8475ecb88083.jpg?1783923112"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Structural Assault
+{
+    "name": "Structural Assault",
+    "manaCost": "{3}{R}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Destroy all artifacts, then Structural Assault deals damage to each creature equal to the number of artifacts that were put into graveyards from the battlefield this turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "BattlefieldMatching",
+                        "filter": "artifact"
+                    },
+                    "storeAs": "destroyAll_gathered"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "destroyAll_gathered",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard"
+                    },
+                    "moveType": "Destroy"
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature"
+                        }
+                    },
+                    "body": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "TurnTracking",
+                            "player": "Each",
+                            "tracker": "ARTIFACTS_DIED"
+                        },
+                        "target": "IterationEntity"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "126",
+        "rarity": "RARE",
+        "artist": "Liiga Smilshkalne",
+        "flavorText": "After the attack on the Vantoleone, the fragile balance of power shattered completely, and the city descended into chaos.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/b/cbdb50e3-fe15-4431-b9bd-c4de65820734.jpg?1783923111",
+        "rulings": [
+            {
+                "date": "2022-04-29",
+                "text": "Structural Assault counts the number of artifacts that were put into graveyards from the battlefield this turn for any reason, not just because they were destroyed by Structural Assault."
+            },
+            {
+                "date": "2022-04-29",
+                "text": "If a player controls an artifact creature with a shield counter on it as Structural Assault destroys all artifacts, a shield counter will be removed before Structural Assault deals damage to each creature. Unless that artifact creature has another shield counter on it, the damage won't be prevented."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "RED"
@@ -7992,6 +8942,76 @@
     ]
 }
 
+// Workshop Warchief
+{
+    "name": "Workshop Warchief",
+    "manaCost": "{3}{G}{G}",
+    "typeLine": "Creature — Rhino Warrior",
+    "oracleText": "Trample\nWhen this creature enters, you gain 3 life.\nWhen this creature dies, create a 4/4 green Rhino Warrior creature token.\nBlitz {4}{G}{G} (If you cast this spell for its blitz cost, it gains haste and \"When this creature dies, draw a card.\" Sacrifice it at the beginning of the next end step.)",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 3
+    },
+    "keywords": [
+        "TRAMPLE",
+        "BLITZ"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Blitz",
+            "cost": "{4}{G}{G}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Workshop Warchief:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                }
+            },
+            {
+                "id": "Workshop Warchief:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 4,
+                    "toughness": 4,
+                    "colors": [
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Rhino",
+                        "Warrior"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/2/3/230419f9-a9f7-441d-bad7-0ed867326aa1.jpg?1783922959"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "165",
+        "rarity": "RARE",
+        "artist": "Zoltan Boros",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/7/27851834-688f-4929-967d-dfa015194f7f.jpg?1783923096"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Wrecking Crew
 {
     "name": "Wrecking Crew",
@@ -8048,6 +9068,141 @@
     ]
 }
 
+// Ziatora's Envoy
+{
+    "name": "Ziatora's Envoy",
+    "manaCost": "{1}{B}{R}{G}",
+    "typeLine": "Creature — Lizard Warrior",
+    "oracleText": "Trample\nWhenever this creature deals combat damage to a player, look at the top card of your library. You may play a land from the top of your library or cast a spell with mana value less than or equal to the damage dealt from the top of your library without paying its mana cost. If you don't, put that card into your hand.\nBlitz {2}{B}{R}{G}",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 4
+    },
+    "keywords": [
+        "TRAMPLE",
+        "BLITZ"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Blitz",
+            "cost": "{2}{B}{R}{G}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ziatora's Envoy:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "filter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "Or",
+                                        "predicates": [
+                                            "IsLand",
+                                            {
+                                                "type": "And",
+                                                "predicates": [
+                                                    "IsNonland",
+                                                    {
+                                                        "type": "ManaValueAtMostDynamic",
+                                                        "amount": {
+                                                            "type": "ContextProperty",
+                                                            "key": "TRIGGER_DAMAGE_AMOUNT"
+                                                        }
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                ]
+                            },
+                            "storeSelected": "selected1",
+                            "prompt": "You may play a land or cast a spell with mana value up to the damage dealt from the top of your library without paying its mana cost.",
+                            "selectedLabel": "Play for free",
+                            "remainderLabel": "Put into your hand",
+                            "showAllCards": true
+                        },
+                        {
+                            "type": "PlayFromCollectionWithoutPayingCost",
+                            "from": "selected1"
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "gathered0",
+                            "filter": {
+                                "statePredicates": [
+                                    {
+                                        "type": "InZone",
+                                        "zone": "Library"
+                                    }
+                                ]
+                            },
+                            "storeMatching": "matching3"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "matching3",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever this creature deals combat damage to a player, look at the top card of your library. You may play a land from the top of your library or cast a spell with mana value less than or equal to the damage dealt from the top of your library without paying its mana cost. If you don't, put that card into your hand."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "232",
+        "rarity": "RARE",
+        "artist": "Tuan Duong Chu",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/a/ba39154c-aace-4d55-a3ad-7c9eb717ed2b.jpg?1783923065",
+        "rulings": [
+            {
+                "date": "2022-04-29",
+                "text": "\"If you don't\" in the second ability refers to whether you played a land or cast a spell from the top of your library, not just whether or not you cast a spell."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED",
+        "GREEN"
+    ]
+}
+
 // Ziatora's Proving Ground
 {
     "name": "Ziatora's Proving Ground",
@@ -8076,5 +9231,118 @@
         "BLACK",
         "GREEN",
         "RED"
+    ]
+}
+
+// Ziatora, the Incinerator
+{
+    "name": "Ziatora, the Incinerator",
+    "manaCost": "{3}{B}{R}{G}",
+    "typeLine": "Legendary Creature — Demon Dragon",
+    "oracleText": "Flying\nAt the beginning of your end step, you may sacrifice another creature. When you do, Ziatora deals damage equal to that creature's power to any target and you create three Treasure tokens.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ziatora, the Incinerator:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ReflexiveTrigger",
+                    "action": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "SelectTarget",
+                                "requirement": {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": "creature ctrl:you",
+                                        "excludeSelf": true
+                                    }
+                                },
+                                "storeAs": "target0",
+                                "nonTargeting": true,
+                                "prompt": "Choose another creature to sacrifice"
+                            },
+                            {
+                                "type": "StoreNumber",
+                                "name": "ziatoraSacrificedPower",
+                                "amount": {
+                                    "type": "EntityProperty",
+                                    "entity": {
+                                        "type": "PipelineTarget",
+                                        "collectionName": "target0"
+                                    },
+                                    "numericProperty": "Power"
+                                }
+                            },
+                            {
+                                "type": "SacrificeTarget",
+                                "target": {
+                                    "type": "PipelineTarget",
+                                    "collectionName": "target0"
+                                }
+                            }
+                        ]
+                    },
+                    "reflexiveEffect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "DealDamage",
+                                "amount": {
+                                    "type": "VariableReference",
+                                    "variableName": "ziatoraSacrificedPower"
+                                },
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            {
+                                "type": "CreatePredefinedToken",
+                                "tokenType": "Treasure",
+                                "count": 3
+                            }
+                        ]
+                    },
+                    "reflexiveTargetRequirements": [
+                        {
+                            "type": "AnyTarget",
+                            "id": "t0"
+                        }
+                    ],
+                    "descriptionOverride": "You may sacrifice another creature. When you do, Ziatora deals damage equal to that creature's power to any target and you create three Treasure tokens."
+                },
+                "descriptionOverride": "At the beginning of your end step, you may sacrifice another creature. When you do, Ziatora deals damage equal to that creature's power to any target and you create three Treasure tokens."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "231",
+        "rarity": "MYTHIC",
+        "artist": "Chris Rahn",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/a/ba4fa4c8-f09f-4d97-a7d1-1b93caf7d4f9.jpg?1783923066",
+        "rulings": [
+            {
+                "date": "2022-04-29",
+                "text": "Use the creature's power as it last existed on the battlefield to determine how much damage Ziatora deals."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED",
+        "GREEN"
     ]
 }
