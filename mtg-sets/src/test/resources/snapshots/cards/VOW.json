@@ -20948,8 +20948,8 @@
                             {
                                 "type": "StateNot",
                                 "predicate": {
-                                    "type": "WasCastFromZone",
-                                    "zone": "Hand"
+                                    "type": "WasCast",
+                                    "fromZone": "Hand"
                                 }
                             }
                         ]

@@ -1397,8 +1397,8 @@ StatePredicate.PutIntoGraveyardFromBattlefieldThisTurn — StatePredicate
 StatePredicate.PutIntoGraveyardThisTurn — StatePredicate
 StatePredicate.ReceivedCounterThisTurn — StatePredicate
 StatePredicate.SharesNameWithSpellCastThisTurn — StatePredicate
+StatePredicate.WasCast — StatePredicate
 StatePredicate.WasCastForWarp — StatePredicate
-StatePredicate.WasCastFromZone — StatePredicate
 StatePredicate.WasDealtDamageBySourceThisTurn — StatePredicate
 StatePredicate.WasDealtDamageThisTurn — StatePredicate
 AddCreatureTypeByCounter — StaticAbility

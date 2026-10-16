@@ -1780,6 +1780,78 @@
     ]
 }
 
+// Errant, Street Artist
+{
+    "name": "Errant, Street Artist",
+    "manaCost": "{U}",
+    "typeLine": "Legendary Creature — Human Rogue",
+    "oracleText": "Flash\nDefender, haste\n{1}{U}, {T}: Copy target spell you control that wasn't cast. You may choose new targets for the copy.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLASH",
+        "DEFENDER",
+        "HASTE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Errant, Street Artist:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{U}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "CopyTargetSpell",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {
+                                "statePredicates": [
+                                    {
+                                        "type": "StateNot",
+                                        "predicate": "WasCast"
+                                    }
+                                ],
+                                "controllerPredicate": "ControlledByYou"
+                            },
+                            "zone": "Stack"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "41",
+        "rarity": "RARE",
+        "artist": "Justine Cruz",
+        "flavorText": "Few know her face, but everyone knows her work.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/1/61d23407-9fe0-4cbf-b4b5-bc1e132c36e4.jpg?1783923146"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Evolving Door
 {
     "name": "Evolving Door",

@@ -1360,20 +1360,27 @@ sealed interface StatePredicate {
     }
 
     /**
-     * A spell on the stack whose cast-origin zone is [zone] — reads the
-     * `SpellOnStackComponent.castFromZone` the engine stamps when the spell is put on the stack
-     * (HAND for a normal cast; GRAVEYARD/EXILE/COMMAND for flashback/forage, plot/foretell,
-     * commander, …). Composes with [Not] for the common "*wasn't* cast from …" phrasing.
+     * A spell on the stack that was cast — from [fromZone] when it is set, from anywhere when it is
+     * null. Reads the `SpellOnStackComponent.castFromZone` the engine stamps when a spell is cast
+     * (HAND for a normal cast; GRAVEYARD/EXILE/COMMAND/LIBRARY for flashback, plot, commander, …).
+     * A copy put directly onto the stack wasn't cast (CR 707.10) and carries no cast origin, so
+     * every reading is false for it; a copy that *is* cast (CR 707.12) has one. Composes with
+     * [Not] for the "*wasn't* cast …" phrasings:
      *
-     * Backs Wash Away's base (bracketed) restriction "counter target spell [that wasn't cast from
-     * its owner's hand]" as `Not(WasCastFromZone(Zone.HAND))`. A spell can only be cast from its
-     * own owner's hand (cards in a hand are owned by that hand's player, CR 108.3), so the
-     * owner-scoped wording collapses to the zone check.
+     *  - Wash Away's "counter target spell that wasn't cast from its owner's hand" is
+     *    `Not(WasCast(Zone.HAND))`. A spell can only be cast from its own owner's hand (cards in a
+     *    hand are owned by that hand's player, CR 108.3), so the owner-scoped wording collapses to
+     *    the zone check.
+     *  - Errant, Street Artist's "copy target spell you control that wasn't cast" is
+     *    `Not(WasCast())`.
+     *
+     * Stack-only: a permanent's "was cast" history is the `WasCast` / `WasCastFromZone`
+     * [com.wingedsheep.sdk.scripting.conditions] family instead.
      */
-    @SerialName("WasCastFromZone")
+    @SerialName("WasCast")
     @Serializable
-    data class WasCastFromZone(val zone: com.wingedsheep.sdk.core.Zone) : Entity {
-        override val description: String = "cast from ${zone.displayName}"
+    data class WasCast(val fromZone: com.wingedsheep.sdk.core.Zone? = null) : Entity {
+        override val description: String = if (fromZone == null) "cast" else "cast from ${fromZone.displayName}"
     }
 
     /**

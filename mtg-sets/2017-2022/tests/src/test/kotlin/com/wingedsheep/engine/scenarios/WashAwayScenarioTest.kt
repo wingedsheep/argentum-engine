@@ -17,8 +17,8 @@ import io.kotest.matchers.shouldNotBe
  * cast can only counter spells cast from somewhere *other* than their owner's hand (flashback,
  * foretell, adventure, cascade, …); the cleaved cast counters any spell.
  *
- * The printed restriction is enforced structurally via `StatePredicate.WasCastFromZone` (through
- * `TargetFilter.notCastFromZone(Zone.HAND)`), which reads the `castFromZone` the engine stamps at
+ * The printed restriction is enforced structurally via `StatePredicate.WasCast` (through
+ * `TargetFilter.notCast(Zone.HAND)`), which reads the `castFromZone` the engine stamps at
  * cast time. Because a card in a hand is owned by that hand's player (CR 108.3), "wasn't cast from
  * its owner's hand" collapses to "wasn't cast from the HAND zone". These tests pin:
  *  - printed cast is a *legal* counter for a graveyard (flashback) cast and actually counters it,

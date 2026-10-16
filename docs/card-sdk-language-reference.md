@@ -5310,10 +5310,13 @@ that targets you" — Shell of the Last Kappa; `Player.EachOpponent` is "that ta
 `subfilter` — `CardPredicate.AbilitySourceMatches`; e.g.
 `TargetFilter.ActivatedOrTriggeredAbilityOnStack.youControl().abilitySourceMatches(GameObjectFilter.Creature)`
 for "from a creature source" — Echo, Perceptive Prodigy);
-`.castFromZone(zone)` / `.notCastFromZone(zone)` (a spell on the stack that was / wasn't cast from a
-specific zone — `StatePredicate.WasCastFromZone`, reading `SpellOnStackComponent.castFromZone`; e.g.
-`TargetFilter.SpellOnStack.notCastFromZone(Zone.HAND)` for "target spell that wasn't cast from its
-owner's hand" — Wash Away, since a card in a hand is owned by that hand's player, CR 108.3);
+`.cast(fromZone = null)` / `.notCast(fromZone = null)` (a spell on the stack that was / wasn't cast —
+from a specific zone when `fromZone` is set, at all when it is null — `StatePredicate.WasCast(fromZone)`,
+reading `SpellOnStackComponent.castFromZone`, which a copy put onto the stack never has (CR 707.10) and
+a cast copy does (CR 707.12); e.g. `TargetFilter.SpellOnStack.notCast(Zone.HAND)` for "target spell that
+wasn't cast from its owner's hand" — Wash Away, since a card in a hand is owned by that hand's player,
+CR 108.3 — and `TargetFilter.SpellOnStack.youControl().notCast()` for "target spell you control that
+wasn't cast" — Errant, Street Artist);
 `.withSingleTarget()` (a spell or ability on the stack with exactly one *chosen* target — `StatePredicate.HasSingleTarget`;
 `TargetFilter.InstantOrSorcerySpellOnStack.withSingleTarget()` is "target instant or sorcery spell with a single
 target", Hydroelectric Specimen. It counts chosen targets, legal or not, so a spell with two targets never

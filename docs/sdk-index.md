@@ -1703,8 +1703,8 @@ Families:
 - `StatePredicate.PutIntoGraveyardThisTurn` — This card is currently in a graveyard *and* was put there during the current turn, from any zone — the battlefield, but equally the library (mill), the hand (discard), or the stack (a countered or…
 - `StatePredicate.ReceivedCounterThisTurn(counterType: CounterType?, placedByController: Boolean)` — One or more counters were put on this permanent during the current turn — the filter-level form of "…that you've put one or more +1/+1 counters on this turn".
 - `StatePredicate.SharesNameWithSpellCastThisTurn` — Shares a name with a spell cast by any player during the current turn.
+- `StatePredicate.WasCast(fromZone: Zone?)` — A spell on the stack that was cast — from fromZone when it is set, from anywhere when it is null.
 - `StatePredicate.WasCastForWarp` — Permanent on the battlefield that was cast for its warp cost (CR 702.185).
-- `StatePredicate.WasCastFromZone(zone: Zone)` — A spell on the stack whose cast-origin zone is zone — reads the `SpellOnStackComponent.castFromZone` the engine stamps when the spell is put on the stack (HAND for a normal cast; GRAVEYARD/EXILE/CO…
 - `StatePredicate.WasDealtDamageBySourceThisTurn` — Was dealt damage this turn by the effect's *source* — the recipient-side view of the source's per-turn damaged-creature record (the same record `Triggers` "a creature dealt damage by this creature…
 - `StatePredicate.WasDealtDamageThisTurn(damageType: DamageType)` — Has been dealt damage this turn.
 

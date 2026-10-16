@@ -1067,17 +1067,20 @@ interface ObjectFilterBuilder<out Self> {
     fun castForWarp() = withStatePredicate(StatePredicate.WasCastForWarp)
 
     /**
-     * Must be a spell on the stack cast from [zone] — reads the engine's stamped
-     * `SpellOnStackComponent.castFromZone`. See [StatePredicate.WasCastFromZone].
+     * Must be a spell on the stack that was cast — from [fromZone] when set, from anywhere when
+     * null. Reads the engine's stamped `SpellOnStackComponent.castFromZone`; a copy put onto the
+     * stack wasn't cast (CR 707.10). See [StatePredicate.WasCast].
      */
-    fun castFromZone(zone: Zone) = withStatePredicate(StatePredicate.WasCastFromZone(zone))
+    fun cast(fromZone: Zone? = null) = withStatePredicate(StatePredicate.WasCast(fromZone))
 
     /**
-     * Must be a spell on the stack that was *not* cast from [zone]. Backs Wash Away's
-     * "counter target spell that wasn't cast from its owner's hand" (`Zone.HAND`).
+     * Must be a spell on the stack that was *not* cast — not from [fromZone] when set, not at all
+     * (a copy) when null. Backs Wash Away's "counter target spell that wasn't cast from its
+     * owner's hand" (`Zone.HAND`) and Errant, Street Artist's "copy target spell you control that
+     * wasn't cast" (no zone).
      */
-    fun notCastFromZone(zone: Zone) =
-        withStatePredicate(StatePredicate.Not(StatePredicate.WasCastFromZone(zone)))
+    fun notCast(fromZone: Zone? = null) =
+        withStatePredicate(StatePredicate.Not(StatePredicate.WasCast(fromZone)))
 
     /**
      * Must be a spell or ability on the stack with exactly one chosen target — "target instant or

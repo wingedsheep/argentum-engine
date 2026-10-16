@@ -695,6 +695,14 @@ internal class SpellCaster(
                 return Zone.GRAVEYARD
             }
         }
+        // Another player's hand or library (Sen Triplets casts from an opponent's hand). A cast
+        // spell always has a cast origin: `StatePredicate.WasCast` reads a null one as a copy that
+        // was never cast (CR 707.10).
+        for (pid in state.turnOrder) {
+            for (zone in listOf(Zone.HAND, Zone.LIBRARY)) {
+                if (cardId in state.getZone(ZoneKey(pid, zone))) return zone
+            }
+        }
         return null
     }
 
