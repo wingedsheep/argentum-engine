@@ -91,6 +91,88 @@
     ]
 }
 
+// Bloodforged Battle-Axe
+{
+    "name": "Bloodforged Battle-Axe",
+    "manaCost": "{1}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Equipped creature gets +2/+0.\nWhenever equipped creature deals combat damage to a player, create a token that's a copy of this Equipment.\nEquip {2}",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Bloodforged Battle-Axe:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "binding": "ATTACHED",
+                "effect": "CreateTokenCopyOfSource",
+                "descriptionOverride": "Whenever equipped creature deals combat damage to a player, create a token that's a copy of this Equipment."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Bloodforged Battle-Axe:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 2,
+                "toughnessBonus": 0
+            }
+        ]
+    },
+    "equipCost": "{2}",
+    "metadata": {
+        "collectorNumber": "50",
+        "rarity": "RARE",
+        "artist": "Alayna Danner",
+        "flavorText": "Spilled blood always begets more of the same.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/7/b7f22249-579f-433d-9422-29d4e82ddc49.jpg?1783935932",
+        "rulings": [
+            {
+                "date": "2017-08-25",
+                "text": "The token enters the battlefield unattached."
+            },
+            {
+                "date": "2017-08-25",
+                "text": "The token has all three of Bloodforged Battle-Axe's abilities, including the one that creates more tokens."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Edgar Markov
 {
     "name": "Edgar Markov",

@@ -1,3 +1,58 @@
+// All That Glitters
+{
+    "name": "All That Glitters",
+    "manaCost": "{1}{W}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature gets +1/+1 for each artifact and/or enchantment you control.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantDynamicStats",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                },
+                "powerBonus": {
+                    "type": "AggregateBattlefield",
+                    "player": "You",
+                    "filter": "artifact|enchantment"
+                },
+                "toughnessBonus": {
+                    "type": "AggregateBattlefield",
+                    "player": "You",
+                    "filter": "artifact|enchantment"
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "2",
+        "rarity": "UNCOMMON",
+        "artist": "Iain McCaig",
+        "flavorText": "A faerie's glee at her trove quickly fades to contentment, then to boredom, then to an urge to steal more.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/9/d9713032-2956-4564-b5f5-2dd16245a4e6.jpg?1783932680",
+        "rulings": [
+            {
+                "date": "2019-10-04",
+                "text": "A permanent that's both an artifact and an enchantment is counted only once."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "You still control Auras that you put onto the battlefield attached to a permanent you don't control."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Arcane Signet
 {
     "name": "Arcane Signet",

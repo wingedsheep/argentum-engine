@@ -2,7 +2,7 @@
 
 **Set Size:** 336 cards
 **Release Date:** March 8, 2024
-**Implemented:** 185 / 336
+**Implemented:** 217 / 336
 | Section    | Total | Done |
 |------------|-------|------|
 | Extras     | 336   | 185  |
@@ -18,9 +18,9 @@
 - [x] Abundant Growth
 - [x] Acquired Mutation
 - [x] Agent Frank Horrigan
-- [ ] Agility Bobblehead
-- [ ] All That Glitters
-- [ ] Almost Perfect
+- [x] Agility Bobblehead
+- [x] All That Glitters
+- [x] Almost Perfect
 - [x] Alpha Deathclaw
 - [x] Anguished Unmaking
 - [ ] Animal Friend
@@ -45,7 +45,7 @@
 - [x] Black Market
 - [x] Blasphemous Act
 - [x] Bloatfly Swarm
-- [ ] Bloodforged Battle-Axe
+- [x] Bloodforged Battle-Axe
 - [ ] Boomer Scrapper
 - [ ] Bottle-Cap Blast
 - [x] Branching Evolution
@@ -65,7 +65,7 @@
 - [x] Cass, Hand of Vengeance
 - [x] Casualties of War
 - [ ] Cathedral Acolyte
-- [ ] Champion's Helm
+- [x] Champion's Helm
 - [x] Chaos Warp
 - [ ] Charisma Bobblehead
 - [x] Cinder Glade
@@ -98,7 +98,7 @@
 - [ ] Elder Arthur Maxson
 - [ ] Elder Owyn Lyons
 - [ ] Electrosiphon
-- [ ] Endurance Bobblehead
+- [x] Endurance Bobblehead
 - [x] Entrapment Maneuver
 - [x] Everflowing Chalice
 - [x] Evolving Wilds
@@ -144,7 +144,7 @@
 - [x] Infesting Radroach
 - [x] Inspiring Call
 - [x] Intangible Virtue
-- [ ] Intelligence Bobblehead
+- [x] Intelligence Bobblehead
 - [ ] Inventory Management
 - [x] Irrigated Farmland
 - [ ] Island
@@ -152,7 +152,7 @@
 - [ ] James, Wandering Dad
 - [x] Jason Bright, Glowing Prophet
 - [x] Jungle Shrine
-- [ ] Junk Jet
+- [x] Junk Jet
 - [ ] Junktown
 - [x] Keeper of the Accord
 - [ ] Kellogg, Dangerous Mind
@@ -208,16 +208,16 @@
 - [x] Panharmonicon
 - [x] Path of Ancestry
 - [x] Path to Exile
-- [ ] Perception Bobblehead
-- [ ] Pip-Boy 3000
+- [x] Perception Bobblehead
+- [x] Pip-Boy 3000
 - [ ] Piper Wright, Publick Reporter
 - [ ] Pitiless Plunderer
 - [ ] Plains
-- [ ] Plasma Caster
+- [x] Plasma Caster
 - [x] Powder Ganger
-- [ ] Power Fist
+- [x] Power Fist
 - [x] Prairie Stream
-- [ ] Pre-War Formalwear
+- [x] Pre-War Formalwear
 - [ ] Preston Garvey, Minuteman
 - [x] Puresteel Paladin
 - [x] Putrefy
@@ -261,9 +261,9 @@
 - [ ] Spire of Industry
 - [x] Squirrel Nest
 - [x] Steel Overseer
-- [ ] Sticky Fingers
+- [x] Sticky Fingers
 - [x] Stolen Strategy
-- [ ] Strength Bobblehead
+- [x] Strength Bobblehead
 - [ ] Strong Back
 - [ ] Strong, the Brutish Thespian
 - [x] Struggle for Project Purity
