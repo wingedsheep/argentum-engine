@@ -33,7 +33,7 @@ class CombatExecutors(
         SwapBlockingAssignmentsExecutor(cardRegistry, predicateEvaluator = amountEvaluator.predicates),
         OpponentGuessesTopCardKindExecutor(),
         PlayerGuessesConditionExecutor(),
-        MarkMustAttackThisTurnExecutor(),
+        MarkMustAttackExecutor(),
         MarkMustBlockThisTurnExecutor(),
         GoadExecutor(),
         CanAttackDespiteDefenderThisTurnExecutor(),

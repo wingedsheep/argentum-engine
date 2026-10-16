@@ -40,6 +40,7 @@ import com.wingedsheep.sdk.scripting.CanBlockAdditionalForCreatureGroup
 import com.wingedsheep.sdk.scripting.MustBeBlocked
 import com.wingedsheep.sdk.scripting.MustBlock
 import com.wingedsheep.sdk.scripting.MustAttack
+import com.wingedsheep.sdk.scripting.MustAttackDefender
 import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
 import com.wingedsheep.sdk.scripting.ZoneScopedStaticAbility
 import com.wingedsheep.sdk.scripting.CompositeStaticAbility
@@ -861,11 +862,18 @@ class StaticAbilityHandler(
                     affectsFilter = convertGroupFilter(ability.filter)
                 )
             }
-            is MustAttack -> {
-                ContinuousEffectData(
-                    modification = if (ability.playersOnly) Modification.SetMustAttackPlayer else Modification.SetMustAttack,
+            is MustAttack -> when (ability.defender) {
+                MustAttackDefender.Any -> ContinuousEffectData(
+                    modification = Modification.SetMustAttack,
                     affectsFilter = convertGroupFilter(ability.filter)
                 )
+                MustAttackDefender.APlayer -> ContinuousEffectData(
+                    modification = Modification.SetMustAttackPlayer,
+                    affectsFilter = convertGroupFilter(ability.filter)
+                )
+                // Whether it binds a creature depends on who is declaring attackers, so it is
+                // enforced at declaration (DirectedAttackRequirements), never projected.
+                MustAttackDefender.AttachedPermanentController -> null
             }
             is ControlEnchantedPermanent -> {
                 // "You control enchanted permanent" - Layer 2 control-changing effect

@@ -8324,7 +8324,7 @@
                     "type": "Composite",
                     "effects": [
                         {
-                            "type": "MarkMustAttackThisTurn",
+                            "type": "MarkMustAttack",
                             "target": {
                                 "type": "BoundVariable",
                                 "name": "t0"
@@ -10948,7 +10948,7 @@
                         }
                     },
                     "body": {
-                        "type": "MarkMustAttackThisTurn",
+                        "type": "MarkMustAttack",
                         "target": "IterationEntity"
                     }
                 },

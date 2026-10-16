@@ -70,7 +70,8 @@ import com.wingedsheep.sdk.scripting.effects.CantAttackGroupEffect
 import com.wingedsheep.sdk.scripting.effects.CantAttackEffect
 import com.wingedsheep.sdk.scripting.effects.CantBlockEffect
 import com.wingedsheep.sdk.scripting.effects.GoadEffect
-import com.wingedsheep.sdk.scripting.effects.MarkMustAttackThisTurnEffect
+import com.wingedsheep.sdk.scripting.effects.MarkMustAttackEffect
+import com.wingedsheep.sdk.scripting.effects.MustAttackWindow
 import com.wingedsheep.sdk.scripting.effects.MarkMustBlockThisTurnEffect
 import com.wingedsheep.sdk.scripting.effects.RemoveSuspectedEffect
 import com.wingedsheep.sdk.scripting.effects.SuspectEffect
@@ -5806,7 +5807,14 @@ object Effects {
 
     /** Mark a creature as required to attack this turn if able. */
     fun MarkMustAttackThisTurn(target: EffectTarget): Effect =
-        MarkMustAttackThisTurnEffect(target)
+        MarkMustAttackEffect(target)
+
+    /**
+     * "That creature attacks during its controller's next combat phase if able" (Sizzling
+     * Soloist) — the requirement waits for that player's next combat, across turns.
+     */
+    fun MarkMustAttackNextCombat(target: EffectTarget): Effect =
+        MarkMustAttackEffect(target, MustAttackWindow.ControllersNextCombat)
 
     /**
      * Mark a creature as required to block this turn if able ("target creature blocks this turn if

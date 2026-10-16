@@ -11578,7 +11578,7 @@
                     "type": "GrantStaticAbility",
                     "ability": {
                         "type": "MustAttack",
-                        "playersOnly": true
+                        "defender": "APlayer"
                     },
                     "target": {
                         "type": "BoundVariable",

@@ -13,6 +13,7 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.MustAttack
+import com.wingedsheep.sdk.scripting.MustAttackDefender
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
@@ -28,7 +29,7 @@ import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
  *    graveyard. Create a token that's a copy of it. That token gains haste. Exile it at the
  *    beginning of the next end step.
  *
- * The first +1 grants `MustAttack(playersOnly = true)` until Nahiri's controller's next turn: the
+ * The first +1 grants `MustAttack(defender = MustAttackDefender.APlayer)` until Nahiri's controller's next turn: the
  * creature must attack each combat, and attacking a planeswalker or battle doesn't satisfy it while
  * a player could be attacked. The 0's mana-value cap is live — the target is re-checked against
  * Nahiri's current loyalty on resolution, per the ruling.
@@ -47,7 +48,7 @@ val NahiriTheUnforgiving = card("Nahiri, the Unforgiving") {
 
     loyaltyAbility(+1) {
         val creature = target(TargetFilter.Creature, optional = true)
-        effect = Effects.GrantStaticAbility(MustAttack(playersOnly = true), creature, Duration.UntilYourNextTurn)
+        effect = Effects.GrantStaticAbility(MustAttack(defender = MustAttackDefender.APlayer), creature, Duration.UntilYourNextTurn)
     }
 
     loyaltyAbility(+1) {

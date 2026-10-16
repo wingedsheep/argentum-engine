@@ -934,7 +934,7 @@ Families:
 - `MarkEnduringReturnEffect` — Stamps the source permanent as having returned via its Enduring ability (Duskmourn Glimmer cycle).
 - `MarkExileControllerGraveyardOnDeathEffect(target: EffectTarget)` — Mark target creature so that when it dies this turn, its controller's graveyard is exiled.
 - `MarkExileOnDeathEffect(target: EffectTarget)` — Mark target creature so that if it would die this turn, it goes to exile instead of graveyard.
-- `MarkMustAttackThisTurnEffect(target: EffectTarget)` — Mark a creature as "must attack this turn if able." Adds MustAttackThisTurnComponent to the target entity.
+- `MarkMustAttackEffect(target: EffectTarget, window: MustAttackWindow)` — Mark a creature as required to attack if able, for the window named — "target creature attacks this turn if able" (Walking Desecration, via `ForEachInGroup` over a group) or "that creature attacks…
 - `MarkMustBlockThisTurnEffect(target: EffectTarget)` — Mark a creature as "blocks this turn if able" (Culvert Ambusher).
 - `MarkSpellExileWithCountersEffect(target: EffectTarget, counterType: CounterType, count: Int)` — Mark a spell on the stack so that, when it resolves, it is exiled with the specified counters on it instead of being put into its owner's graveyard.
 - `MarkSpellPlotOnResolveEffect(target: EffectTarget)` — Mark a spell on the stack so that, when it resolves, it is exiled instead of put into its owner's graveyard and **becomes plotted** (CR 718).
@@ -1846,7 +1846,7 @@ Families:
 - `ModifyStats(powerBonus: Int, toughnessBonus: Int, filter: GroupFilter)` — Modifies power/toughness on a filtered set of permanents.
 - `ModifyUnlockCost(target: UnlockCostTarget, modification: CostModification)` — Static ability that modifies the cost of the **door-unlock** special action (CR 709.5e).
 - `MultiplyManaOnSourceTap(sourceFilter: GameObjectFilter, multiplier: Int)` — Multiplies the mana a permanent matching sourceFilter produces when it is **tapped** for mana: "it produces multiplier times as much of that mana instead".
-- `MustAttack(filter: GroupFilter, playersOnly: Boolean)` — Forces the affected permanents to attack each combat if able.
+- `MustAttack(filter: GroupFilter, defender: MustAttackDefender)` — Forces the affected permanents to attack each combat if able.
 - `MustBeBlocked(allCreatures: Boolean, filter: GroupFilter?)` — Static counterpart of com.wingedsheep.sdk.scripting.effects.MustBeBlockedEffect: the source creature must be blocked while this ability is active.
 - `MustBlock(filter: GroupFilter)` — Forces the affected permanents to block each combat if able.
 - `MustBlockEachAttacker(filter: GroupFilter)` — Each attacking creature creates a separate blocking requirement for matching blockers.

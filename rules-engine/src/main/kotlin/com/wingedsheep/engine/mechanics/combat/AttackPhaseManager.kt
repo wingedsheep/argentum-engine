@@ -10,6 +10,7 @@ import com.wingedsheep.engine.state.components.combat.AttackedThisCombatComponen
 import com.wingedsheep.engine.state.components.combat.AttackersDeclaredThisCombatComponent
 import com.wingedsheep.engine.state.components.combat.AttackersDeclaredThisTurnComponent
 import com.wingedsheep.engine.state.components.combat.MustAttackPlayerComponent
+import com.wingedsheep.engine.state.components.combat.MustAttackNextCombatComponent
 import com.wingedsheep.engine.state.components.combat.MustAttackThisTurnComponent
 import com.wingedsheep.engine.state.components.combat.PlayerAttackedThisTurnComponent
 import com.wingedsheep.engine.state.components.combat.PlayerAttackersThisTurnComponent
@@ -18,6 +19,7 @@ import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.identity.PlayerComponent
+import com.wingedsheep.engine.state.ComponentContainer
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.engine.mechanics.combat.rules.AttackCheckContext
 import com.wingedsheep.engine.mechanics.combat.rules.AttackDefenderRule
@@ -31,6 +33,7 @@ import com.wingedsheep.sdk.scripting.ExertAsItAttacks
 import com.wingedsheep.engine.state.components.battlefield.ExertedComponent
 import com.wingedsheep.engine.state.components.battlefield.ExertedThisTurnComponent
 import com.wingedsheep.sdk.scripting.MustAttack
+import com.wingedsheep.sdk.scripting.MustAttackDefender
 import com.wingedsheep.sdk.scripting.filters.unified.Scope
 import com.wingedsheep.engine.mechanics.battle.Battles
 import com.wingedsheep.engine.handlers.PredicateEvaluator
@@ -154,6 +157,14 @@ internal class AttackPhaseManager(
         )
         if (mustAttackPlayerValidation != null) {
             return ExecutionResult.error(state, mustAttackPlayerValidation)
+        }
+
+        // Check requirements naming the player to attack (Public Enemy)
+        val directedValidation = validateDirectedMustAttackRequirements(
+            state, attackingPlayer, attackers, projected, opponents
+        )
+        if (directedValidation != null) {
+            return ExecutionResult.error(state, directedValidation)
         }
 
         // Check goaded requirements (CR 701.15b–c)
@@ -896,7 +907,7 @@ internal class AttackPhaseManager(
 
         for (attackerId in validAttackers) {
             val container = state.getEntity(attackerId) ?: continue
-            if (!container.has<MustAttackThisTurnComponent>()) continue
+            if (!hasMarkedAttackRequirement(container)) continue
 
             if (attackerId !in attackers.keys) {
                 val cardName = container.get<CardComponent>()?.name ?: "Creature"
@@ -905,6 +916,66 @@ internal class AttackPhaseManager(
         }
 
         return null
+    }
+
+    /**
+     * A requirement a resolved effect put on the creature itself: "attacks this turn if able"
+     * (Walking Desecration), or "attacks during its controller's next combat phase if able"
+     * (Sizzling Soloist) unless it is waiting out a combat whose attackers were already declared.
+     */
+    private fun hasMarkedAttackRequirement(container: ComponentContainer): Boolean =
+        container.has<MustAttackThisTurnComponent>() ||
+            container.get<MustAttackNextCombatComponent>()?.waitsOutCurrentCombat == false
+
+    /**
+     * Validate requirements naming the player to attack — "All creatures attack enchanted
+     * creature's controller each combat if able" (Public Enemy). A creature bound by one
+     * ([bindingDirectedDefenders]) must attack, and must attack one of the players it names: a
+     * player, not their planeswalker or battle.
+     */
+    private fun validateDirectedMustAttackRequirements(
+        state: GameState,
+        attackingPlayer: EntityId,
+        attackers: Map<EntityId, EntityId>,
+        projected: ProjectedState,
+        opponents: List<EntityId>
+    ): String? {
+        val directed = DirectedAttackRequirements(state, cardRegistry, predicateEvaluator)
+        val validAttackers by lazy { getValidAttackers(state, attackingPlayer) }
+        val goadRules by lazy { GoadRules(state, cardRegistry, predicateEvaluator) }
+        for (attackerId in getValidAttackers(state, attackingPlayer)) {
+            val bound = bindingDirectedDefenders(
+                state, projected, attackingPlayer, attackerId, directed, opponents, validAttackers, goadRules
+            )
+            if (bound.isEmpty()) continue
+            if (attackers[attackerId] in bound) continue
+            val cardName = state.getEntity(attackerId)?.get<CardComponent>()?.name ?: "Creature"
+            val playerName = bound.singleOrNull()?.let { state.getEntity(it)?.get<PlayerComponent>()?.name }
+                ?: "the player it's required to attack"
+            return "$cardName must attack $playerName this combat if able"
+        }
+        return null
+    }
+
+    /**
+     * The players a directed requirement names for [attackerId] that it could attack at no cost
+     * and without breaking its goad ([canAttackFreely]) — the "if able" of CR 508.1d. Empty means
+     * no directed requirement binds it: none names an opponent, or it can't attack the one named
+     * (a creature the named player controls is never bound — that player isn't its opponent).
+     */
+    private fun bindingDirectedDefenders(
+        state: GameState,
+        projected: ProjectedState,
+        attackingPlayer: EntityId,
+        attackerId: EntityId,
+        directed: DirectedAttackRequirements,
+        opponents: List<EntityId>,
+        validAttackers: List<EntityId>,
+        goadRules: GoadRules
+    ): Set<EntityId> = directed.namedDefendersOf(attackerId).filterTo(mutableSetOf()) { player ->
+        player in opponents && canAttackFreely(
+            state, projected, attackingPlayer, attackerId, listOf(player), player, opponents, validAttackers, goadRules
+        )
     }
 
     /**
@@ -1079,13 +1150,14 @@ internal class AttackPhaseManager(
         if (state.projectedState.mustAttack(attackerId)) return true
         return state.grantedStaticAbilities.any {
             it.entityId == attackerId && it.ability is MustAttack &&
+                it.ability.defender != MustAttackDefender.AttachedPermanentController &&
                 it.ability.filter.scope is Scope.Self
         }
     }
 
     /**
      * Whether [attackerId]'s must-attack requirement can only be met by attacking a *player*
-     * ([MustAttack.playersOnly]) — projected from a printed static, or granted at runtime (Nahiri,
+     * ([MustAttackDefender.APlayer]) — projected from a printed static, or granted at runtime (Nahiri,
      * the Unforgiving's +1: "until your next turn, up to one target creature attacks a player each
      * combat if able").
      */
@@ -1093,7 +1165,7 @@ internal class AttackPhaseManager(
         if (state.projectedState.mustAttackPlayer(attackerId)) return true
         return state.grantedStaticAbilities.any {
             it.entityId == attackerId && it.ability is MustAttack &&
-                it.ability.playersOnly && it.ability.filter.scope is Scope.Self
+                it.ability.defender == MustAttackDefender.APlayer && it.ability.filter.scope is Scope.Self
         }
     }
 
@@ -1183,10 +1255,10 @@ internal class AttackPhaseManager(
             mandatory.addAll(validAttackers)
         }
 
-        // 2. MustAttackThisTurnComponent (Walking Desecration) — individual creatures
+        // 2. A requirement marked on the creature (Walking Desecration, Sizzling Soloist)
         for (attackerId in validAttackers) {
             val container = state.getEntity(attackerId) ?: continue
-            if (container.has<MustAttackThisTurnComponent>()) {
+            if (hasMarkedAttackRequirement(container)) {
                 mandatory.add(attackerId)
             }
         }
@@ -1203,6 +1275,18 @@ internal class AttackPhaseManager(
         val goadRules = GoadRules(state, cardRegistry, predicateEvaluator)
         for (attackerId in validAttackers) {
             if (goadRules.isGoaded(attackerId)) {
+                mandatory.add(attackerId)
+            }
+        }
+
+        // 5. A requirement naming the player to attack (Public Enemy), where it binds
+        val directed = DirectedAttackRequirements(state, cardRegistry, predicateEvaluator)
+        val opponents = state.getOpponents(attackingPlayer)
+        for (attackerId in validAttackers) {
+            if (attackerId in mandatory) continue
+            if (bindingDirectedDefenders(
+                    state, state.projectedState, attackingPlayer, attackerId, directed, opponents, validAttackers, goadRules
+                ).isNotEmpty()) {
                 mandatory.add(attackerId)
             }
         }

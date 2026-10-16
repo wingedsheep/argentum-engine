@@ -252,6 +252,20 @@ data class MustAttackPlayerComponent(
 data object MustAttackThisTurnComponent : Component
 
 /**
+ * Marks a creature that attacks during its controller's next combat phase if able (Sizzling
+ * Soloist) — [com.wingedsheep.sdk.scripting.effects.MustAttackWindow.ControllersNextCombat].
+ * Enforced like [MustAttackThisTurnComponent] while its controller declares attackers, and
+ * removed as that player's combat phase ends (`CombatManager.endCombat`), whether or not the
+ * creature could attack; it survives turn boundaries until then.
+ *
+ * @property waitsOutCurrentCombat set when the mark lands during a combat phase of the
+ *   creature's controller whose attackers are already declared: that combat isn't "next", so
+ *   its end only clears this flag.
+ */
+@Serializable
+data class MustAttackNextCombatComponent(val waitsOutCurrentCombat: Boolean = false) : Component
+
+/**
  * Marker component letting a creature attack this turn as though it didn't have defender.
  *
  * Added by [com.wingedsheep.sdk.scripting.effects.CanAttackDespiteDefenderThisTurnEffect] (e.g. Krotiq

@@ -8,12 +8,13 @@ import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.scripting.MustAttack
+import com.wingedsheep.sdk.scripting.MustAttackDefender
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 
 /**
- * `MustAttack(playersOnly = true)` — "attacks a player each combat if able". The printed form is
+ * `MustAttack(defender = MustAttackDefender.APlayer)` — "attacks a player each combat if able". The printed form is
  * projected (`mustAttackPlayer`), and the declaration validator rejects both not attacking and
  * attacking a planeswalker while the opponent player is a legal defender.
  */
@@ -25,7 +26,7 @@ class MustAttackAPlayerTest : FunSpec({
         power = 2
         toughness = 2
         oracleText = "This creature attacks a player each combat if able."
-        staticAbility { ability = MustAttack(playersOnly = true) }
+        staticAbility { ability = MustAttack(defender = MustAttackDefender.APlayer) }
     }
 
     val walker = card("Test Walker") {

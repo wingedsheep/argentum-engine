@@ -61,22 +61,53 @@ data class CantAttackYou(
  * Use [GroupFilter.source] for "this creature attacks each combat", or any battlefield
  * filter for "All creatures attack each combat if able" effects (e.g. Grand Melee).
  *
- * @property playersOnly "attacks **a player** each combat if able" (Nahiri, the Unforgiving): the
- *   requirement is only met by attacking a player, so attacking a planeswalker or battle is an
- *   error while some player could legally be attacked (CR 508.1d — maximize requirements obeyed).
+ * @property defender which defender the requirement points at — see [MustAttackDefender]. The
+ *   default, [MustAttackDefender.Any], is met by attacking anything.
  */
 @SerialName("MustAttack")
 @Serializable
 data class MustAttack(
     val filter: GroupFilter = GroupFilter.source(),
-    val playersOnly: Boolean = false
+    val defender: MustAttackDefender = MustAttackDefender.Any
 ) : StaticAbility {
     override val description: String =
-        "${filter.description} attack${if (playersOnly) " a player" else ""} each combat if able"
+        "${filter.description} attack${defender.phrase} each combat if able"
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
         val newFilter = filter.applyTextReplacement(replacer)
         return if (newFilter !== filter) copy(filter = newFilter) else this
     }
+}
+
+/**
+ * Whom a [MustAttack] requirement says the creature attacks. A requirement naming a defender is
+ * obeyed only by attacking that defender, so attacking another is an error while the named one
+ * could legally be attacked (CR 508.1d — obey as many requirements as possible); when it can't
+ * be, the creature is under no requirement from this ability at all.
+ */
+@Serializable
+enum class MustAttackDefender(
+    /** The words the requirement adds after "attack": "" for [Any]. */
+    val phrase: String
+) {
+    /** "attacks each combat if able" — any player, planeswalker or battle obeys it. */
+    Any(""),
+
+    /**
+     * "attacks **a player** each combat if able" (Nahiri, the Unforgiving): attacking a
+     * planeswalker or battle is an error while some player could legally be attacked. Mirrors the
+     * player-only half of goad (CR 701.15b).
+     */
+    APlayer(" a player"),
+
+    /**
+     * "All creatures attack **enchanted creature's controller** each combat if able" (Public
+     * Enemy): the named player is the projected controller of the permanent the ability's source
+     * is attached to, read whenever attackers are declared. A creature that player controls can't
+     * attack them, so it is under no requirement; neither is a creature that can't legally attack
+     * that player. Unlike [Any] and [APlayer], the requirement is enforced at declaration rather
+     * than projected, because whether it binds a creature depends on who is declaring.
+     */
+    AttachedPermanentController(" enchanted creature's controller")
 }
 
 /**

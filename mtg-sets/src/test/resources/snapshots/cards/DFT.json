@@ -8428,7 +8428,7 @@
                             "imageUri": "https://cards.scryfall.io/normal/front/7/0/7072dea6-0d99-47fa-a83d-c8607e6a4bbd.jpg?1783907679"
                         },
                         {
-                            "type": "MarkMustAttackThisTurn",
+                            "type": "MarkMustAttack",
                             "target": {
                                 "type": "PipelineTarget",
                                 "collectionName": "createdTokens"

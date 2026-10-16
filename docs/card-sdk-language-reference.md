@@ -1366,7 +1366,7 @@ serialized shape; the facade for each is:
 | `LoseLifeEffect` | `Effects.LoseLife` |
 | `MarkExileControllerGraveyardOnDeathEffect` | `Effects.MarkExileControllerGraveyardOnDeath` |
 | `MarkExileOnDeathEffect` | `Effects.MarkExileOnDeath` |
-| `MarkMustAttackThisTurnEffect` | `Effects.MarkMustAttackThisTurn` |
+| `MarkMustAttackEffect` | `Effects.MarkMustAttackThisTurn`, `Effects.MarkMustAttackNextCombat` |
 | `MarkSpellExileWithCountersEffect` | `Effects.MarkSpellExileWithCounters` |
 | `ModalEffect` | `Effects.Modal` |
 | `ModifyStatsEffect` | `Effects.ModifyStats` |
@@ -3090,11 +3090,16 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   `AttackPhaseManager`, the mandatory-attacker pre-selection, and the `Goaded` badge — goes through
   it. Unlike the designation it has no "until your next turn" expiry; it ends with the ability. A
   face-down or ability-stripped holder goads nothing.
-- `Effects.MarkMustAttackThisTurn(target = ContextTarget(0))` (`MarkMustAttackThisTurnEffect`) —
-  require one creature to attack this turn if able. The transient marker is enforced by
-  `AttackPhaseManager` and removed during cleanup. It composes with the token pipeline for “that
+- `Effects.MarkMustAttackThisTurn(target = ContextTarget(0))` (`MarkMustAttackEffect`, window
+  `MustAttackWindow.ThisTurn`) — require one creature to attack this turn if able. The transient marker is
+  enforced by `AttackPhaseManager` and removed during cleanup. It composes with the token pipeline for “that
   token attacks this combat if able”: create the token, then target
   `PipelineTarget(CREATED_TOKENS, 0)` with this facade.
+- `Effects.MarkMustAttackNextCombat(target)` (`MarkMustAttackEffect`, window
+  `MustAttackWindow.ControllersNextCombat`) — "that creature attacks during its controller's next combat
+  phase if able" (Sizzling Soloist). The mark waits across turns for that player's next combat phase, binds
+  its declaration, and ends with it whether or not the creature could attack. Landing after that player's
+  attackers are already declared this combat, it waits for the following one.
 - `Effects.MarkMustBlockThisTurn(target = ContextTarget(0))` (`MarkMustBlockThisTurnEffect`) —
   "target creature blocks this turn if able". Adds a `Layer.ABILITY` floating
   `SerializableModification.SetMustBlock` for `Duration.EndOfTurn`, i.e. the same projected
@@ -9433,10 +9438,16 @@ staticAbility {
   satisfies every stored cap rather than selecting only this lower bound. Untaps outside
   the active player's untap step, including Seedborn Muse's other-player untaps, are unrestricted.
 
-- `MustAttack(filter = source(), playersOnly = false)` — matching creatures attack each combat if able
-  (Valley Dasher, Grand Melee). `playersOnly = true` is "attacks **a player** each combat if able": attacking
-  a planeswalker or battle is rejected while some player is a legal defender for it. Grant it for a
-  duration with `Effects.GrantStaticAbility(MustAttack(playersOnly = true), creature, Duration.UntilYourNextTurn)`
+- `MustAttack(filter = source(), defender = MustAttackDefender.Any)` — matching creatures attack each combat
+  if able (Valley Dasher, Grand Melee). `defender` names whom the requirement points at:
+  `MustAttackDefender.APlayer` is "attacks **a player** each combat if able": attacking
+  a planeswalker or battle is rejected while some player is a legal defender for it.
+  `MustAttackDefender.AttachedPermanentController` is "All creatures attack **enchanted creature's
+  controller** each combat if able" (Public Enemy, `MustAttack(GroupFilter.AllCreatures, defender =
+  MustAttackDefender.AttachedPermanentController)`): the player is the host's projected controller, read at
+  declaration; only attacking that player (not their planeswalker) obeys it, and a creature that player
+  controls, or one that can't attack them at no cost, is under no requirement. Grant it for a
+  duration with `Effects.GrantStaticAbility(MustAttack(defender = MustAttackDefender.APlayer), creature, Duration.UntilYourNextTurn)`
   (Nahiri, the Unforgiving) — a granted static's `UntilYourNextTurn` ends at the start of the *granting*
   player's next turn, even when an opponent controls the creature.
 

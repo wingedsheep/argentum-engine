@@ -4149,6 +4149,59 @@
     ]
 }
 
+// Public Enemy
+{
+    "name": "Public Enemy",
+    "manaCost": "{2}{U}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nAll creatures attack enchanted creature's controller each combat if able.\nWhen enchanted creature dies, draw a card.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Public Enemy:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "MustAttack",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "defender": "AttachedPermanentController"
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "55",
+        "rarity": "UNCOMMON",
+        "artist": "Dominik Mayer",
+        "flavorText": "Every Halo smuggler walks a razor's edge between untold riches and sudden disaster.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/e/0e69ba61-8c16-4112-9601-fac978b88667.jpg?1783923141"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Pyre-Sledge Arsonist
 {
     "name": "Pyre-Sledge Arsonist",
@@ -4903,6 +4956,79 @@
         "artist": "Steve Argyle",
         "flavorText": "\"Well, I guess stealth's out of the question.\"",
         "imageUri": "https://cards.scryfall.io/normal/front/a/3/a3ec95f6-88c8-4daf-882f-8b4bc73452c3.jpg?1783923112"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Sizzling Soloist
+{
+    "name": "Sizzling Soloist",
+    "manaCost": "{3}{R}",
+    "typeLine": "Creature — Human Citizen",
+    "oracleText": "Alliance — Whenever another creature you control enters, target creature an opponent controls can't block this turn. If this is the second time this ability has resolved this turn, that creature attacks during its controller's next combat phase if able.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sizzling Soloist:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CantBlockTargetCreatures",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        "IncrementAbilityResolutionCount",
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "SourceAbilityResolvedNTimesThisTurn",
+                                    "count": 2
+                                }
+                            },
+                            "then": {
+                                "type": "MarkMustAttack",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "window": "ControllersNextCombat"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:opponent"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Alliance — Whenever another creature you control enters, target creature an opponent controls can't block this turn. If this is the second time this ability has resolved this turn, that creature attacks during its controller's next combat phase if able."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "123",
+        "rarity": "UNCOMMON",
+        "artist": "Véronique Meignaud",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/5/958dfd59-7dbd-45e0-b6e1-e432c78b6878.jpg?1783923111"
     },
     "colorIdentityOverride": [
         "RED"

@@ -5297,7 +5297,7 @@
                             }
                         },
                         "body": {
-                            "type": "MarkMustAttackThisTurn",
+                            "type": "MarkMustAttack",
                             "target": "IterationEntity"
                         }
                     },

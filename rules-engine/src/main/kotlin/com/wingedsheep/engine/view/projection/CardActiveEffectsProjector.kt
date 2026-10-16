@@ -526,6 +526,17 @@ internal class CardActiveEffectsProjector(
             )
         }
 
+        if (state.getEntity(entityId)?.has<MustAttackNextCombatComponent>() == true) {
+            effects.add(
+                ClientCardEffect(
+                    effectId = "must_attack_next_combat",
+                    name = "Must Attack",
+                    description = "This creature must attack during its controller's next combat if able",
+                    icon = "must-attack"
+                )
+            )
+        }
+
         // Goaded (CR 701.15), by a resolved goad or a Goaded static. Surfaces the standing
         // combat requirement on the creature so opposing combat decisions are obvious
         // without the player having to recall who goaded it.

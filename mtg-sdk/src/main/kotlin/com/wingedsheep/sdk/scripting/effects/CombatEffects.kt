@@ -612,25 +612,43 @@ data class RemoveFromCombatEffect(
 }
 
 /**
- * Mark a creature as "must attack this turn if able."
- * Adds MustAttackThisTurnComponent to the target entity.
+ * Mark a creature as required to attack if able, for the [window] named — "target creature
+ * attacks this turn if able" (Walking Desecration, via `ForEachInGroup` over a group) or "that
+ * creature attacks during its controller's next combat phase if able" (Sizzling Soloist).
  *
- * Used within ForEachInGroupEffect pipelines to mark groups of creatures.
+ * The requirement is on the creature, not on any effect source: it survives the source leaving
+ * the battlefield, and it doesn't care which defender the creature attacks.
  *
  * @property target The creature to mark (typically EffectTarget.IterationEntity within ForEachInGroup)
+ * @property window How long the requirement binds — see [MustAttackWindow].
  */
-@SerialName("MarkMustAttackThisTurn")
+@SerialName("MarkMustAttack")
 @Serializable
-data class MarkMustAttackThisTurnEffect(
-    val target: EffectTarget = EffectTarget.Self
+data class MarkMustAttackEffect(
+    val target: EffectTarget = EffectTarget.Self,
+    val window: MustAttackWindow = MustAttackWindow.ThisTurn
 ) : Effect {
-    override val description: String = "${target.description} attacks this turn if able"
+    override val description: String = "${target.description} attacks ${window.phrase} if able"
+}
+
+/** When a [MarkMustAttackEffect] requirement binds. */
+@Serializable
+enum class MustAttackWindow(val phrase: String) {
+    /** Every combat of the current turn; gone in the cleanup step. */
+    ThisTurn("this turn"),
+
+    /**
+     * The next combat phase of the creature's controller — the one in progress counts only if
+     * attackers haven't been declared in it yet. The requirement ends with that combat phase
+     * whether or not the creature could attack, and lasts across turns until it comes.
+     */
+    ControllersNextCombat("during its controller's next combat phase")
 }
 
 /**
  * Mark a creature as "blocks this turn if able" (Culvert Ambusher).
  *
- * The blocking mirror of [MarkMustAttackThisTurnEffect], and the *unrestricted* sibling of
+ * The blocking mirror of [MarkMustAttackEffect], and the *unrestricted* sibling of
  * [ForceBlockEffect]: this requires the creature to block **some** attacker, not a named one, and
  * the ability's source need not be attacking (or even be a creature). It is the one-shot,
  * turn-scoped form of the static [com.wingedsheep.sdk.scripting.MustBlock] (Grand Melee) — both

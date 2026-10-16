@@ -542,6 +542,8 @@ object ZoneMovementUtils {
             // object; one that leaves and returns is a new object with fresh tallies (CR 400.7).
             .without<com.wingedsheep.engine.state.components.battlefield.AbilityActivatedThisTurnComponent>()
             .without<com.wingedsheep.engine.state.components.battlefield.AbilityResolutionCountThisTurnComponent>()
+            // "Attacks during its controller's next combat phase" binds this object only (CR 400.7).
+            .without<com.wingedsheep.engine.state.components.combat.MustAttackNextCombatComponent>()
             // Exert (CR 701.43a) is a fact about the old object; a new one is unexerted.
             .without<com.wingedsheep.engine.state.components.battlefield.ExertedComponent>()
             .without<com.wingedsheep.engine.state.components.battlefield.ExertedThisTurnComponent>()
