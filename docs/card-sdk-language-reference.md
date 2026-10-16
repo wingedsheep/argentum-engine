@@ -14328,6 +14328,11 @@ default to "you" so card authors don't need to pass it explicitly.
   type, and a **kindred** card contributes only its *other* (permanent) type, not "kindred" itself
   (CR 300.2b) — so this is not the same as counting distinct card types among a graveyard filtered to
   permanent cards, which would over-count a kindred permanent.
+- `DistinctManaValuesInGraveyard(count)` — the same sentence counting **mana values**: "there are
+  `count` or more mana values among cards in your graveyard" (Streets of New Capenna — Syndicate
+  Infiltrator, Snooping Newsie). Composes through `Compare(AggregateZone(Player.You, Zone.GRAVEYARD,
+  aggregation = DISTINCT_VALUES, property = MANA_VALUE), GTE, Fixed(count))`; two cards sharing a mana
+  value count once, a land is mana value 0, and {X} counts as 0 off the stack.
 - `CreatureDiedThisTurn` — intervening-if "if a creature died this turn", **global** (any player's
   control; sums every player's `CreaturesDiedThisTurnComponent`).
 - `ControlledCreatureDiedThisTurn` — intervening-if "if a creature died **under your control** this
@@ -14495,7 +14500,7 @@ forbids `DynamicAmount.X` in card definitions.
   excludeSelf).count() / sumPower() / sumToughness() / sumManaValue() / maxPower() / maxToughness() /
   maxManaValue() / minToughness() / distinctValues(p) / distinctNames() / largestSameNameGroup() / distinctColors() /
   distinctTypes() / totalCounters(type) / totalCounters()` (no type = every kind of counter,
-  `CardNumericProperty.COUNTERS` — Hydra Trainer's "the number of counters on permanents you control"), `zone(player, zone, filter).count() / distinctTypes() / …`,
+  `CardNumericProperty.COUNTERS` — Hydra Trainer's "the number of counters on permanents you control"), `zone(player, zone, filter).count() / distinctTypes() / distinctValues(p) / …` (`distinctValues(MANA_VALUE)` over your graveyard — All-Seeing Arbiter's "the number of different mana values among cards in your graveyard"),
   `lifeTotal(player)`, `yourLifeTotal()`, `startingLifeTotal(player)`, `playerCount(scope)`,
   `countPlayersWith(scope, condition)`, `greatestAmongPlayers(inner, players)`,
   `leastAmongPlayers(inner, players)`, `fewestControlledBySinglePlayer(filter, players)`, `totalManaSpent()`,
@@ -14644,7 +14649,8 @@ forbids `DynamicAmount.X` in card definitions.
   (the number of *distinct values* of the configured `property` — Selvala, Eager Trailblazer's
   "the number of different powers among creatures you control" via
   `aggregation = DISTINCT_VALUES, property = POWER`; two permanents sharing a value count once).
-  Builder shortcut: `DynamicAmounts.battlefield(player, filter).distinctValues(CardNumericProperty.POWER)`.
+  Builder shortcut: `DynamicAmounts.battlefield(player, filter).distinctValues(CardNumericProperty.POWER)`,
+  and over a non-battlefield zone `DynamicAmounts.zone(player, zone, filter).distinctValues(property)`.
   `DISTINCT_NAMES` counts *differently named* matched permanents (two sharing a name count once) —
   "the number of differently named lands you control" (Emil, Vastlands Roamer) via
   `DynamicAmounts.battlefield(Player.You, GameObjectFilter.Land).distinctNames()`.

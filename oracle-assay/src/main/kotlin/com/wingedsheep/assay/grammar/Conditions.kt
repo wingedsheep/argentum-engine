@@ -300,12 +300,15 @@ object Conditions {
         // Delirium and Matzalantli's gate — the same graveyard count by *distinct types* rather than
         // by cards. The noun is the row and the threshold the slot: "card types" and "permanent
         // types" are two `Aggregation`s with a facade each, and both print the one sentence shape.
-        graveyardTypes("card", SdkConditions::Delirium),
-        graveyardTypes("permanent", SdkConditions::DistinctPermanentTypesInGraveyard),
+        graveyardTypes("card types", SdkConditions::Delirium),
+        graveyardTypes("permanent types", SdkConditions::DistinctPermanentTypesInGraveyard),
+        // Streets of New Capenna's gate: the same sentence counting distinct *mana values*.
+        graveyardTypes("mana values", SdkConditions::DistinctManaValuesInGraveyard),
     )
 
     /**
-     * "There are four or more card types among cards in your graveyard" — delirium's condition.
+     * "There are four or more card types among cards in your graveyard" — delirium's condition, and
+     * its siblings counting permanent types or mana values.
      *
      * A row of its own rather than a member of [zoneCount], because the amount is a different value:
      * `AggregateZone` over a distinct-type aggregation, not a `Count` of the zone. The facades own
@@ -315,8 +318,8 @@ object Conditions {
      */
     private fun graveyardTypes(kind: String, condition: (Int) -> Condition): Phrase<Condition> =
         phrase(
-            "there are {n} or more $kind types among cards in your graveyard",
-            name = "$kind types in your graveyard",
+            "there are {n} or more $kind among cards in your graveyard",
+            name = "$kind in your graveyard",
         ) {
             slot("n", Cardinals.word)
             build { condition(it.int("n")) }

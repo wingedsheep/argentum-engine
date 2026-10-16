@@ -476,9 +476,9 @@ object Amounts {
                 "the number of basic land types among", Aggregation.DISTINCT_BASIC_LAND_SUBTYPES, null,
                 "you control", Player.You, "the basic land types on your battlefield",
             ),
-            // Tarmogoyf's count, and the one aggregation the corpus spells over a *zone*. Bare rather
-            // than filtered because "card types among cards" is the only noun Oracle writes it with —
-            // a filtered version would be a printed form no card uses.
+            // Tarmogoyf's count and All-Seeing Arbiter's — the aggregations the corpus spells over a
+            // *zone*. Bare rather than filtered because "among cards" is the only noun Oracle writes
+            // them with — a filtered version would be a printed form no card uses.
             constant(
                 "the number of card types among cards in all graveyards",
                 DynamicAmount.AggregateZone(Player.Each, Zone.GRAVEYARD, aggregation = Aggregation.DISTINCT_TYPES),
@@ -486,6 +486,10 @@ object Amounts {
             constant(
                 "the number of card types among cards in your graveyard",
                 DynamicAmount.AggregateZone(Player.You, Zone.GRAVEYARD, aggregation = Aggregation.DISTINCT_TYPES),
+            ),
+            constant(
+                "the number of different mana values among cards in your graveyard",
+                DynamicAmounts.zone(Player.You, Zone.GRAVEYARD).distinctValues(CardNumericProperty.MANA_VALUE),
             ),
             // "the number of +1/+1 counters on ~" — a tally of the source's own counters, which the SDK
             // reads as a property of an entity rather than as a count of a zone. The kind is a slot:

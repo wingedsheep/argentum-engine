@@ -53,6 +53,7 @@ import com.wingedsheep.sdk.scripting.conditions.PlayerHasEnduringStory
 import com.wingedsheep.sdk.scripting.conditions.RingHasTemptedPlayerAtLeast
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.values.Aggregation
+import com.wingedsheep.sdk.scripting.values.CardNumericProperty
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.sdk.scripting.values.EntityNumericProperty
 import com.wingedsheep.sdk.scripting.conditions.Condition as ConditionInterface
@@ -965,13 +966,30 @@ object Conditions {
     fun DistinctPermanentTypesInGraveyard(count: Int): ConditionInterface =
         graveyardTypeThreshold(count, Aggregation.DISTINCT_PERMANENT_TYPES)
 
-    /** Shared shape for the graveyard type-count gates ([Delirium], [DistinctPermanentTypesInGraveyard]). */
-    private fun graveyardTypeThreshold(count: Int, aggregation: Aggregation): ConditionInterface =
+    /**
+     * If there are [count] or more different mana values among the cards in your graveyard —
+     * Streets of New Capenna's "five or more mana values among cards in your graveyard" (Syndicate
+     * Infiltrator, Snooping Newsie). Two cards sharing a mana value count once; a card with {X} in
+     * its cost has mana value with X = 0 there, and a land contributes mana value 0.
+     */
+    fun DistinctManaValuesInGraveyard(count: Int): ConditionInterface =
+        graveyardTypeThreshold(count, Aggregation.DISTINCT_VALUES, CardNumericProperty.MANA_VALUE)
+
+    /**
+     * Shared shape for the graveyard distinct-count gates ([Delirium],
+     * [DistinctPermanentTypesInGraveyard], [DistinctManaValuesInGraveyard]).
+     */
+    private fun graveyardTypeThreshold(
+        count: Int,
+        aggregation: Aggregation,
+        property: CardNumericProperty? = null
+    ): ConditionInterface =
         Compare(
             DynamicAmount.AggregateZone(
                 player = Player.You,
                 zone = Zone.GRAVEYARD,
-                aggregation = aggregation
+                aggregation = aggregation,
+                property = property
             ),
             ComparisonOperator.GTE,
             DynamicAmount.Fixed(count)

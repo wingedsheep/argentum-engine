@@ -377,6 +377,14 @@ object DynamicAmounts {
         /** The number of card types among the matched cards ("card types among cards in your graveyard"). */
         fun distinctTypes(): DynamicAmount =
             DynamicAmount.AggregateZone(player, zone, filter, Aggregation.DISTINCT_TYPES)
+
+        /**
+         * The number of distinct values of [property] among the matched cards — e.g.
+         * `distinctValues(MANA_VALUE)` for "the number of different mana values among cards in your
+         * graveyard" (All-Seeing Arbiter). Two cards sharing a value count once.
+         */
+        fun distinctValues(property: CardNumericProperty): DynamicAmount =
+            DynamicAmount.AggregateZone(player, zone, filter, Aggregation.DISTINCT_VALUES, property)
     }
 
     // =========================================================================

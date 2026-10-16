@@ -192,7 +192,7 @@ class StaticsTest : StringSpec({
     }
 
     // Delirium. The same graveyard, counted by distinct types through the facade the cards use;
-    // "permanent types" is the sibling aggregation and the same sentence.
+    // "permanent types" and "mana values" are the sibling aggregations and the same sentence.
     "delirium is the graveyard type count the facade builds" {
         fragment(
             "~ gets +1/+1 as long as there are four or more card types among cards in your graveyard."
@@ -204,6 +204,15 @@ class StaticsTest : StringSpec({
         )
         roundTrips("~ gets +1/+1 as long as there are four or more card types among cards in your graveyard.")
         roundTrips("~ gets +1/+1 as long as there are four or more permanent types among cards in your graveyard.")
+        fragment(
+            "~ gets +2/+2 as long as there are five or more mana values among cards in your graveyard."
+        ).script.staticAbilities shouldBe listOf(
+            ConditionalStaticAbility(
+                ability = ModifyStats(2, 2, GroupFilter.source()),
+                condition = SdkConditions.DistinctManaValuesInGraveyard(5),
+            )
+        )
+        roundTrips("~ gets +2/+2 as long as there are five or more mana values among cards in your graveyard.")
     }
 
     // The Doran family. Two rules and one flag: the qualifier is a clause inside the noun phrase

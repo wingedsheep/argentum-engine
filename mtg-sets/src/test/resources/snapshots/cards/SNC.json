@@ -9109,6 +9109,118 @@
     ]
 }
 
+// Snooping Newsie
+{
+    "name": "Snooping Newsie",
+    "manaCost": "{U}{B}",
+    "typeLine": "Creature — Human Rogue",
+    "oracleText": "When this creature enters, mill two cards. (Put the top two cards of your library into your graveyard.)\nAs long as there are five or more mana values among cards in your graveyard, this creature gets +1/+1 and has lifelink.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Snooping Newsie:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                },
+                                "isMill": true
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "ModifyStats",
+                    "powerBonus": 1,
+                    "toughnessBonus": 1,
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateZone",
+                        "player": "You",
+                        "zone": "Graveyard",
+                        "aggregation": "DISTINCT_VALUES",
+                        "property": "MANA_VALUE"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 5
+                    }
+                }
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "LIFELINK",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateZone",
+                        "player": "You",
+                        "zone": "Graveyard",
+                        "aggregation": "DISTINCT_VALUES",
+                        "property": "MANA_VALUE"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 5
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "222",
+        "artist": "E. M. Gist",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/e/bed1e957-3df1-4640-9980-783817826602.jpg?1783923068"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
+    ]
+}
+
 // Social Climber
 {
     "name": "Social Climber",
@@ -9386,6 +9498,63 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Syndicate Infiltrator
+{
+    "name": "Syndicate Infiltrator",
+    "manaCost": "{2}{U}{B}",
+    "typeLine": "Creature — Vampire Wizard",
+    "oracleText": "Flying\nAs long as there are five or more mana values among cards in your graveyard, this creature gets +2/+2.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "ModifyStats",
+                    "powerBonus": 2,
+                    "toughnessBonus": 2,
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateZone",
+                        "player": "You",
+                        "zone": "Graveyard",
+                        "aggregation": "DISTINCT_VALUES",
+                        "property": "MANA_VALUE"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 5
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "226",
+        "rarity": "UNCOMMON",
+        "artist": "Mila Pesic",
+        "flavorText": "The mansion's vaulted ceilings provided the perfect cover for an ambush.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/f/bf86c5f2-0caf-48ca-b7ad-a1cdcd014539.jpg?1783923067"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
     ]
 }
 

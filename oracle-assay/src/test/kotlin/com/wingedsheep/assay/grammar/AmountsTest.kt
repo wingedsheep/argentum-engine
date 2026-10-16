@@ -94,6 +94,15 @@ class AmountsTest : StringSpec({
         roundTrips("~'s power is equal to the number of colors among permanents you control.")
         roundTrips("~'s power is equal to the greatest power among creatures you control.")
         roundTrips("~'s power is equal to the number of basic land types among lands you control.")
+        dynamic("~'s power is equal to the number of different mana values among cards in your graveyard.") shouldBe
+            DynamicAmount.AggregateZone(
+                Player.You,
+                Zone.GRAVEYARD,
+                GameObjectFilter.Any,
+                Aggregation.DISTINCT_VALUES,
+                CardNumericProperty.MANA_VALUE,
+            )
+        roundTrips("~'s power is equal to the number of different mana values among cards in your graveyard.")
     }
 
     "the multiplier is a layer, and only the word English has" {
