@@ -1211,7 +1211,11 @@ data class SelectFromCollectionEffect(
      * Used for "creature card of the chosen type" patterns.
      */
     val matchChosenCreatureType: Boolean = false,
-    /** Custom prompt for the selection decision. If null, a generic prompt is generated. */
+    /**
+     * Custom prompt for the selection decision. If null, a generic prompt is generated. Inside an
+     * `IterationSpace.CounterKindsAmong` loop, `{counter}` is replaced by the visited kind's
+     * printed name ("Choose a token to get a {counter} counter" — Exotic Pets).
+     */
     val prompt: String? = null,
     /** Label describing where selected cards go (e.g., "Put on bottom"). Shown in the UI. */
     val selectedLabel: String? = null,

@@ -695,7 +695,7 @@ Families:
 - `AddColorlessManaEffect(amount: DynamicAmount, restriction: ManaRestriction?, riders: Set<ManaSpellRider>, expiry: ManaExpiry)` — Add colorless mana effect.
 - `AddCombatPhaseEffect(attackerRestriction: GameObjectFilter?)` — Insert a single additional combat phase into the current turn — and *only* a combat phase, with no trailing main phase (Aurelia, the Warleader / Combat Celebrant / Fear of Missing Out: "After this…
 - `AddCountersEffect(counterType: CounterType, count: Int, target: EffectTarget)` — Add counters effect.
-- `AddCountersOfChosenKindEffect(target: EffectTarget, count: Int)` — "Choose a kind of counter on target.
+- `AddCountersOfChosenKindEffect(target: EffectTarget, count: Int, kindFrom: CounterKindSource)` — "Choose a kind of counter on target.
 - `AddCountersToCollectionEffect(collectionName: String, counterType: CounterType, count: Int, amount: DynamicAmount?)` — Add counters to all entities in a named collection.
 - `AddCountersUpToEffect(counterType: CounterType, max: DynamicAmount, target: EffectTarget)` — Put a player-chosen number (0 up to max) of a single kind of counter on a target.
 - `AddCountersWithLimitEffect(counterType: CounterType, amount: DynamicAmount, totalLimit: DynamicAmount, target: EffectTarget)` — Place amount counters without this instruction raising their total above totalLimit.
@@ -1268,6 +1268,7 @@ Families:
 
 - `IterationSpace.Collection(collection: String)` — Iterate the entities in a named pipeline collection.
 - `IterationSpace.ColorsOf(source: EffectTarget.SingleEntity)` — Iterate the colors of a referenced entity in canonical WUBRG order, exposing the current color through the chosen-color context — the same channel `ChooseColorThen` feeds — so per-color atoms (`Gra…
+- `IterationSpace.CounterKindsAmong(filter: GroupFilter)` — Iterate each **kind of counter** among the battlefield permanents matching filter — "for each kind of counter among creatures you control, put a counter of that kind on …" (Exotic Pets).
 - `IterationSpace.Group(filter: GroupFilter, noRegenerate: Boolean)` — Iterate battlefield permanents matching filter, snapshotted before any iteration runs (simultaneous semantics — entities destroyed during iteration stay in the list).
 - `IterationSpace.Players(players: Player)` — Iterate players matching players (e.g. `Player.Each`, `Player.EachOpponent`, `Player.ActivePlayerFirst`).
 - `IterationSpace.Targets` — Iterate the targets chosen for the spell/ability.

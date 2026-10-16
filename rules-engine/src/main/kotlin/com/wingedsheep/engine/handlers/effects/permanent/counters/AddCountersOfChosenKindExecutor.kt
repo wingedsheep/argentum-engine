@@ -14,12 +14,16 @@ import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
 import com.wingedsheep.sdk.scripting.effects.AddCountersOfChosenKindEffect
+import com.wingedsheep.sdk.scripting.effects.CounterKindSource
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import kotlin.reflect.KClass
 
 /**
  * Executor for [AddCountersOfChosenKindEffect] — "choose a kind of counter on target permanent.
  * Put an additional counter of that kind on that permanent" (Ichormoon Gauntlet).
+ *
+ * [CounterKindSource.ITERATION] skips the choice: the kind is the one the enclosing
+ * `IterationSpace.CounterKindsAmong` loop bound as `chosenCounterType` (none → no-op).
  *
  * Reads the kinds on the recipient at resolution. None → no-op; one → placed with no prompt (the
  * only legal choice); two or more → the controller picks through a [ChooseOptionDecision], resumed
@@ -48,6 +52,15 @@ class AddCountersOfChosenKindExecutor(
 
         if (!state.projectedState.canReceiveCounters(recipientId)) {
             return EffectResult.success(state, emptyList())
+        }
+
+        if (effect.kindFrom == CounterKindSource.ITERATION) {
+            val kind = context.chosenCounterType ?: return EffectResult.success(state, emptyList())
+            return addCounters.execute(
+                state,
+                AddCountersEffect(kind, effect.count, EffectTarget.SpecificEntity(recipientId)),
+                context
+            )
         }
 
         val kinds = state.getEntity(recipientId)?.get<CountersComponent>()?.counters

@@ -1158,6 +1158,18 @@ class PipelineBuilder private constructor(private val shared: Shared) {
     }
 
     /**
+     * Run [block] once per kind of counter among the permanents matching [filter]
+     * ([com.wingedsheep.sdk.scripting.effects.IterationSpace.CounterKindsAmong]). Inside, the
+     * visited kind is what `Effects.AddCountersOfChosenKind(kindFrom = CounterKindSource.ITERATION)`
+     * places and what a `{counter}` placeholder in a selection prompt names; collections made
+     * before the loop stay readable — "then for each kind of counter among creatures you control,
+     * put a counter of that kind on either of those tokens" (Exotic Pets).
+     */
+    fun forEachCounterKindAmong(filter: GroupFilter, block: PipelineBuilder.() -> Unit) {
+        steps += com.wingedsheep.sdk.scripting.effects.ForEachCounterKindAmongEffect(filter, nestedAsEffect(block))
+    }
+
+    /**
      * Run [block] once per player matching [players] (the iterated player is `Player.You` inside,
      * with a fresh collection scope per iteration) and return, for each collection handle [block]
      * returns, the union of that collection across every iteration

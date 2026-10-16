@@ -2111,6 +2111,87 @@
     ]
 }
 
+// Exotic Pets
+{
+    "name": "Exotic Pets",
+    "manaCost": "{1}{W}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Create two 1/1 blue Fish creature tokens with \"This token can't be blocked.\" Then for each kind of counter among creatures you control, put a counter of that kind on either of those tokens.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "BLUE"
+                    ],
+                    "creatureTypes": [
+                        "Fish"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/3/b/3b2e726b-f124-43f7-87e4-bb06bbe8e3d7.jpg?1783922964",
+                    "staticAbilities": [
+                        "CantBeBlocked"
+                    ]
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.CounterKindsAmong",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "createdTokens",
+                                "selection": {
+                                    "type": "ChooseExactly",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "selected1",
+                                "prompt": "Choose a Fish to get a {counter} counter",
+                                "useTargetingUI": true
+                            },
+                            {
+                                "type": "AddCountersOfChosenKind",
+                                "target": {
+                                    "type": "PipelineTarget",
+                                    "collectionName": "selected1"
+                                },
+                                "kindFrom": "ITERATION"
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "185",
+        "rarity": "UNCOMMON",
+        "artist": "Drew Baker",
+        "flavorText": "Investigators observed that Altonio's beloved fish were thriving after his disappearance.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/0/902f1ed8-5c10-45e4-8f2f-182e800faab4.jpg?1783923088"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
+    ]
+}
+
 // Fake Your Own Death
 {
     "name": "Fake Your Own Death",

@@ -4,6 +4,7 @@ import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.core.ForEachContinuation
 import com.wingedsheep.engine.core.ForEachItem
+import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.core.GameEvent
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.BattlefieldFilterUtils
@@ -49,6 +50,7 @@ import com.wingedsheep.engine.core.Outcome
  *   iteration object — what `EffectTarget.IterationEntity` names (`Self` stays the source);
  *   outer collections preserved.
  * - ColorsOf: `chosenColor` set — the same channel `ChooseColorThen` feeds.
+ * - CounterKindsAmong: `chosenCounterType` set; outer collections preserved.
  */
 class ForEachExecutor(
     private val effectExecutor: (GameState, Effect, EffectContext) -> EffectResult,
@@ -227,6 +229,17 @@ class ForEachExecutor(
                 Color.entries.filter { it.name in colorNames }.map { ForEachItem.OfColor(it) }
             }
         }
+
+        is IterationSpace.CounterKindsAmong ->
+            resolveGroup(state, IterationSpace.Group(space.filter), context)
+                .flatMap { id ->
+                    state.getEntity(id)?.get<CountersComponent>()?.counters
+                        ?.filterValues { it > 0 }?.keys.orEmpty()
+                }
+                .distinct()
+                // Canonical id order for deterministic event sequencing.
+                .sortedBy { it.name }
+                .map { ForEachItem.OfCounterKind(it) }
     }
 
     /**
@@ -264,6 +277,8 @@ class ForEachExecutor(
         )
 
         is ForEachItem.OfColor -> outerContext.copy(chosenColor = item.color)
+
+        is ForEachItem.OfCounterKind -> outerContext.copy(chosenCounterType = item.counterType)
     }
 
     private fun resolvePlayers(player: Player, state: GameState, context: EffectContext): List<EntityId> {

@@ -2263,8 +2263,13 @@ object Effects {
      * it." — the player picks among the kinds already there (no prompt when only one). The
      * one-kind sibling of the targeted [Proliferate]. Ichormoon Gauntlet.
      */
-    fun AddCountersOfChosenKind(target: EffectTarget = EffectTarget.ContextTarget(0), count: Int = 1): Effect =
-        com.wingedsheep.sdk.scripting.effects.AddCountersOfChosenKindEffect(target, count)
+    fun AddCountersOfChosenKind(
+        target: EffectTarget = EffectTarget.ContextTarget(0),
+        count: Int = 1,
+        kindFrom: com.wingedsheep.sdk.scripting.effects.CounterKindSource =
+            com.wingedsheep.sdk.scripting.effects.CounterKindSource.RECIPIENT
+    ): Effect =
+        com.wingedsheep.sdk.scripting.effects.AddCountersOfChosenKindEffect(target, count, kindFrom)
 
     /**
      * Put every counter that was on the triggering source onto a target.
@@ -4138,6 +4143,19 @@ object Effects {
         source: EffectTarget.SingleEntity,
         effect: Effect
     ): Effect = ForEachColorOfEffect(source, effect)
+
+    /**
+     * Run [effect] once per **kind of counter** among the permanents matching [filter], with
+     * that kind exposed to [AddCountersOfChosenKind] via `kindFrom = CounterKindSource.ITERATION`.
+     * "Then for each kind of counter among creatures you control, put a counter of that kind on
+     * either of those tokens" (Exotic Pets) is a per-kind `SelectFromCollection` of one token
+     * followed by `AddCountersOfChosenKind(PipelineTarget(pick, 0), kindFrom = ITERATION)`.
+     * Kinds are snapshotted before the first iteration; none → zero iterations.
+     */
+    fun ForEachCounterKindAmong(
+        filter: com.wingedsheep.sdk.scripting.filters.unified.GroupFilter,
+        effect: Effect
+    ): Effect = com.wingedsheep.sdk.scripting.effects.ForEachCounterKindAmongEffect(filter, effect)
 
     /**
      * Grant "can't be blocked by creatures of the chosen color" to a target.

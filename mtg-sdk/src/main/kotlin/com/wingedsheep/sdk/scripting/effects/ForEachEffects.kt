@@ -93,8 +93,29 @@ sealed interface IterationSpace {
     @Serializable
     data class ColorsOf(val source: EffectTarget.SingleEntity) : IterationSpace
 
+    /**
+     * Iterate each **kind of counter** among the battlefield permanents matching [filter] —
+     * "for each kind of counter among creatures you control, put a counter of that kind on …"
+     * (Exotic Pets). A kind counts once however many matching permanents carry it, and only
+     * while at least one counter of it is on one of them. The kinds are snapshotted before
+     * the first iteration (in canonical id order, for deterministic event sequencing) and
+     * each is exposed through the chosen-counter-kind context, which
+     * `AddCountersOfChosenKind(kindFrom = CounterKindSource.ITERATION)` reads. Outer
+     * `storedCollections` are preserved, so the body can choose among objects an earlier
+     * step created. No matching counters → zero iterations.
+     *
+     * The counter-kind analogue of [ColorsOf]; [Group] iterates the permanents themselves.
+     */
+    @SerialName("IterationSpace.CounterKindsAmong")
+    @Serializable
+    data class CounterKindsAmong(val filter: GroupFilter) : IterationSpace
+
     fun applyTextReplacement(replacer: TextReplacer): IterationSpace = when (this) {
         is Group -> {
+            val newFilter = filter.applyTextReplacement(replacer)
+            if (newFilter !== filter) copy(filter = newFilter) else this
+        }
+        is CounterKindsAmong -> {
             val newFilter = filter.applyTextReplacement(replacer)
             if (newFilter !== filter) copy(filter = newFilter) else this
         }
@@ -166,6 +187,8 @@ data class ForEachEffect(
             is IterationSpace.Collection -> "For each permanent in ${space.collection}, ${bodyClauses()}"
             is IterationSpace.Group -> renderGroupDescription(text(body), space.filter, space.noRegenerate)
             is IterationSpace.ColorsOf -> "for each color of ${space.source.description}, ${text(body)}"
+            is IterationSpace.CounterKindsAmong ->
+                "For each kind of counter among ${space.filter.description.removePrefix("all ").trimStart()}, ${bodyClauses()}"
         }
     }
 
@@ -272,3 +295,12 @@ fun ForEachInGroupEffect(
 @Suppress("FunctionName")
 fun ForEachColorOfEffect(source: EffectTarget.SingleEntity, effect: Effect): ForEachEffect =
     ForEachEffect(IterationSpace.ColorsOf(source), effect)
+
+/**
+ * Run [effect] once per kind of counter among the permanents matching [filter], exposing
+ * the current kind via the chosen-counter-kind context (Exotic Pets). Lowers to
+ * [ForEachEffect] over [IterationSpace.CounterKindsAmong].
+ */
+@Suppress("FunctionName")
+fun ForEachCounterKindAmongEffect(filter: GroupFilter, effect: Effect): ForEachEffect =
+    ForEachEffect(IterationSpace.CounterKindsAmong(filter), effect)

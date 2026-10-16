@@ -110,25 +110,46 @@ data class AddCountersUpToEffect(
  * `Proliferate(target)` — which adds one of *every* kind — and of [AddCountersEffect], whose kind
  * is fixed by the card instead of read off the recipient.
  *
- * At resolution the executor reads the kinds currently on the target: none is a no-op, exactly one
- * is placed without a prompt, and two or more ask the effect's controller to pick one through a
- * `ChooseOptionDecision`. The counters are placed through the standard [AddCountersEffect] path, so
+ * With [kindFrom] = [CounterKindSource.RECIPIENT] (the default) the executor reads the kinds
+ * currently on the target at resolution: none is a no-op, exactly one is placed without a prompt,
+ * and two or more ask the effect's controller to pick one through a `ChooseOptionDecision`.
+ * With [CounterKindSource.ITERATION] the kind is the one an enclosing
+ * `ForEachEffect(IterationSpace.CounterKindsAmong)` is visiting — "put a counter of that kind on
+ * either of those tokens" (Exotic Pets) — and no choice is asked; outside such a loop it is a
+ * no-op. Either way the counters are placed through the standard [AddCountersEffect] path, so
  * counter-placement replacements (Hardened Scales) and counter-placed triggers apply. A recipient
  * that can't have counters put on it gets none. Works on a permanent or a player target.
  *
- * @property target The permanent (or player) whose counters are read and added to.
- * @property count How many counters of the chosen kind to add.
+ * @property target The permanent (or player) that receives the counters.
+ * @property count How many counters of the kind to add.
+ * @property kindFrom Where the kind comes from: chosen among the recipient's own, or the loop's.
  */
 @SerialName("AddCountersOfChosenKind")
 @Serializable
 data class AddCountersOfChosenKindEffect(
     val target: EffectTarget = EffectTarget.ContextTarget(0),
-    val count: Int = 1
+    val count: Int = 1,
+    val kindFrom: CounterKindSource = CounterKindSource.RECIPIENT
 ) : Effect {
-    override val description: String =
-        "Choose a kind of counter on ${target.description}. Put " +
-            (if (count == 1) "an additional counter" else "$count additional counters") +
-            " of that kind on it"
+    override val description: String = when (kindFrom) {
+        CounterKindSource.RECIPIENT ->
+            "Choose a kind of counter on ${target.description}. Put " +
+                (if (count == 1) "an additional counter" else "$count additional counters") +
+                " of that kind on it"
+        CounterKindSource.ITERATION ->
+            "Put " + (if (count == 1) "a counter" else "$count counters") +
+                " of that kind on ${target.description}"
+    }
+}
+
+/** Where [AddCountersOfChosenKindEffect] takes its counter kind from. */
+@Serializable
+enum class CounterKindSource {
+    /** The controller chooses among the kinds already on the recipient (Ichormoon Gauntlet). */
+    RECIPIENT,
+
+    /** The kind an enclosing `IterationSpace.CounterKindsAmong` loop is visiting (Exotic Pets). */
+    ITERATION
 }
 
 /**

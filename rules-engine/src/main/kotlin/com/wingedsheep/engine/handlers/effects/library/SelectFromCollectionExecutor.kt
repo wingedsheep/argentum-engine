@@ -527,7 +527,11 @@ class SelectFromCollectionExecutor(
         val fromOutside = cards.isNotEmpty() &&
             cards.all { state.logicalZone(it)?.zoneType == com.wingedsheep.sdk.core.Zone.SIDEBOARD }
         val where = if (fromOutside) " from outside the game" else ""
-        val prompt = effect.prompt ?: when {
+        // `{counter}` names the counter kind a `CounterKindsAmong` loop is visiting ("Choose a
+        // token to get a {counter} counter" — Exotic Pets), so each per-kind pick says which.
+        val prompt = effect.prompt?.let { template ->
+            context.chosenCounterType?.let { template.replace("{counter}", it.printed) } ?: template
+        } ?: when {
             minSelections == maxSelections -> "Choose $minSelections card${if (minSelections != 1) "s" else ""}$where"
             minSelections == 0 -> "Choose up to $maxSelections card${if (maxSelections != 1) "s" else ""}$where"
             else -> "Choose $minSelections to $maxSelections cards$where"

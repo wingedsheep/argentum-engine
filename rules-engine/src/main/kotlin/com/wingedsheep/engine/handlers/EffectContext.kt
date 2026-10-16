@@ -333,6 +333,13 @@ data class EffectContext(
      * [chosenColor] is the whole answer; when non-empty it contains [chosenColor].
      */
     val chosenColors: Set<Color> = emptySet(),
+    /**
+     * The kind of counter an enclosing
+     * [com.wingedsheep.sdk.scripting.effects.IterationSpace.CounterKindsAmong] loop is visiting.
+     * Read by `AddCountersOfChosenKind(kindFrom = ITERATION)` and by a body
+     * `SelectFromCollection` prompt's `{counter}` placeholder. Null outside such a loop.
+     */
+    val chosenCounterType: com.wingedsheep.sdk.core.CounterType? = null,
     /** Creature type chosen during casting (e.g., Aphetto Dredging) */
     val chosenCreatureType: String? = null,
     /**

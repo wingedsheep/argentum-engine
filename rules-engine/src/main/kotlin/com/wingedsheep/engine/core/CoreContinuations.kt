@@ -314,7 +314,7 @@ data class TriggerOpponentChooserContinuation(
  * The variant corresponds to (but is deliberately decoupled from) the effect's
  * [com.wingedsheep.sdk.scripting.effects.IterationSpace]: targets iterate [OfTarget],
  * players iterate [OfPlayer], collections/groups iterate [OfEntity], colors iterate
- * [OfColor]. Serializable so a [ForEachContinuation] can carry the remaining items
+ * [OfColor], counter kinds iterate [OfCounterKind]. Serializable so a [ForEachContinuation] can carry the remaining items
  * across a mid-iteration pause.
  */
 @Serializable
@@ -330,6 +330,9 @@ sealed interface ForEachItem {
 
     @Serializable
     data class OfColor(val color: com.wingedsheep.sdk.core.Color) : ForEachItem
+
+    @Serializable
+    data class OfCounterKind(val counterType: com.wingedsheep.sdk.core.CounterType) : ForEachItem
 }
 
 /**

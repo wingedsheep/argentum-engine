@@ -2411,7 +2411,10 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   `Proliferate(target)`: at resolution the controller picks one kind among those on the recipient
   (`ChooseOptionDecision`; no prompt when there is only one kind, a no-op when there are none) and `count`
   counters of it are placed through `AddCounters`, so placement replacements and counter-placed triggers
-  apply. Works on a player target (poison) as well as a permanent.
+  apply. Works on a player target (poison) as well as a permanent. Pass
+  `kindFrom = CounterKindSource.ITERATION` to place the kind an enclosing
+  `ForEachCounterKindAmong` loop is visiting instead — no choice is asked, and outside such a loop
+  it places nothing (Exotic Pets).
 - `AddCountersToCollection(name, type, count)` — add counters to cards held in a pipeline collection.
   An overload takes a `DynamicAmount` instead of an `Int` count, evaluated once at resolution — "create
   a token, then put X +1/+1 counters on it, where X is …" over the `CREATED_TOKENS` collection (Emil,
@@ -4066,6 +4069,18 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   - `ForEachColorOfEffect(source, effect)` / facade `Effects.ForEachColorOf(...)` →
     `IterationSpace.ColorsOf(source)` — per color of an entity, WUBRG order, bound via the
     chosen-color channel (see the choice section).
+  - `ForEachCounterKindAmongEffect(filter, effect)` / facade `Effects.ForEachCounterKindAmong(...)` /
+    pipeline step `forEachCounterKindAmong(filter) { … }` → `IterationSpace.CounterKindsAmong(filter)` —
+    per **kind of counter** among the battlefield permanents matching a group filter (a kind counts
+    once however many permanents carry it, and only while one has at least one of it), canonical id
+    order; the kind is bound as the context's chosen counter kind, which
+    `AddCountersOfChosenKind(kindFrom = CounterKindSource.ITERATION)` places and a
+    `SelectFromCollection` prompt's `{counter}` placeholder names. Outer collections preserved, so
+    the body can pick among objects an earlier step made: "create two Fish … Then for each kind of
+    counter among creatures you control, put a counter of that kind on either of those tokens"
+    (Exotic Pets) is `run(CreateToken(…, count = 2))` then `forEachCounterKindAmong(AllCreaturesYouControl)
+    { val fish = chooseExactly(1, CollectionSlot.CreatedTokens, prompt = "Choose a Fish to get a {counter} counter",
+    useTargetingUI = true); run(AddCountersOfChosenKind(fish.asTarget(0), kindFrom = ITERATION)) }`.
 
   Every space snapshots its items before the first iteration (entities destroyed mid-loop stay in
   the list) and every space is **pause-safe**: a body that pauses for a decision resumes the
