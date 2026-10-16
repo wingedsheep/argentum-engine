@@ -2373,6 +2373,7 @@
                     "from": "Battlefield",
                     "to": "Graveyard"
                 },
+                "binding": "ANY",
                 "effect": {
                     "type": "MoveAllLastKnownCounters",
                     "target": {
@@ -7271,6 +7272,7 @@
                     "filter": "creature ctrl:you",
                     "from": "Battlefield"
                 },
+                "binding": "ANY",
                 "effect": {
                     "type": "ForEach",
                     "space": {

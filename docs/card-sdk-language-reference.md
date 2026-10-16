@@ -7105,7 +7105,10 @@ rejects a raw `TriggerSpec(...)` in a card.
 
 "A" vs "another" is load-bearing: a landfall trigger on a *land* only sees itself enter under `a`.
 Copy the subject the Oracle text prints. `Triggers.self.matching(filter)` narrows the self subject
-("when this creature, if it's a …").
+("when this creature, if it's a …"); on `dies()` / `leaves()` the filter is answered from last-known
+information, so `Triggers.self.matching(GameObjectFilter.Any.enchanted()).dies()` is "when this creature
+dies, if it was enchanted" (Gunner Conscript). It never widens the subject — "whenever a creature you
+control dies" is `Triggers.a(filter)`, not `self.matching(filter)`.
 
 **Object verbs** (`self` / `attached` / `a` / `another`): `enters(from?)`, `leaves(to?, excludeTo?,
 excludeSacrifice?, asCraftMaterial?)`, `dies()`, `changesZone(from?, to?, excludeTo?)` (non-battlefield

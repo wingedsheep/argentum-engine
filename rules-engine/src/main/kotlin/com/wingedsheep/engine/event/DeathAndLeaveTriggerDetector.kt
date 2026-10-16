@@ -96,20 +96,11 @@ class DeathAndLeaveTriggerDetector(
             if (!matcher.isDeathTrigger(ability.trigger)) continue
 
             when (ability.binding) {
-                TriggerBinding.SELF -> {
-                    // "When this creature dies" - always matches its own death
-                    triggers.add(
-                        PendingTrigger(
-                            ability = ability,
-                            sourceId = entityId,
-                            sourceName = info.name,
-                            controllerId = controllerId,
-                            triggerContext = TriggerContext.fromEvent(event)
-                        )
-                    )
-                }
-                TriggerBinding.ANY -> {
-                    // "Whenever a creature [matching filter] dies" - check if its own death matches
+                TriggerBinding.SELF, TriggerBinding.ANY -> {
+                    // SELF: "When this creature dies [, if it was enchanted]" — its own death, still
+                    // narrowed by a `Triggers.self.matching(...)` filter, answered from the zone
+                    // change's last-known snapshot (Gunner Conscript).
+                    // ANY: "Whenever a creature [matching filter] dies" - check if its own death matches
                     // (e.g., Sultai Flayer: "Whenever a creature you control with toughness 4 or greater dies")
                     if (matcher.matchesTrigger(ability.trigger, ability.binding, event, entityId, controllerId, state)) {
                         triggers.add(
@@ -612,8 +603,8 @@ class DeathAndLeaveTriggerDetector(
      * Detect "leaves the battlefield" triggers on permanents that just left.
      * Similar to detectDeathTriggers, but handles ZoneChangeEvent(from=BATTLEFIELD).
      *
-     * SELF binding always fires. ANY binding fires if the leaving entity itself matches the
-     * trigger's filter (e.g., Three Tree Scribe's "Whenever this creature or another creature
+     * SELF and ANY bindings fire if the leaving entity itself matches the trigger's pattern and
+     * filter against last-known information (e.g., Three Tree Scribe's "Whenever this creature or another creature
      * you control leaves the battlefield without dying" must fire when the Scribe itself
      * leaves — the main battlefield loop misses this because the source is no longer on the
      * battlefield by the time the event is processed).
@@ -645,27 +636,12 @@ class DeathAndLeaveTriggerDetector(
             if (event.toZone == Zone.GRAVEYARD && matcher.isDeathTrigger(ability.trigger)) continue
 
             when (ability.binding) {
-                TriggerBinding.SELF -> {
-                    // A SELF leave/exile trigger fires on its own departure, but event-fact
-                    // qualifiers on the pattern (e.g. `requireCraftMaterial` — "while you're
-                    // activating a craft ability", Market Gnome) still gate it, so an unrelated
-                    // exile doesn't fire it. Verify those against the event.
-                    // Under a disjunction, only the atoms this departure can satisfy count.
-                    val satisfiable = matcher.battlefieldExitAtoms(ability.trigger)
-                        .filter { it.to == null || it.to == event.toZone }
-                    if (satisfiable.all { it.requireCraftMaterial } && !event.craftMaterial) continue
-                    triggers.add(
-                        PendingTrigger(
-                            ability = ability,
-                            sourceId = entityId,
-                            sourceName = info.name,
-                            controllerId = controllerId,
-                            triggerContext = TriggerContext.fromEvent(event)
-                        )
-                    )
-                }
-                TriggerBinding.ANY -> {
-                    // "Whenever [this creature or] another creature you control leaves..." —
+                TriggerBinding.SELF, TriggerBinding.ANY -> {
+                    // SELF: its own departure, still gated by the pattern's event-fact qualifiers
+                    // (`requireCraftMaterial` — Market Gnome) and any `Triggers.self.matching(...)`
+                    // filter, read from last-known information. Under a disjunction, any atom this
+                    // departure satisfies fires it.
+                    // ANY: "Whenever [this creature or] another creature you control leaves..." —
                     // check the event against the trigger's filter/excludeTo/binding.
                     if (matcher.matchesTrigger(ability.trigger, ability.binding, event, entityId, controllerId, state)) {
                         triggers.add(

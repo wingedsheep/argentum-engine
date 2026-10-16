@@ -38,7 +38,7 @@ val NinjaTeen = card("Ninja Teen") {
 
     // Level 1: each opponent loses 1 life whenever a creature you control leaves.
     triggeredAbility {
-        trigger = Triggers.self.matching(GameObjectFilter.Creature.youControl()).leaves()
+        trigger = Triggers.a(GameObjectFilter.Creature.youControl()).leaves()
         effect = Effects.ForEachPlayer(
             Player.EachOpponent,
             listOf(Effects.LoseLife(1, EffectTarget.Controller))

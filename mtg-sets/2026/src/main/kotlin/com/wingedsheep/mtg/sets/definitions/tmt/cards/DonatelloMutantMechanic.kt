@@ -52,7 +52,7 @@ val DonatelloMutantMechanic = card("Donatello, Mutant Mechanic") {
     }
 
     triggeredAbility {
-        trigger = Triggers.self.matching(GameObjectFilter.Artifact.youControl()).dies()
+        trigger = Triggers.a(GameObjectFilter.Artifact.youControl()).dies()
         interveningIf = Conditions.TriggeringEntityHadCounters
         val dest = target(TargetFilter(GameObjectFilter.CreatureOrArtifact.youControl()), optional = true)
         effect = Effects.MoveAllLastKnownCounters(dest)
