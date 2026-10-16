@@ -67,7 +67,8 @@ class DrawPhaseManager(
 
         // Snapshot the active player's cards-drawn-this-turn count as the draw step begins,
         // before the turn-based draw (CR 504.1). The first card drawn from here on is "the first
-        // card they draw in this draw step" — the one exempted by Orcish Bowmasters. Captured for
+        // card they draw in this draw step" — the one `DrawEvent.firstInDrawStep` singles out (skipped
+        // by Orcish Bowmasters, the only one Wiretapping sees). Captured for
         // every draw-step entry (including the skip/first-turn paths below) so a later in-step draw
         // is still identified correctly. See GameState.drawStepStartDrawCountByPlayer.
         val drawnSoFar = stateIn.getEntity(activePlayer)
