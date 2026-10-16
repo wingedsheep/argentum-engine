@@ -34,7 +34,7 @@ export const createTargetingSlice: SliceCreator<TargetingSlice> = (set, get) => 
   startTargeting: (targetingState) => {
     set({ targetingState: { ...targetingState, selectionPool: targetingState.selectionPool ?? targetingState.validTargets,
       validTargets: compatibleSelectionPool(targetingState.selectionPool ?? targetingState.validTargets,
-        targetingState.selectionGroups, targetingState.selectedTargets, targetingState.exclusiveGroups) } })
+        targetingState.selectionGroups, targetingState.selectedTargets, targetingState.exclusiveGroups, targetingState.distinctCategories) } })
   },
 
   addTarget: (targetId) => {
@@ -48,7 +48,7 @@ export const createTargetingSlice: SliceCreator<TargetingSlice> = (set, get) => 
             ...state.targetingState,
             selectedTargets: [...selectedTargets, targetId],
             validTargets: compatibleSelectionPool(state.targetingState.selectionPool ?? state.targetingState.validTargets,
-              state.targetingState.selectionGroups, [...selectedTargets, targetId], state.targetingState.exclusiveGroups),
+              state.targetingState.selectionGroups, [...selectedTargets, targetId], state.targetingState.exclusiveGroups, state.targetingState.distinctCategories),
             warning: null,
           },
         }
@@ -82,7 +82,7 @@ export const createTargetingSlice: SliceCreator<TargetingSlice> = (set, get) => 
           ...state.targetingState,
           selectedTargets: newTargets,
           validTargets: compatibleSelectionPool(state.targetingState.selectionPool ?? state.targetingState.validTargets,
-            state.targetingState.selectionGroups, newTargets, state.targetingState.exclusiveGroups),
+            state.targetingState.selectionGroups, newTargets, state.targetingState.exclusiveGroups, state.targetingState.distinctCategories),
           warning: null,
         },
       }
@@ -162,6 +162,7 @@ export const createTargetingSlice: SliceCreator<TargetingSlice> = (set, get) => 
             maxTargets: nextReq.maxTargets,
             selectionGroups: nextReq.selectionGroups ?? null,
             exclusiveGroups: nextReq.exclusiveGroups ?? null,
+            distinctCategories: nextReq.distinctCategories ?? null,
             currentRequirementIndex: nextIndex,
             allSelectedTargets: allSelected,
             targetRequirements: targetingState.targetRequirements,

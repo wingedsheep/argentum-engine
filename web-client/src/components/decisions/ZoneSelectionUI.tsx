@@ -35,6 +35,8 @@ interface ZoneSelectionUIProps {
   initialSelection?: readonly EntityId[]
   selectionGroups?: readonly (readonly EntityId[])[] | null
   exclusiveGroups?: readonly (readonly EntityId[])[] | null
+  /** Each candidate's claimable categories; picks must each claim a different one ("of each color"). */
+  distinctCategories?: Readonly<Record<EntityId, readonly string[]>> | null
   /** Responsive sizing info */
   responsive: ResponsiveSizes
   /** Called when selection is confirmed */
@@ -81,6 +83,7 @@ interface ZoneSelectionUIProps {
 export function ZoneSelectionUI({
   selectionGroups,
   exclusiveGroups,
+  distinctCategories,
   title,
   prompt,
   helperText,
@@ -168,7 +171,7 @@ export function ZoneSelectionUI({
       if (prev.includes(cardId)) {
         return prev.filter((id) => id !== cardId)
       }
-      if (maxSelections > 1 && !compatibleSelectionPool(cards.map((c) => c.id), selectionGroups, prev, exclusiveGroups).includes(cardId)) return prev
+      if (maxSelections > 1 && !compatibleSelectionPool(cards.map((c) => c.id), selectionGroups, prev, exclusiveGroups, distinctCategories).includes(cardId)) return prev
       if (prev.length >= maxSelections) {
         // Single-select at its cap: clicking a different card replaces the pick rather than being
         // ignored — the same rule the board path uses (toggleDecisionSelection), and the only way a

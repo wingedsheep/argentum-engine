@@ -191,6 +191,7 @@ export function GraveyardTargetingUI({
         initialSelection={initialSelection}
         selectionGroups={targetReq?.selectionGroups ?? null}
         exclusiveGroups={targetReq?.exclusiveGroups ?? null}
+        distinctCategories={targetReq?.distinctCategories ?? null}
         responsive={responsive}
         onConfirm={handleConfirm}
         confirmText={isOptionalTarget ? optionalConfirmText : 'Confirm Target'}
@@ -283,6 +284,7 @@ export function GraveyardTargetingUI({
         totalManaValueAtMost={targetReq?.totalManaValueAtMost ?? null}
         selectionGroups={targetReq?.selectionGroups ?? null}
         exclusiveGroups={targetReq?.exclusiveGroups ?? null}
+        distinctCategories={targetReq?.distinctCategories ?? null}
         responsive={responsive}
         onConfirm={handleConfirm}
         onMinimize={() => setMinimized(true)}
@@ -303,6 +305,7 @@ export function GraveyardTargetingUI({
 function GraveyardCardSelection({
   selectionGroups,
   exclusiveGroups,
+  distinctCategories,
   cards,
   selectedCards,
   onSelectedCardsChange,
@@ -326,6 +329,8 @@ function GraveyardCardSelection({
   totalManaValueAtMost?: number | null
   selectionGroups?: readonly (readonly EntityId[])[] | null
   exclusiveGroups?: readonly (readonly EntityId[])[] | null
+  /** Each candidate's claimable categories; picks must each claim a different one ("of each color"). */
+  distinctCategories?: Readonly<Record<EntityId, readonly string[]>> | null
   responsive: ResponsiveSizes
   onConfirm: (selectedCards: EntityId[]) => void
   onMinimize: () => void
@@ -382,7 +387,7 @@ function GraveyardCardSelection({
       onSelectedCardsChange(selectedCards.filter((id) => id !== cardId))
       return
     }
-    if (maxSelections > 1 && !compatibleSelectionPool(cards.map((c) => c.id), selectionGroups, selectedCards, exclusiveGroups).includes(cardId)) return
+    if (maxSelections > 1 && !compatibleSelectionPool(cards.map((c) => c.id), selectionGroups, selectedCards, exclusiveGroups, distinctCategories).includes(cardId)) return
     if (selectedCards.length >= maxSelections) {
       // Single-select slot at its cap: clicking a different card replaces the pick, the same rule
       // the board path uses (toggleDecisionSelection). It also unblocks a mixed

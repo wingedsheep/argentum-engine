@@ -5399,7 +5399,7 @@ spell {
   creatures", "any number of target cards from a single graveyard" — are
   `targets(filter, count, minCount, optional, unlimited, dynamicMaxCount, exactly, sameController,
   sameOwner, sameNumericProperty, sameCreatureType, sameCardType, totalManaValueAtMost, differentNames, differentControllers,
-  onePerCardType, chooser)`, which returns one handle per slot:
+  onePerCardType, onePerColor, chooser)`, which returns one handle per slot:
   `val (first, second) = targets(TargetFilter.Creature, count = 2)`. An ability that treats the
   targets uniformly ignores the handles and reads them with `Effects.ForEachTarget(…)`.
 - **Any other shape** — players, "any target", the mixed "X or Y" shapes — is `target(Targets.X)`:
@@ -5634,12 +5634,22 @@ Every `TargetRequirement` carries count semantics (defaults shown):
   slot: the selection is legal when every chosen object can be **paired with a different card type it
   has** (CR 205.2a — supertypes/subtypes don't count). That is a bipartite matching, not "no two share
   a type": an artifact creature plus a creature is legal (artifact + creature); two plain creatures are
-  not. Pair it with `unlimited = true` — the rule itself bounds the count, and the trigger decision caps
-  `maxTargets` at the number of distinct card types among the legal targets. Enforced cross-target by
-  `TargetValidator` (authoritative) and `DecisionValidators` (via `TargetRequirementInfo.onePerCardType`),
-  both through `OnePerCardType.isSatisfied`; types are projected on the battlefield, printed elsewhere.
+  not. Pair it with `unlimited = true` — the rule itself bounds the count: every targeting offer caps
+  `maxTargets` at the largest matching among the legal targets. Enforced by `TargetValidator`
+  (authoritative) through `OnePerCategoryTargets`; types are projected on the battlefield, printed elsewhere.
   `TargetObject(unlimited = true, onePerCardType = true, filter = TargetFilter(GameObjectFilter.Nonland.ownedByYou(),
   zone = Zone.GRAVEYARD))`. With an `id`, the id is used verbatim (no "any number of" prefix).
+- `onePerColor = false` — on `TargetObject`; the colour sibling, **"for each color, … up to one target …
+  of that color"** (Rogues' Gallery: "For each color, return up to one target creature card of that color
+  from your graveyard to your hand"). Same pairing rule over colours: a multicoloured object claims one
+  of its colours (white-blue + white is legal, the first taking blue), and a colourless object has no
+  colour to claim, so it is never offered or legal. Colours are projected on the battlefield, printed
+  elsewhere. `targets(TargetFilter(GameObjectFilter.Creature.ownedByYou(), zone = Zone.GRAVEYARD),
+  unlimited = true, onePerColor = true)` with `Effects.ForEachTarget(…)`.
+  Both rules reach choosers as `distinctCategories` (candidate → claimable categories) on
+  `TargetRequirementInfo` / `LegalActionTargetInfo`: `DecisionValidators` checks it interactively, the
+  client narrows the pickable pool with it (`compatibleSelectionPool`), and the AI builds its picks with
+  `constrainedTargetSelection`, so a selection stays legal while it is built.
 - `chooser = TargetChooser.Controller` — **who selects this requirement's target(s)**. Set to
   `TargetChooser.Opponent` for "**… of an opponent's choice**" wording (Cuombajj Witches). The chosen
   target is still a real target of *your* spell/ability — announced together with your own targets,

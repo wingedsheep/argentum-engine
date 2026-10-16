@@ -359,7 +359,12 @@ class TargetEnumerationUtils(
                 ?: DynamicTargetCount.bounds(req, xValue = null) { amount ->
                 predicateEvaluator.amounts.evaluate(state, amount, EffectContext(sourceId = sourceId, controllerId = playerId))
             }
+            // "Up to one target … of each card type / color": a candidate with no category to claim
+            // (a colourless card) can never be chosen, so it isn't offered.
+            val distinctCategories = com.wingedsheep.engine.mechanics.targeting.OnePerCategoryTargets
+                .forCandidates(state, req, candidates)
             val validTargets = candidates
+                .let { all -> if (distinctCategories == null) all else all.filter { it in distinctCategories } }
                 .takeIf { satisfiesControllerSpread(state, req, it) }
                 // Too few distinct legal objects for the required count leaves no legal choice
                 // (CR 601.2c, 115.3), so the requirement reports none and the action isn't offered.
@@ -387,6 +392,8 @@ class TargetEnumerationUtils(
                 // legal division.
                 maxTargets = when {
                     (req as? TargetObject)?.ownerDistribution != null -> bounds.max ?: 0
+                    distinctCategories != null -> com.wingedsheep.engine.mechanics.targeting.OnePerCategoryTargets
+                        .maxTargets(distinctCategories)
                     req.unlimited -> minOf(validTargets.size, bounds.max ?: validTargets.size)
                     else -> bounds.max ?: req.count
                 },
@@ -399,6 +406,7 @@ class TargetEnumerationUtils(
                 xConstrainsCount = requirementXConstrainsCount(req),
                 xConstrainsCountExactly = requirementXConstrainsCountExactly(req),
                 differentControllers = (req as? TargetObject)?.differentControllers == true,
+                distinctCategories = distinctCategories?.filterKeys { it in validTargets },
             )
         }
     }

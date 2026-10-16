@@ -372,6 +372,12 @@ data class TargetInfo(
      * by different players"). Lets a chooser that fills the slot itself (the AI) spread its picks.
      */
     val differentControllers: Boolean = false,
+    /**
+     * "Up to one target … of each card type / color": each valid target mapped to the categories
+     * it may claim; the picks must each claim a different one
+     * ([com.wingedsheep.engine.mechanics.targeting.OnePerCategoryTargets]).
+     */
+    val distinctCategories: Map<EntityId, List<String>>? = null,
 )
 
 /**
@@ -381,7 +387,8 @@ data class TargetInfo(
  * ([TargetInfo.differentControllers]) the flattened fields can't express.
  */
 fun List<TargetInfo>.surfacedRequirements(): List<TargetInfo>? =
-    takeIf { size > 1 || any { it.differentControllers || it.selectionGroups != null || it.exclusiveGroups != null } }
+    takeIf { size > 1 || any { it.differentControllers || it.selectionGroups != null || it.exclusiveGroups != null ||
+        it.distinctCategories != null } }
 
 /**
  * Information about a creature that can be tapped for Convoke.

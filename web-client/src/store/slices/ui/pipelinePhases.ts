@@ -1250,6 +1250,7 @@ export function enterPhase(
           selectedTargets: [],
           selectionGroups: firstReq.selectionGroups ?? null,
           exclusiveGroups: firstReq.exclusiveGroups ?? null,
+          distinctCategories: firstReq.distinctCategories ?? null,
           minTargets: resolveMinByX(firstReq.minTargets, maxTargets, firstReq.xConstrainsCountExactly),
           maxTargets,
           currentRequirementIndex: 0,

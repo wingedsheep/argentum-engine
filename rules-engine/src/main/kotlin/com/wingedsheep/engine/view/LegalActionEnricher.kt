@@ -273,6 +273,7 @@ class LegalActionEnricher(
         validTargetsByPrefix = validTargetsByPrefix,
         selectionGroups = selectionGroups,
         exclusiveGroups = exclusiveGroups,
+        distinctCategories = distinctCategories,
         targetZone = targetZone,
         xConstrainsManaValue = xConstrainsManaValue,
         xConstrainsManaValueExactly = xConstrainsManaValueExactly,

@@ -391,14 +391,16 @@ class TargetValidator(
                 }
             }
 
-            // "Up to one target ... of each card type" — each chosen object must fill a different
-            // card-type slot it qualifies for (Uldaros Theorix). CR 115.3 / CR 205.2a.
-            if (requirement is TargetObject && requirement.onePerCardType && targetsForReq.size > 1) {
+            // "Up to one target ... of each card type / color" — each chosen object must fill a
+            // different slot it qualifies for (Uldaros Theorix, Rogues' Gallery). CR 115.3. Checked
+            // for a single target too: a colourless card has no colour slot to fill.
+            if (OnePerCategoryTargets.applies(requirement) && targetsForReq.isNotEmpty()) {
                 val ids = targetsForReq.mapNotNull { target ->
                     (target as? ChosenTarget.Permanent)?.entityId ?: (target as? ChosenTarget.Card)?.cardId
                 }
-                if (!OnePerCardType.isSatisfied(state, ids)) {
-                    return "Targets must be at most one of each card type"
+                if (!OnePerCategoryTargets.isSatisfied(state, requirement, ids)) {
+                    val category = if ((requirement as TargetObject).onePerColor) "color" else "card type"
+                    return "Targets must be at most one of each $category"
                 }
             }
         }

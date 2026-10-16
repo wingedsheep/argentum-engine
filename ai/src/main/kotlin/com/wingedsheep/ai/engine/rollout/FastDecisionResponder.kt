@@ -84,11 +84,10 @@ class FastDecisionResponder(private val intents: IntentCatalog = IntentCatalog.N
                 decision.id,
                 decision.targetRequirements.fold(emptyMap()) { chosen, req ->
                     val pool = decision.legalTargetsFor(req.index, chosen)
-                    val ownerPicks = req.exclusiveGroups?.let { groups ->
-                        constrainedTargetSelection(pool, req.minTargets, req.maxTargets, req.selectionGroups, groups) {
-                            TargetSelection.rank(state, it, playerId, intents)
-                        }
-                    }
+                    val ownerPicks = if (req.exclusiveGroups != null || req.distinctCategories != null) {
+                        constrainedTargetSelection(pool, req.minTargets, req.maxTargets, req.selectionGroups,
+                            req.exclusiveGroups, { TargetSelection.rank(state, it, playerId, intents) }, req.distinctCategories)
+                    } else null
                     val legal = ownerPicks ?: req.selectionGroups?.map { group -> group.filter { it in pool } }
                         ?.filter { it.size >= req.minTargets }
                         ?.maxByOrNull { group -> group.sortedByDescending { TargetSelection.rank(state, it, playerId, intents) }

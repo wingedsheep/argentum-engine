@@ -102,6 +102,7 @@ interface TargetDeclarations {
         differentNames: Boolean = false,
         differentControllers: Boolean = false,
         onePerCardType: Boolean = false,
+        onePerColor: Boolean = false,
         chooser: TargetChooser = TargetChooser.Controller,
     ): List<EffectTarget.BoundVariable> {
         require(ownerDistribution == null ||
@@ -130,6 +131,7 @@ interface TargetDeclarations {
                 differentNames = differentNames,
                 differentControllers = differentControllers,
                 onePerCardType = onePerCardType,
+                onePerColor = onePerColor,
                 chooser = chooser,
             )
         )

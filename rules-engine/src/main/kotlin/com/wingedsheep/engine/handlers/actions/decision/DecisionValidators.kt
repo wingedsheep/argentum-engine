@@ -262,12 +262,15 @@ object DecisionValidators {
                     return "Targets for requirement $reqIndex must be controlled by different players"
                 }
             }
-            // "Up to one target ... of each card type" (Uldaros Theorix). TargetValidator is
-            // authoritative; this rejects it interactively too.
-            if (req.onePerCardType && selectedIds.size > 1 && state != null &&
-                !com.wingedsheep.engine.mechanics.targeting.OnePerCardType.isSatisfied(state, selectedIds)
+            // "Up to one target ... of each card type / color" (Uldaros Theorix, Rogues' Gallery).
+            // TargetValidator is authoritative; this rejects it interactively too.
+            val categories = req.distinctCategories
+            if (categories != null && selectedIds.isNotEmpty() &&
+                !com.wingedsheep.engine.mechanics.targeting.OnePerCardType.canAssignDistinct(
+                    selectedIds.map { categories[it].orEmpty().toSet() }
+                )
             ) {
-                return "Targets for requirement $reqIndex must be at most one of each card type"
+                return "Targets for requirement $reqIndex must each claim a different category"
             }
         }
         return null

@@ -471,6 +471,8 @@ export interface TargetRequirementInfo {
   /** Server-approved pools whose members may be selected together. */
   selectionGroups?: readonly (readonly EntityId[])[] | null
   exclusiveGroups?: readonly (readonly EntityId[])[] | null
+  /** Each candidate's claimable categories; picks must each claim a different one ("of each color"). */
+  distinctCategories?: Readonly<Record<EntityId, readonly string[]>> | null
   readonly emptyChoiceLabel?: string | null
   /**
    * Server-computed choices for a slot whose filter reads an earlier target, keyed by the first
@@ -873,6 +875,8 @@ export interface LegalActionTargetInfo {
   /** Server-approved pools whose members may be selected together. */
   selectionGroups?: readonly (readonly EntityId[])[] | null
   exclusiveGroups?: readonly (readonly EntityId[])[] | null
+  /** Each candidate's claimable categories; picks must each claim a different one ("of each color"). */
+  distinctCategories?: Readonly<Record<EntityId, readonly string[]>> | null
   /** Server-computed choices for the comma-joined earlier target IDs. */
   readonly validTargetsByPrefix?: Readonly<Record<string, readonly EntityId[]>> | null
   readonly index: number

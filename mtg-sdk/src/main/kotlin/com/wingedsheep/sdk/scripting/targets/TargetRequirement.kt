@@ -536,6 +536,17 @@ data class TargetObject(
      */
     val onePerCardType: Boolean = false,
     /**
+     * When true, the chosen targets must be **at most one of each colour** — "for each color,
+     * return up to one target creature card of that color from your graveyard" (Rogues' Gallery).
+     * The colour sibling of [onePerCardType], with the same pairing rule: one instance of the word
+     * "target", each chosen object claims exactly one of its colours, so a multicoloured card fills
+     * one colour slot (a white-blue card plus a white card is legal — the first claims blue). A
+     * colourless object has no colour to claim and is never a legal target. Pair with
+     * `unlimited = true` — the five colours bound the count. Colours are read from projected state
+     * on the battlefield and from the card elsewhere.
+     */
+    val onePerColor: Boolean = false,
+    /**
      * Who picks which legal object this requirement lands on. See [TargetChooser] — the target
      * stays the *controller's* target either way (legality, respondability and CR 115 all still
      * run relative to the controller); only the selection decision is routed elsewhere.
@@ -572,6 +583,7 @@ data class TargetObject(
         val base = when {
             ownerDistribution != null -> "${if (ownerDistribution == OwnerDistribution.UP_TO_ONE) "up to one" else "one"} $target $noun per eligible owner"
             onePerCardType -> "up to one $target $noun of each card type"
+            onePerColor -> "up to one $target $noun of each color"
             unlimited -> "any number of $target $plural"
             // "for each opponent, up to one target creature that player controls"
             perOpponent -> "up to one $target ${noun.removeSuffix(" an opponent controls")} per opponent"

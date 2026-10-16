@@ -5384,6 +5384,49 @@
     ]
 }
 
+// Rogues' Gallery
+{
+    "name": "Rogues' Gallery",
+    "manaCost": "{2}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "For each color, return up to one target creature card of that color from your graveyard to your hand.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": "IterationSpace.Targets",
+            "body": {
+                "type": "MoveToZone",
+                "target": {
+                    "type": "ContextTarget",
+                    "index": 0
+                },
+                "destination": "Hand"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "unlimited": true,
+                "filter": {
+                    "baseFilter": "creature own:you",
+                    "zone": "Graveyard"
+                },
+                "id": "t0",
+                "onePerColor": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "92",
+        "rarity": "UNCOMMON",
+        "artist": "Matt Stewart",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/b/8b9b1fce-585f-442c-99a6-3b9767d68f13.jpg?1783923124"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Sizzling Soloist
 {
     "name": "Sizzling Soloist",

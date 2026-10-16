@@ -88,6 +88,8 @@ export interface TargetingState {
   /** Server-approved pools whose members may be selected together. */
   selectionGroups?: readonly (readonly EntityId[])[] | null
   exclusiveGroups?: readonly (readonly EntityId[])[] | null
+  /** Each candidate's claimable categories; picks must each claim a different one ("of each color"). */
+  distinctCategories?: Readonly<Record<EntityId, readonly string[]>> | null
   action: GameAction
   validTargets: readonly EntityId[]
   selectedTargets: readonly EntityId[]
@@ -258,6 +260,8 @@ export interface DecisionSelectionState {
   /** Server-approved pools whose members may be selected together. */
   selectionGroups?: readonly (readonly EntityId[])[] | null
   exclusiveGroups?: readonly (readonly EntityId[])[] | null
+  /** Each candidate's claimable categories; picks must each claim a different one ("of each color"). */
+  distinctCategories?: Readonly<Record<EntityId, readonly string[]>> | null
   /** The pending decision this selection is for */
   decisionId: string
   /** Valid card IDs that can be selected */

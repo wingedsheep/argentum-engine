@@ -147,6 +147,13 @@ data class TargetRequirementInfo(
     /** Server-computed disjoint groups; at most one target may be picked from each. */
     val exclusiveGroups: List<List<EntityId>>? = null,
     /**
+     * "Up to one target … of each card type / color" ([TargetObject.onePerCardType],
+     * [TargetObject.onePerColor]): each legal candidate mapped to the categories it may claim. A
+     * selection is legal when every pick can be paired with a *different* category from its list
+     * (a matching, so a multicoloured card fills one colour slot). Set by `withTargetConstraints`.
+     */
+    val distinctCategories: Map<EntityId, List<String>>? = null,
+    /**
      * When non-null, the combined mana value of the chosen card targets for this requirement may
      * not exceed this cap — "any number of target creature cards with total mana value X or less"
      * (Fire Lord Sozin). Already resolved to a concrete integer at decision-build time (so a
@@ -168,12 +175,6 @@ data class TargetRequirementInfo(
      * [DecisionValidators.validateTargets].
      */
     val differentControllers: Boolean = false,
-    /**
-     * When true, the chosen targets must be at most one of each card type — each paired with a
-     * different card type it has ("up to one target nonland card of each card type", Uldaros
-     * Theorix). Enforced in [DecisionValidators.validateTargets].
-     */
-    val onePerCardType: Boolean = false,
     /**
      * When true, a target for this requirement must differ from every target chosen for an
      * earlier requirement of the same decision — "another target" wording (`TargetOther`).
@@ -219,9 +220,10 @@ fun ChooseTargetsDecision.legalTargetsFor(index: Int, chosen: Map<Int, List<Enti
 fun ChooseTargetsDecision.minimalSelection(): Map<Int, List<EntityId>> =
     targetRequirements.fold(emptyMap()) { chosen, req ->
         val pool = legalTargetsFor(req.index, chosen)
-        val compatible = req.exclusiveGroups?.let { exclusive ->
-            constrainedTargetSelection(pool, req.minTargets, req.minTargets, req.selectionGroups, exclusive)
-        } ?: req.selectionGroups?.firstOrNull { group -> group.count { it in pool } >= req.minTargets }
+        val compatible = if (req.exclusiveGroups != null || req.distinctCategories != null) {
+            constrainedTargetSelection(pool, req.minTargets, req.minTargets, req.selectionGroups, req.exclusiveGroups,
+                distinctCategories = req.distinctCategories)
+        } else req.selectionGroups?.firstOrNull { group -> group.count { it in pool } >= req.minTargets }
             ?.filter { it in pool } ?: if (req.selectionGroups == null) pool else emptyList()
         chosen + (req.index to compatible.take(req.minTargets))
     }
