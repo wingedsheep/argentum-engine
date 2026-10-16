@@ -53,7 +53,8 @@ class UrabraskHereticPraetorScenarioTest : ScenarioTestBase() {
                     game.handSize(2) shouldBe p2Hand
                     cardNames(game, game.state.getExile(game.player2Id)) shouldContain "Grizzly Bears"
                 }
-                withClue("Urabrask's controller gets nothing from it") {
+                withClue("it's their library, not Urabrask's controller's") {
+                    game.state.getExile(game.player1Id) shouldBe emptyList()
                     game.handSize(1) shouldBe p1Hand
                 }
 
