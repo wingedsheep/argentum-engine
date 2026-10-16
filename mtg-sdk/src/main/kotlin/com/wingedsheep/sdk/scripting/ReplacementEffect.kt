@@ -920,12 +920,22 @@ data class PreventDamageByRemovingCounter(
     val requiresCounter: Boolean = false,
     override val appliesTo: EventPattern = EventPattern.DamageEvent(
         recipient = Recipient.Self
-    )
+    ),
+    /**
+     * The rest of the replacement after the removal — Bloatfly Swarm's "…, then give each player
+     * a rad counter for each +1/+1 counter removed this way". Part of the same replacement, so it
+     * is a replacement rider (no stack, no priority), run once per application that removed at
+     * least one counter, with the number removed readable as
+     * `DynamicAmounts.triggerCountersRemoved()`. It runs even when the damage can't be prevented,
+     * because the counters are still removed (the Bloatfly ruling).
+     */
+    val onRemoved: Effect? = null
 ) : ReplacementEffect {
     override val description: String = buildString {
         append("If ${appliesTo.description}")
         if (requiresCounter) append(" while it has a ${counterType.printed} counter on it")
-        append(", prevent that damage and remove ")
+        append(", prevent that damage")
+        append(if (onRemoved != null) ", remove " else " and remove ")
         append(
             when (removalAmount) {
                 CounterRemovalAmount.One -> "a ${counterType.printed} counter"
@@ -933,11 +943,14 @@ data class PreventDamageByRemovingCounter(
             }
         )
         append(" from it")
+        onRemoved?.let { append(", then ${it.description}") }
     }
 
     override fun applyTextReplacement(replacer: TextReplacer): ReplacementEffect {
         val newAppliesTo = appliesTo.applyTextReplacement(replacer)
-        return if (newAppliesTo !== appliesTo) copy(appliesTo = newAppliesTo) else this
+        val newOnRemoved = onRemoved?.applyTextReplacement(replacer)
+        return if (newAppliesTo !== appliesTo || newOnRemoved !== onRemoved)
+            copy(appliesTo = newAppliesTo, onRemoved = newOnRemoved) else this
     }
 }
 

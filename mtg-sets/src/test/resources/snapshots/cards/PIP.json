@@ -749,6 +749,63 @@
     ]
 }
 
+// Bloatfly Swarm
+{
+    "name": "Bloatfly Swarm",
+    "manaCost": "{3}{B}",
+    "typeLine": "Creature — Insect Mutant",
+    "oracleText": "Flying\nThis creature enters with five +1/+1 counters on it.\nIf damage would be dealt to this creature while it has a +1/+1 counter on it, prevent that damage, remove that many +1/+1 counters from it, then give each player a rad counter for each +1/+1 counter removed this way.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 0
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "count": 5,
+                "selfOnly": true
+            },
+            {
+                "type": "PreventDamageByRemovingCounter",
+                "removalAmount": "EqualToDamage",
+                "requiresCounter": true,
+                "onRemoved": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "Each"
+                    },
+                    "body": {
+                        "type": "AddDynamicCounters",
+                        "counterType": "RAD",
+                        "amount": {
+                            "type": "ContextProperty",
+                            "key": "TRIGGER_COUNTERS_REMOVED_AMOUNT"
+                        },
+                        "target": "Controller"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "42",
+        "rarity": "UNCOMMON",
+        "artist": "Igor Krstic",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/d/2d90b839-0808-435d-bcf3-aa7af414c44b.jpg?1783912410",
+        "rulings": [
+            {
+                "date": "2024-03-08",
+                "text": "If damage that can't be prevented is dealt to Bloatfly Swarm, you still remove that many +1/+1 counters from it, and you still give each player a rad counter for each +1/+1 counter removed this way."
+            }
+        ]
+    }
+}
+
 // Boomer Scrapper
 {
     "name": "Boomer Scrapper",

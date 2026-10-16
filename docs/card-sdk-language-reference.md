@@ -16127,6 +16127,14 @@ The priority groups are (CR 616.1a–f):
   damage to any target" must not fire for a counter paid as a cost or removed by an opponent. The
   payoff amount is `ContextPropertyKey.TRIGGER_COUNTERS_REMOVED_AMOUNT` (the removal mirror of
   `TRIGGER_COUNTERS_PLACED_AMOUNT`), i.e. the counters **removed** — not the damage that was prevented.
+  `onRemoved: Effect?` is the rest of the replacement when the printed text goes on *inside* the same
+  sentence — **Bloatfly Swarm**'s "…, remove that many +1/+1 counters from it, then give each player a
+  rad counter for each +1/+1 counter removed this way" (`Effects.ForEachPlayer(Player.Each,
+  Effects.AddDynamicCounters(RAD, DynamicAmounts.triggerCountersRemoved(), EffectTarget.Controller))`).
+  Unlike the Pummeler's reflexive trigger it is a replacement rider on `pendingReplacementRiders`
+  (like `PreventDamage.onPrevented`): no stack, run before SBAs and trigger detection, once per
+  application that removed at least one counter, with `triggerCountersRemoved()` reading the number
+  removed. It runs even for unpreventable damage, because the counters still go (the Bloatfly ruling).
 - `PreventDamagePerCounter(counterType, appliesTo = DamageEvent(recipient = Self))` — for each
   point of matching damage to a permanent, remove one counter of the named type from that permanent
   and prevent that point (Rock Hydra). Prevents at most the number of counters actually removed;

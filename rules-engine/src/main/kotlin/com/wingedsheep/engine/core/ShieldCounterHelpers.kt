@@ -1,6 +1,8 @@
 package com.wingedsheep.engine.core
 
+import com.wingedsheep.engine.replacement.PendingReplacementRider
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.battlefield.ReplacementEffectSourceComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
@@ -178,9 +180,24 @@ fun applyPreventByRemovingCounterToDamage(
         return CounterSpendingShield(state, event = null, damagePrevented = !cantBePrevented)
     }
 
-    val newState = state.updateEntity(entityId) { c ->
+    val afterRemoval = state.updateEntity(entityId) { c ->
         c.with(counters!!.withRemoved(counterType, removed))
     }
+    // "…, then give each player a rad counter for each +1/+1 counter removed this way" (Bloatfly
+    // Swarm) is the rest of this same replacement: queued as a rider, run before SBAs and triggers.
+    val onRemoved = effect.onRemoved
+    val controllerId = state.projectedState.getController(entityId)
+        ?: container.get<ControllerComponent>()?.playerId
+    val newState = if (onRemoved == null || controllerId == null) afterRemoval
+    else afterRemoval.copy(
+        pendingReplacementRiders = afterRemoval.pendingReplacementRiders + PendingReplacementRider(
+            effect = onRemoved,
+            hostId = entityId,
+            controllerId = controllerId,
+            subjectId = entityId,
+            countersRemoved = removed
+        )
+    )
     val event = CountersRemovedEvent(
         entityId,
         counterType,
