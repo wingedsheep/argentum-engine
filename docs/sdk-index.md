@@ -1502,6 +1502,7 @@ Families:
 - `EntersWithKeywords(keywords: List<Keyword>, condition: Condition?, selfOnly: Boolean, appliesTo: EventPattern)` — Permanent enters the battlefield with keywords (CR 614.1c) — the keyword counterpart of EntersWithCounters.
 - `EntersWithRevealCounters(filter: GameObjectFilter, revealSource: Zone, counterType: CounterType, countersPerReveal: Int, appliesTo: EventPattern)` — As this creature enters, you may reveal any number of cards from a zone that match a filter.
 - `ExileCounteredSpellInstead(then: Effect?, appliesTo: EventPattern)` — "If a spell or ability you control would counter a spell, instead exile that spell and you may play that card without paying its mana cost." — Guile.
+- `GainLifeInsteadOfLosingLife(origin: LifeLossOrigin, restrictions: List<Condition>, appliesTo: EventPattern)` — Life loss of one origin becomes life gain: "You gain life rather than lose life from radiation" (Strong, the Brutish Thespian).
 - `HalveDamage(restrictions: List<Condition>, appliesTo: EventPattern)` — Halve damage dealt, **rounded down** — the dividing mirror of DoubleDamage.
 - `HealOtherDamage(appliesTo: EventPattern)` — The damage is still dealt in full, but as part of the same replacement all *other* damage already marked on the recipient is **healed** (CR 701.69a: "If an effect states that damage already dealt t…
 - `LifeLossFloor(floor: Int, restrictions: List<Condition>, appliesTo: EventPattern)` — Floor the resulting life total when a player would lose life from damage.

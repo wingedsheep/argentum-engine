@@ -52,7 +52,8 @@ class DrainLifeExecutor(
             )
             newState = updatedState
             if (event != null) {
-                totalLost += event.oldLife - event.newLife
+                // A GainLifeInsteadOfLosingLife turns the loss into a gain: nothing was lost.
+                totalLost += (event.oldLife - event.newLife).coerceAtLeast(0)
                 events.add(event)
             }
         }

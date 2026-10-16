@@ -16719,6 +16719,17 @@ not update an existing copy.
   and damage-dealt triggers see the full damage. Multiple instances pick the strictest floor. Used by
   Ali from Cairo (`LifeLossFloor(floor = 1, appliesTo = LifeLossEvent(Player.You))`); Worship adds a
   `restrictions = listOf(YouControlACreature)` gate.
+- `GainLifeInsteadOfLosingLife(origin, restrictions, appliesTo)` — non-damage life loss of one
+  `LifeLossOrigin` becomes life gain of that much: "You gain life rather than lose life from radiation"
+  (Strong, the Brutish Thespian: `GainLifeInsteadOfLosingLife(origin = LifeLossOrigin.RADIATION)`).
+  `appliesTo` is a `LifeLossEvent` (default `Player.You`); `restrictions` gate it like `ModifyLifeLoss`'s.
+  The gain is an ordinary life-gain event (life-gain modifiers, "can't gain life" and gain triggers all
+  apply); the rest of the losing effect still happens (radiation still removes its rad counters), and a
+  drain whose victim converts gives the drainer nothing. Against `ModifyLifeLoss` the affected player's
+  order (CR 616.1) is taken as the one that gains more: an increase applies first, a reduction is
+  skipped. **Scope:** applied in `DamageUtils.loseLife` (the `LoseLife` effect and its siblings);
+  `origin = EFFECT` matches every non-radiation `LoseLife`. Damage-caused loss and life payments are
+  never converted.
 - `ReplaceLifePaymentWithLibraryExile(appliesTo)` — a life **payment** becomes an exile of that many cards
   off the top of the payer's library, when the library is at least that deep (Ashiok, Wicked Manipulator).
   `appliesTo` is a `LifePaymentEvent` whose `player` filter picks whose payments are replaced (default
@@ -18070,7 +18081,7 @@ into a public zone causes 1 life loss from radiation and removal of one rad coun
 is independent of preventing life loss. Shared-team turns give each active player their own trigger.
 The client displays the public counter total on player orbs and opponent seats. Scenario JSON
 can stage player counters with `player1.counters` / `player2.counters` (for example `{"RAD": 4}`).
-Radiation-specific life-loss conversion remains a separate replacement capability.
+`GainLifeInsteadOfLosingLife(origin = LifeLossOrigin.RADIATION)` turns the radiation life loss into gain.
 
 ### Secret simultaneous choices
 

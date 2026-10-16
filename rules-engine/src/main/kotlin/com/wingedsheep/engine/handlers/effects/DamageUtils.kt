@@ -74,8 +74,10 @@ import com.wingedsheep.sdk.scripting.DoubleDamage
 import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.HealOtherDamage
 import com.wingedsheep.sdk.scripting.ModifyDamageAmount
+import com.wingedsheep.sdk.scripting.GainLifeInsteadOfLosingLife
 import com.wingedsheep.sdk.scripting.LifeLossFloor
 import com.wingedsheep.sdk.scripting.ModifyLifeLoss
+import com.wingedsheep.sdk.scripting.effects.LifeLossOrigin
 import com.wingedsheep.sdk.scripting.PreventDamage
 import com.wingedsheep.sdk.scripting.PreventLifeGain
 import com.wingedsheep.sdk.scripting.RedirectDamage
@@ -861,6 +863,12 @@ object DamageUtils {
             applyStaticLifeLossModification(state, playerId, amount, predicateEvaluator = predicateEvaluator)
         } else {
             amount
+        }
+        if (applyLifeLossModification && amount > 0 &&
+            lifeLossBecomesGain(state, playerId, reason, predicateEvaluator)) {
+            // GainLifeInsteadOfLosingLife (Strong, the Brutish Thespian): the affected player orders
+            // it against ModifyLifeLoss (CR 616.1), so take whichever order gains more life.
+            return gainLife(state, playerId, maxOf(amount, lossAmount), predicateEvaluator = predicateEvaluator)
         }
         val newLife = currentLife - lossAmount
         var newState = state.withLifeTotal(playerId, newLife)
@@ -2887,6 +2895,29 @@ object DamageUtils {
             if (modifiedAmount < 0) modifiedAmount = 0
         }
         return modifiedAmount
+    }
+
+    /**
+     * Whether a [GainLifeInsteadOfLosingLife] turns [playerId]'s non-damage life loss, tagged
+     * [reason], into life gain. The effect's origin is read off the reason: `RADIATION` for the
+     * inherent radiation trigger, `LIFE_LOSS` for every other `LoseLife` effect.
+     */
+    private fun lifeLossBecomesGain(
+        state: GameState,
+        playerId: EntityId,
+        reason: LifeChangeReason,
+        predicateEvaluator: PredicateEvaluator
+    ): Boolean {
+        val origin = when (reason) {
+            LifeChangeReason.RADIATION -> LifeLossOrigin.RADIATION
+            LifeChangeReason.LIFE_LOSS -> LifeLossOrigin.EFFECT
+            else -> return false
+        }
+        var converts = false
+        forEachLifeLossReplacement<GainLifeInsteadOfLosingLife>(state, playerId, predicateEvaluator, { it.restrictions }) {
+            if (it.origin == origin) converts = true
+        }
+        return converts
     }
 
     /**

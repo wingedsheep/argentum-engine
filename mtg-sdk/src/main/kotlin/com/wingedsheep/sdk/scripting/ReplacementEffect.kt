@@ -1823,6 +1823,50 @@ data class LifeLossFloor(
 }
 
 /**
+ * Life loss of one [origin] becomes life gain: "You gain life rather than lose life from radiation"
+ * (Strong, the Brutish Thespian). The [appliesTo]-matching player gains that much life instead of
+ * losing it; the gain is an ordinary life-gain event, so life-gain modifiers, "can't gain life" and
+ * "whenever you gain life" triggers all see it. Anything else the losing effect does still happens
+ * (radiation still removes its rad counters).
+ *
+ * When `ModifyLifeLoss` replacements also apply, the affected player orders them (CR 616.1) and
+ * the engine takes the order that gains more life: an increase applies before the conversion, a
+ * reduction is skipped by converting first.
+ *
+ * Scope: non-damage life loss from a `LoseLife` effect of the given [origin]
+ * (`LifeLossOrigin.RADIATION` is the inherent radiation trigger's). Damage-caused loss and life
+ * payments are never converted.
+ */
+@SerialName("GainLifeInsteadOfLosingLife")
+@Serializable
+data class GainLifeInsteadOfLosingLife(
+    val origin: com.wingedsheep.sdk.scripting.effects.LifeLossOrigin,
+    override val restrictions: List<Condition> = emptyList(),
+    override val appliesTo: EventPattern = EventPattern.LifeLossEvent(Player.You)
+) : ReplacementEffect {
+    override val description: String = buildString {
+        val restrictionDesc = restrictions.joinToString(" and ") { it.description.removePrefix("if ") }
+        if (restrictionDesc.isNotEmpty()) append(restrictionDesc.replaceFirstChar { it.uppercase() }).append(", ")
+        val who = when ((appliesTo as? EventPattern.LifeLossEvent)?.player) {
+            Player.You -> "you gain"
+            Player.EachOpponent -> "each opponent gains"
+            else -> "each player gains"
+        }
+        append(if (restrictionDesc.isEmpty()) who.replaceFirstChar { it.uppercase() } else who)
+        append(" life rather than lose life")
+        if (origin == com.wingedsheep.sdk.scripting.effects.LifeLossOrigin.RADIATION) append(" from radiation")
+    }
+
+    override fun applyTextReplacement(replacer: TextReplacer): ReplacementEffect {
+        val newAppliesTo = appliesTo.applyTextReplacement(replacer)
+        val newRestrictions = restrictions.map { it.applyTextReplacement(replacer) }
+        val anyChanged = newAppliesTo !== appliesTo ||
+            newRestrictions.zip(restrictions).any { (n, o) -> n !== o }
+        return if (anyChanged) copy(appliesTo = newAppliesTo, restrictions = newRestrictions) else this
+    }
+}
+
+/**
  * A life *payment* becomes an exile of that many cards off the top of the payer's library, so long
  * as the library is deep enough to cover it. Ashiok, Wicked Manipulator: "If you would pay life
  * while your library has at least that many cards in it, exile that many cards from the top of your
