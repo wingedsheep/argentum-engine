@@ -5,6 +5,7 @@ import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.ControlChangeDirection
+import com.wingedsheep.sdk.scripting.DrawStepFirstCard
 import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.EventPattern.*
 import com.wingedsheep.sdk.scripting.ExploreReveal
@@ -955,11 +956,11 @@ class PlayerTriggerSubject internal constructor(private val player: Player) {
     // ---- Cards and lands ---------------------------------------------------------------------
 
     /**
-     * "draws a card" — once per card (CR 121.2). [exceptFirstInDrawStep] skips the turn-based draw
-     * (CR 504.1, Orcish Bowmasters).
+     * "draws a card" — once per card (CR 121.2). [firstInDrawStep] skips (Orcish Bowmasters) or
+     * keeps only (Wiretapping) the first card drawn in each of the drawer's own draw steps (CR 504.1).
      */
-    fun draws(exceptFirstInDrawStep: Boolean = false): TriggerSpec =
-        spec(DrawEvent(player, exceptFirstInDrawStep = exceptFirstInDrawStep))
+    fun draws(firstInDrawStep: DrawStepFirstCard = DrawStepFirstCard.INCLUDED): TriggerSpec =
+        spec(DrawEvent(player, firstInDrawStep = firstInDrawStep))
 
     /** "draws their [n]th card each turn" — once, even when one multi-card draw crosses it (CR 121.5: no "draw", no count). */
     fun drawsNth(n: Int): TriggerSpec = spec(NthCardDrawnEvent(nthCard = n, player = player))

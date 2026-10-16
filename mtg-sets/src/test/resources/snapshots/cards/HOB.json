@@ -717,7 +717,7 @@
                 },
                 "appliesTo": {
                     "type": "DrawEvent",
-                    "exceptFirstInDrawStep": true
+                    "firstInDrawStep": "EXCLUDED"
                 }
             },
             "MultiplyTokenCreation"

@@ -6,6 +6,7 @@ import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.dsl.Targets
+import com.wingedsheep.sdk.scripting.DrawStepFirstCard
 
 /**
  * A-Orcish Bowmasters (Alchemy rebalance of Orcish Bowmasters)
@@ -32,7 +33,7 @@ val AOrcishBowmasters = card("A-Orcish Bowmasters") {
     keywords(Keyword.FLASH)
 
     triggeredAbility {
-        trigger = Triggers.anOpponent.draws(true)
+        trigger = Triggers.anOpponent.draws(DrawStepFirstCard.EXCLUDED)
         val t = target(Targets.Any)
         effect = Effects.DealDamage(1, t) then Effects.Amass(1, "Orc")
     }

@@ -18,7 +18,7 @@
                 "trigger": {
                     "type": "DrawEvent",
                     "player": "EachOpponent",
-                    "exceptFirstInDrawStep": true
+                    "firstInDrawStep": "EXCLUDED"
                 },
                 "binding": "ANY",
                 "effect": {
@@ -12577,7 +12577,7 @@
                 "trigger": {
                     "type": "DrawEvent",
                     "player": "EachOpponent",
-                    "exceptFirstInDrawStep": true
+                    "firstInDrawStep": "EXCLUDED"
                 },
                 "binding": "ANY",
                 "effect": {

@@ -6,6 +6,7 @@ import com.wingedsheep.assay.syntax.printLine
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.scripting.AbilityId
+import com.wingedsheep.sdk.scripting.DrawStepFirstCard
 import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.TriggeredAbility
 import com.wingedsheep.sdk.scripting.references.Player
@@ -57,7 +58,7 @@ class CardDrawnTriggersTest : StringSpec({
             "Whenever an opponent draws a card except the first one they draw in each of their draw steps, " +
                 "~ deals 1 damage to any target.",
         ).trigger
-        trigger shouldBe EventPattern.DrawEvent(player = Player.EachOpponent, exceptFirstInDrawStep = true)
+        trigger shouldBe EventPattern.DrawEvent(player = Player.EachOpponent, firstInDrawStep = DrawStepFirstCard.EXCLUDED)
     }
 
     // Scrawling Crawler: "that player" is the drawer.

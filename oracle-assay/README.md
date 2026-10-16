@@ -5633,7 +5633,7 @@ Tail keys "you draw a …" and "opponent draws a …". The grammar read the ordi
 the every-draw one it is the sibling of: `Triggers.<player>.draws()` is `DrawEvent`, the drawer is a
 row for the reason it is one in the ordinal rule, and the payoff is the same source cascade because a
 draw names no object (CR 121.2). Orcish Bowmasters' "except the first one they draw in each of their
-draw steps" is the event's `exceptFirstInDrawStep` flag and its own row, since only the opponent's
+draw steps" is the event's `firstInDrawStep = EXCLUDED` scope and its own row, since only the opponent's
 surface prints it. One row joins the life vocabulary — "that player loses {n} life", the drawer as
 `Player.TriggeringPlayer`, as the hand-written cards spell it.
 

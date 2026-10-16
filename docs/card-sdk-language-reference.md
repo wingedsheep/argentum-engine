@@ -7079,7 +7079,7 @@ minLoyaltyRemoved, exhaust, includeManaAbilities, excludeManaAbilities, withoutT
 `attackTriggersAbility()`, `attacks(with?, minAttackers?)` (you declare attackers), `isAttacked(…)`,
 `isDealtDamage(by?, damageType?)`, `isDealtCombatDamage()`, `getsCounters(type?)` (`you` only — counters
 put on the player by anyone: "whenever you get one or more {E}", `CountersPlacedEvent.recipient`),
-`draws(exceptFirstInDrawStep?)`,
+`draws(firstInDrawStep?)`,
 `drawsNth(n)`, `revealsFirstDraw(card?)`, `discards(card?, batch?, firstTimeEachTurn?)`, `mills(card?, batch?)`, `cycles()`, `playsLand(…)`,
 `permanentTurnedFaceUp(filter)`, `searchesLibrary()`, `shufflesLibrary()`, `gainsLife(firstTimeEachTurn?)`,
 `losesLife()`, `losesGame()`, `sacrifices(filter, batch?)`,
@@ -7692,12 +7692,19 @@ in the repo today):
   single "draw N" effect triggers it N times.
 - `Triggers.anOpponent.draws()` — when an opponent draws a card (once per card; the `Player.EachOpponent` analogue
   of `Triggers.you.draws()`).
-- `Triggers.anOpponent.draws(true)` — whenever an opponent draws a card **except** the first
-  card they draw in each of their own draw steps (CR 504.1's turn-based draw is exempt; every
-  other draw — additional draw-step draws and all draws outside the draw step — fires once per
-  card). Backed by `DrawEvent(exceptFirstInDrawStep = true)` plus a per-player draw-step-start
-  snapshot (`GameState.drawStepStartDrawCountByPlayer`) that identifies the one exempt card. Used
-  by Orcish Bowmasters / A-Orcish Bowmasters.
+- `Triggers.anOpponent.draws(DrawStepFirstCard.EXCLUDED)` — whenever an opponent draws a card
+  **except** the first card they draw in each of their own draw steps (CR 504.1's turn-based draw
+  is exempt; every other draw — additional draw-step draws and all draws outside the draw step —
+  fires once per card). Used by Orcish Bowmasters / A-Orcish Bowmasters.
+- `Triggers.you.draws(DrawStepFirstCard.ONLY)` — "whenever you draw your first card during each
+  of your draw steps": fires for that one card only, once per draw step (an additional draw step
+  from an extra beginning phase has its own first card; draws outside your draw step never fire
+  it). Used by Wiretapping.
+- `DrawEvent.firstInDrawStep: DrawStepFirstCard` (`INCLUDED` default / `EXCLUDED` / `ONLY`) is the
+  axis behind both, on triggers and on draw replacements alike (`ReplaceDrawWith(appliesTo =
+  DrawEvent(firstInDrawStep = EXCLUDED))` — Bard, King of Dale). The singled-out card is identified
+  by a per-player draw-step-start snapshot (`GameState.drawStepStartDrawCountByPlayer`): it is the
+  draw made while the player's cards-drawn-this-turn count still equals that snapshot.
 - `Triggers.<player>.drawsNth(n)` — fires when the drawing player draws their Nth card each turn
   (CR 121.2). Draw analogue of `Triggers.<player>.castsNth(n, spell)`; backed by `CardsDrawnThisTurnComponent` (reset
   per turn). Fires exactly once per crossing — a single multi-card draw that spans the

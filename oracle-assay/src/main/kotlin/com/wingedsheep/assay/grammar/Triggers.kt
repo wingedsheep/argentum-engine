@@ -8,6 +8,7 @@ import com.wingedsheep.assay.syntax.oneOf
 import com.wingedsheep.assay.syntax.phrase
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.dsl.Effects
+import com.wingedsheep.sdk.scripting.DrawStepFirstCard
 import com.wingedsheep.sdk.scripting.events.DamageType
 import com.wingedsheep.sdk.scripting.events.Recipient
 import com.wingedsheep.sdk.scripting.events.SpellCastPredicate
@@ -529,7 +530,7 @@ object Triggers {
      * `Player.TriggeringPlayer`.
      *
      * Orcish Bowmasters' "except the first one they draw in each of their draw steps" is the
-     * event's `exceptFirstInDrawStep` flag — the turn-based draw of CR 504.1 — and is its own row
+     * event's `firstInDrawStep = EXCLUDED` scope — the turn-based draw of CR 504.1 — and is its own row
      * rather than a suffix slot, because only the opponent's surface prints it ("they", "their").
      */
     private val everyDrawPrefixes: List<Prefix> = listOf(
@@ -538,7 +539,7 @@ object Triggers {
         triggerRule("whenever a player draws a card", SdkTriggers.player(Player.Each).draws()),
         triggerRule(
             "whenever an opponent draws a card except the first one they draw in each of their draw steps",
-            SdkTriggers.player(Player.EachOpponent).draws(exceptFirstInDrawStep = true),
+            SdkTriggers.player(Player.EachOpponent).draws(DrawStepFirstCard.EXCLUDED),
         ),
     )
 

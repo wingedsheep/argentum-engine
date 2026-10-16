@@ -6,6 +6,7 @@ import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.dsl.Targets
+import com.wingedsheep.sdk.scripting.DrawStepFirstCard
 
 /**
  * Orcish Bowmasters
@@ -21,7 +22,7 @@ import com.wingedsheep.sdk.dsl.Targets
  * ability with two trigger conditions. They never fire from the same event, so we model them as
  * two sibling triggered abilities sharing the same effect: deal 1 damage to any target, then
  * amass Orcs 1. The "except the first card they draw in each of their draw steps" clause is the
- * `Triggers.anOpponent.draws(true)` primitive (CR 504.1 turn-based draw is exempt;
+ * `Triggers.anOpponent.draws(DrawStepFirstCard.EXCLUDED)` primitive (CR 504.1 turn-based draw is exempt;
  * every other draw fires once per card).
  */
 val OrcishBowmasters = card("Orcish Bowmasters") {
@@ -41,7 +42,7 @@ val OrcishBowmasters = card("Orcish Bowmasters") {
     }
 
     triggeredAbility {
-        trigger = Triggers.anOpponent.draws(true)
+        trigger = Triggers.anOpponent.draws(DrawStepFirstCard.EXCLUDED)
         val t = target(Targets.Any)
         effect = Effects.DealDamage(1, t) then Effects.Amass(1, "Orc")
     }

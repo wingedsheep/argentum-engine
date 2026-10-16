@@ -417,9 +417,10 @@ data class GameState(
      * count captured at the start of that player's most recent draw step (set by
      * [com.wingedsheep.engine.core.DrawPhaseManager.performDrawStep]). Used to identify the
      * *first* card a player draws in their own draw step (CR 504.1) — the card exempted by the
-     * "except the first card they draw in each of their draw steps" clause (Orcish Bowmasters).
-     * A draw in this draw step is the exempt one iff the player's cards-drawn-this-turn count
-     * just before it equals this snapshot. Cleared at every turn boundary.
+     * "except the first card they draw in each of their draw steps" clause (Orcish Bowmasters)
+     * and the only one "whenever you draw your first card during each of your draw steps" sees
+     * (Wiretapping). A draw in this draw step is that card iff the player's cards-drawn-this-turn
+     * count just before it equals this snapshot. Cleared at every turn boundary.
      */
     val drawStepStartDrawCountByPlayer: Map<EntityId, Int> = emptyMap(),
 
@@ -1043,6 +1044,17 @@ data class GameState(
                 getEntity(it)?.has<com.wingedsheep.engine.state.components.player.PlayerLostComponent>() == true
             }
         }
+
+    /**
+     * Whether the card [playerId] draws next is the first one they draw in their own current draw
+     * step (CR 504.1) — read before that draw happens, against [drawStepStartDrawCountByPlayer].
+     */
+    fun nextDrawIsFirstInOwnDrawStep(playerId: EntityId): Boolean {
+        if (step != Step.DRAW || !isActiveTurnFor(playerId)) return false
+        val drawnSoFar = getEntity(playerId)
+            ?.get<com.wingedsheep.engine.state.components.player.CardsDrawnThisTurnComponent>()?.count ?: 0
+        return drawnSoFar == (drawStepStartDrawCountByPlayer[playerId] ?: 0)
+    }
 
     fun isActiveTurnFor(playerId: EntityId): Boolean {
         val active = activePlayerId ?: return false

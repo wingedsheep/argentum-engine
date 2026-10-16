@@ -34,6 +34,7 @@ import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.ChoiceSlot
+import com.wingedsheep.sdk.scripting.DrawStepFirstCard
 import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.ExploreReveal
 import com.wingedsheep.sdk.scripting.GameObjectFilter
@@ -1203,11 +1204,12 @@ class TriggerMatcher(
      * [CardsDrawnEvent] (CR 121.2 — each drawn card is an individual draw, so the trigger fires
      * once per card). Returns 0 when the drawing player doesn't match the trigger's player scope.
      *
-     * When [EventPattern.DrawEvent.exceptFirstInDrawStep] is set, the first card the drawing
-     * player draws in their *own* draw step (CR 504.1) is exempt and subtracted from the count.
-     * That exempt card is the one drawn when the player's cards-drawn-this-turn count equals the
+     * [EventPattern.DrawEvent.firstInDrawStep] singles out the first card the drawing player
+     * draws in their *own* draw step (CR 504.1): [DrawStepFirstCard.EXCLUDED] subtracts it from the
+     * count (Orcish Bowmasters), [DrawStepFirstCard.ONLY] fires for it alone (Wiretapping). That
+     * card is the one drawn when the player's cards-drawn-this-turn count equals the
      * draw-step-start snapshot ([GameState.drawStepStartDrawCountByPlayer]); it's contained in this
-     * batch iff `countBefore <= snapshot < countAfter`. Used by Orcish Bowmasters.
+     * batch iff `countBefore <= snapshot < countAfter`.
      *
      * [state] is the POST-execution state, so [CardsDrawnThisTurnComponent] already includes every
      * draw of the whole event batch. When one execution emitted several [CardsDrawnEvent]s for the
@@ -1223,19 +1225,23 @@ class TriggerMatcher(
     ): Int {
         if (!matchesPlayer(state, trigger.player, event.playerId, controllerId)) return 0
         val total = event.count
-        if (!trigger.exceptFirstInDrawStep || total == 0) return total
+        if (trigger.firstInDrawStep == DrawStepFirstCard.INCLUDED || total == 0) return total
 
         val drawer = event.playerId
-        // Exemption only applies in the drawing player's own draw step.
+        // The singled-out card exists only in the drawing player's own draw step.
         val inOwnDrawStep = state.isActiveTurnFor(drawer) && state.step == Step.DRAW
-        if (!inOwnDrawStep) return total
-
-        val countAfter = (state.getEntity(drawer)?.get<CardsDrawnThisTurnComponent>()?.count ?: 0) -
-            samePlayerDrawsLaterInBatch
-        val countBefore = countAfter - total
-        val snapshot = state.drawStepStartDrawCountByPlayer[drawer] ?: 0
-        val exemptInBatch = if (countBefore <= snapshot && snapshot < countAfter) 1 else 0
-        return total - exemptInBatch
+        val firstInBatch = if (inOwnDrawStep) {
+            val countAfter = (state.getEntity(drawer)?.get<CardsDrawnThisTurnComponent>()?.count ?: 0) -
+                samePlayerDrawsLaterInBatch
+            val countBefore = countAfter - total
+            val snapshot = state.drawStepStartDrawCountByPlayer[drawer] ?: 0
+            if (countBefore <= snapshot && snapshot < countAfter) 1 else 0
+        } else 0
+        return when (trigger.firstInDrawStep) {
+            DrawStepFirstCard.INCLUDED -> total
+            DrawStepFirstCard.EXCLUDED -> total - firstInBatch
+            DrawStepFirstCard.ONLY -> firstInBatch
+        }
     }
 
     /**

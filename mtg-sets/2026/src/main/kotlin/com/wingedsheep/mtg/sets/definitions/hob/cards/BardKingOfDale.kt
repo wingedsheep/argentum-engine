@@ -4,6 +4,7 @@ import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.scripting.DrawStepFirstCard
 import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.MultiplyTokenCreation
 import com.wingedsheep.sdk.scripting.ReplaceDrawWith
@@ -45,7 +46,7 @@ val BardKingOfDale = card("Bard, King of Dale") {
             replacementEffect = Effects.DrawCards(2),
             appliesTo = EventPattern.DrawEvent(
                 player = Player.You,
-                exceptFirstInDrawStep = true,
+                firstInDrawStep = DrawStepFirstCard.EXCLUDED,
             ),
         )
     )

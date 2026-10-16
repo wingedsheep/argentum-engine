@@ -21,7 +21,7 @@ import io.kotest.matchers.shouldBe
 
 /**
  * Orcish Bowmasters / A-Orcish Bowmasters and the underlying
- * `Triggers.anOpponent.draws(true)` primitive.
+ * `Triggers.anOpponent.draws(DrawStepFirstCard.EXCLUDED)` primitive.
  *
  * Rules proven (every clause has a paired assertion):
  *  - CR 504.1 — the first card a player draws in their own draw step (the turn-based draw) is

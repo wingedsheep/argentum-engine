@@ -273,21 +273,26 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
      * - "you would draw a card" → DrawEvent(player = Player.You)
      * - "an opponent would draw" → DrawEvent(player = Player.EachOpponent)
      *
-     * When [exceptFirstInDrawStep] is set, the first card the drawing player draws in
-     * each of their own draw steps (CR 504.1's turn-based draw, normally) does **not**
-     * fire the trigger — every other draw they make does. This is the Orcish Bowmasters
-     * clause "except the first card they draw in each of their draw steps".
+     * [firstInDrawStep] scopes the pattern by the first card the drawing player draws in
+     * each of their own draw steps (CR 504.1's turn-based draw, normally): [DrawStepFirstCard.EXCLUDED]
+     * is Orcish Bowmasters' "except the first card they draw in each of their draw steps";
+     * [DrawStepFirstCard.ONLY] is Wiretapping's "whenever you draw your first card during each of
+     * your draw steps".
      */
     @SerialName("DrawEvent")
     @Serializable
     data class DrawEvent(
         val player: Player = Player.You,
-        val exceptFirstInDrawStep: Boolean = false,
+        val firstInDrawStep: DrawStepFirstCard = DrawStepFirstCard.INCLUDED,
     ) : EventPattern {
         override val description: String = buildString {
             append(player.description)
             append(" would draw a card")
-            if (exceptFirstInDrawStep) append(" (except the first each draw step)")
+            when (firstInDrawStep) {
+                DrawStepFirstCard.INCLUDED -> Unit
+                DrawStepFirstCard.EXCLUDED -> append(" (except the first each draw step)")
+                DrawStepFirstCard.ONLY -> append(" (only the first each of their draw steps)")
+            }
         }
     }
 
@@ -3684,4 +3689,20 @@ internal fun describeObjectsForEvent(filter: GameObjectFilter): String {
     }
 
     return "$pluralized$controllerSuffix"
+}
+
+/**
+ * How an [EventPattern.DrawEvent] treats the first card a player draws in each of their own draw
+ * steps (CR 504.1 — normally the turn-based draw, but whichever card is drawn first in that step).
+ */
+@Serializable
+enum class DrawStepFirstCard {
+    /** Every draw matches ("whenever you draw a card"). */
+    INCLUDED,
+
+    /** Every draw but that one matches (Orcish Bowmasters, Bard, King of Dale). */
+    EXCLUDED,
+
+    /** Only that draw matches (Wiretapping). */
+    ONLY,
 }
