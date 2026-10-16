@@ -63,12 +63,10 @@ val TheMotherlodeExcavator = card("The Motherlode, Excavator") {
                 "defending player controls, and creatures that player controls without flying can't " +
                 "block this turn."
         ) {
-            val land = target(TargetFilter(GameObjectFilter.NonbasicLand.defendingPlayerControls()))
+            val defending = EffectTarget.PlayerRef(Player.DefendingPlayer)
+            val land = target(TargetFilter(GameObjectFilter.NonbasicLand.targetPlayerControls(defending)))
             effect = Effects.Destroy(land) then Effects.CantBlockGroup(
-                GroupFilter(
-                    GameObjectFilter.Creature.withoutKeyword(Keyword.FLYING)
-                        .targetPlayerControls(EffectTarget.PlayerRef(Player.DefendingPlayer))
-                )
+                GroupFilter(GameObjectFilter.Creature.withoutKeyword(Keyword.FLYING).targetPlayerControls(defending))
             )
         }
     }

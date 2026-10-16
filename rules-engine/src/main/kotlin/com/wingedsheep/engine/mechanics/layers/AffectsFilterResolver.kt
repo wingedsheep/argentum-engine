@@ -366,11 +366,9 @@ internal class AffectsFilterResolver(
                         // restriction resolved (ResolutionPlayerBaker), or a state-relative reference.
                         // Answered by the evaluator's shared player leaf; it must never fail open, or
                         // a one-player restriction would bind every controller's creatures.
-                        is ControllerPredicate.ControlledByReferencedPlayer -> when {
-                            entityController == null -> false
-                            leaf.target is EffectTarget.SpecificEntity ->
-                                entityController == (leaf.target as EffectTarget.SpecificEntity).entityId
-                            else -> relationalContext?.let { ctx ->
+                        is ControllerPredicate.ControlledByReferencedPlayer -> when (val ref = leaf.target) {
+                            is EffectTarget.SpecificEntity -> entityController == ref.entityId
+                            else -> if (entityController == null) false else relationalContext?.let { ctx ->
                                 relationalEvaluator.playerMatchesControlLeaf(
                                     state, relationalProjection, entityController, leaf, ctx
                                 )
