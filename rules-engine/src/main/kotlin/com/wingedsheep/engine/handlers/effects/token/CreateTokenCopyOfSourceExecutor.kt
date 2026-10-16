@@ -181,7 +181,7 @@ class CreateTokenCopyOfSourceExecutor(
             // counter. BattlefieldEntry.place skips enters-with-counters setup, so apply the shared
             // Saga-entry helper (as the standard moveToZone pipeline does). No-op for non-Sagas.
             val (sagaState, sagaEvents) = com.wingedsheep.engine.handlers.effects.ZoneMovementUtils
-                .applySagaEntryIfNeeded(newState, tokenId)
+                .applySagaEntryIfNeeded(newState, tokenId, predicateEvaluator)
             newState = sagaState
             events.addAll(sagaEvents)
 

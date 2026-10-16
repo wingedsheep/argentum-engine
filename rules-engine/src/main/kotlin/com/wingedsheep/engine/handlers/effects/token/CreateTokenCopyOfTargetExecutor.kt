@@ -519,7 +519,7 @@ class CreateTokenCopyOfTargetExecutor(
             // and intentionally skips enters-with-counters setup, so apply the shared Saga-entry
             // helper here — the same one the standard moveToZone pipeline uses. No-op for non-Sagas.
             val (sagaState, sagaEvents) = com.wingedsheep.engine.handlers.effects.ZoneMovementUtils
-                .applySagaEntryIfNeeded(newState, tokenId)
+                .applySagaEntryIfNeeded(newState, tokenId, amountEvaluator.predicates)
             newState = sagaState
             events.addAll(sagaEvents)
 

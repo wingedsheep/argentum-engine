@@ -365,6 +365,13 @@ data class ReplaceTokenCreationWithToken(
  *                    is placing the counters — the recipient filter on [appliesTo] is the
  *                    sole "you control" gate (e.g., Doubling Season: "on a permanent you
  *                    control").
+ * @param effectsOnly When true, only placements made by an *effect* are doubled — "If **an effect**
+ *                    would put one or more counters…" (Doubling Season). Counters put on as a
+ *                    cost (a [+1] loyalty cost, blight, "put a counter on this: …") and by a
+ *                    turn-based action (a Saga's precombat-main lore counter) are not effects, so
+ *                    they pass through unchanged. When false (the default), every placement counts
+ *                    — "If one or more counters **would be put**" (Corpsejack Menace) and "If **you**
+ *                    would put" (Innkeeper's Talent) both see costs too.
  */
 @SerialName("DoubleCounterPlacement")
 @Serializable
@@ -373,7 +380,8 @@ data class DoubleCounterPlacement(
     override val appliesTo: EventPattern = EventPattern.CounterPlacementEvent(
         counterType = CounterType.PLUS_ONE_PLUS_ONE,
         recipient = Recipient.CreatureYouControl
-    )
+    ),
+    val effectsOnly: Boolean = false
 ) : ReplacementEffect {
     override val description: String =
         "If ${appliesTo.description}, place twice that many counters instead"

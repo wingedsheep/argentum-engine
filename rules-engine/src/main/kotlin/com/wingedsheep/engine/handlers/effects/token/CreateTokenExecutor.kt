@@ -7,6 +7,7 @@ import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.handlers.effects.EnterTappedReplacements
 import com.wingedsheep.engine.handlers.effects.EntersWithReplacements
+import com.wingedsheep.engine.handlers.effects.ReplacementEffectUtils
 import com.wingedsheep.engine.state.Component
 import com.wingedsheep.engine.state.ComponentContainer
 import com.wingedsheep.engine.state.GameState
@@ -316,31 +317,6 @@ class CreateTokenExecutor(
                     container, effect.staticAbilities
                 )
             }
-            if (effect.initialCounters.isNotEmpty()) {
-                var counters = CountersComponent()
-                // A token created "with a +1/+1 counter on it" is given those counters as it
-                // enters, which CR 122.6 counts as counters being *put on* it, and CR 122.6a makes
-                // its controller the player putting them there. Stamp the same per-permanent
-                // history marker the ordinary placement paths do, so counter-history readings
-                // (Kid Loki's "you've put one or more +1/+1 counters on this turn") see the token
-                // and so a later placement on it reports firstThisTurn = false. No
-                // CountersAddedEvent is emitted: the counters arrive as part of the token's
-                // creation, not as a separate placement event.
-                var history = com.wingedsheep.engine.state.components.battlefield
-                    .ReceivedCountersThisTurnComponent()
-                for ((counterType, amount) in effect.initialCounters) {
-                    counters = counters.withAdded(counterType, amount)
-                    if (amount > 0) {
-                        history = history.with(
-                            counterType,
-                            byController = true,
-                        )
-                    }
-                }
-                container = container.with(counters)
-                if (history.counterTypes.isNotEmpty()) container = container.with(history)
-            }
-
             newState = newState.withEntity(tokenId, container)
             // A planeswalker or battle now being attacked is stamped as such (CR 506.4).
             if (defenderId != null) {
@@ -359,6 +335,36 @@ class CreateTokenExecutor(
                 definedTapped = effect.tapped, attacking = effect.attacking,
                 predicateEvaluator = amountEvaluator.predicates
             )
+            if (effect.initialCounters.isNotEmpty()) {
+                // A token created "with a +1/+1 counter on it" is given those counters as it
+                // enters, which CR 122.6 counts as counters being *put on* it, and CR 122.6a makes
+                // its controller the player putting them there. So the counter-placement
+                // replacements apply (Hardened Scales, Doubling Season), read against the
+                // battlefield as it stood before the tokens were created and the token's own
+                // prospective characteristics (CR 614.12), like any other entrant.
+                // Stamp the same per-permanent history marker the ordinary placement paths do, so
+                // counter-history readings (Kid Loki's "you've put one or more +1/+1 counters on
+                // this turn") see the token and so a later placement on it reports
+                // firstThisTurn = false. No CountersAddedEvent is emitted: the counters arrive as
+                // part of the token's creation, not as a separate placement event.
+                val prospective = EntersWithReplacements.prospectiveEntryView(newState, tokenId, state)
+                var counters = newState.getEntity(tokenId)?.get<CountersComponent>() ?: CountersComponent()
+                var history = com.wingedsheep.engine.state.components.battlefield
+                    .ReceivedCountersThisTurnComponent()
+                for ((counterType, amount) in effect.initialCounters) {
+                    val placed = ReplacementEffectUtils.applyCounterPlacementModifiers(
+                        prospective, tokenId, counterType, amount, placerId = tokenControllerId,
+                        predicateEvaluator = amountEvaluator.predicates, replacementSourceState = state
+                    )
+                    if (placed <= 0) continue
+                    counters = counters.withAdded(counterType, placed)
+                    history = history.with(counterType, byController = true)
+                }
+                newState = newState.updateEntity(tokenId) { c ->
+                    val withCounters = c.with(counters)
+                    if (history.counterTypes.isNotEmpty()) withCounters.with(history) else withCounters
+                }
+            }
         }
 
         // Apply "enters with counters" replacement effects from other battlefield permanents

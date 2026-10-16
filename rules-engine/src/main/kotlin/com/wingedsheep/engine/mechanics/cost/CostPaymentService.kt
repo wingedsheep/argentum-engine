@@ -743,11 +743,18 @@ class CostPaymentService(private val services: EngineServices) {
         val events = mutableListOf<GameEvent>()
         for (permanentId in selected) {
             val container = newState.getEntity(permanentId) ?: continue
+            // A cost's counters are still a placement (placement replacements apply), but not an
+            // effect's — Doubling Season's "if an effect would put" passes them by.
+            val placed = com.wingedsheep.engine.handlers.effects.ReplacementEffectUtils.applyCounterPlacementModifiers(
+                newState, permanentId, counterType, count, placerId = payerId,
+                predicateEvaluator = predicateEvaluator, byEffect = false
+            )
+            if (placed <= 0) continue
             // Read the counters inside the update so a repeated id accumulates rather than
             // clobbering — no printed cost selects the same permanent twice, but the loop shouldn't
             // depend on that.
             newState = newState.updateEntity(permanentId) { c ->
-                c.with((c.get<CountersComponent>() ?: CountersComponent()).withAdded(counterType, count))
+                c.with((c.get<CountersComponent>() ?: CountersComponent()).withAdded(counterType, placed))
             }
             val (marked, firstThisTurn, firstOfTypeThisTurn) = com.wingedsheep.engine.handlers.effects.DamageUtils
                 .recordCounterPlacement(newState, permanentId, counterType, placerId = payerId)
@@ -756,7 +763,7 @@ class CostPaymentService(private val services: EngineServices) {
                 com.wingedsheep.engine.core.CountersAddedEvent(
                     permanentId,
                     counterType,
-                    count,
+                    placed,
                     container.get<CardComponent>()?.name ?: "Permanent",
                     firstThisTurn,
                     firstOfTypeThisTurn = firstOfTypeThisTurn,

@@ -463,9 +463,17 @@ class BeginningPhaseManager(
             val cardComponent = container.get<CardComponent>() ?: continue
             val sagaComponent = container.get<SagaComponent>() ?: continue
 
-            // This entity is a Saga — add a lore counter and mark newly triggered chapters
+            // This entity is a Saga — add a lore counter and mark newly triggered chapters. The
+            // lore counter is put on by a turn-based action (CR 714.3b): a placement, so the
+            // placement replacements see it (Innkeeper's Talent), but not an effect's, so
+            // Doubling Season's "if an effect would put" doesn't.
             val counters = container.get<CountersComponent>() ?: CountersComponent()
-            val newLoreCount = counters.getCount(CounterType.LORE) + 1
+            val added = com.wingedsheep.engine.handlers.effects.ReplacementEffectUtils.applyCounterPlacementModifiers(
+                newState, entityId, CounterType.LORE, 1, placerId = projected.getController(entityId),
+                predicateEvaluator = predicateEvaluator, byEffect = false
+            )
+            if (added <= 0) continue
+            val newLoreCount = counters.getCount(CounterType.LORE) + added
 
             // Determine which chapters this lore counter triggers
             val cardDef = cardRegistry.getCard(cardComponent.cardDefinitionId)
@@ -479,11 +487,11 @@ class BeginningPhaseManager(
             }
 
             newState = newState.updateEntity(entityId) { c ->
-                c.with(counters.withAdded(CounterType.LORE, 1))
+                c.with(counters.withAdded(CounterType.LORE, added))
                     .with(updatedSaga)
             }
             newState = com.wingedsheep.engine.handlers.effects.DamageUtils.markCounterOnControlledPermanent(newState, entityId, CounterType.LORE)
-            events.add(CountersAddedEvent(entityId, CounterType.LORE, 1, cardComponent.name))
+            events.add(CountersAddedEvent(entityId, CounterType.LORE, added, cardComponent.name))
         }
 
         return ExecutionResult.success(newState, events)

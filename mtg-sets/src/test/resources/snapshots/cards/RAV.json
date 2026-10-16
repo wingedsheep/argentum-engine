@@ -4960,7 +4960,8 @@
                         "type": "RecipientObject",
                         "filter": "permanent ctrl:you"
                     }
-                }
+                },
+                "effectsOnly": true
             }
         ]
     },

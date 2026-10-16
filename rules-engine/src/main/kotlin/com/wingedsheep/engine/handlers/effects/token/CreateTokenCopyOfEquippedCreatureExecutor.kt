@@ -172,7 +172,7 @@ class CreateTokenCopyOfEquippedCreatureExecutor(
         // the token enters as a Saga with its on-enter lore counter. BattlefieldEntry.place skips
         // enters-with-counters setup, so apply the shared Saga-entry helper. No-op for non-Sagas.
         val (sagaState, sagaEvents) = com.wingedsheep.engine.handlers.effects.ZoneMovementUtils
-            .applySagaEntryIfNeeded(newState, tokenId)
+            .applySagaEntryIfNeeded(newState, tokenId, predicateEvaluator)
 
         // CR 306.5b: the equipped creature can be a planeswalker card animated by its own ability
         // (Gideon Blackblade) — the copy keeps the printed planeswalker types and loyalty (copiable

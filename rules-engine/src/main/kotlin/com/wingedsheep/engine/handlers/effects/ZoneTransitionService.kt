@@ -938,7 +938,7 @@ class ZoneTransitionService(
                 // wires the controller — only then does projection see the right controller.
                 newState = PermanentEntryTracker.record(newState, destControllerId, entityId)
                 // Handle Saga entering the battlefield (Rule 714.3a)
-                val (sagaState, sagaEvents) = ZoneMovementUtils.applySagaEntryIfNeeded(newState, entityId, entryCounterTotals)
+                val (sagaState, sagaEvents) = ZoneMovementUtils.applySagaEntryIfNeeded(newState, entityId, predicateEvaluator, entryCounterTotals)
                 newState = sagaState
                 events.addAll(sagaEvents)
                 // Handle the intrinsic entry counters of a planeswalker (loyalty, CR 306.5b) or a
@@ -1756,7 +1756,7 @@ class ZoneTransitionService(
         state: GameState,
         entityId: EntityId
     ): Pair<GameState, List<EngineGameEvent>> {
-        return ZoneMovementUtils.applySagaEntryIfNeeded(state, entityId)
+        return ZoneMovementUtils.applySagaEntryIfNeeded(state, entityId, predicateEvaluator)
     }
 
     /**

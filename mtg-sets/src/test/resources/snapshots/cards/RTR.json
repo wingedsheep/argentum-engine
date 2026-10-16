@@ -906,6 +906,44 @@
     ]
 }
 
+// Corpsejack Menace
+{
+    "name": "Corpsejack Menace",
+    "manaCost": "{2}{B}{G}",
+    "typeLine": "Creature — Fungus",
+    "oracleText": "If one or more +1/+1 counters would be put on a creature you control, twice that many +1/+1 counters are put on it instead.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "replacementEffects": [
+            "DoubleCounterPlacement"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "152",
+        "rarity": "RARE",
+        "artist": "Chris Rahn",
+        "flavorText": "Weakness is not in the nature of the Swarm.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/3/b35a8efe-2a3e-4060-9134-d4150e4bdf28.jpg?1783940342",
+        "rulings": [
+            {
+                "date": "2017-11-17",
+                "text": "If a creature you control would enter the battlefield with a number of +1/+1 counters on it, it enters with twice that many instead."
+            },
+            {
+                "date": "2017-11-17",
+                "text": "If you control two Corpsejack Menaces, the number of +1/+1 counters put on a creature is four times the original number. Three Corpsejack Menaces multiplies the original number by eight, and so on."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
+    ]
+}
+
 // Cyclonic Rift
 {
     "name": "Cyclonic Rift",

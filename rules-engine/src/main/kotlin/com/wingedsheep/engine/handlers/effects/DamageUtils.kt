@@ -534,21 +534,28 @@ object DamageUtils {
                     else ((projected.getToughness(targetId) ?: 0) -
                         (newState.getEntity(targetId)?.get<DamageComponent>()?.amount ?: 0)).coerceAtLeast(0)
                 creatureExcessDamage = (effectiveAmount - witherLethalNeeded).coerceAtLeast(0)
-                val counters = newState.getEntity(targetId)?.get<CountersComponent>() ?: CountersComponent()
-                newState = newState.updateEntity(targetId) { container ->
-                    container.with(counters.withAdded(CounterType.MINUS_ONE_MINUS_ONE, effectiveAmount))
-                }
-                // CR 702.80 / 122.6a: the -1/-1 counters are put on the creature by the wither
-                // source's controller, so "whenever you put counters" triggers see them as yours.
+                // CR 702.80a / 122.6a: the -1/-1 counters are put on the creature by the wither
+                // source's controller, so "whenever you put counters" triggers see them as yours —
+                // and, being a counter placement, they go through the placement replacements.
                 val witherPlacer = newState.projectedState.getController(sourceId)
-                val (afterMark, firstThisTurn, firstOfTypeThisTurn) = recordCounterPlacement(
-                    newState, targetId, CounterType.MINUS_ONE_MINUS_ONE, placerId = witherPlacer
+                val witherCounters = ReplacementEffectUtils.applyCounterPlacementModifiers(
+                    newState, targetId, CounterType.MINUS_ONE_MINUS_ONE, effectiveAmount,
+                    placerId = witherPlacer, predicateEvaluator = zones.predicateEvaluator
                 )
-                newState = afterMark
-                events.add(CountersAddedEvent(targetId, CounterType.MINUS_ONE_MINUS_ONE, effectiveAmount,
-                    newState.getEntity(targetId)?.get<CardComponent>()?.name ?: "Creature",
-                    firstThisTurn, firstOfTypeThisTurn = firstOfTypeThisTurn,
-                    placedBy = witherPlacer))
+                if (witherCounters > 0) {
+                    val counters = newState.getEntity(targetId)?.get<CountersComponent>() ?: CountersComponent()
+                    newState = newState.updateEntity(targetId) { container ->
+                        container.with(counters.withAdded(CounterType.MINUS_ONE_MINUS_ONE, witherCounters))
+                    }
+                    val (afterMark, firstThisTurn, firstOfTypeThisTurn) = recordCounterPlacement(
+                        newState, targetId, CounterType.MINUS_ONE_MINUS_ONE, placerId = witherPlacer
+                    )
+                    newState = afterMark
+                    events.add(CountersAddedEvent(targetId, CounterType.MINUS_ONE_MINUS_ONE, witherCounters,
+                        newState.getEntity(targetId)?.get<CardComponent>()?.name ?: "Creature",
+                        firstThisTurn, firstOfTypeThisTurn = firstOfTypeThisTurn,
+                        placedBy = witherPlacer))
+                }
                 // Wither only changes the FORM of the damage (CR 702.80a); the creature was still
                 // dealt damage by this source, so a deathtouch source still marks it for
                 // destruction as an SBA (CR 702.2b / 704.5h) even though nothing is marked as
@@ -3196,17 +3203,25 @@ object DamageUtils {
 
                 val counterType = effect.counterType
 
-                val currentCounters = counterHolder.get<CountersComponent>() ?: CountersComponent()
-                val updatedCounters = currentCounters.withAdded(counterType, amount)
-                newState = newState.updateEntity(counterHolderId) { c ->
-                    c.with(updatedCounters)
-                }
-                val (afterMark, firstThisTurn, firstOfTypeThisTurn) =
-                    recordCounterPlacement(newState, counterHolderId, counterType, placerId = sourceControllerId)
-                newState = afterMark
-
+                // The damage is replaced by a counter placement, which the placement replacements
+                // see like any other (Hardened Scales with Phytohydra's +1/+1 counters).
                 val entityName = counterHolder.get<CardComponent>()?.name ?: ""
-                events.add(CountersAddedEvent(counterHolderId, effect.counterType, amount, entityName, firstThisTurn, firstOfTypeThisTurn = firstOfTypeThisTurn, placedBy = sourceControllerId))
+                val placed = ReplacementEffectUtils.applyCounterPlacementModifiers(
+                    state, counterHolderId, counterType, amount,
+                    placerId = sourceControllerId, predicateEvaluator = zones.predicateEvaluator
+                )
+                val currentCounters = counterHolder.get<CountersComponent>() ?: CountersComponent()
+                val updatedCounters = if (placed > 0) currentCounters.withAdded(counterType, placed) else currentCounters
+                if (placed > 0) {
+                    newState = newState.updateEntity(counterHolderId) { c ->
+                        c.with(updatedCounters)
+                    }
+                    val (afterMark, firstThisTurn, firstOfTypeThisTurn) =
+                        recordCounterPlacement(newState, counterHolderId, counterType, placerId = sourceControllerId)
+                    newState = afterMark
+
+                    events.add(CountersAddedEvent(counterHolderId, effect.counterType, placed, entityName, firstThisTurn, firstOfTypeThisTurn = firstOfTypeThisTurn, placedBy = sourceControllerId))
+                }
 
                 // Check sacrifice threshold (state-triggered ability approximation)
                 val totalCounters = updatedCounters.getCount(counterType)

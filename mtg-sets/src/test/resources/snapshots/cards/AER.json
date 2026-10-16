@@ -1340,3 +1340,75 @@
         "imageUri": "https://cards.scryfall.io/normal/front/3/2/329a8738-3e17-403a-857a-0ba529ce8cd1.jpg?1783936718"
     }
 }
+
+// Winding Constrictor
+{
+    "name": "Winding Constrictor",
+    "manaCost": "{B}{G}",
+    "typeLine": "Creature — Snake",
+    "oracleText": "If one or more counters would be put on an artifact or creature you control, that many plus one of each of those kinds of counters are put on that permanent instead.\nIf you would get one or more counters, you get that many plus one of each of those kinds of counters instead.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "ModifyCounterPlacement",
+                "appliesTo": {
+                    "type": "CounterPlacementEvent",
+                    "recipient": {
+                        "type": "RecipientObject",
+                        "filter": "artifact|creature ctrl:you"
+                    }
+                }
+            },
+            {
+                "type": "ModifyCounterPlacement",
+                "appliesTo": {
+                    "type": "CounterPlacementEvent",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "You"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "140",
+        "rarity": "UNCOMMON",
+        "artist": "Izzy",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/0/107c8aa8-c8f8-4cbf-821b-bd2cb33354f0.jpg?1783936732",
+        "rulings": [
+            {
+                "date": "2017-09-29",
+                "text": "If a nonartifact, noncreature permanent (such as a planeswalker) would enter the battlefield with counters on it and become an artifact or a creature on the battlefield due to another card's effect (such as that of Mycosynth Lattice), Winding Constrictor's effect will give that permanent another of those counters."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "If an artifact or creature you control would enter the battlefield with a number of any kind of counters on it, it enters with that many plus one instead."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "If an effect includes multiple instructions to put one or more counters on an artifact or creature, such as Lifecrafter's Gift does, Winding Constrictor's effect applies to each of those instructions."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "If you control two Winding Constrictors, the number of counters placed on the artifact or creature is the original number plus two. Three Winding Constrictors adds three to the original number, and so on."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "If you would get counters of multiple kinds at the same time, Winding Constrictor increases the number of each of those kinds of counters by one. The same is true if counters of multiple kinds would be placed on an artifact or creature you control."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "Winding Constrictor's effect can't apply to itself as it's entering the battlefield or to any other permanent entering the battlefield at the same time as it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
+    ]
+}

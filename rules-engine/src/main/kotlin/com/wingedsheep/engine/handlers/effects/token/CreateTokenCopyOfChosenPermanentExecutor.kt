@@ -197,7 +197,7 @@ class CreateTokenCopyOfChosenPermanentExecutor(
             // counter. BattlefieldEntry.place skips enters-with-counters setup, so apply the shared
             // Saga-entry helper (as the standard moveToZone pipeline does). No-op for non-Sagas.
             val (sagaState, sagaEvents) = com.wingedsheep.engine.handlers.effects.ZoneMovementUtils
-                .applySagaEntryIfNeeded(newState, tokenId)
+                .applySagaEntryIfNeeded(newState, tokenId, predicateEvaluator)
 
             // CR 306.5b: likewise a token copy of a planeswalker enters with the copied printed
             // loyalty (a copiable value, CR 707.2), or state-based actions (CR 704.5i) bin it on

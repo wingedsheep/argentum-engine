@@ -658,21 +658,19 @@ object EntersWithReplacements {
         controllerId: EntityId,
         counter: CounterType?,
         addedSubtype: String?,
-        grantedAbility: com.wingedsheep.sdk.scripting.TriggeredAbility? = null
+        grantedAbility: com.wingedsheep.sdk.scripting.TriggeredAbility? = null,
+        predicateEvaluator: PredicateEvaluator
     ): Pair<GameState, List<GameEvent>> {
         var newState = state
         val events = mutableListOf<GameEvent>()
         if (counter != null) {
+            // An entry counter like any other — the placement replacements see it (CR 122.6).
             val name = newState.getEntity(entityId)?.get<CardComponent>()?.name ?: ""
-            newState = newState.updateEntity(entityId) { c ->
-                val current = c.get<CountersComponent>() ?: CountersComponent()
-                c.with(current.withAdded(counter, 1))
-            }
-            val (afterMark, firstThisTurn, firstOfTypeThisTurn) = DamageUtils.recordCounterPlacement(
-                newState, entityId, counter, byController = true
+            val (placed, placedEvents) = placeEntryCounters(
+                newState, entityId, counter, 1, controllerId, name, predicateEvaluator
             )
-            newState = afterMark
-            events.add(CountersAddedEvent(entityId, counter, 1, name, firstThisTurn, firstOfTypeThisTurn = firstOfTypeThisTurn, placedBy = controllerId))
+            newState = placed
+            events.addAll(placedEvents)
         }
         // Gate on the entering permanent's *base* type — the projected state isn't recomputed yet at
         // this ETB point, so it wouldn't yet see the just-resolved permanent as a creature.

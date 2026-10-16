@@ -1626,25 +1626,32 @@ internal class CombatDamageManager(
                 (newState.getEntity(targetId)?.get<DamageComponent>()?.amount ?: 0)).coerceAtLeast(0)
             val excess = (amount - lethalNeeded).coerceAtLeast(0)
             if (hasWither) {
-                // Wither (CR 702.80): damage to creatures is dealt in the form of -1/-1 counters
-                val counters = newState.getEntity(targetId)?.get<CountersComponent>() ?: CountersComponent()
-                newState = newState.updateEntity(targetId) { container ->
-                    container.with(counters.withAdded(com.wingedsheep.sdk.core.CounterType.MINUS_ONE_MINUS_ONE, amount))
+                // Wither (CR 702.80): damage to creatures is dealt in the form of -1/-1 counters,
+                // a counter placement the placement replacements see like any other.
+                val witherCounters = ReplacementEffectUtils.applyCounterPlacementModifiers(
+                    newState, targetId, CounterType.MINUS_ONE_MINUS_ONE, amount,
+                    placerId = projected.getController(sourceId), predicateEvaluator = predicateEvaluator
+                )
+                if (witherCounters > 0) {
+                    val counters = newState.getEntity(targetId)?.get<CountersComponent>() ?: CountersComponent()
+                    newState = newState.updateEntity(targetId) { container ->
+                        container.with(counters.withAdded(CounterType.MINUS_ONE_MINUS_ONE, witherCounters))
+                    }
+                    // The wither source's controller is the player putting the -1/-1 counters on, so
+                    // record both axes; on the usual "opponent's creature withers yours" board that
+                    // resolves to a placement *not* made by the target's controller.
+                    val (afterMark, firstThisTurn, firstOfTypeThisTurn) =
+                        com.wingedsheep.engine.handlers.effects.DamageUtils.recordCounterPlacement(
+                            newState,
+                            targetId,
+                            CounterType.MINUS_ONE_MINUS_ONE,
+                            placerId = projected.getController(sourceId),
+                        )
+                    newState = afterMark
+                    events.add(CountersAddedEvent(targetId, CounterType.MINUS_ONE_MINUS_ONE, witherCounters,
+                        newState.getEntity(targetId)?.get<CardComponent>()?.name ?: "Creature", firstThisTurn, firstOfTypeThisTurn = firstOfTypeThisTurn,
+                        placedBy = projected.getController(sourceId)))
                 }
-                // The wither source's controller is the player putting the -1/-1 counters on, so
-                // record both axes; on the usual "opponent's creature withers yours" board that
-                // resolves to a placement *not* made by the target's controller.
-                val (afterMark, firstThisTurn, firstOfTypeThisTurn) =
-                    com.wingedsheep.engine.handlers.effects.DamageUtils.recordCounterPlacement(
-                        newState,
-                        targetId,
-                        com.wingedsheep.sdk.core.CounterType.MINUS_ONE_MINUS_ONE,
-                        placerId = projected.getController(sourceId),
-                    )
-                newState = afterMark
-                events.add(CountersAddedEvent(targetId, com.wingedsheep.sdk.core.CounterType.MINUS_ONE_MINUS_ONE, amount,
-                    newState.getEntity(targetId)?.get<CardComponent>()?.name ?: "Creature", firstThisTurn, firstOfTypeThisTurn = firstOfTypeThisTurn,
-                    placedBy = projected.getController(sourceId)))
                 // Wither only changes the FORM of the damage (CR 702.80a); the creature was still
                 // dealt damage by this source, so a deathtouch source still marks it for
                 // destruction as an SBA (CR 702.2b / 704.5h) even though nothing is marked as

@@ -980,7 +980,7 @@ class ModalAndCloneContinuationResumer(
         // just chosen (CR 702.155b), so they can only be placed now. No-op for a non-Saga, and for a
         // Saga whose entry already placed them (a land played or moved through the zone pipeline).
         val (sagaState, sagaEvents) = com.wingedsheep.engine.handlers.effects.ZoneMovementUtils
-            .applySagaEntryIfNeeded(newState, entityId)
+            .applySagaEntryIfNeeded(newState, entityId, services.predicateEvaluator)
         newState = sagaState
 
         // Emit the entry event, so the permanent's enters triggers (landfall, "when ~ enters") fire
@@ -1170,12 +1170,16 @@ class ModalAndCloneContinuationResumer(
         val revealEvents = mutableListOf<GameEvent>()
         if (revealedCards.isNotEmpty()) {
             val counterCount = revealedCards.size * continuation.countersPerReveal
-            val current = newState.getEntity(spellId)
-                ?.get<com.wingedsheep.engine.state.components.battlefield.CountersComponent>()
-                ?: com.wingedsheep.engine.state.components.battlefield.CountersComponent()
-            newState = newState.updateEntity(spellId) { c ->
-                c.with(current.withAdded(continuation.counterType, counterCount))
-            }
+            // "Enters with a +1/+1 counter for each card revealed" — entering with counters is a
+            // placement (CR 122.6), so it runs through the shared entry-counter path and the
+            // counter-placement replacements (Hardened Scales, Corpsejack Menace) apply.
+            val (placedState, placedEvents) = com.wingedsheep.engine.handlers.effects.EntersWithReplacements
+                .placeEntryCounters(
+                    newState, spellId, continuation.counterType, counterCount, controllerId,
+                    newState.getEntity(spellId)?.get<CardComponent>()?.name ?: "",
+                    predicateEvaluator = services.predicateEvaluator
+                )
+            newState = placedState
 
             // Emit reveal event so opponent can see the revealed cards
             val cardNames = revealedCards.mapNotNull { cardId ->
@@ -1194,6 +1198,7 @@ class ModalAndCloneContinuationResumer(
                     source = spellName
                 )
             )
+            revealEvents.addAll(placedEvents)
         }
 
         // Complete the permanent entry
@@ -1312,34 +1317,20 @@ class ModalAndCloneContinuationResumer(
         newState = afterSacrifice
         events.addAll(sacrificeEvents)
 
-        // Place counters on the still-resolving spell entity.
+        // Place counters on the still-resolving spell entity. Devour counters go on the object
+        // *as it enters* the battlefield (CR 702.82a), a placement under CR 122.6 — so the shared
+        // entry-counter path applies the counter-placement replacements (Hardened Scales, Corpsejack
+        // Menace) and CR 122.6a makes the entering permanent's controller the placer.
         val counterCount = sacrificed.size * continuation.multiplier
         if (counterCount > 0) {
-            val resolvedCounterType = continuation.counterType
-            val current = newState.getEntity(spellId)
-                ?.get<com.wingedsheep.engine.state.components.battlefield.CountersComponent>()
-                ?: com.wingedsheep.engine.state.components.battlefield.CountersComponent()
-            newState = newState.updateEntity(spellId) { c ->
-                c.with(current.withAdded(resolvedCounterType, counterCount))
-            }
-            // Devour counters go on the object *as it enters* the battlefield, so CR 122.6a makes
-            // the entering permanent's controller the placer regardless of whose effect it was.
-            // The spell entity has no projected controller yet, so the flag is passed directly.
-            val (afterMark, firstThisTurn, firstOfTypeThisTurn) = com.wingedsheep.engine.handlers.effects.DamageUtils
-                .recordCounterPlacement(
-                    newState,
-                    spellId,
-                    resolvedCounterType,
-                    byController = true,
+            val (placedState, placedEvents) = com.wingedsheep.engine.handlers.effects.EntersWithReplacements
+                .placeEntryCounters(
+                    newState, spellId, continuation.counterType, counterCount, controllerId,
+                    newState.getEntity(spellId)?.get<CardComponent>()?.name ?: "",
+                    predicateEvaluator = services.predicateEvaluator
                 )
-            newState = afterMark
-            val spellName = newState.getEntity(spellId)?.get<CardComponent>()?.name ?: ""
-            events.add(
-                com.wingedsheep.engine.core.CountersAddedEvent(
-                    spellId, continuation.counterType, counterCount, spellName, firstThisTurn, firstOfTypeThisTurn = firstOfTypeThisTurn,
-                    placedBy = controllerId
-                )
-            )
+            newState = placedState
+            events.addAll(placedEvents)
         }
 
         // Complete the permanent entry.

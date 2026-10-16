@@ -37,20 +37,42 @@ object ReplacementEffectUtils {
     }
 
     /**
-     * Apply ModifyCounterPlacement replacement effects (Hardened Scales, Winding Constrictor).
+     * Apply every counter-placement replacement to one placement of [count] [counterType] counters
+     * on [targetId] and return how many are actually put there — the one chokepoint every path that
+     * *puts* counters on a permanent or player goes through (effects, costs, entering with counters,
+     * damage dealt as counters, the Saga turn-based action). CR 122.6 makes an object given counters
+     * as it enters count as counters being put on it, so the entry paths route here too.
      *
-     * Scans all battlefield entities for ReplacementEffectSourceComponent containing
-     * ModifyCounterPlacement effects. If the counter type and recipient match, modifies
-     * the counter count by the effect's modifier.
+     * Sources, in one pool:
+     *  - static [ModifyCounterPlacement] (Hardened Scales, Winding Constrictor) and
+     *    [DoubleCounterPlacement] (Doubling Season, Corpsejack Menace) on the battlefield — or, for
+     *    an entrant ([replacementSourceState] given), on the battlefield before the entry plus the
+     *    entrant's own `Recipient.Self` replacements (CR 614.12);
+     *  - temporary, controller-scoped [GameState.activeCounterPlacementModifiers] (Prairie Dog);
+     *  - [CapCounterPlacementThisTurn] (Melira), always last.
      *
-     * @param state The current game state
-     * @param targetId The entity receiving counters
-     * @param counterType The type of counter being placed (as CounterType enum)
-     * @param count The original number of counters
-     * @param placerId The player placing the counters — used to gate effects that only
-     *                 apply when "you" are the one placing them (e.g., Innkeeper's Talent
-     *                 Level 3). When null, placer-gated effects do not apply.
-     * @return The modified counter count
+     * **Ordering (CR 616.1).** With several of these applying, the affected object's controller
+     * (or the affected player) chooses the order, and the order is observable once additive and
+     * doubling effects mix: Winding Constrictor + Corpsejack Menace turn 1 counter into 4 (add,
+     * then double) or 3 (double, then add). Rather than ask, the engine applies the order the
+     * affected player would pick:
+     *  - for a counter kind its recipient wants (+1/+1, loyalty, lore, …) the largest result —
+     *    positive additions first, then doublings, then negative additions;
+     *  - for a [harmful kind][isHarmfulToRecipient] (-1/-1 and other minus stat counters, poison,
+     *    stun) the smallest — negative additions first, then doublings, then positive additions;
+     *  - caps last, which is the smallest result either way (Melira's ruling).
+     * Once a step brings the count to zero the event no longer exists and nothing later applies.
+     * This never depends on battlefield order. The one judgment call is a player who *wants* the
+     * minus counters on their own creature (a persist loop) — the engine assumes they don't.
+     *
+     * @param placerId The player putting the counters — gates [ModifyCounterPlacement.placedByYou] /
+     *                 [DoubleCounterPlacement.placedByYou] and the temporary modifiers. When null,
+     *                 placer-gated effects do not apply.
+     * @param byEffect Whether an *effect* is putting the counters. False for counters put on as a
+     *                 cost (CR 118 — a [+N] loyalty cost, blight, "put a counter on this") and by a
+     *                 turn-based action (CR 714.3b); [DoubleCounterPlacement.effectsOnly] (Doubling
+     *                 Season's "if an effect would put") skips those.
+     * @return The modified counter count, never negative.
      */
     fun applyCounterPlacementModifiers(
         state: GameState,
@@ -59,13 +81,15 @@ object ReplacementEffectUtils {
         count: Int,
         placerId: EntityId? = null,
         predicateEvaluator: PredicateEvaluator,
-        replacementSourceState: GameState? = null
+        replacementSourceState: GameState? = null,
+        byEffect: Boolean = true
     ): Int {
         if (count <= 0) return count
         // A capped recipient can't get more of this kind this turn: the placement doesn't happen.
         if (isCounterPlacementLocked(state, targetId, counterType)) return 0
 
-        var modifiedCount = count
+        val additions = mutableListOf<Int>()
+        var doublings = 0
 
         val sources = replacementSourceState ?: state
         // 1. Static battlefield replacement effects (Hardened Scales, Doubling Season, …).
@@ -94,6 +118,8 @@ object ReplacementEffectUtils {
                     is DoubleCounterPlacement -> effect.placedByYou
                 }
                 if (placedByYouOnly && placerId != sourceControllerId) continue
+                // "If an EFFECT would put..." — costs and turn-based actions aren't effects.
+                if (effect is DoubleCounterPlacement && effect.effectsOnly && !byEffect) continue
 
                 if (counterEvent.counterType != null && counterEvent.counterType != counterType) continue
 
@@ -105,8 +131,8 @@ object ReplacementEffectUtils {
                 if (!recipientMatches) continue
 
                 when (effect) {
-                    is ModifyCounterPlacement -> modifiedCount += effect.modifier
-                    is DoubleCounterPlacement -> modifiedCount *= 2
+                    is ModifyCounterPlacement -> additions += effect.modifier
+                    is DoubleCounterPlacement -> doublings++
                 }
             }
         }
@@ -126,16 +152,56 @@ object ReplacementEffectUtils {
                 predicateEvaluator = predicateEvaluator
             )
             if (!recipientMatches) continue
-            modifiedCount += modifier.modifier
+            additions += modifier.modifier
         }
 
-        // 3. Caps apply last — the order the affected player would pick (Melira's ruling), so a
+        // 3. The affected player's order (CR 616.1) — see the KDoc.
+        var modifiedCount = orderedForAffectedPlayer(count, additions, doublings, counterType)
+        if (modifiedCount <= 0) return 0
+
+        // 4. Caps apply last — the order the affected player would pick (Melira's ruling), so a
         //    doubler or an additive modifier can't push a capped placement past the cap.
         val cap = counterPlacementCap(state, targetId, counterType, predicateEvaluator, sources)
         if (cap != null) modifiedCount = minOf(modifiedCount, cap)
 
         return modifiedCount.coerceAtLeast(0)
     }
+
+    /**
+     * Fold [additions] and [doublings] into [count] in the order the affected player picks
+     * (CR 616.1): the largest result for a kind they want, the smallest for a
+     * [harmful][isHarmfulToRecipient] one. A step that leaves nothing ends the event — no later
+     * replacement can bring it back.
+     */
+    internal fun orderedForAffectedPlayer(
+        count: Int,
+        additions: List<Int>,
+        doublings: Int,
+        counterType: CounterType
+    ): Int {
+        val minimize = isHarmfulToRecipient(counterType)
+        val (before, after) = additions.partition { if (minimize) it < 0 else it > 0 }
+        var result = count
+        for (add in before) {
+            result += add
+            if (result <= 0) return 0
+        }
+        repeat(doublings) { result = com.wingedsheep.engine.core.GameLimits.addClamped(result, result) }
+        for (add in after) {
+            result += add
+            if (result <= 0) return 0
+        }
+        return result
+    }
+
+    /**
+     * Counter kinds the recipient's controller is assumed not to want more of when ordering
+     * placement replacements: the minus stat counters (-1/-1, -1/-0, -2/-2, …), poison and stun.
+     */
+    fun isHarmfulToRecipient(counterType: CounterType): Boolean =
+        counterType.name.startsWith("MINUS_") ||
+            counterType == CounterType.POISON ||
+            counterType == CounterType.STUN
 
     /** Whether [targetId] already took a [CapCounterPlacementThisTurn] lock on [counterType] this turn. */
     fun isCounterPlacementLocked(state: GameState, targetId: EntityId, counterType: CounterType): Boolean =

@@ -226,7 +226,7 @@ object TokenFromDefinition {
         // counter (chapter I then triggers). BattlefieldEntry.place is the ad-hoc insertion path
         // and intentionally skips enters-with-counters setup, so apply the shared Saga-entry
         // helper here — the same one the standard moveToZone pipeline uses. No-op for non-Sagas.
-        val (sagaState, sagaEvents) = ZoneMovementUtils.applySagaEntryIfNeeded(newState, tokenId)
+        val (sagaState, sagaEvents) = ZoneMovementUtils.applySagaEntryIfNeeded(newState, tokenId, predicateEvaluator)
         newState = sagaState
 
         // CR 306.5b: same for a minted planeswalker — it enters with its printed loyalty counters,

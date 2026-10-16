@@ -592,13 +592,19 @@ class CostHandler(private val zones: ZoneTransitionService) {
                 if (!projected.canReceiveCounters(targetId)) {
                     return CostPaymentResult.failure("Blight target can't have counters put on it")
                 }
+                // A cost isn't an effect: placement replacements apply, Doubling Season's doesn't.
+                val blightCounters = ReplacementEffectUtils.applyCounterPlacementModifiers(
+                    state, targetId, CounterType.MINUS_ONE_MINUS_ONE, cost.amount, placerId = controllerId,
+                    predicateEvaluator = predicateEvaluator, byEffect = false
+                )
+                if (blightCounters <= 0) return CostPaymentResult.success(state, manaPool)
                 val counters = targetContainer.get<CountersComponent>() ?: CountersComponent()
                 val firstThisTurn = DamageUtils
                     .isFirstCounterThisTurn(state, targetId)
                 val firstOfTypeThisTurn = DamageUtils
                     .isFirstCounterOfTypeThisTurn(state, targetId, CounterType.MINUS_ONE_MINUS_ONE)
                 val withCounters = state.updateEntity(targetId) { c ->
-                    c.with(counters.withAdded(CounterType.MINUS_ONE_MINUS_ONE, cost.amount))
+                    c.with(counters.withAdded(CounterType.MINUS_ONE_MINUS_ONE, blightCounters))
                 }
                 val newState = DamageUtils
                     .markCounterPlacedOnCreature(
@@ -609,7 +615,7 @@ class CostHandler(private val zones: ZoneTransitionService) {
                     CountersAddedEvent(
                         entityId = targetId,
                         counterType = CounterType.MINUS_ONE_MINUS_ONE,
-                        amount = cost.amount,
+                        amount = blightCounters,
                         entityName = targetName,
                         firstThisTurn = firstThisTurn,
         firstOfTypeThisTurn = firstOfTypeThisTurn,
@@ -643,11 +649,18 @@ class CostHandler(private val zones: ZoneTransitionService) {
                 }
             }
             is AbilityCost.Loyalty -> {
-                // Adjust loyalty counters based on the cost change
+                // Adjust loyalty counters based on the cost change. A [+N] cost *puts* N loyalty
+                // counters on the planeswalker (CR 606.4) — a placement, so the placement
+                // replacements apply (Innkeeper's Talent, Vorinclex); it's a cost, not an effect,
+                // so Doubling Season's "if an effect would put" doesn't.
+                val added = if (cost.change > 0) ReplacementEffectUtils.applyCounterPlacementModifiers(
+                    state, sourceId, CounterType.LOYALTY, cost.change, placerId = controllerId,
+                    predicateEvaluator = predicateEvaluator, byEffect = false
+                ) else 0
                 val newState = state.updateEntity(sourceId) { container ->
                     val counters = container.get<CountersComponent>() ?: CountersComponent()
                     val newCounters = if (cost.change >= 0) {
-                        counters.withAdded(CounterType.LOYALTY, cost.change)
+                        counters.withAdded(CounterType.LOYALTY, added)
                     } else {
                         counters.withRemoved(CounterType.LOYALTY, -cost.change)
                     }
@@ -1008,10 +1021,11 @@ class CostHandler(private val zones: ZoneTransitionService) {
         is CostAtom.PutCountersOnPermanent ->
             CostPaymentResult.failure("PutCountersOnPermanent is a PayCost, not an activated-ability cost")
         is CostAtom.PutCountersOnSelf -> {
-            // Counters put on as a cost are an ordinary counter placement (CR 121.6), so they run
+            // Counters put on as a cost are an ordinary counter placement (CR 122.6), so they run
             // through the same chokepoint as the AddCounters effect: the "can't have counters put
             // on it" gate (CR 614.1 / Solemnity), the placement replacements (Hardened Scales,
-            // Doubling Season), and the first-placement-this-turn marker. A permanent that can't
+            // Corpsejack Menace — not Doubling Season, whose "if an effect would put" excludes a
+            // cost), and the first-placement-this-turn marker. A permanent that can't
             // receive counters still pays the cost — nothing is owed and the activation stands.
             val counterType = atom.counterType
             if (!state.projectedState.canReceiveCounters(sourceId)) {
@@ -1020,7 +1034,7 @@ class CostHandler(private val zones: ZoneTransitionService) {
                 val current = state.getEntity(sourceId)?.get<CountersComponent>() ?: CountersComponent()
                 val modifiedCount = ReplacementEffectUtils.applyCounterPlacementModifiers(
                     state, sourceId, counterType, atom.count, placerId = controllerId,
-                    predicateEvaluator = predicateEvaluator
+                    predicateEvaluator = predicateEvaluator, byEffect = false
                 )
                 val firstThisTurn = DamageUtils.isFirstCounterThisTurn(state, sourceId)
                 val firstOfTypeThisTurn = DamageUtils.isFirstCounterOfTypeThisTurn(state, sourceId, counterType)

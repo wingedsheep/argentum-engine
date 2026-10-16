@@ -429,7 +429,8 @@ class PlayLandHandler(
                 val (afterRider, riderEvents) = com.wingedsheep.engine.handlers.effects.EntersWithReplacements
                     .applyCastFromGraveyardRider(
                         newState, action.cardId, action.playerId,
-                        grant.entersWithCounter, grant.addedSubtypeOnEntry, grant.grantedAbilityOnEntry
+                        grant.entersWithCounter, grant.addedSubtypeOnEntry, grant.grantedAbilityOnEntry,
+                        predicateEvaluator = predicateEvaluator
                     )
                 newState = afterRider
                 riderEvents

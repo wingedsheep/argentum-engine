@@ -42,8 +42,15 @@ private fun rejectUnaffordableLife(check: SpellCostCheck, required: Int, message
  * Puts [amount] -1/-1 counters on [targetId] as a blight payment, with the first-counter-this-turn
  * record and the counters-added event.
  */
-private fun blight(ledger: SpellCostLedger, targetId: EntityId, amount: Int) {
+private fun blight(ledger: SpellCostLedger, targetId: EntityId, rawAmount: Int) {
     val targetContainer = ledger.state.getEntity(targetId) ?: return
+    // Counters put on as a cost are still a counter placement: the placement replacements apply,
+    // except Doubling Season-style "if an effect would put" ones (a cost isn't an effect).
+    val amount = com.wingedsheep.engine.handlers.effects.ReplacementEffectUtils.applyCounterPlacementModifiers(
+        ledger.state, targetId, CounterType.MINUS_ONE_MINUS_ONE, rawAmount, placerId = ledger.playerId,
+        predicateEvaluator = ledger.zones.predicateEvaluator, byEffect = false
+    )
+    if (amount <= 0) return
     val counters = targetContainer.get<CountersComponent>() ?: CountersComponent()
     val firstThisTurn = DamageUtils.isFirstCounterThisTurn(ledger.state, targetId)
     val firstOfTypeThisTurn =

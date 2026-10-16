@@ -16467,7 +16467,7 @@ The priority groups are (CR 616.1a–f):
   for each card that actually reached exile. `maxCards = DynamicAmount.XValue` models X-bounded entry
   choices; a zero maximum or no matching cards skips the prompt. **Mimeoplasm, Revered One** uses this
   with creature cards, three +1/+1 counters per card, and later targets the linked exile pile.
-- `ModifyCounterPlacement(modifier, appliesTo, placedByYou?)` / `DoubleCounterPlacement(placedByYou?, appliesTo)` —
+- `ModifyCounterPlacement(modifier, appliesTo, placedByYou?)` / `DoubleCounterPlacement(placedByYou?, appliesTo, effectsOnly?)` —
   **static** counter-placement modifiers living on a battlefield permanent for as long as it remains
   (Hardened Scales `+1`, Winding Constrictor `+1`, Doubling Season doubles). `appliesTo` is an
   `EventPattern.CounterPlacementEvent(counterType, recipient)`; `recipient = CreatureYouControl` is
@@ -16482,6 +16482,24 @@ The priority groups are (CR 616.1a–f):
   `Effects.GrantCounterPlacementModifier(...)` (§4 Counters) instead — it records a controller-scoped
   modifier in a turn-scoped game-state store consulted from the same counter-placement chokepoint,
   and expires at end of turn.
+  **Where they apply:** every path that *puts* counters on a permanent or player goes through
+  `ReplacementEffectUtils.applyCounterPlacementModifiers` — counter effects (AddCounters, proliferate,
+  move/distribute, explore, adapt…), **entering with counters** (CR 122.6: printed and granted
+  enters-with, starting loyalty/defense, devour, reveal-for-counters, impending's time counters, a
+  Saga's entry lore counter(s), a graveyard-cast rider's finality counter, and tokens created "with a
+  counter on it"), **damage dealt as counters** (wither, `ReplaceDamageWithCounters`, toxic's poison),
+  **costs** (`Costs.PutCounterOnSelf`, `PutCountersOnPermanent`, blight, a [+N] loyalty cost) and the
+  Saga's precombat-main **turn-based** lore counter. Counters put on a card in a non-battlefield zone
+  (suspend's time counters, exile-with-counters) are not on a permanent, so these never touch them.
+  **`effectsOnly`** (`DoubleCounterPlacement`, default `false`) is Doubling Season's "if **an effect**
+  would put": set it `true` and costs and the Saga turn-based lore counter pass through undoubled
+  (Corpsejack Menace's "would be put" and Innkeeper's Talent's "if you would put" leave it `false`).
+  **Ordering (CR 616.1):** when several apply to one placement, the affected object's controller (or
+  affected player) picks the order; the engine applies the order they would pick, never battlefield
+  order — for a counter kind the recipient wants, positive additions, then doublings, then negative
+  additions (Winding Constrictor + Corpsejack Menace: 1 → (1 + 1) × 2 = 4); for a harmful kind (minus
+  stat counters such as -1/-1, poison, stun) the reverse (1 → 1 × 2 + 1 = 3). A step that empties the
+  placement ends it; caps (`CapCounterPlacementThisTurn`) apply last.
 - `CapCounterPlacementThisTurn(amount = 1, appliesTo = CounterPlacementEvent(POISON, Recipient.You))` —
   **static** cap-and-lock: "If you would get one or more poison counters, instead you get one poison
   counter and you can't get additional poison counters this turn" (**Melira, the Living Cure** — the

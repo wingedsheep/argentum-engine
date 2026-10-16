@@ -2,7 +2,7 @@
 
 **Set Size:** 336 cards
 **Release Date:** March 8, 2024
-**Implemented:** 168 / 336
+**Implemented:** 185 / 336
 | Section    | Total | Done |
 |------------|-------|------|
 | Extras     | 336   | 158  |
@@ -76,7 +76,7 @@
 - [ ] Commander Sofia Daguerre
 - [ ] Contagion Clasp
 - [x] Contaminated Drink
-- [ ] Corpsejack Menace
+- [x] Corpsejack Menace
 - [ ] Craig Boone, Novac Guard
 - [ ] Crimson Caravaneer
 - [x] Crucible of Worlds
@@ -347,7 +347,7 @@
 - [x] Wild Growth
 - [ ] Wild Wasteland
 - [x] Windbrisk Heights
-- [ ] Winding Constrictor
+- [x] Winding Constrictor
 - [x] Woodland Cemetery
 - [x] Yes Man, Personal Securitron
 - [ ] Young Deathclaws
