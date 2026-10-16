@@ -3828,7 +3828,7 @@
     "name": "Ob Nixilis, the Adversary",
     "manaCost": "{1}{B}{R}",
     "typeLine": "Legendary Planeswalker — Nixilis",
-    "oracleText": "Casualty X. The copy isn't legendary and has starting loyalty X. (As you cast this spell, you may sacrifice a creature with power X. When you do, copy this spell. The copy becomes a token.)\n+1: Each opponent loses 2 life unless they discard a card. If you control a Demon or Devil, you gain 2 life.\n−2: Create a 1/1 red Devil creature token with \"When this creature dies, it deals 1 damage to any target.\"\n−7: Target player draws seven cards and loses 7 life.",
+    "oracleText": "Casualty X. The copy isn't legendary and has starting loyalty X. (As you cast this spell, you may sacrifice a creature with power X. When you do, copy this spell. The copy becomes a token.)\n+1: Each opponent loses 2 life unless they discard a card. If you control a Demon or Devil, you gain 2 life.\n−2: Create a 1/1 red Devil creature token with \"When this token dies, it deals 1 damage to any target.\"\n−7: Target player draws seven cards and loses 7 life.",
     "keywords": [
         "CASUALTY"
     ],
@@ -3942,13 +3942,13 @@
                                 "type": "AnyTarget",
                                 "id": "t0"
                             },
-                            "descriptionOverride": "When this creature dies, it deals 1 damage to any target."
+                            "descriptionOverride": "When this token dies, it deals 1 damage to any target."
                         }
                     ]
                 },
                 "timing": "SorcerySpeed",
                 "isPlaneswalkerAbility": true,
-                "descriptionOverride": "Create a 1/1 red Devil creature token with \"When this creature dies, it deals 1 damage to any target.\""
+                "descriptionOverride": "Create a 1/1 red Devil creature token with \"When this token dies, it deals 1 damage to any target.\""
             },
             {
                 "id": "Ob Nixilis, the Adversary:4",

@@ -985,8 +985,8 @@ export function enterPhase(
           flags.targetDescription = costInfo.description
           break
         }
-        // Casualty N / X (CR 702.153a) — optional: sacrifice one creature with power N (or the
-        // announced X) or greater, or none to cast without the copy.
+        // Casualty N / X (CR 702.153a): casualty is its own legal action — declining it is the plain
+        // cast — so exactly one creature with power N (or the announced X) or greater is picked here.
         case 'Casualty': {
           const chosenX = action.type === 'CastSpell' ? action.xValue : undefined
           const candidates = costInfo.validSacrificeTargets ?? []

@@ -242,7 +242,7 @@ internal class CastCostPayer(
     private fun payCasualty(ledger: SpellCostLedger, cardDef: CardDefinition?) {
         val permId = ledger.action.casualtyCreature ?: return
         val variable = cardDef?.keywordAbilities
-            ?.any { it is com.wingedsheep.sdk.scripting.KeywordAbility.Casualty && it.isVariable } == true
+            ?.any { it is KeywordAbility.Casualty && it.isVariable } == true
         if (variable) {
             ledger.costDefinedX = ledger.action.xValue ?: (ledger.state.projectedState.getPower(permId) ?: 0)
         }

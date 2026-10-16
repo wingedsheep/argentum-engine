@@ -118,6 +118,11 @@ data class LegalAction(
      * the server prices the submitted targets itself and solves.
      */
     val manaCostPerExtraTarget: String? = null,
+    /**
+     * The caster announces an X for this action. Usually that X is generic mana in the cost, but it
+     * can be announced without being paid as mana (casualty X), so mana-side consumers must check
+     * [manaCostString] for `{X}` rather than reading this flag as "X is mana".
+     */
     val hasXCost: Boolean = false,
     val maxAffordableX: Int? = null,
     val minX: Int = 0,

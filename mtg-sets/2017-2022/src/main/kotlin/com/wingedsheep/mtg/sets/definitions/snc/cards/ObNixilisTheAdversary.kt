@@ -25,7 +25,7 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * may sacrifice a creature with power X. When you do, copy this spell. The copy becomes a token.)
  * +1: Each opponent loses 2 life unless they discard a card. If you control a Demon or Devil, you
  * gain 2 life.
- * −2: Create a 1/1 red Devil creature token with "When this creature dies, it deals 1 damage to
+ * −2: Create a 1/1 red Devil creature token with "When this token dies, it deals 1 damage to
  * any target."
  * −7: Target player draws seven cards and loses 7 life.
  */
@@ -39,7 +39,7 @@ val ObNixilisTheAdversary = card("Ob Nixilis, the Adversary") {
         "becomes a token.)\n" +
         "+1: Each opponent loses 2 life unless they discard a card. If you control a Demon or Devil, " +
         "you gain 2 life.\n" +
-        "−2: Create a 1/1 red Devil creature token with \"When this creature dies, it deals 1 damage " +
+        "−2: Create a 1/1 red Devil creature token with \"When this token dies, it deals 1 damage " +
         "to any target.\"\n" +
         "−7: Target player draws seven cards and loses 7 life."
 
@@ -77,12 +77,12 @@ val ObNixilisTheAdversary = card("Ob Nixilis, the Adversary") {
                     trigger = Triggers.self.dies()
                     val any = target(Targets.Any)
                     effect = Effects.DealDamage(1, any)
-                    description = "When this creature dies, it deals 1 damage to any target."
+                    description = "When this token dies, it deals 1 damage to any target."
                 }
             ),
             imageUri = "https://cards.scryfall.io/normal/front/e/c/ec75fdab-818c-4f3a-94c1-fd3f577a87f5.jpg?1783922960",
         )
-        description = "Create a 1/1 red Devil creature token with \"When this creature dies, it deals " +
+        description = "Create a 1/1 red Devil creature token with \"When this token dies, it deals " +
             "1 damage to any target.\""
     }
 
