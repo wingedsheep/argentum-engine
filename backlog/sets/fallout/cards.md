@@ -2,7 +2,7 @@
 
 **Set Size:** 336 cards
 **Release Date:** March 8, 2024
-**Implemented:** 283 / 336
+**Implemented:** 319 / 336
 | Section    | Total | Done |
 |------------|-------|------|
 | Extras     | 336   | 185  |
@@ -58,7 +58,7 @@
 - [x] Butch DeLoria, Tunnel Snake
 - [x] C.A.M.P.
 - [x] Caesar, Legion's Emperor
-- [ ] Cait, Cage Brawler
+- [x] Cait, Cage Brawler
 - [x] Canopy Vista
 - [x] Canyon Slough
 - [x] Captain of the Watch
@@ -112,7 +112,7 @@
 - [x] Fertile Ground
 - [x] Fervent Charge
 - [x] Fetid Pools
-- [ ] Find
+- [x] Find
 - [x] Fireshrieker
 - [ ] Forest
 - [x] Fraying Sanity
@@ -149,7 +149,7 @@
 - [x] Irrigated Farmland
 - [ ] Island
 - [x] Isolated Chapel
-- [ ] James, Wandering Dad
+- [x] James, Wandering Dad
 - [x] Jason Bright, Glowing Prophet
 - [x] Jungle Shrine
 - [x] Junk Jet
@@ -184,7 +184,7 @@
 - [x] Mossfire Valley
 - [ ] Mountain
 - [x] Mr. House, President and CEO
-- [ ] Mutational Advantage
+- [x] Mutational Advantage
 - [x] Myriad Landscape
 - [x] Mysterious Stranger
 - [x] Mystic Forge
@@ -278,7 +278,7 @@
 - [x] Swiftfoot Boots
 - [x] Swords to Plowshares
 - [x] Synth Eradicator
-- [ ] Synth Infiltrator
+- [x] Synth Infiltrator
 - [x] T-45 Power Armor
 - [x] Tainted Field
 - [x] Tainted Isle
@@ -309,7 +309,7 @@
 - [x] The Master, Transcendent
 - [ ] The Motherlode, Excavator
 - [x] The Nipton Lottery
-- [ ] The Prydwen, Steel Flagship
+- [x] The Prydwen, Steel Flagship
 - [x] The Wise Mothman
 - [x] Thirst for Knowledge
 - [x] Thought Vessel
@@ -325,10 +325,10 @@
 - [x] Vault 112: Sadistic Simulation
 - [x] Vault 11: Voter's Dilemma
 - [x] Vault 12: The Necropolis
-- [ ] Vault 13: Dweller's Journey
-- [ ] Vault 21: House Gambit
+- [x] Vault 13: Dweller's Journey
+- [x] Vault 21: House Gambit
 - [x] Vault 75: Middle School
-- [ ] Vault 87: Forced Evolution
+- [x] Vault 87: Forced Evolution
 - [x] Veronica, Dissident Scribe
 - [x] Vexing Radgull
 - [x] Vigor

@@ -1322,6 +1322,137 @@
     ]
 }
 
+// Find // Finality
+{
+    "name": "Find // Finality",
+    "manaCost": "",
+    "typeLine": "Sorcery",
+    "oracleText": "Return up to two target creature cards from your graveyard to your hand.\n//\nYou may put two +1/+1 counters on a creature you control. Then all creatures get -4/-4 until end of turn.",
+    "metadata": {
+        "collectorNumber": "225",
+        "rarity": "RARE",
+        "artist": "Tomasz Jedruszek",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/e/1e4e9e35-6cbc-4997-beff-d1a22d87545e.jpg?1783934112",
+        "rulings": [
+            {
+                "date": "2018-10-05",
+                "text": "Finality doesn't target the creature to receive +1/+1 counters. You can cast it even if you control no creatures."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "Finality affects only creatures on the battlefield at the time it resolves. Creatures that enter the battlefield later in the turn won't get -4/-4."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
+    ],
+    "layout": "SPLIT",
+    "cardFaces": [
+        {
+            "name": "Find",
+            "manaCost": "{B/G}{B/G}",
+            "typeLine": "Sorcery",
+            "oracleText": "Return up to two target creature cards from your graveyard to your hand.",
+            "script": {
+                "spellEffect": {
+                    "type": "ForEach",
+                    "space": "IterationSpace.Targets",
+                    "body": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        },
+                        "destination": "Hand"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "count": 2,
+                        "optional": true,
+                        "filter": {
+                            "baseFilter": "creature own:you",
+                            "zone": "Graveyard"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "Finality",
+            "manaCost": "{4}{B}{G}",
+            "typeLine": "Sorcery",
+            "oracleText": "You may put two +1/+1 counters on a creature you control. Then all creatures get -4/-4 until end of turn.",
+            "script": {
+                "spellEffect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.MayDecide",
+                                "prompt": "Put two +1/+1 counters on a creature you control?"
+                            },
+                            "then": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "SelectTarget",
+                                        "requirement": {
+                                            "type": "TargetObject",
+                                            "filter": {
+                                                "baseFilter": "creature ctrl:you"
+                                            }
+                                        },
+                                        "storeAs": "target0",
+                                        "nonTargeting": true,
+                                        "prompt": "Choose a creature you control to get two +1/+1 counters"
+                                    },
+                                    {
+                                        "type": "AddCounters",
+                                        "counterType": "PLUS_ONE_PLUS_ONE",
+                                        "count": 2,
+                                        "target": {
+                                            "type": "PipelineTarget",
+                                            "collectionName": "target0"
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Group",
+                                "filter": {
+                                    "baseFilter": "creature"
+                                }
+                            },
+                            "body": {
+                                "type": "ModifyStats",
+                                "powerModifier": {
+                                    "type": "Fixed",
+                                    "amount": -4
+                                },
+                                "toughnessModifier": {
+                                    "type": "Fixed",
+                                    "amount": -4
+                                },
+                                "target": "IterationEntity"
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+    ],
+    "hasNoManaCost": true
+}
+
 // Fire Urchin
 {
     "name": "Fire Urchin",

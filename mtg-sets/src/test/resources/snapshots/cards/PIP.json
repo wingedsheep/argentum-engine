@@ -2174,6 +2174,181 @@
     }
 }
 
+// Cait, Cage Brawler
+{
+    "name": "Cait, Cage Brawler",
+    "manaCost": "{R}{G}",
+    "typeLine": "Legendary Creature — Human Warrior",
+    "oracleText": "During your turn, Cait has indestructible.\nWhenever Cait attacks, you and defending player each draw a card, then discard a card. Put two +1/+1 counters on Cait if you discarded the card with the greatest mana value among those cards or tied for greatest.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Cait, Cage Brawler:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "DefendingPlayer"
+                            }
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Hand"
+                                    },
+                                    "storeAs": "gathered0"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "gathered0",
+                                    "selection": {
+                                        "type": "ChooseExactly",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeSelected": "selected1",
+                                    "prompt": "Choose a card to discard"
+                                },
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Hand",
+                                        "player": "DefendingPlayer"
+                                    },
+                                    "storeAs": "gathered2"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "gathered2",
+                                    "selection": {
+                                        "type": "ChooseExactly",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "chooser": "DefendingPlayer",
+                                    "storeSelected": "selected3",
+                                    "prompt": "Choose a card to discard"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "selected1",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Graveyard"
+                                    },
+                                    "moveType": "Discard"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "selected3",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Graveyard",
+                                        "player": "DefendingPlayer"
+                                    },
+                                    "moveType": "Discard"
+                                },
+                                {
+                                    "type": "Gated",
+                                    "gate": {
+                                        "type": "Gate.WhenCondition",
+                                        "condition": {
+                                            "type": "All",
+                                            "conditions": [
+                                                {
+                                                    "type": "CollectionContainsMatch",
+                                                    "collection": "selected1"
+                                                },
+                                                {
+                                                    "type": "Compare",
+                                                    "left": {
+                                                        "type": "StoredCardManaValue",
+                                                        "collectionName": "selected1"
+                                                    },
+                                                    "operator": "GTE",
+                                                    "right": {
+                                                        "type": "StoredCardManaValue",
+                                                        "collectionName": "selected3"
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "then": {
+                                        "type": "AddCounters",
+                                        "counterType": "PLUS_ONE_PLUS_ONE",
+                                        "count": 2,
+                                        "target": "Self"
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever Cait attacks, you and defending player each draw a card, then discard a card. Put two +1/+1 counters on Cait if you discarded the card with the greatest mana value among those cards or tied for greatest."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "INDESTRUCTIBLE",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": "IsYourTurn"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "96",
+        "rarity": "RARE",
+        "artist": "Joseph Meehan",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/c/fca61d02-2819-483f-9d30-862f0650ab0a.jpg?1783912393",
+        "rulings": [
+            {
+                "date": "2024-03-08",
+                "text": "If a card you discard has {X} in its mana cost, X is considered to be 0."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "If you somehow can't discard a card (probably because you had no cards in hand and another effect prevented you from drawing cards), you won't put any counters on Cait no matter whether or not the defending player discarded a card or what that card's mana value is."
+            }
+        ]
+    }
+}
+
 // Cass, Hand of Vengeance
 {
     "name": "Cass, Hand of Vengeance",
@@ -5360,6 +5535,62 @@
     }
 }
 
+// James, Wandering Dad
+{
+    "name": "James, Wandering Dad",
+    "manaCost": "{2}{U}",
+    "typeLine": "Legendary Creature — Human Scientist",
+    "oracleText": "{T}: Add {C}{C}. Spend this mana only to activate abilities.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "James, Wandering Dad:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "restriction": "AbilityActivationOnly"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true,
+                "descriptionOverride": "{T}: Add {C}{C}. Spend this mana only to activate abilities."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "31",
+        "rarity": "RARE",
+        "artist": "Wonchun Choi",
+        "flavorText": "\"So long as we've got each other, that's all that matters.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/1/31fed516-04e1-4453-b955-dfbd32bab2f3.jpg?1783912413"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ],
+    "layout": "ADVENTURE",
+    "cardFaces": [
+        {
+            "name": "Follow Him",
+            "manaCost": "{X}{U}{U}",
+            "typeLine": "Instant — Adventure",
+            "oracleText": "Investigate X times. (Then exile this card. You may cast the creature later from exile.)",
+            "script": {
+                "spellEffect": {
+                    "type": "Investigate",
+                    "count": "XValue"
+                }
+            }
+        }
+    ]
+}
+
 // Jason Bright, Glowing Prophet
 {
     "name": "Jason Bright, Glowing Prophet",
@@ -6930,6 +7161,75 @@
             }
         ]
     }
+}
+
+// Mutational Advantage
+{
+    "name": "Mutational Advantage",
+    "manaCost": "{1}{G}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Permanents you control with counters on them gain hexproof and indestructible until end of turn. Prevent all damage that would be dealt to those permanents this turn. Proliferate. (Choose any number of permanents and/or players, then give each another counter of each kind already there.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsPermanent"
+                                ],
+                                "statePredicates": [
+                                    "HasAnyCounter"
+                                ],
+                                "controllerPredicate": "ControlledByYou"
+                            }
+                        }
+                    },
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "HEXPROOF",
+                                "target": "IterationEntity"
+                            },
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "INDESTRUCTIBLE",
+                                "target": "IterationEntity"
+                            },
+                            {
+                                "type": "PreventDamageShield",
+                                "target": "IterationEntity"
+                            }
+                        ]
+                    }
+                },
+                "Proliferate"
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "111",
+        "rarity": "RARE",
+        "artist": "Maxim Kostin",
+        "flavorText": "\"Ow, my pipe!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/1/b1ff92f1-9dc7-48e6-9e7c-9ef4a88518cb.jpg?1783912387",
+        "rulings": [
+            {
+                "date": "2024-03-08",
+                "text": "The set of permanents affected by Mutational Advantage is determined at the time Mutational Advantage resolves. Permanents that gain counters later in the turn won't become affected by this effect, and permanents that lose all of their counters later in the turn won't stop being affected."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ]
 }
 
 // Mysterious Stranger
@@ -10781,6 +11081,76 @@
     ]
 }
 
+// Synth Infiltrator
+{
+    "name": "Synth Infiltrator",
+    "manaCost": "{3}{U}{U}",
+    "typeLine": "Artifact Creature — Synth",
+    "oracleText": "Improvise (Your artifacts can help cast this spell. Each artifact you tap after you're done activating mana abilities pays for {1}.)\nYou may have this creature enter as a copy of any creature on the battlefield, except it's a Synth artifact creature in addition to its other types.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 0
+    },
+    "keywords": [
+        "IMPROVISE"
+    ],
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "EntersAsCopy",
+                "exceptions": {
+                    "addedCardTypes": [
+                        "ARTIFACT",
+                        "CREATURE"
+                    ],
+                    "addedSubtypes": [
+                        "Synth"
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "40",
+        "rarity": "RARE",
+        "artist": "Leonardo Borazio",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/f/3fe16bc4-8457-4c5f-902a-0746112e80a4.jpg?1783912409",
+        "rulings": [
+            {
+                "date": "2024-03-08",
+                "text": "Improvise doesn't change Synth Infiltrator's mana cost or mana value, and it can't reduce Synth Infiltrator's cost below {U}{U}."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "Except for being a Synth artifact creature in addition to its other types, Synth Infiltrator copies exactly what was printed on the original creature and nothing else (unless that creature is copying something else or is a token; see below). It doesn't copy whether that creature is tapped or untapped, whether it has any counters on it or Auras and Equipment attached to it, or any non-copy effects that have changed its power, toughness, types, color, and so on."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "If the copied creature has {X} in its mana cost, X is 0."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "If the copied creature is a token, Synth Infiltrator copies the original characteristics of that token as stated by the effect that created that token, with the noted exceptions."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "If the copied creature is copying something else, then Synth Infiltrator enters the battlefield as whatever that creature copied, with the noted exceptions."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "Any enters-the-battlefield abilities of the copied creature will trigger when Synth Infiltrator enters the battlefield. Any \"as [this creature] enters the battlefield\" or \"[this creature] enters the battlefield with\" abilities of the copied creature will also work."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "You can choose not to have Synth Infiltrator enter the battlefield as a copy of another creature. If you do, it will probably die due to having 0 toughness. (This is probably not the kind of innovation the Institute would approve of.)"
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // T-45 Power Armor
 {
     "name": "T-45 Power Armor",
@@ -11365,6 +11735,85 @@
             {
                 "date": "2024-03-08",
                 "text": "Players can’t take actions between the time the creature is randomly chosen and the time at which the rest of the effects occur."
+            }
+        ]
+    }
+}
+
+// The Prydwen, Steel Flagship
+{
+    "name": "The Prydwen, Steel Flagship",
+    "manaCost": "{4}{W}{W}",
+    "typeLine": "Legendary Artifact — Vehicle",
+    "oracleText": "Flying\nWhenever another nontoken artifact you control enters, create a 2/2 white Human Knight creature token with \"This token gets +2/+2 as long as an artifact entered the battlefield under your control this turn.\"\nCrew 2",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "keywords": [
+        "FLYING",
+        "CREW"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "CREW",
+            "n": 2
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "The Prydwen, Steel Flagship:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "artifact nontoken ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 2,
+                    "toughness": 2,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Human",
+                        "Knight"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/5/4/546bda77-e3a8-4f2a-ba9c-94fb0b9ff183.jpg?1783912048",
+                    "staticAbilities": [
+                        {
+                            "type": "ConditionalStaticAbility",
+                            "ability": {
+                                "type": "ModifyStats",
+                                "powerBonus": 2,
+                                "toughnessBonus": 2,
+                                "filter": {
+                                    "baseFilter": "permanent",
+                                    "scope": "Self"
+                                }
+                            },
+                            "condition": {
+                                "type": "PermanentTypeEnteredBattlefieldThisTurn",
+                                "cardType": "ARTIFACT"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "22",
+        "rarity": "RARE",
+        "artist": "Victor Harmatiuk",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/c/9c0a8eda-bfeb-4fd9-9e41-12fce02883d8.jpg?1783912416",
+        "rulings": [
+            {
+                "date": "2024-03-08",
+                "text": "Once an artifact enters the battlefield under your control in a given turn, it doesn't matter what happens to it later. A Knight token created by The Prydwen, Steel Flagship's second ability will still get +2/+2 for the rest of that turn."
             }
         ]
     }
@@ -12249,6 +12698,355 @@
     }
 }
 
+// Vault 13: Dweller's Journey
+{
+    "name": "Vault 13: Dweller's Journey",
+    "manaCost": "{3}{W}",
+    "typeLine": "Enchantment — Saga",
+    "oracleText": "(As this Saga enters and after your draw step, add a lore counter. Sacrifice after III.)\nI — For each player, exile up to one other target enchantment or creature that player controls until this Saga leaves the battlefield.\nII — You gain 2 life and scry 2.\nIII — Return two cards exiled with this Saga to the battlefield under their owners' control and put the rest on the bottom of their owners' libraries.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Vault 13: Dweller's Journey:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "FromLinkedExile",
+                            "storeAs": "linked_return"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "linked_return",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            },
+                            "underOwnersControl": true
+                        }
+                    ]
+                }
+            }
+        ],
+        "sagaChapters": [
+            {
+                "chapter": 1,
+                "effect": {
+                    "type": "ForEach",
+                    "space": "IterationSpace.Targets",
+                    "body": {
+                        "type": "ExileUntilLeaves",
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        }
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "creature|enchantment",
+                        "excludeSelf": true
+                    },
+                    "id": "t0",
+                    "dynamicMaxCount": {
+                        "type": "PlayerCount",
+                        "scope": "Each"
+                    },
+                    "differentControllers": true
+                }
+            },
+            {
+                "chapter": 2,
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        },
+                        {
+                            "type": "Scry",
+                            "count": 2
+                        }
+                    ]
+                }
+            },
+            {
+                "chapter": 3,
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "FromLinkedExile",
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
+                            },
+                            "storeSelected": "selected1",
+                            "storeRemainder": "remainder1",
+                            "prompt": "Choose two cards to return to the battlefield",
+                            "selectedLabel": "Return to the battlefield",
+                            "remainderLabel": "Put on the bottom of its owner's library"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            },
+                            "underOwnersControl": true
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Players",
+                                "players": "OwnersOfLinkedExile"
+                            },
+                            "body": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": "FromLinkedExile",
+                                        "storeAs": "gathered0"
+                                    },
+                                    {
+                                        "type": "FilterCollection",
+                                        "from": "gathered0",
+                                        "filter": "own:you",
+                                        "storeMatching": "matching1"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "matching1",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Library",
+                                            "placement": "Bottom"
+                                        },
+                                        "order": "OwnerChooses"
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "26",
+        "rarity": "RARE",
+        "artist": "Gaboleps",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/2/a22ad436-215a-4da1-b12e-1faac474f948.jpg?1783912414"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Vault 21: House Gambit
+{
+    "name": "Vault 21: House Gambit",
+    "manaCost": "{1}{R}",
+    "typeLine": "Enchantment — Saga",
+    "oracleText": "(As this Saga enters and after your draw step, add a lore counter. Sacrifice after III.)\nI, II — Discard a card, then draw a card.\nIII — Reveal up to five nonland cards from your hand. For each of those cards that has the same mana value as another card revealed this way, create a Treasure token.",
+    "script": {
+        "sagaChapters": [
+            {
+                "chapter": 1,
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand"
+                            },
+                            "storeAs": "hand"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "hand",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "discarded",
+                            "prompt": "Choose 1 card to discard"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "discarded",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Discard"
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "chapter": 2,
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand"
+                            },
+                            "storeAs": "hand"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "hand",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "discarded",
+                            "prompt": "Choose 1 card to discard"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "discarded",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Discard"
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "chapter": 3,
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand",
+                                "filter": "nonland"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 5
+                                }
+                            },
+                            "storeSelected": "selected1",
+                            "prompt": "Reveal up to five nonland cards from your hand",
+                            "selectedLabel": "Reveal"
+                        },
+                        {
+                            "type": "RevealCollection",
+                            "from": "selected1",
+                            "fromZone": "Hand"
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Collection",
+                                "collection": "selected1"
+                            },
+                            "body": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "ConditionalOnCollection",
+                                        "collection": "selected1",
+                                        "ifNotEmpty": {
+                                            "type": "CreatePredefinedToken",
+                                            "tokenType": "Treasure"
+                                        },
+                                        "minSize": 2,
+                                        "filter": {
+                                            "cardPredicates": [
+                                                {
+                                                    "type": "SharesManaValueWith",
+                                                    "entity": "IterationEntity"
+                                                }
+                                            ]
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "69",
+        "rarity": "RARE",
+        "artist": "Kieran Yanner",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/0/40972644-a284-4c7c-a451-d70eff7488ab.jpg?1783912400",
+        "rulings": [
+            {
+                "date": "2024-03-08",
+                "text": "If a card in your hand has {X} in its mana cost, X is 0."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Vault 75: Middle School
 {
     "name": "Vault 75: Middle School",
@@ -12325,6 +13123,116 @@
         "artist": "Victor Harmatiuk",
         "imageUri": "https://cards.scryfall.io/normal/front/3/9/3992e262-0491-4379-b74b-13cc8b63065e.jpg?1783912413"
     }
+}
+
+// Vault 87: Forced Evolution
+{
+    "name": "Vault 87: Forced Evolution",
+    "manaCost": "{3}{G}{U}",
+    "typeLine": "Enchantment — Saga",
+    "oracleText": "(As this Saga enters and after your draw step, add a lore counter. Sacrifice after III.)\nI — Gain control of target non-Mutant creature for as long as you control this Saga.\nII — Put a +1/+1 counter on target creature you control. It becomes a Mutant in addition to its other types.\nIII — Draw cards equal to the greatest power among Mutants you control.",
+    "script": {
+        "sagaChapters": [
+            {
+                "chapter": 1,
+                "effect": {
+                    "type": "GainControl",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "duration": {
+                        "type": "WhileYouControlSource",
+                        "sourceDescription": "this Saga"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                {
+                                    "type": "NotSubtype",
+                                    "subtype": "Mutant"
+                                }
+                            ]
+                        }
+                    },
+                    "id": "t0"
+                }
+            },
+            {
+                "chapter": 2,
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 1,
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t1"
+                            }
+                        },
+                        {
+                            "type": "AddCreatureType",
+                            "subtype": "Mutant",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t1"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you"
+                    },
+                    "id": "t1"
+                }
+            },
+            {
+                "chapter": 3,
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "creature Mutant",
+                        "aggregation": "MAX",
+                        "property": "POWER"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "122",
+        "rarity": "RARE",
+        "artist": "Nicholas Gregory",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/3/33bf267b-f41c-447a-aa35-0c01aad8a489.jpg?1783912383",
+        "rulings": [
+            {
+                "date": "2024-03-08",
+                "text": "If Vault 87 leaves the battlefield before its first chapter ability resolves, you won't gain control of the target creature at all."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "The target of Vault 87's first chapter ability only needs to be a non-Mutant when that ability is put onto the stack and when that ability resolves. The control effect won't end if it later becomes a Mutant (perhaps because of the effect of the second chapter ability)."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "Use the greatest power among Mutants you control as Vault 87's last ability resolves to determine how many cards to draw."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ]
 }
 
 // Veronica, Dissident Scribe
