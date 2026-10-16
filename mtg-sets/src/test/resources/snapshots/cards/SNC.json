@@ -4550,6 +4550,82 @@
     }
 }
 
+// Paragon of Modernity
+{
+    "name": "Paragon of Modernity",
+    "manaCost": "{4}",
+    "typeLine": "Artifact Creature — Angel Warrior",
+    "oracleText": "Flying\n{3}: This creature gets +1/+1 until end of turn. If exactly three colors of mana were spent to activate this ability, put a +1/+1 counter on it instead.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Paragon of Modernity:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}"
+                    }
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "DistinctColorsManaSpent",
+                                "payment": "ACTIVATION"
+                            },
+                            "operator": "EQ",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 3
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": "Self"
+                    },
+                    "otherwise": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": "Self"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "242",
+        "artist": "Volkan Baǵa",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/3/939450d7-1107-4645-ad23-68749b1ec4c2.jpg?1783923061",
+        "rulings": [
+            {
+                "date": "2022-04-29",
+                "text": "Colorless is not a color. Similarly, colorless mana isn't counted when determining the number of colors that were spent on an ability."
+            }
+        ]
+    }
+}
+
 // Professional Face-Breaker
 {
     "name": "Professional Face-Breaker",

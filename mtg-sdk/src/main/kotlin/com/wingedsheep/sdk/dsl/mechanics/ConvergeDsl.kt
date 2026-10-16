@@ -35,7 +35,7 @@ fun CardBuilder.convergeEntersWithCounters(
     replacementEffect(
         EntersWithDynamicCounters(
             counterType = counterType,
-            count = DynamicAmount.DistinctColorsManaSpent,
+            count = DynamicAmount.DistinctColorsManaSpent(),
         ),
     )
 }

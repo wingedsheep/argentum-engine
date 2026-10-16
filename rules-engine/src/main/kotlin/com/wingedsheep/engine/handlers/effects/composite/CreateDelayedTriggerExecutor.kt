@@ -340,7 +340,7 @@ class CreateDelayedTriggerExecutor(
         DynamicAmount.CreaturesThatCrewedOrSaddledThisTurn,
         is DynamicAmount.CommanderColorIdentityCount,
         is DynamicAmount.DevotionTo,
-        DynamicAmount.DistinctColorsManaSpent,
+        is DynamicAmount.DistinctColorsManaSpent,
         is DynamicAmount.EntityProperty,
         is DynamicAmount.Fixed,
         is DynamicAmount.LargestSharedCreatureTypeCount,

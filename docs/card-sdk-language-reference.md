@@ -14492,7 +14492,7 @@ forbids `DynamicAmount.X` in card definitions.
   down by color. Used by payoffs that scale with how much of a color went into X — Soul Burn ("you gain
   life equal to the amount of black mana spent on X"). Pair with `xManaRestriction` (see below) so the X
   can only be paid with the relevant colors.
-- `DistinctColorsManaSpent` — the number of distinct *colors* of mana spent to cast the source spell
+- `DistinctColorsManaSpent(payment = CAST)` — the number of distinct *colors* of mana spent to cast the source spell
   (0–5), counting how many of the W/U/B/R/G payment buckets are non-zero. Colorless is not a color
   (CR 105.1) and never counts; mana spent on `{X}` and on generic costs still has its color counted.
   Backs the **Converge** ability word and the classic **Sunburst** rule. Resolves off the source
@@ -14500,6 +14500,10 @@ forbids `DynamicAmount.X` in card definitions.
   `CastRecordComponent` afterward), so it reads correctly both at resolution and as the permanent enters
   (the common use: feeding `EntersWithDynamicCounters`). Facade: `DynamicAmounts.colorsOfManaSpent()`.
   A permanent put onto the battlefield without being cast spent no mana, so this is 0 for it.
+  `payment = ManaPayment.ACTIVATION` (`colorsOfManaSpent(ManaPayment.ACTIVATION)`) counts the colors
+  spent to activate the *resolving ability* instead, read off its own saved payment and never the
+  source's cast record — Paragon of Modernity's "if exactly three colors of mana were spent to
+  activate this ability" is `Compare(colorsOfManaSpent(ACTIVATION) == 3)`. 0 for a triggered ability.
 - `ManaOfColorSpent(color)` — how much mana of one `color` was spent to cast the current spell, across
   the whole cost (generic and `{X}` included, unlike `ManaSpentOnX`). "**For each {U}{U} spent to cast
   it**" (The Brothers' War — Bladecoil Serpent, Clay Champion) is this halved, rounded down:

@@ -9,6 +9,7 @@ import com.wingedsheep.sdk.scripting.values.CardNumericProperty
 import com.wingedsheep.sdk.scripting.values.ContextPropertyKey
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.sdk.scripting.values.EntityNumericProperty
+import com.wingedsheep.sdk.scripting.values.ManaPayment
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.core.CounterType
@@ -410,9 +411,12 @@ object DynamicAmounts {
     /**
      * The number of distinct colors of mana spent to cast the source spell (0–5).
      * Backs the Converge ability word and the Sunburst counter rule. Colorless is not a
-     * color, so it never contributes.
+     * color, so it never contributes. `payment = ACTIVATION` counts the colors spent to activate
+     * the resolving ability instead ("if exactly three colors of mana were spent to activate this
+     * ability").
      */
-    fun colorsOfManaSpent(): DynamicAmount = DynamicAmount.DistinctColorsManaSpent
+    fun colorsOfManaSpent(payment: ManaPayment = ManaPayment.CAST): DynamicAmount =
+        DynamicAmount.DistinctColorsManaSpent(payment)
 
     /**
      * The number of distinct colors of mana spent to cast the spell that fired this trigger

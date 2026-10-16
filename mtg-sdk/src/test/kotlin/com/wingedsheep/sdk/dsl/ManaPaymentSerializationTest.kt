@@ -18,6 +18,12 @@ class ManaPaymentSerializationTest : FunSpec({
             DynamicAmounts.manaSpentFromSubtype(Subtype.TREASURE, ManaPayment.ACTIVATION)
         Json.decodeFromString<DynamicAmount>(Json.encodeToString<DynamicAmount>(amount)) shouldBe amount
     }
+    test("existing colors-spent JSON reads the cast payment; activation round-trips") {
+        Json.decodeFromString<DynamicAmount>("""{"type":"DistinctColorsManaSpent"}""") shouldBe
+            DynamicAmounts.colorsOfManaSpent()
+        val amount = DynamicAmounts.colorsOfManaSpent(ManaPayment.ACTIVATION)
+        Json.decodeFromString<DynamicAmount>(Json.encodeToString<DynamicAmount>(amount)) shouldBe amount
+    }
     test("mixed token batch round-trips without losing member art or counters") {
         val batch = Effects.CreateTokensTogether(
             Effects.CreateToken(power = 3, toughness = 3, creatureTypes = setOf("Robot"),

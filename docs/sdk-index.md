@@ -638,7 +638,7 @@ Families:
 - `DynamicAmount.CreaturesWithSubtypeDiedThisTurn(subtype: Subtype, player: Player)` — The number of creatures with subtype that died (were put into a graveyard from the battlefield) this turn while under player's control.
 - `DynamicAmount.DevotionTo(colors: List<Color>, player: Player)` — A player's **devotion** to one or more colors (CR 700.5): the number of mana symbols of colors among the mana costs of permanents that player controls.
 - `DynamicAmount.DistinctCardTypesInCollections(collections: List<String>)` — Number of distinct *card types* among the cards in the named pipeline collections (the union of every collection, de-duplicated by card type).
-- `DynamicAmount.DistinctColorsManaSpent` — The number of distinct *colors* of mana spent to cast the source spell (0–5).
+- `DynamicAmount.DistinctColorsManaSpent(payment: ManaPayment)` — The number of distinct *colors* of mana spent to cast the source spell (0–5).
 - `DynamicAmount.DistinctEntitiesInCollections(collections: List<String>)` — Number of *distinct* entities across several named pipeline collections.
 - `DynamicAmount.Divide(numerator: DynamicAmount, denominator: DynamicAmount, roundUp: Boolean)` — Divide one dynamic amount by another, with configurable rounding.
 - `DynamicAmount.DungeonsCompleted(player: Player, dungeon: String?)` — How many dungeons player has completed this game (CR 309.7 — a player completes a dungeon as it is removed from the game).

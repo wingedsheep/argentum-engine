@@ -102,6 +102,36 @@ class ActivationManaProvenanceTest : FunSpec({
         d.state.getEntity(player)!!.get<ManaPoolComponent>()!!.white shouldBe 1
     }
 
+    test("distinct colors spent to activate read the ability's own payment, not the source's cast") {
+        fun reader(payment: ManaPayment) = card("Color reader ${payment.name}") {
+            typeLine = "Artifact"
+            activatedAbility {
+                cost = Costs.Mana("{3}")
+                effect = Effects.GainLife(DynamicAmounts.colorsOfManaSpent(payment))
+            }
+        }
+        val activation = reader(ManaPayment.ACTIVATION)
+        val cast = reader(ManaPayment.CAST)
+        val d = GameTestDriver()
+        d.registerCards(TestCards.all + listOf(activation, cast))
+        d.initMirrorMatch(Deck.of("Plains" to 40))
+        d.passPriorityUntil(Step.PRECOMBAT_MAIN)
+        val player = d.activePlayer!!
+        fun activate(def: com.wingedsheep.sdk.model.CardDefinition, vararg colors: Color?): Int {
+            val permanent = d.putPermanentOnBattlefield(player, def.name)
+            colors.forEach { if (it == null) d.giveColorlessMana(player, 1) else d.giveMana(player, it) }
+            val life = d.getLifeTotal(player)
+            d.submit(ActivateAbility(player, permanent, def.script.activatedAbilities.single().id)).error shouldBe null
+            d.bothPass()
+            return d.getLifeTotal(player) - life
+        }
+        activate(activation, Color.WHITE, Color.BLUE, Color.BLACK) shouldBe 3
+        activate(activation, Color.RED, Color.RED, null) shouldBe 1
+        activate(activation, null, null, null) shouldBe 0
+        // CAST still reads the (absent) cast record of a permanent that was never cast.
+        activate(cast, Color.WHITE, Color.BLUE, Color.BLACK) shouldBe 0
+    }
+
     test("a departed source's snow snapshot marks floating mana and preserves its payment provenance") {
         val player = EntityId("snow-player")
         val before = com.wingedsheep.engine.state.GameState().withEntity(player,

@@ -183,7 +183,7 @@ class DynamicAmountEvaluator(
         is DynamicAmount.CommanderColorIdentityCount,
         is DynamicAmount.DevotionTo,
         is DynamicAmount.DistinctCardTypesInCollections,
-        DynamicAmount.DistinctColorsManaSpent,
+        is DynamicAmount.DistinctColorsManaSpent,
         is DynamicAmount.DistinctEntitiesInCollections,
         is DynamicAmount.Fixed,
         is DynamicAmount.LargestSharedCreatureTypeCount,
@@ -308,8 +308,13 @@ class DynamicAmountEvaluator(
             // the source entity's recorded payment via the shared reader so it resolves at ETB
             // (EntersWithDynamicCounters) as well as mid-resolution; falls through to the context
             // total being irrelevant — color breakdown only lives on the entity's components.
-            is DynamicAmount.DistinctColorsManaSpent ->
-                context.sourceId?.let { ManaSpentReader.distinctColorsSpent(state, it) } ?: 0
+            // ACTIVATION reads the resolving ability's own saved payment instead.
+            is DynamicAmount.DistinctColorsManaSpent -> when (amount.payment) {
+                com.wingedsheep.sdk.scripting.values.ManaPayment.CAST ->
+                    context.sourceId?.let { ManaSpentReader.distinctColorsSpent(state, it) } ?: 0
+                com.wingedsheep.sdk.scripting.values.ManaPayment.ACTIVATION ->
+                    context.manaSpent?.distinctColors ?: 0
+            }
 
             is DynamicAmount.ManaSpentFromSubtype -> when (amount.payment) {
                 com.wingedsheep.sdk.scripting.values.ManaPayment.CAST ->

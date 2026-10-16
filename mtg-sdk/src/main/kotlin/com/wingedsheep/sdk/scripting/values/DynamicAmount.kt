@@ -1015,11 +1015,18 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
      * read while the spell is still on the stack or as the permanent enters (the dominant use:
      * feeding `ReplacementEffect.EntersWithDynamicCounters`). A permanent put onto the
      * battlefield without being cast spent no mana, so this is 0 for it.
+     *
+     * `payment = ACTIVATION` instead reads the independently saved payment of the resolving
+     * activated ability, never the source's cast record — Paragon of Modernity's "if exactly three
+     * colors of mana were spent to activate this ability". A triggered ability recorded no
+     * payment, so it reads 0 there.
      */
     @SerialName("DistinctColorsManaSpent")
     @Serializable
-    data object DistinctColorsManaSpent : DynamicAmount {
-        override val description: String = "the number of colors of mana spent to cast this spell"
+    data class DistinctColorsManaSpent(
+        val payment: ManaPayment = ManaPayment.CAST,
+    ) : DynamicAmount {
+        override val description: String = "the number of colors of mana spent to ${if (payment == ManaPayment.CAST) "cast this spell" else "activate this ability"}"
     }
 
     /**

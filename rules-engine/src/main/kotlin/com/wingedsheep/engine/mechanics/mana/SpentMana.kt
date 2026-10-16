@@ -23,6 +23,9 @@ data class SpentMana(
 ) {
     val total: Int get() = white + blue + black + red + green + colorless
 
+    /** How many of the five colors were spent (0–5); colorless is not a color. */
+    val distinctColors: Int get() = listOf(white, blue, black, red, green).count { it > 0 }
+
     operator fun plus(other: SpentMana) = SpentMana(
         white + other.white, blue + other.blue, black + other.black,
         red + other.red, green + other.green, colorless + other.colorless, provenance + other.provenance,
