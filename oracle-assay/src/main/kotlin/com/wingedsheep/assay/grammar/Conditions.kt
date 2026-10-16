@@ -300,10 +300,10 @@ object Conditions {
         // Delirium and Matzalantli's gate — the same graveyard count by *distinct types* rather than
         // by cards. The noun is the row and the threshold the slot: "card types" and "permanent
         // types" are two `Aggregation`s with a facade each, and both print the one sentence shape.
-        graveyardTypes("card types", SdkConditions::Delirium),
-        graveyardTypes("permanent types", SdkConditions::DistinctPermanentTypesInGraveyard),
+        graveyardDistinct("card types", SdkConditions::Delirium),
+        graveyardDistinct("permanent types", SdkConditions::DistinctPermanentTypesInGraveyard),
         // Streets of New Capenna's gate: the same sentence counting distinct *mana values*.
-        graveyardTypes("mana values", SdkConditions::DistinctManaValuesInGraveyard),
+        graveyardDistinct("mana values", SdkConditions::DistinctManaValuesInGraveyard),
     )
 
     /**
@@ -316,7 +316,7 @@ object Conditions {
      * compares the whole model — a filtered or opponent-side tally refuses to print rather than
      * reading as your whole graveyard.
      */
-    private fun graveyardTypes(kind: String, condition: (Int) -> Condition): Phrase<Condition> =
+    private fun graveyardDistinct(kind: String, condition: (Int) -> Condition): Phrase<Condition> =
         phrase(
             "there are {n} or more $kind among cards in your graveyard",
             name = "$kind in your graveyard",

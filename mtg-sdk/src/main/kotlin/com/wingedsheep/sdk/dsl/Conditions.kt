@@ -951,7 +951,7 @@ object Conditions {
      * Used by Delirium cards (Spineseeker Centipede, Balustrade Wurm).
      */
     fun Delirium(count: Int = 4): ConditionInterface =
-        graveyardTypeThreshold(count, Aggregation.DISTINCT_TYPES)
+        graveyardDistinctThreshold(count, Aggregation.DISTINCT_TYPES)
 
     /**
      * If there are [count] or more distinct *permanent* types (CR 110.4: artifact, battle, creature,
@@ -964,7 +964,7 @@ object Conditions {
      * cards still counts once.
      */
     fun DistinctPermanentTypesInGraveyard(count: Int): ConditionInterface =
-        graveyardTypeThreshold(count, Aggregation.DISTINCT_PERMANENT_TYPES)
+        graveyardDistinctThreshold(count, Aggregation.DISTINCT_PERMANENT_TYPES)
 
     /**
      * If there are [count] or more different mana values among the cards in your graveyard —
@@ -973,13 +973,13 @@ object Conditions {
      * its cost has mana value with X = 0 there, and a land contributes mana value 0.
      */
     fun DistinctManaValuesInGraveyard(count: Int): ConditionInterface =
-        graveyardTypeThreshold(count, Aggregation.DISTINCT_VALUES, CardNumericProperty.MANA_VALUE)
+        graveyardDistinctThreshold(count, Aggregation.DISTINCT_VALUES, CardNumericProperty.MANA_VALUE)
 
     /**
      * Shared shape for the graveyard distinct-count gates ([Delirium],
      * [DistinctPermanentTypesInGraveyard], [DistinctManaValuesInGraveyard]).
      */
-    private fun graveyardTypeThreshold(
+    private fun graveyardDistinctThreshold(
         count: Int,
         aggregation: Aggregation,
         property: CardNumericProperty? = null
