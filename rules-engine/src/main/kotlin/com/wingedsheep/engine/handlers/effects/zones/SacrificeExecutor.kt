@@ -3,7 +3,6 @@ package com.wingedsheep.engine.handlers.effects.zones
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.DecisionHandler
 import com.wingedsheep.engine.handlers.EffectContext
-import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.handlers.effects.BattlefieldFilterUtils
 import com.wingedsheep.engine.handlers.effects.ZoneTransitionService
@@ -59,7 +58,7 @@ class SacrificeExecutor(
         }
 
         // Find all valid permanents on the battlefield that the player controls
-        val validPermanents = findValidPermanents(state, controllerId, effect, sourceId)
+        val validPermanents = findValidPermanents(state, context, effect, sourceId)
 
         if (effect.any) {
             // "Sacrifice any number of..." - player chooses 0 to all
@@ -89,12 +88,15 @@ class SacrificeExecutor(
 
     private fun findValidPermanents(
         state: GameState,
-        controllerId: EntityId,
+        context: EffectContext,
         effect: SacrificeEffect,
         sourceId: EntityId? = null
     ): List<EntityId> {
+        // The resolving ability's whole context, as ReflexiveTriggerEffectExecutor's feasibility
+        // check reads it — so a source-relative filter ("an Aura attached to Three Dog",
+        // `attachedToSource()`) sees its source and the two agree on what can be sacrificed.
         val matches = BattlefieldFilterUtils.findMatchingOnBattlefield(
-            state, effect.filter.youControl(), PredicateContext(controllerId = controllerId),
+            state, effect.filter.youControl(), context,
             predicateEvaluator = zones.predicateEvaluator
         )
         return if (effect.excludeSource && sourceId != null) {

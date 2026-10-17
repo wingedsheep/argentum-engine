@@ -314,14 +314,19 @@ abstract class ScenarioTestBase : FunSpec() {
          * [AttachedToComponent] and the host's [AttachmentsComponent] and registers the Aura's
          * static/replacement effects, so its "enchanted permanent ..." abilities apply immediately —
          * the deterministic alternative to casting + resolving the Aura. The attachment owner/
-         * controller is [playerNumber].
+         * controller is [playerNumber]; [isToken] makes the attachment a token.
          */
-        fun withCardAttachedTo(playerNumber: Int, auraName: String, hostName: String): ScenarioBuilder {
+        fun withCardAttachedTo(
+            playerNumber: Int,
+            auraName: String,
+            hostName: String,
+            isToken: Boolean = false,
+        ): ScenarioBuilder {
             val playerId = if (playerNumber == 1) player1Id!! else player2Id!!
             val hostId = findPermanentInBuilder(hostName)
                 ?: error("Host '$hostName' must already be on the battlefield before attaching '$auraName'")
 
-            withCardOnBattlefield(playerNumber, auraName)
+            withCardOnBattlefield(playerNumber, auraName, isToken = isToken)
             val auraId = findPermanentInBuilder(auraName)
                 ?: error("Failed to place aura '$auraName' on the battlefield")
 

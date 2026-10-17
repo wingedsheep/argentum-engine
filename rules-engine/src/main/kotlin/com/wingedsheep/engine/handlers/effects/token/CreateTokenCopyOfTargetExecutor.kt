@@ -9,6 +9,9 @@ import com.wingedsheep.engine.core.ZoneChangeEvent
 import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
+import com.wingedsheep.engine.handlers.effects.LkiPolicy
+import com.wingedsheep.engine.handlers.effects.lkiPolicyFor
+import com.wingedsheep.engine.handlers.effects.lkiSnapshotFor
 import com.wingedsheep.engine.handlers.effects.copy.CopyExceptionApplier
 import com.wingedsheep.engine.mechanics.layers.StaticAbilityHandler
 import com.wingedsheep.engine.registry.CardRegistry
@@ -196,6 +199,7 @@ class CreateTokenCopyOfTargetExecutor(
         context: EffectContext,
     ): ComponentContainer? {
         if (effect.target == EffectTarget.IterationEntity) departedCapturedEntity(state, context)?.let { return it }
+        departedSnapshotReference(state, effect, context)?.let { return it }
         context.resolveTarget(effect.target, state)?.let { id ->
             val entity = state.getEntity(id) ?: return null
             return departedPermanentTarget(state, effect, context, id, entity) ?: entity
@@ -228,6 +232,32 @@ class CreateTokenCopyOfTargetExecutor(
             ?.copiableContainer()
             ?.let { return it }
         return captured.copiableContainer()
+    }
+
+    /**
+     * A permanent named by a last-known-information reference that carries its own frozen
+     * snapshot — "sacrifice an Aura … When you sacrifice an Aura this way, … create a token that's
+     * a copy of that Aura" (Three Dog, Galaxy News DJ) reads [EffectTarget.SacrificedAsCost] — and
+     * that is no longer that object on the battlefield. It is copied from the copiable values the
+     * snapshot froze as it left (CR 608.2h, CR 707.2): a sacrificed token has ceased to exist
+     * (CR 704.5d), and a card in the graveyard is a new object (CR 400.7) whose own values — not
+     * what it was copying — are not the ones "that Aura" names. Null while it is still the same
+     * battlefield object (read live) or when the snapshot froze no copiable values.
+     */
+    private fun departedSnapshotReference(
+        state: GameState,
+        effect: CreateTokenCopyOfTargetEffect,
+        context: EffectContext,
+    ): ComponentContainer? {
+        val reference = effect.target as? EffectTarget.SingleEntity ?: return null
+        // The source and the triggering object keep their own departure handling (copySource).
+        if (reference == EffectTarget.Self || reference == EffectTarget.TriggeringEntity) return null
+        if (lkiPolicyFor(reference) != LkiPolicy.LIVE_THEN_LKI) return null
+        val id = context.resolveTarget(reference, state) ?: return null
+        val snapshot = context.lkiSnapshotFor(reference, id)?.takeIf { it.copiableCard != null } ?: return null
+        val sameVisit = id in state.getBattlefield() && (snapshot.battlefieldEntryTimestamp == null ||
+            state.getEntity(id)?.get<BattlefieldEntryTimestampComponent>()?.timestamp == snapshot.battlefieldEntryTimestamp)
+        return if (sameVisit) null else snapshot.copiableContainer()
     }
 
     /**

@@ -526,7 +526,9 @@ internal class ActivationCostPayer(
             .orEmpty()
         val sacrificeTargetIds = chosenSacrifices + forcedSacrifices + sacrificeAllTargets +
             (action.costPayment?.variableCostPermanents ?: emptyList())
-        val sacrificedSnapshots = captureEntitySnapshots(sacrificeTargetIds, state.projectedState, state)
+        // The state-aware capture also freezes token-ness and copiable values, so "a copy of the
+        // sacrificed permanent" can still be made after a sacrificed token ceased to exist.
+        val sacrificedSnapshots = captureEntitySnapshots(sacrificeTargetIds, state)
 
         // Mirror sacrifice snapshots for tapped-as-cost permanents — they may leave the
         // battlefield in response while the ability is on the stack.

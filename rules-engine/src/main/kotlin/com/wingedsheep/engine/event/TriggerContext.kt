@@ -281,6 +281,17 @@ data class TriggerContext(
      * every other trigger.
      */
     val producedManaColors: Set<com.wingedsheep.sdk.core.Color>? = null,
+    /**
+     * For a reflexive trigger (CR 603.12) — last-known snapshots of the permanents the resolving
+     * ability had sacrificed, by its cost or by its own instructions, when "when you do" fired. The
+     * reflexive ability resolves from a fresh context on the far side of a stack round-trip, so
+     * this is what lets its [com.wingedsheep.sdk.scripting.targets.EffectTarget.SacrificedAsCost]
+     * still name "that Aura" — and copy it from its frozen copiable values, even a token that has
+     * ceased to exist (Three Dog, Galaxy News DJ). Empty for every other trigger.
+     */
+    @OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
+    @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
+    val sacrificedPermanents: List<com.wingedsheep.engine.state.components.stack.EntitySnapshot> = emptyList(),
 ) {
     /**
      * The triggering permanent's last-known type line ([lastKnownCardTypes] + [lastKnownSubtypes],

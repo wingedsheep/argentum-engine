@@ -2755,6 +2755,17 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   single artifact or creature you control, … a copy of that artifact or creature" — Vesuvan Duplimancy) copies a
   target that left before the ability resolved as it last existed on the battlefield: its departure snapshot, or,
   for a token that has ceased to exist, the copiable values frozen when the ability triggered.
+  **A sacrificed permanent.** `CreateTokenCopyOfTarget(EffectTarget.SacrificedAsCost(0))` copies the permanent
+  the cost or an earlier `SacrificeOwn` step sacrificed from the copiable values its sacrifice snapshot froze
+  (`EntitySnapshot.copiableCard`, CR 608.2h) — so a sacrificed *token* is still copied, and an Aura that was
+  copying something is copied as that. The snapshot rides into a `ReflexiveTriggerEffect`'s reflexive half
+  (`TriggerContext.sacrificedPermanents`), so "you may pay {2} and sacrifice an Aura attached to Three Dog.
+  When you sacrifice an Aura this way, for each other attacking creature you control, create a token that's a
+  copy of that Aura attached to that creature" is `ReflexiveTrigger(action = PayMana("{2}") then
+  SacrificeOwn(Aura.attachedToSource()), optional = true) { ForEachInGroup(other attacking creatures you
+  control) { CreateTokenCopyOfTarget(SacrificedAsCost(0), attachedTo = IterationEntity) } }` (Three Dog,
+  Galaxy News DJ); `attachedTo` makes the attachment a non-targeting one and skips any token that couldn't
+  legally enchant its creature (CR 303.4i).
   Like `CreateToken`, both `CreateTokenCopyOfTarget` and `CreateTokenCopyOfSource` publish their created token
   entity IDs to the `CREATED_TOKENS` pipeline collection, so a sibling effect in a `CompositeEffect` can address
   the new copy — e.g. Applied Geometry's "Create a token that's a copy … Put six +1/+1 counters on it" composes
@@ -4141,7 +4152,8 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   CR 603.12's "when you do" never triggers — for `optional = true` that means the "may [action]?"
   question isn't worth asking (answering yes would no-op the action while still firing the payoff),
   and for `optional = false` it means a vacuous action must not pay out either. Alongside
-  `SelectTargetEffect` / `SacrificeEffect` / `ChooseActionEffect` / `PayExactCountersEffect`, it scores
+  `SelectTargetEffect` / `SacrificeEffect` / `ChooseActionEffect` / `PayExactCountersEffect` /
+  `PayManaCostEffect` (an unaffordable "you may pay {2} and …" isn't asked), it scores
   the **Gather → Select → Move pipeline** that `Effects.Discard` and the counted `Patterns.Hand`
   discards compile to — a `SelectFromCollection` whose `SelectionMode` carries a minimum
   (`ChooseExactly`, `Random`) drawing from a collection the preceding `GatherCards` will leave empty.
@@ -5058,7 +5070,10 @@ A resolving nonpermanent spell retains its stack instance through serialized eff
   value" (Sidisi, Regent of the Mire). A pipeline `sacrifice(...)` step earlier in the same resolution
   appends to the same list, so "you may sacrifice X. If you do, … it …" reads it too (The Gitrog,
   Ravenous Ride; Braids, Arisen Nightmare). The snapshot carries the projected type line, so a
-  `sharingCardTypeWith(SacrificedAsCost())` filter compares the types the permanent last had.
+  `sharingCardTypeWith(SacrificedAsCost())` filter compares the types the permanent last had, and its
+  frozen copiable values let `CreateTokenCopyOfTarget(SacrificedAsCost())` copy it once it's gone — a token
+  included. A `ReflexiveTriggerEffect`'s reflexive half still reads what its action (or the resolving
+  ability's cost) sacrificed, carried across the stack round-trip.
 - `EffectTarget.TappedAsCost(index = 0)` — a permanent **tapped to pay this activation's cost**, read
   from `EffectContext.tappedPermanents`; the tap counterpart of `DiscardedAsCost`. Every printed use taps
   exactly one, hence the `index` default. Used by Vodalian War Machine (FEM), whose abilities each tap an

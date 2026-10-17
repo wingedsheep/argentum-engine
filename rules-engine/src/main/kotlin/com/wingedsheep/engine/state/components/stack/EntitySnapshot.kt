@@ -11,6 +11,9 @@ import com.wingedsheep.engine.state.components.combat.BlockingComponent
 import com.wingedsheep.engine.state.components.battlefield.DamageSourceLki
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.TokenComponent
+import com.wingedsheep.engine.state.components.identity.copiableCardComponent
+import com.wingedsheep.engine.state.components.identity.copiableDoubleFacedComponent
+import com.wingedsheep.engine.state.components.identity.copiableNumericKeywords
 import com.wingedsheep.sdk.core.CardType
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Subtype
@@ -376,7 +379,8 @@ fun captureEntitySnapshots(
  * and its **name** ([EntitySnapshot.name], via [CardComponent]). Use at a sacrifice site when a
  * following sibling needs either — Exploit's `ExploitedEvent.sacrificedWasToken` (read by Skull
  * Skaab's "exploits a nontoken creature" clause) for the first, naming what an alternative cost ate
- * for the second. Caller must invoke this BEFORE the zone change so projected values, the token
+ * for the second. It also freezes the permanent's battlefield visit and copiable values, so a
+ * token copy of a sacrificed permanent is made from them (Three Dog, Galaxy News DJ). Caller must invoke this BEFORE the zone change so projected values, the token
  * component and the card component all still resolve.
  */
 fun captureEntitySnapshots(
@@ -389,6 +393,13 @@ fun captureEntitySnapshots(
             ?.get<com.wingedsheep.engine.state.components.battlefield.BattlefieldEntryTimestampComponent>()?.timestamp,
         wasToken = container?.has<TokenComponent>() ?: false,
         name = container?.get<CardComponent>()?.name,
+        // Copiable values (CR 707.2) as it last existed on the battlefield, so "create a token
+        // that's a copy of that [sacrificed] permanent" can still copy it once it is gone — a
+        // token has ceased to exist outright (CR 704.5d), and a card in the graveyard is a new
+        // object whose own values are not the ones to copy (CR 608.2h).
+        copiableCard = container?.copiableCardComponent(),
+        copiableNumericKeywords = container?.copiableNumericKeywords().orEmpty(),
+        copiableDoubleFaced = container?.copiableDoubleFacedComponent { it },
     )
 }
 

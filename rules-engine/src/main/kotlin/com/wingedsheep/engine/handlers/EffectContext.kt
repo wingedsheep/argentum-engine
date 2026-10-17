@@ -616,6 +616,8 @@ data class EffectContext(
             sourceBattlefieldTimestamp = ability.sourceBattlefieldTimestamp,
             objectReferences = ability.objectReferences,
             lastKnownSourceSnapshot = ability.lastKnownSourceSnapshot,
+            // A reflexive ability reads what the ability that fired it sacrificed (CR 603.12).
+            sacrificedPermanents = ability.triggerContext?.sacrificedPermanents.orEmpty(),
             targets = targets,
             triggerContext = ability.triggerContext,
             triggeringEntityId = ability.triggerContext?.triggeringEntityId,

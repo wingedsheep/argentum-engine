@@ -313,7 +313,7 @@
 - [x] The Wise Mothman
 - [x] Thirst for Knowledge
 - [x] Thought Vessel
-- [ ] Three Dog, Galaxy News DJ
+- [x] Three Dog, Galaxy News DJ
 - [x] Thrill-Kill Disciple
 - [x] Tireless Tracker
 - [x] Treasure Vault

@@ -199,6 +199,11 @@ class ReflexiveTriggerEffectExecutor(
             available == null || minimum == null || minimum == 0 || available > 0
         }
         is CompositeEffect -> isCompositeFeasible(state, action, context, gathered)
+        // "You may pay {2} and sacrifice an Aura …" (Three Dog, Galaxy News DJ) — a mana payment
+        // that can't be made can't be performed, so the may-question must be absent. Mirrors
+        // GatedEffectExecutor.canAfford for the same shape in a Gate.MayPay cost slot.
+        is com.wingedsheep.sdk.scripting.effects.PayManaCostEffect ->
+            action.waterbend || manaSolver.canPay(state, context.controllerId, action.cost)
         // "You may pay {E}{E}{E}" (Guide of Souls) — an all-or-nothing player-counter payment
         // is only feasible if the payer already has at least that many. Mirrors the SacrificeEffect
         // case: without this, the "may pay" prompt would be offered even at 0 energy, and
@@ -427,9 +432,14 @@ class ReflexiveTriggerEffectExecutor(
         // CompositeEffectExecutor's sibling-to-sibling propagation.
         val mergedContext = if (
             result.updatedCollections.isNotEmpty() || result.updatedSubtypeGroups.isNotEmpty() ||
-            result.updatedStoredNumbers.isNotEmpty() || result.updatedChosenValues.isNotEmpty()
+            result.updatedStoredNumbers.isNotEmpty() || result.updatedChosenValues.isNotEmpty() ||
+            result.updatedSacrificedPermanents.isNotEmpty()
         ) {
             context.copy(
+                // "When you sacrifice an Aura this way" reads what the action sacrificed — the
+                // same snapshots the paused path merges in through exposeCollectionsToNextFrame.
+                sacrificedPermanents = context.sacrificedPermanents +
+                    result.updatedSacrificedPermanents.filterNot { it in context.sacrificedPermanents },
                 pipeline = context.pipeline.copy(
                     storedCollections = context.pipeline.storedCollections + result.updatedCollections,
                     storedSubtypeGroups = context.pipeline.storedSubtypeGroups + result.updatedSubtypeGroups,
@@ -491,7 +501,10 @@ class ReflexiveTriggerEffectExecutor(
                         xValue = effectContext.xValue,
                         triggeringOrigin = null,
                         triggeringObject = null,
-                        triggeringBattlefieldTimestamp = null
+                        triggeringBattlefieldTimestamp = null,
+                        // What the resolving ability sacrificed, so "that Aura" still resolves
+                        // once the reflexive ability builds its own context.
+                        sacrificedPermanents = effectContext.sacrificedPermanents
                     )
             )
         }

@@ -12010,6 +12010,107 @@
     }
 }
 
+// Three Dog, Galaxy News DJ
+{
+    "name": "Three Dog, Galaxy News DJ",
+    "manaCost": "{1}{R}{W}",
+    "typeLine": "Legendary Creature — Human Bard",
+    "oracleText": "Whenever you attack, you may pay {2} and sacrifice an Aura attached to Three Dog. When you sacrifice an Aura this way, for each other attacking creature you control, create a token that's a copy of that Aura attached to that creature.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Three Dog, Galaxy News DJ:1",
+                "trigger": "YouAttackEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "ReflexiveTrigger",
+                    "action": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "PayManaCost",
+                                "cost": "{2}"
+                            },
+                            {
+                                "type": "Sacrifice",
+                                "filter": {
+                                    "cardPredicates": [
+                                        "IsEnchantment",
+                                        {
+                                            "type": "HasSubtype",
+                                            "subtype": "Aura"
+                                        }
+                                    ],
+                                    "statePredicates": [
+                                        "IsAttachedToSource"
+                                    ]
+                                }
+                            }
+                        ]
+                    },
+                    "reflexiveEffect": {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Group",
+                            "filter": {
+                                "baseFilter": "creature attacking ctrl:you",
+                                "excludeSelf": true
+                            }
+                        },
+                        "body": {
+                            "type": "CreateTokenCopyOfTarget",
+                            "target": "SacrificedAsCost",
+                            "attachedTo": "IterationEntity"
+                        }
+                    },
+                    "descriptionOverride": "For each other attacking creature you control, create a token that's a copy of the sacrificed Aura attached to that creature."
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "120",
+        "rarity": "RARE",
+        "artist": "Elizabeth Peiró",
+        "flavorText": "\"You're listening to Galaxy News Radio, bringing you the truth, no matter how bad it hurts.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/b/ab34e869-be7a-4632-95b3-5f200b4edcca.jpg?1783912383",
+        "rulings": [
+            {
+                "date": "2024-03-08",
+                "text": "Since Three Dog's reflexive triggered ability doesn't target, Aura tokens created by that ability will be attached to attacking creatures you control with shroud."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "If one of the Aura tokens being created couldn't legally be attached to the appropriate attacking creature (because of an ability like protection from enchantments), that Aura token won't be created."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "The tokens copy exactly what was printed on the original Aura and nothing else (unless that Aura was itself copying something else; see below). It doesn't copy whether that Aura was tapped or untapped, whether it had any counters on it or Auras attached to it, or any non-copy effects that changed its types, color, and so on."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "If the copied Aura was copying something else, the tokens enter the battlefield as whatever that Aura was copying."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "If the copied Aura had {X} in its mana cost, X is 0."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "Any enters-the-battlefield abilities of the copied Aura will trigger when the tokens enter the battlefield. Any \"as [this Aura] enters the battlefield\" or \"[this Aura] enters the battlefield with\" abilities of the Aura will also work."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
+    ]
+}
+
 // Thrill-Kill Disciple
 {
     "name": "Thrill-Kill Disciple",
