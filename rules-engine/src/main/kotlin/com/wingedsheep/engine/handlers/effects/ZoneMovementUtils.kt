@@ -1019,11 +1019,11 @@ object ZoneMovementUtils {
         }
 
         // "A creature dealt damage this turn by a source you controlled" (Etching of Kumano) — read
-        // off the dying creature's own record of its damage sources, each frozen with its controller
-        // at damage time, so the source needn't still be around.
-        if (StatePredicate.WasDealtDamageBySourceControllerThisTurn in filter.statePredicates) {
-            val sources = container.get<DamagedBySourcesThisTurnComponent>()?.sources
-            if (sources == null || sources.none { it.sourceControllerId == sourceControllerId }) return false
+        // off the dying creature's own record of its damage sources, each frozen at damage time, so
+        // the source needn't still be around.
+        for (predicate in filter.statePredicates.filterIsInstance<StatePredicate.WasDealtDamageThisTurnBy>()) {
+            val record = container.get<DamagedBySourcesThisTurnComponent>()
+            if (record == null || !record.matchesAny(predicate.sourceFilter, sourceControllerId)) return false
         }
 
         // Check card predicates

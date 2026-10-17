@@ -339,7 +339,7 @@ class DeathAndLeaveTriggerDetector(
                     // Observer shape (Shelob): any source that dealt damage to the dying creature this
                     // turn must match the filter, evaluated against its last-known state when it dealt
                     // the damage (CR 608.2h). "you control" resolves to the trigger's controller.
-                    matchesDamageSourceFilter(event.lastKnown?.damageSources ?: emptySet(), sourceFilter, entry.controllerId)
+                    (event.lastKnown?.damageSources ?: emptySet()).any { it.matches(sourceFilter, entry.controllerId) }
                 }
                 // "another creature": never fire for the source observing its own death.
                 if (fires && ability.binding == com.wingedsheep.sdk.scripting.TriggerBinding.ANY &&
@@ -390,33 +390,6 @@ class DeathAndLeaveTriggerDetector(
      * evaluated — the snapshot intentionally captures just those facts (the shape used by Shelob and
      * generalizable "dealt damage by [subtype] you control/opponents control" triggers).
      */
-    private fun matchesDamageSourceFilter(
-        sources: Set<com.wingedsheep.engine.state.components.battlefield.DamageSourceLki>,
-        filter: com.wingedsheep.sdk.scripting.GameObjectFilter,
-        observerControllerId: com.wingedsheep.sdk.model.EntityId,
-    ): Boolean {
-        if (sources.isEmpty()) return false
-        val requiredSubtype = filter.cardPredicates
-            .filterIsInstance<com.wingedsheep.sdk.scripting.predicates.CardPredicate.HasSubtype>()
-            .map { it.subtype }
-        val requiresCreature = filter.cardPredicates.any {
-            it is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsCreature
-        }
-        val controllerPred = filter.controllerPredicate
-        return sources.any { src ->
-            if (requiresCreature && !src.sourceWasCreature) return@any false
-            if (requiredSubtype.isNotEmpty() && !requiredSubtype.all { it in src.sourceSubtypes }) return@any false
-            when (controllerPred) {
-                null -> true
-                is com.wingedsheep.sdk.scripting.predicates.ControllerPredicate.ControlledByYou ->
-                    src.sourceControllerId == observerControllerId
-                is com.wingedsheep.sdk.scripting.predicates.ControllerPredicate.ControlledByOpponent ->
-                    src.sourceControllerId != observerControllerId
-                else -> true
-            }
-        }
-    }
-
     /**
      * Detect persist triggers (CR 702.79) when a nontoken creature dies with no -1/-1 counters on it.
      *

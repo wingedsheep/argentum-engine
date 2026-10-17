@@ -2050,13 +2050,12 @@ class PredicateEvaluator(
                     ?.creatureIds?.contains(entityId) == true
             }
 
-            // Dealt damage this turn by a source the effect source's controller controlled at the
-            // time: the candidate's own record of its damage sources, each frozen with its
-            // controller as it dealt the damage. Inert with no source context.
-            StatePredicate.WasDealtDamageBySourceControllerThisTurn -> {
+            // Dealt damage this turn by a matching source: the candidate's own record of its damage
+            // sources, each frozen as it dealt the damage. Inert with no source context.
+            is StatePredicate.WasDealtDamageThisTurnBy -> {
                 val you = context?.controllerId
                 you != null && container.get<DamagedBySourcesThisTurnComponent>()
-                    ?.sources?.any { it.sourceControllerId == you } == true
+                    ?.matchesAny(predicate.sourceFilter, you) == true
             }
 
             StatePredicate.ControlledSinceTurnBegan ->

@@ -2049,7 +2049,10 @@
                                 "IsCreature"
                             ],
                             "statePredicates": [
-                                "WasDealtDamageBySourceControllerThisTurn"
+                                {
+                                    "type": "WasDealtDamageThisTurnBy",
+                                    "sourceFilter": "ctrl:you"
+                                }
                             ]
                         },
                         "from": "Battlefield",

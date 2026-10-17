@@ -618,21 +618,27 @@ sealed interface StatePredicate {
     }
 
     /**
-     * Was dealt damage this turn by a source the effect source's controller controlled *when that
-     * damage was dealt* — "a creature dealt damage this turn by a source you controlled" (Etching of
-     * Kumano). Reads the candidate's own per-turn record of the sources that damaged it, each frozen
-     * with its controller at damage time (CR 608.2h's last-known information), so a source that has
-     * since left the battlefield or changed control still counts as it stood then.
+     * Was dealt damage this turn by a source matching [sourceFilter], judged as that source stood
+     * *when it dealt the damage* — "a creature dealt damage this turn by a source you controlled"
+     * (Etching of Kumano: `GameObjectFilter.Any.youControl()`). Reads the candidate's own per-turn
+     * record of the sources that damaged it, each frozen at damage time, so a source that has since
+     * left the battlefield or changed control still counts as it was then. "You" in the filter is
+     * the effect source's controller.
+     *
+     * The record holds each source's controller, whether it was a creature, and its creature
+     * subtypes, so [sourceFilter] may use `youControl()` / `opponentControls()`, `Creature` and
+     * `withSubtype(...)` — the same reading Shelob's "dealt damage this turn by a Spider you
+     * controlled" trigger gives its source filter. Anything else fails closed.
      *
      * Closest types: [WasDealtDamageBySourceThisTurn] names one specific source and reads that
-     * source's record, which is dropped when it leaves the battlefield — "by a source you controlled"
-     * names no source and must outlive it; [WasDealtDamageThisTurn] ignores who dealt the damage.
-     * Source-relative ("you" is the effect source's controller) and inert with no source context.
+     * source's record, which is dropped when it leaves the battlefield (its cards' rulings need
+     * that); [WasDealtDamageThisTurn] has no source axis at all. Source-relative and inert with no
+     * source context.
      */
-    @SerialName("WasDealtDamageBySourceControllerThisTurn")
+    @SerialName("WasDealtDamageThisTurnBy")
     @Serializable
-    data object WasDealtDamageBySourceControllerThisTurn : History {
-        override val description: String = "dealt damage this turn by a source you controlled"
+    data class WasDealtDamageThisTurnBy(val sourceFilter: GameObjectFilter) : History {
+        override val description: String = "dealt damage this turn by a ${sourceFilter.description} source"
     }
 
     /** Controlled by its current controller without interruption since this turn began, regardless of haste. */

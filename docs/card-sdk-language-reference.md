@@ -6581,18 +6581,21 @@ This is the player-arm prerequisite for the planned composable mixed `TargetUnio
   to = Zone.GRAVEYARD)))` (Frostwielder, Kumano's Pupils, Kumano, Master Yamabushi) and still applies when
   the host dies simultaneously. Inert with no source context (group-static projection, granted
   sourceless replacements).
-- `.wasDealtDamageBySourceControllerThisTurn()` — the creature was dealt damage this turn by **a source
-  you controlled** (any source, "you" being the effect source's controller); backed by
-  `StatePredicate.WasDealtDamageBySourceControllerThisTurn`. Reads the candidate's *own* record of the
-  sources that damaged it this turn, each frozen with its controller as it dealt the damage (the same
-  record Shelob's observer death trigger reads), so a source that has since left the battlefield or
-  changed control still counts as it stood then — unlike `.wasDealtDamageBySourceThisTurn()`, which needs
-  its one source to still be around. Honoured by the zone-change redirect path (printed and granted
-  replacements alike), so Etching of Kumano's "if a creature dealt damage this turn by a source you
-  controlled would die, exile it instead" is `replacementEffect(RedirectZoneChange(newDestination =
-  Zone.EXILE, appliesTo = EventPattern.ZoneChangeEvent(filter =
-  GameObjectFilter.Creature.wasDealtDamageBySourceControllerThisTurn(), from = Zone.BATTLEFIELD,
-  to = Zone.GRAVEYARD)))`. Cleared at end of turn. Inert with no source context (group-static projection).
+- `.wasDealtDamageThisTurnBy(sourceFilter)` — the creature was dealt damage this turn by a source
+  matching `sourceFilter` **as that source stood when it dealt the damage**; backed by
+  `StatePredicate.WasDealtDamageThisTurnBy`. Reads the candidate's *own* record of the sources that
+  damaged it this turn (the `DamageSourceLki` snapshots Shelob's observer death trigger reads, through
+  the same matcher), so a source that has since left the battlefield or changed control still counts as
+  it was then — unlike `.wasDealtDamageBySourceThisTurn()`, which needs its one source to still be around.
+  The snapshot holds the source's controller, whether it was a creature and its creature subtypes, so
+  `sourceFilter` may use `youControl()` / `opponentControls()` ("you" = the effect source's controller),
+  `Creature` and `withSubtype(...)`; any other predicate fails closed. Honoured by the zone-change
+  redirect path (printed and granted replacements alike), so Etching of Kumano's "if a creature dealt
+  damage this turn by a source you controlled would die, exile it instead" is
+  `replacementEffect(RedirectZoneChange(newDestination = Zone.EXILE, appliesTo =
+  EventPattern.ZoneChangeEvent(filter = GameObjectFilter.Creature.wasDealtDamageThisTurnBy(
+  GameObjectFilter.Any.youControl()), from = Zone.BATTLEFIELD, to = Zone.GRAVEYARD)))`. Cleared at end
+  of turn. Inert with no source context (group-static projection).
 - `.saddled()` — permanent is saddled (CR 702.171b); backed by `StatePredicate.IsSaddled`.
 - `.renowned()` — creature has the **renowned** designation (CR 702.112b); backed by
   `StatePredicate.IsRenowned` and the engine's `RenownedComponent`. Component-backed and sticky

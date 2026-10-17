@@ -997,7 +997,31 @@ data class DamageSourceLki(
     val sourceId: EntityId? = null,
     val sourceSubtypes: Set<com.wingedsheep.sdk.core.Subtype> = emptySet(),
     val sourceWasCreature: Boolean = true,
-)
+) {
+    /**
+     * Does this source, as it stood when it dealt the damage, match [filter]? "You" is [youId]. The
+     * snapshot holds only controller, creature-ness and creature subtypes, so a filter asking for
+     * anything else fails closed rather than matching every source.
+     */
+    fun matches(filter: com.wingedsheep.sdk.scripting.GameObjectFilter, youId: EntityId): Boolean {
+        if (filter.statePredicates.isNotEmpty()) return false
+        if (filter.anyOf.isNotEmpty() && filter.anyOf.none { matches(it, youId) }) return false
+        for (predicate in filter.cardPredicates) {
+            val ok = when (predicate) {
+                com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsCreature -> sourceWasCreature
+                is com.wingedsheep.sdk.scripting.predicates.CardPredicate.HasSubtype -> predicate.subtype in sourceSubtypes
+                else -> false
+            }
+            if (!ok) return false
+        }
+        return when (filter.controllerPredicate) {
+            null -> true
+            com.wingedsheep.sdk.scripting.predicates.ControllerPredicate.ControlledByYou -> sourceControllerId == youId
+            com.wingedsheep.sdk.scripting.predicates.ControllerPredicate.ControlledByOpponent -> sourceControllerId != youId
+            else -> false
+        }
+    }
+}
 
 /**
  * Tracks the last-known snapshots of all sources that dealt damage to this creature this turn.
@@ -1012,6 +1036,10 @@ data class DamagedBySourcesThisTurnComponent(
 ) : Component {
     fun adding(source: DamageSourceLki): DamagedBySourcesThisTurnComponent =
         copy(sources = sources + source)
+
+    /** Whether any recorded source matches [filter], "you" being [youId]. See [DamageSourceLki.matches]. */
+    fun matchesAny(filter: com.wingedsheep.sdk.scripting.GameObjectFilter, youId: EntityId): Boolean =
+        sources.any { it.matches(filter, youId) }
 }
 
 /**

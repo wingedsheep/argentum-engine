@@ -34,7 +34,7 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * Chapter II is Long List of the Ents' one-shot delayed cast trigger: the counter goes on the spell
  * on the stack and travels with it onto the battlefield. Etching's replacement reads each dying
  * creature's own record of who controlled the sources that damaged it this turn
- * (`wasDealtDamageBySourceControllerThisTurn`), so the source needn't still be on the battlefield.
+ * (`wasDealtDamageThisTurnBy(Any.youControl())`), so the source needn't still be on the battlefield.
  */
 private val EtchingOfKumano = card("Etching of Kumano") {
     manaCost = ""
@@ -51,7 +51,7 @@ private val EtchingOfKumano = card("Etching of Kumano") {
         RedirectZoneChange(
             newDestination = Zone.EXILE,
             appliesTo = EventPattern.ZoneChangeEvent(
-                filter = GameObjectFilter.Creature.wasDealtDamageBySourceControllerThisTurn(),
+                filter = GameObjectFilter.Creature.wasDealtDamageThisTurnBy(GameObjectFilter.Any.youControl()),
                 from = Zone.BATTLEFIELD,
                 to = Zone.GRAVEYARD,
             ),

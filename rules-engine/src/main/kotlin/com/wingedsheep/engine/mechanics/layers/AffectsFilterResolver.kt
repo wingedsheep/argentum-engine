@@ -598,7 +598,7 @@ internal class AffectsFilterResolver(
         // damaged-creature record. Only meaningful via PredicateEvaluator / the zone-change gate.
         StatePredicate.WasDealtDamageBySourceThisTurn -> false
         // "By a source you controlled" needs the ability's controller, absent here too.
-        StatePredicate.WasDealtDamageBySourceControllerThisTurn -> false
+        is StatePredicate.WasDealtDamageThisTurnBy -> false
         // Likewise source-relative: "crewed/saddled the source this turn" needs the ability's
         // source permanent, absent in group-static projection. Only meaningful in target/count
         // contexts via PredicateEvaluator / DynamicAmountEvaluator. Never match here.

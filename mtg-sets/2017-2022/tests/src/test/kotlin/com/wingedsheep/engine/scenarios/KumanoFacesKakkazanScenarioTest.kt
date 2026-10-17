@@ -18,7 +18,7 @@ import io.kotest.matchers.shouldBe
  *   Back: Haste. If a creature dealt damage this turn by a source you controlled would die, exile it
  *   instead.
  *
- * The replacement's own rules live in `WasDealtDamageBySourceControllerThisTurnTest`; this walks the
+ * The replacement's own rules live in `WasDealtDamageThisTurnByTest`; this walks the
  * card through all three chapters and pins the back face.
  */
 class KumanoFacesKakkazanScenarioTest : ScenarioTestBase() {

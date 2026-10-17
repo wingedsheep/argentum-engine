@@ -21,12 +21,12 @@ import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
 /**
- * `StatePredicate.WasDealtDamageBySourceControllerThisTurn` — "a creature dealt damage this turn by a
+ * `StatePredicate.WasDealtDamageThisTurnBy(sourceFilter)` — "a creature dealt damage this turn by a
  * source you controlled" (Etching of Kumano). Read off the damaged creature's own record of its
- * damage sources, each frozen with its controller at damage time, both by the predicate evaluator and
- * by the zone-change redirect path that answers "…would die, exile it instead".
+ * damage sources, each frozen as it stood at damage time, both by the predicate evaluator and by the
+ * zone-change redirect path that answers "…would die, exile it instead".
  */
-class WasDealtDamageBySourceControllerThisTurnTest : FunSpec({
+class WasDealtDamageThisTurnByTest : FunSpec({
 
     // "If a creature dealt damage this turn by a source you controlled would die, exile it instead."
     val etching = card("Damage-History Test Etching") {
@@ -36,7 +36,7 @@ class WasDealtDamageBySourceControllerThisTurnTest : FunSpec({
             RedirectZoneChange(
                 newDestination = Zone.EXILE,
                 appliesTo = EventPattern.ZoneChangeEvent(
-                    filter = GameObjectFilter.Creature.wasDealtDamageBySourceControllerThisTurn(),
+                    filter = GameObjectFilter.Creature.wasDealtDamageThisTurnBy(GameObjectFilter.Any.youControl()),
                     from = Zone.BATTLEFIELD,
                     to = Zone.GRAVEYARD,
                 ),
@@ -51,11 +51,11 @@ class WasDealtDamageBySourceControllerThisTurnTest : FunSpec({
         passPriorityUntil(Step.PRECOMBAT_MAIN)
     }
 
-    val filter = GameObjectFilter.Creature.wasDealtDamageBySourceControllerThisTurn()
+    val filter = GameObjectFilter.Creature.wasDealtDamageThisTurnBy(GameObjectFilter.Any.youControl())
 
-    fun GameTestDriver.matchesFor(playerId: EntityId, cardId: EntityId) =
+    fun GameTestDriver.matchesFor(playerId: EntityId, cardId: EntityId, f: GameObjectFilter = filter) =
         services.predicateEvaluator.matches(
-            state, state.projectedState, cardId, filter,
+            state, state.projectedState, cardId, f,
             PredicateContext.fromEffectContext(EffectContext(sourceId = null, controllerId = playerId))
         )
 
@@ -151,5 +151,41 @@ class WasDealtDamageBySourceControllerThisTurnTest : FunSpec({
         d.destroy(me, victim)
 
         d.state.getExile(me).contains(victim) shouldBe true
+    }
+
+    test("the source is judged by who controlled it when it dealt the damage, not who controls it now") {
+        val d = driver(); val me = d.activePlayer!!; val opp = d.getOpponent(me)
+        d.putPermanentOnBattlefield(me, etching.name)
+        val mySource = d.putCreatureOnBattlefield(me, "Grizzly Bears")
+        val victim = d.putCreatureOnBattlefield(opp, "Centaur Courser")
+
+        d.ping(me, mySource, victim)
+        d.run(Effects.GainControl(EffectTarget.ContextTarget(0)), opp, null, mySource)
+        withClue("the opponent now controls the source") {
+            d.state.projectedState.getController(mySource) shouldBe opp
+        }
+
+        d.matchesFor(me, victim) shouldBe true
+        d.matchesFor(opp, victim) shouldBe false
+        d.destroy(opp, victim)
+        d.state.getExile(opp).contains(victim) shouldBe true
+    }
+
+    test("the source filter reads the source's damage-time type and subtypes, and fails closed past them") {
+        val d = driver(); val me = d.activePlayer!!; val opp = d.getOpponent(me)
+        val bears = d.putCreatureOnBattlefield(me, "Grizzly Bears")
+        val victim = d.putCreatureOnBattlefield(opp, "Centaur Courser")
+        d.ping(me, bears, victim)
+
+        d.matchesFor(me, victim, GameObjectFilter.Creature.wasDealtDamageThisTurnBy(
+            GameObjectFilter.Creature.youControl().withSubtype("Bear"))) shouldBe true
+        d.matchesFor(me, victim, GameObjectFilter.Creature.wasDealtDamageThisTurnBy(
+            GameObjectFilter.Creature.withSubtype("Spider"))) shouldBe false
+        d.matchesFor(opp, victim, GameObjectFilter.Creature.wasDealtDamageThisTurnBy(
+            GameObjectFilter.Any.opponentControls())) shouldBe true
+        withClue("a predicate the damage-time record can't answer never matches") {
+            d.matchesFor(me, victim, GameObjectFilter.Creature.wasDealtDamageThisTurnBy(
+                GameObjectFilter.Any.tapped())) shouldBe false
+        }
     }
 })
