@@ -379,6 +379,99 @@
     ]
 }
 
+// Arc Spitter
+{
+    "name": "Arc Spitter",
+    "manaCost": "{1}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Equipped creature has \"{1}: This creature deals 1 damage to target creature that's blocking it.\"\nEquip {1} ({1}: Attach to target creature you control. Equip only as a sorcery.)",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Arc Spitter:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantActivatedAbility",
+                "ability": {
+                    "id": "Arc Spitter:1",
+                    "cost": {
+                        "type": "CostAtomWrapper",
+                        "atom": {
+                            "type": "AtomMana",
+                            "cost": "{1}"
+                        }
+                    },
+                    "effect": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "damageSource": "Self"
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": {
+                                    "cardPredicates": [
+                                        "IsCreature"
+                                    ],
+                                    "statePredicates": [
+                                        "IsBlockingSource"
+                                    ]
+                                }
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "descriptionOverride": "{1}: This creature deals 1 damage to target creature that's blocking it."
+                }
+            }
+        ]
+    },
+    "equipCost": "{1}",
+    "metadata": {
+        "collectorNumber": "233",
+        "rarity": "UNCOMMON",
+        "artist": "Matt Forsyth",
+        "flavorText": "\"I'm fresh out of mercy today. Why don't you ask Sparky here for forgiveness?\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/9/f95a00ed-dc77-4dcd-9e14-6902565974b5.jpg?1783923071"
+    },
+    "colorIdentityOverride": []
+}
+
 // Attended Socialite
 {
     "name": "Attended Socialite",
@@ -2524,6 +2617,98 @@
     "colorIdentityOverride": []
 }
 
+// Ceremonial Groundbreaker
+{
+    "name": "Ceremonial Groundbreaker",
+    "manaCost": "{1}{G}{W}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Equipped creature gets +2/+1 and has trample.\nEquip Citizen {1}\nEquip {3} ({3}: Attach to target creature you control. Equip only as a sorcery.)",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Ceremonial Groundbreaker:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "Citizen creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature Citizen ctrl:you"
+                        },
+                        "id": "Citizen creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true,
+                "equipQuality": "Citizen"
+            },
+            {
+                "id": "Ceremonial Groundbreaker:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 2,
+                "toughnessBonus": 1
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "TRAMPLE"
+            }
+        ]
+    },
+    "equipCost": "{3}",
+    "metadata": {
+        "collectorNumber": "175",
+        "rarity": "UNCOMMON",
+        "artist": "Drew Baker",
+        "flavorText": "Construction in New Capenna is imbued with tradition and ritual.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/a/0a542616-aa4d-40d9-acad-47bc98bd6281.jpg?1783923091"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE"
+    ]
+}
+
 // Chrome Cat
 {
     "name": "Chrome Cat",
@@ -3282,6 +3467,57 @@
         "RED",
         "BLUE",
         "WHITE"
+    ]
+}
+
+// Crew Captain
+{
+    "name": "Crew Captain",
+    "manaCost": "{B}{R}{G}",
+    "typeLine": "Creature — Human Warrior",
+    "oracleText": "Haste\nThis creature has indestructible as long as it entered this turn.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 2
+    },
+    "keywords": [
+        "HASTE"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "INDESTRUCTIBLE",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": {
+                        "statePredicates": [
+                            "EnteredThisTurn"
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "180",
+        "rarity": "UNCOMMON",
+        "artist": "Jakub Kasper",
+        "flavorText": "The Riveteers are as good at raising buildings as they are at razing them.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/9/99806615-2f4a-4fe4-82f8-83445ae93a97.jpg?1783923089"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED",
+        "GREEN"
     ]
 }
 
@@ -5440,6 +5676,96 @@
     ]
 }
 
+// Getaway Car
+{
+    "name": "Getaway Car",
+    "manaCost": "{3}",
+    "typeLine": "Artifact — Vehicle",
+    "oracleText": "Haste\nWhenever this Vehicle attacks or blocks, return up to one target creature that crewed it this turn to its owner's hand.\nCrew 1 (Tap any number of creatures you control with total power 1 or more: This Vehicle becomes an artifact creature until end of turn.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "keywords": [
+        "HASTE",
+        "CREW"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "CREW",
+            "n": 1
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Getaway Car:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Hand"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsCreature"
+                            ],
+                            "statePredicates": [
+                                "CrewedOrSaddledSourceThisTurn"
+                            ]
+                        }
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Whenever this Vehicle attacks, return up to one target creature that crewed it this turn to its owner's hand."
+            },
+            {
+                "id": "Getaway Car:2",
+                "trigger": "BlockEvent",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    },
+                    "destination": "Hand"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsCreature"
+                            ],
+                            "statePredicates": [
+                                "CrewedOrSaddledSourceThisTurn"
+                            ]
+                        }
+                    },
+                    "id": "t1"
+                },
+                "descriptionOverride": "Whenever this Vehicle blocks, return up to one target creature that crewed it this turn to its owner's hand."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "237",
+        "rarity": "RARE",
+        "artist": "Donato Giancola",
+        "flavorText": "For those who need to make a quick departure without attracting undue attention.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/a/8a6d2fa3-3f5a-4b6f-8b7e-6a8bf65c07ad.jpg?1783923063"
+    }
+}
+
 // Giada, Font of Hope
 {
     "name": "Giada, Font of Hope",
@@ -6308,6 +6634,62 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Hoard Hauler
+{
+    "name": "Hoard Hauler",
+    "manaCost": "{3}{R}",
+    "typeLine": "Artifact — Vehicle",
+    "oracleText": "Trample\nWhenever this Vehicle deals combat damage to a player, create a Treasure token for each artifact they control.\nCrew 3 (Tap any number of creatures you control with total power 3 or more: This Vehicle becomes an artifact creature until end of turn.)",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "TRAMPLE",
+        "CREW"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "CREW",
+            "n": 3
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Hoard Hauler:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Treasure",
+                    "dynamicCount": {
+                        "type": "AggregateBattlefield",
+                        "player": "TriggeringPlayer",
+                        "filter": "artifact"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "109",
+        "rarity": "RARE",
+        "artist": "Jake Murray",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/9/19f190e9-52f3-4e34-8fb6-88174c189ee7.jpg?1783923119"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -8654,6 +9036,126 @@
     ]
 }
 
+// Masked Bandits
+{
+    "name": "Masked Bandits",
+    "manaCost": "{3}{B}{R}{G}",
+    "typeLine": "Creature — Raccoon Rogue",
+    "oracleText": "Vigilance\nMenace (This creature can't be blocked except by two or more creatures.)\n{2}, Exile this card from your hand: Target land gains \"{T}: Add {B}, {R}, or {G}\" until this card is cast from exile. You may cast this card for as long as it remains exiled.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "VIGILANCE",
+        "MENACE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Masked Bandits:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}"
+                            }
+                        },
+                        "CostExileSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GrantActivatedAbility",
+                            "ability": {
+                                "id": "Masked Bandits:1",
+                                "cost": "CostTap",
+                                "effect": {
+                                    "type": "AddManaOfChoice",
+                                    "colorSet": {
+                                        "type": "ManaColorSet.Specific",
+                                        "colors": [
+                                            "BLACK",
+                                            "RED",
+                                            "GREEN"
+                                        ]
+                                    }
+                                },
+                                "timing": "ManaAbility",
+                                "isManaAbility": true
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "duration": "UntilSourceCastFromExile"
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Exile",
+                                        "filter": {
+                                            "statePredicates": [
+                                                "IsSource"
+                                            ]
+                                        }
+                                    },
+                                    "storeAs": "gathered0"
+                                },
+                                {
+                                    "type": "GrantMayPlayFromExile",
+                                    "from": "gathered0",
+                                    "expiry": "Permanent"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "land"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "activateFromZone": "Hand",
+                "descriptionOverride": "{2}, Exile this card from your hand: Target land gains \"{T}: Add {B}, {R}, or {G}\" until this card is cast from exile. You may cast this card for as long as it remains exiled."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "201",
+        "artist": "Micah Epstein",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/3/03757415-6b58-42d3-9452-a862e90647ee.jpg?1783923080",
+        "rulings": [
+            {
+                "date": "2022-04-29",
+                "text": "You may use the mana ability Masked Bandits grants to the land while casting Masked Bandits from exile."
+            },
+            {
+                "date": "2022-04-29",
+                "text": "If Masked Bandits is removed from exile without being cast, the land will continue to have this ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED",
+        "GREEN"
+    ]
+}
+
 // Mayhem Patrol
 {
     "name": "Mayhem Patrol",
@@ -8971,6 +9473,244 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Mr. Orfeo, the Boulder
+{
+    "name": "Mr. Orfeo, the Boulder",
+    "manaCost": "{1}{B}{R}{G}",
+    "typeLine": "Legendary Creature — Rhino Warrior",
+    "oracleText": "Whenever you attack, double target creature's power until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Mr. Orfeo, the Boulder:1",
+                "trigger": "YouAttackEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "EntityProperty",
+                        "entity": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "numericProperty": "Power"
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "204",
+        "rarity": "UNCOMMON",
+        "artist": "Daarken",
+        "flavorText": "Once he was jumped by a dozen Maestros agents. You can still see their imprints in the pavement if you know where to look.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/7/97caaa92-2a7d-4f79-8d42-86733c902072.jpg?1783923079",
+        "rulings": [
+            {
+                "date": "2022-04-29",
+                "text": "To double a creature's power, that creature gets +X/+0, where X is that creature's power as Mr. Orfeo's triggered ability resolves."
+            }
+        ]
+    }
+}
+
+// Mysterious Limousine
+{
+    "name": "Mysterious Limousine",
+    "manaCost": "{3}{W}{W}",
+    "typeLine": "Artifact — Vehicle",
+    "oracleText": "Whenever this Vehicle enters or attacks, exile up to one other target creature until this Vehicle leaves the battlefield. If a creature is put into exile this way, return each other card exiled with this Vehicle to the battlefield under its owner's control.\nCrew 2",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "CREW"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "CREW",
+            "n": 2
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Mysterious Limousine:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "FromLinkedExile",
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "ExileUntilLeaves",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GatherCards",
+                            "source": "FromLinkedExile",
+                            "storeAs": "gathered2"
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "gathered2",
+                            "collectionFilter": {
+                                "type": "ExcludeOtherCollection",
+                                "otherCollectionName": "gathered0"
+                            },
+                            "storeMatching": "matching3"
+                        },
+                        {
+                            "type": "ConditionalOnCollection",
+                            "collection": "matching3",
+                            "ifNotEmpty": {
+                                "type": "MoveCollection",
+                                "from": "gathered0",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Battlefield"
+                                },
+                                "underOwnersControl": true
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "creature",
+                        "excludeSelf": true
+                    },
+                    "id": "t0"
+                }
+            },
+            {
+                "id": "Mysterious Limousine:2",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "FromLinkedExile",
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "ExileUntilLeaves",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t1"
+                            }
+                        },
+                        {
+                            "type": "GatherCards",
+                            "source": "FromLinkedExile",
+                            "storeAs": "gathered2"
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "gathered2",
+                            "collectionFilter": {
+                                "type": "ExcludeOtherCollection",
+                                "otherCollectionName": "gathered0"
+                            },
+                            "storeMatching": "matching3"
+                        },
+                        {
+                            "type": "ConditionalOnCollection",
+                            "collection": "matching3",
+                            "ifNotEmpty": {
+                                "type": "MoveCollection",
+                                "from": "gathered0",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Battlefield"
+                                },
+                                "underOwnersControl": true
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "creature",
+                        "excludeSelf": true
+                    },
+                    "id": "t1"
+                }
+            },
+            {
+                "id": "Mysterious Limousine:3",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "FromLinkedExile",
+                            "storeAs": "linked_return"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "linked_return",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            },
+                            "underOwnersControl": true
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "22",
+        "rarity": "RARE",
+        "artist": "Dan Murayama Scott",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/5/a58cb742-0ba7-4795-9772-25d4db0bc4ce.jpg?1783923155"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -9811,6 +10551,51 @@
     }
 }
 
+// Ognis, the Dragon's Lash
+{
+    "name": "Ognis, the Dragon's Lash",
+    "manaCost": "{1}{B/R}{R}{R/G}",
+    "typeLine": "Legendary Creature — Lizard Warrior",
+    "oracleText": "Haste\nWhenever a creature you control with haste attacks, create a tapped Treasure token.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "HASTE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ognis, the Dragon's Lash:1",
+                "trigger": {
+                    "type": "AttackEvent",
+                    "filter": "creature kw:haste ctrl:you"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Treasure",
+                    "tapped": true
+                },
+                "descriptionOverride": "Whenever a creature you control with haste attacks, create a tapped Treasure token."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "210",
+        "rarity": "RARE",
+        "artist": "Andreas Zafiratos",
+        "flavorText": "Ziatora's second-in-command has a habit of appearing when and where her enemies least expect her.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/3/636058c3-bacc-4a66-8988-832ab0cc9be6.jpg?1783923075"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED",
+        "GREEN"
+    ]
+}
+
 // Ominous Parcel
 {
     "name": "Ominous Parcel",
@@ -10060,6 +10845,75 @@
             }
         ]
     }
+}
+
+// Park Heights Pegasus
+{
+    "name": "Park Heights Pegasus",
+    "manaCost": "{G}{W}",
+    "typeLine": "Creature — Pegasus",
+    "oracleText": "Flying, trample\nWhenever this creature deals combat damage to a player, draw a card if you had two or more creatures enter the battlefield under your control this turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING",
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Park Heights Pegasus:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "TurnTracking",
+                                "player": "You",
+                                "tracker": "CREATURES_ENTERED_UNDER_CONTROL"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    }
+                },
+                "descriptionOverride": "Whenever this creature deals combat damage to a player, draw a card if you had two or more creatures enter the battlefield under your control this turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "211",
+        "rarity": "RARE",
+        "artist": "Randy Gallegos",
+        "flavorText": "The burglar turned, bowed, and dropped from the ledge onto her waiting mount.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/b/bba250e8-1ceb-40f5-95f1-fb00a2a723eb.jpg?1783923073"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE"
+    ]
 }
 
 // Patch Up
@@ -13291,6 +14145,61 @@
     ]
 }
 
+// Scuttling Butler
+{
+    "name": "Scuttling Butler",
+    "manaCost": "{3}",
+    "typeLine": "Artifact Creature — Construct",
+    "oracleText": "At the beginning of combat on your turn, if you control two or more multicolored permanents, this creature gains double strike until end of turn.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Scuttling Butler:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "BEGIN_COMBAT"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "DOUBLE_STRIKE",
+                    "target": "Self"
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": {
+                            "cardPredicates": [
+                                "IsPermanent",
+                                "IsMulticolored"
+                            ]
+                        }
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                },
+                "descriptionOverride": "At the beginning of combat on your turn, if you control two or more multicolored permanents, this creature gains double strike until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "244",
+        "rarity": "UNCOMMON",
+        "artist": "Gaboleps",
+        "flavorText": "Porter, cleaner, and bouncer all in one.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/e/0edbece0-8444-4634-a47b-7c88d1b8325e.jpg?1783923059"
+    }
+}
+
 // Security Bypass
 {
     "name": "Security Bypass",
@@ -13501,6 +14410,142 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Shattered Seraph
+{
+    "name": "Shattered Seraph",
+    "manaCost": "{4}{W}{U}{B}",
+    "typeLine": "Creature — Angel Rogue",
+    "oracleText": "Flying\nWhen this creature enters, you gain 3 life.\n{2}, Exile this card from your hand: Target land gains \"{T}: Add {W}, {U}, or {B}\" until this card is cast from exile. You may cast this card for as long as it remains exiled.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Shattered Seraph:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                },
+                "descriptionOverride": "When this creature enters, you gain 3 life."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Shattered Seraph:3",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}"
+                            }
+                        },
+                        "CostExileSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GrantActivatedAbility",
+                            "ability": {
+                                "id": "Shattered Seraph:2",
+                                "cost": "CostTap",
+                                "effect": {
+                                    "type": "AddManaOfChoice",
+                                    "colorSet": {
+                                        "type": "ManaColorSet.Specific",
+                                        "colors": [
+                                            "WHITE",
+                                            "BLUE",
+                                            "BLACK"
+                                        ]
+                                    }
+                                },
+                                "timing": "ManaAbility",
+                                "isManaAbility": true
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "duration": "UntilSourceCastFromExile"
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Exile",
+                                        "filter": {
+                                            "statePredicates": [
+                                                "IsSource"
+                                            ]
+                                        }
+                                    },
+                                    "storeAs": "gathered0"
+                                },
+                                {
+                                    "type": "GrantMayPlayFromExile",
+                                    "from": "gathered0",
+                                    "expiry": "Permanent"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "land"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "activateFromZone": "Hand",
+                "descriptionOverride": "{2}, Exile this card from your hand: Target land gains \"{T}: Add {W}, {U}, or {B}\" until this card is cast from exile. You may cast this card for as long as it remains exiled."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "221",
+        "artist": "Bastien L. Deharme",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/c/cc75ba0d-230e-4ca4-bb40-bd05af2a4457.jpg?1783923070",
+        "rulings": [
+            {
+                "date": "2022-04-29",
+                "text": "You may use the mana ability Shattered Seraph grants to the land while casting Shattered Seraph from exile."
+            },
+            {
+                "date": "2022-04-29",
+                "text": "If Shattered Seraph is removed from exile without being cast, the land will continue to have this ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE",
+        "BLACK"
     ]
 }
 
@@ -13981,6 +15026,160 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Spara's Adjudicators
+{
+    "name": "Spara's Adjudicators",
+    "manaCost": "{2}{G}{W}{U}",
+    "typeLine": "Creature — Cat Citizen",
+    "oracleText": "When this creature enters, target creature an opponent controls can't attack or block until your next turn.\n{2}, Exile this card from your hand: Target land gains \"{T}: Add {G}, {W}, or {U}\" until this card is cast from exile. You may cast this card for as long as it remains exiled.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Spara's Adjudicators:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CantAttack",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "duration": "UntilYourNextTurn"
+                        },
+                        {
+                            "type": "CantBlockTargetCreatures",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "duration": "UntilYourNextTurn"
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:opponent"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this creature enters, target creature an opponent controls can't attack or block until your next turn."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Spara's Adjudicators:3",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}"
+                            }
+                        },
+                        "CostExileSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GrantActivatedAbility",
+                            "ability": {
+                                "id": "Spara's Adjudicators:2",
+                                "cost": "CostTap",
+                                "effect": {
+                                    "type": "AddManaOfChoice",
+                                    "colorSet": {
+                                        "type": "ManaColorSet.Specific",
+                                        "colors": [
+                                            "GREEN",
+                                            "WHITE",
+                                            "BLUE"
+                                        ]
+                                    }
+                                },
+                                "timing": "ManaAbility",
+                                "isManaAbility": true
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t1"
+                            },
+                            "duration": "UntilSourceCastFromExile"
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Exile",
+                                        "filter": {
+                                            "statePredicates": [
+                                                "IsSource"
+                                            ]
+                                        }
+                                    },
+                                    "storeAs": "gathered0"
+                                },
+                                {
+                                    "type": "GrantMayPlayFromExile",
+                                    "from": "gathered0",
+                                    "expiry": "Permanent"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "land"
+                        },
+                        "id": "t1"
+                    }
+                ],
+                "activateFromZone": "Hand",
+                "descriptionOverride": "{2}, Exile this card from your hand: Target land gains \"{T}: Add {G}, {W}, or {U}\" until this card is cast from exile. You may cast this card for as long as it remains exiled."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "224",
+        "artist": "Aaron J. Riley",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/9/29eb0e40-d184-423f-8484-ee288fda00cd.jpg?1783923068",
+        "rulings": [
+            {
+                "date": "2022-04-29",
+                "text": "You may use the mana ability Spara's Adjudicators grants to the land while casting Spara's Adjudicators from exile."
+            },
+            {
+                "date": "2022-04-29",
+                "text": "If Spara's Adjudicators is removed from exile without being cast, the land will continue to have this ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE",
+        "BLUE"
     ]
 }
 
@@ -15071,6 +16270,161 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Unlicensed Hearse
+{
+    "name": "Unlicensed Hearse",
+    "manaCost": "{2}",
+    "typeLine": "Artifact — Vehicle",
+    "oracleText": "{T}: Exile up to two target cards from a single graveyard.\nUnlicensed Hearse's power and toughness are each equal to the number of cards exiled with it.\nCrew 2 (Tap any number of creatures you control with total power 2 or more: This Vehicle becomes an artifact creature until end of turn.)",
+    "creatureStats": {
+        "power": {
+            "type": "Dynamic",
+            "source": {
+                "type": "ContextProperty",
+                "key": "LINKED_EXILE_CARD_COUNT"
+            }
+        },
+        "toughness": {
+            "type": "Dynamic",
+            "source": {
+                "type": "ContextProperty",
+                "key": "LINKED_EXILE_CARD_COUNT"
+            }
+        }
+    },
+    "keywords": [
+        "CREW"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "CREW",
+            "n": 2
+        }
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Unlicensed Hearse:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "ForEach",
+                    "space": "IterationSpace.Targets",
+                    "body": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        },
+                        "destination": "Exile",
+                        "linkToSource": true
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "count": 2,
+                        "optional": true,
+                        "filter": {
+                            "baseFilter": {},
+                            "zone": "Graveyard"
+                        },
+                        "id": "t0",
+                        "sameOwner": true
+                    }
+                ],
+                "descriptionOverride": "{T}: Exile up to two target cards from a single graveyard."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "246",
+        "rarity": "RARE",
+        "artist": "Chris Seaman",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/3/93ee60f7-31dd-4bc6-b71f-57a1a0d19d20.jpg?1783923059",
+        "rulings": [
+            {
+                "date": "2022-04-29",
+                "text": "If you activated the crew ability of Unlicensed Hearse before exiling any cards with its first ability, its power and toughness will be 0/0. Unless there is another effect increasing its toughness, it will be put into its owner's graveyard as a state-based action."
+            }
+        ]
+    }
+}
+
+// Unlucky Witness
+{
+    "name": "Unlucky Witness",
+    "manaCost": "{R}",
+    "typeLine": "Creature — Human Citizen",
+    "oracleText": "When this creature dies, exile the top two cards of your library. Until your next end step, you may play one of those cards.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Unlucky Witness:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        },
+                        {
+                            "type": "GrantMayPlayFromExile",
+                            "from": "gathered0",
+                            "expiry": {
+                                "type": "UntilControllerStep",
+                                "step": "END"
+                            },
+                            "singleUse": true
+                        }
+                    ]
+                },
+                "descriptionOverride": "When this creature dies, exile the top two cards of your library. Until your next end step, you may play one of those cards."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "128",
+        "rarity": "UNCOMMON",
+        "artist": "Tyler Walpole",
+        "flavorText": "The guard took a midnight shift to earn a promotion. Unfortunately, so did the assassin.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/c/ec6430c0-67c1-4793-b4be-8f47545c57d6.jpg?1783923110",
+        "rulings": [
+            {
+                "date": "2022-04-29",
+                "text": "You must pay all costs and follow all normal timing rules for a card played this way. For example, you may play a land card this way only during a main phase of your own turn when the stack is empty, and only if you haven't yet played a land this turn."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
