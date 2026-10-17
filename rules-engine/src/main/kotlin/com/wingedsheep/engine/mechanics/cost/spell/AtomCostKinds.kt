@@ -153,7 +153,7 @@ internal object SacrificeCostKind : SpellCostKind<CostAtom.Sacrifice> {
         // Snapshot projected subtypes and P/T before zone change
         // (Rule 113.7a / 608.2h — "as it last existed on the battlefield")
         val sacrificed = ledger.payment.sacrificedPermanents
-        ledger.sacrificedSnapshots.addAll(captureEntitySnapshots(sacrificed, ledger.state.projectedState, ledger.state))
+        ledger.sacrificedSnapshots.addAll(captureEntitySnapshots(sacrificed, ledger.state))
         for (permId in sacrificed) {
             if (ledger.state.getEntity(permId) == null) continue
             ledger.sacrifice(permId)
@@ -173,7 +173,7 @@ internal object SacrificeAllCostKind : SpellCostKind<CostAtom.SacrificeAll> {
     override fun pay(ledger: SpellCostLedger, cost: CostAtom.SacrificeAll): String? {
         val all = ledger.costHandler.sacrificeAllCandidates(ledger.state, cost, ledger.playerId)
         // Snapshot before any of them leaves (CR 608.2h) — "the sacrificed creatures' total power".
-        ledger.sacrificedSnapshots.addAll(captureEntitySnapshots(all, ledger.state.projectedState, ledger.state))
+        ledger.sacrificedSnapshots.addAll(captureEntitySnapshots(all, ledger.state))
         for (permId in all) ledger.sacrifice(permId)
         return null
     }
@@ -794,7 +794,7 @@ internal object VariablePermanentsCostKind : SpellCostKind<CostAtom.VariablePerm
                 ledger.events.addAll(tapEvents)
             }
             PermanentCostAction.SACRIFICE -> {
-                ledger.sacrificedSnapshots.addAll(captureEntitySnapshots(chosen, ledger.state.projectedState, ledger.state))
+                ledger.sacrificedSnapshots.addAll(captureEntitySnapshots(chosen, ledger.state))
                 for (permId in chosen) {
                     if (ledger.state.getEntity(permId) == null) continue
                     ledger.sacrifice(permId)

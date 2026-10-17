@@ -99,6 +99,29 @@ class ThreeDogGalaxyNewsDjScenarioTest : ScenarioTestBase() {
             game.hostOf(aura) shouldBe game.findPermanent("Three Dog, Galaxy News DJ")
         }
 
+        test("an Aura on another attacker, not Three Dog, isn't offered and nothing is paid") {
+            val game = scenario()
+                .withPlayers("Player1", "Player2")
+                .withCardOnBattlefield(1, "Three Dog, Galaxy News DJ")
+                .withCardOnBattlefield(1, "Grizzly Bears")
+                .withCardAttachedTo(1, "Holy Strength", "Grizzly Bears")
+                .withCardOnBattlefield(1, "Hill Giant")
+                .withLandsOnBattlefield(1, "Plains", 2)
+                .withCardInLibrary(1, "Forest")
+                .withCardInLibrary(2, "Forest")
+                .withActivePlayer(1)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+            game.attackWithAll()
+            game.resolveAnswering(pay = true) shouldBe false
+
+            withClue("the lands stay untapped") {
+                game.findAllPermanents("Plains").none { game.state.getEntity(it)!!.has<TappedComponent>() } shouldBe true
+            }
+            val aura = game.named("Holy Strength").single()
+            game.hostOf(aura) shouldBe game.findPermanent("Grizzly Bears")
+        }
+
         test("without {2} available the may isn't offered") {
             val game = board(lands = 1)
             game.attackWithAll()

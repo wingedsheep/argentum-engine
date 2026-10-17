@@ -154,6 +154,46 @@ class SacrificedPermanentTokenCopyScenarioTest : ScenarioTestBase() {
             game.hostOf(copy) shouldBe game.findPermanent("Grizzly Bears")
         }
 
+        for (chosenIsToken in listOf(false, true)) {
+            test("with two Auras the paused sacrifice choice reaches the reflexive trigger (token=$chosenIsToken)") {
+                val game = scenario()
+                    .withPlayers("Player1", "Player2")
+                    .withCardOnBattlefield(1, "Sacrifice Echo Bard")
+                    .withCardAttachedTo(1, "Holy Strength", "Sacrifice Echo Bard")
+                    .withCardAttachedTo(1, "Unholy Strength", "Sacrifice Echo Bard", isToken = chosenIsToken)
+                    .withCardOnBattlefield(1, "Grizzly Bears")
+                    .withCardInLibrary(1, "Forest")
+                    .withCardInLibrary(2, "Forest")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+                val unholy = game.named("Unholy Strength").single()
+
+                game.passUntilPhase(Phase.COMBAT, Step.DECLARE_ATTACKERS)
+                game.declareAttackers(mapOf("Sacrifice Echo Bard" to 2, "Grizzly Bears" to 2)).error shouldBe null
+                var chose = false
+                var guard = 0
+                while (guard++ < 30 && (game.state.stack.isNotEmpty() || game.state.pendingDecision != null)) {
+                    when (val decision = game.state.pendingDecision) {
+                        null -> game.resolveStack()
+                        is YesNoDecision -> game.submitDecision(YesNoResponse(decision.id, true)).error shouldBe null
+                        is SelectCardsDecision -> {
+                            chose = true
+                            game.selectCards(listOf(unholy)).error shouldBe null
+                        }
+                        else -> error("unexpected decision $decision")
+                    }
+                }
+
+                withClue("two candidates, so the sacrifice paused for a choice") { chose shouldBe true }
+                val bears = game.findPermanent("Grizzly Bears")
+                withClue("the copy is of the chosen Aura, on the other attacker") {
+                    game.named("Unholy Strength").filter { it != unholy }.map { game.hostOf(it) } shouldBe listOf(bears)
+                    game.named("Holy Strength").map { game.hostOf(it) } shouldBe listOf(game.findPermanent("Sacrifice Echo Bard"))
+                }
+            }
+        }
+
         test("no token for a creature with protection from enchantments; shroud doesn't stop one (CR 303.4i)") {
             val game = scenario()
                 .withPlayers("Player1", "Player2")

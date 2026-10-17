@@ -252,7 +252,7 @@ internal class CastCostPayer(
         if (variable) {
             ledger.costDefinedX = ledger.action.xValue ?: (ledger.state.projectedState.getPower(permId) ?: 0)
         }
-        ledger.sacrificedSnapshots.addAll(captureEntitySnapshots(listOf(permId), ledger.state.projectedState, ledger.state))
+        ledger.sacrificedSnapshots.addAll(captureEntitySnapshots(listOf(permId), ledger.state))
         if (ledger.state.getEntity(permId) != null) {
             ledger.sacrifice(permId)
         }

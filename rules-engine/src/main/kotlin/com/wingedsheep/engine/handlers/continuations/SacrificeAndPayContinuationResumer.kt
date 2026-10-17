@@ -135,7 +135,8 @@ class SacrificeAndPayContinuationResumer(
     }
 
     /**
-     * Publish [snapshots] of just-sacrificed permanents onto the enclosing [EffectContinuation]s so
+     * Publish [snapshots] of just-sacrificed permanents onto the enclosing [EffectContinuation]s
+     * (and reflexive / gated-action frames) so
      * a sibling effect resolving after this paused sacrifice can read
      * `context.sacrificedPermanents` (Rise of the Witch-king's "if you sacrificed a creature this
      * way…" rider). Mirrors `CreatureTypeChoiceContinuationResumer`'s "walk the stack and patch the
@@ -146,15 +147,19 @@ class SacrificeAndPayContinuationResumer(
         snapshots: List<com.wingedsheep.engine.state.components.stack.EntitySnapshot>
     ): GameState {
         if (snapshots.isEmpty()) return state
+        fun com.wingedsheep.engine.handlers.EffectContext.withSnapshots() = copy(
+            sacrificedPermanents = sacrificedPermanents + snapshots.filterNot { it in sacrificedPermanents }
+        )
         return state.copy(continuationStack = state.continuationStack.map { frame ->
-            if (frame is EffectContinuation) {
-                frame.copy(
-                    effectContext = frame.effectContext.copy(
-                        sacrificedPermanents = frame.effectContext.sacrificedPermanents + snapshots
-                    )
-                )
-            } else {
-                frame
+            when (frame) {
+                is EffectContinuation -> frame.copy(effectContext = frame.effectContext.withSnapshots())
+                // "When you sacrifice an Aura this way" (Three Dog) reads what a paused sacrifice
+                // chose, as does a Gate.DoAction's payoff — both wait beneath the sacrifice.
+                is com.wingedsheep.engine.core.ReflexiveTriggerTargetContinuation ->
+                    frame.copy(effectContext = frame.effectContext.withSnapshots())
+                is com.wingedsheep.engine.core.GatedActionContinuation ->
+                    frame.copy(effectContext = frame.effectContext.withSnapshots())
+                else -> frame
             }
         })
     }
