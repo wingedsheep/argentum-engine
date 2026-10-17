@@ -2,6 +2,8 @@ package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.StepChangedEvent
 import com.wingedsheep.engine.state.components.player.AdditionalPhasesComponent
+import com.wingedsheep.engine.state.components.player.CombatPhaseEndedThisTurnComponent
+import com.wingedsheep.engine.state.components.player.InAdditionalCombatPhaseComponent
 import com.wingedsheep.engine.state.components.player.ExtraPhaseKind
 import com.wingedsheep.engine.state.components.player.QueuedPhase
 import com.wingedsheep.engine.support.GameTestDriver
@@ -23,8 +25,8 @@ import io.kotest.matchers.shouldBe
  *    an additional main phase" (Aggravated Assault, All-Out Assault), the shape that previously was
  *    the only thing `AddCombatPhaseEffect` could express.
  *
- * The redirect happens after the postcombat main phase (engine simplification of CR 500.8). These
- * tests pin the *turn-flow* result by recording the steps the active player visits across one turn:
+ * Each queued phase is inserted directly after the phase that queued it (CR 500.8), and the turn
+ * then resumes where it left off. These tests pin the *turn-flow* result by recording the steps the active player visits across one turn:
  * the combat-only shape visits the postcombat main phase exactly once (the natural one), while the
  * combat+main shape visits it twice.
  */
@@ -113,23 +115,76 @@ class AdditionalCombatPhaseTest : FunSpec({
         driver.state.getEntity(attacker)?.has<AdditionalPhasesComponent>() shouldBe false
     }
 
-    test("queued combat phase orders the natural postcombat main before the inserted combat phase") {
+    /** The combat / main / end steps of [steps], in order. */
+    fun phaseMarkers(steps: List<Step>) =
+        steps.filter { it == Step.BEGIN_COMBAT || it == Step.POSTCOMBAT_MAIN || it == Step.END }
+
+    test("a combat phase queued during the precombat main phase comes before the natural combat") {
         val driver = createDriver()
         val attacker = driver.activePlayer!!
 
         driver.queuePhases(attacker, ExtraPhaseKind.COMBAT)
         val steps = driver.recordStepsThroughTurn()
 
-        // The combat-relevant slice of the turn, in order: the natural combat, the natural
-        // postcombat main, then the inserted combat phase, then straight to the end step.
-        val phaseMarkers = steps.filter {
-            it == Step.BEGIN_COMBAT || it == Step.POSTCOMBAT_MAIN || it == Step.END
-        }
-        phaseMarkers shouldContainExactly listOf(
+        // CR 500.8 "after this phase": straight after the precombat main phase, then the turn
+        // resumes with its natural combat and postcombat main phases.
+        phaseMarkers(steps) shouldContainExactly listOf(
+            Step.BEGIN_COMBAT,      // inserted extra combat
             Step.BEGIN_COMBAT,      // natural combat
             Step.POSTCOMBAT_MAIN,   // natural postcombat main
-            Step.BEGIN_COMBAT,      // inserted extra combat
-            Step.END                // end step — NO second postcombat main
+            Step.END
         )
+    }
+
+    test("combat + main queued precombat both come before the natural combat, in creation order") {
+        val driver = createDriver()
+        val attacker = driver.activePlayer!!
+
+        driver.queuePhases(attacker, ExtraPhaseKind.COMBAT, ExtraPhaseKind.MAIN)
+        val steps = driver.recordStepsThroughTurn()
+
+        phaseMarkers(steps) shouldContainExactly listOf(
+            Step.BEGIN_COMBAT,      // inserted extra combat
+            Step.POSTCOMBAT_MAIN,   // inserted extra main
+            Step.BEGIN_COMBAT,      // natural combat
+            Step.POSTCOMBAT_MAIN,   // natural postcombat main
+            Step.END
+        )
+    }
+
+    test("a combat phase queued during combat comes before the natural postcombat main phase") {
+        val driver = createDriver()
+        val attacker = driver.activePlayer!!
+
+        driver.passPriorityUntil(Step.BEGIN_COMBAT)
+        driver.replaceState(driver.state.updateEntity(attacker) {
+            it.with(AdditionalPhasesComponent(listOf(QueuedPhase(ExtraPhaseKind.COMBAT))))
+        })
+        val steps = driver.recordStepsThroughTurn()
+
+        phaseMarkers(steps) shouldContainExactly listOf(
+            Step.BEGIN_COMBAT,      // natural combat (where the recording started)
+            Step.BEGIN_COMBAT,      // inserted extra combat
+            Step.POSTCOMBAT_MAIN,   // natural postcombat main
+            Step.END
+        )
+    }
+
+    test("an inserted combat ahead of the natural one is the turn's first combat phase") {
+        val driver = createDriver()
+        val attacker = driver.activePlayer!!
+
+        driver.queuePhases(attacker, ExtraPhaseKind.COMBAT)
+        driver.passPriorityUntil(Step.BEGIN_COMBAT)
+        driver.state.getEntity(attacker)?.has<InAdditionalCombatPhaseComponent>() shouldBe true
+        driver.state.getEntity(attacker)?.has<CombatPhaseEndedThisTurnComponent>() shouldBe false
+
+        // Through the inserted combat into the natural one: a combat phase has now ended.
+        var guard = 0
+        while (driver.state.getEntity(attacker)?.has<InAdditionalCombatPhaseComponent>() == true && guard++ < 50) {
+            driver.bothPass()
+        }
+        driver.currentStep shouldBe Step.BEGIN_COMBAT
+        driver.state.getEntity(attacker)?.has<CombatPhaseEndedThisTurnComponent>() shouldBe true
     }
 })

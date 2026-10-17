@@ -3712,13 +3712,15 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   Assault); the combat atom alone adds *no* trailing main phase. Implemented as an ordered
   `AdditionalPhasesComponent(phases: List<QueuedPhase>)` queue on the active player (each `QueuedPhase`
   is a `COMBAT` / `MAIN` / `BEGINNING` kind plus, for a combat phase, an optional attacker-restriction
-  filter), drained one at a time by `TurnManager.advanceStep` after the postcombat main phase and, for
-  an inserted combat or beginning phase, again as it ends (marked by `InAdditionalCombatPhaseComponent`
-  / `InAdditionalBeginningPhaseComponent`) so an inserted phase proceeds straight to the next queued
-  phase or the end step instead of granting an unwanted main phase. Queue order follows CR 500.8 —
-  the most recently created phase happens first — while phases one effect creates together (the
-  combat-then-main composition) keep that effect's order. Engine simplification: all queued phases are
-  inserted after the postcombat main phase regardless of when the effect resolved.
+  filter), drained one at a time by `TurnManager.advanceStep` as **the phase that created it ends** —
+  "after this phase" means directly after it, whichever phase that is. Cast precombat (Grim Reaper's
+  Sprint, Relentless Assault), the extra combat comes before the natural combat phase; added during
+  combat (Aurelia, Combat Celebrant, Fear of Missing Out), it comes before the natural postcombat main
+  phase. The first inserted phase records `InsertedPhasesResumeComponent(anchor)` — the natural phase
+  the chain was added after — and when the last queued phase ends the turn carries on as if that
+  anchor had just ended, so an inserted combat or beginning phase never grants an unwanted main
+  phase. Queue order follows CR 500.8 — the most recently created phase happens first — while phases
+  one effect creates together (the combat-then-main composition) keep that effect's order.
 - `Effects.AddBeginningPhase` — the third atomic extra-phase effect: "there is an additional beginning
   phase after this phase" (Shadow of the Second Sun). Queues one `BEGINNING` phase: a real untap step
   (permanents phase and untap; "doesn't untap during its controller's next untap step" is satisfied by
@@ -14069,8 +14071,9 @@ that works in both resolution and static-ability (projection) contexts.
   postcombat main phase, and in any inserted extra combat). Master Warcraft's timing line:
   `castOnlyIf(Conditions.BeforeAttackersDeclared)`.
 - `IsFirstCombatPhaseOfTurn` — the combat analog of `IsFirstEndStepOfTurn`: it's the turn's first
-  (natural) combat phase, i.e. *not* an extra combat phase inserted by `Effects.AddCombatPhase`.
-  Board-derived (reads `state.phase == COMBAT` + the active player's "in an inserted combat phase"
+  combat phase, i.e. no combat phase has ended yet this turn — an extra combat inserted *before* the
+  natural one (Grim Reaper's Sprint cast precombat) is the first, and the natural one after it is not.
+  Board-derived (reads `state.phase == COMBAT` + the active player's "a combat phase ended this turn"
   marker), so it evaluates identically at resolution and under projection. The intervening-if / loop
   guard for "after this phase, there is an additional combat phase" riders: use it as
   `triggerRestriction` so the spawned combat phase doesn't spawn another (Balthier and Fran; also the

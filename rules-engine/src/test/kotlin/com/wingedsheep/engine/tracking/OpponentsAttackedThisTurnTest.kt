@@ -78,7 +78,7 @@ class OpponentsAttackedThisTurnTest : FunSpec({
         val d = setup()
         d.addComponent(d.player1, AdditionalPhasesComponent(listOf(QueuedPhase(ExtraPhaseKind.COMBAT))))
         attack(d, mapOf(attacker(d) to d.player2))
-        d.passPriorityUntil(Step.POSTCOMBAT_MAIN)
+        d.passPriorityUntil(Step.END_COMBAT) // the queued combat came first; the natural one follows
         attack(d, mapOf(attacker(d) to d.player2, attacker(d) to d.state.turnOrder[2]))
         count(d) shouldBe 2
         d.passPriorityUntil(Step.UPKEEP)
@@ -114,7 +114,7 @@ class OpponentsAttackedThisTurnTest : FunSpec({
         count(d) shouldBe 0
         evaluator.conditions.evaluate(d.state, Conditions.YouAttackedThisTurn, EffectContext(null, p[0])) shouldBe false
         evaluator.conditions.evaluate(d.state, Conditions.YouAttackedThisTurn, EffectContext(null, p[1])) shouldBe true
-        d.passPriorityUntil(Step.POSTCOMBAT_MAIN)
+        d.passPriorityUntil(Step.END_COMBAT) // the queued combat came first; the natural one follows
         d.untapPermanent(teammate)
         d.passPriorityUntil(Step.DECLARE_ATTACKERS)
         val result = d.declareAttackers(p[0], mapOf(teammate to p[3]))

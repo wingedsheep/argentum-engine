@@ -4889,6 +4889,101 @@
     }
 }
 
+// Grim Reaper's Sprint
+{
+    "name": "Grim Reaper's Sprint",
+    "manaCost": "{4}{R}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Morbid — This spell costs {3} less to cast if a creature died this turn.\nEnchant creature\nWhen this Aura enters, untap each creature you control. If it's your main phase, there is an additional combat phase after this phase.\nEnchanted creature gets +2/+2 and has haste.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Grim Reaper's Sprint:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Group",
+                                "filter": {
+                                    "baseFilter": "creature ctrl:you"
+                                }
+                            },
+                            "body": {
+                                "type": "TapUntap",
+                                "target": "IterationEntity",
+                                "tap": false
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "IsInPhase",
+                                    "phases": [
+                                        "PRECOMBAT_MAIN",
+                                        "POSTCOMBAT_MAIN"
+                                    ]
+                                }
+                            },
+                            "then": "AddCombatPhase"
+                        }
+                    ]
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "ReduceGenericBy",
+                    "source": {
+                        "type": "FixedIfCreatureDiedThisTurn",
+                        "amount": 3
+                    }
+                }
+            },
+            {
+                "type": "ModifyStats",
+                "powerBonus": 2,
+                "toughnessBonus": 2
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "HASTE"
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "58",
+        "rarity": "RARE",
+        "artist": "Anton Solovianchyk",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/8/18e76286-9e06-42de-b322-eb8aa2cdca3a.jpg?1783912404",
+        "rulings": [
+            {
+                "date": "2024-03-08",
+                "text": "If the creature Grim Reaper's Sprint would enchant is an illegal target by the time Grim Reaper's Sprint would resolve, the entire spell doesn't resolve. It's put into the graveyard from the stack, so its triggered ability won't trigger, and you won't untap your creatures or get an additional combat phase."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Gunner Conscript
 {
     "name": "Gunner Conscript",

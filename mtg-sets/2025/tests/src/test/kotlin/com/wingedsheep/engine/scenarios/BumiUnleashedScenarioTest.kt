@@ -99,8 +99,8 @@ class BumiUnleashedScenarioTest : ScenarioTestBase() {
             ).error shouldBe null
 
             // Resolve blockers + combat damage; Bumi hits Bob, its trigger untaps lands and queues the
-            // restricted extra combat phase.
-            game.passUntilPhase(Phase.POSTCOMBAT_MAIN, Step.POSTCOMBAT_MAIN)
+            // restricted extra combat phase, which begins as this combat phase ends.
+            game.passUntilPhase(Phase.COMBAT, Step.END_COMBAT)
 
             // "Untap all lands you control": the land that started tapped is now untapped.
             game.state.getEntity(mountain)?.has<TappedComponent>() shouldBe false

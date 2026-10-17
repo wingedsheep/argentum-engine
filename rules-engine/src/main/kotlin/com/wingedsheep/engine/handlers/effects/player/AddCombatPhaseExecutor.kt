@@ -15,7 +15,7 @@ import kotlin.reflect.KClass
 /**
  * Queue a [kind] phase (optionally carrying an [attackerRestriction] for a COMBAT phase) on the
  * active player's [AdditionalPhasesComponent] (CR 500.8). The queue is drained by the TurnManager
- * after the postcombat main phase. Shared by every add-a-phase executor so they stay one insertion.
+ * as the phase in progress ends, so the phase lands directly after it. Shared by every add-a-phase executor so they stay one insertion.
  *
  * CR 500.8: when several phases are added at the same point, the most recently created one happens
  * first — so a new creation goes to the *front* of the queue. Phases one effect creates in sequence
@@ -39,7 +39,7 @@ internal fun GameState.queueAdditionalPhase(
 /**
  * Executor for [AddCombatPhaseEffect] — "After this phase, there is an additional combat phase."
  *
- * Queues a single COMBAT phase on the active player; it is inserted after the postcombat main phase
+ * Queues a single COMBAT phase on the active player; it is inserted directly after the current phase
  * and is NOT followed by an extra main phase (that requires composing with [AddMainPhaseEffect]).
  */
 class AddCombatPhaseExecutor : EffectExecutor<AddCombatPhaseEffect> {

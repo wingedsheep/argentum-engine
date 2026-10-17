@@ -174,8 +174,9 @@ data class PlayAdditionalLandsEffect(
  * (see `Effects.AddCombatPhase` / `Effects.AddMainPhase`), so cards express exactly what they print
  * instead of always getting the bundled combat+main pair.
  *
- * Per CR 500.8 extra phases are added after the specified phase; the engine inserts the queued
- * phase(s) after the postcombat main phase.
+ * Per CR 500.8 extra phases are added after the specified phase: the engine inserts the queued
+ * phase directly after the phase in progress when the effect resolved (precombat main, combat or
+ * postcombat main), then resumes the natural turn.
  *
  * [attackerRestriction] optionally constrains *which creatures may be declared as attackers during
  * that inserted combat phase* (CR 508.1c — the active player checks each creature for attacking
@@ -210,8 +211,8 @@ data class AddCombatPhaseEffect(
  * additional main phase" (Aggravated Assault, All-Out Assault). A standalone extra main phase
  * (CR 505.1a — every main phase after the first is a postcombat main phase) is also expressible.
  *
- * Per CR 500.8 the phase is added after the specified phase; the engine inserts it after the
- * postcombat main phase, in the order the queueing effects resolved.
+ * Per CR 500.8 the phase is added after the specified phase: the engine inserts it directly after
+ * the phase in progress when the effect resolved.
  */
 @SerialName("AddMainPhase")
 @Serializable

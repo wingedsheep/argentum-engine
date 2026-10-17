@@ -26,6 +26,8 @@ import com.wingedsheep.engine.state.components.player.InAdditionalCombatPhaseCom
 import com.wingedsheep.engine.state.components.player.AdditionalUpkeepStepsComponent
 import com.wingedsheep.engine.state.components.player.InAdditionalUpkeepStepComponent
 import com.wingedsheep.engine.state.components.player.InAdditionalBeginningPhaseComponent
+import com.wingedsheep.engine.state.components.player.InsertedPhasesResumeComponent
+import com.wingedsheep.engine.state.components.player.CombatPhaseEndedThisTurnComponent
 import com.wingedsheep.engine.state.components.player.AdditionalEndStepsComponent
 import com.wingedsheep.engine.state.components.player.InAdditionalEndStepComponent
 import com.wingedsheep.engine.state.components.player.BendsThisTurnComponent
@@ -60,6 +62,13 @@ import com.wingedsheep.engine.mechanics.combat.CombatDefenders
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.replacement.ReplacementEffectProcessor
 import com.wingedsheep.sdk.scripting.Duration
+
+/**
+ * The last step of each phase an extra phase can be added after (CR 500.8): leaving one of these ends
+ * its phase, so the extra-phase queue is drained there. The ending phase is absent — a phase added
+ * during it would come after the turn's last phase.
+ */
+private val PHASE_ENDING_STEPS = setOf(Step.DRAW, Step.PRECOMBAT_MAIN, Step.END_COMBAT, Step.POSTCOMBAT_MAIN)
 
 /**
  * Manages turn-based game flow: phases, steps, and turn transitions.
@@ -270,11 +279,13 @@ class TurnManager(
 
     /**
      * Pop the next entry from the active player's [AdditionalPhasesComponent] queue (CR 500.8) and
-     * redirect the turn into that phase, or return `null` if the queue is empty. A COMBAT entry
-     * re-enters the combat phase at its begin-combat step and sets [InAdditionalCombatPhaseComponent]
-     * so the end-of-combat advance drains the queue again instead of falling into a postcombat main
-     * phase; a MAIN entry re-enters a fresh postcombat main phase and clears that marker. The active
-     * player gets priority in the new phase.
+     * redirect the turn into that phase, or return `null` if the queue is empty. Called as any phase
+     * ends, so a phase is inserted directly after the phase that created it ("after this phase"). A
+     * COMBAT entry re-enters the combat phase at its begin-combat step and sets
+     * [InAdditionalCombatPhaseComponent]; a MAIN entry re-enters a fresh postcombat main phase and
+     * clears that marker. The first phase of a chain records the ended step as the
+     * [InsertedPhasesResumeComponent] anchor, where the natural turn resumes once the queue is
+     * exhausted. The active player gets priority in the new phase.
      */
     private fun drainAdditionalPhase(state: GameState, activePlayer: EntityId): ExecutionResult? {
         var current = state
@@ -326,8 +337,12 @@ class TurnManager(
             }
 
             redirectedState = redirectedState.updateEntity(activePlayer) { container ->
-                val left = container.without<InAdditionalCombatPhaseComponent>()
+                val cleared = container.without<InAdditionalCombatPhaseComponent>()
                     .without<InAdditionalBeginningPhaseComponent>()
+                // Leaving a natural phase starts a chain: remember where the turn picks up again.
+                // Leaving an inserted phase keeps the chain's anchor.
+                val left = if (cleared.has<InsertedPhasesResumeComponent>()) cleared
+                    else cleared.with(InsertedPhasesResumeComponent(anchor = state.step))
                 when (next.kind) {
                     // Copy the entry's attacker restriction onto the marker so the declare-attackers
                     // legality check (AdditionalCombatPhaseAttackerRule) can enforce it for the
@@ -395,29 +410,30 @@ class TurnManager(
     }
 
     /**
-     * Leave an inserted phase whose queue is exhausted for the end step — the turn never falls back
-     * into a main phase it didn't add. Clears the inserted-phase markers.
+     * Leave the last inserted phase of a chain: the turn continues as though [anchor] — the natural
+     * phase the chain was added after — had just ended (CR 500.8), so an extra combat added during the
+     * precombat main phase is followed by the natural combat phase and never by an unwanted main phase.
+     * An inserted combat phase ending here is closed first, unless the anchor is itself the end of
+     * combat step, whose natural advance into the postcombat main phase closes it.
      */
-    private fun proceedToEndStepAfterInsertedPhase(state: GameState, activePlayer: EntityId): ExecutionResult {
+    private fun resumeAfterInsertedPhases(state: GameState, activePlayer: EntityId, anchor: Step): ExecutionResult {
         val events = mutableListOf<GameEvent>()
-        var redirectedState = state
-        if (state.step == Step.END_COMBAT) {
-            val closed = closeCombatPhase(redirectedState)
+        var resumed = state
+        if (state.step == Step.END_COMBAT && anchor != Step.END_COMBAT) {
+            val closed = closeCombatPhase(resumed)
             if (closed.outcome !is Outcome.Done) return closed
-            redirectedState = closed.newState
+            resumed = closed.newState
             events.addAll(closed.events)
         }
-        redirectedState = redirectedState
+        resumed = resumed
             .updateEntity(activePlayer) {
-                it.without<InAdditionalCombatPhaseComponent>().without<InAdditionalBeginningPhaseComponent>()
+                it.without<InAdditionalCombatPhaseComponent>()
+                    .without<InAdditionalBeginningPhaseComponent>()
+                    .without<InsertedPhasesResumeComponent>()
             }
-            .copy(step = Step.END, phase = Phase.ENDING, priorityPassedBy = emptySet())
-        val beforeCopyExpiry = redirectedState
-        redirectedState = cleanupPhaseManager.performNextEndStepExpiry(redirectedState)
-        events += copyExpiryEvents(beforeCopyExpiry, redirectedState)
-        events += PhaseChangedEvent(Phase.ENDING)
-        events += StepChangedEvent(Step.END)
-        return ExecutionResult.success(redirectedState.withPriority(activePlayer), events)
+            .copy(step = anchor, phase = anchor.phase)
+        val onward = advanceStepFromEndedStep(resumed)
+        return onward.copy(events = events + onward.events)
     }
 
     /**
@@ -462,6 +478,11 @@ class TurnManager(
         // combat phase follows — "their next combat phase" is a single phase, never the extra ones.
         var state = incomingState
         if (currentStep == Step.END_COMBAT) {
+            // A combat phase that actually happened is over: later combat phases this turn are not
+            // its first (IsFirstCombatPhaseOfTurn), and attackers have been declared.
+            if (!skipsTurnPart(state, Step.END_COMBAT, activePlayer)) {
+                state = state.updateEntity(activePlayer) { it.with(CombatPhaseEndedThisTurnComponent) }
+            }
             // Every member of the active team — a combat hijack controls the team (CR 805.8).
             for (member in state.sharedTurnTeam(activePlayer)) {
                 val combatHijack = state.getEntity(member)?.get<PlayerTurnHijackedComponent>()
@@ -503,39 +524,20 @@ class TurnManager(
             return ExecutionResult.success(redirectedState, events)
         }
 
-        // Leaving an *inserted* extra combat phase (Aurelia / Fear of Missing Out / the combat half
-        // of Aggravated Assault). The InAdditionalCombatPhaseComponent marker distinguishes these
-        // from the natural combat phase: an extra combat phase must NOT fall through into a
-        // postcombat main phase (Step.next() of END_COMBAT) — a trailing main phase only exists when
-        // an explicit AddMainPhaseEffect queued one. So we drain the queue here instead: the next
-        // queued phase begins, or if the queue is empty the turn proceeds to the end step.
-        if (currentStep == Step.END_COMBAT &&
-            state.getEntity(activePlayer)?.has<InAdditionalCombatPhaseComponent>() == true
-        ) {
+        // A phase is ending: drain the extra phases added "after this phase" (CR 500.8) — Grim
+        // Reaper's Sprint's precombat combat, Aurelia's combat, Aggravated Assault's combat and main,
+        // Shadow of the Second Sun's beginning phase. When the queue is empty and the phase ending
+        // is itself an inserted one, the natural turn resumes after the chain's anchor; an inserted
+        // combat or beginning phase never falls through into the main phase that would normally
+        // follow it, and a trailing main phase exists only when an AddMainPhaseEffect queued one.
+        if (currentStep in PHASE_ENDING_STEPS) {
             drainAdditionalPhase(state, activePlayer)?.let { return it }
-
-            // Queue exhausted after the last inserted combat phase: end the extra-phase
-            // progression at the end step (never a postcombat main).
-            return proceedToEndStepAfterInsertedPhase(state, activePlayer)
+            state.getEntity(activePlayer)?.get<InsertedPhasesResumeComponent>()?.let {
+                return resumeAfterInsertedPhases(state, activePlayer, it.anchor)
+            }
         }
 
-        // Leaving the draw step of an *inserted* beginning phase (Shadow of the Second Sun). Like an
-        // inserted combat phase it must not fall through into the step that normally follows — a
-        // precombat main phase — but drains the queue, or proceeds to the end step.
-        if (currentStep == Step.DRAW &&
-            state.getEntity(activePlayer)?.has<InAdditionalBeginningPhaseComponent>() == true
-        ) {
-            drainAdditionalPhase(state, activePlayer)?.let { return it }
-            return proceedToEndStepAfterInsertedPhase(state, activePlayer)
-        }
-
-        // Check for additional phases queued after the postcombat main phase (Aggravated Assault,
-        // Aurelia, Fear of Missing Out, …). CR 500.8: extra phases are inserted after the specified
-        // phase; the engine inserts them after the postcombat main phase, draining the queue one
-        // entry at a time (combat phases occur before any extra upkeep steps — see below).
         if (currentStep == Step.POSTCOMBAT_MAIN) {
-            drainAdditionalPhase(state, activePlayer)?.let { return it }
-
             // No more additional combat/main phases — now drain any additional upkeep steps
             // (Obeka, Splitter of Seconds). Per the card's rulings, extra combat phases (created
             // earlier) happen before the extra beginning phases, which is why this check follows

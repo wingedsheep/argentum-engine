@@ -145,14 +145,15 @@ data object IsFirstEndStepOfTurn : Condition {
 /**
  * Condition: "If it's the first combat phase of the turn."
  *
- * True while the active player is in a combat phase that is *not* an extra combat phase inserted by
- * [com.wingedsheep.sdk.scripting.effects.AddCombatPhaseEffect]. This is the intervening-if / loop
+ * True while the active player is in a combat phase and no combat phase has ended yet this turn — an
+ * extra combat phase inserted by [com.wingedsheep.sdk.scripting.effects.AddCombatPhaseEffect] before
+ * the natural one is the turn's first, and the natural one after it is not. This is the intervening-if / loop
  * guard for "after this phase, there is an additional combat phase" riders (Balthier and Fran, Éomer,
  * Genji Glove, Raph & Leo): the rider only adds an extra combat phase during the first one, so the
  * additional combat phase it spawns doesn't spawn another. The combat analog of
  * [IsFirstEndStepOfTurn].
  *
- * Board-derived (reads `state.phase` and the active player's "in an additional combat phase" marker),
+ * Board-derived (reads `state.phase` and the active player's "a combat phase ended this turn" marker),
  * so it evaluates identically at resolution and under projection.
  */
 @SerialName("IsFirstCombatPhaseOfTurn")

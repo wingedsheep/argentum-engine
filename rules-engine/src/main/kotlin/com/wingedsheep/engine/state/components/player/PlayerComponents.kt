@@ -6,6 +6,7 @@ import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.core.Keyword
+import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.TurnPart
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.effects.HijackScope
@@ -568,10 +569,13 @@ data class QueuedPhase(
 
 /**
  * Component tracking the queue of additional phases to be inserted into the current turn, in the
- * order they should occur (CR 500.8). When the postcombat main phase would advance to the end step,
- * if this component exists the game drains the queue one entry at a time — redirecting to a fresh
- * combat phase ([ExtraPhaseKind.COMBAT]), postcombat main phase ([ExtraPhaseKind.MAIN]) or
- * beginning phase ([ExtraPhaseKind.BEGINNING]).
+ * order they should occur (CR 500.8: "after this phase"). When the phase in progress ends — the
+ * beginning, precombat main, combat or postcombat main phase, natural or inserted — the game drains
+ * the queue one entry at a time, redirecting to a fresh combat phase ([ExtraPhaseKind.COMBAT]),
+ * postcombat main phase ([ExtraPhaseKind.MAIN]) or beginning phase ([ExtraPhaseKind.BEGINNING]).
+ * Every entry is drained at the end of the phase that created it (or of the inserted phase queued
+ * ahead of it), so each lands directly after the phase it names; [InsertedPhasesResumeComponent]
+ * remembers where the natural turn picks up again.
  *
  * Built atomically: [com.wingedsheep.sdk.scripting.effects.AddCombatPhaseEffect] queues a COMBAT
  * entry, [com.wingedsheep.sdk.scripting.effects.AddMainPhaseEffect] a MAIN entry and
@@ -590,12 +594,35 @@ data class AdditionalPhasesComponent(
 ) : Component
 
 /**
+ * Placed on the active player when the first phase of a chain of inserted phases begins
+ * ([AdditionalPhasesComponent]), recording [anchor] — the last step of the natural phase those
+ * phases were added after (CR 500.8). While it is set the game is inside an inserted phase; when the
+ * last queued phase ends, the turn continues exactly as if [anchor] had just ended: an extra combat
+ * added during the precombat main phase is followed by the natural combat phase, one added during
+ * combat by the natural postcombat main phase, one added during the postcombat main phase by the end
+ * step. Consumed by that resume, and swept at end-of-turn cleanup.
+ */
+@Serializable
+data class InsertedPhasesResumeComponent(val anchor: Step) : Component
+
+/**
+ * Marker placed on the active player once a combat phase has ended this turn (natural or inserted).
+ * The board-free answer to "is this the first combat phase of the turn" and "have attackers been
+ * declared this turn yet": an inserted combat phase that comes *before* the natural one (Grim
+ * Reaper's Sprint cast precombat) is the turn's first, and the natural one after it is not. Swept at
+ * end-of-turn cleanup.
+ */
+@Serializable
+data object CombatPhaseEndedThisTurnComponent : Component
+
+/**
  * Marker placed on the active player while the game is inside an *inserted* extra combat phase
  * (see [AdditionalPhasesComponent]). It tells the TurnManager that advancing out of that combat
  * phase's end-of-combat step must drain the extra-phase queue rather than fall through into a
  * postcombat main phase — so a combat-only extra phase never grants an unwanted main phase. The
  * trailing main phase is added only when an explicit [ExtraPhaseKind.MAIN] is queued. Consumed when
- * the queue is exhausted (the game proceeds to the end step) or when a queued main phase begins.
+ * the queue is exhausted (the turn resumes at [InsertedPhasesResumeComponent.anchor]) or when a
+ * queued main phase begins.
  *
  * [attackerRestriction] carries the restriction of the phase currently in progress (copied from the
  * drained [QueuedPhase]): while set, only creatures matching it may be declared as attackers this
@@ -640,7 +667,7 @@ data object InAdditionalUpkeepStepComponent : Component
 /**
  * Marker placed on the active player while the game is inside an *inserted* beginning phase
  * ([ExtraPhaseKind.BEGINNING]). Its draw step must not fall through into a precombat main phase:
- * advancing out of it drains the extra-phase queue instead, or proceeds to the end step when the
+ * advancing out of it drains the extra-phase queue instead, or resumes the natural turn when the
  * queue is empty. Consumed by that advance, and swept at end-of-turn cleanup.
  */
 @Serializable

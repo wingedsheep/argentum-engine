@@ -48,6 +48,8 @@ import com.wingedsheep.engine.state.components.player.PlayerCountersRemovedThisT
 import com.wingedsheep.engine.state.components.player.PlusOneCountersPutOnYourCreaturesThisTurnComponent
 import com.wingedsheep.engine.state.components.player.InAdditionalCombatPhaseComponent
 import com.wingedsheep.engine.state.components.player.InAdditionalBeginningPhaseComponent
+import com.wingedsheep.engine.state.components.player.InsertedPhasesResumeComponent
+import com.wingedsheep.engine.state.components.player.CombatPhaseEndedThisTurnComponent
 import com.wingedsheep.engine.state.components.player.AdditionalEndStepsComponent
 import com.wingedsheep.engine.state.components.player.InAdditionalEndStepComponent
 import com.wingedsheep.engine.state.components.player.CantActivateLoyaltyAbilitiesComponent
@@ -703,6 +705,9 @@ class CleanupPhaseManager(
                 if (result.has<InAdditionalBeginningPhaseComponent>()) {
                     result = result.without<InAdditionalBeginningPhaseComponent>()
                 }
+                result = result
+                    .without<InsertedPhasesResumeComponent>()
+                    .without<CombatPhaseEndedThisTurnComponent>()
                 // Clear any leftover additional-end-step state. The count is normally drained by the
                 // TurnManager, but a turn could end with the marker still set (it persists across the
                 // extra end steps so IsFirstEndStepOfTurn keeps reading false); reset both so the next
