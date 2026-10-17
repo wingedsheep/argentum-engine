@@ -448,6 +448,11 @@ fun captureLastKnown(state: GameState, entityId: EntityId): EntitySnapshot {
         textChanges = TextChanges.of(state, entityId),
         wasAttacking = container?.has<AttackingComponent>() ?: false,
         wasBlocking = container?.has<BlockingComponent>() ?: false,
+        // CR 700.9, frozen like the zone-exit snapshot: a cost that sacrifices or exiles the
+        // source wipes its counters and attachments before "if it's modified" is read.
+        wasModified = com.wingedsheep.engine.handlers.predicates.isModified(state, entityId) {
+            state.projectedState.getController(it)
+        },
         attachmentIds = attachmentIdsOf(state, entityId),
     )
 }
