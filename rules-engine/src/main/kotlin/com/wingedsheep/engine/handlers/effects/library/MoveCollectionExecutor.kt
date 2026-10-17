@@ -87,7 +87,9 @@ class MoveCollectionExecutor(
                 val destPlayerId = resolvePlayer(destination.player, context, state)
                 if (destPlayerId != null) {
                     val destZoneKey = ZoneKey(destPlayerId, Zone.LIBRARY)
-                    val (shuffledLibrary, shuffledState) = state.nextRandom { shuffle(state.getZone(destZoneKey)) }
+                    // Strip reveals before shuffling, as the non-empty path below does
+                    val cleared = LibraryRevealUtils.clearLibraryReveals(state, destPlayerId)
+                    val (shuffledLibrary, shuffledState) = cleared.nextRandom { shuffle(cleared.getZone(destZoneKey)) }
                     val newState = shuffledState.reorderZone(destZoneKey, shuffledLibrary)
                     return EffectResult.success(newState, listOf(LibraryShuffledEvent(destPlayerId)))
                 }
