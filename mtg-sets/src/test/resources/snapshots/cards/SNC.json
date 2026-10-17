@@ -304,6 +304,46 @@
     ]
 }
 
+// Angel of Suffering
+{
+    "name": "Angel of Suffering",
+    "manaCost": "{3}{B}{B}",
+    "typeLine": "Creature — Nightmare Angel",
+    "oracleText": "Flying\nIf damage would be dealt to you, prevent that damage and mill twice that many cards.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "ReplaceDamageWithMill",
+                "appliesTo": {
+                    "type": "DamageEvent",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "You"
+                    }
+                },
+                "miller": "You",
+                "multiplier": 2
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "67",
+        "rarity": "MYTHIC",
+        "artist": "Martina Fačková",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/d/cd4aee25-496d-453e-95b7-d773fe21cacc.jpg?1783923135"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Angelic Observer
 {
     "name": "Angelic Observer",

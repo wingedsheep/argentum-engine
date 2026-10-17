@@ -16429,13 +16429,19 @@ The priority groups are (CR 616.1a–f):
   `CombatDamageManager` for combat); combat callers pass `isCombatDamage = true` so a noncombat-only
   pattern isn't applied to combat damage. The source and recipient are matched by the same shared
   matchers as every other damage replacement.
-- `ReplaceDamageWithMill(appliesTo = DamageEvent(recipient = Opponent))` — replace matching damage
-  (CR 615, neither dealt nor prevented): each opponent of the replacement's controller mills that many
-  cards instead. The Mindskinner: `DamageEvent(recipient = Recipient.Opponent, source =
-  GameObjectFilter.Any.youControl())` covers both the unblockable creature's
-  combat damage and noncombat damage from any source you control. Mirrors `ReplaceDamageWithCounters`;
-  wired in both damage paths (`DamageUtils.applyReplaceDamageWithMill` for the general path,
-  `CombatDamageManager` for combat). Damage-type filtering is not applied (matches any type).
+- `ReplaceDamageWithMill(appliesTo = DamageEvent(recipient = Opponent), miller = Player.EachOpponent, multiplier = 1)`
+  — prevent matching damage and `miller` mills `multiplier` times that many cards, as one prevention
+  effect (not a trigger). `miller` is read relative to the replacement's controller: `EachOpponent`
+  (every opponent, not just the damaged one), `You`, `Each`, or `TriggeringPlayer` (the player the
+  damage would be dealt to); any other reference is rejected at construction. The Mindskinner:
+  `DamageEvent(recipient = Recipient.Opponent, source = GameObjectFilter.Any.youControl())` with the
+  defaults covers both the unblockable creature's combat damage and noncombat damage from any source
+  you control. Angel of Suffering ("prevent that damage and mill twice that many cards"):
+  `DamageEvent(recipient = Recipient.You)`, `miller = Player.You`, `multiplier = 2`. Damage that
+  **can't be prevented** is still dealt in full and the mill still happens (both cards' rulings);
+  preventable damage is replaced once however many copies apply. Wired in both damage paths
+  (`DamageUtils.applyReplaceDamageWithMill` for the general path, `CombatDamageManager` for combat).
+  Damage-type filtering is not applied (matches any type).
 - `HealOtherDamage(appliesTo = DamageEvent(recipient = Self))` — the damage is dealt **in full**, but
   as part of the same replacement all *other* damage already marked on the recipient is **healed**
   (CR 701.69a: "If an effect states that damage already dealt to a permanent 'is healed,' that

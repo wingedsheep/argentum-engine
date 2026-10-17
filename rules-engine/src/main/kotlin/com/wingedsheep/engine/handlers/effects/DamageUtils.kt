@@ -340,6 +340,8 @@ object DamageUtils {
         // only) reads it to decide whether it applies.
         var effectiveAmount = applyStaticDamageAmplification(zones.cardRegistry, state, targetId, amount, sourceId, isCombatDamage, predicateEvaluator = zones.predicateEvaluator)
         var newState = state
+        // Events of a replacement that applied without consuming the damage (an unpreventable mill).
+        var replacementEvents: List<EngineGameEvent> = emptyList()
 
         // Check for damage-to-counters replacement (Force Bubble)
         // This replaces the damage entirely — it is neither dealt nor prevented.
@@ -348,9 +350,14 @@ object DamageUtils {
             val counterResult = applyReplaceDamageWithCounters(zones, newState, targetId, effectiveAmount, sourceId, isCombatDamage)
             if (counterResult != null) return counterResult
 
-            // Damage-to-an-opponent → prevent + each opponent mills that many (The Mindskinner).
-            val millResult = applyReplaceDamageWithMill(zones, newState, targetId, effectiveAmount, sourceId)
-            if (millResult != null) return millResult
+            // Damage-to-a-player → prevent + mill (The Mindskinner, Angel of Suffering). Damage that
+            // can't be prevented still mills, then carries on and is dealt.
+            val millResult = applyReplaceDamageWithMill(zones, newState, targetId, effectiveAmount, sourceId, cantBePrevented)
+            if (millResult != null) {
+                if (millResult.damagePrevented) return EffectResult.success(millResult.state, millResult.events)
+                newState = millResult.state
+                replacementEvents = millResult.events
+            }
         } else {
             // Damage-to-a-creature self-replacement (Anti-Venom): "if damage would be dealt to
             // <this creature>, prevent it and put that many +1/+1 counters on him." Matches only a
@@ -371,7 +378,7 @@ object DamageUtils {
         // prevention/replacement effects competing for the same event, and CR 616.1 lets the
         // affected permanent's controller order them. Letting protection win first leaves the shield
         // counter intact, which is the ordering that player would always choose.
-        var shieldCounterEvents: List<EngineGameEvent> = emptyList()
+        var shieldCounterEvents: List<EngineGameEvent> = replacementEvents
         if (!isPlayer) {
             val shielded = applyShieldCounterToDamage(newState, targetId, cantBePrevented)
             if (shielded != null) {
@@ -3271,27 +3278,45 @@ object DamageUtils {
     }
 
     /**
-     * Check for [ReplaceDamageWithMill] replacement effects (The Mindskinner).
+     * The outcome of [applyReplaceDamageWithMill]: the state after the mill, its events, and whether
+     * the damage was prevented. Unpreventable damage still mills but is not prevented — the caller
+     * then keeps dealing it.
+     */
+    data class MillReplacement(
+        val state: GameState,
+        val events: List<EngineGameEvent>,
+        val damagePrevented: Boolean
+    )
+
+    /**
+     * Check for [ReplaceDamageWithMill] replacement effects (The Mindskinner, Angel of Suffering).
      *
-     * Scans the battlefield for permanents whose replacement effect prevents damage matching its
-     * [ReplaceDamageWithMill.appliesTo] pattern and instead mills that many cards from each opponent
-     * of the replacement's controller. [targetId] is the damage recipient (a player), [sourceId] the
-     * damage source (required — the modelled cards scope to "a source you control"). Returns a
-     * short-circuiting [EffectResult] when a replacement applies (so the original damage is replaced,
-     * not dealt), or null when none matches.
+     * Scans the battlefield for permanents whose replacement effect matches the damage
+     * ([ReplaceDamageWithMill.appliesTo]); a match prevents the damage and has
+     * [ReplaceDamageWithMill.miller] mill [ReplaceDamageWithMill.multiplier] times [amount] cards.
+     * [targetId] is the damage recipient (a player), [sourceId] the damage source. Returns null when
+     * none matches.
+     *
+     * Preventable damage is replaced once: the first match prevents it, leaving nothing for a second
+     * copy to replace (The Mindskinner's ruling). Damage that [cantBePrevented] is still dealt, so the
+     * event survives every application — each matching effect mills, and the caller deals the damage.
      *
      * Mirrors [applyReplaceDamageWithCounters]; like it, damage-type filtering is not applied
-     * (the modelled card replaces damage of any type).
+     * (the modelled cards replace damage of any type).
      */
     fun applyReplaceDamageWithMill(
         zones: ZoneTransitionService,
         state: GameState,
         targetId: EntityId,
         amount: Int,
-        sourceId: EntityId?
-    ): EffectResult? {
-        if (amount <= 0 || sourceId == null) return null
+        sourceId: EntityId?,
+        cantBePrevented: Boolean = isDamagePreventionDisabled(state, targetId, sourceId, predicateEvaluator = zones.predicateEvaluator)
+    ): MillReplacement? {
+        if (amount <= 0) return null
         val projected = state.projectedState
+        var newState = state
+        val events = mutableListOf<EngineGameEvent>()
+        var applied = false
 
         for (entityId in state.getBattlefield()) {
             val container = state.getEntity(entityId) ?: continue
@@ -3319,26 +3344,38 @@ object DamageUtils {
                 )
                 if (!recipientMatches) continue
 
-                // Replace the damage: each opponent of the controller mills `amount` cards. Snapshot
-                // the top cards before moving so a shrinking library doesn't re-read shifted slots.
-                var newState = state
-                val events = mutableListOf<EngineGameEvent>()
+                val millers = when (effect.miller) {
+                    Player.You -> listOf(sourceControllerId)
+                    Player.TriggeringPlayer -> listOf(targetId)
+                    Player.Each -> state.turnOrder
+                    else -> state.getOpponents(sourceControllerId)
+                }
+                // Snapshot each library's top cards before moving so a shrinking library doesn't
+                // re-read shifted slots. One mill instruction for every miller (CR 603.2c: a single
+                // milled event).
+                val count = amount * effect.multiplier
                 val milledCards = mutableListOf<EntityId>()
-                for (opponentId in state.getOpponents(sourceControllerId)) {
-                    val topCards = newState.getLibrary(opponentId).take(amount)
+                val millEvents = mutableListOf<EngineGameEvent>()
+                for (millerId in millers) {
+                    val topCards = newState.getLibrary(millerId).take(count)
                     milledCards += topCards
                     for (cardId in topCards) {
                         val result = zones.moveToZone(newState, cardId, Zone.GRAVEYARD)
                         newState = result.state
-                        events.addAll(result.events)
+                        millEvents.addAll(result.events)
                     }
                 }
-                // One mill instruction for every opponent (CR 603.2c: a single milled event).
-                val (trackedState, milledEvent) = ZoneTransitionService.trackMill(newState, events, milledCards)
-                return EffectResult.success(trackedState, events + listOfNotNull(milledEvent))
+                val (trackedState, milledEvent) = ZoneTransitionService.trackMill(newState, millEvents, milledCards)
+                newState = trackedState
+                events += millEvents
+                milledEvent?.let(events::add)
+                applied = true
+                if (!cantBePrevented) return MillReplacement(newState, events, damagePrevented = true)
+                break
             }
         }
 
-        return null
+        return if (applied) MillReplacement(newState, events, damagePrevented = false) else null
     }
+
 }

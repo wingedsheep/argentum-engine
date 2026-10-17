@@ -10,6 +10,7 @@ import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Deck
+import com.wingedsheep.sdk.scripting.DamageCantBePrevented
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import com.wingedsheep.engine.core.Outcome
@@ -22,6 +23,7 @@ import com.wingedsheep.engine.core.Outcome
  * 2. "If a source you control would deal damage to an opponent, prevent that damage and each
  *    opponent mills that many cards." — noncombat damage from a source you control is likewise
  *    replaced with milling.
+ * 3. Damage that can't be prevented is dealt in full, and each opponent still mills that many.
  */
 class TheMindskinnerTest : FunSpec({
 
@@ -39,9 +41,16 @@ class TheMindskinnerTest : FunSpec({
         }
     }
 
+    val leyline = card("Test Leyline") {
+        manaCost = "{0}"
+        typeLine = "Enchantment"
+        oracleText = "Damage can't be prevented."
+        replacementEffect(DamageCantBePrevented())
+    }
+
     fun driver(): GameTestDriver {
         val d = GameTestDriver()
-        d.registerCards(TestCards.all + listOf(TheMindskinner, zapper))
+        d.registerCards(TestCards.all + listOf(TheMindskinner, zapper, leyline))
         d.initMirrorMatch(
             deck = Deck.of("Island" to 20, "Grizzly Bears" to 20),
             skipMulligans = true,
@@ -104,5 +113,27 @@ class TheMindskinnerTest : FunSpec({
         d.assertLifeTotal(p2, 20)
         (libBefore - d.state.getLibrary(p2).size) shouldBe 3
         (d.getGraveyard(p2).size - gyBefore) shouldBe 3
+    }
+
+    test("unpreventable combat damage is dealt, and the opponent still mills that many") {
+        val d = driver()
+        val p1 = d.activePlayer!!
+        val p2 = d.getOpponent(p1)
+        d.passPriorityUntil(Step.PRECOMBAT_MAIN)
+
+        val skinner = d.putPermanentOnBattlefield(p1, "The Mindskinner")
+        d.removeSummoningSickness(skinner)
+        d.putPermanentOnBattlefield(p1, "Test Leyline")
+        val libBefore = d.state.getLibrary(p2).size
+
+        d.passPriorityUntil(Step.DECLARE_ATTACKERS)
+        d.declareAttackers(p1, listOf(skinner), p2)
+        d.bothPass()
+        d.declareNoBlockers(p2)
+        d.bothPass()
+        d.bothPass()
+
+        d.assertLifeTotal(p2, 10)
+        (libBefore - d.state.getLibrary(p2).size) shouldBe 10
     }
 })

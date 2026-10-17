@@ -1231,13 +1231,13 @@ internal class CombatDamageManager(
             return newState
         }
 
-        // Replace combat damage to an opponent → prevent + each opponent mills that many
-        // (The Mindskinner: an unblockable attacker's combat damage routes through here).
+        // Replace combat damage to a player → prevent + mill (The Mindskinner's unblockable
+        // attacker, Angel of Suffering). Unpreventable damage still mills, then is dealt below.
         val millResult = DamageUtils.applyReplaceDamageWithMill(zones, newState, targetId, amplifiedAmount, sourceId)
         if (millResult != null) {
             newState = millResult.state
             events.addAll(millResult.events)
-            return newState
+            if (millResult.damagePrevented) return newState
         }
 
         // Deflection / reflection shields (Deflecting Palm prevents; Eye for an Eye reflects but
