@@ -74,6 +74,194 @@
     ]
 }
 
+// All-Seeing Arbiter
+{
+    "name": "All-Seeing Arbiter",
+    "manaCost": "{4}{U}{U}",
+    "typeLine": "Creature — Avatar",
+    "oracleText": "Flying\nWhenever this creature enters or attacks, draw two cards, then discard a card.\nWhenever you discard a card, target creature an opponent controls gets -X/-0 until your next turn, where X is the number of different mana values among cards in your graveyard.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "All-Seeing Arbiter:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Hand"
+                                    },
+                                    "storeAs": "hand"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "hand",
+                                    "selection": {
+                                        "type": "ChooseExactly",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeSelected": "discarded",
+                                    "prompt": "Choose 1 card to discard"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "discarded",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Graveyard"
+                                    },
+                                    "moveType": "Discard"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever this creature enters, draw two cards, then discard a card."
+            },
+            {
+                "id": "All-Seeing Arbiter:2",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Hand"
+                                    },
+                                    "storeAs": "hand"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "hand",
+                                    "selection": {
+                                        "type": "ChooseExactly",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeSelected": "discarded",
+                                    "prompt": "Choose 1 card to discard"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "discarded",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Graveyard"
+                                    },
+                                    "moveType": "Discard"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever this creature attacks, draw two cards, then discard a card."
+            },
+            {
+                "id": "All-Seeing Arbiter:3",
+                "trigger": "DiscardEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Multiply",
+                        "amount": {
+                            "type": "AggregateZone",
+                            "player": "You",
+                            "zone": "Graveyard",
+                            "aggregation": "DISTINCT_VALUES",
+                            "property": "MANA_VALUE"
+                        },
+                        "multiplier": -1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "duration": "UntilYourNextTurn"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:opponent"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "34",
+        "rarity": "MYTHIC",
+        "artist": "Robin Olausson",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/8/c832c0b8-aefa-459c-8de8-aa32400612cd.jpg?1783923151",
+        "rulings": [
+            {
+                "date": "2022-04-29",
+                "text": "The mana value of a split card in the graveyard is the total mana value of both halves of that card. It does not have two mana values."
+            },
+            {
+                "date": "2022-04-29",
+                "text": "The mana value of a double-faced card in your graveyard is always the mana value of the front face."
+            },
+            {
+                "date": "2022-04-29",
+                "text": "X is 0 when determining the mana value of a card in your graveyard."
+            },
+            {
+                "date": "2022-04-29",
+                "text": "The mana value of a land card is 0."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // An Offer You Can't Refuse
 {
     "name": "An Offer You Can't Refuse",
@@ -235,6 +423,182 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Aven Heartstabber
+{
+    "name": "Aven Heartstabber",
+    "manaCost": "{U}{B}",
+    "typeLine": "Creature — Bird Assassin",
+    "oracleText": "Flying\nAs long as there are five or more mana values among cards in your graveyard, this creature gets +2/+2 and has deathtouch.\nWhen this creature dies, mill two cards, then draw a card.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Aven Heartstabber:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                },
+                                "isMill": true
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            }
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "ModifyStats",
+                    "powerBonus": 2,
+                    "toughnessBonus": 2,
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateZone",
+                        "player": "You",
+                        "zone": "Graveyard",
+                        "aggregation": "DISTINCT_VALUES",
+                        "property": "MANA_VALUE"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 5
+                    }
+                }
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "DEATHTOUCH",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateZone",
+                        "player": "You",
+                        "zone": "Graveyard",
+                        "aggregation": "DISTINCT_VALUES",
+                        "property": "MANA_VALUE"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 5
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "166",
+        "rarity": "RARE",
+        "artist": "Dan Murayama Scott",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/c/acef329c-61e6-41c1-8d89-ff2417949839.jpg?1783923095"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
+    ]
+}
+
+// Backstreet Bruiser
+{
+    "name": "Backstreet Bruiser",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Octopus Rogue",
+    "oracleText": "Defender\nAs long as there are two or more counters among creatures you control, this creature can attack as though it didn't have defender.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "DEFENDER"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CanAttackDespiteDefender",
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "creature",
+                        "aggregation": "SUM",
+                        "property": "COUNTERS"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "35",
+        "artist": "Aaron Miller",
+        "flavorText": "\"I could show you what's in the case, but it'd be the last thing you ever see.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/d/8d3a94c8-a7eb-4f05-8d48-d42e5129b09a.jpg?1783923150",
+        "rulings": [
+            {
+                "date": "2022-04-29",
+                "text": "Backstreet Bruiser's ability looks for two or more individual counters. It doesn't matter if the counters are the same kind or different kinds or whether they are on the same permanent or different permanents."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -1911,6 +2275,49 @@
     ]
 }
 
+// Case the Joint
+{
+    "name": "Case the Joint",
+    "manaCost": "{3}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Draw two cards, then look at the top card of each player's library.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                },
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "TopOfLibrary",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "player": "Each"
+                    },
+                    "storeAs": "gathered1"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "37",
+        "artist": "Stella Spente",
+        "flavorText": "Steel doors and iron bars are child's play for an Obscura operative.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/f/0f9edf04-681d-45f9-975f-704154040506.jpg?1783923149"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Celebrity Fencer
 {
     "name": "Celebrity Fencer",
@@ -1949,6 +2356,96 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Celestial Regulator
+{
+    "name": "Celestial Regulator",
+    "manaCost": "{1}{W}{U}",
+    "typeLine": "Creature — Angel Advisor",
+    "oracleText": "Flying\nWhen this creature enters, choose target creature you don't control and tap it. If you control a creature with a counter on it, the chosen creature doesn't untap during its controller's next untap step.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Celestial Regulator:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "TapUntap",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Exists",
+                                    "player": "You",
+                                    "zone": "Battlefield",
+                                    "filter": {
+                                        "cardPredicates": [
+                                            "IsCreature"
+                                        ],
+                                        "statePredicates": [
+                                            "HasAnyCounter"
+                                        ]
+                                    }
+                                }
+                            },
+                            "then": {
+                                "type": "GrantKeyword",
+                                "keyword": "DOESNT_UNTAP",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "duration": "UntilAfterAffectedControllersNextUntap"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsCreature"
+                            ],
+                            "controllerPredicate": {
+                                "type": "ControllerNot",
+                                "predicate": "ControlledByYou"
+                            }
+                        }
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "174",
+        "artist": "Mathias Kollros",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/5/25803f0b-4475-447e-abdf-dcd6a98dd654.jpg?1783923092"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
     ]
 }
 
@@ -2237,6 +2734,98 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Civil Servant
+{
+    "name": "Civil Servant",
+    "manaCost": "{G}{W}",
+    "typeLine": "Creature — Cat Citizen",
+    "oracleText": "Whenever this creature attacks, you may tap another untapped Citizen you control. If you do, this creature gets +1/+0 and gains lifelink until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Civil Servant:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "BattlefieldMatching",
+                                        "filter": "permanent Citizen untapped",
+                                        "player": "You",
+                                        "excludeSelf": true
+                                    },
+                                    "storeAs": "gathered0"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "gathered0",
+                                    "selection": {
+                                        "type": "ChooseExactly",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeSelected": "selected1",
+                                    "prompt": "Tap another untapped Citizen you control",
+                                    "useTargetingUI": true
+                                },
+                                {
+                                    "type": "TapUntapCollection",
+                                    "collectionName": "selected1"
+                                }
+                            ]
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "ModifyStats",
+                                "powerModifier": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "toughnessModifier": {
+                                    "type": "Fixed",
+                                    "amount": 0
+                                },
+                                "target": "Self"
+                            },
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "LIFELINK",
+                                "target": "Self"
+                            }
+                        ]
+                    },
+                    "descriptionOverride": "You may tap another untapped Citizen you control. If you do, this creature gets +1/+0 and gains lifelink until end of turn."
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "176",
+        "artist": "Tony Foti",
+        "flavorText": "\"Together we can build a safer, brighter New Capenna!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/c/1cf5da68-a79b-40a3-93bc-785fb2352b05.jpg?1783923091"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE"
     ]
 }
 
@@ -3900,6 +4489,63 @@
     },
     "colorIdentityOverride": [
         "WHITE",
+        "BLUE"
+    ]
+}
+
+// Expendable Lackey
+{
+    "name": "Expendable Lackey",
+    "manaCost": "{U}",
+    "typeLine": "Creature — Human Citizen",
+    "oracleText": "{1}{U}, Exile this card from your graveyard: Create a 1/1 blue Fish creature token with \"This token can't be blocked.\" Activate only as a sorcery.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Expendable Lackey:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{U}"
+                            }
+                        },
+                        "CostExileSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "BLUE"
+                    ],
+                    "creatureTypes": [
+                        "Fish"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/3/b/3b2e726b-f124-43f7-87e4-bb06bbe8e3d7.jpg?1783922964",
+                    "staticAbilities": [
+                        "CantBeBlocked"
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "activateFromZone": "Graveyard"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "43",
+        "artist": "Randy Gallegos",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/5/9515329a-0738-4b23-a326-ff417f47da77.jpg?1783923145"
+    },
+    "colorIdentityOverride": [
         "BLUE"
     ]
 }
@@ -7883,6 +8529,77 @@
     ]
 }
 
+// Majestic Metamorphosis
+{
+    "name": "Majestic Metamorphosis",
+    "manaCost": "{2}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Until end of turn, target artifact or creature becomes a 4/4 Angel artifact creature and gains flying.\nDraw a card.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "BecomeCreature",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "power": {
+                        "type": "Fixed",
+                        "amount": 4
+                    },
+                    "toughness": {
+                        "type": "Fixed",
+                        "amount": 4
+                    },
+                    "keywords": [
+                        "FLYING"
+                    ],
+                    "creatureTypes": [
+                        "Angel"
+                    ],
+                    "removeTypes": [
+                        "ENCHANTMENT",
+                        "LAND",
+                        "PLANESWALKER",
+                        "BATTLE",
+                        "KINDRED"
+                    ],
+                    "addTypes": [
+                        "ARTIFACT"
+                    ]
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "artifact|creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "48",
+        "artist": "Ben Hill",
+        "flavorText": "New Capenna's statues hold Old Capenna's secrets.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/c/bcaebea6-9e3f-4ac7-abe1-5445912f5b44.jpg?1783923143"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Make Disappear
 {
     "name": "Make Disappear",
@@ -9204,6 +9921,69 @@
         "flavorText": "The rest of Anhelo's assistant arrived over the following week.",
         "imageUri": "https://cards.scryfall.io/normal/front/e/1/e1691374-e9f2-4a8b-abdb-0bb1dbc96715.jpg?1783923059"
     }
+}
+
+// Out of the Way
+{
+    "name": "Out of the Way",
+    "manaCost": "{3}{U}",
+    "typeLine": "Instant",
+    "oracleText": "This spell costs {2} less to cast if it targets a green permanent.\nReturn target nonland permanent an opponent controls to its owner's hand.\nDraw a card.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Hand"
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "nonland permanent ctrl:opponent"
+                },
+                "id": "t0"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "ReduceGenericBy",
+                    "source": {
+                        "type": "FixedIfAnyTargetMatches",
+                        "amount": 2,
+                        "filter": "permanent green"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "52",
+        "rarity": "UNCOMMON",
+        "artist": "Tony Foti",
+        "flavorText": "\"You bore me.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/2/2201ade5-8add-49f2-8045-ae351aaf061c.jpg?1783923143"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
 }
 
 // Paragon of Modernity
@@ -11930,6 +12710,70 @@
     ]
 }
 
+// Rooftop Nuisance
+{
+    "name": "Rooftop Nuisance",
+    "manaCost": "{2}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Casualty 1 (As you cast this spell, you may sacrifice a creature with power 1 or greater. When you do, copy this spell and you may choose a new target for the copy.)\nTap target creature. It doesn't untap during its controller's next untap step.\nDraw a card.",
+    "keywords": [
+        "CASUALTY"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Casualty",
+            "threshold": 1
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "DOESNT_UNTAP",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "duration": "UntilAfterAffectedControllersNextUntap"
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "57",
+        "artist": "Svetlin Velinov",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/7/d7a84781-b40c-41e0-a0b9-86e466c9b12d.jpg?1783923139"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Rumor Gatherer
 {
     "name": "Rumor Gatherer",
@@ -11990,6 +12834,41 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Run Out of Town
+{
+    "name": "Run Out of Town",
+    "manaCost": "{3}{U}",
+    "typeLine": "Instant",
+    "oracleText": "The owner of target nonland permanent puts it on their choice of the top or bottom of their library.",
+    "script": {
+        "spellEffect": {
+            "type": "PutOnLibraryPositionOfChoice",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "nonland permanent"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "58",
+        "artist": "Lucas Staniec",
+        "flavorText": "Better to depart in haste than be dearly departed.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/c/7cf00112-0844-49db-a061-d0eb488de68a.jpg?1783923139"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -12252,6 +13131,104 @@
     ]
 }
 
+// Sanguine Spy
+{
+    "name": "Sanguine Spy",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Vampire Rogue",
+    "oracleText": "Menace, lifelink\n{1}, Sacrifice another creature: Surveil 1. (Look at the top card of your library. You may put that card into your graveyard.)\nAt the beginning of your end step, if there are five or more mana values among cards in your graveyard, you may pay 2 life. If you do, draw a card.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "MENACE",
+        "LIFELINK"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sanguine Spy:2",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayLife",
+                            "amount": 2
+                        }
+                    },
+                    "then": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    }
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateZone",
+                        "player": "You",
+                        "zone": "Graveyard",
+                        "aggregation": "DISTINCT_VALUES",
+                        "property": "MANA_VALUE"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 5
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Sanguine Spy:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "creature",
+                                "excludeSelf": true
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "Surveil",
+                    "count": 1
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "93",
+        "rarity": "RARE",
+        "artist": "David Palumbo",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/d/2d52ea1e-5b66-47c7-9a6d-95f5996565d8.jpg?1783923124"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Scheming Fence
 {
     "name": "Scheming Fence",
@@ -12468,6 +13445,65 @@
     ]
 }
 
+// Sewer Crocodile
+{
+    "name": "Sewer Crocodile",
+    "manaCost": "{5}{U}",
+    "typeLine": "Creature — Crocodile",
+    "oracleText": "{3}{U}: This creature can't be blocked this turn. This ability costs {3} less to activate if there are five or more mana values among cards in your graveyard.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 6
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Sewer Crocodile:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}{U}"
+                    }
+                },
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "CANT_BE_BLOCKED",
+                    "target": "Self"
+                },
+                "descriptionOverride": "{3}{U}: This creature can't be blocked this turn. This ability costs {3} less to activate if there are five or more mana values among cards in your graveyard.",
+                "conditionalCostReduction": {
+                    "reduction": "{3}",
+                    "condition": {
+                        "type": "Compare",
+                        "left": {
+                            "type": "AggregateZone",
+                            "player": "You",
+                            "zone": "Graveyard",
+                            "aggregation": "DISTINCT_VALUES",
+                            "property": "MANA_VALUE"
+                        },
+                        "operator": "GTE",
+                        "right": {
+                            "type": "Fixed",
+                            "amount": 5
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "60",
+        "artist": "Milivoj Ćeran",
+        "flavorText": "\"Quick, let's hide in the sewer!\"\n—Ginsi the Thief, now deceased",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/0/a06ac58b-6d72-4eb4-a1c9-61b5314c7769.jpg?1783923137"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Sizzling Soloist
 {
     "name": "Sizzling Soloist",
@@ -12676,6 +13712,121 @@
     "colorIdentityOverride": [
         "BLUE",
         "WHITE"
+    ]
+}
+
+// Sleep with the Fishes
+{
+    "name": "Sleep with the Fishes",
+    "manaCost": "{2}{U}{U}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nWhen this Aura enters, tap enchanted creature and you create a 1/1 blue Fish creature token with \"This token can't be blocked.\"\nEnchanted creature doesn't untap during its controller's untap step.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sleep with the Fishes:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "TapUntap",
+                            "target": "EnchantedCreature"
+                        },
+                        {
+                            "type": "CreateToken",
+                            "power": 1,
+                            "toughness": 1,
+                            "colors": [
+                                "BLUE"
+                            ],
+                            "creatureTypes": [
+                                "Fish"
+                            ],
+                            "imageUri": "https://cards.scryfall.io/normal/front/3/b/3b2e726b-f124-43f7-87e4-bb06bbe8e3d7.jpg?1783922964",
+                            "staticAbilities": [
+                                "CantBeBlocked"
+                            ]
+                        }
+                    ]
+                },
+                "descriptionOverride": "When this Aura enters, tap enchanted creature and you create a 1/1 blue Fish creature token with \"This token can't be blocked.\""
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "DOESNT_UNTAP"
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "61",
+        "rarity": "UNCOMMON",
+        "artist": "Randy Gallegos",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/7/3742a0fb-4b86-49d6-b6fb-bd6a42fa1bcb.jpg?1783923138"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Slip Out the Back
+{
+    "name": "Slip Out the Back",
+    "manaCost": "{U}",
+    "typeLine": "Instant",
+    "oracleText": "Put a +1/+1 counter on target creature. It phases out. (Treat it and anything attached to it as though they don't exist until its controller's next turn.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "PhaseOut",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "62",
+        "rarity": "UNCOMMON",
+        "artist": "Zara Alfonso",
+        "flavorText": "\"I was never here.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/7/8725f4c4-fad7-460e-b86c-ff81674f0980.jpg?1783923138"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
