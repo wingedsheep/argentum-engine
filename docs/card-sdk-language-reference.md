@@ -9376,8 +9376,10 @@ staticAbility {
   holder *has* the ability and its "you" is the holder's controller. Nerd Rage:
   `GrantStaticAbility(NoMaximumHandSize, Filters.EnchantedCreature)` — an Aura on an opponent's creature frees
   the opponent's hand. `ability` is typed `ProjectedStaticAbility` — the sealed marker for kinds whose engine
-  read consults the holder's projected statics (`ProjectedState.getStaticAbilities`): today `NoMaximumHandSize`
-  and `Enlist`. To grant another kind this way, route its read through projection and mark it.
+  read consults the holder's projected statics (`ProjectedState.getStaticAbilities`): today `NoMaximumHandSize`,
+  `Enlist`, `GrantCantLoseGame` and `GrantOpponentsCantWinGame` (Cloudsteel Kirin: "Equipped creature has 'You
+  can't lose the game and your opponents can't win the game'" is one `GrantStaticAbility` per clause over
+  `Filters.EquippedCreature`). To grant another kind this way, route its read through projection and mark it.
 - `GrantTriggeredAbility(ability, filter)` — "[filter] have '<triggered ability>'". On a battlefield-scoped
   `GroupFilter` it is the lord shape — Unctus, Grand Metatect's "Other blue creatures you control have 'Whenever
   this creature becomes tapped, draw a card, then discard a card'" is `GrantTriggeredAbility(<becomesTapped → loot>,
@@ -10717,12 +10719,16 @@ staticAbility {
   (Lich's Mastery, Platinum Angel). Suppresses *all* loss conditions for that player (0-or-less life,
   poison, empty-library draw, effect losses); opponents can still win via "you win the game" effects.
   Projected to `GrantsCantLoseGameComponent`, read by every player-loss SBA via `playerCantLoseGame`.
+  Also a `ProjectedStaticAbility`: granted to a creature by the `GrantStaticAbility` static (Cloudsteel Kirin's
+  equipped creature), it protects the *holder's* controller, read off projection
+  (`ControllerGrants.anyHoldingProjected`), and ends with the grant. (A one-shot `Effects.GrantStaticAbility` of
+  it isn't lowered yet — no card needs it.)
 - `GrantOpponentsCantWinGame` — the complementary half: an effect that would make an *opponent* of this
   permanent's controller win the game does nothing at all (Herald of Eternal Dawn, "You can't lose the
   game and your opponents can't win the game" — pair it with `GrantCantLoseGame` for the full lock).
   The win fizzles outright, so it also doesn't collaterally eliminate that opponent's other opponents.
   Projected to `GrantsOpponentsCantWinGameComponent`, read by `WinGameExecutor` via `playerCantWinGame`
-  (team-aware: a teammate's permanent never restricts you).
+  (team-aware: a teammate's permanent never restricts you). Grantable like `GrantCantLoseGame`.
 - `GrantCantLoseGameFromLife` — the narrow sibling: controller "doesn't lose the game for having 0 or
   less life" (CR 704.5a) only. Poison, empty-library, and effect-based losses still apply — including a
   card's own `Effects.LoseGame`. Marina Vendrell's Grimoire ("…and don't lose the game for having 0 or

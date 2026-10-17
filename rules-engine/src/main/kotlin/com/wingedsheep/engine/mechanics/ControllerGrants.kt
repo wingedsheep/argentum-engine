@@ -7,6 +7,7 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.ControllerGrantMarker
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.ProjectedStaticAbility
 import com.wingedsheep.sdk.scripting.conditions.Condition
 
 /**
@@ -78,6 +79,29 @@ object ControllerGrants {
             val controllerId = granterController(state, entityId) ?: return@any false
             controllerMatches(controllerId) && isGrantingNow(state, entityId, marker, predicateEvaluator = predicateEvaluator)
         }
+
+    /**
+     * Whether any permanent on the battlefield holds an [A] among its *projected* static abilities
+     * and has a controller satisfying [controllerMatches].
+     *
+     * The companion read to [anyGranting] for the controller grants that are also a
+     * [ProjectedStaticAbility]: a printed instance is stamped as a marker at entry (that's what
+     * carries an "as long as …" gate), while one granted to a permanent — by an Equipment or Aura's
+     * [com.wingedsheep.sdk.scripting.GrantStaticAbility] (Cloudsteel Kirin's equipped creature) —
+     * only exists in projection. Projection is the right owner for it: the grant ends when the
+     * Equipment moves, and stops when the holder loses all its abilities. "You" is the holder's
+     * projected controller, never the granting source's.
+     */
+    inline fun <reified A : ProjectedStaticAbility> anyHoldingProjected(
+        state: GameState,
+        crossinline controllerMatches: (EntityId) -> Boolean
+    ): Boolean {
+        val projected = state.projectedState
+        return state.getBattlefield().any { entityId ->
+            projected.getStaticAbilities(entityId).any { it is A } &&
+                granterController(state, entityId)?.let { controllerMatches(it) } == true
+        }
+    }
 
     /** Whether [playerId] controls a permanent currently granting [M]. */
     inline fun <reified M> grantedTo(

@@ -15,6 +15,8 @@ import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
 import com.wingedsheep.engine.state.components.player.LossReason
 import com.wingedsheep.engine.state.components.player.PlayerLostComponent
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.GrantCantLoseGame
+import com.wingedsheep.sdk.scripting.GrantOpponentsCantWinGame
 
 /**
  * 704.5a - A player with 0 or less life loses the game.
@@ -61,7 +63,8 @@ internal fun playerCantLoseGame(state: GameState, playerId: EntityId, predicateE
     // games the grant protects only its own controller.
     val team = (if (state.format.playersWinLoseAsTeam) state.teamOf(playerId) else listOf(playerId))
         .toHashSet()
-    return ControllerGrants.anyGranting<GrantsCantLoseGameComponent>(state, predicateEvaluator = predicateEvaluator) { it in team }
+    return ControllerGrants.anyGranting<GrantsCantLoseGameComponent>(state, predicateEvaluator = predicateEvaluator) { it in team } ||
+        ControllerGrants.anyHoldingProjected<GrantCantLoseGame>(state) { it in team }
 }
 
 /**
@@ -89,5 +92,6 @@ internal fun playerCantLoseGameFromLife(state: GameState, playerId: EntityId, pr
  */
 internal fun playerCantWinGame(state: GameState, playerId: EntityId, predicateEvaluator: PredicateEvaluator): Boolean {
     val opponents = state.getOpponents(playerId).toHashSet()
-    return ControllerGrants.anyGranting<GrantsOpponentsCantWinGameComponent>(state, predicateEvaluator = predicateEvaluator) { it in opponents }
+    return ControllerGrants.anyGranting<GrantsOpponentsCantWinGameComponent>(state, predicateEvaluator = predicateEvaluator) { it in opponents } ||
+        ControllerGrants.anyHoldingProjected<GrantOpponentsCantWinGame>(state) { it in opponents }
 }

@@ -559,6 +559,118 @@
     "colorIdentityOverride": []
 }
 
+// Cloudsteel Kirin
+{
+    "name": "Cloudsteel Kirin",
+    "manaCost": "{2}{W}",
+    "typeLine": "Artifact Creature — Equipment Kirin",
+    "oracleText": "Flying\nEquipped creature has flying and \"You can't lose the game and your opponents can't win the game.\"\nReconfigure {5} ({5}: Attach to target creature you control; or unattach from a creature. Reconfigure only as a sorcery. While attached, this isn't a creature.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING",
+        "RECONFIGURE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Cloudsteel Kirin:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{5}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "another creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you",
+                            "excludeSelf": true
+                        },
+                        "id": "another creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "descriptionOverride": "Reconfigure {5}: Attach to target creature you control"
+            },
+            {
+                "id": "Cloudsteel Kirin:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{5}"
+                    }
+                },
+                "effect": "UnattachEquipment",
+                "timing": "SorcerySpeed",
+                "restrictions": [
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": "Self",
+                            "filter": {
+                                "statePredicates": [
+                                    {
+                                        "type": "IsAttachedTo",
+                                        "filter": "creature"
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                ],
+                "descriptionOverride": "Reconfigure {5}: Unattach from the creature"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "FLYING"
+            },
+            {
+                "type": "GrantStaticAbility",
+                "ability": "GrantCantLoseGame"
+            },
+            {
+                "type": "GrantStaticAbility",
+                "ability": "GrantOpponentsCantWinGame"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "8",
+        "rarity": "RARE",
+        "artist": "Jonathan Kuo",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/1/a13ddda7-da6e-415e-8886-295514f862d4.jpg?1783923925",
+        "rulings": [
+            {
+                "date": "2022-02-18",
+                "text": "No game effect can cause you to lose the game or cause any opponent to win the game while you control a creature equipped with Cloudsteel Kirin. It doesn't matter whether you have 0 or less life, you're forced to draw a card while your library is empty, you have ten or more poison counters, or so on. You keep playing."
+            },
+            {
+                "date": "2022-02-18",
+                "text": "If you have 0 or less life while Cloudsteel Kirin is equipped to a creature, activating reconfigure to attach Cloudsteel Kirin to another creature you control doesn't cause you to lose the game. You would lose the game if Cloudsteel Kirin becomes unattached or becomes attached to a creature you don't control."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Crackling Emergence
 {
     "name": "Crackling Emergence",

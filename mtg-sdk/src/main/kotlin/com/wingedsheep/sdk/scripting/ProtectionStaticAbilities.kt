@@ -432,10 +432,14 @@ data class CantBeTargetedBySourceTypeAbilities(
  * When active, prevents all game loss conditions: life at 0 or less,
  * 10+ poison counters, drawing from empty library, and card effects.
  * Note: opponents can still WIN the game via effects that say so.
+ *
+ * A [ProjectedStaticAbility], so an Equipment or Aura can grant it to the creature it's attached
+ * to through [GrantStaticAbility] ("Equipped creature has 'You can't lose the game …'", Cloudsteel
+ * Kirin) — the creature's controller is then "you".
  */
 @SerialName("GrantCantLoseGame")
 @Serializable
-data object GrantCantLoseGame : StaticAbility {
+data object GrantCantLoseGame : ProjectedStaticAbility {
     override val description: String = "You can't lose the game"
 }
 
@@ -449,10 +453,11 @@ data object GrantCantLoseGame : StaticAbility {
  * doesn't collaterally eliminate the winner's *other* opponents. This is distinct from, and
  * complementary to, [GrantCantLoseGame] on the same permanent: can't-lose protects the
  * controller from being made to lose, while this clause fizzles the opponent's win outright.
+ * Grantable through [GrantStaticAbility] like [GrantCantLoseGame].
  */
 @SerialName("GrantOpponentsCantWinGame")
 @Serializable
-data object GrantOpponentsCantWinGame : StaticAbility {
+data object GrantOpponentsCantWinGame : ProjectedStaticAbility {
     override val description: String = "Your opponents can't win the game"
 }
 
