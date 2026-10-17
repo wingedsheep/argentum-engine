@@ -14,7 +14,6 @@ import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.AdditionalCost
 import com.wingedsheep.sdk.scripting.CostZone
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.ReducingCostAction
 import com.wingedsheep.sdk.scripting.costs.CardMeasure
 import com.wingedsheep.sdk.scripting.costs.CostAtom
 import com.wingedsheep.sdk.scripting.costs.PayCost
@@ -825,18 +824,18 @@ object Costs {
          * for each … sacrificed this way" (Torgaar, Famine Incarnate).
          */
         fun SacrificeAnyNumberForCostReduction(
-            filter: GameObjectFilter = GameObjectFilter.Creature,
-            reductionPerUnit: Int = 2
-        ): AdditionalCost = AdditionalCost.AnyNumberForCostReduction(ReducingCostAction.SACRIFICE, filter, reductionPerUnit)
+            filter: GameObjectFilter,
+            reductionPerUnit: Int
+        ): AdditionalCost = AdditionalCost.AnyNumberForCostReduction(PermanentCostAction.SACRIFICE, filter, reductionPerUnit)
 
         /**
          * "You may tap any number of untapped [filter] you control. This spell costs {[reductionPerUnit]}
          * less to cast for each … tapped this way" (Explosive Singularity).
          */
         fun TapAnyNumberForCostReduction(
-            filter: GameObjectFilter = GameObjectFilter.Creature,
-            reductionPerUnit: Int = 1
-        ): AdditionalCost = AdditionalCost.AnyNumberForCostReduction(ReducingCostAction.TAP, filter, reductionPerUnit)
+            filter: GameObjectFilter,
+            reductionPerUnit: Int
+        ): AdditionalCost = AdditionalCost.AnyNumberForCostReduction(PermanentCostAction.TAP, filter, reductionPerUnit)
 
         /**
          * "You may exile any number of [filter] cards from your hand. This spell costs
@@ -844,8 +843,9 @@ object Costs {
          */
         fun ExileAnyNumberFromHandForCostReduction(
             filter: GameObjectFilter,
-            reductionPerUnit: Int = 2
-        ): AdditionalCost = AdditionalCost.AnyNumberForCostReduction(ReducingCostAction.EXILE_FROM_HAND, filter, reductionPerUnit)
+            reductionPerUnit: Int
+        ): AdditionalCost =
+            AdditionalCost.AnyNumberForCostReduction(PermanentCostAction.EXILE, filter, reductionPerUnit, CostZone.HAND)
 
         /** Forage (exile three cards from your graveyard or sacrifice a Food). */
         val Forage: AdditionalCost = AdditionalCost.Forage

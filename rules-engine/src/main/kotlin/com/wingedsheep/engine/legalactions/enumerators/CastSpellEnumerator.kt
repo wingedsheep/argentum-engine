@@ -284,13 +284,19 @@ class CastSpellEnumerator(
             // (CR 601.2f) — Spectral Denial's discounts raise its X ceiling.
             val xCredit = context.costCalculator.minPossibleXCredit(state, cardDef, playerId, cardId, effectiveCost)
 
-            // Apply the largest "costs {N} less for each … this way" discount for the affordability check
-            // What the printed generic can't absorb pays the announced X instead (CR 601.2f), so it
-            // raises the X ceiling below — a March with two white cards to exile reaches X + 4.
+            // The largest "costs {N} less for each … this way" discount, for the affordability check.
+            // A candidate that is itself a counted mana source (a mana dork tapped or sacrificed for
+            // the discount) can't also make its mana, so it is worth N − 1 over the sources already
+            // counted, not N. What the printed generic can't absorb pays the announced X instead
+            // (CR 601.2f), so it raises the X ceiling below — a March with two white cards to exile
+            // reaches X + 4.
             val reducingCost = offer.reducingCost
             var reducingXCredit = 0
             if (reducingCost != null && offer.reducingCandidates.isNotEmpty()) {
-                val maxReduction = offer.reducingCandidates.size * reducingCost.reductionPerUnit
+                val manaSourceIds = context.availableManaSources.mapTo(HashSet()) { it.entityId }
+                val sourceCandidates = offer.reducingCandidates.count { it in manaSourceIds }
+                val maxReduction = (offer.reducingCandidates.size - sourceCandidates) * reducingCost.reductionPerUnit +
+                    sourceCandidates * (reducingCost.reductionPerUnit - 1).coerceAtLeast(0)
                 val genericBefore = effectiveCost.genericAmount
                 effectiveCost = effectiveCost.reduceGeneric(maxReduction)
                 if (effectiveCost.hasX) {
@@ -637,14 +643,7 @@ class CastSpellEnumerator(
                 } else 0
                 val fixedCost = effectiveCost.cmc  // X contributes 0 to CMC
                 val xSymbolCount = effectiveCost.xCount.coerceAtLeast(1)
-                // A permanent that taps or is sacrificed for the discount can't also make mana, so
-                // a counted mana source among the candidates gives back the one mana it was counted for.
-                val reducingAvailable = if (reducingXCredit > 0 && reducingCost != null) {
-                    val manaSourceIds = cachedSources.mapTo(HashSet()) { it.entityId }
-                    val doubleCounted = offer.reducingCandidates.count { it in manaSourceIds }
-                    (reducingXCredit - doubleCounted).coerceAtLeast(0)
-                } else 0
-                ((availableSources + delveAvailable + waterbendAvailable + convokeAvailable + improviseAvailable + xCredit + reducingAvailable - fixedCost) / xSymbolCount)
+                ((availableSources + delveAvailable + waterbendAvailable + convokeAvailable + improviseAvailable + xCredit + reducingXCredit - fixedCost) / xSymbolCount)
                     .coerceAtLeast(0)
             } else null
 

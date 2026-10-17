@@ -27,7 +27,9 @@ val MarchOfOtherworldlyLight = card("March of Otherworldly Light") {
         "from your hand. This spell costs {2} less to cast for each card exiled this way.\n" +
         "Exile target artifact, creature, or enchantment with mana value X or less."
 
-    additionalCost(Costs.additional.ExileAnyNumberFromHandForCostReduction(GameObjectFilter.Any.withColor(Color.WHITE)))
+    additionalCost(Costs.additional.ExileAnyNumberFromHandForCostReduction(
+        GameObjectFilter.Any.withColor(Color.WHITE), reductionPerUnit = 2
+    ))
 
     spell {
         val permanent = target(TargetFilter(GameObjectFilter.ArtifactCreatureOrEnchantment.manaValueAtMostX()))

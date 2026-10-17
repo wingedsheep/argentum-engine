@@ -5,6 +5,7 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 
 /**
  * Explosive Singularity — Kamigawa: Neon Dynasty #140 (canonical printing)
@@ -25,7 +26,7 @@ val ExplosiveSingularity = card("Explosive Singularity") {
         "creatures you control. This spell costs {1} less to cast for each creature tapped this way.\n" +
         "Explosive Singularity deals 10 damage to any target."
 
-    additionalCost(Costs.additional.TapAnyNumberForCostReduction())
+    additionalCost(Costs.additional.TapAnyNumberForCostReduction(GameObjectFilter.Creature, reductionPerUnit = 1))
 
     spell {
         val any = target(Targets.Any)

@@ -15157,6 +15157,7 @@
         "additionalCosts": [
             {
                 "type": "AnyNumberForCostReduction",
+                "action": "SACRIFICE",
                 "filter": "nonland permanent",
                 "reductionPerUnit": 1
             }

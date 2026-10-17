@@ -39,14 +39,14 @@ class AnyNumberForCostReductionScenarioTest : FunSpec({
     val whiteMarch = card("Test White March") {
         manaCost = "{X}{W}"
         typeLine = "Instant"
-        additionalCost(Costs.additional.ExileAnyNumberFromHandForCostReduction(GameObjectFilter.Any.withColor(Color.WHITE)))
+        additionalCost(Costs.additional.ExileAnyNumberFromHandForCostReduction(GameObjectFilter.Any.withColor(Color.WHITE), 2))
         spell { effect = Effects.GainLife(DynamicAmount.XValue) }
     }
 
     val singularity = card("Test Singularity") {
         manaCost = "{4}{R}{R}"
         typeLine = "Sorcery"
-        additionalCost(Costs.additional.TapAnyNumberForCostReduction())
+        additionalCost(Costs.additional.TapAnyNumberForCostReduction(GameObjectFilter.Creature, 1))
         spell { effect = Effects.GainLife(10) }
     }
 
@@ -189,6 +189,17 @@ class AnyNumberForCostReductionScenarioTest : FunSpec({
             val info = cast.additionalCostInfo.shouldNotBeNull()
             info.costType shouldBe "TapForCostReduction"
             info.validTapTargets shouldContainExactlyInAnyOrder untapped
+        }
+
+        test("a mana creature tapped for the discount isn't also counted as mana") {
+            val (d, me) = driver()
+            val spell = d.putCardInHand(me, "Test Singularity")
+            repeat(2) { d.putLandOnBattlefield(me, "Mountain") }
+            // Three untapped Llanowar Elves: tapped for mana they make {3}, tapped for the cost they
+            // take {3} off — never both, so {4}{R}{R} is a mana short either way.
+            repeat(3) { d.removeSummoningSickness(d.putCreatureOnBattlefield(me, "Llanowar Elves")) }
+
+            d.legalActions(me).none { (it.action as? CastSpell)?.cardId == spell && it.affordable } shouldBe true
         }
 
         test("not affordable when even every creature can't close the gap") {

@@ -27,7 +27,7 @@ import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AdditionalCost
 import com.wingedsheep.sdk.scripting.AdditionalCostPayment
 import com.wingedsheep.sdk.scripting.CostZone
-import com.wingedsheep.sdk.scripting.ReducingCostAction
+import com.wingedsheep.sdk.scripting.costs.PermanentCostAction
 
 /*
  * Kinds for the casting-context-specific [AdditionalCost] subtypes — the costs that mean something
@@ -281,12 +281,12 @@ internal object AnyNumberForCostReductionCostKind : SpellCostKind<AdditionalCost
 
     override fun candidates(env: SpellCostEnumeration, cost: AdditionalCost.AnyNumberForCostReduction): List<EntityId> =
         when (cost.action) {
-            ReducingCostAction.SACRIFICE ->
+            PermanentCostAction.SACRIFICE ->
                 env.costUtils.findVariableSacrificeTargets(env.state, env.playerId, cost.filter)
-            ReducingCostAction.TAP ->
+            PermanentCostAction.TAP ->
                 env.costUtils.findAbilityTapTargets(env.state, env.playerId, cost.filter)
             // The spell is on its way to the stack (CR 601.2a), so it can't pay for itself.
-            ReducingCostAction.EXILE_FROM_HAND ->
+            PermanentCostAction.EXILE ->
                 env.costUtils.findExileTargets(env.state, env.playerId, cost.filter, Zone.HAND)
                     .filter { it != env.castCardId }
         }
@@ -294,9 +294,9 @@ internal object AnyNumberForCostReductionCostKind : SpellCostKind<AdditionalCost
     /** The objects the caster chose for [cost], from the payment channel its action fills. */
     fun chosen(cost: AdditionalCost.AnyNumberForCostReduction, payment: AdditionalCostPayment?): List<EntityId> =
         when (cost.action) {
-            ReducingCostAction.SACRIFICE -> payment?.sacrificedPermanents
-            ReducingCostAction.TAP -> payment?.tappedPermanents
-            ReducingCostAction.EXILE_FROM_HAND -> payment?.exiledCards
+            PermanentCostAction.SACRIFICE -> payment?.sacrificedPermanents
+            PermanentCostAction.TAP -> payment?.tappedPermanents
+            PermanentCostAction.EXILE -> payment?.exiledCards
         } ?: emptyList()
 
     /**
@@ -310,19 +310,19 @@ internal object AnyNumberForCostReductionCostKind : SpellCostKind<AdditionalCost
         )
 
     private fun pickerData(cost: AdditionalCost.AnyNumberForCostReduction, candidates: List<EntityId>) = when (cost.action) {
-        ReducingCostAction.SACRIFICE -> AdditionalCostData(
+        PermanentCostAction.SACRIFICE -> AdditionalCostData(
             description = cost.description,
             costType = "SacrificeForCostReduction",
             validSacrificeTargets = candidates,
             sacrificeCount = 0,
         )
-        ReducingCostAction.TAP -> AdditionalCostData(
+        PermanentCostAction.TAP -> AdditionalCostData(
             description = cost.description,
             costType = "TapForCostReduction",
             validTapTargets = candidates,
             tapCount = 0,
         )
-        ReducingCostAction.EXILE_FROM_HAND -> AdditionalCostData(
+        PermanentCostAction.EXILE -> AdditionalCostData(
             description = cost.description,
             costType = "ExileFromHand",
             validExileTargets = candidates,
@@ -340,15 +340,15 @@ internal object AnyNumberForCostReductionCostKind : SpellCostKind<AdditionalCost
         for (id in picks) {
             val card = state.getEntity(id)?.get<CardComponent>() ?: return "Chosen object not found: $id"
             when (cost.action) {
-                ReducingCostAction.SACRIFICE, ReducingCostAction.TAP -> {
+                PermanentCostAction.SACRIFICE, PermanentCostAction.TAP -> {
                     if (id !in state.getBattlefield()) return "${card.name} is not on the battlefield"
                     if (projected.getController(id) != check.playerId) return "You can only choose permanents you control"
                     // CR 701.26a — only an untapped permanent can be tapped.
-                    if (cost.action == ReducingCostAction.TAP && state.getEntity(id)?.has<TappedComponent>() == true) {
+                    if (cost.action == PermanentCostAction.TAP && state.getEntity(id)?.has<TappedComponent>() == true) {
                         return "${card.name} is already tapped"
                     }
                 }
-                ReducingCostAction.EXILE_FROM_HAND -> {
+                PermanentCostAction.EXILE -> {
                     if (id == check.action.cardId) return "A spell can't exile itself to pay its own cost"
                     if (id !in state.getZone(ZoneKey(check.playerId, Zone.HAND))) return "${card.name} is not in your hand"
                 }
@@ -363,19 +363,19 @@ internal object AnyNumberForCostReductionCostKind : SpellCostKind<AdditionalCost
     override fun pay(ledger: SpellCostLedger, cost: AdditionalCost.AnyNumberForCostReduction): String? {
         val picks = chosen(cost, ledger.payment)
         when (cost.action) {
-            ReducingCostAction.SACRIFICE -> {
+            PermanentCostAction.SACRIFICE -> {
                 ledger.sacrificedSnapshots.addAll(captureEntitySnapshots(picks, ledger.state))
                 for (permId in picks) {
                     if (ledger.state.getEntity(permId) == null) continue
                     ledger.sacrifice(permId)
                 }
             }
-            ReducingCostAction.TAP -> for (permId in picks) {
+            PermanentCostAction.TAP -> for (permId in picks) {
                 val (tappedState, tapEvents) = tap(ledger.state, permId)
                 ledger.state = tappedState
                 ledger.events.addAll(tapEvents)
             }
-            ReducingCostAction.EXILE_FROM_HAND -> {
+            PermanentCostAction.EXILE -> {
                 ledger.exiledAsCostCards.addAll(picks)
                 exileFromOwnZone(ledger, picks, Zone.HAND)
             }

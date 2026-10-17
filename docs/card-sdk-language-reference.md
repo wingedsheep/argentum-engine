@@ -1019,20 +1019,22 @@ cast action advertises the first selection cost as `additionalCostInfo` and the 
   sacrificed permanent is snapshotted, so "for each Spirit sacrificed this way" is
   `DynamicAmounts.permanentsSacrificedThisWay()`. For "… this spell costs {2} less for each" use
   `SacrificeAnyNumberForCostReduction` instead.
-- `Costs.additional.SacrificeAnyNumberForCostReduction(filter = Creature, reductionPerUnit = 2)`,
-  `TapAnyNumberForCostReduction(filter = Creature, reductionPerUnit = 1)`,
-  `ExileAnyNumberFromHandForCostReduction(filter, reductionPerUnit = 2)` — "as an additional cost to
-  cast this spell, you may sacrifice / tap / exile from your hand any number of …. This spell costs {N}
-  less to cast for each … this way" (Torgaar, Famine Incarnate; Explosive Singularity; the NEO Marches,
-  e.g. `ExileAnyNumberFromHandForCostReduction(GameObjectFilter.Any.withColor(Color.WHITE))`). One
-  `AdditionalCost.AnyNumberForCostReduction(action: ReducingCostAction, filter, reductionPerUnit)`.
+- `Costs.additional.SacrificeAnyNumberForCostReduction(filter, reductionPerUnit)`,
+  `TapAnyNumberForCostReduction(filter, reductionPerUnit)`,
+  `ExileAnyNumberFromHandForCostReduction(filter, reductionPerUnit)` — "as an additional cost to cast
+  this spell, you may sacrifice / tap / exile from your hand any number of …. This spell costs {N} less
+  to cast for each … this way" (Torgaar, Famine Incarnate; Explosive Singularity; the NEO Marches,
+  e.g. `ExileAnyNumberFromHandForCostReduction(GameObjectFilter.Any.withColor(Color.WHITE), 2)`). One
+  `AdditionalCost.AnyNumberForCostReduction(action: PermanentCostAction, filter, reductionPerUnit,
+  fromZone = BATTLEFIELD)`; `EXILE` is hand-only (`fromZone = HAND`), `SACRIFICE` / `TAP` battlefield-only.
   The count is a **price, not a value**: each pick takes N generic off the total cost (CR 601.2f — the
   announced X is generic in that total, so on an `{X}{W}` March the discount keeps paying into the X),
   and the effect never reads it; X stays the announced X. Choosing none is always legal. Tapping is a
   cost, not `{T}`, so summoning-sick creatures may pay; exiling from hand never offers the spell itself
   (CR 601.2a). The enumerator publishes a zero-floor picker — `costType` `SacrificeForCostReduction`
   (`sacrificedPermanents`), `TapForCostReduction` (`tappedPermanents`) or `ExileFromHand`
-  (`exiledCards`, `exileMinCount = 0`) — and the castability check assumes every candidate is used.
+  (`exiledCards`, `exileMinCount = 0`). Its castability check and X ceiling assume every candidate is
+  used, netting a candidate that is itself a mana source (a mana dork) at N − 1.
 - `Costs.additional.TapForTotalPower(totalPower, filter = GameObjectFilter.Creature)` — "tap any number of
   creatures you control with total power N or more" (Teamwork N, CR 702.194a). A
   `CostAtom.VariablePermanents` with `action = TAP`, `xMeasure = TOTAL_POWER`, `minMeasure = N` and

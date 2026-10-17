@@ -1087,6 +1087,7 @@
             {
                 "type": "AnyNumberForCostReduction",
                 "action": "TAP",
+                "filter": "creature",
                 "reductionPerUnit": 1
             }
         ]
@@ -2143,8 +2144,10 @@
         "additionalCosts": [
             {
                 "type": "AnyNumberForCostReduction",
-                "action": "EXILE_FROM_HAND",
-                "filter": "white"
+                "action": "EXILE",
+                "filter": "white",
+                "reductionPerUnit": 2,
+                "fromZone": "HAND"
             }
         ]
     },
