@@ -8710,6 +8710,14 @@ Dominant back faces that "stay" instead self-exile on their final chapter, dodgi
   where `Triggers.you.sacrifices(filter, batch = true)` would give one) but ANY exclusion like `Triggers.you.sacrifices(filter, batch = true)` (a source that
   is itself a Food counts its own sacrifice). Pick by the printed article — "one or more" → batch,
   "a" → `Triggers.you.sacrifices(filter)`, "another" → `Triggers.you.sacrificesAnother(filter)`.
+- `Triggers.you.sacrificesAnother(filter, batch = true)` — "whenever you sacrifice **one or more other**
+  <filter>" (Forge Boss): `OTHER` binding with batch multiplicity, so it fires **once** per batch however
+  many matching permanents go, never for the source alone, and the source itself never satisfies the
+  filter. A source sacrificed *in the same batch* as other matching permanents still fires once — the
+  self-sacrifice pass looks back at the whole batch (leaves-the-battlefield look-back). That pass treats
+  every binding the same way: a batch `ANY` source sacrificed alongside matching permanents fires even
+  if the source itself doesn't match (Camellia sacrificed with a Food), `SELF` only ever sees itself.
+  Pair with `oncePerTurn = true` for "This ability triggers only once each turn."
 - `Triggers.self.isSacrificed()` — source is sacrificed.
 - `EventPattern.ChampionedEvent` — "when a [quality] is championed with this creature" (CR 702.72c;
   Mistbind Clique). Reach it through `Triggers.self.champions()`. A parameterless pattern whose

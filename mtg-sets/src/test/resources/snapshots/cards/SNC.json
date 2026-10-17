@@ -4227,6 +4227,53 @@
     ]
 }
 
+// Forge Boss
+{
+    "name": "Forge Boss",
+    "manaCost": "{2}{B}{R}",
+    "typeLine": "Creature — Human Warrior",
+    "oracleText": "Whenever you sacrifice one or more other creatures, this creature deals 2 damage to each opponent. This ability triggers only once each turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Forge Boss:1",
+                "trigger": {
+                    "type": "PermanentsSacrificedEvent",
+                    "filter": "creature"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "EachOpponent"
+                    }
+                },
+                "oncePerTurn": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "189",
+        "rarity": "UNCOMMON",
+        "artist": "Igor Kieryluk",
+        "flavorText": "\"Big furnace like this can reduce anything to ash. You got something you need reduced to ash?\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/0/5052247d-ef72-47f0-973d-2be98bf754c1.jpg?1790192811"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
+    ]
+}
+
 // Gathering Throng
 {
     "name": "Gathering Throng",

@@ -110,6 +110,18 @@ class TriggerDetectorBatchTriggerTest : FunSpec({
         }
     }
 
+    // "Whenever you sacrifice one or more other creatures, …" (Forge Boss shape): batch + OTHER.
+    val otherCreatureSacrificeWatcher = card("Other Sacrifice Watcher") {
+        manaCost = "{1}"
+        typeLine = "Creature — Human Warrior"
+        power = 1
+        toughness = 1
+        triggeredAbility {
+            trigger = Triggers.you.sacrificesAnother(GameObjectFilter.Creature, batch = true)
+            effect = LoseLifeEffect(1, EffectTarget.PlayerRef(Player.EachOpponent))
+        }
+    }
+
     fun createDriver(vararg extras: CardDefinition): GameTestDriver {
         val driver = GameTestDriver()
         driver.registerCards(TestCards.all + extras.toList())
@@ -273,6 +285,73 @@ class TriggerDetectorBatchTriggerTest : FunSpec({
             triggers.filter {
                 it.ability.trigger is EventPattern.PermanentsSacrificedEvent
             }.shouldBeEmpty()
+        }
+    }
+
+    context("sacrifice batch, another (one or more other creatures)") {
+
+        test("several other creatures sacrificed at once fire it once") {
+            val driver = createDriver(otherCreatureSacrificeWatcher, nonBirdCreature)
+            val watcher = driver.putCreatureOnBattlefield(driver.player1, "Other Sacrifice Watcher")
+            val fodder = (1..3).map { driver.putCardInGraveyard(driver.player1, "Test Squirrel") }
+            val event = PermanentsSacrificedEvent(driver.player1, fodder, fodder.map { "Test Squirrel" })
+
+            val triggers = detectorFor(driver).detectTriggers(driver.state, listOf(event))
+
+            triggers shouldHaveSize 1
+            triggers[0].sourceId shouldBe watcher
+            triggers[0].triggerContext.triggeringEntityId shouldBe fodder.first()
+        }
+
+        test("the source sacrificed alone does not fire it") {
+            val driver = createDriver(otherCreatureSacrificeWatcher)
+            val watcher = driver.putCardInGraveyard(driver.player1, "Other Sacrifice Watcher")
+            val event = PermanentsSacrificedEvent(driver.player1, listOf(watcher), listOf("Other Sacrifice Watcher"))
+
+            detectorFor(driver).detectTriggers(driver.state, listOf(event)).shouldBeEmpty()
+        }
+
+        test("the source sacrificed alongside other creatures looks back and fires once") {
+            val driver = createDriver(otherCreatureSacrificeWatcher, nonBirdCreature)
+            val watcher = driver.putCardInGraveyard(driver.player1, "Other Sacrifice Watcher")
+            val fodder = (1..2).map { driver.putCardInGraveyard(driver.player1, "Test Squirrel") }
+            val event = PermanentsSacrificedEvent(
+                driver.player1, listOf(watcher) + fodder, listOf("Other Sacrifice Watcher") + fodder.map { "Test Squirrel" }
+            )
+
+            val triggers = detectorFor(driver).detectTriggers(driver.state, listOf(event))
+
+            triggers shouldHaveSize 1
+            triggers[0].sourceId shouldBe watcher
+            triggers[0].triggerContext.triggeringEntityId shouldBe fodder.first()
+        }
+
+        test("a noncreature batch-mate does not count") {
+            val driver = createDriver(otherCreatureSacrificeWatcher, plainArtifact)
+            val watcher = driver.putCardInGraveyard(driver.player1, "Other Sacrifice Watcher")
+            val mox = driver.putCardInGraveyard(driver.player1, "Chrome Mox")
+            val event = PermanentsSacrificedEvent(
+                driver.player1, listOf(watcher, mox), listOf("Other Sacrifice Watcher", "Chrome Mox")
+            )
+
+            detectorFor(driver).detectTriggers(driver.state, listOf(event)).shouldBeEmpty()
+        }
+
+        test("a batch ANY source that doesn't match the filter still sees its matching batch-mates") {
+            // Camellia isn't a Food, but sacrificed together with a Food it looks back at that Food.
+            val driver = createDriver(CamelliaTheSeedmiser, foodToken)
+            val camellia = driver.putCardInGraveyard(driver.player1, "Camellia, the Seedmiser")
+            val food = driver.putCardInGraveyard(driver.player1, "Food Token")
+            val event = PermanentsSacrificedEvent(
+                driver.player1, listOf(camellia, food), listOf("Camellia, the Seedmiser", "Food Token")
+            )
+
+            val triggers = detectorFor(driver).detectTriggers(driver.state, listOf(event))
+                .filter { it.ability.trigger is EventPattern.PermanentsSacrificedEvent }
+
+            triggers shouldHaveSize 1
+            triggers[0].sourceId shouldBe camellia
+            triggers[0].triggerContext.triggeringEntityId shouldBe food
         }
     }
 

@@ -1047,9 +1047,12 @@ class PlayerTriggerSubject internal constructor(private val player: Player) {
     fun sacrifices(filter: GameObjectFilter = GameObjectFilter.Any, batch: Boolean = false): TriggerSpec =
         spec(PermanentsSacrificedEvent(filter = filter, sacrificedBy = player, perPermanent = !batch))
 
-    /** "sacrifices another [filter]" — once per permanent; the source sacrificing itself doesn't count. */
-    fun sacrificesAnother(filter: GameObjectFilter = GameObjectFilter.Any): TriggerSpec =
-        spec(PermanentsSacrificedEvent(filter = filter, sacrificedBy = player, perPermanent = true), TriggerBinding.OTHER)
+    /**
+     * "sacrifices another [filter]" — once per permanent; the source sacrificing itself doesn't count.
+     * [batch] is "sacrifices one or more other [filter]", once per batch (Forge Boss).
+     */
+    fun sacrificesAnother(filter: GameObjectFilter = GameObjectFilter.Any, batch: Boolean = false): TriggerSpec =
+        spec(PermanentsSacrificedEvent(filter = filter, sacrificedBy = player, perPermanent = !batch), TriggerBinding.OTHER)
 
     /**
      * "taps an untapped [filter]" — a tap the player *caused* (an effect instructed them to tap),

@@ -3096,51 +3096,33 @@ class TriggerDetector(
                         // be satisfied here.
                         if (trigger.sacrificedBy == Player.EachOpponent) continue
 
-                        if (trigger.perPermanent) {
-                            // Per-permanent template ("a/another permanent") where the source is
-                            // itself among the simultaneously-sacrificed permanents. Fire once per
-                            // matching batch member (CR 603.2c): ANY counts itself, OTHER excludes
-                            // it, SELF only itself.
-                            val eligible = batchPermanentIds.filter { pid ->
-                                sacrificedPermanentMatchesFilter(state, pid, trigger.filter) &&
-                                    when (ability.binding) {
-                                        TriggerBinding.SELF -> pid == permanentId
-                                        TriggerBinding.OTHER -> pid != permanentId
-                                        else -> true
-                                    }
-                            }
-                            for (triggeringPermanentId in eligible) {
-                                triggers.add(
-                                    PendingTrigger(
-                                        ability = ability,
-                                        sourceId = permanentId,
-                                        sourceName = cardComponent.name,
-                                        controllerId = controllerId,
-                                        triggerContext = TriggerContext(triggeringEntityId = triggeringPermanentId)
-                                    )
-                                )
-                            }
-                            continue
+                        // The source is itself among the simultaneously-sacrificed permanents, so
+                        // it looks back at the whole batch (CR 603.10a): ANY counts itself, OTHER
+                        // excludes it ("one or more other creatures" — Forge Boss sacrificed with
+                        // its fodder still sees the fodder), SELF only itself.
+                        val eligible = batchPermanentIds.filter { pid ->
+                            sacrificedPermanentMatchesFilter(state, pid, trigger.filter) &&
+                                when (ability.binding) {
+                                    TriggerBinding.SELF -> pid == permanentId
+                                    TriggerBinding.OTHER -> pid != permanentId
+                                    else -> true
+                                }
                         }
-
-                        // Batch template ("one or more permanents"): SELF and ANY include the
-                        // source sacrificing itself; fires once.
-                        if (ability.binding != TriggerBinding.SELF &&
-                            ability.binding != TriggerBinding.ANY
-                        ) continue
-                        if (!sacrificedPermanentMatchesFilter(state, permanentId, trigger.filter)) continue
-
-                        triggers.add(
-                            PendingTrigger(
-                                ability = ability,
-                                sourceId = permanentId,
-                                sourceName = cardComponent.name,
-                                controllerId = controllerId,
-                                triggerContext = TriggerContext(
-                                    triggeringEntityId = permanentId
+                        // Per-permanent template ("a/another permanent") fires once per matching
+                        // batch member (CR 603.2c); batch template ("one or more") fires once.
+                        val triggeringPermanents =
+                            if (trigger.perPermanent) eligible else eligible.take(1)
+                        for (triggeringPermanentId in triggeringPermanents) {
+                            triggers.add(
+                                PendingTrigger(
+                                    ability = ability,
+                                    sourceId = permanentId,
+                                    sourceName = cardComponent.name,
+                                    controllerId = controllerId,
+                                    triggerContext = TriggerContext(triggeringEntityId = triggeringPermanentId)
                                 )
                             )
-                        )
+                        }
                     }
                 }
             }
