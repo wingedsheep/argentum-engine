@@ -16,6 +16,7 @@ import com.wingedsheep.engine.state.components.battlefield.CrewSaddleContributor
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.stack.ActivatedAbilityOnStackComponent
+import com.wingedsheep.sdk.core.AbilityFlag
 import com.wingedsheep.sdk.scripting.CrewSaddleCost
 import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.effects.AddCardTypeEffect
@@ -111,6 +112,11 @@ class CrewVehicleHandler(
             // Must not be tapped
             if (creatureContainer.has<TappedComponent>()) {
                 return "Creature is already tapped: $creatureId"
+            }
+
+            // "Can't crew Vehicles" (Revoke Privileges) — a projected restriction flag.
+            if (projected.hasKeyword(creatureId, AbilityFlag.CANT_CREW)) {
+                return "That creature can't crew Vehicles: $creatureId"
             }
 
             // Summoning sickness does NOT prevent crewing (CR 702.122c)

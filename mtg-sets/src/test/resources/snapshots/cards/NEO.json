@@ -2057,6 +2057,72 @@
     ]
 }
 
+// Intercessor's Arrest
+{
+    "name": "Intercessor's Arrest",
+    "manaCost": "{2}{W}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant permanent\nEnchanted permanent can't attack, block, or crew Vehicles. Its activated abilities can't be activated unless they're mana abilities.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CantAttack",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            },
+            {
+                "type": "CantBlock",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "CANT_CREW"
+            },
+            {
+                "type": "PreventActivatedAbilities",
+                "filter": {
+                    "cardPredicates": [
+                        "IsPermanent"
+                    ],
+                    "statePredicates": [
+                        "IsAttachedToBySource"
+                    ]
+                },
+                "nonManaAbilitiesOnly": true
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "permanent"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "20",
+        "artist": "Steve Prescott",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/8/e83f2148-bb5d-4236-8d12-150deed0577e.jpg?1783923919",
+        "rulings": [
+            {
+                "date": "2022-02-18",
+                "text": "A creature that \"can't crew Vehicles\" can't be tapped to pay the crew cost of a Vehicle."
+            },
+            {
+                "date": "2022-02-18",
+                "text": "Intercessor's Arrest doesn't stop static abilities from affecting the game, and it doesn't stop triggered abilities from triggering. It also doesn't stop mana abilities from being activated. Most activated abilities that produce mana as they resolve are mana abilities."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Jukai Naturalist
 {
     "name": "Jukai Naturalist",

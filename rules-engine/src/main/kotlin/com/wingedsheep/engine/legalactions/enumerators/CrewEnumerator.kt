@@ -12,6 +12,7 @@ import com.wingedsheep.engine.mechanics.combat.rules.AttackAvailability
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.core.AbilityFlag
 import com.wingedsheep.sdk.scripting.CrewSaddleCost
 
 /**
@@ -60,6 +61,7 @@ class CrewEnumerator : ActionEnumerator {
                 if (!projected.isCreature(creatureId)) continue
                 val creatureContainer = state.getEntity(creatureId) ?: continue
                 if (creatureContainer.has<TappedComponent>()) continue
+                if (projected.hasKeyword(creatureId, AbilityFlag.CANT_CREW)) continue
                 // Summoning sickness does NOT prevent crewing.
                 // What it contributes, not its raw power — `CrewVehicleHandler` measures the cost
                 // through the same evaluator, so a creature that "crews Vehicles as though its

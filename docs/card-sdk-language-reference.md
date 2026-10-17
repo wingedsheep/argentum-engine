@@ -9620,6 +9620,12 @@ staticAbility {
   matching permanents. Honored in the control-change executors (`GainControl`, `GainControlByMost`,
   `ExchangeControl` — an exchange where either side can't be gained control of fails entirely); the
   controller keeping their own permanent is an unaffected no-op. (Guardian Beast)
+- `GrantKeyword(AbilityFlag.CANT_CREW.name, filter)` — matching creatures can't crew Vehicles: they
+  can't be tapped to pay a crew cost (CR 702.122a). `CrewEnumerator` leaves them out of the crew
+  candidates and `CrewVehicleHandler` rejects a crew that names one; they can still attack, block and
+  saddle Mounts unless something else says otherwise. The "can't attack, block, or crew Vehicles" Aura
+  is `CantAttack` + `CantBlock` + this grant, each scoped to the enchanted permanent. (Revoke
+  Privileges, Intercessor's Arrest)
 - `GrantKeyword(AbilityFlag.CANT_TRANSFORM.name, filter)` — matching permanents can't transform
   (CR 701.27b — a permanent that can't transform simply doesn't). Honored in `flipDfcInPlace`, the one
   shared transform-in-place implementation, so it covers *every* cause: a `TransformEffect` one-shot, an

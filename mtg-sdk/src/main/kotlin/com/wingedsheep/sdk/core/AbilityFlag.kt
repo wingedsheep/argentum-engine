@@ -87,6 +87,16 @@ enum class AbilityFlag(val displayName: String) {
      */
     CANT_GAIN_CONTROL("Can't be gained control of"),
 
+    // ── Crew restriction flags ──────────────────────────────────
+    /**
+     * "This creature can't crew Vehicles" (Revoke Privileges, Bound in Gold, Intercessor's Arrest).
+     * Crewing is tapping untapped creatures to pay a Vehicle's crew cost (CR 702.122a), so this
+     * removes the creature from that cost's candidates: `CrewEnumerator` never offers it and
+     * `CrewVehicleHandler` refuses a crew that names it. Crew only — saddling a Mount (CR 702.171)
+     * is a different cost and stays open. Grant it to the Aura's host through the `GrantKeyword` static.
+     */
+    CANT_CREW("Can't crew Vehicles"),
+
     // ── Transform restriction flags ─────────────────────────────
     /**
      * "This permanent can't transform" (CR 701.27b — a permanent that can't transform simply
