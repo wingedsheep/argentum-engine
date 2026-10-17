@@ -343,22 +343,26 @@ data class InvestigateEffect(
 }
 
 /**
- * Create an Aura Role token of the specified type attached to a target creature.
+ * Create a named Aura token attached to a target object: a Role ("create a Wicked Role token
+ * attached to up to one target creature") or any other predefined Aura token ("create a green Aura
+ * enchantment token named Settlement attached to up to one target land you control").
  *
- * Role tokens are Enchantment — Aura Role tokens defined in PredefinedTokens.
- * Role replacement rule: if the target already has a Role controlled by the same
- * player, the old Role is put into the graveyard before the new one enters.
+ * The token's characteristics — its enchant restriction above all — come from the token
+ * `CardDefinition` registered under [tokenName] (PredefinedTokens). No token is created when the
+ * object is undefined (an unchosen "up to one" target) or the token couldn't legally enchant it
+ * (CR 303.4i). A Role replaces any Role the same player already controls on that object
+ * (CR 303.7a).
  *
- * @property roleName The name of the Role token (e.g., "Sorcerer Role")
- * @property target The creature to attach the Role to
+ * @property tokenName The token's registered name (e.g. "Sorcerer Role", "Settlement")
+ * @property target The object to attach the token to
  */
-@SerialName("CreateRoleToken")
+@SerialName("CreateAuraToken")
 @Serializable
-data class CreateRoleTokenEffect(
-    val roleName: String,
+data class CreateAuraTokenEffect(
+    val tokenName: String,
     val target: EffectTarget = EffectTarget.ContextTarget(0)
 ) : Effect {
-    override val description: String = "Create a $roleName token attached to ${target.description}"
+    override val description: String = "Create a $tokenName token attached to ${target.description}"
 }
 
 /**

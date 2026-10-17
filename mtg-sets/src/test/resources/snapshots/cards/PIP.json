@@ -9025,6 +9025,88 @@
     }
 }
 
+// Preston Garvey, Minuteman
+{
+    "name": "Preston Garvey, Minuteman",
+    "manaCost": "{2}{R}{G}{W}",
+    "typeLine": "Legendary Creature — Human Soldier",
+    "oracleText": "At the beginning of combat on your turn, create a green Aura enchantment token named Settlement attached to up to one target land you control. It has enchant land and \"Enchanted land has '{T}: Add one mana of any color.'\"\nWhenever Preston Garvey attacks, untap each enchanted permanent you control.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Preston Garvey, Minuteman:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "BEGIN_COMBAT"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateAuraToken",
+                    "tokenName": "Settlement",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "land ctrl:you"
+                    },
+                    "id": "t0"
+                }
+            },
+            {
+                "id": "Preston Garvey, Minuteman:2",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsPermanent"
+                                ],
+                                "statePredicates": [
+                                    "IsEnchanted"
+                                ],
+                                "controllerPredicate": "ControlledByYou"
+                            }
+                        }
+                    },
+                    "body": {
+                        "type": "TapUntap",
+                        "target": "IterationEntity",
+                        "tap": false
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "8",
+        "rarity": "MYTHIC",
+        "artist": "Leonardo Borazio",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/2/22b60168-1e7b-4c80-bb93-6841c1e961bb.jpg?1783912420",
+        "rulings": [
+            {
+                "date": "2024-03-08",
+                "text": "If the target land is an illegal target as Preston Garvey's first ability tries to resolve, it won't resolve and none of its effects happen. The Settlement token won't be created."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "In the rare case that the target land is a legal target as Preston Garvey's first ability resolves but the target land can't legally be enchanted by the Settlement token, the token won't be created at all."
+            }
+        ]
+    }
+}
+
 // Radstorm
 {
     "name": "Radstorm",

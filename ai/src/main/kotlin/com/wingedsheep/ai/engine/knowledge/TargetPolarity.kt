@@ -34,7 +34,7 @@ import com.wingedsheep.sdk.scripting.effects.CantBeRegeneratedEffect
 import com.wingedsheep.sdk.scripting.effects.CantBlockEffect
 import com.wingedsheep.sdk.scripting.effects.CounterEffect
 import com.wingedsheep.sdk.scripting.effects.CounterTargetSource
-import com.wingedsheep.sdk.scripting.effects.CreateRoleTokenEffect
+import com.wingedsheep.sdk.scripting.effects.CreateAuraTokenEffect
 import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.effects.ExileTargetSpellEffect
@@ -288,8 +288,8 @@ object TargetPolarityAnalyzer {
             is AdaptEffect -> leaf.target to TargetPolarity.BENEFICIAL
             is AdaptAsThoughNoCountersEffect -> leaf.target to TargetPolarity.BENEFICIAL
             is AddDynamicCountersEffect -> leaf.target to counterPolarity(leaf.counterType)
-            // The Role does to its creature what any Aura does to the one it enchants.
-            is CreateRoleTokenEffect -> leaf.target to definitions(leaf.roleName)
+            // The Aura token does to its object what any Aura does to the one it enchants.
+            is CreateAuraTokenEffect -> leaf.target to definitions(leaf.tokenName)
                 ?.let { auraPolarity(it, definitions) }
                 ?.takeIf { it != TargetPolarity.UNKNOWN }
             else -> return emptyList()

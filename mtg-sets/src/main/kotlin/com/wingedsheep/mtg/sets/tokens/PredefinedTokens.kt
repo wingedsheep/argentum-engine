@@ -15,6 +15,9 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.dsl.Patterns
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.scripting.TimingRule
+import com.wingedsheep.sdk.scripting.GrantActivatedAbility
+import com.wingedsheep.sdk.scripting.ActivatedAbility
+import com.wingedsheep.sdk.scripting.AbilityId
 import com.wingedsheep.sdk.scripting.values.ManaColorSet
 import com.wingedsheep.sdk.model.CardDefinition.Companion.doubleFacedPermanent
 import com.wingedsheep.sdk.scripting.CanOnlyBlockCreaturesWith
@@ -520,6 +523,35 @@ object PredefinedTokens {
             imageUri = "https://cards.scryfall.io/normal/front/c/f/cff8ef48-2988-4d21-837e-01f1459e07c5.jpg?1783914992"
             imageRotation = 180
             artist = "Rovina Cai"
+        }
+    }
+
+    /**
+     * Settlement — the green Aura enchantment token Preston Garvey, Minuteman creates (Fallout):
+     * enchant land and "Enchanted land has '{T}: Add one mana of any color.'" Not a Role.
+     */
+    val Settlement = card("Settlement") {
+        typeLine = "Enchantment — Aura"
+        colorIdentity = "G"
+        oracleText = "Enchant land\nEnchanted land has \"{T}: Add one mana of any color.\""
+
+        auraTarget = TargetObject(filter = TargetFilter.Land)
+
+        staticAbility {
+            ability = GrantActivatedAbility(
+                ability = ActivatedAbility(
+                    id = AbilityId.next(),
+                    cost = Costs.Tap,
+                    effect = Effects.AddAnyColorMana(1),
+                    isManaAbility = true,
+                    timing = TimingRule.ManaAbility
+                )
+            )
+        }
+
+        metadata {
+            imageUri = "https://cards.scryfall.io/normal/front/0/2/02789d01-f939-4515-a6e4-db6aff36f893.jpg?1783912044"
+            artist = "Mathias Kollros"
         }
     }
 
@@ -1254,6 +1286,7 @@ object PredefinedTokens {
         CursedRole,
         WickedRole,
         YoungHeroRole,
+        Settlement,
         Incubator,
         Drone,
         Everywhere,

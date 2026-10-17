@@ -198,7 +198,7 @@ import com.wingedsheep.sdk.scripting.effects.Mode
 import com.wingedsheep.sdk.scripting.effects.CREATED_TOKENS
 import com.wingedsheep.sdk.scripting.effects.CreatePredefinedTokenEffect
 import com.wingedsheep.sdk.scripting.effects.InvestigateEffect
-import com.wingedsheep.sdk.scripting.effects.CreateRoleTokenEffect
+import com.wingedsheep.sdk.scripting.effects.CreateAuraTokenEffect
 import com.wingedsheep.sdk.scripting.effects.CounterAllOnStackEffect
 import com.wingedsheep.sdk.scripting.effects.CounterCondition
 import com.wingedsheep.sdk.scripting.effects.CounterDestination
@@ -3729,7 +3729,18 @@ object Effects {
      * @param target The creature to attach the Role to
      */
     fun CreateRoleToken(roleName: String, target: EffectTarget): Effect =
-        CreateRoleTokenEffect(roleName, target)
+        CreateAuraTokenEffect(roleName, target)
+
+    /**
+     * Create a named, predefined Aura token attached to a target object — "create a green Aura
+     * enchantment token named Settlement attached to up to one target land you control". No token
+     * is created when the target is unchosen or can't legally be enchanted by it (CR 303.4i).
+     *
+     * @param tokenName The registered token name (e.g. "Settlement")
+     * @param target The object to attach the token to
+     */
+    fun CreateAuraToken(tokenName: String, target: EffectTarget): Effect =
+        CreateAuraTokenEffect(tokenName, target)
 
     /**
      * Incubate N (CR 701.51). Create an Incubator token with N +1/+1 counters on it

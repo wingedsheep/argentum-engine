@@ -34,7 +34,7 @@ class TokenExecutors(
             CreateTokenExecutor(amountEvaluator, staticAbilityHandler, cardRegistry, tokenArtRegistry),
             createPredefinedToken,
             InvestigateExecutor(createPredefinedToken, amountEvaluator),
-            CreateRoleTokenExecutor(zones, cardRegistry, staticAbilityHandler),
+            CreateAuraTokenExecutor(zones, cardRegistry, staticAbilityHandler),
             CreateTokenCopyOfSourceExecutor(cardRegistry, staticAbilityHandler, predicateEvaluator = zones.predicateEvaluator),
             CreateTokenCopyOfEquippedCreatureExecutor(cardRegistry, staticAbilityHandler, predicateEvaluator = zones.predicateEvaluator),
             CreateTokenCopyOfChosenPermanentExecutor(cardRegistry, staticAbilityHandler, predicateEvaluator = zones.predicateEvaluator),

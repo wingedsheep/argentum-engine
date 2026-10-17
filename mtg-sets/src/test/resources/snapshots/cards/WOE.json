@@ -1059,8 +1059,8 @@
                 }
             },
             "body": {
-                "type": "CreateRoleToken",
-                "roleName": "Cursed Role",
+                "type": "CreateAuraToken",
+                "tokenName": "Cursed Role",
                 "target": "IterationEntity"
             }
         }
@@ -1365,8 +1365,8 @@
                         }
                     },
                     {
-                        "type": "CreateRoleToken",
-                        "roleName": "Monster Role"
+                        "type": "CreateAuraToken",
+                        "tokenName": "Monster Role"
                     }
                 ]
             }
@@ -1864,8 +1864,8 @@
             "oracleText": "Create a Royal Role token attached to target creature you control. (If you control another Role on it, put that one into the graveyard. Enchanted creature gets +1/+1 and has ward {1}.) (Then exile this card. You may cast the creature later from exile.)",
             "script": {
                 "spellEffect": {
-                    "type": "CreateRoleToken",
-                    "roleName": "Royal Role",
+                    "type": "CreateAuraToken",
+                    "tokenName": "Royal Role",
                     "target": {
                         "type": "BoundVariable",
                         "name": "t0"
@@ -3192,8 +3192,8 @@
                     "to": "Battlefield"
                 },
                 "effect": {
-                    "type": "CreateRoleToken",
-                    "roleName": "Royal Role",
+                    "type": "CreateAuraToken",
+                    "tokenName": "Royal Role",
                     "target": {
                         "type": "BoundVariable",
                         "name": "t0"
@@ -3298,8 +3298,8 @@
                         },
                         {
                             "effect": {
-                                "type": "CreateRoleToken",
-                                "roleName": "Wicked Role",
+                                "type": "CreateAuraToken",
+                                "tokenName": "Wicked Role",
                                 "target": {
                                     "type": "BoundVariable",
                                     "name": "t0"
@@ -3531,8 +3531,8 @@
             "oracleText": "Create a Wicked Role token attached to target creature you control. (If you control another Role on it, put that one into the graveyard. Enchanted creature gets +1/+1. When this Role is put into a graveyard, each opponent loses 1 life.) (Then exile this card. You may cast the creature later from exile.)",
             "script": {
                 "spellEffect": {
-                    "type": "CreateRoleToken",
-                    "roleName": "Wicked Role",
+                    "type": "CreateAuraToken",
+                    "tokenName": "Wicked Role",
                     "target": {
                         "type": "BoundVariable",
                         "name": "t0"
@@ -3723,8 +3723,8 @@
                 {
                     "type": "ReflexiveTrigger",
                     "action": {
-                        "type": "CreateRoleToken",
-                        "roleName": "Monster Role",
+                        "type": "CreateAuraToken",
+                        "tokenName": "Monster Role",
                         "target": {
                             "type": "BoundVariable",
                             "name": "t0"
@@ -3813,8 +3813,8 @@
                     "to": "Battlefield"
                 },
                 "effect": {
-                    "type": "CreateRoleToken",
-                    "roleName": "Cursed Role",
+                    "type": "CreateAuraToken",
+                    "tokenName": "Cursed Role",
                     "target": "Self"
                 }
             }
@@ -3854,8 +3854,8 @@
                     }
                 },
                 {
-                    "type": "CreateRoleToken",
-                    "roleName": "Young Hero Role",
+                    "type": "CreateAuraToken",
+                    "tokenName": "Young Hero Role",
                     "target": {
                         "type": "BoundVariable",
                         "name": "t1"
@@ -4114,8 +4114,8 @@
                     "to": "Battlefield"
                 },
                 "effect": {
-                    "type": "CreateRoleToken",
-                    "roleName": "Cursed Role",
+                    "type": "CreateAuraToken",
+                    "tokenName": "Cursed Role",
                     "target": {
                         "type": "BoundVariable",
                         "name": "t0"
@@ -4840,8 +4840,8 @@
                     ]
                 },
                 "effect": {
-                    "type": "CreateRoleToken",
-                    "roleName": "Young Hero Role",
+                    "type": "CreateAuraToken",
+                    "tokenName": "Young Hero Role",
                     "target": {
                         "type": "BoundVariable",
                         "name": "t0"
@@ -5132,8 +5132,8 @@
                     "moveType": "Discard"
                 },
                 {
-                    "type": "CreateRoleToken",
-                    "roleName": "Wicked Role",
+                    "type": "CreateAuraToken",
+                    "tokenName": "Wicked Role",
                     "target": {
                         "type": "BoundVariable",
                         "name": "t1"
@@ -5797,8 +5797,8 @@
                     "to": "Battlefield"
                 },
                 "effect": {
-                    "type": "CreateRoleToken",
-                    "roleName": "Monster Role",
+                    "type": "CreateAuraToken",
+                    "tokenName": "Monster Role",
                     "target": "Self"
                 }
             }
@@ -6189,8 +6189,8 @@
             "oracleText": "Create a Monster Role token attached to target creature you control. (If you control another Role on it, put that one into the graveyard. Enchanted creature gets +1/+1 and has trample.) (Then exile this card. You may cast the creature later from exile.)",
             "script": {
                 "spellEffect": {
-                    "type": "CreateRoleToken",
-                    "roleName": "Monster Role",
+                    "type": "CreateAuraToken",
+                    "tokenName": "Monster Role",
                     "target": {
                         "type": "BoundVariable",
                         "name": "t0"
@@ -6689,8 +6689,8 @@
             {
                 "chapter": 1,
                 "effect": {
-                    "type": "CreateRoleToken",
-                    "roleName": "Cursed Role",
+                    "type": "CreateAuraToken",
+                    "tokenName": "Cursed Role",
                     "target": {
                         "type": "BoundVariable",
                         "name": "t0"
@@ -10200,8 +10200,8 @@
                             }
                         },
                         {
-                            "type": "CreateRoleToken",
-                            "roleName": "Sorcerer Role",
+                            "type": "CreateAuraToken",
+                            "tokenName": "Sorcerer Role",
                             "target": {
                                 "type": "BoundVariable",
                                 "name": "t0"
@@ -10264,8 +10264,8 @@
                     "to": "Battlefield"
                 },
                 "effect": {
-                    "type": "CreateRoleToken",
-                    "roleName": "Wicked Role",
+                    "type": "CreateAuraToken",
+                    "tokenName": "Wicked Role",
                     "target": {
                         "type": "BoundVariable",
                         "name": "t0"
@@ -10723,8 +10723,8 @@
                         }
                     },
                     "then": {
-                        "type": "CreateRoleToken",
-                        "roleName": "Young Hero Role",
+                        "type": "CreateAuraToken",
+                        "tokenName": "Young Hero Role",
                         "target": {
                             "type": "BoundVariable",
                             "name": "t0"
@@ -11052,8 +11052,8 @@
                     }
                 },
                 {
-                    "type": "CreateRoleToken",
-                    "roleName": "Monster Role",
+                    "type": "CreateAuraToken",
+                    "tokenName": "Monster Role",
                     "target": {
                         "type": "BoundVariable",
                         "name": "t0"
@@ -11484,8 +11484,8 @@
                             "fromZone": "Graveyard"
                         },
                         {
-                            "type": "CreateRoleToken",
-                            "roleName": "Wicked Role",
+                            "type": "CreateAuraToken",
+                            "tokenName": "Wicked Role",
                             "target": "Self"
                         }
                     ]
@@ -12286,8 +12286,8 @@
                     "to": "Graveyard"
                 },
                 "effect": {
-                    "type": "CreateRoleToken",
-                    "roleName": "Young Hero Role",
+                    "type": "CreateAuraToken",
+                    "tokenName": "Young Hero Role",
                     "target": {
                         "type": "BoundVariable",
                         "name": "t0"
@@ -13190,8 +13190,8 @@
                     "to": "Battlefield"
                 },
                 "effect": {
-                    "type": "CreateRoleToken",
-                    "roleName": "Royal Role",
+                    "type": "CreateAuraToken",
+                    "tokenName": "Royal Role",
                     "target": {
                         "type": "BoundVariable",
                         "name": "t0"
@@ -13899,8 +13899,8 @@
                     "destination": "Battlefield"
                 },
                 {
-                    "type": "CreateRoleToken",
-                    "roleName": "Young Hero Role",
+                    "type": "CreateAuraToken",
+                    "tokenName": "Young Hero Role",
                     "target": {
                         "type": "BoundVariable",
                         "name": "t0"
@@ -14503,8 +14503,8 @@
                     }
                 },
                 {
-                    "type": "CreateRoleToken",
-                    "roleName": "Royal Role",
+                    "type": "CreateAuraToken",
+                    "tokenName": "Royal Role",
                     "target": {
                         "type": "BoundVariable",
                         "name": "t0"
@@ -15070,8 +15070,8 @@
                     "byDestruction": true
                 },
                 {
-                    "type": "CreateRoleToken",
-                    "roleName": "Wicked Role",
+                    "type": "CreateAuraToken",
+                    "tokenName": "Wicked Role",
                     "target": {
                         "type": "BoundVariable",
                         "name": "t1"
@@ -15853,8 +15853,8 @@
                         }
                     },
                     "then": {
-                        "type": "CreateRoleToken",
-                        "roleName": "Sorcerer Role",
+                        "type": "CreateAuraToken",
+                        "tokenName": "Sorcerer Role",
                         "target": {
                             "type": "BoundVariable",
                             "name": "t0"
@@ -16083,8 +16083,8 @@
                     "to": "Battlefield"
                 },
                 "effect": {
-                    "type": "CreateRoleToken",
-                    "roleName": "Cursed Role",
+                    "type": "CreateAuraToken",
+                    "tokenName": "Cursed Role",
                     "target": {
                         "type": "BoundVariable",
                         "name": "t0"
@@ -16142,8 +16142,8 @@
                 },
                 "binding": "ANY",
                 "effect": {
-                    "type": "CreateRoleToken",
-                    "roleName": "Sorcerer Role",
+                    "type": "CreateAuraToken",
+                    "tokenName": "Sorcerer Role",
                     "target": {
                         "type": "BoundVariable",
                         "name": "t0"
@@ -16810,8 +16810,8 @@
                     "to": "Battlefield"
                 },
                 "effect": {
-                    "type": "CreateRoleToken",
-                    "roleName": "Monster Role",
+                    "type": "CreateAuraToken",
+                    "tokenName": "Monster Role",
                     "target": {
                         "type": "BoundVariable",
                         "name": "t0"
@@ -18514,8 +18514,8 @@
             {
                 "chapter": 3,
                 "effect": {
-                    "type": "CreateRoleToken",
-                    "roleName": "Wicked Role",
+                    "type": "CreateAuraToken",
+                    "tokenName": "Wicked Role",
                     "target": {
                         "type": "BoundVariable",
                         "name": "t1"
@@ -19717,8 +19717,8 @@
                     }
                 },
                 {
-                    "type": "CreateRoleToken",
-                    "roleName": "Wicked Role",
+                    "type": "CreateAuraToken",
+                    "tokenName": "Wicked Role",
                     "target": {
                         "type": "BoundVariable",
                         "name": "t1"
@@ -19818,8 +19818,8 @@
                                 }
                             },
                             "body": {
-                                "type": "CreateRoleToken",
-                                "roleName": "Wicked Role",
+                                "type": "CreateAuraToken",
+                                "tokenName": "Wicked Role",
                                 "target": "IterationEntity"
                             }
                         }
@@ -19935,8 +19935,8 @@
                         }
                     },
                     "then": {
-                        "type": "CreateRoleToken",
-                        "roleName": "Sorcerer Role",
+                        "type": "CreateAuraToken",
+                        "tokenName": "Sorcerer Role",
                         "target": "Self"
                     }
                 }
@@ -20117,8 +20117,8 @@
                             }
                         },
                         {
-                            "type": "CreateRoleToken",
-                            "roleName": "Cursed Role",
+                            "type": "CreateAuraToken",
+                            "tokenName": "Cursed Role",
                             "target": {
                                 "type": "BoundVariable",
                                 "name": "t0"
@@ -21332,8 +21332,8 @@
                     "descriptionOverride": "You may discard a card. If you do, draw two cards."
                 },
                 {
-                    "type": "CreateRoleToken",
-                    "roleName": "Wicked Role",
+                    "type": "CreateAuraToken",
+                    "tokenName": "Wicked Role",
                     "target": {
                         "type": "BoundVariable",
                         "name": "t0"

@@ -2849,7 +2849,13 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   a colorless land token with all five basic land subtypes (Plains/Island/Swamp/Mountain/Forest) that
   taps for any color — i.e. the mana ability of each basic land type, without the basic supertype. The
   Overlord of the Hauntwoods trigger creates them `tapped = true`.
-- `CreateRoleToken(roleName, target)` — attach a Role aura token.
+- `CreateRoleToken(roleName, target)` — attach a Role aura token (a facade over `CreateAuraTokenEffect`).
+- `CreateAuraToken(tokenName, target)` — create a named predefined Aura token attached to the target
+  object (`CreateAuraTokenEffect`, which Roles share): Fallout's Settlement (Preston Garvey,
+  Minuteman). The token `CardDefinition` registered under `tokenName` in `PredefinedTokens` supplies
+  its color, enchant restriction and abilities. No token is created when the object is undefined (an
+  unchosen "up to one target") or the token couldn't legally enchant it (CR 303.4i); a Role also
+  replaces a Role the same player controls on that object (CR 303.7a).
 - `CreateMapToken(count?, imageUri?)` — Map artifact tokens. `count` accepts an `Int` or a `DynamicAmount`
   (the latter evaluated at resolution, e.g. Journey On's `CreateMapToken(Add(Fixed(1),
   CountPlayersWith(Player.EachOpponent, Conditions.ControlArtifact)))` — "X is one plus the number
