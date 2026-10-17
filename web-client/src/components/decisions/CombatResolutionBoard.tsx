@@ -70,7 +70,7 @@ export function CombatResolutionBoard({ decision }: { decision: CombatResolution
     myEdges.some((e) => e.sourceId === sourceId && !e.orderConstrained && !e.isTrampleDrain)
   const bandingActive =
     decision.attackers.some((a) => a.bandId != null) ||
-    [...decision.attackers, ...decision.blockers].some((c) => hasBanding(c.id))
+    decision.edges.some((e) => !e.orderConstrained && !e.isTrampleDrain)
 
   // Initial / reset assignment. Starts from the engine's lethal-first defaults, but for any source
   // whose division banding handed to this player we instead dump the source's whole
@@ -309,7 +309,7 @@ export function CombatResolutionBoard({ decision }: { decision: CombatResolution
                 {sourceLabel(sourceId)}
               </span>
               {hasBanding(sourceId) && bandingPill(sourceId)}
-              {sourceBandingInverted(sourceId) && !hasBanding(sourceId) && (
+              {sourceBandingInverted(sourceId) && (
                 <span style={{ color: '#c084fc', fontSize: responsive.fontSize.small, maxWidth: cardW + 30, textAlign: 'center', lineHeight: 1.2 }}>
                   Banding: you assign this creature's damage
                 </span>

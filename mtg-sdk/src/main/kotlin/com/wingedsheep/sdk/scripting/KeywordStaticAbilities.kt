@@ -15,8 +15,9 @@ import kotlinx.serialization.Serializable
  * attached creature, [GroupFilter.source] for "this creature has flying", or any
  * battlefield-scoped filter for lord effects ("Other creatures you control have flying").
  *
- * The [keyword] field stores the enum name (e.g., "FLYING", "DOESNT_UNTAP") which the
- * engine uses for string-based keyword checks in projected state.
+ * The [keyword] field stores the `Keyword`/`AbilityFlag` enum name (e.g., "FLYING", "DOESNT_UNTAP"),
+ * or a parameterized keyword's projected string (`KeywordAbility.BandsWithOther.projectedKeyword`),
+ * which the engine uses for string-based keyword checks in projected state.
  */
 @SerialName("GrantKeyword")
 @Serializable

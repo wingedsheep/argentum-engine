@@ -850,7 +850,7 @@ internal class AttackPhaseManager(
             // them has "bands with other [quality]").
             val nonBandingCount = band.count { !projected.hasKeyword(it, Keyword.BANDING) }
             if (nonBandingCount > 1 && !BandsWithOtherRules.formsBand(state, projected, band)) {
-                return "A band may contain at most one creature without banding"
+                return "A band needs every creature but one to have banding, or every creature to share a quality one of them \"bands with other\""
             }
         }
         return null

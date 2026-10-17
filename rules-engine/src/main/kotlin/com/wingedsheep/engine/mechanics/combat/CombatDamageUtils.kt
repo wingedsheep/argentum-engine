@@ -100,7 +100,8 @@ internal object CombatDamageUtils {
         // CR 702.22k: if any blocked attacker has banding — or the blocked attackers include a
         // [quality] creature with "bands with other [quality]" and another [quality] creature —
         // the active player divides this blocker's damage "as they choose".
-        return if (BandsWithOtherRules.invertsDamageAssignment(state, projected, blocking.blockedAttackerIds)) {
+        val liveAttackers = blocking.blockedAttackerIds.filter { it in state.getBattlefield() }
+        return if (BandsWithOtherRules.invertsDamageAssignment(state, projected, liveAttackers)) {
             DamageChooser(activePlayerId, orderConstrained = false)
         } else {
             DamageChooser(defaultChooser, orderConstrained = true)
