@@ -21,6 +21,7 @@ import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 
 class FilteredCastRestrictionTest : FunSpec({
     val creature = card("Cast Ban Creature") {
@@ -35,6 +36,10 @@ class FilteredCastRestrictionTest : FunSpec({
         cardFaces = listOf(CardFace("Ban Adventure Spell", ManaCost.ZERO, TypeLine.parse("Instant"),
             script = instant.script))
     )
+    val xInstant = card("Cast Ban X Instant") {
+        manaCost = "{X}"; typeLine = "Instant"
+        spell { effect = Effects.DrawCards(1) }
+    }
     val morph = card("Cast Ban Morph") {
         manaCost = "{0}"; typeLine = "Enchantment"; morph = "{0}"
     }
@@ -55,12 +60,12 @@ class FilteredCastRestrictionTest : FunSpec({
     }
     fun setup(): GameTestDriver = GameTestDriver().apply {
         registerCards(TestCards.all + listOf(creature, instant, adventure, morph, modal, modalCreatureFront, disturb,
-            suspendCreature, suspendInstant, bestowed))
+            suspendCreature, suspendInstant, bestowed, xInstant))
         initMirrorMatch(Deck.of("Plains" to 40), startingPlayer = 0)
         passPriorityUntil(Step.PRECOMBAT_MAIN)
     }
     fun ban(d: GameTestDriver, filter: GameObjectFilter, duration: Duration = Duration.EndOfTurn) {
-        val result = CantCastSpellsExecutor().execute(d.state,
+        val result = CantCastSpellsExecutor(d.services.predicateEvaluator.amounts).execute(d.state,
             CantCastSpellsEffect(EffectTarget.PlayerRef(Player.You), duration, filter),
             EffectContext(sourceId = null, controllerId = d.activePlayer!!))
         result.outcome shouldBe Outcome.Done
@@ -208,7 +213,7 @@ class FilteredCastRestrictionTest : FunSpec({
     }
     test("an end-of-your-next-turn ban outlives the opponent's turn and lifts after the controller's next one") {
         val d = setup(); val me = d.activePlayer!!; val opp = d.getOpponent(me)
-        val result = CantCastSpellsExecutor().execute(d.state,
+        val result = CantCastSpellsExecutor(d.services.predicateEvaluator.amounts).execute(d.state,
             CantCastSpellsEffect(EffectTarget.PlayerRef(Player.Each), Duration.EndOfYourNextTurn,
                 GameObjectFilter.Creature),
             EffectContext(sourceId = null, controllerId = me))
@@ -228,5 +233,37 @@ class FilteredCastRestrictionTest : FunSpec({
         d.passPriorityUntil(Step.UPKEEP, opp)
         banned(me) shouldBe false
         banned(opp) shouldBe false
+    }
+    test("an until-your-next-turn ban locks a dynamic mana value at resolution and lifts on the controller's next turn") {
+        val d = setup(); val me = d.activePlayer!!; val opp = d.getOpponent(me)
+        val reference = d.putCardInHand(me, "Grizzly Bears")
+        val result = CantCastSpellsExecutor(d.services.predicateEvaluator.amounts).execute(d.state,
+            CantCastSpellsEffect(EffectTarget.PlayerRef(Player.EachOpponent), Duration.UntilYourNextTurn,
+                GameObjectFilter.Any.manaValueEqualsDynamic(
+                    com.wingedsheep.sdk.dsl.DynamicAmounts.manaValueOf(EffectTarget.SpecificEntity(reference)))),
+            EffectContext(sourceId = null, controllerId = me))
+        d.replaceState(result.state)
+        val ban = d.state.getEntity(opp)!!.get<CantCastSpellsComponent>()!!.restrictions.single()
+        // Locked in as a literal: later casts read no resolution context.
+        ban.spellFilter shouldBe GameObjectFilter.Any.manaValue(2)
+        d.state.getEntity(me)?.get<CantCastSpellsComponent>() shouldBe null
+
+        d.passPriorityUntil(Step.PRECOMBAT_MAIN, opp)
+        d.state.getEntity(opp)?.get<CantCastSpellsComponent>() shouldNotBe null
+        // Only mana value 2 is banned: their {0} instant is still castable.
+        val free = d.putCardInHand(opp, instant.name)
+        d.legalActions(opp).mapNotNull { it.action as? CastSpell }.any { it.cardId == free } shouldBe true
+        // The controller's next turn lifts it right after untap.
+        d.passPriorityUntil(Step.UPKEEP, me)
+        d.state.getEntity(opp)?.get<CantCastSpellsComponent>() shouldBe null
+    }
+    test("a mana-value ban reads the chosen X: the offer stays up and only the banned X is rejected") {
+        val d = setup(); val me = d.activePlayer!!
+        ban(d, GameObjectFilter.Any.manaValue(2))
+        repeat(2) { d.putLandOnBattlefield(me, "Plains") }
+        val spell = d.putCardInHand(me, xInstant.name)
+        offers(d, spell).isNotEmpty() shouldBe true
+        d.submitExpectFailure(CastSpell(me, spell, xValue = 2))
+        d.submitSuccess(CastSpell(me, spell, xValue = 1))
     }
 })

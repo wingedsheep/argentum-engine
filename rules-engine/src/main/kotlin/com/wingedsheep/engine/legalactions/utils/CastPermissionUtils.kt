@@ -249,17 +249,29 @@ class CastPermissionUtils(
             back != null && definition != null -> buildCardComponentForDfcFace(current, back, dfcBackFaceManaValue(definition, current.manaValue))
             else -> current
         }
-        val matchingState = if (castCard == current) announced else announced.updateEntity(action.cardId) {
-            it.with(castCard)
+        // CR 202.3e: the proposed spell's mana value counts the X chosen for it (CR 601.2b precedes
+        // the 601.2e legality check), so a mana-value ban reads it. An enumerated offer has no X
+        // yet: it is withheld only when the ban holds at X = 0 and at an arbitrarily large X, so a
+        // single-value or capped ban leaves the offer up and validation rejects a banned X.
+        val xCount = if (castCard.manaValueOverride == null && castCard.manaCost.hasX) castCard.manaCost.xCount else 0
+        fun blockedWith(card: CardComponent): Boolean {
+            val matchingState = if (card == current) announced else announced.updateEntity(action.cardId) {
+                it.with(card)
+            }
+            // The candidate is outside the battlefield; the existing projection is sufficient and
+            // its absence for this entity makes the predicate read the announced CardComponent.
+            return bans.any { ban ->
+                predicateEvaluator.matches(
+                    matchingState, state.projectedState, action.cardId, ban.spellFilter,
+                    PredicateContext(controllerId = ban.controllerId ?: action.playerId, sourceId = ban.sourceId)
+                )
+            }
         }
-        // The candidate is outside the battlefield; the existing projection is sufficient and
-        // its absence for this entity makes the predicate read the announced CardComponent.
-        return bans.any { ban ->
-            predicateEvaluator.matches(
-                matchingState, state.projectedState, action.cardId, ban.spellFilter,
-                PredicateContext(controllerId = ban.controllerId ?: action.playerId, sourceId = ban.sourceId)
-            )
-        }
+        if (xCount == 0) return blockedWith(castCard)
+        fun withX(x: Int) = castCard.copy(manaValueOverride = castCard.manaValue + x * xCount)
+        val chosenX = action.xValue
+        return if (chosenX != null) blockedWith(withX(chosenX))
+            else blockedWith(withX(0)) && blockedWith(withX(UNBOUNDED_X))
     }
 
     /**
@@ -2166,3 +2178,6 @@ data class TopOfLibraryCastGrant(
     val filter: GameObjectFilter,
     val additionalCost: com.wingedsheep.sdk.scripting.AdditionalCost?,
 )
+
+/** Stands in for "some large X" when an enumerated X spell's offer is checked against a mana-value ban. */
+private const val UNBOUNDED_X = 1_000

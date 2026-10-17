@@ -3320,13 +3320,18 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   `PlayerRef(Player.Each)` + `GameObjectFilter.Noncreature` models **Calamity's Wake**.
   The filter checks the spell's announced characteristics (including alternative faces, bestow and
   face-down casting), not a fixed list of cards at resolution. Independent bans accumulate and
-  expire separately; supported durations are `EndOfTurn`, `EndOfYourNextTurn` (lifts at the cleanup of the
+  expire separately; supported durations are `EndOfTurn`, `UntilYourNextTurn` (lifts right after the
+  effect controller's next untap step, for every affected player), `EndOfYourNextTurn` (lifts at the cleanup of the
   effect controller's next turn, for every affected player — **Single Combat**) and `Permanent`. Existing spells on the
   stack, land plays and activated abilities are unaffected. The default still forbids every spell.
-  Use characteristic filters independent of the casting process, such as type, subtype or color.
-  X-dependent mana-value filters, caster-relative controller filters and stack-state predicates
-  are not supported: matching happens before the card moves to the stack, and offers do not yet
-  constrain the chosen X. Those cases need additional casting-state and offer support.
+  A dynamic mana-value bound (`manaValueEqualsDynamic` / `ManaValueAtMostDynamic`) is locked in as a literal when
+  the effect resolves (CR 608.2h) — **Living Breakthrough**: `Triggers.you.casts()` →
+  `CantCastSpells(PlayerRef(EachOpponent), UntilYourNextTurn, Any.manaValueEqualsDynamic(DynamicAmounts.triggeringManaValue()))`.
+  A mana-value ban reads the X chosen for an `{X}` spell (CR 202.3e): the offer stays up unless the ban holds at
+  every X, and validation rejects a banned X.
+  Use characteristic filters independent of the casting process, such as type, subtype, color or mana value.
+  Caster-relative controller filters and stack-state predicates are not supported: matching happens
+  before the card moves to the stack.
 - `CantSearchLibrariesEffect(target, duration = EndOfTurn)` — target player(s) can't search libraries. Facade:
   `Effects.CantSearchLibraries(target, duration)`; `EffectTarget.PlayerRef(Player.Each)` for "Players can't search
   libraries this turn" (Shadow of Doubt). Stamps `CantSearchLibrariesComponent` (cleared at end-of-turn cleanup). Enforced

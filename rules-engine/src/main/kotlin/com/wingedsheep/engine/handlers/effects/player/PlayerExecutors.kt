@@ -45,7 +45,7 @@ class PlayerExecutors(
         AddBeginningPhaseExecutor(),
         AnyPlayerMayPayExecutor(executeEffect = effectExecutor, predicateEvaluator = zones.predicateEvaluator),
         CantActivateLoyaltyAbilitiesExecutor(),
-        CantCastSpellsExecutor(),
+        CantCastSpellsExecutor(amounts = zones.predicateEvaluator.amounts),
         CantSearchLibrariesExecutor(),
         CantCastSpellsFromNonHandZonesExecutor(),
         CantPlayCardsFromHandExecutor(),
