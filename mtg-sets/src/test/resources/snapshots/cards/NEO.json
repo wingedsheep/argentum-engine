@@ -164,6 +164,83 @@
     ]
 }
 
+// Boon of Boseiju
+{
+    "name": "Boon of Boseiju",
+    "manaCost": "{1}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature gets +X/+X until end of turn, where X is the greatest mana value among permanents you control. Untap it.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "permanent",
+                        "aggregation": "MAX",
+                        "property": "MANA_VALUE"
+                    },
+                    "toughnessModifier": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "permanent",
+                        "aggregation": "MAX",
+                        "property": "MANA_VALUE"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "tap": false
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "176",
+        "rarity": "UNCOMMON",
+        "artist": "Anastasia Ovchinnikova",
+        "flavorText": "She closed her eyes and remembered the smell of the leaves of Jukai Forest. When she opened them, the buildings of Towashi had grown small.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/6/06771591-0480-4232-bc67-216b2e0fe738.jpg?1783923854",
+        "rulings": [
+            {
+                "date": "2022-02-18",
+                "text": "The greatest mana value among permanents you control is determined as Boon of Boseiju resolves."
+            },
+            {
+                "date": "2022-02-18",
+                "text": "If a permanent on the battlefield has {X} in its mana cost, X is 0 when determining that permanent's mana value."
+            },
+            {
+                "date": "2022-02-18",
+                "text": "Transforming double-faced permanents, such as those found in this set, have the mana value of their front face at all times, even while back-face-up."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Boseiju, Who Endures
 {
     "name": "Boseiju, Who Endures",
@@ -435,6 +512,61 @@
         "imageUri": "https://cards.scryfall.io/normal/front/d/e/defaeb68-3f8a-4740-b13f-8c71c7e9c8b4.jpg?1783923827"
     },
     "colorIdentityOverride": []
+}
+
+// Dockside Chef
+{
+    "name": "Dockside Chef",
+    "manaCost": "{B}",
+    "typeLine": "Enchantment Creature — Human Citizen",
+    "oracleText": "{1}{B}, Sacrifice an artifact or creature: Draw a card.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Dockside Chef:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{B}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "artifact|creature"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "93",
+        "rarity": "UNCOMMON",
+        "artist": "Steven Belledin",
+        "flavorText": "The squirming is how you know it's fresh.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/8/d80100c3-c81e-4084-8dfe-f8610637fd91.jpg?1783923888"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
 }
 
 // Dokuchi Shadow-Walker
@@ -1160,6 +1292,91 @@
         "artist": "Iris Compiet",
         "flavorText": "It is said that one must modestly refuse a gift three times before accepting it to show humility before the kami.",
         "imageUri": "https://cards.scryfall.io/normal/front/d/1/d1066ccd-a932-4d05-98da-11ae4675364e.jpg?1783923849"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Geothermal Kami
+{
+    "name": "Geothermal Kami",
+    "manaCost": "{3}{G}",
+    "typeLine": "Creature — Spirit",
+    "oracleText": "When this creature enters, you may return an enchantment you control to its owner's hand. If you do, you gain 3 life.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Geothermal Kami:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.DoAction",
+                            "action": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "BattlefieldMatching",
+                                            "filter": "enchantment",
+                                            "player": "You"
+                                        },
+                                        "storeAs": "gathered0"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "gathered0",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "selected1",
+                                        "prompt": "Return a permanent you control to its owner's hand",
+                                        "useTargetingUI": true
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "selected1",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Hand"
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        "then": {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 3
+                            }
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "186",
+        "artist": "Rudy Siswanto",
+        "flavorText": "A mysterious kami will sometimes appear to overworked monks and offer them a warm, relaxing bath.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/5/559d7162-39fc-4d99-8c5f-b40a765b883a.jpg?1783923849"
     },
     "colorIdentityOverride": [
         "GREEN"
@@ -3227,6 +3444,45 @@
         "imageUri": "https://cards.scryfall.io/normal/front/1/d/1d4ad89a-3a00-4bf4-a357-4a8a089d4a82.jpg"
     },
     "colorIdentityOverride": []
+}
+
+// Undercity Scrounger
+{
+    "name": "Undercity Scrounger",
+    "manaCost": "{2}{B}",
+    "typeLine": "Artifact Creature — Human Rogue",
+    "oracleText": "{T}: Create a Treasure token. Activate only if a creature died this turn. (It's an artifact with \"{T}, Sacrifice this token: Add one mana of any color.\")",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 4
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Undercity Scrounger:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Treasure"
+                },
+                "restrictions": [
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": "CreatureDiedThisTurn"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "126",
+        "artist": "Mike Jordana",
+        "flavorText": "\"That will pay for another arm extension all by itself! Well, as long as it doesn't explode.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/3/6319b84b-8a3d-4bc8-af48-8b500f124be1.jpg?1783923874"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
 }
 
 // Unstoppable Ogre
