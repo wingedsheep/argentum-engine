@@ -1054,6 +1054,59 @@
     ]
 }
 
+// Divine Offering
+{
+    "name": "Divine Offering",
+    "manaCost": "{1}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Destroy target artifact. You gain life equal to its mana value.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "numericProperty": "ManaValue"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "artifact"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "9",
+        "artist": "Jeff A. Menges",
+        "flavorText": "D'Haren stared at the twisted lump of metal that had been a prized artifact. The fight was getting ugly.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/c/9c78c2f3-2f40-48ad-9dc4-55d1fa399a56.jpg?1783948086"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Divine Transformation
 {
     "name": "Divine Transformation",
@@ -1374,6 +1427,77 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Force Spike
+{
+    "name": "Force Spike",
+    "manaCost": "{U}",
+    "typeLine": "Instant",
+    "oracleText": "Counter target spell unless its controller pays {1}.",
+    "script": {
+        "spellEffect": {
+            "type": "Counter",
+            "condition": {
+                "type": "CounterCondition.UnlessPaysMana",
+                "cost": "{1}"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {},
+                    "zone": "Stack"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "58",
+        "artist": "Bryon Wackwitz",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/0/70e64028-ae96-4950-aa6c-9d347409fad3.jpg?1783948076"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Fortified Area
+{
+    "name": "Fortified Area",
+    "manaCost": "{1}{W}{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "Wall creatures you control get +1/+0 and have banding. (Any creatures with banding, and up to one without, can attack in a band. Bands are blocked as a group. If any creatures with banding you control are blocking or being blocked by a creature, you divide that creature's combat damage, not its controller, among any of the creatures it's being blocked by or is blocking.)",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 0,
+                "filter": {
+                    "baseFilter": "creature Wall ctrl:you"
+                }
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "BANDING",
+                "filter": {
+                    "baseFilter": "creature Wall ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "14",
+        "rarity": "UNCOMMON",
+        "artist": "Randy Asplund-Faith",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/c/dc64f19c-5b2b-4697-b4dc-2be9c3790794.jpg?1783948086"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -1950,6 +2074,76 @@
     ]
 }
 
+// Hyperion Blacksmith
+{
+    "name": "Hyperion Blacksmith",
+    "manaCost": "{1}{R}{R}",
+    "typeLine": "Creature — Human Artificer",
+    "oracleText": "{T}: You may tap or untap target artifact an opponent controls.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Hyperion Blacksmith:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Modal",
+                        "modes": [
+                            {
+                                "effect": {
+                                    "type": "TapUntap",
+                                    "target": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    }
+                                },
+                                "description": "Tap that artifact"
+                            },
+                            {
+                                "effect": {
+                                    "type": "TapUntap",
+                                    "target": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    },
+                                    "tap": false
+                                },
+                                "description": "Untap that artifact"
+                            }
+                        ],
+                        "countsAsModalSpell": false
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "artifact ctrl:opponent"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "152",
+        "rarity": "UNCOMMON",
+        "artist": "Dan Frazier",
+        "flavorText": "\"The smith a mighty man is he/ With large and sinewy hands./ And the muscles of his brawny arms/ Are strong as iron bands.\"\n—Henry Wadsworth Longfellow, The Village Blacksmith",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/4/44d499a9-fe7c-4a1a-9eb3-a7fd9f85ae08.jpg?1783948056"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Immolation
 {
     "name": "Immolation",
@@ -2261,6 +2455,49 @@
     ]
 }
 
+// Kobold Drill Sergeant
+{
+    "name": "Kobold Drill Sergeant",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Kobold Soldier",
+    "oracleText": "Other Kobold creatures you control get +0/+1 and have trample.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 0,
+                "toughnessBonus": 1,
+                "filter": {
+                    "baseFilter": "creature Kobold ctrl:you",
+                    "excludeSelf": true
+                }
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "TRAMPLE",
+                "filter": {
+                    "baseFilter": "creature Kobold ctrl:you",
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "154",
+        "rarity": "UNCOMMON",
+        "artist": "Julie Baroh",
+        "flavorText": "\"Joining this army is easy, boy. Just survive your first battle.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/4/741b14f8-625d-41be-a734-0efe042a6ee8.jpg?1783948055"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Kobold Overlord
 {
     "name": "Kobold Overlord",
@@ -2497,6 +2734,43 @@
     "colorIdentityOverride": [
         "BLACK",
         "RED"
+    ]
+}
+
+// Lifeblood
+{
+    "name": "Lifeblood",
+    "manaCost": "{2}{W}{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "Whenever a Mountain an opponent controls becomes tapped, you gain 1 life.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Lifeblood:1",
+                "trigger": {
+                    "type": "TapEvent",
+                    "filter": "land Mountain ctrl:opponent"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "27",
+        "rarity": "RARE",
+        "artist": "Mark Tedin",
+        "flavorText": "\"Foolish wizard! As you tap the power of your lofty keep, so grows my strength.\"\n—Malvern Xelionos, *Letters*",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/e/4ecb1362-9a67-4d4c-8d69-9ac2ebf4d0b0.jpg?1783948083"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -3438,6 +3712,45 @@
     ]
 }
 
+// Spirit Link
+{
+    "name": "Spirit Link",
+    "manaCost": "{W}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature (Target a creature as you cast this. This card enters attached to that creature.)\nWhenever enchanted creature deals damage, you gain that much life.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Spirit Link:1",
+                "trigger": "DealsDamageEvent",
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "ContextProperty",
+                        "key": "TRIGGER_DAMAGE_AMOUNT"
+                    }
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "37",
+        "rarity": "UNCOMMON",
+        "artist": "Kaja Foglio",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/e/5e2d35f8-3cf6-4843-9030-0e9a885d836c.jpg?1783948080"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Sunastian Falconer
 {
     "name": "Sunastian Falconer",
@@ -3560,6 +3873,54 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// The Brute
+{
+    "name": "The Brute",
+    "manaCost": "{1}{R}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature gets +1/+0.\n{R}{R}{R}: Regenerate enchanted creature.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "The Brute:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{R}{R}{R}"
+                    }
+                },
+                "effect": {
+                    "type": "Regenerate",
+                    "target": "EnchantedCreature"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 0
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "167",
+        "artist": "Mark Poole",
+        "flavorText": "\"Union may be strength, but it is mere blind brute strength unless wisely directed.\" —Samuel Butler",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/9/f9ffb265-872f-47b3-974c-92bcbebd557e.jpg?1783948052"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -3809,6 +4170,47 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Underworld Dreams
+{
+    "name": "Underworld Dreams",
+    "manaCost": "{B}{B}{B}",
+    "typeLine": "Enchantment",
+    "oracleText": "Whenever an opponent draws a card, this enchantment deals 1 damage to that player.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Underworld Dreams:1",
+                "trigger": {
+                    "type": "DrawEvent",
+                    "player": "EachOpponent"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "TriggeringPlayer"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "124",
+        "rarity": "UNCOMMON",
+        "artist": "Julie Baroh",
+        "flavorText": "\"In the drowsy dark cave of the mind dreams build their nest with fragments dropped from day's caravan.\" —Rabindranath Tagore",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/0/a0e8f8d8-eac0-451c-a167-be84667a8e3d.jpg?1783948061"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
