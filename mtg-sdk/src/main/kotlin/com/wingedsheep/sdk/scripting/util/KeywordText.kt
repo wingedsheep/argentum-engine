@@ -2,6 +2,7 @@ package com.wingedsheep.sdk.scripting.util
 
 import com.wingedsheep.sdk.core.AbilityFlag
 import com.wingedsheep.sdk.core.Keyword
+import com.wingedsheep.sdk.scripting.KeywordAbility
 
 /**
  * Player-visible wording for granting or removing a keyword-or-flag, as stored on the grant
@@ -17,6 +18,7 @@ import com.wingedsheep.sdk.core.Keyword
  * @param plural the subject is plural ("creatures you control"), so the verb agrees with it.
  */
 fun describeKeywordGrant(subject: String, keyword: String, plural: Boolean = false): String {
+    bandsWithOtherText(keyword)?.let { return "$subject ${if (plural) "gain" else "gains"} $it" }
     Keyword.entries.firstOrNull { it.name == keyword }?.let {
         return "$subject ${if (plural) "gain" else "gains"} ${it.displayName.lowercase()}"
     }
@@ -33,6 +35,7 @@ fun describeKeywordGrant(subject: String, keyword: String, plural: Boolean = fal
  */
 fun describeKeywordLoss(subject: String, keyword: String, plural: Boolean = false): String {
     val verb = if (plural) "lose" else "loses"
+    bandsWithOtherText(keyword)?.let { return "$subject $verb $it" }
     Keyword.entries.firstOrNull { it.name == keyword }?.let {
         return "$subject $verb ${it.displayName.lowercase()}"
     }
@@ -47,9 +50,21 @@ fun describeKeywordLoss(subject: String, keyword: String, plural: Boolean = fals
  * phrase ("flying", "can't be blocked").
  */
 fun keywordDisplayText(keyword: String): String =
-    Keyword.entries.firstOrNull { it.name == keyword }?.displayName?.lowercase()
+    bandsWithOtherText(keyword) ?: Keyword.entries.firstOrNull { it.name == keyword }?.displayName?.lowercase()
         ?: AbilityFlag.entries.firstOrNull { it.name == keyword }?.displayName?.replaceFirstChar { it.lowercase() }
         ?: keyword.lowercase().replace('_', ' ')
+
+/**
+ * "Bands with other" keywords (CR 702.22b) carry their quality inside the string, so they are
+ * decoded rather than looked up: `"bands with other legendary creatures"` (quoted, as Oracle prints
+ * a granted one), and the bare [KeywordAbility.BandsWithOther.FAMILY_KEYWORD] reads as the family —
+ * `all "bands with other" abilities` (Shelkin Brownie).
+ */
+private fun bandsWithOtherText(keyword: String): String? {
+    if (keyword == KeywordAbility.BandsWithOther.FAMILY_KEYWORD) return "all \"bands with other\" abilities"
+    val ability = KeywordAbility.BandsWithOther.fromKeyword(keyword) ?: return null
+    return "\"" + ability.description.replaceFirstChar { it.lowercase() } + "\""
+}
 
 /**
  * [flag]'s display name as a predicate of its subject, or null when it isn't one. Display names

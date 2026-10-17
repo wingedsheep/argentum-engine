@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.view.projection
 
+import com.wingedsheep.engine.mechanics.combat.BandsWithOtherRules
 import com.wingedsheep.engine.handlers.ConditionEvaluator
 import com.wingedsheep.engine.handlers.effects.FaceDownTurnUp
 import com.wingedsheep.engine.mechanics.SoulbondPairing
@@ -427,6 +428,23 @@ internal class CardProjector(
         )
     }
 
+    /** This permanent's own "bands with other" keywords (CR 702.22b), for [ClientCard.bandsWithOther]. */
+    private fun bandsWithOtherOf(frame: CardFrame): List<String> =
+        frame.projectedValues?.keywords?.filter { KeywordAbility.BandsWithOther.isBandsWithOther(it) }.orEmpty()
+
+    /**
+     * The "bands with other" keywords in play whose quality this creature has — the server's own
+     * [BandsWithOtherRules.hasQuality], so the client's band check can't drift from `validateBands`.
+     */
+    private fun bandQualitiesOf(frame: CardFrame): List<String> {
+        val inPlay = frame.projectedState.bandsWithOtherInPlay
+        if (inPlay.isEmpty() || !frame.projectedState.isCreature(frame.entityId)) return emptyList()
+        return inPlay.filter { keyword ->
+            val ability = KeywordAbility.BandsWithOther.fromKeyword(keyword) ?: return@filter false
+            BandsWithOtherRules.hasQuality(frame.state, frame.projectedState, frame.entityId, ability)
+        }
+    }
+
     private fun revealedImageUri(frame: CardFrame, isRevealedToViewer: Boolean): String? =
         if (isRevealedToViewer) (frame.cardComponent.imageUri ?: frame.cardDef?.metadata?.imageUri) else null
 
@@ -490,6 +508,8 @@ internal class CardProjector(
             hexproofFromColors = characteristics.hexproofFromColors,
             hexproofFromMonocolored = characteristics.hexproofFromMonocolored,
             hexproofFromMulticolored = characteristics.hexproofFromMulticolored,
+            bandsWithOther = if (onBattlefield) bandsWithOtherOf(frame) else emptyList(),
+            bandQualities = if (onBattlefield) bandQualitiesOf(frame) else emptyList(),
             counters = container.get<CountersComponent>()?.counters ?: emptyMap(),
             isTapped = characteristics.isTapped,
             isExerted = characteristics.isExerted,

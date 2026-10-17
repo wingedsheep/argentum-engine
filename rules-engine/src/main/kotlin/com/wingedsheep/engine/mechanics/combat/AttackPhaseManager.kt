@@ -805,7 +805,8 @@ internal class AttackPhaseManager(
      * - Each band must have at least two creatures.
      * - Each creature in a band must also be one of the declared attackers.
      * - All creatures in a band must attack the same defender.
-     * - At most one creature in a band may lack the [Keyword.BANDING] keyword.
+     * - At most one creature in a band may lack the [Keyword.BANDING] keyword — unless every
+     *   member shares a quality one of them "bands with other" ([BandsWithOtherRules.formsBand]).
      * - A creature may appear in at most one band.
      *
      * Returns an error message if any constraint is violated, or null when valid (including
@@ -824,7 +825,6 @@ internal class AttackPhaseManager(
             if (band.size < 2) {
                 return "A band must contain at least two creatures"
             }
-            var nonBandingCount = 0
             var sharedDefender: EntityId? = null
             for (creatureId in band) {
                 if (creatureId in seen) {
@@ -844,13 +844,13 @@ internal class AttackPhaseManager(
                 } else if (sharedDefender != defenderId) {
                     return "All creatures in a band must attack the same defender"
                 }
-
-                if (!projected.hasKeyword(creatureId, Keyword.BANDING)) {
-                    nonBandingCount += 1
-                    if (nonBandingCount > 1) {
-                        return "A band may contain at most one creature without banding"
-                    }
-                }
+            }
+            // CR 702.22c: either banding's form (at most one member without banding) or the
+            // "bands with other [quality]" form (every member has the quality and at least one of
+            // them has "bands with other [quality]").
+            val nonBandingCount = band.count { !projected.hasKeyword(it, Keyword.BANDING) }
+            if (nonBandingCount > 1 && !BandsWithOtherRules.formsBand(state, projected, band)) {
+                return "A band may contain at most one creature without banding"
             }
         }
         return null

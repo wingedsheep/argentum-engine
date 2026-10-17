@@ -27,6 +27,14 @@ data class GrantKeyword(
     constructor(keyword: Keyword, filter: GroupFilter = GroupFilter.attachedCreature()) :
         this(keyword.name, filter)
 
+    /**
+     * Grant a "bands with other [quality]" ability (CR 702.22b) — "White legendary creatures you
+     * control have 'bands with other legendary creatures'" (Cathedral of Serra), or a token's own
+     * "It has 'bands with other creatures named Wolves of the Hunt'" with [GroupFilter.source].
+     */
+    constructor(ability: KeywordAbility.BandsWithOther, filter: GroupFilter = GroupFilter.attachedCreature()) :
+        this(ability.projectedKeyword, filter)
+
     override val description: String =
         "${filter.description} have ${com.wingedsheep.sdk.scripting.util.keywordDisplayText(keyword)}"
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {

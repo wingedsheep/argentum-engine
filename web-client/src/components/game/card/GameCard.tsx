@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useGameStore } from '@/store/gameStore.ts'
 import { useHasLegalActions } from '@/store/selectors.ts'
 import type { ClientCard, EntityId, LegalActionInfo } from '@/types'
-import { Color, ColorSymbols, CounterType, Keyword } from '@/types/enums'
+import { Color, ColorSymbols, CounterType } from '@/types/enums'
 import { isBattle } from '@/utils/combatTargets'
 import { getCardImageUrl, getScryfallFallbackUrl, faceDownImageUrl } from '@/utils/cardImages.ts'
 import { useInteraction } from '@/hooks/useInteraction.ts'
@@ -240,7 +240,6 @@ function GameCardImpl({
   const isSelected = useGameStore((state) => state.selectedCardId === card.id)
   // The interaction in progress (targeting, combat, decisions, payment selections), reduced to what
   // it means for this card — see useCardInteractionState. Hotseat's "which row is ours" is folded in.
-  const cardHasBanding = card.keywords.includes(Keyword.BANDING)
   const {
     isInTargetingMode, isValidTarget, isSelectedTarget, isBeingCast, costIfSacrificed,
     hasPendingDecision, isChooseTargetsDecision, isValidDecisionTarget, isManaPaymentWindow,
@@ -261,7 +260,6 @@ function GameCardImpl({
     cardId: card.id,
     isCreature: card.cardTypes.includes('CREATURE'),
     isOpponentCard,
-    hasBanding: cardHasBanding,
   })
   // `legalActions` is a fresh array on every server update, so subscribing to it re-renders this
   // card whenever *anything* happens anywhere — and on a full board that is most of the cost of
@@ -449,8 +447,8 @@ function GameCardImpl({
   const bandColor = isBanded ? bandColorFor(bandIndex) : null
 
   // `isBandDropTarget`: while one of your attackers is being dragged, this card is a legal band
-  // drop target iff it's a valid attacker (other than the dragged one) and at least one of (drag
-  // source, this card) has BANDING. Used to highlight the drop target.
+  // drop target iff it's a valid attacker (other than the dragged one) and the band the drop would
+  // make is legal (CR 702.22c: banding, or "bands with other"). Used to highlight the drop target.
   //
   // `isBystanderAttacker` (multiplayer): an attacker in this combat that is attacking a *different*
   // defender — you can't block it (CR 509.1b), so render it dimmed while you declare blocks.
@@ -559,7 +557,7 @@ function GameCardImpl({
       if (!isSelectedAsAttacker) {
         store.toggleAttacker(card.id) // Select it immediately so the arrow shows
       }
-      store.startDraggingAttacker(card.id, cardHasBanding)
+      store.startDraggingAttacker(card.id)
       return
     }
 
@@ -574,7 +572,7 @@ function GameCardImpl({
       dragStartPos.current = { x: clientX, y: clientY }
       useGameStore.getState().startDraggingCard(card.id)
     }
-  }, [isInAttackerMode, isSelectedAsAttacker, isValidAttacker, cardHasBanding, isInBlockerMode, isValidBlocker, canDragToPlay, card.id])
+  }, [isInAttackerMode, isSelectedAsAttacker, isValidAttacker, isInBlockerMode, isValidBlocker, canDragToPlay, card.id])
 
   // Handle mouse/touch up - drop blocker on attacker
   const handlePointerUp = useCallback(() => {

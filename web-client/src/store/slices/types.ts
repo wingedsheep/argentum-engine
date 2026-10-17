@@ -1297,7 +1297,6 @@ export type GameStore = {
   autoTapPreview: readonly EntityId[] | null
   draggingBlockerId: EntityId | null
   draggingAttackerId: EntityId | null
-  draggingAttackerHasBanding: boolean | null
   draggingCardId: EntityId | null
   revealedHandCardIds: readonly EntityId[] | null
   revealedCardsInfo: {
@@ -1357,7 +1356,7 @@ export type GameStore = {
   clearBlockerAssignments: () => void
   startDraggingBlocker: (blockerId: EntityId) => void
   stopDraggingBlocker: () => void
-  startDraggingAttacker: (attackerId: EntityId, hasBanding?: boolean) => void
+  startDraggingAttacker: (attackerId: EntityId) => void
   stopDraggingAttacker: () => void
   setAttackTarget: (attackerId: EntityId, targetId: EntityId) => void
   assignDefenderToSelectedAttackers: (defenderId: EntityId) => void

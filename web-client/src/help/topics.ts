@@ -1279,7 +1279,7 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
       { kind: 'p', text: 'Blocking: drag each blocker to an attacker, then Confirm Blocks — or No Blocks. Clear resets your choices.' },
       { kind: 'p', text: 'Crowded combat: hover any attacker or blocker (long-press on a phone) to pick out its block. Everything tied to it lights up — its blockers or the attackers it blocks, their other blockers, and the rest of its band — the rest of the board dims, and a caption on the card names who it is blocking or blocked by.' },
       { kind: 'p', text: 'A blocked attacker stays blocked even after its blockers die or leave combat. When that happens its red attack chevron turns into a blue Blocked tag, and any attack arrow it has fades to a dashed line, so it does not look like it is still getting through.' },
-      { kind: 'p', text: 'Dragging one attacker onto another bands them (CR 702.22). On a phone, swipe left and right on the opponent strip to move between boards.' },
+      { kind: 'p', text: 'Dragging one attacker onto another bands them (CR 702.22) — the drop lights up only when the band would be legal: creatures with banding plus at most one without, or creatures that all share the quality one of them "bands with other" (any number of legendary creatures, say). On a phone, swipe left and right on the opponent strip to move between boards.' },
     ],
     related: ['pass-button', 'decisions', 'multiplayer-camera', 'zone-browsers'],
   },

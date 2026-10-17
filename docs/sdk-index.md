@@ -1284,6 +1284,7 @@ Families:
 
 - `KeywordAbility.Affinity(forType: CardType)` — Affinity for a card type.
 - `KeywordAbility.AffinityForSubtype(forSubtype: Subtype)` — Affinity for a creature subtype.
+- `KeywordAbility.BandsWithOther(supertype: Supertype?, subtype: Subtype?, name: String?)` — "Bands with other quality" (CR 702.22b) — the special form of banding Legends printed.
 - `KeywordAbility.Bestow(cost: ManaCost, additionalCost: AdditionalCost?)`
 - `KeywordAbility.Blitz(cost: ManaCost, additionalCost: AdditionalCost?)` — Blitz with a mana cost and an optional bundled non-mana cost (CR 702.152, Streets of New Capenna).
 - `KeywordAbility.Casualty(threshold: Int?, copyExceptions: CopyExceptions, copyStartingLoyalty: DynamicAmount?)` — Casualty N (CR 702.153).

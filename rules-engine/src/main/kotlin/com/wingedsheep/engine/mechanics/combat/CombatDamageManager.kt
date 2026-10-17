@@ -542,10 +542,11 @@ internal class CombatDamageManager(
             val liveBlockerIds = blockedBy.blockerIds.filter { it in battlefield }
             if (liveBlockerIds.isEmpty()) continue
 
-            // CR 702.22j: a banding blocker hands the division to the defender even at exact
-            // lethal (where requiresManualAssignment would normally say "no choice").
+            // CR 702.22j: a banding blocker (or a "bands with other" pair of blockers) hands the
+            // division to the defender even at exact lethal (where requiresManualAssignment would
+            // normally say "no choice").
             val bandingOverride = liveBlockerIds.size >= 2 &&
-                liveBlockerIds.any { projected.hasKeyword(it, Keyword.BANDING) }
+                BandsWithOtherRules.invertsDamageAssignment(state, projected, liveBlockerIds)
             val bipartitePull = attackerId in attackersWithBipartiteBlocker
             if (!damageCalculator.requiresManualAssignment(state, attackerId) &&
                 !bandingOverride && !bipartitePull) continue

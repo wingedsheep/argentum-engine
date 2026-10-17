@@ -34,17 +34,15 @@ function store(overrides: Record<string, unknown> = {}): GameStore {
     harmonizeSelectionState: null,
     combatState: null,
     draggingAttackerId: null,
-    draggingAttackerHasBanding: null,
     draggingBlockerId: null,
     ...overrides,
   } as unknown as GameStore
 }
 
-const input = (cardId: string, extra: Partial<{ isCreature: boolean; isOpponentCard: boolean; hasBanding: boolean }> = {}) => ({
+const input = (cardId: string, extra: Partial<{ isCreature: boolean; isOpponentCard: boolean }> = {}) => ({
   cardId: id(cardId),
   isCreature: true,
   isOpponentCard: false,
-  hasBanding: false,
   ...extra,
 })
 

@@ -2169,6 +2169,7 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
 - `GrantEscape(target, cost?, additionalCost?, duration)` — grant **Escape** (CR 702.138) to a target card in a graveyard. The single-card runtime sibling of printed `KeywordAbility.Escape` and of the whole-graveyard static `GraveyardCardsHaveEscape`. `cost` defaults to `null` = "equal to its mana cost" (a card with no mana cost has an unpayable escape cost; a printed {0} remains payable); `additionalCost` is the non-mana half, e.g. `Costs.additional.ExileOtherCards(2)` for Desdemona, Freedom's Edge: `Effects.GrantEscape(card, additionalCost = Costs.additional.ExileOtherCards(2))`. Records a runtime `GrantedKeywordAbility` keyed to the card entity; the enumerator, `CastZoneResolver`, cost totaller and additional-cost collector read printed-**or**-granted escape through `EscapeCasts.effectiveEscape` (each distinct escape cost is offered separately). Escape itself does not change the resolution destination, and a permanent cast this way escaped (`Conditions.Escaped`). The grant expires in the cleanup step (EndOfTurn) and is dropped when the card changes zones (CR 400.7), so it cannot escape again from a later graveyard life. The target filter carries any type restriction ("creature card … that's an artifact or that has mana value 3 or less").
 - `GrantEmbalm(target, cost?, duration)` — grant **Embalm** (CR 702.128) to a target creature card in a graveyard. The runtime sibling of the printed `embalm(cost)` builder helper. `cost` defaults to `null` = "equal to the card's mana cost" (Cursecloth Wrappings: "{T}: Target creature card in your graveyard gains embalm until end of turn. The embalm cost is equal to its mana cost."); pass a `ManaCost` for a fixed embalm cost. Unlike `GrantHarmonize`/`GrantFlashback` — which grant *cast* keywords and so have to reach the cast pipeline through a `GrantedKeywordAbility` record — embalm is an ordinary graveyard-**activated** ability, so this records a plain `GrantedActivatedAbility` (the object `embalmAbility(cost)` builds) keyed to the card entity, and `ZoneActivatedAbilityEnumerator` surfaces it on the card in the graveyard. Rejects a noncreature target or a card not in a graveyard. The grant expires in the cleanup step (EndOfTurn).
 - `RemoveKeyword(keyword, target, duration)` — strip a keyword. Target-general, mirroring `GrantKeyword`: **any battlefield permanent, not just creatures**. That matters for the "creatures *and Vehicles*" wording — an uncrewed Vehicle is an artifact and not a creature, so a creature-only guard would silently exempt exactly the permanents such a card names (Spectacular Pileup: "All creatures and Vehicles lose indestructible until end of turn, then destroy all creatures and Vehicles" = `Patterns.Group.removeKeywordFromAll(Keyword.INDESTRUCTIBLE, GroupFilter(GameObjectFilter.CreatureOrVehicle))` then `Effects.DestroyAll(GameObjectFilter.CreatureOrVehicle)`). Removing a keyword the permanent doesn't have is a harmless no-op in projection. Note this is a real characteristic change in layer 6, *not* "destroy, ignoring indestructible" — a permanent that gains indestructible after the removal resolves keeps it.
+- `RemoveAllBandsWithOther(target, duration)` — "loses all 'bands with other' abilities" (CR 702.22b — Shelkin Brownie): a `RemoveKeywordEffect` over `KeywordAbility.BandsWithOther.FAMILY_KEYWORD`, stripping every quality. "Loses banding and all 'bands with other' abilities" (Tolaria) is just `RemoveKeyword(Keyword.BANDING, …)` — losing banding loses them too.
 - `RemoveAllAbilities(target, duration)` — wipe all abilities (including granted keywords).
 - `ExileSpellsOnStack(opponentsOnly?, excludeSource?)` — exile matching spells directly from the stack; this is not a counter, so it works on spells that can't be countered. `excludeSource = true` models “all other spells” (Summary Dismissal).
 - `CounterAllStackObjects(spells?, abilities?, opponentsOnly?)` — counter the selected kinds of stack objects, with controller scope configurable. Use `spells = false` for “counter all abilities.”
@@ -12465,6 +12466,25 @@ composite abilities).
   (attached by `CardEntityFactory.applyDefinitionDecorations`); the remaining `ProtectionScope`s in the
   *hexproof* namespace format the oracle text but have no targeting wiring yet and are deliberately not
   projected.
+- `KeywordAbility.BandsWithOther(supertype | subtype | name)` — "bands with other [quality]" (CR 702.22b),
+  the special form of banding. Exactly one quality: `KeywordAbility.bandsWithOther(Supertype.LEGENDARY)`
+  ("bands with other legendary creatures" — the Legends land cycle), `KeywordAbility.bandsWithOther(Subtype("Dinosaur"))`
+  ("bands with other Dinosaurs" — Old Fogey), `KeywordAbility.bandsWithOtherNamed("Wolves of the Hunt")`
+  ("bands with other creatures named Wolves of the Hunt"). Projected as the keyword string
+  `projectedKeyword` (`BANDS_WITH_OTHER_SUPERTYPE_LEGENDARY`, `BANDS_WITH_OTHER_SUBTYPE_Dinosaur`,
+  `BANDS_WITH_OTHER_NAMED_Wolves of the Hunt`; `fromKeyword` decodes one). Printed on a card it is
+  lowered to the permanent's own `GrantKeyword(ability, GroupFilter.source())`; granted, it rides
+  `GrantKeyword(ability, filter)` — "White legendary creatures you control have 'bands with other legendary
+  creatures'" (Cathedral of Serra) — and an inline token gets it through `staticAbilities` with
+  `GroupFilter.source()` (Master of the Hunt). The engine (`BandsWithOtherRules`, projected supertypes /
+  subtypes / name) accepts a band of any number of [quality] creatures when one has the ability
+  (CR 702.22c), and hands combat-damage division to the other player when a creature is blocked by — or
+  blocks — a [quality] creature with the ability plus another [quality] creature (CR 702.22j/k).
+  Removing `Keyword.BANDING` removes every "bands with other" too (CR 702.22b);
+  `Effects.RemoveAllBandsWithOther(target)` — or `RemoveKeywordStatic` / `RemoveKeywordEffect` with
+  `KeywordAbility.BandsWithOther.FAMILY_KEYWORD` — is "loses all 'bands with other' abilities" (Shelkin
+  Brownie). The client receives `ClientCard.bandsWithOther` / `bandQualities` so declare-attackers mirrors
+  the server's band check.
 - **Source-kind scopes** — qualities that are a *kind of source* rather than a characteristic
   (CR 702.16a): `ProtectionScope.Spells`, `ProtectionScope.PermanentsCastThisTurn`,
   `ProtectionScope.ActivatedAbilities`, `ProtectionScope.TriggeredAbilities`. Usable in both

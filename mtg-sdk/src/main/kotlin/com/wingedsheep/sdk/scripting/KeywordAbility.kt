@@ -183,6 +183,99 @@ sealed interface KeywordAbility {
     }
 
     // =========================================================================
+    // Bands with other
+    // =========================================================================
+
+    /**
+     * "Bands with other [quality]" (CR 702.22b) — the special form of banding Legends printed.
+     * The quality is exactly one of a [supertype] ("bands with other legendary creatures" —
+     * Cathedral of Serra and its cycle), a creature [subtype] ("bands with other Dinosaurs" — Old
+     * Fogey) or a card [name] ("bands with other creatures named Wolves of the Hunt" — Master of
+     * the Hunt's token).
+     *
+     * Rules the engine reads off [projectedKeyword] (see `BandsWithOtherRules`):
+     * - CR 702.22c — one or more attacking [quality] creatures with this ability and any number of
+     *   other attacking [quality] creatures may attack as a band.
+     * - CR 702.22j/k — an attacker blocked by (or a blocker blocking) both a [quality] creature with
+     *   this ability and another [quality] creature has its damage divided by the other player.
+     * - CR 702.22b — losing banding loses every "bands with other" ability too; removing
+     *   [FAMILY_KEYWORD] removes them all ("loses all 'bands with other' abilities" — Shelkin
+     *   Brownie). CR 702.22m — multiple instances of the same quality are redundant, which the
+     *   projected keyword *set* gives for free.
+     *
+     * The closest neighbours are [Protection] and [Hexproof], whose [ProtectionScope] also names
+     * qualities; neither fits — a scope names what a permanent is protected *from* (colours, card
+     * types, source kinds) and has no card-name form, while this names what its *bandmates* must be.
+     * [Simple] can't carry a quality at all.
+     *
+     * Printed on a card it projects as a keyword on that permanent; granted ("white legendary
+     * creatures you control have …") it rides a `GrantKeyword(bandsWithOther, filter)` static, and
+     * a token gets it the same way with `GroupFilter.source()`.
+     */
+    @SerialName("BandsWithOther")
+    @Serializable
+    data class BandsWithOther(
+        val supertype: com.wingedsheep.sdk.core.Supertype? = null,
+        val subtype: Subtype? = null,
+        val name: String? = null,
+    ) : KeywordAbility {
+        init {
+            require(listOfNotNull(supertype, subtype, name).size == 1) {
+                "BandsWithOther needs exactly one quality: a supertype, a subtype or a name"
+            }
+        }
+
+        /**
+         * The projected keyword string — `BANDS_WITH_OTHER_SUPERTYPE_LEGENDARY`,
+         * `BANDS_WITH_OTHER_SUBTYPE_Dinosaur`, `BANDS_WITH_OTHER_NAMED_Wolves of the Hunt`. The
+         * subtype and name keep their printed spelling so [fromKeyword] decodes them losslessly.
+         */
+        val projectedKeyword: String
+            get() = when {
+                supertype != null -> "${FAMILY_KEYWORD}_$SUPERTYPE_TAG${supertype.name}"
+                subtype != null -> "${FAMILY_KEYWORD}_$SUBTYPE_TAG${subtype.value}"
+                else -> "${FAMILY_KEYWORD}_$NAMED_TAG$name"
+            }
+
+        override val description: String
+            get() = "Bands with other " + when {
+                supertype != null -> "${supertype.displayName.lowercase()} creatures"
+                subtype != null -> "${subtype.value}s"
+                else -> "creatures named $name"
+            }
+
+        companion object {
+            /**
+             * The family name. `RemoveKeyword` with it strips every "bands with other" ability
+             * (Shelkin Brownie, Tolaria); it is also the prefix of every [projectedKeyword].
+             */
+            const val FAMILY_KEYWORD: String = "BANDS_WITH_OTHER"
+            private const val SUPERTYPE_TAG = "SUPERTYPE_"
+            private const val SUBTYPE_TAG = "SUBTYPE_"
+            private const val NAMED_TAG = "NAMED_"
+
+            /** True for any projected "bands with other …" keyword string. */
+            fun isBandsWithOther(keyword: String): Boolean = keyword.startsWith("${FAMILY_KEYWORD}_")
+
+            /** Decode a [projectedKeyword] back into its ability, or null if [keyword] isn't one. */
+            fun fromKeyword(keyword: String): BandsWithOther? {
+                if (!isBandsWithOther(keyword)) return null
+                val quality = keyword.removePrefix("${FAMILY_KEYWORD}_")
+                return when {
+                    quality.startsWith(SUPERTYPE_TAG) -> com.wingedsheep.sdk.core.Supertype.entries
+                        .firstOrNull { it.name == quality.removePrefix(SUPERTYPE_TAG) }
+                        ?.let { BandsWithOther(supertype = it) }
+                    quality.startsWith(SUBTYPE_TAG) -> quality.removePrefix(SUBTYPE_TAG)
+                        .takeIf { it.isNotEmpty() }?.let { BandsWithOther(subtype = Subtype(it)) }
+                    quality.startsWith(NAMED_TAG) -> quality.removePrefix(NAMED_TAG)
+                        .takeIf { it.isNotEmpty() }?.let { BandsWithOther(name = it) }
+                    else -> null
+                }
+            }
+        }
+    }
+
+    // =========================================================================
     // Numeric Keywords
     // =========================================================================
 
@@ -1435,6 +1528,16 @@ sealed interface KeywordAbility {
         /** Protection from a supertype — "from legendary creatures" (Tsabo Tavoc). */
         fun protectionFromSupertype(supertype: String): KeywordAbility =
             Protection(ProtectionScope.Supertype(supertype))
+
+        /** "Bands with other legendary creatures" (CR 702.22b) — the Legends land cycle. */
+        fun bandsWithOther(supertype: com.wingedsheep.sdk.core.Supertype): BandsWithOther =
+            BandsWithOther(supertype = supertype)
+
+        /** "Bands with other Dinosaurs" (CR 702.22b) — Old Fogey. */
+        fun bandsWithOther(subtype: Subtype): BandsWithOther = BandsWithOther(subtype = subtype)
+
+        /** "Bands with other creatures named [name]" (CR 702.22b) — Master of the Hunt's Wolves. */
+        fun bandsWithOtherNamed(name: String): BandsWithOther = BandsWithOther(name = name)
 
         /**
          * Plain Devour: sacrifice any number of creatures as this enters, N counters each.

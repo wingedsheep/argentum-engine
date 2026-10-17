@@ -12,7 +12,6 @@ import {
   createUpdateBlockerAssignmentsMessage,
 } from '@/types'
 import type { ClientGameState } from '@/types'
-import { Keyword } from '@/types/enums'
 import { bandIsLegal, mergedBand } from '@/utils/combatBands'
 import { attackTargetsFor, canAttackTarget } from '@/utils/attackTargets'
 import { getWebSocket } from '../shared'
@@ -45,13 +44,6 @@ export interface CombatSliceState {
   combatState: CombatState | null
   draggingBlockerId: EntityId | null
   draggingAttackerId: EntityId | null
-  /**
-   * Whether the currently-dragged attacker has the BANDING keyword. Set alongside
-   * [draggingAttackerId] so other GameCards can decide whether they're a legal
-   * band-drop target without re-querying the store for keyword data. Null when no
-   * attacker is being dragged.
-   */
-  draggingAttackerHasBanding: boolean | null
   draggingCardId: EntityId | null
   opponentAttackerTargets: { selectedAttackers: readonly EntityId[]; attackerTargets: Record<EntityId, EntityId> } | null
   opponentBlockerAssignments: Record<EntityId, EntityId[]> | null
@@ -72,7 +64,7 @@ export interface CombatSliceActions {
   clearBlockerAssignments: () => void
   startDraggingBlocker: (blockerId: EntityId) => void
   stopDraggingBlocker: () => void
-  startDraggingAttacker: (attackerId: EntityId, hasBanding?: boolean) => void
+  startDraggingAttacker: (attackerId: EntityId) => void
   stopDraggingAttacker: () => void
   startDraggingCard: (cardId: EntityId) => void
   stopDraggingCard: () => void
@@ -107,7 +99,6 @@ export const createCombatSlice: SliceCreator<CombatSlice> = (set, get) => ({
   combatState: null,
   draggingBlockerId: null,
   draggingAttackerId: null,
-  draggingAttackerHasBanding: null,
   draggingCardId: null,
   opponentAttackerTargets: null,
   opponentBlockerAssignments: null,
@@ -301,12 +292,12 @@ export const createCombatSlice: SliceCreator<CombatSlice> = (set, get) => ({
     set({ draggingBlockerId: null })
   },
 
-  startDraggingAttacker: (attackerId, hasBanding = false) => {
-    set({ draggingAttackerId: attackerId, draggingAttackerHasBanding: hasBanding })
+  startDraggingAttacker: (attackerId) => {
+    set({ draggingAttackerId: attackerId })
   },
 
   stopDraggingAttacker: () => {
-    set({ draggingAttackerId: null, draggingAttackerHasBanding: null })
+    set({ draggingAttackerId: null })
   },
 
   startDraggingCard: (cardId) => {
@@ -495,9 +486,8 @@ export const createCombatSlice: SliceCreator<CombatSlice> = (set, get) => ({
     if (sourceId === targetId) return
     set((state) => {
       if (!state.combatState || state.combatState.mode !== 'declareAttackers') return state
-      const hasBanding = (id: EntityId): boolean =>
-        state.gameState?.cards[id]?.keywords.includes(Keyword.BANDING) ?? false
-      if (!bandIsLegal(mergedBand(state.combatState.bands, sourceId, targetId), hasBanding)) return state
+      const cardOf = (id: EntityId) => state.gameState?.cards[id]
+      if (!bandIsLegal(mergedBand(state.combatState.bands, sourceId, targetId), cardOf)) return state
 
       // Auto-select both attackers if not already selected. Mandatory creatures are
       // already in the list; this just extends it.

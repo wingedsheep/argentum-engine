@@ -1,6 +1,7 @@
 import { useShallow } from 'zustand/react/shallow'
 import { useGameStore, type GameStore } from '@/store/gameStore.ts'
 import type { EntityId } from '@/types'
+import { bandIsLegal, mergedBand } from '@/utils/combatBands'
 import type { CounterRemovalCreatureInfo } from '@/types/messages.ts'
 
 /**
@@ -173,11 +174,10 @@ export interface CardInteractionInput {
   readonly cardId: EntityId
   readonly isCreature: boolean
   readonly isOpponentCard: boolean
-  readonly hasBanding: boolean
 }
 
 export function selectCardInteraction(state: GameStore, input: CardInteractionInput): CardInteractionState {
-  const { cardId, isCreature, isOpponentCard, hasBanding } = input
+  const { cardId, isCreature, isOpponentCard } = input
   const viewed = state.spectatingState?.gameState ?? state.gameState
 
   // Targeting
@@ -258,7 +258,9 @@ export function selectCardInteraction(state: GameStore, input: CardInteractionIn
     !!draggingAttackerId &&
     draggingAttackerId !== cardId &&
     isValidCombatCreature &&
-    (hasBanding || state.draggingAttackerHasBanding === true)
+    // Exactly the band the drop would make, checked as the server will (CR 702.22c — banding or
+    // "bands with other"), so the highlight never promises a band the link would refuse.
+    bandIsLegal(mergedBand(combat.bands, draggingAttackerId, cardId), (id) => viewed?.cards?.[id])
 
   const isValidBlocker = isInBlockerMode && ownForCombat && isValidCombatCreature
   const isSelectedAsBlocker = isInBlockerMode && !!(combat.blockerAssignments[cardId]?.length)
@@ -336,8 +338,8 @@ export function selectCardInteraction(state: GameStore, input: CardInteractionIn
 
 /** Subscribes a card to its own slice of the interaction state; see [CardInteractionState]. */
 export function useCardInteractionState(input: CardInteractionInput): CardInteractionState {
-  const { cardId, isCreature, isOpponentCard, hasBanding } = input
+  const { cardId, isCreature, isOpponentCard } = input
   return useGameStore(
-    useShallow((state) => selectCardInteraction(state, { cardId, isCreature, isOpponentCard, hasBanding })),
+    useShallow((state) => selectCardInteraction(state, { cardId, isCreature, isOpponentCard })),
   )
 }

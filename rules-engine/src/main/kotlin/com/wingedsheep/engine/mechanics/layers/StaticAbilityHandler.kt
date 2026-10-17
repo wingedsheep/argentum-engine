@@ -285,7 +285,8 @@ class StaticAbilityHandler(
         // RoomFaceStatics is what lets a Room face's continuous statics project once its door is
         // unlocked; the component is re-baked on later unlocks by RoomDoorUnlocker.
         val allStaticAbilities = RoomFaceStatics.activeStaticAbilities(container, cardDefinition) +
-            container.get<CardComponent>()?.copyStaticAbilities.orEmpty()
+            container.get<CardComponent>()?.copyStaticAbilities.orEmpty() +
+            printedBandsWithOther(cardDefinition)
 
         val spending = mutableListOf<ManaSpendingGrant>()
         fun collectSpending(ability: StaticAbility, conditions: List<Condition> = emptyList()) {
@@ -423,6 +424,22 @@ class StaticAbilityHandler(
 
         return result
     }
+
+    /**
+     * A printed "bands with other [quality]" (CR 702.22b — Old Fogey) has no [com.wingedsheep.sdk.core.Keyword]
+     * constant for the base keyword set to carry, so it projects the way a granted one does: as the
+     * permanent's own `GrantKeyword(ability, source)`. Removal (CR 702.22b's "loses banding", Shelkin
+     * Brownie's "loses all 'bands with other' abilities") and losing all abilities then strip it
+     * exactly as they strip a granted one.
+     */
+    private fun printedBandsWithOther(cardDefinition: CardDefinition): List<StaticAbility> =
+        cardDefinition.keywordAbilities
+            .filterIsInstance<com.wingedsheep.sdk.scripting.KeywordAbility.BandsWithOther>()
+            .map {
+                com.wingedsheep.sdk.scripting.GrantKeyword(
+                    it, com.wingedsheep.sdk.scripting.filters.unified.GroupFilter.source()
+                )
+            }
 
     /**
      * A controller-granting static ability that is present on the permanent, together with the

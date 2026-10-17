@@ -183,6 +183,18 @@ class ProjectedState(
 
     fun getKeywords(entityId: EntityId): Set<String> = projectedValues[entityId]?.keywords ?: emptySet()
 
+    /**
+     * Every "bands with other [quality]" keyword (CR 702.22b) some permanent has. Empty in
+     * virtually every game; computed once per projection for the client's per-card band
+     * qualities rather than re-scanning the battlefield for each card.
+     */
+    val bandsWithOtherInPlay: Set<String> by lazy {
+        projectedValues.values.asSequence()
+            .flatMap { it.keywords.asSequence() }
+            .filter { com.wingedsheep.sdk.scripting.KeywordAbility.BandsWithOther.isBandsWithOther(it) }
+            .toSet()
+    }
+
     fun hasKeyword(entityId: EntityId, keyword: String): Boolean =
         getKeywords(entityId).contains(keyword)
 

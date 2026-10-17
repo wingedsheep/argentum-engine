@@ -2190,6 +2190,15 @@ object Effects {
         RemoveKeywordEffect(flag.name, target, duration)
 
     /**
+     * "Target creature loses all 'bands with other' abilities" (CR 702.22b — Shelkin Brownie,
+     * Tolaria): removes every [KeywordAbility.BandsWithOther], whatever its quality. Removing
+     * [Keyword.BANDING] already does this too, so "loses banding and all 'bands with other'
+     * abilities" is just `RemoveKeyword(Keyword.BANDING, …)`.
+     */
+    fun RemoveAllBandsWithOther(target: EffectTarget, duration: Duration = Duration.EndOfTurn): Effect =
+        RemoveKeywordEffect(KeywordAbility.BandsWithOther.FAMILY_KEYWORD, target, duration)
+
+    /**
      * Remove all abilities from a target creature until end of turn (or other duration).
      * "Target creature loses all abilities until end of turn."
      */

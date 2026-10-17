@@ -1,4 +1,5 @@
-import type { EntityId } from '@/types'
+import type { ClientCard, EntityId } from '@/types'
+import { Keyword } from '@/types/enums'
 
 /**
  * The band that linking [sourceId] to [targetId] would produce (CR 702.22): both creatures plus
@@ -14,12 +15,27 @@ export function mergedBand(
   return Array.from(new Set<EntityId>([sourceId, targetId, ...sourceBand, ...targetBand]))
 }
 
+/** The slice of a `ClientCard` the band check reads — all of it projected by the server. */
+export type BandingCard = Pick<ClientCard, 'keywords' | 'bandsWithOther' | 'bandQualities'>
+
 /**
- * CR 702.22c: a band may contain at most one creature without banding — which also covers the
- * two-creature case where neither has it. `hasBanding` should read the server's projected
- * keyword set (`ClientCard.keywords`), the same set the engine's `validateBands` reads, so the
- * client only ever refuses a band the server would refuse too.
+ * CR 702.22c: the two forms of band the engine's `validateBands` accepts, read off the server's
+ * projected card data so the client only ever refuses a band the server would refuse too.
+ *
+ * - Banding: at most one member without banding — which also covers the two-creature case where
+ *   neither has it.
+ * - "Bands with other [quality]" (CR 702.22b): some member's "bands with other" ability is one
+ *   whose quality *every* member has. The server computes each creature's qualities
+ *   (`ClientCard.bandQualities`), so no type or name is interpreted here.
  */
-export function bandIsLegal(members: readonly EntityId[], hasBanding: (id: EntityId) => boolean): boolean {
-  return members.filter((id) => !hasBanding(id)).length <= 1
+export function bandIsLegal(
+  members: readonly EntityId[],
+  cardOf: (id: EntityId) => BandingCard | undefined,
+): boolean {
+  if (members.filter((id) => !cardOf(id)?.keywords.includes(Keyword.BANDING)).length <= 1) return true
+  return members.some((holder) =>
+    (cardOf(holder)?.bandsWithOther ?? []).some((ability) =>
+      members.every((id) => cardOf(id)?.bandQualities?.includes(ability) ?? false),
+    ),
+  )
 }

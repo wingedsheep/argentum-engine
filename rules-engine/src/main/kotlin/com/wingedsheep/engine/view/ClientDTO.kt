@@ -315,6 +315,22 @@ data class ClientCard(
     /** Hexproof from multicolored (CR 105.2b) — shows an uncolored hexproof shield chip */
     val hexproofFromMulticolored: Boolean = false,
 
+    /**
+     * This permanent's "bands with other [quality]" abilities (CR 702.22b), as their projected
+     * keyword strings (`BANDS_WITH_OTHER_SUPERTYPE_LEGENDARY`, …). [keywords] can't carry them —
+     * they have no [Keyword] constant. Empty off the battlefield and for nearly every permanent.
+     */
+    val bandsWithOther: List<String> = emptyList(),
+
+    /**
+     * Which of the "bands with other" abilities on the battlefield this creature has the quality
+     * for — the subset of every permanent's [bandsWithOther] it would satisfy as a bandmate. With
+     * [bandsWithOther] this is everything the declare-attackers UI needs to mirror the server's
+     * CR 702.22c band check without reading types or names itself: a band is legal through
+     * "bands with other" when some member's ability is in every member's [bandQualities].
+     */
+    val bandQualities: List<String> = emptyList(),
+
     /** Counters on the card */
     val counters: Map<CounterType, Int>,
 

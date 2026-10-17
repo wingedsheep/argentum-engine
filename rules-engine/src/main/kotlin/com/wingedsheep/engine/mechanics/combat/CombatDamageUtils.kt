@@ -12,7 +12,6 @@ import com.wingedsheep.engine.state.components.combat.BlockingComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.sdk.core.AbilityFlag
-import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AssignCombatDamageAsUnblocked
 import com.wingedsheep.sdk.scripting.AssignDamageEqualToToughness
@@ -49,7 +48,9 @@ internal object CombatDamageUtils {
      * `damageAssignmentChooser` / `blockerDamageAssignmentChooser` / `attackerBandHasBanding`.
      *
      * - [ATTACKER][CombatSide.ATTACKER]: default is the attacking player. If any creature
-     *   blocking [sourceId] has banding, CR 702.22j hands the division to the defending player.
+     *   blocking [sourceId] has banding (or two of them form a "bands with other" pair —
+     *   [BandsWithOtherRules.invertsDamageAssignment]), CR 702.22j hands the division to the
+     *   defending player.
      * - [BLOCKER][CombatSide.BLOCKER]: default is the blocker's controller ([defaultChooser]).
      *   If any attacker [sourceId] is blocking has banding, CR 702.22k hands the division to the
      *   active player.
@@ -74,10 +75,11 @@ internal object CombatDamageUtils {
     ): DamageChooser {
         val container = state.getEntity(attackerId) ?: return DamageChooser(defaultChooser, orderConstrained = true)
         val blockedBy = container.get<BlockedComponent>()
-        val blockerHasBanding = blockedBy?.blockerIds?.any {
-            it in state.getBattlefield() && projected.hasKeyword(it, Keyword.BANDING)
-        } == true
-        if (!blockerHasBanding) return DamageChooser(defaultChooser, orderConstrained = true)
+        val battlefield = state.getBattlefield()
+        val liveBlockers = blockedBy?.blockerIds?.filter { it in battlefield }.orEmpty()
+        if (!BandsWithOtherRules.invertsDamageAssignment(state, projected, liveBlockers)) {
+            return DamageChooser(defaultChooser, orderConstrained = true)
+        }
 
         // CR 702.22j: the defending player divides this attacker's damage "as they choose".
         val defenderId = container.get<AttackingComponent>()?.defenderId
@@ -95,10 +97,10 @@ internal object CombatDamageUtils {
     ): DamageChooser {
         val blocking = state.getEntity(blockerId)?.get<BlockingComponent>()
             ?: return DamageChooser(defaultChooser, orderConstrained = true)
-        // CR 702.22k: if any blocked attacker has banding, the active player divides this
-        // blocker's damage "as they choose".
-        val attackerHasBanding = blocking.blockedAttackerIds.any { projected.hasKeyword(it, Keyword.BANDING) }
-        return if (attackerHasBanding) {
+        // CR 702.22k: if any blocked attacker has banding — or the blocked attackers include a
+        // [quality] creature with "bands with other [quality]" and another [quality] creature —
+        // the active player divides this blocker's damage "as they choose".
+        return if (BandsWithOtherRules.invertsDamageAssignment(state, projected, blocking.blockedAttackerIds)) {
             DamageChooser(activePlayerId, orderConstrained = false)
         } else {
             DamageChooser(defaultChooser, orderConstrained = true)

@@ -244,7 +244,14 @@ internal class CardActiveEffectsProjector(
 
     private fun signed(amount: Int): String = if (amount >= 0) "+$amount" else "$amount"
 
-    private fun keywordName(keyword: String): String = keyword.lowercase().replace('_', ' ')
+    private fun keywordName(keyword: String): String =
+        // "Bands with other" keywords carry their quality (and a card name) inside the string, so
+        // they are decoded rather than lower-cased: `"bands with other legendary creatures"`.
+        if (keyword.startsWith(com.wingedsheep.sdk.scripting.KeywordAbility.BandsWithOther.FAMILY_KEYWORD)) {
+            com.wingedsheep.sdk.scripting.util.keywordDisplayText(keyword)
+        } else {
+            keyword.lowercase().replace('_', ' ')
+        }
 
     /** This badge with its effect's end stated, both as a field and in the text a tooltip shows. */
     private fun ClientCardEffect.lasting(phrase: String?): ClientCardEffect {

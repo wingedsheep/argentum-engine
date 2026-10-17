@@ -15,6 +15,7 @@ import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Keyword
+import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.model.EntityId
 
 /**
@@ -162,6 +163,13 @@ internal class EffectApplicator(
                 }
                 is Modification.RemoveKeyword -> {
                     values.keywords.remove(mod.keyword)
+                    // CR 702.22b: losing banding loses every "bands with other" ability too, and
+                    // the family name itself means "loses all 'bands with other' abilities".
+                    if (mod.keyword == Keyword.BANDING.name ||
+                        mod.keyword == KeywordAbility.BandsWithOther.FAMILY_KEYWORD
+                    ) {
+                        values.keywords.removeAll { KeywordAbility.BandsWithOther.isBandsWithOther(it) }
+                    }
                 }
                 is Modification.GrantLandwalkFromChosen -> {
                     val chosenLandType = state.getEntity(effect.sourceId)

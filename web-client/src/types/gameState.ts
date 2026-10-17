@@ -236,6 +236,18 @@ export interface ClientCard {
   /** Hexproof from multicolored (CR 105.2b) — shows an uncolored hexproof shield chip */
   readonly hexproofFromMulticolored?: boolean
 
+  /**
+   * This permanent's "bands with other [quality]" abilities (CR 702.22b) as projected keyword
+   * strings (`BANDS_WITH_OTHER_SUPERTYPE_LEGENDARY`, …). Absent for nearly every card.
+   */
+  readonly bandsWithOther?: readonly string[]
+
+  /**
+   * The "bands with other" abilities on the battlefield whose quality this creature has — so the
+   * client can mirror the server's band check without reading types or names (see combatBands.ts).
+   */
+  readonly bandQualities?: readonly string[]
+
   /** Counters on the card */
   readonly counters: Partial<Record<CounterType, number>>
 
