@@ -19480,7 +19480,11 @@
         ]
     },
     "colorIdentityOverride": [
-        "RED"
+        "WHITE",
+        "BLUE",
+        "BLACK",
+        "RED",
+        "GREEN"
     ]
 }
 

@@ -29,7 +29,7 @@ import com.wingedsheep.sdk.scripting.references.Player
  */
 val WidespreadThieving = card("Widespread Thieving") {
     manaCost = "{2}{R}"
-    colorIdentity = "R"
+    colorIdentity = "WUBRG"
     typeLine = "Enchantment"
     oracleText = "Hideaway 5 (When this enchantment enters, look at the top five cards of your " +
         "library, exile one face down, then put the rest on the bottom in a random order.)\n" +
