@@ -30,7 +30,7 @@ val QuietContemplation = card("Quiet Contemplation") {
         effect = Effects.MayPay(
             cost = ManaCost.parse("{1}"),
             then = Effects.Tap(creatureOpponentControls) then
-                Effects.GrantKeyword(AbilityFlag.DOESNT_UNTAP, creatureOpponentControls, Duration.UntilAfterAffectedControllersNextUntap)
+                Effects.GrantKeyword(AbilityFlag.DOESNT_UNTAP, creatureOpponentControls, Duration.UntilAfterAffectedControllersNextUntap())
         )
     }
 

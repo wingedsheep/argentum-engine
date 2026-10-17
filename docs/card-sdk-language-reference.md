@@ -3279,7 +3279,7 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   client replays the flight; the engine AI aims with `FlipAim`.
 - `Effects.SkipNextStepOrPhase(part, target = Controller)` (`SkipStepOrPhaseEffect(part, SkipDuration.NEXT, target)`, `part` = `TurnPart.UNTAP_STEP` | `DRAW_STEP`; other parts are rejected at construction) — a one-shot marker: the target skips their **next** instance of `part`, consumed by the step it skips.
   - `DRAW_STEP` adds the `SkipDrawStepComponent` marker consumed by `DrawPhaseManager.performDrawStep` (Elfhame Sanctuary's "you skip your draw step this turn", Fasting).
-  - `UNTAP_STEP` skips the player's entire next untap step (CR 500.11): nothing of theirs phases or untaps — every permanent type, not just the creatures/lands `SkipUntap` holds — and their own "next untap step" markers (`SkipUntap`, exert, `Duration.UntilAfterAffectedControllersNextUntap`) wait for the first step that isn't skipped. Stacks: two skips skip the next two untap steps (CR 614.10a). Adds to a counted `SkipNextUntapStepComponent`, consumed in `TurnManager.finishUntapStep`. Shisato, Whispering Hunter: `Effects.SkipNextStepOrPhase(TurnPart.UNTAP_STEP, EffectTarget.PlayerRef(Player.TriggeringPlayer))`; Yosei, the Morning Star.
+  - `UNTAP_STEP` skips the player's entire next untap step (CR 500.11): nothing of theirs phases or untaps — every permanent type, not just the creatures/lands `SkipUntap` holds — and their own "next untap step" markers (`SkipUntap`, exert, `Duration.UntilAfterAffectedControllersNextUntap()`) wait for the first step that isn't skipped. Stacks: two skips skip the next two untap steps (CR 614.10a). Adds to a counted `SkipNextUntapStepComponent`, consumed in `TurnManager.finishUntapStep`. Shisato, Whispering Hunter: `Effects.SkipNextStepOrPhase(TurnPart.UNTAP_STEP, EffectTarget.PlayerRef(Player.TriggeringPlayer))`; Yosei, the Morning Star.
 - `Effects.SkipStepOrPhaseThisTurn(part, target)` (`SkipStepOrPhaseEffect(part, SkipDuration.THIS_TURN, target)`, `part` = `TurnPart.DRAW_STEP` |
   `MAIN_PHASE` | `COMBAT_PHASE`; `UNTAP_STEP` exists for the one-shot and standing forms) — the target skips **every** instance of that part of the turn for the rest of
   this turn. The **duration** is what separates it from the one-shot `SkipNextStepOrPhase` / `SkipCombatPhases`
@@ -9762,11 +9762,10 @@ staticAbility {
     target, Duration.WhileSourceTapped("…"))`: the one-way `WhileSourceTapped` latch drops the grant the
     instant the source untaps.
     For "doesn't untap during its controller's **next** untap step" pass
-    `Duration.UntilAfterAffectedControllersNextUntap` (Crippling Chill); for "… next **two** untap
-    steps" pass `Duration.UntilAfterAffectedControllersNextUntaps(2)` (Telekinesis, `count >= 2`).
-    Each untap step of the affected permanent's controller counts one off — the multi-step duration
-    is rewritten to `…NextUntaps(count - 1)`, then to the single-step form for its last step — and
-    skipped untap steps don't count.
+    `Duration.UntilAfterAffectedControllersNextUntap()` (Crippling Chill); for "… next **two** untap
+    steps" pass `Duration.UntilAfterAffectedControllersNextUntap(count = 2)` (Telekinesis).
+    Each untap step of the affected permanent's controller counts one off (the duration is rewritten
+    to `count - 1`, and the effect ends after the last step); skipped untap steps don't count.
   - `AbilityFlag.MAY_NOT_UNTAP` — controller may choose not to untap it (Everglove Courier, and the
     Antiquities self-optional untap-skip on Phyrexian Gremlins / Ashnod's Battle Gear / Tawnos's Weaponry).
   - `AbilityFlag.REMOVE_COUNTER_TO_UNTAP` — "If this would untap during your untap step, remove a +1/+1

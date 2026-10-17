@@ -53,7 +53,7 @@ val CelestialRegulator = card("Celestial Regulator") {
                 then = Effects.GrantKeyword(
                     AbilityFlag.DOESNT_UNTAP,
                     creature,
-                    Duration.UntilAfterAffectedControllersNextUntap,
+                    Duration.UntilAfterAffectedControllersNextUntap(),
                 ),
             )
     }

@@ -59,7 +59,7 @@ val TamiyoTheMoonSage = card("Tamiyo, the Moon Sage") {
         effect = Effects.Tap(permanent) then Effects.GrantKeyword(
             AbilityFlag.DOESNT_UNTAP,
             permanent,
-            Duration.UntilAfterAffectedControllersNextUntap
+            Duration.UntilAfterAffectedControllersNextUntap()
         )
         description = "Tap target permanent. It doesn't untap during its controller's next untap step."
     }

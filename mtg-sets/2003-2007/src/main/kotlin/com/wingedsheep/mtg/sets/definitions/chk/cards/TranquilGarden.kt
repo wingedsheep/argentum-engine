@@ -37,7 +37,7 @@ val TranquilGarden = card("Tranquil Garden") {
         effect = Effects.AddMana(Color.GREEN) then Effects.GrantKeyword(
             AbilityFlag.DOESNT_UNTAP,
             EffectTarget.Self,
-            Duration.UntilAfterAffectedControllersNextUntap,
+            Duration.UntilAfterAffectedControllersNextUntap(),
         )
         manaAbility = true
         timing = TimingRule.ManaAbility
@@ -48,7 +48,7 @@ val TranquilGarden = card("Tranquil Garden") {
         effect = Effects.AddMana(Color.WHITE) then Effects.GrantKeyword(
             AbilityFlag.DOESNT_UNTAP,
             EffectTarget.Self,
-            Duration.UntilAfterAffectedControllersNextUntap,
+            Duration.UntilAfterAffectedControllersNextUntap(),
         )
         manaAbility = true
         timing = TimingRule.ManaAbility

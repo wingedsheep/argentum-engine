@@ -50,7 +50,7 @@ val ChillOfTheGrave = card("Chill of the Grave") {
             Effects.GrantKeyword(
                 AbilityFlag.DOESNT_UNTAP,
                 creature,
-                Duration.UntilAfterAffectedControllersNextUntap
+                Duration.UntilAfterAffectedControllersNextUntap()
             ) then
             Effects.DrawCards(1)
     }

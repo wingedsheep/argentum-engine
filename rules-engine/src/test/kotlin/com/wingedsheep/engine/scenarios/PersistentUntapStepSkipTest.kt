@@ -33,7 +33,7 @@ class PersistentUntapStepSkipTest : FunSpec({
         spell { val t = target(TargetFilter.Permanent); effect = Effects.GainControl(t) } }
     val buff = card("Untap Duration Buff") { manaCost = "{0}"; typeLine = "Instant"
         spell { val t = target(TargetFilter.Creature)
-            effect = Effects.ModifyStats(2, 2, t, Duration.UntilAfterAffectedControllersNextUntap) } }
+            effect = Effects.ModifyStats(2, 2, t, Duration.UntilAfterAffectedControllersNextUntap()) } }
     val optionalUntap = card("Skip Optional Untap") { typeLine = "Artifact"
         flags(com.wingedsheep.sdk.core.AbilityFlag.MAY_NOT_UNTAP) }
     val seedborn = card("Skip Other Untap") { typeLine = "Artifact"; staticAbility { ability = UntapDuringOtherUntapSteps } }

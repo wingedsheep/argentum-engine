@@ -29,7 +29,7 @@ val Tangle = card("Tangle") {
                 Effects.GrantKeyword(
                     AbilityFlag.DOESNT_UNTAP,
                     EffectTarget.IterationEntity,
-                    Duration.UntilAfterAffectedControllersNextUntap
+                    Duration.UntilAfterAffectedControllersNextUntap()
                 )
             )
     }

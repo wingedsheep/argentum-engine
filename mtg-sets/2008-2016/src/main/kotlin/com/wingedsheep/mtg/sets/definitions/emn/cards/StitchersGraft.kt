@@ -51,7 +51,7 @@ val StitchersGraft = card("Stitcher's Graft") {
         effect = Effects.GrantKeyword(
             AbilityFlag.DOESNT_UNTAP,
             EffectTarget.EquippedCreature,
-            Duration.UntilAfterAffectedControllersNextUntap
+            Duration.UntilAfterAffectedControllersNextUntap()
         )
         description = "Whenever equipped creature attacks, it doesn't untap during its " +
             "controller's next untap step."

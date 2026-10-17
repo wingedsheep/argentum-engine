@@ -248,36 +248,24 @@ sealed interface Duration {
     }
 
     /**
-     * Effect lasts through the affected entity's controller's next untap step, then expires.
-     * Used for "doesn't untap during its controller's next untap step" effects.
+     * Effect lasts through the affected entity's controller's next [count] untap steps, then expires.
+     * Used for "doesn't untap during its controller's next untap step" effects (Crippling Chill,
+     * Mercurial Kite) and, with `count = 2`, "… next two untap steps" (Telekinesis).
      * Unlike UntilYourNextTurn (which tracks the caster), this tracks the affected creature's controller.
-     * Example: Crippling Chill, Mercurial Kite
+     * Each untap step of that controller counts one off (`CleanupPhaseManager
+     * .expireAffectedControllersNextUntapEffects` rewrites the duration to `count - 1`, and drops the
+     * effect after the last step); a skipped untap step doesn't count.
      */
     @SerialName("UntilAfterAffectedControllersNextUntap")
     @Serializable
-    data object UntilAfterAffectedControllersNextUntap : Duration {
-        override val description = "doesn't untap during its controller's next untap step"
-    }
-
-    /**
-     * Effect lasts through the next *[count]* untap steps of the affected entity's controller, then
-     * expires — "it doesn't untap during its controller's next two untap steps" (Telekinesis).
-     * The multi-step generalisation of [UntilAfterAffectedControllersNextUntap]: each untap step of
-     * the affected entity's controller counts one off (`CleanupPhaseManager
-     * .expireAffectedControllersNextUntapEffects` rewrites the effect's duration to
-     * `UntilAfterAffectedControllersNextUntaps(count - 1)`, and to
-     * [UntilAfterAffectedControllersNextUntap] for the last step), so skipped untap steps don't
-     * count, exactly as for the single-step form. [count] is at least 2; one step is
-     * [UntilAfterAffectedControllersNextUntap].
-     */
-    @SerialName("UntilAfterAffectedControllersNextUntaps")
-    @Serializable
-    data class UntilAfterAffectedControllersNextUntaps(val count: Int) : Duration {
+    data class UntilAfterAffectedControllersNextUntap(val count: Int = 1) : Duration {
         init {
-            require(count >= 2) { "Use UntilAfterAffectedControllersNextUntap for a single untap step" }
+            require(count >= 1) { "count must be at least 1, was $count" }
         }
 
-        override val description = "during its controller's next ${numberToWord(count)} untap steps"
+        override val description =
+            if (count == 1) "doesn't untap during its controller's next untap step"
+            else "during its controller's next ${numberToWord(count)} untap steps"
     }
 
     /**

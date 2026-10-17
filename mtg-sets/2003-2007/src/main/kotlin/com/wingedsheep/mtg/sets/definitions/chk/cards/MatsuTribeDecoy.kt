@@ -44,7 +44,7 @@ val MatsuTribeDecoy = card("Matsu-Tribe Decoy") {
             Effects.GrantKeyword(
                 AbilityFlag.DOESNT_UNTAP,
                 EffectTarget.TriggeringEntity,
-                Duration.UntilAfterAffectedControllersNextUntap,
+                Duration.UntilAfterAffectedControllersNextUntap(),
             )
     }
 

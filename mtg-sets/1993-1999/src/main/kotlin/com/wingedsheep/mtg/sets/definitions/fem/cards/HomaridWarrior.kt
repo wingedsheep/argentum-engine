@@ -35,7 +35,7 @@ val HomaridWarrior = card("Homarid Warrior") {
             Effects.GrantKeyword(
                 AbilityFlag.DOESNT_UNTAP,
                 EffectTarget.Self,
-                Duration.UntilAfterAffectedControllersNextUntap,
+                Duration.UntilAfterAffectedControllersNextUntap(),
             ) then
             Effects.Tap(EffectTarget.Self)
         description = "{U}: This creature gains shroud until end of turn and doesn't untap during your next untap step. Tap it."

@@ -35,7 +35,7 @@ val RooftopNuisance = card("Rooftop Nuisance") {
             Effects.GrantKeyword(
                 AbilityFlag.DOESNT_UNTAP,
                 creature,
-                Duration.UntilAfterAffectedControllersNextUntap,
+                Duration.UntilAfterAffectedControllersNextUntap(),
             ) then
             Effects.DrawCards(1)
     }

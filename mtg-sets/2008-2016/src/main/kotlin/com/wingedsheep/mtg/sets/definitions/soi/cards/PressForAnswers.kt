@@ -30,7 +30,7 @@ val PressForAnswers = card("Press for Answers") {
             Effects.GrantKeyword(
                 AbilityFlag.DOESNT_UNTAP,
                 creature,
-                Duration.UntilAfterAffectedControllersNextUntap
+                Duration.UntilAfterAffectedControllersNextUntap()
             ) then
             Effects.Investigate()
     }

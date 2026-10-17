@@ -65,7 +65,7 @@ val DreamshackleGeist = card("Dreamshackle Geist") {
                     effect = Effects.GrantKeyword(
                         AbilityFlag.DOESNT_UNTAP,
                         creature,
-                        Duration.UntilAfterAffectedControllersNextUntap,
+                        Duration.UntilAfterAffectedControllersNextUntap(),
                     )
                 }
             ),

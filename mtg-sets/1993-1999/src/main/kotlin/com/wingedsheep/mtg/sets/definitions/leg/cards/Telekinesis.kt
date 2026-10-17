@@ -30,7 +30,7 @@ val Telekinesis = card("Telekinesis") {
             Effects.GrantKeyword(
                 AbilityFlag.DOESNT_UNTAP,
                 creature,
-                Duration.UntilAfterAffectedControllersNextUntaps(2),
+                Duration.UntilAfterAffectedControllersNextUntap(count = 2),
             )
     }
 

@@ -86,7 +86,7 @@ val TamiyoFieldResearcher = card("Tamiyo, Field Researcher") {
             Effects.GrantKeyword(
                 AbilityFlag.DOESNT_UNTAP,
                 EffectTarget.ContextTarget(0),
-                Duration.UntilAfterAffectedControllersNextUntap
+                Duration.UntilAfterAffectedControllersNextUntap()
             )
         )
         description = "Tap up to two target nonland permanents. They don't untap during their " +

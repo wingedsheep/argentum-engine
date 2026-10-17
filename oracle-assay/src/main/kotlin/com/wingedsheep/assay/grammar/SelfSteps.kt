@@ -127,7 +127,7 @@ object SelfSteps {
                 Effects.GrantKeyword(
                     AbilityFlag.DOESNT_UNTAP,
                     target,
-                    Duration.UntilAfterAffectedControllersNextUntap,
+                    Duration.UntilAfterAffectedControllersNextUntap(),
                 ),
                 subject,
             ),

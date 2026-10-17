@@ -33,7 +33,7 @@ val WatertrapWeaver = card("Watertrap Weaver") {
             Effects.GrantKeyword(
                 AbilityFlag.DOESNT_UNTAP,
                 creature,
-                Duration.UntilAfterAffectedControllersNextUntap
+                Duration.UntilAfterAffectedControllersNextUntap()
             )
     }
 

@@ -54,7 +54,7 @@ val JunkWinder = card("Junk Winder") {
             Effects.GrantKeyword(
                 AbilityFlag.DOESNT_UNTAP,
                 permanent,
-                Duration.UntilAfterAffectedControllersNextUntap
+                Duration.UntilAfterAffectedControllersNextUntap()
             )
         description = "Whenever a token you control enters, tap target nonland permanent an " +
             "opponent controls. It doesn't untap during its controller's next untap step."

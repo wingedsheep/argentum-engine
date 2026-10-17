@@ -2166,7 +2166,7 @@ object Steps {
             spellEffect = Effects.GrantKeyword(
                 AbilityFlag.DOESNT_UNTAP,
                 Targets.bound(),
-                Duration.UntilAfterAffectedControllersNextUntap,
+                Duration.UntilAfterAffectedControllersNextUntap(),
             ),
             targetRequirements = listOf(Targets.permanent(filter)),
         )

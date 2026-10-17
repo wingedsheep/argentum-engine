@@ -42,7 +42,7 @@ val StitchedMangler = card("Stitched Mangler") {
             Effects.GrantKeyword(
                 AbilityFlag.DOESNT_UNTAP,
                 creature,
-                Duration.UntilAfterAffectedControllersNextUntap
+                Duration.UntilAfterAffectedControllersNextUntap()
             )
     }
 

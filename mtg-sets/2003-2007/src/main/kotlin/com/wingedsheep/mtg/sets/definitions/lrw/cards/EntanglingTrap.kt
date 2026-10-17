@@ -45,7 +45,7 @@ val EntanglingTrap = card("Entangling Trap") {
                 Effects.GrantKeyword(
                     AbilityFlag.DOESNT_UNTAP,
                     creature,
-                    Duration.UntilAfterAffectedControllersNextUntap
+                    Duration.UntilAfterAffectedControllersNextUntap()
                 )
             )
         description = "tap target creature an opponent controls. If you won, that creature " +

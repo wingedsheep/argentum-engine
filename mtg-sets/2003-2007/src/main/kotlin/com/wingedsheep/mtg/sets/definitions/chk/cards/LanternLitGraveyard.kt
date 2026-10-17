@@ -37,7 +37,7 @@ val LanternLitGraveyard = card("Lantern-Lit Graveyard") {
         effect = Effects.AddMana(Color.BLACK) then Effects.GrantKeyword(
             AbilityFlag.DOESNT_UNTAP,
             EffectTarget.Self,
-            Duration.UntilAfterAffectedControllersNextUntap,
+            Duration.UntilAfterAffectedControllersNextUntap(),
         )
         manaAbility = true
         timing = TimingRule.ManaAbility
@@ -48,7 +48,7 @@ val LanternLitGraveyard = card("Lantern-Lit Graveyard") {
         effect = Effects.AddMana(Color.RED) then Effects.GrantKeyword(
             AbilityFlag.DOESNT_UNTAP,
             EffectTarget.Self,
-            Duration.UntilAfterAffectedControllersNextUntap,
+            Duration.UntilAfterAffectedControllersNextUntap(),
         )
         manaAbility = true
         timing = TimingRule.ManaAbility

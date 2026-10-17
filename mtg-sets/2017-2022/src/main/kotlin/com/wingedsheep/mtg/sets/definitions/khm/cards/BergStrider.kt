@@ -43,7 +43,7 @@ val BergStrider = card("Berg Strider") {
                 then = Effects.GrantKeyword(
                     AbilityFlag.DOESNT_UNTAP,
                     permanent,
-                    Duration.UntilAfterAffectedControllersNextUntap,
+                    Duration.UntilAfterAffectedControllersNextUntap(),
                 ),
             )
     }

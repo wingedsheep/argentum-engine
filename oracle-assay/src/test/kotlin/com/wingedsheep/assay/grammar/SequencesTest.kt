@@ -166,7 +166,7 @@ class SequencesTest : StringSpec({
                         Effects.GrantKeyword(
                             AbilityFlag.DOESNT_UNTAP,
                             Targets.bound(),
-                            Duration.UntilAfterAffectedControllersNextUntap,
+                            Duration.UntilAfterAffectedControllersNextUntap(),
                         ),
                     targetRequirements = listOf(Targets.permanent(GameObjectFilter.Creature)),
                 )
@@ -196,7 +196,7 @@ class SequencesTest : StringSpec({
                 spellEffect = Effects.GrantKeyword(
                     AbilityFlag.DOESNT_UNTAP,
                     EffectTarget.Self,
-                    Duration.UntilAfterAffectedControllersNextUntap,
+                    Duration.UntilAfterAffectedControllersNextUntap(),
                 )
             )
         )

@@ -600,8 +600,7 @@ Families:
 - `Duration.EndOfYourNextUpkeep` — Effect lasts until the end of your next upkeep step — it outlives the upkeep it was created in (and every other player's turn) and ends as your following upkeep step ends, so it is still in force w…
 - `Duration.NextUse(sourceDescription: String)` — Effect is consumed the first time its replacement effect is applied or end of turn if not consumed.
 - `Duration.Permanent` — Effect is permanent (static abilities, auras while attached).
-- `Duration.UntilAfterAffectedControllersNextUntap` — Effect lasts through the affected entity's controller's next untap step, then expires.
-- `Duration.UntilAfterAffectedControllersNextUntaps(count: Int)` — Effect lasts through the next *count* untap steps of the affected entity's controller, then expires — "it doesn't untap during its controller's next two untap steps" (Telekinesis).
+- `Duration.UntilAfterAffectedControllersNextUntap(count: Int)` — Effect lasts through the affected entity's controller's next count untap steps, then expires.
 - `Duration.UntilCondition(conditionDescription: String)` — Effect lasts until a condition is met.
 - `Duration.UntilNextEndStep` — Effect lasts until the beginning of the next end step (the *next* one — never the end step it was created in).
 - `Duration.UntilPhase(phase: String)` — Effect lasts until a specific phase.

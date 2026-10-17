@@ -553,7 +553,7 @@ class TurnManager(
 
         // An upkeep step of the active (team) player's turn is ending: "until the end of your next
         // upkeep" effects past their floor end now (Halfdane). Before the additional-upkeep
-        // redirect below, so an inserted upkeep step (Obeka) ends them as well.
+        // redirect below, so an inserted upkeep step (Obeka) on a turn past the floor ends them too.
         if (currentStep == Step.UPKEEP) {
             state = cleanupPhaseManager.expireEndOfYourNextUpkeepEffects(state, activePlayer)
         }

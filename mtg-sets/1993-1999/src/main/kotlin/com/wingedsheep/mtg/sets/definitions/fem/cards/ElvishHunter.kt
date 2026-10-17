@@ -33,7 +33,7 @@ val ElvishHunter = card("Elvish Hunter") {
         effect = Effects.GrantKeyword(
             AbilityFlag.DOESNT_UNTAP,
             creature,
-            Duration.UntilAfterAffectedControllersNextUntap,
+            Duration.UntilAfterAffectedControllersNextUntap(),
         )
         description = "{1}{G}, {T}: Target creature doesn't untap during its controller's next untap step."
     }

@@ -21,7 +21,7 @@ import io.kotest.matchers.shouldBe
  *  - [Duration.EndOfAffectedControllersNextTurn] — ends at the cleanup of the affected creature's
  *    controller's next turn; the creating turn never counts, even when it is that player's own
  *    (Wall of Dust).
- *  - [Duration.UntilAfterAffectedControllersNextUntaps] — counts the affected creature's
+ *  - [Duration.UntilAfterAffectedControllersNextUntap] with `count = 2` — counts the affected creature's
  *    controller's untap steps down, one per step (Telekinesis).
  */
 class LaterTurnDurationsTest : FunSpec({
@@ -48,7 +48,7 @@ class LaterTurnDurationsTest : FunSpec({
         spell {
             val t = target(TargetFilter.Creature)
             effect = Effects.Tap(t) then
-                Effects.GrantKeyword(AbilityFlag.DOESNT_UNTAP, t, Duration.UntilAfterAffectedControllersNextUntaps(2))
+                Effects.GrantKeyword(AbilityFlag.DOESNT_UNTAP, t, Duration.UntilAfterAffectedControllersNextUntap(count = 2))
         }
     }
 
@@ -157,19 +157,19 @@ class LaterTurnDurationsTest : FunSpec({
         d.passPriorityUntil(Step.UPKEEP, p2)
         withClue("first untap step: still tapped, one step left") {
             d.isTapped(bear) shouldBe true
-            d.has(Duration.UntilAfterAffectedControllersNextUntap) shouldBe true
+            d.has(Duration.UntilAfterAffectedControllersNextUntap()) shouldBe true
         }
 
         d.passPriorityUntil(Step.UPKEEP, p1)
         withClue("another player's untap step doesn't count") {
             d.isTapped(bear) shouldBe true
-            d.has(Duration.UntilAfterAffectedControllersNextUntap) shouldBe true
+            d.has(Duration.UntilAfterAffectedControllersNextUntap()) shouldBe true
         }
 
         d.passPriorityUntil(Step.UPKEEP, p2)
         withClue("second untap step: still tapped, and the effect is spent") {
             d.isTapped(bear) shouldBe true
-            d.has(Duration.UntilAfterAffectedControllersNextUntap) shouldBe false
+            d.has(Duration.UntilAfterAffectedControllersNextUntap()) shouldBe false
         }
 
         d.passPriorityUntil(Step.UPKEEP, p1)
@@ -177,9 +177,9 @@ class LaterTurnDurationsTest : FunSpec({
         withClue("third untap step: it untaps") { d.isTapped(bear) shouldBe false }
     }
 
-    test("the multi-step duration requires at least two steps") {
-        runCatching { Duration.UntilAfterAffectedControllersNextUntaps(1) }.isFailure shouldBe true
-        Duration.UntilAfterAffectedControllersNextUntaps(2).description shouldBe
+    test("the untap-step count must be positive and reads as a number of steps") {
+        runCatching { Duration.UntilAfterAffectedControllersNextUntap(count = 0) }.isFailure shouldBe true
+        Duration.UntilAfterAffectedControllersNextUntap(count = 2).description shouldBe
             "during its controller's next two untap steps"
     }
 })

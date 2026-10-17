@@ -4132,7 +4132,7 @@
                         "name": "t0"
                     },
                     "duration": {
-                        "type": "UntilAfterAffectedControllersNextUntaps",
+                        "type": "UntilAfterAffectedControllersNextUntap",
                         "count": 2
                     }
                 }

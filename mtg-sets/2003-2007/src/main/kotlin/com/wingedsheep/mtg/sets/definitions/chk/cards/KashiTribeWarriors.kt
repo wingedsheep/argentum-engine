@@ -35,7 +35,7 @@ val KashiTribeWarriors = card("Kashi-Tribe Warriors") {
             Effects.GrantKeyword(
                 AbilityFlag.DOESNT_UNTAP,
                 EffectTarget.TriggeringEntity,
-                Duration.UntilAfterAffectedControllersNextUntap,
+                Duration.UntilAfterAffectedControllersNextUntap(),
             )
     }
 

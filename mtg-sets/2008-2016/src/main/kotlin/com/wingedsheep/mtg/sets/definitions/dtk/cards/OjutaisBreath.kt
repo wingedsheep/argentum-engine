@@ -39,7 +39,7 @@ val OjutaisBreath = card("Ojutai's Breath") {
             Effects.GrantKeyword(
                 AbilityFlag.DOESNT_UNTAP,
                 t,
-                Duration.UntilAfterAffectedControllersNextUntap
+                Duration.UntilAfterAffectedControllersNextUntap()
             )
     }
 

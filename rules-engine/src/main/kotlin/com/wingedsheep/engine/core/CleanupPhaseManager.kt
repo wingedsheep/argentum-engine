@@ -485,9 +485,8 @@ class CleanupPhaseManager(
     /**
      * Expire UntilAfterAffectedControllersNextUntap floating effects after the untap step.
      * These expire when any of the affected entities are controlled by the active player,
-     * meaning the affected creature's controller just had their untap step. A multi-step
-     * [Duration.UntilAfterAffectedControllersNextUntaps] effect counts that step off instead:
-     * it stays, one step shorter (down to the single-step form for its last step).
+     * meaning the affected creature's controller just had their untap step. A multi-step effect
+     * (`count > 1`) counts that step off instead: it stays, one step shorter.
      */
     fun expireAffectedControllersNextUntapEffects(
         state: GameState,
@@ -507,17 +506,13 @@ class CleanupPhaseManager(
         var changed = false
         val remaining = state.floatingEffects.mapNotNull { floatingEffect ->
             when (val duration = floatingEffect.duration) {
-                Duration.UntilAfterAffectedControllersNextUntap ->
-                    if (controllerJustUntapped(floatingEffect)) null.also { changed = true } else floatingEffect
-                is Duration.UntilAfterAffectedControllersNextUntaps ->
-                    if (controllerJustUntapped(floatingEffect)) {
+                is Duration.UntilAfterAffectedControllersNextUntap ->
+                    if (!controllerJustUntapped(floatingEffect)) floatingEffect
+                    else {
                         changed = true
-                        val left = duration.count - 1
-                        floatingEffect.copy(
-                            duration = if (left == 1) Duration.UntilAfterAffectedControllersNextUntap
-                            else Duration.UntilAfterAffectedControllersNextUntaps(left)
-                        )
-                    } else floatingEffect
+                        if (duration.count == 1) null
+                        else floatingEffect.copy(duration = duration.copy(count = duration.count - 1))
+                    }
                 else -> floatingEffect
             }
         }
@@ -652,7 +647,13 @@ class CleanupPhaseManager(
                     }
                 }
                 is Duration.UntilYourNextUpkeep -> true  // Keep until upkeep
-                is Duration.EndOfYourNextUpkeep -> true  // Expired as that upkeep step ends (expireEndOfYourNextUpkeepEffects)
+                // Normally expired as that upkeep step ends (expireEndOfYourNextUpkeepEffects).
+                // Backstop: a turn that ended mid-upkeep (CR 724, "end the turn") never left its
+                // upkeep step normally, so drop it at that turn's cleanup instead.
+                is Duration.EndOfYourNextUpkeep -> !(
+                    newState.isActiveTurnFor(floatingEffect.controllerId) &&
+                        (floatingEffect.expiresAfterTurn ?: 0) <= newState.turnNumber
+                    )
                 is Duration.EndOfAffectedControllersNextTurn -> {
                     // Ends at the cleanup of the affected entity's controller's next turn: the
                     // floor excludes the creating turn, the projected-controller guard keys it to
@@ -710,7 +711,6 @@ class CleanupPhaseManager(
                 is Duration.WhileAffectedHasCounter -> true  // Gated per-frame by StateProjector (counter present); latched off by EndedDurationExpiryCheck when the counter leaves
                 is Duration.WhileAffectedTapped -> true  // Gated per-frame by StateProjector / activation-legality checks; latched off by EndedDurationExpiryCheck when the permanent untaps
                 is Duration.UntilAfterAffectedControllersNextUntap -> true  // Expires after affected entity's controller's untap
-                is Duration.UntilAfterAffectedControllersNextUntaps -> true  // Counted down after each of those untap steps
                 is Duration.UntilPhase -> true  // Handle in phase transitions
                 is Duration.UntilCondition -> true  // Handle condition checking elsewhere
             }

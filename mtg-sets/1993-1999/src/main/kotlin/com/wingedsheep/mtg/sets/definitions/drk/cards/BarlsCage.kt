@@ -30,7 +30,7 @@ val BarlsCage = card("Barl's Cage") {
         effect = Effects.GrantKeyword(
             AbilityFlag.DOESNT_UNTAP,
             creature,
-            Duration.UntilAfterAffectedControllersNextUntap,
+            Duration.UntilAfterAffectedControllersNextUntap(),
         )
     }
 
