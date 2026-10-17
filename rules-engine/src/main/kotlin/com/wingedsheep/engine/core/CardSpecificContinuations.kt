@@ -803,12 +803,14 @@ data class ActivateAbilitySacrificeContinuation(
  * @property action The original [ActivateAbility] (`costPayment.variableCostPermanents` still empty).
  * @property candidates The eligible permanents offered as options (used to validate the pick).
  * @property minCount Minimum number of permanents that must be chosen (the cost's floor).
+ * @property maxCount Maximum number that may be chosen (the cost's cap), or `null` for no cap.
  */
 @Serializable
 data class ActivateAbilityVariablePermanentsContinuation(
     val action: ActivateAbility,
     val candidates: List<EntityId>,
-    val minCount: Int
+    val minCount: Int,
+    val maxCount: Int? = null
 ) : AnswerContinuation
 
 /**

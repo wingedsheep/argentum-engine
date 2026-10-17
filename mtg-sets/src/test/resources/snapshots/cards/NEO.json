@@ -4217,6 +4217,95 @@
     ]
 }
 
+// Scrap Welder
+{
+    "name": "Scrap Welder",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Goblin Artificer",
+    "oracleText": "{T}, Sacrifice an artifact with mana value X: Return target artifact card with mana value less than X from your graveyard to the battlefield. It gains haste until end of turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Scrap Welder:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomVariablePermanents",
+                                "filter": "artifact",
+                                "excludeSelf": false,
+                                "action": "SACRIFICE",
+                                "maxCount": 1
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "destination": "Battlefield",
+                            "fromZone": "Graveyard"
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "HASTE",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsArtifact",
+                                    {
+                                        "type": "CompareNumericProperty",
+                                        "property": "MANA_VALUE",
+                                        "operator": "LT",
+                                        "amount": "XValue"
+                                    }
+                                ],
+                                "controllerPredicate": "OwnedByYou"
+                            },
+                            "zone": "Graveyard"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{T}, Sacrifice an artifact with mana value X: Return target artifact card with mana value less than X from your graveyard to the battlefield. It gains haste until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "159",
+        "rarity": "RARE",
+        "artist": "Simon Dominic",
+        "flavorText": "\"This big metal guy will make some amazing wind chimes!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/4/14057067-2325-4229-8580-d9a6397ae343.jpg?1783923860"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Scrapyard Steelbreaker
 {
     "name": "Scrapyard Steelbreaker",

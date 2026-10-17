@@ -647,12 +647,12 @@ counts a hybrid Phyrexian pip paid with life like any other Phyrexian pip.
   activated-ability and the spell additional-cost paths). Its selection is recorded, so a resolving
   effect can name the exiled cards via `CardSource.ExiledAsCost`, or the single object as
   `EffectTarget.ExiledAsCost()` — read as it last existed on the battlefield.
-- `Costs.ExilePermanents(filter = Any, minCount = 1, excludeSelf = true, xMeasure = TOTAL_MANA_VALUE, minMeasure = 0)`
-  / `Costs.SacrificePermanents(filter = Any, minCount = 1, excludeSelf = false, xMeasure = COUNT, minMeasure = 0)`
+- `Costs.ExilePermanents(filter = Any, minCount = 1, excludeSelf = true, xMeasure = TOTAL_MANA_VALUE, minMeasure = 0, maxCount = null)`
+  / `Costs.SacrificePermanents(filter = Any, minCount = 1, excludeSelf = false, xMeasure = COUNT, minMeasure = 0, maxCount = null)`
   / `Costs.TapPermanentsVariable(filter = Creature, minCount = 1, excludeSelf = false, xMeasure = COUNT, minMeasure = 0)` —
   **variable-count** "exile/sacrifice/tap one or more permanents you control matching `filter`"
   activated-ability cost (CR 601.2b — the player chooses how many, at least `minCount`, as the
-  ability is activated). One atom, `CostAtom.VariablePermanents`, with three orthogonal axes; the two
+  ability is activated). One atom, `CostAtom.VariablePermanents`, with four orthogonal axes; the
   facades are the named entry points to it. With `excludeSelf` the ability's own source is excluded
   ("one or more *other* …"); leave it false when the source may pay for itself.
   - **`action`** (set by which facade you call) — `EXILE` moves the permanents via the normal
@@ -675,6 +675,15 @@ counts a hybrid Phyrexian pip paid with life like any other Phyrexian pip.
   - **`minMeasure`** — a floor on the *measure* rather than on the count (0 = none): "any number …
     with total power N or more". Pair it with `minCount = 0` for the free-count shapes; the engine
     marks the whole cost unpayable when every candidate together falls short (CR 601.2h).
+  - **`maxCount`** — a cap on the count (`null` = none). `maxCount = 1` with `TOTAL_MANA_VALUE` is
+    the single-permanent shape whose own mana value is X: **Scrap Welder**'s "{T}, Sacrifice an
+    artifact with mana value X: Return target artifact card with mana value less than X from your
+    graveyard to the battlefield" — `Costs.SacrificePermanents(Artifact, maxCount = 1, xMeasure =
+    TOTAL_MANA_VALUE)` with a target filtered by `GameObjectFilter.manaValueLessThanX()`.
+    Which artifact is picked announces X, so the selection pause offers only the artifacts that leave
+    the X-bounded target something to choose, and payment rejects more than `maxCount`. A spell's
+    additional cost enforces the cap at validation; the spell-side picker doesn't show it yet, since
+    no printed spell has a capped variable cost.
 
   This atom is also a **spell additional cost**, not only an activated-ability cost: teamwork
   (CR 702.194a) rides it through `AdditionalCost.Atom`, paying from
@@ -686,8 +695,8 @@ counts a hybrid Phyrexian pip paid with life like any other Phyrexian pip.
   Target player adds three mana of the chosen color for each artifact sacrificed this way" —
   `Costs.SacrificePermanents(Artifact, excludeSelf = false)` plus
   `AddManaOfChoice(amount = Multiply(XValue, 3), recipient = <the target>)`). The engine drives the
-  activation in order: it pauses for the on-battlefield selection (min = `minCount`, max = all
-  eligible), computes X, then pauses again for the ability's target — so an over-X target can never
+  activation in order: it pauses for the on-battlefield selection (min = `minCount`, max =
+  `maxCount` or all eligible), computes X, then pauses again for the ability's target — so an over-X target can never
   be chosen. Both pauses precede cost payment, so cancelling either is side-effect-free. Pair with
   `TimingRule.SorcerySpeed` where the card says "Activate only as a sorcery."
 - `Costs.Forage()` (ability cost) / `Costs.additional.Forage` (additional cost) — Forage (CR
@@ -6296,6 +6305,9 @@ This is the player-arm prerequisite for the planned composable mixed `TargetUnio
 - `.manaValue(n)` / `.manaValueAtMost(n)` / `.manaValueAtLeast(n)` — mana-value comparator.
 - `.manaValueAtMostX()` — `compareNumericProperty(MANA_VALUE, LTE, XValue)`: mana value ≤ the X chosen for the
   source spell/ability.
+- `.manaValueLessThanX()` — `compareNumericProperty(MANA_VALUE, LT, XValue)`: mana value **strictly** below the
+  X — "target artifact card with mana value less than X" (**Scrap Welder**, whose X is the sacrificed artifact's
+  mana value). Permissive while X is unbound, like `.manaValueAtMostX()`.
 - `.manaValueEqualsX()` — `compareNumericProperty(MANA_VALUE, EQ, XValue)`: mana value **exactly equal** to the X chosen for the source spell/ability (the chosen
   number, or the X paid in an `{X}…` mana cost).
   Available on both the object-filter builders and on `TargetFilter` (mirrors `.manaValueAtMostX()`). Used by Void

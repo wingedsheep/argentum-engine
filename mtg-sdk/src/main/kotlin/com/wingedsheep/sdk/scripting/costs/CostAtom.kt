@@ -219,6 +219,11 @@ sealed interface CostAtom : TextReplaceable<CostAtom> {
      *    more" (Teamwork). The measure doubles as the ability's X when it resolves.
      *  - [minMeasure] — a *floor on the measure* rather than on the count: "with total power N or
      *    more". 0 means unbounded, in which case only [minCount] constrains the choice.
+     *  - [maxCount] — a *cap on the count*. `null` (the default) leaves it open ("one or more");
+     *    `minCount = maxCount = 1` is the single-permanent shape whose own measure is X: "sacrifice
+     *    an artifact with mana value X" (Scrap Welder) — still a variable cost, because which
+     *    artifact is chosen is what announces X (CR 601.2b) and so bounds a "mana value less than X"
+     *    target, which a fixed-count [Sacrifice] atom has no X to do.
      *
      * @property filter which permanents you control may be chosen.
      * @property minCount minimum number to choose (default 1 — "one or more"). Set 0 alongside a
@@ -230,6 +235,7 @@ sealed interface CostAtom : TextReplaceable<CostAtom> {
      * @property action what the cost does with the chosen permanents.
      * @property xMeasure how the chosen set is measured.
      * @property minMeasure minimum total the chosen set's [xMeasure] must reach (0 = no floor).
+     * @property maxCount maximum number to choose, or `null` for no cap.
      */
     @SerialName("AtomVariablePermanents")
     @Serializable
@@ -239,8 +245,13 @@ sealed interface CostAtom : TextReplaceable<CostAtom> {
         val excludeSelf: Boolean = true,
         val action: PermanentCostAction = PermanentCostAction.EXILE,
         val xMeasure: VariableCostMeasure = VariableCostMeasure.TOTAL_MANA_VALUE,
-        val minMeasure: Int = 0
+        val minMeasure: Int = 0,
+        val maxCount: Int? = null
     ) : CostAtom {
+        init {
+            require(maxCount == null || maxCount >= maxOf(minCount, 1)) { "maxCount must be at least minCount and 1" }
+        }
+
         // Variable count — the floor the payer must at least select. The picker's max is the number
         // of eligible permanents, resolved by the engine at activation time.
         override val selectionCount: Int get() = minCount
@@ -250,7 +261,16 @@ sealed interface CostAtom : TextReplaceable<CostAtom> {
                 PermanentCostAction.SACRIFICE -> "sacrifice "
                 PermanentCostAction.TAP -> "tap "
             })
+            if (minCount == 1 && maxCount == 1) {
+                append(if (excludeSelf) "another ${filter.description}" else quantify(1, filter.description))
+                append(" you control")
+                if (xMeasure == VariableCostMeasure.TOTAL_MANA_VALUE) append(" with mana value X")
+                if (xMeasure == VariableCostMeasure.TOTAL_POWER) append(" with power X")
+                return@buildString
+            }
             append(when {
+                maxCount != null && maxCount == minCount -> "$minCount "
+                maxCount != null -> "${maxOf(minCount, 0)} to $maxCount "
                 minCount <= 0 -> "any number of "
                 minCount == 1 -> "one or more "
                 else -> "$minCount or more "

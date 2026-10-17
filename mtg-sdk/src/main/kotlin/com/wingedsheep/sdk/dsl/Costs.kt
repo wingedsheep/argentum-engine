@@ -444,10 +444,11 @@ object Costs {
         minCount: Int = 1,
         excludeSelf: Boolean = true,
         xMeasure: VariableCostMeasure = VariableCostMeasure.TOTAL_MANA_VALUE,
-        minMeasure: Int = 0
+        minMeasure: Int = 0,
+        maxCount: Int? = null
     ): AbilityCost = AbilityCost.Atom(
         CostAtom.VariablePermanents(
-            filter, minCount, excludeSelf, PermanentCostAction.EXILE, xMeasure, minMeasure
+            filter, minCount, excludeSelf, PermanentCostAction.EXILE, xMeasure, minMeasure, maxCount
         )
     )
 
@@ -459,17 +460,20 @@ object Costs {
      *
      * [excludeSelf] defaults to false: the ability's own source is usually a legal choice for its
      * own cost (Radiant Lotus is an artifact and may sacrifice itself). Pass [xMeasure]
-     * `TOTAL_MANA_VALUE` for the "with total mana value X" shape.
+     * `TOTAL_MANA_VALUE` for the "with total mana value X" shape, and `maxCount = 1` with it for
+     * "sacrifice an artifact with mana value X" (Scrap Welder) — one permanent, whose own mana
+     * value is the X a "mana value less than X" target is measured against.
      */
     fun SacrificePermanents(
         filter: GameObjectFilter = GameObjectFilter.Any,
         minCount: Int = 1,
         excludeSelf: Boolean = false,
         xMeasure: VariableCostMeasure = VariableCostMeasure.COUNT,
-        minMeasure: Int = 0
+        minMeasure: Int = 0,
+        maxCount: Int? = null
     ): AbilityCost = AbilityCost.Atom(
         CostAtom.VariablePermanents(
-            filter, minCount, excludeSelf, PermanentCostAction.SACRIFICE, xMeasure, minMeasure
+            filter, minCount, excludeSelf, PermanentCostAction.SACRIFICE, xMeasure, minMeasure, maxCount
         )
     )
 

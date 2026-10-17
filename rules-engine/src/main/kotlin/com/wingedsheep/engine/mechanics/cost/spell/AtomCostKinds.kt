@@ -734,6 +734,10 @@ internal object VariablePermanentsCostKind : SpellCostKind<CostAtom.VariablePerm
         if (chosen.size < cost.minCount) {
             return "You must $verb at least ${cost.minCount} ${cost.filter.description}(s) to cast this spell"
         }
+        val maxCount = cost.maxCount
+        if (maxCount != null && chosen.size > maxCount) {
+            return "You may $verb at most $maxCount ${cost.filter.description}(s) to cast this spell"
+        }
         val context = PredicateContext(controllerId = check.playerId)
         for (permId in chosen) {
             val permContainer = state.getEntity(permId)

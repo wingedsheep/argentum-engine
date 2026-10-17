@@ -1280,6 +1280,10 @@ class CostHandler(private val zones: ZoneTransitionService) {
         if (toPay.size < minCount) {
             return CostPaymentResult.failure("Not enough permanents chosen to $verb (need $minCount, got ${toPay.size})")
         }
+        val maxCount = atom.maxCount
+        if (maxCount != null && toPay.size > maxCount) {
+            return CostPaymentResult.failure("Too many permanents chosen to $verb (at most $maxCount, got ${toPay.size})")
+        }
         // A measure floor ("… with total power N or more") is checked instead of, or alongside, the
         // count floor — CR 702.194a's teamwork threshold is on the sum, not the size.
         if (atom.minMeasure > 0) {

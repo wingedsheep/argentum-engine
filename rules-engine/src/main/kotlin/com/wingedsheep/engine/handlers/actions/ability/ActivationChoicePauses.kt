@@ -40,6 +40,7 @@ import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.targets.TargetChooser
 import com.wingedsheep.sdk.scripting.targets.TargetRequirement
+import com.wingedsheep.sdk.scripting.util.quantify
 
 /**
  * The announcement-time choices an activation may have to stop and ask for before any cost is paid
@@ -485,15 +486,35 @@ internal class ActivationChoicePauses(
                 sourceId = action.sourceId,
             )
             .let { if (variablePermanentsCost.excludeSelf) it.filter { id -> id != action.sourceId } else it }
+            .let { all ->
+                // A single-permanent cost ("sacrifice an artifact with mana value X" — Scrap Welder)
+                // announces X by which permanent is picked, so offer only the picks that leave the
+                // X-bounded target pause below something to choose; any other pick would be an
+                // activation that can't be completed (CR 601.2c via CR 602.2b).
+                if (variablePermanentsCost.maxCount == 1) {
+                    all.filter { id ->
+                        hasLegalControllerTargets(
+                            state, activation, VariablePermanentsCost.measure(state, variablePermanentsCost.xMeasure, listOf(id))
+                        )
+                    }
+                } else all
+            }
         val minCount = variablePermanentsCost.minCount
+        val maxCount = variablePermanentsCost.maxCount
         if (candidates.size < minCount) {
-            return ExecutionResult.error(state, "Not enough permanents to $verb for ${sourceName}")
+            return ExecutionResult.error(
+                state,
+                if (maxCount == 1) "No ${variablePermanentsCost.filter.description} to $verb leaves a legal target for ${sourceName}"
+                else "Not enough permanents to $verb for ${sourceName}"
+            )
         }
-        val prompt = "Choose one or more ${variablePermanentsCost.filter.description}s to $verb for ${sourceName}"
+        val prompt = if (maxCount == 1) "Choose ${quantify(1, variablePermanentsCost.filter.description)} to $verb for ${sourceName}"
+            else "Choose one or more ${variablePermanentsCost.filter.description}s to $verb for ${sourceName}"
         val continuation = ActivateAbilityVariablePermanentsContinuation(
             action = action,
             candidates = candidates,
-            minCount = minCount
+            minCount = minCount,
+            maxCount = maxCount
         )
         return state.suspendForDecision(
             question = { decisionId ->
@@ -504,11 +525,30 @@ internal class ActivationChoicePauses(
                     context = castingContext(action, sourceName),
                     options = candidates,
                     minSelections = minCount,
-                    maxSelections = candidates.size
+                    maxSelections = maxCount?.coerceAtMost(candidates.size) ?: candidates.size
                 )
             },
             answer = continuation
         )
+    }
+
+    /**
+     * Whether every mandatory controller-chosen target of [activation] would have enough legal
+     * choices with X bound to [x] — the same check [variablePermanentsTargetChoice] makes once the
+     * cost choice is known, asked ahead of it for each candidate pick.
+     */
+    private fun hasLegalControllerTargets(state: GameState, activation: Activation, x: Int): Boolean {
+        val action = activation.action
+        val context = PredicateContext(controllerId = action.playerId, sourceId = action.sourceId, xValue = x)
+        return activation.targetRequirements
+            .filter { it.chooser == TargetChooser.Controller && it.effectiveMinCount > 0 }
+            .all { req ->
+                val legal = targetFinder.findLegalTargets(
+                    state, req, action.playerId, action.sourceId,
+                    targetingSourceType = TargetingSourceType.ACTIVATED_ABILITY, pipelineContext = context
+                )
+                com.wingedsheep.engine.mechanics.targeting.NumericTargetEquality.eligible(state, legal, req).size >= req.effectiveMinCount
+            }
     }
 
     // -------------------------------------------------------------------

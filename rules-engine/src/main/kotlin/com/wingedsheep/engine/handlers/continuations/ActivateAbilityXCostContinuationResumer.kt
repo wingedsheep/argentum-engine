@@ -340,6 +340,10 @@ class ActivateAbilityXCostContinuationResumer(
                 "Must choose at least ${continuation.minCount} permanent(s), got ${selected.size}"
             )
         }
+        val maxCount = continuation.maxCount
+        if (maxCount != null && selected.size > maxCount) {
+            return ExecutionResult.error(state, "Must choose at most $maxCount permanent(s), got ${selected.size}")
+        }
         if (selected.toSet().size != selected.size) {
             return ExecutionResult.error(state, "Cannot choose the same permanent twice for one cost")
         }

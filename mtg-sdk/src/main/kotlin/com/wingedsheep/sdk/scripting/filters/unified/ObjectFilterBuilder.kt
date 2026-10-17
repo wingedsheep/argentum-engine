@@ -188,6 +188,10 @@ interface ObjectFilterBuilder<out Self> {
     fun manaValueAtMostX() =
         compareNumericProperty(CardNumericProperty.MANA_VALUE, ComparisonOperator.LTE, DynamicAmount.XValue)
 
+    /** Mana value less than the X chosen for the source spell/ability (Scrap Welder) */
+    fun manaValueLessThanX() =
+        compareNumericProperty(CardNumericProperty.MANA_VALUE, ComparisonOperator.LT, DynamicAmount.XValue)
+
     /** Mana value exactly equal to the number chosen for the source spell/ability (Void) */
     fun manaValueEqualsX() =
         compareNumericProperty(CardNumericProperty.MANA_VALUE, ComparisonOperator.EQ, DynamicAmount.XValue)
