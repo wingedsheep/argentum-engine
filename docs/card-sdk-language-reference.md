@@ -4147,6 +4147,13 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   `Patterns.Hand.discardAnyNumber()` (Miasma Demon: "you may discard any number of cards. When you do, up
   to that many target creatures each get -2/-2") — this pipeline state is carried across the stack
   round-trip via `PendingTrigger.carriedPipeline`/`TriggeredAbilityOnStackComponent.carriedPipeline`.
+  A reflexive requirement's *filter* reads the same carried numbers: a dynamic cap such as
+  `manaValueAtMostDynamic(excess.amount)` sees the action's stored number both when the target is
+  chosen and when it is re-checked on resolution. **Unleash the Inferno**: `runStoringNumber {
+  DealDamage(7, t, excessDamageVariable = it) }`, then `If(CompareAmounts(excess.amount, GTE, 1),
+  ReflexiveTrigger(Effects.Nothing, optional = false) { target(ArtifactOrEnchantment.opponentControls()
+  .manaValueAtMostDynamic(excess.amount)); Destroy })` — "when it deals excess damage this way, destroy
+  target artifact or enchantment … with mana value less than or equal to that amount of excess damage".
   This differs from the cast-time path (`TargetValidator.effectiveMaxCount`), where the pipeline isn't
   live yet — pipeline-linked caps only work on reflexive/resolution-time targets.
   `ReflexiveTriggerEffectExecutor.isActionFeasible` decides up front whether the action can happen at

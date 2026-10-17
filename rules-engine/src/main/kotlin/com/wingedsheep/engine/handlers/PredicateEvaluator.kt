@@ -2760,6 +2760,13 @@ data class PredicateContext(
     /** Named string lists stored by pipeline effects (e.g., chosen creature types). */
     val storedStringLists: Map<String, List<String>> = emptyMap(),
     /**
+     * Named numbers stored by pipeline effects ([com.wingedsheep.engine.handlers.PipelineState.storedNumbers]).
+     * Lets a target filter's dynamic cap read a value a reflexive trigger's action half stored when
+     * the trigger's targets are chosen — Unleash the Inferno's "mana value less than or equal to that
+     * amount of excess damage" (`manaValueAtMostDynamic(VariableReference("excess"))`).
+     */
+    val storedNumbers: Map<String, Int> = emptyMap(),
+    /**
      * Named lists of subtype sets stored by pipeline effects — one `Set<String>` per
      * source entity. Populated by `GatherSubtypesEffect`. Used by
      * [CardPredicate.HasSubtypeInEachStoredGroup] to implement "shares a subtype with
@@ -2890,6 +2897,7 @@ data class PredicateContext(
                 chosenValues = chosenValues,
                 storedStringLists = storedStringLists,
                 storedSubtypeGroups = storedSubtypeGroups,
+                storedNumbers = storedNumbers,
             ),
         )
     }
@@ -2918,6 +2926,7 @@ data class PredicateContext(
                 chosenValues = context.pipeline.chosenValues,
                 storedStringLists = context.pipeline.storedStringLists,
                 storedSubtypeGroups = context.pipeline.storedSubtypeGroups,
+                storedNumbers = context.pipeline.storedNumbers,
                 storedCollections = context.pipeline.storedCollections,
                 targets = context.targets,
                 namedTargets = context.pipeline.namedTargets,

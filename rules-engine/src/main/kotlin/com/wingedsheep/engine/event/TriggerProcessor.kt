@@ -296,6 +296,7 @@ class TriggerProcessor(
                 chosenValues = trigger.carriedPipeline?.chosenValues ?: emptyMap(),
                 storedStringLists = trigger.carriedPipeline?.storedStringLists ?: emptyMap(),
                 storedSubtypeGroups = trigger.carriedPipeline?.storedSubtypeGroups ?: emptyMap(),
+                storedNumbers = trigger.carriedPipeline?.storedNumbers ?: emptyMap(),
             )
         )
 
@@ -370,6 +371,7 @@ class TriggerProcessor(
             chosenValues = trigger.carriedPipeline?.chosenValues ?: emptyMap(),
             storedStringLists = trigger.carriedPipeline?.storedStringLists ?: emptyMap(),
             storedSubtypeGroups = trigger.carriedPipeline?.storedSubtypeGroups ?: emptyMap(),
+            storedNumbers = trigger.carriedPipeline?.storedNumbers ?: emptyMap(),
         )
         val visibleRequirements = if (sequential) allRequirements.take(1) else allRequirements
         // Find legal targets for each requirement
@@ -989,6 +991,7 @@ class TriggerProcessor(
             chosenValues = ability.carriedPipeline?.chosenValues ?: emptyMap(),
             storedStringLists = ability.carriedPipeline?.storedStringLists ?: emptyMap(),
             storedSubtypeGroups = ability.carriedPipeline?.storedSubtypeGroups ?: emptyMap(),
+            storedNumbers = ability.carriedPipeline?.storedNumbers ?: emptyMap(),
         ),
     )
 
