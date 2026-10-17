@@ -1,6 +1,7 @@
 package com.wingedsheep.sdk.scripting
 
 import com.wingedsheep.sdk.core.CounterType
+import com.wingedsheep.sdk.scripting.util.numberToWord
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -78,6 +79,27 @@ sealed interface Duration {
     @Serializable
     data object EndOfYourNextTurn : Duration {
         override val description = "until the end of your next turn"
+    }
+
+    /**
+     * Effect lasts until the end of your next upkeep step — it outlives the upkeep it was created
+     * in (and every other player's turn) and ends as your following upkeep step ends, so it is
+     * still in force while that upkeep's triggers resolve.
+     *
+     * The upkeep-step sibling of [EndOfYourNextTurn], keyed and floored the same way: the creating
+     * [com.wingedsheep.engine.mechanics.layers.ActiveFloatingEffect] records
+     * `expiresAfterTurn = turnNumber + 1`, and `CleanupPhaseManager.expireEndOfYourNextUpkeepEffects`
+     * drops it as an upkeep step of its controller's (team's) turn ends at or after that floor, so
+     * the creating upkeep never counts. Distinct from [UntilYourNextUpkeep], which ends as that
+     * upkeep *begins*. Honoured by the floating-effect path only.
+     *
+     * Example: Halfdane — "… base power and toughness become equal to … until the end of your next
+     * upkeep."
+     */
+    @SerialName("EndOfYourNextUpkeep")
+    @Serializable
+    data object EndOfYourNextUpkeep : Duration {
+        override val description = "until the end of your next upkeep"
     }
 
     /**
@@ -235,6 +257,43 @@ sealed interface Duration {
     @Serializable
     data object UntilAfterAffectedControllersNextUntap : Duration {
         override val description = "doesn't untap during its controller's next untap step"
+    }
+
+    /**
+     * Effect lasts through the next *[count]* untap steps of the affected entity's controller, then
+     * expires — "it doesn't untap during its controller's next two untap steps" (Telekinesis).
+     * The multi-step generalisation of [UntilAfterAffectedControllersNextUntap]: each untap step of
+     * the affected entity's controller counts one off (`CleanupPhaseManager
+     * .expireAffectedControllersNextUntapEffects` rewrites the effect's duration to
+     * `UntilAfterAffectedControllersNextUntaps(count - 1)`, and to
+     * [UntilAfterAffectedControllersNextUntap] for the last step), so skipped untap steps don't
+     * count, exactly as for the single-step form. [count] is at least 2; one step is
+     * [UntilAfterAffectedControllersNextUntap].
+     */
+    @SerialName("UntilAfterAffectedControllersNextUntaps")
+    @Serializable
+    data class UntilAfterAffectedControllersNextUntaps(val count: Int) : Duration {
+        init {
+            require(count >= 2) { "Use UntilAfterAffectedControllersNextUntap for a single untap step" }
+        }
+
+        override val description = "during its controller's next ${numberToWord(count)} untap steps"
+    }
+
+    /**
+     * Effect lasts until the end of the affected entity's controller's next turn — "that creature
+     * can't attack during its controller's next turn" (Wall of Dust). The affected-object mirror of
+     * [EndOfYourNextTurn], keyed like [UntilAfterAffectedControllersNextUntap]: the creating
+     * [com.wingedsheep.engine.mechanics.layers.ActiveFloatingEffect] records
+     * `expiresAfterTurn = turnNumber + 1`, and `CleanupPhaseManager.cleanupEndOfTurn` drops it at
+     * the cleanup of the first turn at or after that floor whose active (team) player controls an
+     * affected entity. The current turn never counts, even when it is that controller's own turn.
+     * Floating-effect path only.
+     */
+    @SerialName("EndOfAffectedControllersNextTurn")
+    @Serializable
+    data object EndOfAffectedControllersNextTurn : Duration {
+        override val description = "during its controller's next turn"
     }
 
     /**

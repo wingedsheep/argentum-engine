@@ -1780,6 +1780,71 @@
     ]
 }
 
+// Halfdane
+{
+    "name": "Halfdane",
+    "manaCost": "{1}{W}{U}{B}",
+    "typeLine": "Legendary Creature — Shapeshifter",
+    "oracleText": "At the beginning of your upkeep, Halfdane's base power and toughness become equal to the power and toughness of target creature other than Halfdane until the end of your next upkeep.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Halfdane:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "SetBaseStats",
+                    "target": "Self",
+                    "power": {
+                        "type": "EntityProperty",
+                        "entity": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "numericProperty": "Power"
+                    },
+                    "toughness": {
+                        "type": "EntityProperty",
+                        "entity": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "numericProperty": "Toughness"
+                    },
+                    "duration": "EndOfYourNextUpkeep"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature",
+                        "excludeSelf": true
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "229",
+        "rarity": "RARE",
+        "artist": "Melissa A. Benson",
+        "flavorText": "Hail from Tolaria the ever changing 'Dane.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/e/2e939761-3542-4044-9038-d1d30c6a38fc.jpg?1783948039"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "BLUE",
+        "WHITE"
+    ]
+}
+
 // Headless Horseman
 {
     "name": "Headless Horseman",
@@ -4033,6 +4098,67 @@
     ]
 }
 
+// Telekinesis
+{
+    "name": "Telekinesis",
+    "manaCost": "{U}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Tap target creature. Prevent all combat damage that would be dealt by that creature this turn. It doesn't untap during its controller's next two untap steps.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "PreventDamageShield",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "scope": "CombatOnly",
+                    "direction": "FromTarget"
+                },
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "DOESNT_UNTAP",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "duration": {
+                        "type": "UntilAfterAffectedControllersNextUntaps",
+                        "count": 2
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "79",
+        "rarity": "RARE",
+        "artist": "Daniel Gelon",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/5/d5aa920e-b93f-41c2-b505-a9350353be8b.jpg?1783948071"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Teleport
 {
     "name": "Teleport",
@@ -4714,6 +4840,52 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Wall of Dust
+{
+    "name": "Wall of Dust",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Wall",
+    "oracleText": "Defender (This creature can't attack.)\nWhenever this creature blocks a creature, that creature can't attack during its controller's next turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 4
+    },
+    "keywords": [
+        "DEFENDER"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Wall of Dust:1",
+                "trigger": {
+                    "type": "BlockEvent",
+                    "attackerFilter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ]
+                    }
+                },
+                "effect": {
+                    "type": "CantAttack",
+                    "target": "TriggeringEntity",
+                    "duration": "EndOfAffectedControllersNextTurn"
+                },
+                "descriptionOverride": "Whenever this creature blocks a creature, that creature can't attack during its controller's next turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "168",
+        "rarity": "UNCOMMON",
+        "artist": "Richard Thomas",
+        "flavorText": "An ever-moving swarm of dust engulfs and disorients anything that comes near.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/a/aaf53dfe-5d48-4811-b2f5-5a5c1cb462ca.jpg?1783948051"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 

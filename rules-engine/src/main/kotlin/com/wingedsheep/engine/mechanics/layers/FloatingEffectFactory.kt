@@ -95,7 +95,13 @@ fun GameState.createFloatingEffect(
         // "Until the end of your next turn" never includes the turn it was created on — not even
         // when that is the controller's own turn — so the floor is always the next turn number.
         referencedObjects = referencedObjects,
-        expiresAfterTurn = if (duration is Duration.EndOfYourNextTurn) turnNumber + 1 else null
+        // The same floor serves the upkeep-step and affected-controller variants.
+        expiresAfterTurn = when (duration) {
+            Duration.EndOfYourNextTurn,
+            Duration.EndOfYourNextUpkeep,
+            Duration.EndOfAffectedControllersNextTurn -> turnNumber + 1
+            else -> null
+        }
     )
 }
 

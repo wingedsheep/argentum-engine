@@ -551,6 +551,13 @@ class TurnManager(
             return endTurn(state)
         }
 
+        // An upkeep step of the active (team) player's turn is ending: "until the end of your next
+        // upkeep" effects past their floor end now (Halfdane). Before the additional-upkeep
+        // redirect below, so an inserted upkeep step (Obeka) ends them as well.
+        if (currentStep == Step.UPKEEP) {
+            state = cleanupPhaseManager.expireEndOfYourNextUpkeepEffects(state, activePlayer)
+        }
+
         // Leaving an inserted additional upkeep step (Obeka, Splitter of Seconds). Per CR 500.10
         // the extra beginning phase has only its upkeep step (its untap and draw steps are
         // skipped), and the game then returns to the phase after which the steps were added — the
@@ -1259,11 +1266,13 @@ class TurnManager(
             s = cleanupPhaseManager.expireUntilYourNextTurnEffects(s, leaver)
             s = cleanupPhaseManager.expireUntilYourNextUpkeepEffects(s, leaver)
             s = cleanupPhaseManager.expireGoadedDesignationFor(s, leaver).first
-            // "Until the end of your next turn" is keyed to a turn the leaver will never take
-            // (a turn-number floor plus a controller guard); CR 800.4m ends it here as well.
+            // "Until the end of your next turn" / "… next upkeep" are keyed to a turn the leaver
+            // will never take (a turn-number floor plus a controller guard); CR 800.4m ends them
+            // here as well.
             s = s.copy(
                 floatingEffects = s.floatingEffects.filterNot { fe ->
-                    fe.duration is com.wingedsheep.sdk.scripting.Duration.EndOfYourNextTurn &&
+                    (fe.duration is com.wingedsheep.sdk.scripting.Duration.EndOfYourNextTurn ||
+                        fe.duration is com.wingedsheep.sdk.scripting.Duration.EndOfYourNextUpkeep) &&
                         fe.controllerId == leaver
                 },
                 mayPlayPermissions = s.mayPlayPermissions.filterNot { permission ->

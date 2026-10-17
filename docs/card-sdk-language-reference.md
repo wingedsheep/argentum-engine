@@ -3037,7 +3037,16 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   that creature until the **end of** your next turn" (Evil's Thrall). That duration is strictly
   longer than `Duration.UntilYourNextTurn`, which ends at the *beginning* of your next turn; it runs
   through that whole turn and ends at its cleanup step (CR 514.2). Only the floating-effect path
-  honours it — see the `Duration.EndOfYourNextTurn` KDoc for the mechanism and its limits. For the
+  honours it — see the `Duration.EndOfYourNextTurn` KDoc for the mechanism and its limits. Two
+  siblings share its turn-number floor (the creating turn never counts): **`Duration.EndOfYourNextUpkeep`**
+  ends as the controller's next upkeep step *ends* — still in force while that upkeep's triggers
+  resolve; contrast `Duration.UntilYourNextUpkeep`, which ends as it begins (Halfdane:
+  `Effects.SetBasePowerAndToughness(DynamicAmounts.powerOf(t), DynamicAmounts.toughnessOf(t),
+  EffectTarget.Self, Duration.EndOfYourNextUpkeep)`) — and **`Duration.EndOfAffectedControllersNextTurn`**
+  is keyed to the *affected* object's controller rather than the caster, ending at the cleanup of
+  that player's next turn: "that creature can't attack during its controller's next turn" (Wall of
+  Dust: `Effects.CantAttack(EffectTarget.TriggeringEntity, Duration.EndOfAffectedControllersNextTurn)`).
+  Both are floating-effect-only. For the
   "if <condition>, … **instead**" duration switch, wrap two `GainControlEffect`s that differ only in
   `duration` in one `Effects.If` — never a short steal followed by a second grab; that would
   be two control changes where the card describes one. Pair with
@@ -9747,6 +9756,12 @@ staticAbility {
     remains tapped" — compose `Effects.Tap(target) then Effects.GrantKeyword(AbilityFlag.DOESNT_UNTAP,
     target, Duration.WhileSourceTapped("…"))`: the one-way `WhileSourceTapped` latch drops the grant the
     instant the source untaps.
+    For "doesn't untap during its controller's **next** untap step" pass
+    `Duration.UntilAfterAffectedControllersNextUntap` (Crippling Chill); for "… next **two** untap
+    steps" pass `Duration.UntilAfterAffectedControllersNextUntaps(2)` (Telekinesis, `count >= 2`).
+    Each untap step of the affected permanent's controller counts one off — the multi-step duration
+    is rewritten to `…NextUntaps(count - 1)`, then to the single-step form for its last step — and
+    skipped untap steps don't count.
   - `AbilityFlag.MAY_NOT_UNTAP` — controller may choose not to untap it (Everglove Courier, and the
     Antiquities self-optional untap-skip on Phyrexian Gremlins / Ashnod's Battle Gear / Tawnos's Weaponry).
   - `AbilityFlag.REMOVE_COUNTER_TO_UNTAP` — "If this would untap during your untap step, remove a +1/+1

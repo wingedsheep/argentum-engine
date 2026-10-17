@@ -3,6 +3,7 @@ package com.wingedsheep.engine.core
 import com.wingedsheep.engine.handlers.effects.copy.expireCopyLayers
 import com.wingedsheep.engine.handlers.DecisionHandler
 import com.wingedsheep.engine.handlers.effects.DamageUtils
+import com.wingedsheep.engine.mechanics.layers.ActiveFloatingEffect
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.battlefield.AbilityActivatedThisTurnComponent
@@ -452,9 +453,29 @@ class CleanupPhaseManager(
     }
 
     /**
+     * Expire [Duration.EndOfYourNextUpkeep] floating effects as an upkeep step of [activePlayer]'s
+     * turn ends (TurnManager, on leaving Step.UPKEEP). The floor (`expiresAfterTurn`, the turn
+     * after creation) keeps the upkeep the effect was created in from counting; the active-team
+     * guard keys it to the controller's own upkeep, as for [Duration.EndOfYourNextTurn].
+     */
+    fun expireEndOfYourNextUpkeepEffects(state: GameState, activePlayer: EntityId): GameState {
+        // The team's upkeep is each head's upkeep in a shared team turn (CR 805.4).
+        val activeTeam = state.sharedTurnTeam(activePlayer).toHashSet()
+        val remaining = state.floatingEffects.filterNot { floatingEffect ->
+            floatingEffect.duration is Duration.EndOfYourNextUpkeep &&
+                floatingEffect.controllerId in activeTeam &&
+                // No floor: assembled outside createFloatingEffect — fail closed and expire.
+                (floatingEffect.expiresAfterTurn ?: 0) <= state.turnNumber
+        }
+        return if (remaining.size != state.floatingEffects.size) state.copy(floatingEffects = remaining) else state
+    }
+
+    /**
      * Expire UntilAfterAffectedControllersNextUntap floating effects after the untap step.
      * These expire when any of the affected entities are controlled by the active player,
-     * meaning the affected creature's controller just had their untap step.
+     * meaning the affected creature's controller just had their untap step. A multi-step
+     * [Duration.UntilAfterAffectedControllersNextUntaps] effect counts that step off instead:
+     * it stays, one step shorter (down to the single-step form for its last step).
      */
     fun expireAffectedControllersNextUntapEffects(
         state: GameState,
@@ -466,19 +487,29 @@ class CleanupPhaseManager(
         // affected creature's controller just had their untap step" — unless that head skipped
         // it (CR 614.10a: the effect waits for the first untap step that isn't skipped).
         val activeTeam = state.sharedTurnTeam(activePlayer).toHashSet() - skippedUntapStep
-        val remaining = state.floatingEffects.filter { floatingEffect ->
-            if (floatingEffect.duration !is Duration.UntilAfterAffectedControllersNextUntap) return@filter true
-            // Expire if any affected entity is controlled by the active team
-            val affectedByActivePlayer = floatingEffect.effect.affectedEntities.any { entityId ->
+        // An affected entity controlled by the active team: its controller just untapped.
+        fun controllerJustUntapped(floatingEffect: ActiveFloatingEffect) =
+            floatingEffect.effect.affectedEntities.any { entityId ->
                 projected.getController(entityId) in activeTeam
             }
-            !affectedByActivePlayer
+        var changed = false
+        val remaining = state.floatingEffects.mapNotNull { floatingEffect ->
+            when (val duration = floatingEffect.duration) {
+                Duration.UntilAfterAffectedControllersNextUntap ->
+                    if (controllerJustUntapped(floatingEffect)) null.also { changed = true } else floatingEffect
+                is Duration.UntilAfterAffectedControllersNextUntaps ->
+                    if (controllerJustUntapped(floatingEffect)) {
+                        changed = true
+                        val left = duration.count - 1
+                        floatingEffect.copy(
+                            duration = if (left == 1) Duration.UntilAfterAffectedControllersNextUntap
+                            else Duration.UntilAfterAffectedControllersNextUntaps(left)
+                        )
+                    } else floatingEffect
+                else -> floatingEffect
+            }
         }
-        return if (remaining.size != state.floatingEffects.size) {
-            state.copy(floatingEffects = remaining)
-        } else {
-            state
-        }
+        return if (changed) state.copy(floatingEffects = remaining) else state
     }
 
     /**
@@ -581,6 +612,12 @@ class CleanupPhaseManager(
         var newState = state
 
         // 1. Expire floating effects with EndOfTurn duration
+        // Read only by EndOfAffectedControllersNextTurn — lazy so ordinary cleanups don't project.
+        val activeTeam by lazy {
+            newState.activePlayerId?.let { newState.sharedTurnTeam(it).toHashSet() }.orEmpty()
+        }
+        val projectedForCleanup by lazy { newState.projectedState }
+        fun projectedController(entityId: EntityId) = projectedForCleanup.getController(entityId)
         val remainingEffects = newState.floatingEffects.filter { floatingEffect ->
             when (floatingEffect.duration) {
                 is Duration.EndOfTurn -> false  // Remove it
@@ -603,6 +640,17 @@ class CleanupPhaseManager(
                     }
                 }
                 is Duration.UntilYourNextUpkeep -> true  // Keep until upkeep
+                is Duration.EndOfYourNextUpkeep -> true  // Expired as that upkeep step ends (expireEndOfYourNextUpkeepEffects)
+                is Duration.EndOfAffectedControllersNextTurn -> {
+                    // Ends at the cleanup of the affected entity's controller's next turn: the
+                    // floor excludes the creating turn, the projected-controller guard keys it to
+                    // the affected object's controller (as UntilAfterAffectedControllersNextUntap).
+                    when (val floor = floatingEffect.expiresAfterTurn) {
+                        null -> false  // Fail closed, as for EndOfYourNextTurn
+                        else -> !(newState.turnNumber >= floor &&
+                            floatingEffect.effect.affectedEntities.any { projectedController(it) in activeTeam })
+                    }
+                }
                 is Duration.UntilNextEndStep -> true  // Expired on entry to the next end step (performNextEndStepExpiry)
                 is Duration.Permanent -> true  // Never expires
                 // Event-bounded ("until this card is cast from exile"): never a turn boundary. Only
@@ -650,6 +698,7 @@ class CleanupPhaseManager(
                 is Duration.WhileAffectedHasCounter -> true  // Gated per-frame by StateProjector (counter present); latched off by EndedDurationExpiryCheck when the counter leaves
                 is Duration.WhileAffectedTapped -> true  // Gated per-frame by StateProjector / activation-legality checks; latched off by EndedDurationExpiryCheck when the permanent untaps
                 is Duration.UntilAfterAffectedControllersNextUntap -> true  // Expires after affected entity's controller's untap
+                is Duration.UntilAfterAffectedControllersNextUntaps -> true  // Counted down after each of those untap steps
                 is Duration.UntilPhase -> true  // Handle in phase transitions
                 is Duration.UntilCondition -> true  // Handle condition checking elsewhere
             }
