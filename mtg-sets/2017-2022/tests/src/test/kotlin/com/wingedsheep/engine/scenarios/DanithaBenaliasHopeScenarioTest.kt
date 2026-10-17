@@ -15,9 +15,9 @@ import io.kotest.matchers.types.shouldBeInstanceOf
  * Danitha, Benalia's Hope (DMU #15) — "When Danitha enters, you may put an Aura or Equipment card
  * from your hand or graveyard onto the battlefield attached to Danitha."
  *
- * The card splits along its two rulings: an Aura enters attached through `attachTo` (or stays in its
- * previous zone when it can't legally enchant Danitha), while an Equipment enters through the
- * ordinary path and is then attached — entering unattached when Danitha is gone.
+ * The card splits along its two rulings, both through `attachTo`: an Aura enters attached (or stays in
+ * its previous zone when it can't legally enchant Danitha), while an Equipment enters attached — or
+ * unattached when Danitha is gone.
  */
 class DanithaBenaliasHopeScenarioTest : ScenarioTestBase() {
 

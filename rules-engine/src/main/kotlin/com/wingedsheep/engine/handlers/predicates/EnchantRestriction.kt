@@ -25,7 +25,7 @@ import com.wingedsheep.sdk.scripting.targets.TargetRequirement
  *
  * Only the requirement's *filter* is evaluated — never targeting legality — because both callers
  * ask about an Aura that isn't being cast: the enchant state-based action (CR 704.5m, an attached
- * Aura isn't re-targeted, so hexproof/shroud don't dislodge it) and `CardPredicate.CouldEnchant`
+ * Aura isn't re-targeted, so hexproof/shroud don't dislodge it) and `CardPredicate.CouldAttachTo`
  * ("an Aura card that could enchant it" — an Aura put onto the battlefield doesn't target,
  * CR 303.4f).
  */

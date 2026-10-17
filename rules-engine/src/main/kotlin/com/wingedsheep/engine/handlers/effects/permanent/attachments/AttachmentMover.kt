@@ -75,19 +75,60 @@ object AttachmentMover {
     }
 
     /**
+     * Whether the Aura, Equipment or Fortification *card* [cardId] could be attached to [hostId] as
+     * it is put onto the battlefield — "put … onto the battlefield attached to it", or "an Aura or
+     * Equipment card that could be attached to it". The card isn't on the battlefield yet, so its
+     * own characteristics are its card's, and "you" in its restrictions is [controllerId], the
+     * player who would control it. An Aura asks [EnchantRestriction.couldAttach]; an Equipment needs
+     * a creature host (CR 301.5) and can't be a creature card itself (CR 301.5c); a Fortification
+     * needs a land host and can't be a creature card (CR 301.6); and neither can enter attached to a
+     * permanent with protection from it (CR 702.16c/d) or one its own [EquipmentAttachRestriction]
+     * rules out. Anything else can't be attached (CR 701.3b). Doesn't ask whether [hostId] is on the
+     * battlefield — callers that move the card check that themselves.
+     */
+    fun couldAttachCard(
+        state: GameState,
+        predicateEvaluator: PredicateEvaluator,
+        cardRegistry: CardRegistry,
+        cardId: EntityId,
+        card: CardComponent,
+        hostId: EntityId,
+        controllerId: EntityId
+    ): Boolean {
+        if (cardId == hostId) return false
+        val projected = state.projectedState
+        val typeLine = card.typeLine
+        return when {
+            typeLine.isAura -> !typeLine.isCreature && EnchantRestriction.couldAttach(
+                state, projected, predicateEvaluator, cardRegistry, cardId, card, hostId, controllerId
+            )
+            typeLine.isEquipment ->
+                projected.isCreature(hostId) && !typeLine.isCreature &&
+                    !EnchantRestriction.hostProtectedFromAttachment(state, projected, cardRegistry, cardId, card, hostId) &&
+                    equipRestrictionAllows(state, predicateEvaluator, cardRegistry, cardId, hostId, controllerId)
+            typeLine.isFortification ->
+                projected.hasType(hostId, "LAND") && !typeLine.isCreature &&
+                    !EnchantRestriction.hostProtectedFromAttachment(state, projected, cardRegistry, cardId, card, hostId)
+            else -> false
+        }
+    }
+
+    /**
      * Whether the Equipment [equipmentId]'s own "can be attached only to …" restrictions
      * ([EquipmentAttachRestriction]) admit [hostId]. True when it has none — including when it is
      * face down or has lost all abilities, since the restriction is a static ability of the Equipment.
      * The host is matched on the projected state with the Equipment as predicate source and its
-     * controller as "you". Shared by [canAttach], the equip ability's resolution and the CR 704.5n
-     * state-based action, so the three can't disagree about a host.
+     * controller as "you" — or [controllerId], for an Equipment card that isn't on the battlefield
+     * yet ([couldAttachCard]). Shared by [canAttach], [couldAttachCard], the equip ability's
+     * resolution and the CR 704.5n state-based action, so they can't disagree about a host.
      */
     fun equipRestrictionAllows(
         state: GameState,
         predicateEvaluator: PredicateEvaluator,
         cardRegistry: CardRegistry,
         equipmentId: EntityId,
-        hostId: EntityId
+        hostId: EntityId,
+        controllerId: EntityId? = null
     ): Boolean {
         val container = state.getEntity(equipmentId) ?: return true
         if (container.has<FaceDownComponent>()) return true
@@ -98,8 +139,8 @@ object AttachmentMover {
             ?.filterIsInstance<EquipmentAttachRestriction>()
             .orEmpty()
         if (restrictions.isEmpty()) return true
-        val controllerId = projected.getController(equipmentId) ?: return false
-        val context = PredicateContext(controllerId = controllerId, sourceId = equipmentId)
+        val you = projected.getController(equipmentId) ?: controllerId ?: return false
+        val context = PredicateContext(controllerId = you, sourceId = equipmentId)
         return restrictions.all { predicateEvaluator.matches(state, projected, hostId, it.filter, context) }
     }
 

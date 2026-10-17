@@ -1413,13 +1413,16 @@ data class MoveCollectionEffect(
      */
     val filter: GameObjectFilter? = null,
     /**
-     * For a move onto the battlefield: the permanent every **Aura** in the collection enters
-     * attached to — "put that Aura card onto the battlefield attached to it" (Auratouched Mage),
-     * "return the other cards exiled this way … attached to that creature" (Flickerform). The effect
-     * names the host, so no enchant choice is offered (CR 303.4f). An Aura whose printed enchant
-     * restriction that host doesn't satisfy — or every Aura, when the host is no longer on the
-     * battlefield — can't enter and stays in its current zone (CR 303.4g). Non-Aura cards move
-     * normally. Null (the default) leaves each Aura's host to the player's choice.
+     * For a move onto the battlefield: the permanent every **Aura, Equipment and Fortification**
+     * card in the collection enters attached to — "put that Aura card onto the battlefield attached
+     * to it" (Auratouched Mage), "return the other cards exiled this way … attached to that
+     * creature" (Flickerform), "an Aura or Equipment card … attached to Danitha". The effect names
+     * the host, so no enchant choice is offered (CR 303.4f). An Aura that host can't legally carry —
+     * or every Aura, when the host is no longer on the battlefield — can't enter and stays in its
+     * current zone (CR 303.4g); an Equipment or Fortification that can't be attached enters
+     * unattached. Pair with a `CardPredicate.CouldAttachTo` [filter] when the unattachable ones stay
+     * behind instead (Mantle of the Ancients). Other cards move normally. Null (the default) leaves
+     * each Aura's host to the player's choice.
      */
     val attachTo: EffectTarget? = null
 ) : Effect {

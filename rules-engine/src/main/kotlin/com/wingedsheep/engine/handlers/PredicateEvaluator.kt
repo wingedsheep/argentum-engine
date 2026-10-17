@@ -90,7 +90,7 @@ import com.wingedsheep.sdk.scripting.values.CardNumericProperty
 class PredicateEvaluator(
     /**
      * Printed definitions, for the few predicates that read a candidate's script rather than its
-     * components (an Aura's enchant restriction for [CardPredicate.CouldEnchant]). Those predicates
+     * components (an Aura's enchant restriction for [CardPredicate.CouldAttachTo]). Those predicates
      * fail closed on an evaluator built without one — which only the pure-data layers that have no
      * engine to ask (the layer projection behind [GameState.projectedState]) should build. Everything
      * in the engine graph shares [com.wingedsheep.engine.core.EngineServices.predicateEvaluator].
@@ -438,7 +438,7 @@ class PredicateEvaluator(
             is CardPredicate.OriginallyPrintedInSet,
             is CardPredicate.PowerAtLeast,
             is CardPredicate.PowerAtMost,
-            is CardPredicate.CouldEnchant,
+            is CardPredicate.CouldAttachTo,
             is CardPredicate.PowerAtMostEntity,
             is CardPredicate.PowerEquals,
             is CardPredicate.PowerEqualsDynamic,
@@ -1087,12 +1087,11 @@ class PredicateEvaluator(
             // "An Aura card that could enchant it" (Auratouched Mage). Reads the candidate's printed
             // enchant restriction off its definition and evaluates it against the referenced
             // permanent — the same reading the enchant SBA uses. Fails closed with no registry.
-            is CardPredicate.CouldEnchant -> {
-                if (!card.typeLine.isAura) return false
+            is CardPredicate.CouldAttachTo -> {
                 val hostId = resolveEntity(state, predicate.reference, context, projected) ?: return false
                 val registry = cardRegistry ?: return false
-                com.wingedsheep.engine.handlers.predicates.EnchantRestriction.couldAttach(
-                    state, projected, this, registry, entityId, card, hostId,
+                com.wingedsheep.engine.handlers.effects.permanent.attachments.AttachmentMover.couldAttachCard(
+                    state, this, registry, entityId, card, hostId,
                     controllerId = context?.controllerId ?: return false
                 )
             }
@@ -2637,7 +2636,7 @@ class PredicateEvaluator(
             is CardPredicate.PowerOrToughnessAtMost,
             is CardPredicate.TotalPowerAndToughnessAtMost,
             is CardPredicate.PowerGreaterThanEntity,
-            is CardPredicate.CouldEnchant,
+            is CardPredicate.CouldAttachTo,
             is CardPredicate.PowerAtMostEntity,
             is CardPredicate.PowerLessThanEntity,
             is CardPredicate.CompareNumericProperty,

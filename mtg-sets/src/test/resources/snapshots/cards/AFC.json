@@ -1,1 +1,130 @@
-
+// Mantle of the Ancients
+{
+    "name": "Mantle of the Ancients",
+    "manaCost": "{3}{W}{W}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature you control\nWhen this Aura enters, return any number of target Aura and/or Equipment cards from your graveyard to the battlefield attached to enchanted creature.\nEnchanted creature gets +1/+1 for each Aura and Equipment attached to it.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Mantle of the Ancients:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "ChosenTargets",
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            },
+                            "filter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "CouldAttachTo",
+                                        "reference": "EnchantedCreature"
+                                    }
+                                ]
+                            },
+                            "attachTo": "EnchantedCreature"
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "unlimited": true,
+                    "filter": {
+                        "baseFilter": "Aura|Equipment own:you",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantDynamicStats",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                },
+                "powerBonus": {
+                    "type": "Add",
+                    "left": {
+                        "type": "EntityProperty",
+                        "entity": "EnchantedCreature",
+                        "numericProperty": {
+                            "type": "AttachmentCount",
+                            "kind": "AURA"
+                        }
+                    },
+                    "right": {
+                        "type": "EntityProperty",
+                        "entity": "EnchantedCreature",
+                        "numericProperty": {
+                            "type": "AttachmentCount",
+                            "kind": "EQUIPMENT"
+                        }
+                    }
+                },
+                "toughnessBonus": {
+                    "type": "Add",
+                    "left": {
+                        "type": "EntityProperty",
+                        "entity": "EnchantedCreature",
+                        "numericProperty": {
+                            "type": "AttachmentCount",
+                            "kind": "AURA"
+                        }
+                    },
+                    "right": {
+                        "type": "EntityProperty",
+                        "entity": "EnchantedCreature",
+                        "numericProperty": {
+                            "type": "AttachmentCount",
+                            "kind": "EQUIPMENT"
+                        }
+                    }
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature ctrl:you"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "8",
+        "rarity": "RARE",
+        "artist": "Denman Rooke",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/6/867124fc-c8e4-4e0e-be41-b74a6bb34e86.jpg?1783926258",
+        "rulings": [
+            {
+                "date": "2021-07-23",
+                "text": "As the enters-the-battlefield ability is resolving, any targets that couldn't be legally attached to the creature enchanted by Mantle of the Ancients stay in your graveyard."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "If Mantle of the Ancients becomes attached to a different creature in response to its enters-the-battlefield ability, the creature it's attached to as that ability is resolving is the \"enchanted creature,\" even though you used the original enchanted creature to choose targets. This means some of those targets may become illegal."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "If Mantle of the Ancients leaves the battlefield before its enters-the-battlefield ability resolves, the last permanent it was attached to before leaving the battlefield is the \"enchanted creature\" (even if that permanent is no longer a creature)."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}

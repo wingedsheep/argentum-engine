@@ -3468,12 +3468,17 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   of Lothlórien, The Ring Goes South). (Equivalent to a `FilterCollection` partition; the inline
   filter just avoids naming an intermediate collection.) `storeMovedAs = "<key>"` captures the
   resulting entity ids under a pipeline collection; `attachTo = <EffectTarget>` (battlefield
-  destination only) puts every **Aura** in the collection onto the battlefield attached to that
-  permanent with no enchant choice — "put that Aura card onto the battlefield attached to it"
-  (Auratouched Mage), "return the other cards … attached to that creature" (Flickerform). An Aura the
-  host can't legally enchant (enchant restriction or protection from its color), or every Aura when
-  the host isn't on the battlefield, stays where it is
-  (CR 303.4g); non-Aura cards move normally. `markEnteredViaSourceAbility = true` stamps each
+  destination only) puts every **Aura, Equipment and Fortification** card in the collection onto the
+  battlefield attached to that permanent with no enchant choice — "put that Aura card onto the
+  battlefield attached to it" (Auratouched Mage), "return the other cards … attached to that creature"
+  (Flickerform), "put an Aura or Equipment card … onto the battlefield attached to Danitha". Legality is
+  `AttachmentMover.couldAttachCard`, the same reading as `.couldAttachTo(ref)`. An Aura the host can't
+  legally enchant (enchant restriction or protection from its color), or every Aura when the host isn't
+  on the battlefield, stays where it is (CR 303.4g); an Equipment/Fortification that can't be attached
+  (a noncreature host, protection, its own `EquipmentAttachRestriction`, a creature card) **enters
+  unattached** (Danitha's ruling), and every other card moves normally. When the wording keeps the
+  unattachable ones behind instead ("any targets that couldn't be legally attached … stay in your
+  graveyard", Mantle of the Ancients), add `filter = GameObjectFilter.Any.couldAttachTo(host)`. `markEnteredViaSourceAbility = true` stamps each
   card that lands on the battlefield with `EnteredViaAbilityComponent(this source)` so a later
   `GatherCards(CardSource.EnteredViaThisResolution)` can re-collect them from live battlefield state.
   `lookableInExile = true` is the "**You may look at that card for as long as it remains exiled**"
@@ -4900,7 +4905,8 @@ their library into their graveyard. If it's a creature card, you create a 2/2 bl
   a new object, CR 400.7). Pair with `move(..., BATTLEFIELD, attachTo = …)` to re-attach — an Aura the new
   host can't legally carry stays put. Cass, Hand of Vengeance: `chooseAnyNumber(gather(AttachedTo(
   TriggeringEntity, Aura, zone = GRAVEYARD)))` → `move(…, attachTo = ContextTarget(0))`, then
-  `chooseAnyNumber(gather(AttachedTo(TriggeringEntity, Equipment)))` → `AttachTargetEquipmentToCreature`.
+  `chooseAnyNumber(gather(AttachedTo(TriggeringEntity, Equipment)))` → `AttachTargetEquipmentToCreature`
+  (those Equipment are still on the battlefield, so they are attached, not put onto it).
 - `CardSource.ChosenTargets` — the spell/ability's already-resolved targets.
 - `CardSource.FromLinkedExile(count?)` — the cards in the source's linked-exile pile.
 - `CardSource.CraftedMaterials` — the cards exiled to Craft the source (its
@@ -6194,12 +6200,16 @@ This is the player-arm prerequisite for the planned composable mixed `TargetUnio
   by `.manaValueAtMostX()`), and activation-time validation plus the CR 608.2b resolution-time re-check reject
   any card whose mana value isn't exactly X.
 - `.manaValueAtMostEntity(ref)` — mana value ≤ a referenced entity's mana value (e.g. Kodama of the East Tree).
-- `.couldEnchant(ref)` (`CardPredicate.CouldEnchant`) — an Aura card whose printed enchant restriction
-  (`auraTarget`) the referenced permanent satisfies — "search your library for an Aura card that could
-  enchant it" (Auratouched Mage: `Enchantment.withSubtype("Aura").couldEnchant(EffectTarget.Self)`).
-  Reads the enchant filter and protection from the Aura's colors (CR 702.16c) — the same reading as the
-  enchant SBA (`EnchantRestriction.couldAttach`), never
-  targeting legality; "you" in the restriction is the evaluating controller. Non-Auras never match.
+- `.couldAttachTo(ref)` (`CardPredicate.CouldAttachTo`) — an Aura, Equipment or Fortification card that
+  could be attached to the referenced permanent — "search your library for an Aura card that could
+  enchant it" (Auratouched Mage: `Enchantment.withSubtype("Aura").couldAttachTo(EffectTarget.Self)`),
+  the "couldn't be legally attached … stay in your graveyard" half of Mantle of the Ancients (as a
+  `move(…, attachTo = …, filter = …)` filter). An Aura reads its printed enchant restriction and
+  protection from its colors (CR 702.16c) — the same reading as the enchant SBA
+  (`EnchantRestriction.couldAttach`); an Equipment needs a creature host, a Fortification a land, and
+  neither may be a creature card, meet protection (CR 702.16d) or fail its own
+  `EquipmentAttachRestriction` (`AttachmentMover.couldAttachCard`). Never targeting legality; "you" in a
+  restriction is the evaluating controller. Any other card never matches.
   Known gap: a host that has left the battlefield is judged by its current card, not last-known info.
 - `.powerEqualsX()` — `compareNumericProperty(POWER, EQ, XValue)`: projected power **exactly equal** to the X
   chosen for the source spell/ability — the power analogue of `.manaValueEqualsX()`. Available on both the

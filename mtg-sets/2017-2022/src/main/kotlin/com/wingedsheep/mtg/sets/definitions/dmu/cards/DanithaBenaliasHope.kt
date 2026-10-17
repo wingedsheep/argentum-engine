@@ -21,15 +21,11 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * battlefield attached to Danitha.
  *
  * The pick is a `chooseUpTo(1)` over hand + graveyard — choosing nothing *is* the "you may". The
- * move then splits along the two rulings:
- *  - An **Aura** goes through `MoveCollectionEffect.attachTo = Self`: it enters attached to Danitha
- *    with no enchant choice, or — when Danitha has left the battlefield or can't legally be enchanted
- *    by it — stays in its previous zone (CR 303.4g).
- *  - An **Equipment** isn't covered by `attachTo` (Auras only), so it enters through the ordinary
- *    battlefield path and is then attached to Danitha by `AttachTargetEquipmentToCreature`, which
- *    refuses an illegal host or one that is no longer on the battlefield — so it "enters unattached"
- *    exactly as the second ruling says. The `ifNotEmpty` Equipment guard keeps the attach step from
- *    ever seeing an Aura.
+ * move is `MoveCollectionEffect.attachTo = Self`, which splits along the two rulings:
+ *  - An **Aura** enters attached to Danitha with no enchant choice, or — when Danitha has left the
+ *    battlefield or can't legally be enchanted by it — stays in its previous zone (CR 303.4g).
+ *  - An **Equipment** enters attached to Danitha, or — when Danitha has left the battlefield or
+ *    can't legally be equipped by it — enters unattached.
  */
 val DanithaBenaliasHope = card("Danitha, Benalia's Hope") {
     manaCost = "{4}{W}"
@@ -59,9 +55,6 @@ val DanithaBenaliasHope = card("Danitha, Benalia's Hope") {
                 prompt = "Put an Aura or Equipment card onto the battlefield attached to Danitha"
             )
             move(putting, CardDestination.ToZone(Zone.BATTLEFIELD, Player.You), attachTo = EffectTarget.Self)
-            ifNotEmpty(putting, filter = GameObjectFilter.Any.withSubtype("Equipment")) {
-                run(Effects.AttachTargetEquipmentToCreature(putting.asTarget, EffectTarget.Self))
-            }
         }
         description = "When Danitha enters, you may put an Aura or Equipment card from your hand or " +
             "graveyard onto the battlefield attached to Danitha."

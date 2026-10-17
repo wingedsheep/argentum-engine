@@ -806,18 +806,22 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
     }
 
     /**
-     * An Aura card whose printed "Enchant …" restriction ([com.wingedsheep.sdk.model.CardScript.auraTarget])
-     * the referenced permanent satisfies — "search your library for an Aura card that could enchant
-     * it" (Auratouched Mage). Only the enchant restriction is read, not targeting legality: an Aura
-     * put onto the battlefield isn't cast and doesn't target (CR 303.4f), so hexproof and shroud
-     * don't matter. "You" in the restriction ("Enchant creature you control") is the evaluating
-     * controller — the player who would put the Aura onto the battlefield. A non-Aura never
-     * matches, and nor does an unresolvable reference.
+     * An Aura, Equipment or Fortification card that could be attached to the referenced permanent
+     * — "search your library for an Aura card that could enchant it" (Auratouched Mage), "return …
+     * Aura and/or Equipment cards … attached to enchanted creature" where the ones that couldn't be
+     * stay behind (Mantle of the Ancients). An Aura needs a host its printed "Enchant …" restriction
+     * ([com.wingedsheep.sdk.model.CardScript.auraTarget]) admits; an Equipment needs a creature, a
+     * Fortification a land; none may meet protection from it (CR 702.16c/d). Only attachment
+     * legality is read, not targeting: a card put onto the battlefield attached isn't cast and
+     * doesn't target (CR 303.4f), so hexproof and shroud don't matter. "You" in a restriction
+     * ("Enchant creature you control") is the evaluating controller — the player who would put the
+     * card onto the battlefield. Any other card never matches, and nor does an unresolvable
+     * reference.
      */
-    @SerialName("CouldEnchant")
+    @SerialName("CouldAttachTo")
     @Serializable
-    data class CouldEnchant(val reference: EffectTarget.SingleEntity) : CardPredicate {
-        override val description: String = "that could enchant ${reference.description}"
+    data class CouldAttachTo(val reference: EffectTarget.SingleEntity) : CardPredicate {
+        override val description: String = "that could be attached to ${reference.description}"
         override fun applyTextReplacement(replacer: TextReplacer): CardPredicate = this
     }
 

@@ -305,9 +305,12 @@ interface ObjectFilterBuilder<out Self> {
     fun powerLessThanEntity(reference: EffectTarget.SingleEntity) =
         withCardPredicate(CardPredicate.PowerLessThanEntity(reference))
 
-    /** An Aura card whose enchant restriction the referenced permanent satisfies (Auratouched Mage). */
-    fun couldEnchant(reference: EffectTarget.SingleEntity) =
-        withCardPredicate(CardPredicate.CouldEnchant(reference))
+    /**
+     * An Aura, Equipment or Fortification card that could be attached to the referenced permanent
+     * (Auratouched Mage, Mantle of the Ancients).
+     */
+    fun couldAttachTo(reference: EffectTarget.SingleEntity) =
+        withCardPredicate(CardPredicate.CouldAttachTo(reference))
 
     fun powerAtMostEntity(reference: EffectTarget.SingleEntity) =
         withCardPredicate(CardPredicate.PowerAtMostEntity(reference))

@@ -89,7 +89,6 @@ CardPredicate.CardTypeEqualsChosenComponent — CardPredicate
 CardPredicate.ColoredManaSymbolsAtLeast — CardPredicate
 CardPredicate.CompareNumericProperty — CardPredicate
 CardPredicate.ConvokedSource — CardPredicate
-CardPredicate.CouldEnchant — CardPredicate
 CardPredicate.CouldProduceColorlessMana — CardPredicate
 CardPredicate.DoesNotShareCreatureTypeWithPermanentYouControl — CardPredicate
 CardPredicate.DoesNotShareLandTypeWithPermanentYouControl — CardPredicate
@@ -1629,6 +1628,7 @@ AdaptAsThoughNoCountersEffect — Effect — Biomancer's Familiar — Regenerate
 AdaptEffect — Effect — Biomancer's Familiar — AddCountersEffect, ConditionalEffect — adapt was spelled If(Not(SourceHasCounter), AddCounters) on ten MH3 cards (migrated here); a generic If can't be seen as "this creature adapts", which AdaptAsThoughNoCounters must key to and consume, and AddCounters has no "only if it has none" axis that wouldn't fork its meaning
 CantAttackYou — StaticAbility — Promise of Loyalty — CantBeAttackedBy, CantAttack — CantBeAttackedBy is defender-anchored (read off the defending player's board, attackers named by a class filter) so it can't name one creature or ride a per-creature "while it has a vow counter" grant, and it never covers planeswalkers; CantAttack is absolute and lowers to a projected flag, which can't carry which player is protected
 CardPredicate.ChosenBySource — CardPredicate — Scheming Fence — Scope.ChosenCreature, EffectTarget.ChosenCreature — both read the same CREATURE slot, but Scope is a GroupFilter scope and EffectTarget an effect target; PreventActivatedAbilities and GainActivatedAbilitiesOfPermanents take a GameObjectFilter, which only a CardPredicate can narrow to the source's chosen permanent
+CardPredicate.CouldAttachTo — CardPredicate — Mantle of the Ancients — CouldEnchant (renamed into this), EquipmentAttachRestriction — renames and widens CouldEnchant from Aura cards to Aura, Equipment and Fortification cards (no net new type); EquipmentAttachRestriction is a static on the Equipment itself, not a filter a search or move can ask of any card
 CardPredicate.SharesColorWithTriggeringMana — CardPredicate — C.A.M.P. — CardPredicate.SharesColorWithRecipient, CardPredicate.SharesColorWith — SharesColorWith compares against an object (an EffectTarget), and SharesColorWithRecipient against the in-flight damage recipient; mana isn't an object either can reference, so the colors of the mana a land produced come from the trigger context through their own context-relative sibling
 CompanionCondition.DeckSizeAboveMinimum — CompanionCondition — none yet (Yorion, Sky Nomad prints it) — CompanionCondition.EachCard, CompanionCondition.DistinctNames — Yorion counts the starting deck against the format's minimum size, a property of the deck as a whole that no per-card filter can read
 CompanionCondition.DistinctNames — CompanionCondition — none yet (Lutri, the Spellchaser prints it) — CompanionCondition.EachCard, CompanionCondition.ShareACardType — a singleton condition compares cards with each other (no repeated name among the matching cards); EachCard reads each card alone, and ShareACardType intersects types, not names

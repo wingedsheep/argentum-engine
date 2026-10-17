@@ -1165,7 +1165,7 @@ class CastZoneResolver(
                 is CardPredicate.PowerEqualsDynamic,
                 is CardPredicate.PowerAtMostDynamic,
                 is CardPredicate.ToughnessEqualsDynamic,
-                is CardPredicate.CouldEnchant,
+                is CardPredicate.CouldAttachTo,
                 CardPredicate.CouldProduceColorlessMana,
                 is CardPredicate.PowerAtMostEntity,
                 is CardPredicate.PowerGreaterThanEntity,

@@ -3385,19 +3385,6 @@
                                 "zone": "Battlefield"
                             },
                             "attachTo": "Self"
-                        },
-                        {
-                            "type": "ConditionalOnCollection",
-                            "collection": "selected1",
-                            "ifNotEmpty": {
-                                "type": "AttachTargetEquipmentToCreature",
-                                "equipmentTarget": {
-                                    "type": "PipelineTarget",
-                                    "collectionName": "selected1"
-                                },
-                                "creatureTarget": "Self"
-                            },
-                            "filter": "Equipment"
                         }
                     ]
                 },

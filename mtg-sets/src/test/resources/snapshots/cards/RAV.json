@@ -110,7 +110,7 @@
                                             "subtype": "Aura"
                                         },
                                         {
-                                            "type": "CouldEnchant",
+                                            "type": "CouldAttachTo",
                                             "reference": "Self"
                                         }
                                     ]

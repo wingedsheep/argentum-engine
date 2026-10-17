@@ -1070,7 +1070,7 @@ internal class AffectsFilterResolver(
         is CardPredicate.ToughnessEqualsDynamic -> false
         is CardPredicate.PowerGreaterThanEntity -> false
         is CardPredicate.PowerAtMostEntity -> false
-        is CardPredicate.CouldEnchant -> false
+        is CardPredicate.CouldAttachTo -> false
         CardPredicate.CouldProduceColorlessMana -> false
         is CardPredicate.PowerLessThanEntity -> false
         is CardPredicate.CompareNumericProperty -> false

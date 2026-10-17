@@ -17,7 +17,7 @@ import io.kotest.matchers.types.shouldBeInstanceOf
  * battlefield attached to it. Otherwise, reveal the Aura card and put it into your hand. Then
  * shuffle."
  *
- * Pins the two new pieces: `CardPredicate.CouldEnchant` narrows the search to Auras whose printed
+ * Pins the two new pieces: `CardPredicate.CouldAttachTo` narrows the search to Auras whose printed
  * enchant restriction the Mage satisfies (Holy Strength yes, Erosion's "enchant land" no), and
  * `MoveCollectionEffect.attachTo` puts the found Aura onto the battlefield attached to the Mage
  * with no enchant choice. With the Mage gone, the Aura goes to hand instead.

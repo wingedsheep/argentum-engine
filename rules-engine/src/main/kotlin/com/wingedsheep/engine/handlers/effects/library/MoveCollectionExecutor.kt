@@ -8,6 +8,7 @@ import com.wingedsheep.engine.handlers.effects.EntersWithReplacements
 import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils
 import com.wingedsheep.engine.handlers.effects.ZoneMovementUtils
 import com.wingedsheep.engine.handlers.effects.ZoneTransitionService
+import com.wingedsheep.engine.handlers.effects.permanent.attachments.AttachmentMover
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
@@ -220,10 +221,12 @@ class MoveCollectionExecutor(
     }
 
     /**
-     * [MoveCollectionEffect.attachTo]: every Aura in [cards] enters the battlefield attached to the
-     * named host — no enchant choice, the effect specifies it (CR 303.4f). An Aura the host can't
+     * [MoveCollectionEffect.attachTo]: every Aura, Equipment and Fortification card in [cards]
+     * enters the battlefield attached to the named host — no enchant choice, the effect specifies
+     * it (CR 303.4f). Legality is [AttachmentMover.couldAttachCard]'s. An Aura the host can't
      * legally carry, or every Aura when the host has left the battlefield, stays where it is
-     * (CR 303.4g). The rest of the collection then moves through the ordinary path.
+     * (CR 303.4g); an Equipment or Fortification that can't be attached instead enters unattached,
+     * with the rest of the collection, which moves through the ordinary path.
      */
     private fun moveAurasAttachedTo(
         state: GameState,
@@ -233,30 +236,45 @@ class MoveCollectionExecutor(
         attachTo: com.wingedsheep.sdk.scripting.targets.EffectTarget,
         effect: MoveCollectionEffect
     ): EffectResult {
-        val (auras, others) = cards.partition { context.entryCopies[it]?.copiedCard == null && state.getEntity(it)?.get<CardComponent>()?.isAura == true }
         val hostId = context.resolveTarget(attachTo, state)?.takeIf { it in state.getBattlefield() }
         val defaultControllerId = resolvePlayer(destination.player, context, state) ?: context.controllerId
+        fun controllerOf(cardId: EntityId, card: CardComponent): EntityId = if (effect.underOwnersControl) {
+            state.getEntity(cardId)?.get<OwnerComponent>()?.playerId ?: card.ownerId ?: defaultControllerId
+        } else defaultControllerId
+        fun cardOf(cardId: EntityId): CardComponent? =
+            if (context.entryCopies[cardId]?.copiedCard != null) null else state.getEntity(cardId)?.get<CardComponent>()
+        val auras = cards.filter { cardOf(it)?.typeLine?.isAura == true }
+        // An Equipment or Fortification that couldn't be attached enters unattached (CR 301.5c,
+        // 301.6), so it joins the ordinary move rather than staying behind like an Aura.
+        val attaching = auras + cards.filter { cardId ->
+            val card = cardOf(cardId) ?: return@filter false
+            hostId != null && (card.typeLine.isEquipment || card.typeLine.isFortification) &&
+                AttachmentMover.couldAttachCard(
+                    state, predicateEvaluator, cardRegistry, cardId, card, hostId, controllerOf(cardId, card)
+                )
+        }
+        val others = cards.filter { it !in attaching }.toMutableList()
         var newState = state
         val events = mutableListOf<GameEvent>()
         val moved = mutableListOf<EntityId>()
         if (hostId != null) {
-            for (auraId in auras) {
-                val container = newState.getEntity(auraId) ?: continue
-                val card = container.get<CardComponent>() ?: continue
-                val controllerId = if (effect.underOwnersControl) {
-                    container.get<OwnerComponent>()?.playerId ?: card.ownerId ?: defaultControllerId
-                } else defaultControllerId
-                // Enchant restriction and protection (CR 702.16c) together: an Aura that couldn't stay
-                // attached never attaches, so it stays in its current zone (CR 303.4g).
-                val legal = com.wingedsheep.engine.handlers.predicates.EnchantRestriction.couldAttach(
-                    newState, newState.projectedState, predicateEvaluator, cardRegistry,
-                    auraId, card, hostId, controllerId
+            for (cardId in cards.filter { it in attaching }) {
+                val card = newState.getEntity(cardId)?.get<CardComponent>() ?: continue
+                val controllerId = controllerOf(cardId, card)
+                // Re-asked against the state after the earlier entries: an attachment that entered
+                // first can change what the host may carry (a protection-granting Aura). An Aura
+                // that no longer could stays in its zone (CR 303.4g); an Equipment enters unattached.
+                val legal = AttachmentMover.couldAttachCard(
+                    newState, predicateEvaluator, cardRegistry, cardId, card, hostId, controllerId
                 )
-                if (!legal || hostId !in newState.getBattlefield()) continue
-                val (afterMove, moveEvents) = moveAuraToBattlefield(newState, auraId, hostId, controllerId, effect.addCounterType, context, state)
+                if (!legal || hostId !in newState.getBattlefield()) {
+                    if (!card.typeLine.isAura) others.add(cardId)
+                    continue
+                }
+                val (afterMove, moveEvents) = moveAuraToBattlefield(newState, cardId, hostId, controllerId, effect.addCounterType, context, state)
                 newState = afterMove
                 events.addAll(moveEvents)
-                if (auraId in newState.getBattlefield()) moved.add(auraId)
+                if (cardId in newState.getBattlefield()) moved.add(cardId)
             }
         }
         val storeMovedAs = effect.storeMovedAs
