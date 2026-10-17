@@ -126,6 +126,7 @@ Families:
 
 ## AdditionalCost
 
+- `AdditionalCost.AnyNumberForCostReduction(action: ReducingCostAction, filter: GameObjectFilter, reductionPerUnit: Int)` — "As an additional cost to cast this spell, you may <action> any number of <filter>.
 - `AdditionalCost.Atom(atom: CostAtom)` — A single shared payable thing — see CostAtom.
 - `AdditionalCost.Behold(filter: GameObjectFilter, count: Int, storeAs: String)` — Behold: choose a matching permanent you control or reveal a matching card from your hand.
 - `AdditionalCost.BlightOrPay(blightAmount: Int, alternativeManaCost: String)` — Blight N or pay additional mana: the caster must either put N -1/-1 counters on a creature they control, or pay extra mana on top of the spell's base mana cost.
@@ -140,7 +141,6 @@ Families:
 - `AdditionalCost.PayLifeEqualToManaValueOfSpell` — Pay life equal to the mana value of the spell being cast.
 - `AdditionalCost.PayLifePerTarget(amountPerTarget: Int)` — Pay amountPerTarget life for each target chosen by this spell.
 - `AdditionalCost.PayXLife(minCount: Int)` — Pay X life (variable): the caster declares X at cast time and pays X life as an additional cost.
-- `AdditionalCost.SacrificeCreaturesForCostReduction(filter: GameObjectFilter, costReductionPerCreature: Int)` — Sacrifice any number of permanents matching the given filter as an additional cost.
 
 ## AmountFilter
 

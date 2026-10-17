@@ -39,9 +39,9 @@ val RottenmouthViper = card("Rottenmouth Viper") {
         "each opponent loses 4 life unless that player sacrifices a nonland permanent of their choice or discards a card."
 
     additionalCost(
-        Costs.additional.SacrificeCreaturesForCostReduction(
+        Costs.additional.SacrificeAnyNumberForCostReduction(
             filter = GameObjectFilter.NonlandPermanent,
-            costReductionPerCreature = 1
+            reductionPerUnit = 1
         )
     )
 

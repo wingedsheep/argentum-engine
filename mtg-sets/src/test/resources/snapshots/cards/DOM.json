@@ -13159,7 +13159,7 @@
             }
         ],
         "additionalCosts": [
-            "SacrificeCreaturesForCostReduction"
+            "AnyNumberForCostReduction"
         ]
     },
     "metadata": {

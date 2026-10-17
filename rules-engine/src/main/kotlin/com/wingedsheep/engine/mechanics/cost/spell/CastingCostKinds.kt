@@ -5,6 +5,7 @@ import com.wingedsheep.engine.state.LifePaymentPurpose
 import com.wingedsheep.engine.core.CardsRevealedEvent
 import com.wingedsheep.engine.core.CountersAddedEvent
 import com.wingedsheep.engine.core.ZoneChangeEvent
+import com.wingedsheep.engine.core.tap
 import com.wingedsheep.engine.handlers.CostHandler
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.costs.ChoiceCostResolver
@@ -15,6 +16,7 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.battlefield.LinkedExileComponent
+import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.ExiledFromZoneComponent
@@ -25,6 +27,7 @@ import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AdditionalCost
 import com.wingedsheep.sdk.scripting.AdditionalCostPayment
 import com.wingedsheep.sdk.scripting.CostZone
+import com.wingedsheep.sdk.scripting.ReducingCostAction
 
 /*
  * Kinds for the casting-context-specific [AdditionalCost] subtypes — the costs that mean something
@@ -262,47 +265,120 @@ internal object ExileVariableCardsCostKind : SpellCostKind<AdditionalCost.ExileV
 }
 
 /**
- * "You may sacrifice any number of creatures; this spell costs {2} less for each" (Torgaar). The
- * reduction is part of the total cost (`CastCostTotaller`), priced from the declared sacrifices.
+ * "You may sacrifice / tap / exile from your hand any number of …; this spell costs {N} less for each"
+ * (Torgaar, Explosive Singularity, the NEO Marches). Choosing none is always legal. The discount is
+ * part of the total cost (`CastCostTotaller`), priced from the declared picks — [chosen] reads them
+ * from the payment channel the action's picker fills.
  */
-internal object SacrificeForCostReductionCostKind : SpellCostKind<AdditionalCost.SacrificeCreaturesForCostReduction> {
-    // Always payable — sacrificing 0 creatures is valid.
-    override fun canPay(state: GameState, payerId: EntityId, cost: AdditionalCost.SacrificeCreaturesForCostReduction, costHandler: CostHandler) = true
+internal object AnyNumberForCostReductionCostKind : SpellCostKind<AdditionalCost.AnyNumberForCostReduction> {
+    override fun canPay(state: GameState, payerId: EntityId, cost: AdditionalCost.AnyNumberForCostReduction, costHandler: CostHandler) = true
 
-    override fun enumerate(env: SpellCostEnumeration, cost: AdditionalCost.SacrificeCreaturesForCostReduction, offer: SpellCostOffer): Boolean {
-        offer.variableSacrificeTargets = env.costUtils.findVariableSacrificeTargets(env.state, env.playerId, cost.filter)
-        offer.variableSacrificeReduction = cost.costReductionPerCreature
+    override fun enumerate(env: SpellCostEnumeration, cost: AdditionalCost.AnyNumberForCostReduction, offer: SpellCostOffer): Boolean {
+        offer.reducingCost = cost
+        offer.reducingCandidates = candidates(env, cost)
         return true
     }
 
-    override fun validate(check: SpellCostCheck, cost: AdditionalCost.SacrificeCreaturesForCostReduction): String? {
+    override fun candidates(env: SpellCostEnumeration, cost: AdditionalCost.AnyNumberForCostReduction): List<EntityId> =
+        when (cost.action) {
+            ReducingCostAction.SACRIFICE ->
+                env.costUtils.findVariableSacrificeTargets(env.state, env.playerId, cost.filter)
+            ReducingCostAction.TAP ->
+                env.costUtils.findAbilityTapTargets(env.state, env.playerId, cost.filter)
+            // The spell is on its way to the stack (CR 601.2a), so it can't pay for itself.
+            ReducingCostAction.EXILE_FROM_HAND ->
+                env.costUtils.findExileTargets(env.state, env.playerId, cost.filter, Zone.HAND)
+                    .filter { it != env.castCardId }
+        }
+
+    /** The objects the caster chose for [cost], from the payment channel its action fills. */
+    fun chosen(cost: AdditionalCost.AnyNumberForCostReduction, payment: AdditionalCostPayment?): List<EntityId> =
+        when (cost.action) {
+            ReducingCostAction.SACRIFICE -> payment?.sacrificedPermanents
+            ReducingCostAction.TAP -> payment?.tappedPermanents
+            ReducingCostAction.EXILE_FROM_HAND -> payment?.exiledCards
+        } ?: emptyList()
+
+    /**
+     * The picker for [cost]: from zero up to every candidate. Its prompt is the choice plus what each
+     * pick is worth — "Tap any number of untapped creatures you control — each one makes this spell
+     * cost {1} less" — shorter than the printed two sentences, which the cast's card already shows.
+     */
+    fun data(cost: AdditionalCost.AnyNumberForCostReduction, candidates: List<EntityId>) =
+        pickerData(cost, candidates).copy(
+            description = "${cost.choice} — each one makes this spell cost {${cost.reductionPerUnit}} less"
+        )
+
+    private fun pickerData(cost: AdditionalCost.AnyNumberForCostReduction, candidates: List<EntityId>) = when (cost.action) {
+        ReducingCostAction.SACRIFICE -> AdditionalCostData(
+            description = cost.description,
+            costType = "SacrificeForCostReduction",
+            validSacrificeTargets = candidates,
+            sacrificeCount = 0,
+        )
+        ReducingCostAction.TAP -> AdditionalCostData(
+            description = cost.description,
+            costType = "TapForCostReduction",
+            validTapTargets = candidates,
+            tapCount = 0,
+        )
+        ReducingCostAction.EXILE_FROM_HAND -> AdditionalCostData(
+            description = cost.description,
+            costType = "ExileFromHand",
+            validExileTargets = candidates,
+            exileMinCount = 0,
+            exileMaxCount = candidates.size,
+        )
+    }
+
+    override fun validate(check: SpellCostCheck, cost: AdditionalCost.AnyNumberForCostReduction): String? {
         val state = check.state
         val projected = state.projectedState
-        for (permId in check.payment?.sacrificedPermanents ?: emptyList()) {
-            val permContainer = state.getEntity(permId)
-                ?: return "Sacrificed permanent not found: $permId"
-            val permCard = permContainer.get<CardComponent>()
-                ?: return "Sacrificed entity is not a card: $permId"
-            if (projected.getController(permId) != check.playerId) {
-                return "You can only sacrifice permanents you control"
+        val picks = chosen(cost, check.payment)
+        if (picks.size != picks.distinct().size) return "The same object can't be chosen twice"
+        val context = PredicateContext(controllerId = check.playerId)
+        for (id in picks) {
+            val card = state.getEntity(id)?.get<CardComponent>() ?: return "Chosen object not found: $id"
+            when (cost.action) {
+                ReducingCostAction.SACRIFICE, ReducingCostAction.TAP -> {
+                    if (id !in state.getBattlefield()) return "${card.name} is not on the battlefield"
+                    if (projected.getController(id) != check.playerId) return "You can only choose permanents you control"
+                    // CR 701.26a — only an untapped permanent can be tapped.
+                    if (cost.action == ReducingCostAction.TAP && state.getEntity(id)?.has<TappedComponent>() == true) {
+                        return "${card.name} is already tapped"
+                    }
+                }
+                ReducingCostAction.EXILE_FROM_HAND -> {
+                    if (id == check.action.cardId) return "A spell can't exile itself to pay its own cost"
+                    if (id !in state.getZone(ZoneKey(check.playerId, Zone.HAND))) return "${card.name} is not in your hand"
+                }
             }
-            if (permId !in state.getBattlefield()) {
-                return "Sacrificed permanent is not on the battlefield: $permId"
-            }
-            val context = PredicateContext(controllerId = check.playerId)
-            if (!check.predicateEvaluator.matches(state, projected, permId, cost.filter, context)) {
-                return "${permCard.name} doesn't match the required filter: ${cost.filter.description}"
+            if (!check.predicateEvaluator.matches(state, projected, id, cost.filter, context)) {
+                return "${card.name} doesn't match the required filter: ${cost.filter.description}"
             }
         }
         return null
     }
 
-    override fun pay(ledger: SpellCostLedger, cost: AdditionalCost.SacrificeCreaturesForCostReduction): String? {
-        val sacrificed = ledger.payment.sacrificedPermanents
-        ledger.sacrificedSnapshots.addAll(captureEntitySnapshots(sacrificed, ledger.state))
-        for (permId in sacrificed) {
-            if (ledger.state.getEntity(permId) == null) continue
-            ledger.sacrifice(permId)
+    override fun pay(ledger: SpellCostLedger, cost: AdditionalCost.AnyNumberForCostReduction): String? {
+        val picks = chosen(cost, ledger.payment)
+        when (cost.action) {
+            ReducingCostAction.SACRIFICE -> {
+                ledger.sacrificedSnapshots.addAll(captureEntitySnapshots(picks, ledger.state))
+                for (permId in picks) {
+                    if (ledger.state.getEntity(permId) == null) continue
+                    ledger.sacrifice(permId)
+                }
+            }
+            ReducingCostAction.TAP -> for (permId in picks) {
+                val (tappedState, tapEvents) = tap(ledger.state, permId)
+                ledger.state = tappedState
+                ledger.events.addAll(tapEvents)
+            }
+            ReducingCostAction.EXILE_FROM_HAND -> {
+                ledger.exiledAsCostCards.addAll(picks)
+                exileFromOwnZone(ledger, picks, Zone.HAND)
+            }
         }
         return null
     }

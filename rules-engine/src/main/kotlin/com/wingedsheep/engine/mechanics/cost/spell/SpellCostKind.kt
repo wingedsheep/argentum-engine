@@ -141,8 +141,8 @@ class SpellCostEnumeration(
 class SpellCostOffer {
     var lifeRequired = 0
     val sacrificeTargets = mutableListOf<EntityId>()
-    var variableSacrificeTargets = emptyList<EntityId>()
-    var variableSacrificeReduction = 0
+    var reducingCost: AdditionalCost.AnyNumberForCostReduction? = null
+    var reducingCandidates = emptyList<EntityId>()
     var variablePermanentsCost: CostAtom.VariablePermanents? = null
     var variablePermanentsTargets = emptyList<EntityId>()
     var exileTargets = emptyList<EntityId>()

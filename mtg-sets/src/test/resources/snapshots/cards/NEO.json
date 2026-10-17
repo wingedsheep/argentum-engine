@@ -1059,6 +1059,49 @@
     ]
 }
 
+// Explosive Singularity
+{
+    "name": "Explosive Singularity",
+    "manaCost": "{8}{R}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "As an additional cost to cast this spell, you may tap any number of untapped creatures you control. This spell costs {1} less to cast for each creature tapped this way.\nExplosive Singularity deals 10 damage to any target.",
+    "script": {
+        "spellEffect": {
+            "type": "DealDamage",
+            "amount": {
+                "type": "Fixed",
+                "amount": 10
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "AnyTarget",
+                "id": "t0"
+            }
+        ],
+        "additionalCosts": [
+            {
+                "type": "AnyNumberForCostReduction",
+                "action": "TAP",
+                "reductionPerUnit": 1
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "140",
+        "rarity": "MYTHIC",
+        "artist": "Liiga Smilshkalne",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/6/e6cdd822-44a1-4d58-9de4-69fc56eae255.jpg?1783923869"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Fang of Shigeki
 {
     "name": "Fang of Shigeki",
@@ -2050,6 +2093,66 @@
         "artist": "Fiona Hsieh",
         "flavorText": "The playful kami reserved its greatest blessings for those who brought not wealth or rare delicacies, but particularly amusing trinkets.",
         "imageUri": "https://cards.scryfall.io/normal/front/2/4/24bbdeb0-9165-4874-a853-d19c20c250ef.jpg?1783923916"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// March of Otherworldly Light
+{
+    "name": "March of Otherworldly Light",
+    "manaCost": "{X}{W}",
+    "typeLine": "Instant",
+    "oracleText": "As an additional cost to cast this spell, you may exile any number of white cards from your hand. This spell costs {2} less to cast for each card exiled this way.\nExile target artifact, creature, or enchantment with mana value X or less.",
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "destination": "Exile"
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    "IsArtifact",
+                                    "IsCreature",
+                                    "IsEnchantment"
+                                ]
+                            },
+                            {
+                                "type": "CompareNumericProperty",
+                                "property": "MANA_VALUE",
+                                "operator": "LTE",
+                                "amount": "XValue"
+                            }
+                        ]
+                    }
+                },
+                "id": "t0"
+            }
+        ],
+        "additionalCosts": [
+            {
+                "type": "AnyNumberForCostReduction",
+                "action": "EXILE_FROM_HAND",
+                "filter": "white"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "28",
+        "rarity": "RARE",
+        "artist": "Nils Hamm",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/5/553fb946-2706-475b-89f9-e4355ec9ea2b.jpg?1783923916"
     },
     "colorIdentityOverride": [
         "WHITE"

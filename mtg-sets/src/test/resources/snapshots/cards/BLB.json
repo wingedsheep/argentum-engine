@@ -15156,9 +15156,9 @@
         ],
         "additionalCosts": [
             {
-                "type": "SacrificeCreaturesForCostReduction",
+                "type": "AnyNumberForCostReduction",
                 "filter": "nonland permanent",
-                "costReductionPerCreature": 1
+                "reductionPerUnit": 1
             }
         ]
     },

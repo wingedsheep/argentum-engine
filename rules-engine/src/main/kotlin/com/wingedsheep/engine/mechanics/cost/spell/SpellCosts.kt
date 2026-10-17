@@ -50,7 +50,7 @@ object SpellCosts {
         put(AdditionalCost.PayXLife::class, PayXLifeCostKind)
         put(AdditionalCost.PayLifeEqualToManaValueOfSpell::class, PayLifeEqualToManaValueCostKind)
         put(AdditionalCost.ExileVariableCards::class, ExileVariableCardsCostKind)
-        put(AdditionalCost.SacrificeCreaturesForCostReduction::class, SacrificeForCostReductionCostKind)
+        put(AdditionalCost.AnyNumberForCostReduction::class, AnyNumberForCostReductionCostKind)
         put(AdditionalCost.Forage::class, ForageCostKind)
         put(AdditionalCost.BlightOrPay::class, BlightOrPayCostKind)
         put(AdditionalCost.BlightVariable::class, BlightVariableCostKind)

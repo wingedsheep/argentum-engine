@@ -279,6 +279,7 @@ export function computePhases(actionInfo: LegalActionInfo, options?: ComputePhas
       'SacrificeForCostReduction',
       'SacrificeVariable',
       'TapPermanents',
+      'TapForCostReduction',
       'BouncePermanent',
       'DiscardCard',
       'ExileFromGraveyard',
@@ -544,7 +545,7 @@ export function mergeResult(
           return casualtyCreature ? { ...action, casualtyCreature } : action
         }
         const fieldUpdate =
-          costType === 'TapPermanents'
+          costType === 'TapPermanents' || costType === 'TapForCostReduction'
             ? { tappedPermanents: selectedTargets }
             : costType === 'DiscardCard'
               ? { discardedCards: selectedTargets }
@@ -943,6 +944,16 @@ export function enterPhase(
           minTargets = 0
           maxTargets = validTargets.length
           flags.isSacrificeSelection = true
+          flags.targetDescription = costInfo.description
+          break
+        // "You may tap any number of untapped creatures you control; this spell costs {1} less for
+        // each" (Explosive Singularity) — any number, none included.
+        case 'TapForCostReduction':
+          validTargets = [...(costInfo.validTapTargets ?? [])]
+          minTargets = 0
+          maxTargets = validTargets.length
+          flags.isSacrificeSelection = true
+          flags.isTapPermanentSelection = true
           flags.targetDescription = costInfo.description
           break
         case 'SacrificeVariable':

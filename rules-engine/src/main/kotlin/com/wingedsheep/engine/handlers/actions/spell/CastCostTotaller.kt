@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.handlers.actions.spell
 
+import com.wingedsheep.engine.mechanics.cost.spell.AnyNumberForCostReductionCostKind
 import com.wingedsheep.engine.core.AlternativeCostType
 import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.handlers.PredicateEvaluator
@@ -179,11 +180,13 @@ internal class CastCostTotaller(
             effectiveCost = effectiveCost + ManaCost.parse("{${action.additionalManaForCounters}}")
         }
 
-        // Sacrifice-for-cost-reduction (Torgaar): the declared sacrifices take generic mana off.
+        // "You may sacrifice / tap / exile any number of …; this spell costs {N} less for each"
+        // (Torgaar, Explosive Singularity, the Marches): the declared picks take generic mana off.
         if (cardDef != null && action.additionalCostPayment != null) {
             for (cost in cardDef.script.additionalCosts) {
-                if (cost is AdditionalCost.SacrificeCreaturesForCostReduction) {
-                    val reduction = action.additionalCostPayment.sacrificedPermanents.size * cost.costReductionPerCreature
+                if (cost is AdditionalCost.AnyNumberForCostReduction) {
+                    val picks = AnyNumberForCostReductionCostKind.chosen(cost, action.additionalCostPayment)
+                    val reduction = picks.size * cost.reductionPerUnit
                     if (reduction > 0) {
                         effectiveCost = effectiveCost.reduceGeneric(reduction)
                     }

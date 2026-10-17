@@ -109,20 +109,51 @@ sealed interface AdditionalCost : TextReplaceable<AdditionalCost> {
     }
 
     /**
-     * Sacrifice any number of permanents matching the given filter as an additional cost.
-     * Each sacrifice reduces the spell's generic mana cost by [costReductionPerCreature].
-     * Example: "You may sacrifice any number of creatures. This spell costs {2} less for each creature sacrificed."
+     * "As an additional cost to cast this spell, you may <action> any number of <filter>. This spell
+     * costs {N} less to cast for each <one> <action>ed this way." The caster chooses how many (zero
+     * included), and each one takes [reductionPerUnit] generic mana off the total cost (CR 601.2f —
+     * the announced X is generic mana in that total, so the discount keeps paying into an {X}).
      *
-     * @property filter Which permanents can be sacrificed
-     * @property costReductionPerCreature Generic mana reduction per sacrificed creature
+     *  - [action] `SACRIFICE` — permanents you control (Torgaar, Famine Incarnate; Rottenmouth Viper).
+     *  - [action] `TAP` — untapped permanents you control; a cost, not the {T} symbol, so summoning
+     *    sickness doesn't matter (Explosive Singularity).
+     *  - [action] `EXILE_FROM_HAND` — cards in your hand other than the spell itself (the
+     *    Kamigawa: Neon Dynasty March cycle).
+     *
+     * Closest neighbours: [CostAtom.VariablePermanents] (a variable-count cost whose count becomes
+     * the ability's X, never a discount, and battlefield-only) and [ExileVariableCards] (the count is
+     * the spell's X). Here the count is a *price*, not a value the effect reads.
+     *
+     * @property action what is done with each chosen object.
+     * @property filter which objects may be chosen.
+     * @property reductionPerUnit generic mana taken off per object chosen.
      */
-    @SerialName("SacrificeCreaturesForCostReduction")
+    @SerialName("AnyNumberForCostReduction")
     @Serializable
-    data class SacrificeCreaturesForCostReduction(
+    data class AnyNumberForCostReduction(
+        val action: ReducingCostAction = ReducingCostAction.SACRIFICE,
         val filter: GameObjectFilter = GameObjectFilter.Creature,
-        val costReductionPerCreature: Int = 2
+        val reductionPerUnit: Int = 2
     ) : AdditionalCost {
-        override val description: String = "You may sacrifice any number of creatures. This spell costs {$costReductionPerCreature} less to cast for each creature sacrificed this way."
+        override val description: String get() =
+            "You may ${choice.replaceFirstChar { it.lowercase() }}. This spell costs {$reductionPerUnit} " +
+                "less to cast for each ${if (action == ReducingCostAction.EXILE_FROM_HAND) "card" else filter.description} " +
+                "${when (action) {
+                    ReducingCostAction.SACRIFICE -> "sacrificed"
+                    ReducingCostAction.TAP -> "tapped"
+                    ReducingCostAction.EXILE_FROM_HAND -> "exiled"
+                }} this way."
+
+        /** The choice on its own — "Tap any number of untapped creatures you control" — for a picker prompt. */
+        val choice: String get() = when (action) {
+            ReducingCostAction.SACRIFICE -> "Sacrifice any number of ${filter.description}s"
+            ReducingCostAction.TAP -> "Tap any number of untapped ${filter.description}s you control"
+            ReducingCostAction.EXILE_FROM_HAND -> "Exile any number of ${cardsNoun()} from your hand"
+        }
+
+        // A colour-only filter describes itself as "white"; a hand pick is always of cards.
+        private fun cardsNoun(): String = filter.description.let { if (it.endsWith("card")) "${it}s" else "$it cards" }
+
         override fun applyTextReplacement(replacer: TextReplacer): AdditionalCost {
             val newFilter = filter.applyTextReplacement(replacer)
             return if (newFilter !== filter) copy(filter = newFilter) else this
@@ -609,3 +640,16 @@ data class DistributedCounterRemoval(
     val counterType: String,
     val count: Int
 )
+
+/** What an [AdditionalCost.AnyNumberForCostReduction] does with each object the caster chooses. */
+@Serializable
+enum class ReducingCostAction {
+    /** Sacrifice permanents you control. */
+    SACRIFICE,
+
+    /** Tap untapped permanents you control (CR 701.26a). */
+    TAP,
+
+    /** Exile cards from your hand. */
+    EXILE_FROM_HAND
+}
