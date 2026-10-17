@@ -24,6 +24,7 @@ import com.wingedsheep.engine.state.components.battlefield.AttachmentsComponent
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.battlefield.DamageComponent
 import com.wingedsheep.engine.state.components.battlefield.DamageDealtToCreaturesThisTurnComponent
+import com.wingedsheep.engine.state.components.battlefield.DamagedBySourcesThisTurnComponent
 import com.wingedsheep.sdk.scripting.predicates.StatePredicate
 import com.wingedsheep.engine.state.components.battlefield.HasDealtCombatDamageToPlayerComponent
 import com.wingedsheep.engine.state.components.battlefield.HasBecomeTappedComponent
@@ -1015,6 +1016,14 @@ object ZoneMovementUtils {
                 sourceState.getEntity(it)?.get<DamageDealtToCreaturesThisTurnComponent>()?.creatureIds
             }
             if (damaged == null || entityId !in damaged) return false
+        }
+
+        // "A creature dealt damage this turn by a source you controlled" (Etching of Kumano) — read
+        // off the dying creature's own record of its damage sources, each frozen with its controller
+        // at damage time, so the source needn't still be around.
+        if (StatePredicate.WasDealtDamageBySourceControllerThisTurn in filter.statePredicates) {
+            val sources = container.get<DamagedBySourcesThisTurnComponent>()?.sources
+            if (sources == null || sources.none { it.sourceControllerId == sourceControllerId }) return false
         }
 
         // Check card predicates

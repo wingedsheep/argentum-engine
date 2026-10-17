@@ -6581,6 +6581,18 @@ This is the player-arm prerequisite for the planned composable mixed `TargetUnio
   to = Zone.GRAVEYARD)))` (Frostwielder, Kumano's Pupils, Kumano, Master Yamabushi) and still applies when
   the host dies simultaneously. Inert with no source context (group-static projection, granted
   sourceless replacements).
+- `.wasDealtDamageBySourceControllerThisTurn()` — the creature was dealt damage this turn by **a source
+  you controlled** (any source, "you" being the effect source's controller); backed by
+  `StatePredicate.WasDealtDamageBySourceControllerThisTurn`. Reads the candidate's *own* record of the
+  sources that damaged it this turn, each frozen with its controller as it dealt the damage (the same
+  record Shelob's observer death trigger reads), so a source that has since left the battlefield or
+  changed control still counts as it stood then — unlike `.wasDealtDamageBySourceThisTurn()`, which needs
+  its one source to still be around. Honoured by the zone-change redirect path (printed and granted
+  replacements alike), so Etching of Kumano's "if a creature dealt damage this turn by a source you
+  controlled would die, exile it instead" is `replacementEffect(RedirectZoneChange(newDestination =
+  Zone.EXILE, appliesTo = EventPattern.ZoneChangeEvent(filter =
+  GameObjectFilter.Creature.wasDealtDamageBySourceControllerThisTurn(), from = Zone.BATTLEFIELD,
+  to = Zone.GRAVEYARD)))`. Cleared at end of turn. Inert with no source context (group-static projection).
 - `.saddled()` — permanent is saddled (CR 702.171b); backed by `StatePredicate.IsSaddled`.
 - `.renowned()` — creature has the **renowned** designation (CR 702.112b); backed by
   `StatePredicate.IsRenowned` and the engine's `RenownedComponent`. Component-backed and sticky

@@ -1715,6 +1715,7 @@ Families:
 - `StatePredicate.SharesNameWithSpellCastThisTurn` — Shares a name with a spell cast by any player during the current turn.
 - `StatePredicate.WasCast(fromZone: Zone?)` — A spell on the stack that was cast — from fromZone when it is set, from anywhere when it is null.
 - `StatePredicate.WasCastForWarp` — Permanent on the battlefield that was cast for its warp cost (CR 702.185).
+- `StatePredicate.WasDealtDamageBySourceControllerThisTurn` — Was dealt damage this turn by a source the effect source's controller controlled *when that damage was dealt* — "a creature dealt damage this turn by a source you controlled" (Etching of Kumano).
 - `StatePredicate.WasDealtDamageBySourceThisTurn` — Was dealt damage this turn by the effect's *source* — the recipient-side view of the source's per-turn damaged-creature record (the same record `Triggers` "a creature dealt damage by this creature…
 - `StatePredicate.WasDealtDamageThisTurn(damageType: DamageType)` — Has been dealt damage this turn.
 

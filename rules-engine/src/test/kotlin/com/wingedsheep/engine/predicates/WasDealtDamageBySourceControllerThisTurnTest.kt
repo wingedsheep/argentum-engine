@@ -1,0 +1,155 @@
+package com.wingedsheep.engine.predicates
+
+import com.wingedsheep.engine.handlers.EffectContext
+import com.wingedsheep.engine.handlers.PredicateContext
+import com.wingedsheep.engine.state.components.stack.ChosenTarget
+import com.wingedsheep.engine.support.GameTestDriver
+import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.core.Zone
+import com.wingedsheep.sdk.dsl.Effects
+import com.wingedsheep.sdk.dsl.card
+import com.wingedsheep.sdk.model.Deck
+import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.EventPattern
+import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.RedirectZoneChange
+import com.wingedsheep.sdk.scripting.effects.Effect
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import io.kotest.assertions.withClue
+import io.kotest.core.spec.style.FunSpec
+import io.kotest.matchers.shouldBe
+
+/**
+ * `StatePredicate.WasDealtDamageBySourceControllerThisTurn` — "a creature dealt damage this turn by a
+ * source you controlled" (Etching of Kumano). Read off the damaged creature's own record of its
+ * damage sources, each frozen with its controller at damage time, both by the predicate evaluator and
+ * by the zone-change redirect path that answers "…would die, exile it instead".
+ */
+class WasDealtDamageBySourceControllerThisTurnTest : FunSpec({
+
+    // "If a creature dealt damage this turn by a source you controlled would die, exile it instead."
+    val etching = card("Damage-History Test Etching") {
+        manaCost = "{R}"
+        typeLine = "Enchantment"
+        replacementEffect(
+            RedirectZoneChange(
+                newDestination = Zone.EXILE,
+                appliesTo = EventPattern.ZoneChangeEvent(
+                    filter = GameObjectFilter.Creature.wasDealtDamageBySourceControllerThisTurn(),
+                    from = Zone.BATTLEFIELD,
+                    to = Zone.GRAVEYARD,
+                ),
+            )
+        )
+    }
+
+    fun driver() = GameTestDriver().apply {
+        registerCards(TestCards.all)
+        registerCard(etching)
+        initMirrorMatch(Deck.of("Forest" to 40))
+        passPriorityUntil(Step.PRECOMBAT_MAIN)
+    }
+
+    val filter = GameObjectFilter.Creature.wasDealtDamageBySourceControllerThisTurn()
+
+    fun GameTestDriver.matchesFor(playerId: EntityId, cardId: EntityId) =
+        services.predicateEvaluator.matches(
+            state, state.projectedState, cardId, filter,
+            PredicateContext.fromEffectContext(EffectContext(sourceId = null, controllerId = playerId))
+        )
+
+    fun GameTestDriver.run(effect: Effect, controllerId: EntityId, sourceId: EntityId?, target: EntityId) {
+        val result = services.effectExecutorRegistry.execute(
+            state, effect,
+            EffectContext(
+                sourceId = sourceId, controllerId = controllerId,
+                targets = listOf(ChosenTarget.Permanent(target))
+            )
+        )
+        result.error shouldBe null
+        replaceState(result.state)
+    }
+
+    fun GameTestDriver.ping(by: EntityId, source: EntityId, target: EntityId) =
+        run(Effects.DealDamage(1, EffectTarget.ContextTarget(0)), by, source, target)
+
+    fun GameTestDriver.destroy(by: EntityId, target: EntityId) =
+        run(Effects.Destroy(EffectTarget.ContextTarget(0)), by, null, target)
+
+    test("matches only for the player who controlled the damaging source") {
+        val d = driver(); val me = d.activePlayer!!; val opp = d.getOpponent(me)
+        val mySource = d.putCreatureOnBattlefield(me, "Grizzly Bears")
+        val victim = d.putCreatureOnBattlefield(opp, "Centaur Courser")
+
+        withClue("undamaged") { d.matchesFor(me, victim) shouldBe false }
+        d.ping(me, mySource, victim)
+
+        d.matchesFor(me, victim) shouldBe true
+        d.matchesFor(opp, victim) shouldBe false
+    }
+
+    test("a creature damaged by a source you controlled is exiled when something else kills it") {
+        val d = driver(); val me = d.activePlayer!!; val opp = d.getOpponent(me)
+        d.putPermanentOnBattlefield(me, etching.name)
+        val mySource = d.putCreatureOnBattlefield(me, "Grizzly Bears")
+        val victim = d.putCreatureOnBattlefield(opp, "Centaur Courser")
+
+        d.ping(me, mySource, victim)
+        // The killer is the opponent's own effect: how it dies doesn't matter, only who damaged it.
+        d.destroy(opp, victim)
+
+        d.state.getExile(opp).contains(victim) shouldBe true
+        d.state.getGraveyard(opp).contains(victim) shouldBe false
+    }
+
+    test("a creature damaged only by an opponent's source dies normally") {
+        val d = driver(); val me = d.activePlayer!!; val opp = d.getOpponent(me)
+        d.putPermanentOnBattlefield(me, etching.name)
+        val theirSource = d.putCreatureOnBattlefield(opp, "Grizzly Bears")
+        val victim = d.putCreatureOnBattlefield(me, "Centaur Courser")
+
+        d.ping(opp, theirSource, victim)
+        d.destroy(me, victim)
+
+        d.state.getGraveyard(me).contains(victim) shouldBe true
+    }
+
+    test("an undamaged creature dies normally") {
+        val d = driver(); val me = d.activePlayer!!; val opp = d.getOpponent(me)
+        d.putPermanentOnBattlefield(me, etching.name)
+        val victim = d.putCreatureOnBattlefield(opp, "Centaur Courser")
+
+        d.destroy(me, victim)
+
+        d.state.getGraveyard(opp).contains(victim) shouldBe true
+    }
+
+    test("the damaging source needn't still be on the battlefield") {
+        val d = driver(); val me = d.activePlayer!!; val opp = d.getOpponent(me)
+        d.putPermanentOnBattlefield(me, etching.name)
+        val mySource = d.putCreatureOnBattlefield(me, "Grizzly Bears")
+        val victim = d.putCreatureOnBattlefield(opp, "Centaur Courser")
+
+        d.ping(me, mySource, victim)
+        d.destroy(me, mySource)
+        withClue("the source is gone (and, undamaged by my sources, went to the graveyard)") {
+            d.state.getGraveyard(me).contains(mySource) shouldBe true
+        }
+        d.destroy(opp, victim)
+
+        d.state.getExile(opp).contains(victim) shouldBe true
+    }
+
+    test("damage you dealt to your own creature counts too") {
+        val d = driver(); val me = d.activePlayer!!
+        d.putPermanentOnBattlefield(me, etching.name)
+        val mySource = d.putCreatureOnBattlefield(me, "Grizzly Bears")
+        val victim = d.putCreatureOnBattlefield(me, "Centaur Courser")
+
+        d.ping(me, mySource, victim)
+        d.destroy(me, victim)
+
+        d.state.getExile(me).contains(victim) shouldBe true
+    }
+})

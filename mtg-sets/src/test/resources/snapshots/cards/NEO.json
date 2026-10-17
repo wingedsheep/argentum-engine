@@ -1951,6 +1951,136 @@
     ]
 }
 
+// Kumano Faces Kakkazan
+{
+    "name": "Kumano Faces Kakkazan",
+    "manaCost": "{R}",
+    "typeLine": "Enchantment — Saga",
+    "oracleText": "(As this Saga enters and after your draw step, add a lore counter.)\nI — This Saga deals 1 damage to each opponent and each planeswalker they control.\nII — When you next cast a creature spell this turn, that creature enters with an additional +1/+1 counter on it.\nIII — Exile this Saga, then return it to the battlefield transformed under your control.",
+    "script": {
+        "sagaChapters": [
+            {
+                "chapter": 1,
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "EachOpponent"
+                            }
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Group",
+                                "filter": {
+                                    "baseFilter": "planeswalker ctrl:opponent"
+                                }
+                            },
+                            "body": {
+                                "type": "DealDamage",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "target": "IterationEntity"
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "chapter": 2,
+                "effect": {
+                    "type": "CreateDelayedTrigger",
+                    "effect": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": "TriggeringEntity"
+                    },
+                    "trigger": {
+                        "event": {
+                            "type": "SpellCastEvent",
+                            "spellFilter": {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ]
+                            }
+                        },
+                        "binding": "ANY"
+                    },
+                    "fireOnce": true
+                }
+            },
+            {
+                "chapter": 3,
+                "effect": "ExileAndReturnTransformed"
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Etching of Kumano",
+        "manaCost": "",
+        "typeLine": "Enchantment Creature — Human Shaman",
+        "oracleText": "Haste\nIf a creature dealt damage this turn by a source you controlled would die, exile it instead.",
+        "creatureStats": {
+            "power": 2,
+            "toughness": 2
+        },
+        "keywords": [
+            "HASTE"
+        ],
+        "script": {
+            "replacementEffects": [
+                {
+                    "type": "RedirectZoneChange",
+                    "newDestination": "Exile",
+                    "appliesTo": {
+                        "type": "ZoneChangeEvent",
+                        "filter": {
+                            "cardPredicates": [
+                                "IsCreature"
+                            ],
+                            "statePredicates": [
+                                "WasDealtDamageBySourceControllerThisTurn"
+                            ]
+                        },
+                        "from": "Battlefield",
+                        "to": "Graveyard"
+                    }
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "152",
+            "rarity": "UNCOMMON",
+            "artist": "Mike Bierek",
+            "flavorText": "Many kami came to demand a secret he did not know, and every one of them fell.",
+            "imageUri": "https://cards.scryfall.io/normal/back/2/8/28d92cad-45b0-479d-97fc-c175f3a3f259.jpg?1783923870"
+        },
+        "colorIdentityOverride": [
+            "RED"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "152",
+        "rarity": "UNCOMMON",
+        "artist": "Mike Bierek",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/8/28d92cad-45b0-479d-97fc-c175f3a3f259.jpg?1783923870"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Lion Sash
 {
     "name": "Lion Sash",
@@ -2257,6 +2387,65 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Malicious Malfunction
+{
+    "name": "Malicious Malfunction",
+    "manaCost": "{1}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "All creatures get -2/-2 until end of turn. If a creature would die this turn, exile it instead.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GrantReplacementEffect",
+                    "replacement": {
+                        "type": "RedirectZoneChange",
+                        "newDestination": "Exile",
+                        "appliesTo": {
+                            "type": "ZoneChangeEvent",
+                            "filter": "creature",
+                            "from": "Battlefield",
+                            "to": "Graveyard"
+                        }
+                    }
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature"
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": -2
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": -2
+                        },
+                        "target": "IterationEntity"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "110",
+        "rarity": "UNCOMMON",
+        "artist": "Deruchenko Alexander",
+        "flavorText": "\"That? A minor test, nothing more. Incompleat flesh is weak.\"\n—Jin-Gitaxias",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/6/56e7415f-f014-4ece-81db-d8271444d9e9.jpg?1783923881"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 

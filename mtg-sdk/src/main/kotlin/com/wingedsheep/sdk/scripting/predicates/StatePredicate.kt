@@ -617,6 +617,24 @@ sealed interface StatePredicate {
         override val description: String = "dealt damage by this creature this turn"
     }
 
+    /**
+     * Was dealt damage this turn by a source the effect source's controller controlled *when that
+     * damage was dealt* — "a creature dealt damage this turn by a source you controlled" (Etching of
+     * Kumano). Reads the candidate's own per-turn record of the sources that damaged it, each frozen
+     * with its controller at damage time (CR 608.2h's last-known information), so a source that has
+     * since left the battlefield or changed control still counts as it stood then.
+     *
+     * Closest types: [WasDealtDamageBySourceThisTurn] names one specific source and reads that
+     * source's record, which is dropped when it leaves the battlefield — "by a source you controlled"
+     * names no source and must outlive it; [WasDealtDamageThisTurn] ignores who dealt the damage.
+     * Source-relative ("you" is the effect source's controller) and inert with no source context.
+     */
+    @SerialName("WasDealtDamageBySourceControllerThisTurn")
+    @Serializable
+    data object WasDealtDamageBySourceControllerThisTurn : History {
+        override val description: String = "dealt damage this turn by a source you controlled"
+    }
+
     /** Controlled by its current controller without interruption since this turn began, regardless of haste. */
     @SerialName("ControlledSinceTurnBegan")
     @Serializable
