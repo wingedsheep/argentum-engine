@@ -418,7 +418,7 @@ Families:
 - `SourceForetoldOnPriorTurn` — Gate condition for the cast-from-exile permission granted by foretell (CR 702.143).
 - `SourceInZone(zones: Set<Zone>)` — Condition: "if this is in zones" — where the ability's source object sits *right now*.
 - `SourceIsBlockingOrBlockedBySubtype(subtypes: List<String>)` — Condition: "as long as it's blocking or blocked by a creature of one of subtypes".
-- `SourceIsModified` — Condition: "As long as this permanent is modified" Per CR 700.4, a permanent is modified if it has one or more counters on it, one or more Equipment attached, or is enchanted by one or more Auras i…
+- `SourceIsModified` — Condition: "As long as this permanent is modified" Per CR 700.9, a permanent is modified if it has one or more counters on it, one or more Equipment attached, or is enchanted by one or more Auras i…
 - `SourceIsRingBearer` — Condition: "if this creature is your Ring-bearer" (CR 701.54e).
 - `SourcePlottedOnPriorTurn` — Gate condition for the cast-from-exile permission granted by plot.
 - `SourceReturnedAsEnchantment` — Condition: "this permanent returned via its Enduring ability" (Duskmourn Glimmer cycle).

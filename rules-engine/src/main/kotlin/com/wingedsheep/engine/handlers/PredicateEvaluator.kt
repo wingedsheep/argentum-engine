@@ -311,13 +311,15 @@ class PredicateEvaluator(
     /**
      * Tri-state evaluation of one [StatePredicate] against frozen last-known information — the
      * state-predicate sibling of [matchesSnapshotPredicate], with the same null-means-unknown
-     * discipline. Only the combat status [EntitySnapshot] freezes is answered: attacking
-     * ([EntitySnapshot.wasAttacking]) and blocking ([EntitySnapshot.wasBlocking]).
+     * discipline. Only the status [EntitySnapshot] freezes is answered: attacking
+     * ([EntitySnapshot.wasAttacking]), blocking ([EntitySnapshot.wasBlocking]) and modified
+     * ([EntitySnapshot.wasModified]).
      */
     private fun matchesSnapshotState(snapshot: EntitySnapshot, predicate: StatePredicate): Boolean? =
         when (predicate) {
             StatePredicate.IsAttacking -> snapshot.wasAttacking
             StatePredicate.IsBlocking -> snapshot.wasBlocking
+            StatePredicate.IsModified -> snapshot.wasModified
             is StatePredicate.Not -> matchesSnapshotState(snapshot, predicate.predicate)?.not()
             is StatePredicate.And -> {
                 val results = predicate.predicates.map { matchesSnapshotState(snapshot, it) }
@@ -2282,8 +2284,12 @@ class PredicateEvaluator(
                 playerMatchesControlLeaf(state, projected, protector, predicate.protector, ctx)
             }
 
+            // Live on the battlefield; once the permanent has left, the frozen last-known snapshot
+            // (CR 608.2h) answers, as for IsAttacking — Ian the Reckless's "if it's modified" is
+            // rechecked on resolution against the creature as it last existed (ruling 2024-03-08).
             StatePredicate.IsModified ->
-                com.wingedsheep.engine.handlers.predicates.isModified(state, entityId) { projected.getController(it) }
+                com.wingedsheep.engine.handlers.predicates.isModified(state, entityId) { projected.getController(it) } ||
+                    container.get<LastKnownPermanentComponent>()?.snapshot?.wasModified == true
 
             // Attached-to-type — entity has an AttachedToComponent and the referenced
             // permanent currently has the requested CardType (Pyramids: "Aura attached

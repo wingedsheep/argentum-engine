@@ -5363,6 +5363,78 @@
     }
 }
 
+// Ian the Reckless
+{
+    "name": "Ian the Reckless",
+    "manaCost": "{1}{R}",
+    "typeLine": "Legendary Creature — Human Warrior",
+    "oracleText": "Whenever Ian the Reckless attacks, if it's modified, you may have it deal damage equal to its power to you and any target. (Equipment, Auras you control, and counters are modifications.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ian the Reckless:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "DealDamage",
+                                "amount": {
+                                    "type": "EntityProperty",
+                                    "entity": "Self",
+                                    "numericProperty": "Power"
+                                },
+                                "target": "Controller"
+                            },
+                            {
+                                "type": "DealDamage",
+                                "amount": {
+                                    "type": "EntityProperty",
+                                    "entity": "Self",
+                                    "numericProperty": "Power"
+                                },
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        ]
+                    }
+                },
+                "targetRequirement": {
+                    "type": "AnyTarget",
+                    "id": "t0"
+                },
+                "interveningIf": "SourceIsModified"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "59",
+        "rarity": "UNCOMMON",
+        "artist": "Lorenzo Mastroianni",
+        "flavorText": "\"I may not be a very good fighter any more, but I'm good enough to best the likes of you!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/c/4cd46b6a-eb20-4ffa-94e0-47d1d2d46087.jpg?1783912404",
+        "rulings": [
+            {
+                "date": "2024-03-08",
+                "text": "If Ian the Reckless isn't modified when it attacks, its ability won't trigger at all. When its ability tries to resolve, if it isn't modified at that time, the ability won't resolve."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "If Ian the Reckless leaves the battlefield before its last ability resolves, as long as it was modified when it was last on the battlefield, use its power as it last existed on the battlefield to determine how much damage that ability deals."
+            }
+        ]
+    }
+}
+
 // Idolized
 {
     "name": "Idolized",

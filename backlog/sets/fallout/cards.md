@@ -137,7 +137,7 @@
 - [x] Hornet Queen
 - [x] Hour of Reckoning
 - [x] Hullbreaker Horror
-- [ ] Ian the Reckless
+- [x] Ian the Reckless
 - [x] Idolized
 - [x] Impassioned Orator
 - [x] Inexorable Tide

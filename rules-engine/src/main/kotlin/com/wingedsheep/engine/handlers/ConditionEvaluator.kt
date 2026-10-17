@@ -1346,7 +1346,16 @@ class ConditionEvaluator(
 
     private fun evaluateSourceIsModifiedCtx(state: GameState, ctx: ConditionEvaluationContext): Boolean {
         val sourceId = ctx.sourceId ?: return false
+        // Last-known information (CR 608.2h): once the source has left the battlefield, an
+        // intervening-if rechecked on resolution (CR 603.4) reads it as it last existed — Ian the
+        // Reckless's "if it's modified" (ruling 2024-03-08). The ability's own departure snapshot
+        // comes first, so a source that blinked back as a new object isn't read live.
+        if (ctx is Resolution) {
+            ctx.effectContext.lastKnownSourceSnapshot?.takeIf { it.entityId == sourceId }
+                ?.let { return it.wasModified }
+        }
         val entity = state.getEntity(sourceId) ?: return false
+        entity.get<LastKnownPermanentComponent>()?.snapshot?.let { return it.wasModified }
         val controllerId = ctx.controllerId
 
         val counters = entity.get<com.wingedsheep.engine.state.components.battlefield.CountersComponent>()

@@ -123,10 +123,11 @@ data object YouChoseOtherCreatureAsRingBearer : Condition {
 /**
  * Condition: "As long as this permanent is modified"
  *
- * Per CR 700.4, a permanent is modified if it has one or more counters on it, one or more
+ * Per CR 700.9, a permanent is modified if it has one or more counters on it, one or more
  * Equipment attached, or is enchanted by one or more Auras its controller controls. Kept
  * as a dedicated condition because the controller-of-source / controller-of-Aura match
- * isn't expressible via the generic `SourceMatches` filter machinery.
+ * isn't expressible via the generic `SourceMatches` filter machinery. Once the source has
+ * left the battlefield it reads last-known information (CR 608.2h) — Ian the Reckless.
  */
 @SerialName("SourceIsModified")
 @Serializable

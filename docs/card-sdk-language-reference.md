@@ -6982,7 +6982,10 @@ work for abilities-on-stack (which carry no `CardComponent`).
   Aura that changes hands turns the predicate off continuously.
 - `IsModified` — has an Equipment attached, an Aura **controlled by the permanent's controller**
   attached, **or** any counter (CR 700.9). An opponent's Aura on your creature doesn't modify it; both
-  controllers are read through projection. For the source-relative form use `Conditions.SourceIsModified`.
+  controllers are read through projection. For the source-relative form use `SourceIsModified`.
+  **Last-known-information aware** (CR 608.2h): once the permanent has left the battlefield it answers
+  from the departure snapshot's `wasModified` — Ian the Reckless's intervening-if, rechecked after Ian
+  dies in response (ruling 2024-03-08).
 - `AttachedToCardType(cardType)` — Aura/Equipment whose `AttachedToComponent` points to a
   permanent that currently has the given top-level [`CardType`] in its **projected** type
   set. Used by filters like "Aura attached to a land" (Pyramids) or "Equipment attached
@@ -14012,8 +14015,11 @@ that works in both resolution and static-ability (projection) contexts.
   count. `Conditions.Not(SourceHasDealtCombatDamage)` gates Ruric Thar, Magecrusher's hexproof.
 - `SourceHasDealtCombatDamageToPlayer` — saboteur-style payoff gate.
 - `SourceIsModified` — has counters, attached Equipment, or controller-owned Aura
-  attached (CR 700.4). Kept as a dedicated condition because the controller-of-Aura
-  match isn't expressible via the generic `EntityMatches` filter machinery.
+  attached (CR 700.9). Kept as a dedicated condition because the controller-of-Aura
+  match isn't expressible via the generic `EntityMatches` filter machinery. Once the source has
+  left the battlefield it reads last-known information (the ability's departure snapshot first, so
+  a blinked-back source isn't read live): Ian the Reckless's `interveningIf` still passes after Ian
+  dies in response, if it was modified when it left.
 - `SourceReceivedCounterThisTurn(counterType = null, placedByYou = false)` — "if you put a counter on this creature
   this turn." `SourceMatches(GameObjectFilter.Any.receivedCounterThisTurn(...))`, i.e. the source-scoped view of
   `StatePredicate.ReceivedCounterThisTurn`; the filter-level form covers "each creature you control that you've
