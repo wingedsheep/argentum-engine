@@ -1660,7 +1660,7 @@ const SET_SYNERGIES: Record<string, SetSynergies> = {
         name: 'Obscura',
         colors: ['W', 'U', 'B'],
         keyCard: 'Queza, Augur of Agonies',
-        description: 'Connive to loot through your deck and grow your evasive Rogues, while disruption picks apart the opponent\'s hand. A tempo deck that flies over the top and turns every card drawn into pressure.',
+        description: 'Connive to loot through your deck and grow your evasive Rogues, while Queza drains the opponent with every card you draw. A tempo deck that flies over the top and turns every card drawn into pressure.',
       },
       {
         name: 'Maestros',

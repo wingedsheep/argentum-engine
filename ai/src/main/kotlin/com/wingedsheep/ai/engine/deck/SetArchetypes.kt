@@ -741,7 +741,7 @@ object SetArchetypes {
                 Archetype("Brokers", listOf(Color.WHITE, Color.BLUE, Color.GREEN),
                     "Protect your best creatures with shield counters and keep them in play, trading favorably while their counters soak up removal and combat damage. A resilient midrange deck that grinds out value from a few well-guarded threats."),
                 Archetype("Obscura", listOf(Color.WHITE, Color.BLUE, Color.BLACK),
-                    "Connive to loot through your deck and grow your evasive Rogues, while disruption picks apart the opponent's hand. A tempo deck that flies over the top and turns every card drawn into pressure."),
+                    "Connive to loot through your deck and grow your evasive Rogues, while Queza drains the opponent with every card you draw. A tempo deck that flies over the top and turns every card drawn into pressure."),
                 Archetype("Maestros", listOf(Color.BLUE, Color.BLACK, Color.RED),
                     "Sacrifice creatures to casualty for copied spells, and lean on instants and sorceries to control the board. A spell-heavy control deck whose removal and card selection buy time for doubled payoffs."),
                 Archetype("Riveteers", listOf(Color.BLACK, Color.RED, Color.GREEN),
