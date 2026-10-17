@@ -378,10 +378,14 @@ data class ActivatedAbility(
         /**
          * The label an equip ability's target requirement carries, which doubles as the name of the
          * bound variable the attach effect reads. One function because both halves must use the same
-         * string or the effect reads a slot nothing declared.
+         * string or the effect reads a slot nothing declared. "Equip planeswalker" (Luxior) names a
+         * card type rather than qualifying "creature", so its target is a planeswalker you control.
          */
-        fun equipTargetLabel(quality: String?): String =
-            if (quality == null) "creature you control" else "$quality creature you control"
+        fun equipTargetLabel(quality: String?): String = when (quality) {
+            null -> "creature you control"
+            "planeswalker" -> "planeswalker you control"
+            else -> "$quality creature you control"
+        }
     }
 }
 

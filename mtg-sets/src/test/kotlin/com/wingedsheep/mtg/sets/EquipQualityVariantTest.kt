@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets
 
+import com.wingedsheep.sdk.scripting.ActivatedAbility
 import com.wingedsheep.sdk.scripting.TimingRule
 import com.wingedsheep.sdk.scripting.costs.manaCostOrNull
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
@@ -118,7 +119,7 @@ class EquipQualityVariantTest : FunSpec({
                         quality shouldNotBe null
                     }
                     withClue("the prompt label is built from the quality") {
-                        ability.targetRequirements.singleOrNull()?.id shouldBe "$quality creature you control"
+                        ability.targetRequirements.singleOrNull()?.id shouldBe ActivatedAbility.equipTargetLabel(quality)
                     }
                 }
             }

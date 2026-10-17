@@ -512,6 +512,119 @@
     "colorIdentityOverride": []
 }
 
+// Arcane Bombardment
+{
+    "name": "Arcane Bombardment",
+    "manaCost": "{4}{R}{R}",
+    "typeLine": "Enchantment",
+    "oracleText": "Whenever you cast your first instant or sorcery spell each turn, exile an instant or sorcery card at random from your graveyard. Then copy each card exiled with this enchantment. You may cast any number of the copies without paying their mana costs.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Arcane Bombardment:1",
+                "trigger": {
+                    "type": "NthSpellCastEvent",
+                    "nthSpell": 1,
+                    "player": "You",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    "IsInstant",
+                                    "IsSorcery"
+                                ]
+                            }
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Graveyard",
+                                "filter": "instant|sorcery"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "Random",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected1"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            },
+                            "linkToSource": true
+                        },
+                        {
+                            "type": "GatherCards",
+                            "source": "FromLinkedExile",
+                            "storeAs": "gathered3"
+                        },
+                        {
+                            "type": "CopyCollectionIntoCollection",
+                            "from": "gathered3",
+                            "storeAs": "copies4"
+                        },
+                        {
+                            "type": "CastAnyNumberFromCollectionWithoutPayingCost",
+                            "from": "copies4"
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever you cast your first instant or sorcery spell each turn, exile an instant or sorcery card at random from your graveyard. Then copy each card exiled with this enchantment. You may cast any number of the copies without paying their mana costs."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "101",
+        "rarity": "MYTHIC",
+        "artist": "Marta Nael",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/1/31f1b2bd-fe06-45ec-99dc-ff357a7a31d2.jpg?1783923123",
+        "rulings": [
+            {
+                "date": "2022-04-29",
+                "text": "The spell that caused Arcane Bombardment's ability to trigger is normally still on the stack while that ability resolves. That spell won't be among the cards in your graveyard when you exile an instant or sorcery from it at random."
+            },
+            {
+                "date": "2022-04-29",
+                "text": "If you've already cast an instant or sorcery spell the turn that Arcane Bombardment enters the battlefield, it won't trigger until you cast an instant or sorcery spell on a later turn."
+            },
+            {
+                "date": "2022-04-29",
+                "text": "You cast the desired copies as the triggered ability resolves. You don't get to cast them later in the turn. You choose the order of copies as you cast them."
+            },
+            {
+                "date": "2022-04-29",
+                "text": "If you cast a spell with {X} in its cost without paying its mana cost, you must choose 0 for X."
+            },
+            {
+                "date": "2022-04-29",
+                "text": "If Arcane Bombardment leaves the battlefield, the exiled cards remain in exile. If it returns to the battlefield or you play another copy of it, you won't get to cast copies of the cards previously exiled."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Attended Socialite
 {
     "name": "Attended Socialite",
@@ -4966,6 +5079,273 @@
     ]
 }
 
+// Elspeth Resplendent
+{
+    "name": "Elspeth Resplendent",
+    "manaCost": "{3}{W}{W}",
+    "typeLine": "Legendary Planeswalker — Elspeth",
+    "oracleText": "+1: Choose up to one target creature. Put a +1/+1 counter and a counter from among flying, first strike, lifelink, or vigilance on it.\n−3: Look at the top seven cards of your library. You may put a permanent card with mana value 3 or less from among them onto the battlefield with a shield counter on it. Put the rest on the bottom of your library in a random order.\n−7: Create five 3/3 white Angel creature tokens with flying.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Elspeth Resplendent:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "ChooseAction",
+                    "choices": [
+                        {
+                            "label": "Flying counter",
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "AddCounters",
+                                        "counterType": "PLUS_ONE_PLUS_ONE",
+                                        "count": 1,
+                                        "target": {
+                                            "type": "BoundVariable",
+                                            "name": "t0"
+                                        }
+                                    },
+                                    {
+                                        "type": "AddCounters",
+                                        "counterType": "FLYING",
+                                        "count": 1,
+                                        "target": {
+                                            "type": "BoundVariable",
+                                            "name": "t0"
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "label": "First strike counter",
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "AddCounters",
+                                        "counterType": "PLUS_ONE_PLUS_ONE",
+                                        "count": 1,
+                                        "target": {
+                                            "type": "BoundVariable",
+                                            "name": "t0"
+                                        }
+                                    },
+                                    {
+                                        "type": "AddCounters",
+                                        "counterType": "FIRST_STRIKE",
+                                        "count": 1,
+                                        "target": {
+                                            "type": "BoundVariable",
+                                            "name": "t0"
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "label": "Lifelink counter",
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "AddCounters",
+                                        "counterType": "PLUS_ONE_PLUS_ONE",
+                                        "count": 1,
+                                        "target": {
+                                            "type": "BoundVariable",
+                                            "name": "t0"
+                                        }
+                                    },
+                                    {
+                                        "type": "AddCounters",
+                                        "counterType": "LIFELINK",
+                                        "count": 1,
+                                        "target": {
+                                            "type": "BoundVariable",
+                                            "name": "t0"
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "label": "Vigilance counter",
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "AddCounters",
+                                        "counterType": "PLUS_ONE_PLUS_ONE",
+                                        "count": 1,
+                                        "target": {
+                                            "type": "BoundVariable",
+                                            "name": "t0"
+                                        }
+                                    },
+                                    {
+                                        "type": "AddCounters",
+                                        "counterType": "VIGILANCE",
+                                        "count": 1,
+                                        "target": {
+                                            "type": "BoundVariable",
+                                            "name": "t0"
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "optional": true,
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Elspeth Resplendent:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -3
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 7
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "filter": "permanent mv<=3",
+                            "storeSelected": "selected1",
+                            "storeRemainder": "remainder1",
+                            "prompt": "You may put a permanent card with mana value 3 or less onto the battlefield with a shield counter on it.",
+                            "showAllCards": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            },
+                            "addCounterType": "SHIELD"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "remainder1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Bottom"
+                            },
+                            "order": "Random"
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Elspeth Resplendent:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -7
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 5
+                    },
+                    "power": 3,
+                    "toughness": 3,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Angel"
+                    ],
+                    "keywords": [
+                        "FLYING"
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "11",
+        "rarity": "MYTHIC",
+        "artist": "Anna Steinbauer",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/c/7c606af0-f3d1-44a4-b24e-ee1263569b1f.jpg?1783923158",
+        "rulings": [
+            {
+                "date": "2022-04-29",
+                "text": "For Elspeth's first ability, its controller chooses flying, first strike, lifelink, or vigilance, then that counter and the +1/+1 counter are placed on the target creature at the same time."
+            },
+            {
+                "date": "2022-04-29",
+                "text": "Shield counters don't prevent players from sacrificing creatures."
+            },
+            {
+                "date": "2022-04-29",
+                "text": "Removing a shield counter in this way isn't the same as regenerating a creature."
+            },
+            {
+                "date": "2022-04-29",
+                "text": "If a permanent that would be dealt damage has more than one shield counter on it, that damage is prevented and only one shield counter is removed."
+            },
+            {
+                "date": "2022-04-29",
+                "text": "If a permanent with a shield counter is dealt unpreventable damage, that damage will be dealt and a shield counter will still be removed."
+            },
+            {
+                "date": "2022-04-29",
+                "text": "A creature with a shield counter on it may still be destroyed by state-based actions if it has damage marked on it equal to its toughness or has been dealt unpreventable damage by a source with deathtouch."
+            },
+            {
+                "date": "2022-04-29",
+                "text": "“Shield” is not an ability that creatures have and shield counters are not keyword counters. If a creature with a shield counter loses its abilities, the shield counter will still protect it as normal."
+            }
+        ]
+    },
+    "startingLoyalty": 5,
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Endless Detour
 {
     "name": "Endless Detour",
@@ -9335,6 +9715,134 @@
         "BLACK",
         "RED"
     ]
+}
+
+// Luxior, Giada's Gift
+{
+    "name": "Luxior, Giada's Gift",
+    "manaCost": "{1}",
+    "typeLine": "Legendary Artifact — Equipment",
+    "oracleText": "Equipped creature gets +1/+1 for each counter on it.\nEquipped permanent isn't a planeswalker and is a creature in addition to its other types. (Loyalty abilities can still be activated.)\nEquip planeswalker {1}\nEquip {3}",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Luxior, Giada's Gift:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "planeswalker you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "planeswalker ctrl:you"
+                        },
+                        "id": "planeswalker you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true,
+                "equipQuality": "planeswalker"
+            },
+            {
+                "id": "Luxior, Giada's Gift:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantDynamicStats",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                },
+                "powerBonus": {
+                    "type": "EntityProperty",
+                    "entity": "AffectedEntity",
+                    "numericProperty": {
+                        "type": "CounterCount",
+                        "counterType": null
+                    }
+                },
+                "toughnessBonus": {
+                    "type": "EntityProperty",
+                    "entity": "AffectedEntity",
+                    "numericProperty": {
+                        "type": "CounterCount",
+                        "counterType": null
+                    }
+                }
+            },
+            {
+                "type": "RemoveCardType",
+                "cardType": "PLANESWALKER",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            },
+            {
+                "type": "GrantCardType",
+                "cardType": "CREATURE",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            }
+        ]
+    },
+    "equipCost": "{3}",
+    "metadata": {
+        "collectorNumber": "240",
+        "rarity": "MYTHIC",
+        "artist": "Volkan Baǵa",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/8/1833662b-ccf3-4c16-9767-666d6407aa65.jpg?1783923061",
+        "rulings": [
+            {
+                "date": "2022-04-29",
+                "text": "\"Equip planeswalker\" is a variant of the equip ability. \"Equip planeswalker [cost]\" means \"[Cost]: Attach this permanent to target planeswalker you control as though that planeswalker were a creature. Activate only as a sorcery.\""
+            },
+            {
+                "date": "2022-04-29",
+                "text": "Unless another effect is making that planeswalker a creature with a power and toughness, the equipped planeswalker has base power and toughness 0/0."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
 }
 
 // Luxurious Libation
@@ -18284,6 +18792,229 @@
     ]
 }
 
+// Vivien on the Hunt
+{
+    "name": "Vivien on the Hunt",
+    "manaCost": "{4}{G}{G}",
+    "typeLine": "Legendary Planeswalker — Vivien",
+    "oracleText": "+2: You may sacrifice a creature. If you do, search your library for a creature card with mana value equal to 1 plus the sacrificed creature's mana value, put it onto the battlefield, then shuffle.\n+1: Mill five cards, then put any number of creature cards milled this way into your hand.\n−1: Create a 4/4 green Rhino Warrior creature token.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Vivien on the Hunt:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 2
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "BattlefieldMatching",
+                                "filter": "creature",
+                                "player": "You"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected1",
+                            "prompt": "You may sacrifice a creature",
+                            "selectedLabel": "Sacrifice",
+                            "useTargetingUI": true
+                        },
+                        {
+                            "type": "ConditionalOnCollection",
+                            "collection": "selected1",
+                            "ifNotEmpty": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "selected1",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Graveyard"
+                                        },
+                                        "moveType": "Sacrifice"
+                                    },
+                                    {
+                                        "type": "Composite",
+                                        "effects": [
+                                            {
+                                                "type": "GatherCards",
+                                                "source": {
+                                                    "type": "FromZone",
+                                                    "zone": "Library",
+                                                    "filter": {
+                                                        "cardPredicates": [
+                                                            "IsCreature",
+                                                            {
+                                                                "type": "ManaValueEqualsDynamic",
+                                                                "amount": {
+                                                                    "type": "Add",
+                                                                    "left": {
+                                                                        "type": "EntityProperty",
+                                                                        "entity": "SacrificedAsCost",
+                                                                        "numericProperty": "ManaValue"
+                                                                    },
+                                                                    "right": {
+                                                                        "type": "Fixed",
+                                                                        "amount": 1
+                                                                    }
+                                                                }
+                                                            }
+                                                        ]
+                                                    }
+                                                },
+                                                "storeAs": "searchable",
+                                                "search": true
+                                            },
+                                            {
+                                                "type": "SelectFromCollection",
+                                                "from": "searchable",
+                                                "selection": {
+                                                    "type": "ChooseUpTo",
+                                                    "count": {
+                                                        "type": "Fixed",
+                                                        "amount": 1
+                                                    }
+                                                },
+                                                "storeSelected": "found",
+                                                "prompt": "Search your library for a creature card with mana value equal to (the sacrificed creature's mana value + 1) to put onto the battlefield",
+                                                "selectedLabel": "Put onto the battlefield"
+                                            },
+                                            {
+                                                "type": "MoveCollection",
+                                                "from": "found",
+                                                "destination": {
+                                                    "type": "ToZone",
+                                                    "zone": "Battlefield"
+                                                }
+                                            },
+                                            "ShuffleLibrary",
+                                            "EmitLibrarySearchedEvent"
+                                        ]
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "You may sacrifice a creature. If you do, search your library for a creature card with mana value equal to 1 plus the sacrificed creature's mana value, put it onto the battlefield, then shuffle."
+            },
+            {
+                "id": "Vivien on the Hunt:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 5
+                                },
+                                "isMill": true
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            }
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "gathered0",
+                            "filter": "creature",
+                            "storeMatching": "matching2"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "matching2",
+                            "selection": "ChooseAnyNumber",
+                            "storeSelected": "selected3",
+                            "prompt": "Put any number of creature cards milled this way into your hand",
+                            "selectedLabel": "Put into your hand"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected3",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Mill five cards, then put any number of creature cards milled this way into your hand."
+            },
+            {
+                "id": "Vivien on the Hunt:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -1
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 4,
+                    "toughness": 4,
+                    "colors": [
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Rhino",
+                        "Warrior"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/2/3/230419f9-a9f7-441d-bad7-0ed867326aa1.jpg?1783922959"
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Create a 4/4 green Rhino Warrior creature token."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "162",
+        "rarity": "MYTHIC",
+        "artist": "Jake Murray",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/e/5edfb119-abc9-4d4d-bc46-33cce1a0922d.jpg?1783923096",
+        "rulings": [
+            {
+                "date": "2022-04-29",
+                "text": "You may activate Vivien on the Hunt's first ability without sacrificing a creature. If you do, the ability does nothing."
+            }
+        ]
+    },
+    "startingLoyalty": 4,
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Voice of the Vermin
 {
     "name": "Voice of the Vermin",
@@ -18591,6 +19322,165 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Widespread Thieving
+{
+    "name": "Widespread Thieving",
+    "manaCost": "{2}{R}",
+    "typeLine": "Enchantment",
+    "oracleText": "Hideaway 5 (When this enchantment enters, look at the top five cards of your library, exile one face down, then put the rest on the bottom in a random order.)\nWhenever you cast a multicolored spell, create a Treasure token. Then you may pay {W}{U}{B}{R}{G}. If you do, you may play the exiled card without paying its mana cost.",
+    "keywords": [
+        "HIDEAWAY"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "HIDEAWAY",
+            "n": 5
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Widespread Thieving:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 5
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected1",
+                            "storeRemainder": "remainder1",
+                            "prompt": "Choose a card to exile face down",
+                            "selectedLabel": "Exile face down",
+                            "remainderLabel": "Put on bottom of library"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            },
+                            "linkToSource": true,
+                            "faceDown": "HIDDEN"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "remainder1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Bottom"
+                            },
+                            "order": "Random"
+                        }
+                    ]
+                }
+            },
+            {
+                "id": "Widespread Thieving:2",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsMulticolored"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CreatePredefinedToken",
+                            "tokenType": "Treasure"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.MayPay",
+                                "cost": {
+                                    "type": "PayManaCost",
+                                    "cost": "{W}{U}{B}{R}{G}"
+                                }
+                            },
+                            "then": {
+                                "type": "Gated",
+                                "gate": "Gate.MayDecide",
+                                "then": {
+                                    "type": "Composite",
+                                    "effects": [
+                                        {
+                                            "type": "GatherCards",
+                                            "source": "FromLinkedExile",
+                                            "storeAs": "gathered0"
+                                        },
+                                        {
+                                            "type": "PlayFromCollectionWithoutPayingCost",
+                                            "from": "gathered0"
+                                        }
+                                    ]
+                                },
+                                "descriptionOverride": "Play the exiled card without paying its mana cost"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever you cast a multicolored spell, create a Treasure token. Then you may pay {W}{U}{B}{R}{G}. If you do, you may play the exiled card without paying its mana cost."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "130",
+        "rarity": "RARE",
+        "artist": "Andrew Mar",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/d/cd22723d-855f-4b31-827f-a4e388ebbc07.jpg?1783923111",
+        "rulings": [
+            {
+                "date": "2022-04-29",
+                "text": "You may use the Treasure token created by the first part of Widespread Thieving's last ability to pay part of the {W}{U}{B}{R}{G} cost in the second part of that ability."
+            },
+            {
+                "date": "2022-04-29",
+                "text": "\"Hideaway N\" means \"When this permanent enters the battlefield, look at the top N cards of your library. Exile one of them face down and put the rest on the bottom of your library in a random order. The exiled card gains 'The player who controls the permanent that exiled this card may look at this card in the exile zone.'\""
+            },
+            {
+                "date": "2022-04-29",
+                "text": "Any player who has controlled a permanent with a hideaway ability since a card was exiled with it may look at that card."
+            },
+            {
+                "date": "2022-04-29",
+                "text": "Hideaway now causes you to put the rest of the cards on the bottom of your library in a random order instead of any order."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
