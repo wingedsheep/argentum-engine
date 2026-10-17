@@ -182,7 +182,8 @@ class CostCalculator(
         // less (or more)" modifiers (Will / Rowan, Scion of …; Ral, Leyline Prodigy; Academy
         // Loremaster's tax). The amount was fixed when the granting ability resolved, so unlike
         // the affinity riders above nothing is recomputed here — and unlike them, a matching cast
-        // does not consume the entry.
+        // does not consume the entry, except a `nextSpellOnly` one (Peerless Samurai), which
+        // CastTriggers.consumeNextSpellRiders spends.
         for (modifier in state.spellCostModifiers) {
             if (modifier.controllerId != casterId) continue
             if (!matchesCardDefinition(cardDef, modifier.spellFilter, null, state, state.projectedState)) continue

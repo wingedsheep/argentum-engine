@@ -445,11 +445,16 @@ internal class CastTriggers(
      * One-shot "the next spell you cast this turn costs {N} less" modifiers (Peerless Samurai). The
      * cost calculator already applied them while they were present; consuming every matching one
      * here means only the *next* matching spell is discounted — several stacked instances all go to
-     * that one spell. Repeating modifiers (`nextSpellOnly = false`) are left alone.
+     * that one spell. Repeating modifiers (`nextSpellOnly = false`) are left alone. A face-down
+     * cast only spends unfiltered entries — the only ones `CostCalculator.calculateFaceDownCost`
+     * applies to it.
      */
     private fun consumeNextSpellCostModifiers(state: GameState, spell: CastSpellOnStack): GameState {
+        val faceDown = spell.action.castFaceDown
         val matching = state.spellCostModifiers.filter {
-            it.nextSpellOnly && spellMatchesRider(state, spell, it.controllerId, it.sourceId, it.spellFilter)
+            it.nextSpellOnly &&
+                (!faceDown || it.spellFilter == GameObjectFilter.Any) &&
+                spellMatchesRider(state, spell, it.controllerId, it.sourceId, it.spellFilter)
         }
         if (matching.isEmpty()) return state
         return state.copy(spellCostModifiers = state.spellCostModifiers.filter { it !in matching })
