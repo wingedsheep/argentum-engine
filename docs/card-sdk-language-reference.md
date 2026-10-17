@@ -16432,8 +16432,8 @@ The priority groups are (CR 616.1a–f):
 - `ReplaceDamageWithMill(appliesTo = DamageEvent(recipient = Opponent), miller = Player.EachOpponent, multiplier = 1)`
   — prevent matching damage and `miller` mills `multiplier` times that many cards, as one prevention
   effect (not a trigger). `miller` is read relative to the replacement's controller: `EachOpponent`
-  (every opponent, not just the damaged one), `You`, `Each`, or `TriggeringPlayer` (the player the
-  damage would be dealt to); any other reference is rejected at construction. The Mindskinner:
+  (every opponent, not just the damaged one) or `You`; any other reference is rejected at
+  construction ("the damaged player mills" is `ReplaceDamageWithCounters.damagedPlayerMills`). The Mindskinner:
   `DamageEvent(recipient = Recipient.Opponent, source = GameObjectFilter.Any.youControl())` with the
   defaults covers both the unblockable creature's combat damage and noncombat damage from any source
   you control. Angel of Suffering ("prevent that damage and mill twice that many cards"):

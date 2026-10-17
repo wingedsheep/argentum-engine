@@ -378,6 +378,8 @@ object DamageUtils {
         // prevention/replacement effects competing for the same event, and CR 616.1 lets the
         // affected permanent's controller order them. Letting protection win first leaves the shield
         // counter intact, which is the ordering that player would always choose.
+        // Seeded with the player branch's surviving replacement events; the creature-only shield
+        // steps below append to it, so it carries every event of a damage that is still dealt.
         var shieldCounterEvents: List<EngineGameEvent> = replacementEvents
         if (!isPlayer) {
             val shielded = applyShieldCounterToDamage(newState, targetId, cantBePrevented)
@@ -3344,12 +3346,8 @@ object DamageUtils {
                 )
                 if (!recipientMatches) continue
 
-                val millers = when (effect.miller) {
-                    Player.You -> listOf(sourceControllerId)
-                    Player.TriggeringPlayer -> listOf(targetId)
-                    Player.Each -> state.turnOrder
-                    else -> state.getOpponents(sourceControllerId)
-                }
+                val millers = if (effect.miller == Player.You) listOf(sourceControllerId)
+                    else state.getOpponents(sourceControllerId)
                 // Snapshot each library's top cards before moving so a shrinking library doesn't
                 // re-read shifted slots. One mill instruction for every miller (CR 603.2c: a single
                 // milled event).

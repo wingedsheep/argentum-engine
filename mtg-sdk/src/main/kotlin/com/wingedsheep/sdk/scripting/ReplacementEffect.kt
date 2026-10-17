@@ -2656,8 +2656,8 @@ data class ReplaceDamageWithCounters(
  * damage is replaced.
  *
  * [miller] is read relative to this permanent's controller: [Player.EachOpponent] (every opponent,
- * not just the damaged one — the printed "each opponent"), [Player.You], [Player.Each], or
- * [Player.TriggeringPlayer] (the player the damage would be dealt to).
+ * not just the damaged one — the printed "each opponent") or [Player.You]. ("The damaged player
+ * mills" is [ReplaceDamageWithCounters.damagedPlayerMills].)
  *
  * The mill is part of the same prevention effect, not a trigger. Per both cards' rulings, damage
  * that **can't be prevented** is still dealt in full, and the mill still happens; damage that can be
@@ -2680,12 +2680,7 @@ data class ReplaceDamageWithMill(
     override val description: String = buildString {
         append("If ${appliesTo.description}, prevent that damage and ")
         append(
-            when (miller) {
-                Player.You -> "you mill"
-                Player.Each -> "each player mills"
-                Player.TriggeringPlayer -> "that player mills"
-                else -> "each opponent mills"
-            }
+            if (miller == Player.You) "you mill" else "each opponent mills"
         )
         append(if (multiplier == 2) " twice that many cards" else if (multiplier > 2) " $multiplier times that many cards" else " that many cards")
     }
@@ -2697,7 +2692,7 @@ data class ReplaceDamageWithMill(
 
     companion object {
         private val SUPPORTED_MILLERS: Set<Player> =
-            setOf(Player.EachOpponent, Player.You, Player.Each, Player.TriggeringPlayer)
+            setOf(Player.EachOpponent, Player.You)
     }
 }
 
