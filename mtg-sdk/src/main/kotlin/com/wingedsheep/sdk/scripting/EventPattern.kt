@@ -1789,6 +1789,32 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
     }
 
     /**
+     * When a Vehicle becomes crewed — "whenever [this Vehicle] becomes crewed" means "whenever a
+     * crew ability of [this Vehicle] resolves" (CR 702.122e).
+     *
+     * Binding SELF = "whenever this Vehicle becomes crewed" (Mobilizer Mech); ANY = "whenever a
+     * [filter] becomes crewed". [firstTimeEachTurn] restricts to the first crew ability that
+     * resolved on the Vehicle this turn — crew may be activated again on an already-crewed Vehicle.
+     */
+    @SerialName("BecameCrewedEvent")
+    @Serializable
+    data class BecameCrewedEvent(
+        val filter: GameObjectFilter = GameObjectFilter.Any,
+        val firstTimeEachTurn: Boolean = false
+    ) : EventPattern {
+        override val description: String = buildString {
+            append(describeObjectForEvent(filter))
+            append(" becomes crewed")
+            if (firstTimeEachTurn) append(" for the first time each turn")
+        }
+
+        override fun applyTextReplacement(replacer: TextReplacer): EventPattern {
+            val newFilter = filter.applyTextReplacement(replacer)
+            return if (newFilter !== filter) copy(filter = newFilter) else this
+        }
+    }
+
+    /**
      * When a permanent becomes renowned (CR 702.112b) — a renown trigger resolved on it.
      *
      * Binding SELF = "when this creature becomes renowned" (Relic Seeker); ANY = "whenever a

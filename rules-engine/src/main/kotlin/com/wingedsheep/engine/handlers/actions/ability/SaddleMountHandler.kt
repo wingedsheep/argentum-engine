@@ -177,10 +177,9 @@ class SaddleMountHandler(
             // Crew and saddle are activated abilities too — "was activated this turn".
             val activated = c.get<AbilityActivatedThisTurnComponent>() ?: AbilityActivatedThisTurnComponent()
             c.with(activated.withAnyActivated()).with(
-                CrewSaddleContributorsComponent(
-                    creatureIds = (existing?.creatureIds ?: emptySet()) + action.saddleCreatures,
-                    crewActivations = existing?.crewActivations ?: 0
-                )
+                (existing ?: CrewSaddleContributorsComponent(creatureIds = emptySet())).let {
+                    it.copy(creatureIds = it.creatureIds + action.saddleCreatures)
+                }
             )
         }
 

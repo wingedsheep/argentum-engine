@@ -80,6 +80,7 @@ import com.wingedsheep.engine.handlers.effects.permanent.types.BecomeCreatureTyp
 import com.wingedsheep.engine.handlers.effects.permanent.types.BecomePreparedExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.types.UnprepareExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.types.BecomeSaddledExecutor
+import com.wingedsheep.engine.handlers.effects.permanent.types.BecomeCrewedExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.types.BecomeMonstrousExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.types.BecomeRenownedExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.types.BecomeSolvedExecutor
@@ -185,6 +186,7 @@ class PermanentExecutors(
         BecomeChosenManaColorExecutor(),
         BecomeCreatureExecutor(amountEvaluator = amountEvaluator),
         BecomeSaddledExecutor(),
+        BecomeCrewedExecutor(),
         BecomeRenownedExecutor(),
         BecomeMonstrousExecutor(),
         BecomeSolvedExecutor(),

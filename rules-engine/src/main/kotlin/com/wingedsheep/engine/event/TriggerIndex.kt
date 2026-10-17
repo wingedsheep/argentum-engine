@@ -104,6 +104,7 @@ enum class TriggerCategory {
     SEARCH_LIBRARY,
     SHUFFLE_LIBRARY,
     BECAME_SADDLED,
+    BECAME_CREWED,
     BECAME_RENOWNED,
     BECAME_MONSTROUS,
     CREW_OR_SADDLE_CONTRIBUTION,
@@ -342,6 +343,7 @@ class TriggerIndex(
                 is SdkGameEvent.SearchLibraryEvent -> SEARCH_LIBRARY_LIST
                 is SdkGameEvent.ShuffleLibraryEvent -> SHUFFLE_LIBRARY_LIST
                 is SdkGameEvent.BecameSaddledEvent -> BECAME_SADDLED_LIST
+                is SdkGameEvent.BecameCrewedEvent -> BECAME_CREWED_LIST
                 is SdkGameEvent.BecameRenownedEvent -> BECAME_RENOWNED_LIST
                 is SdkGameEvent.BecameMonstrousEvent -> BECAME_MONSTROUS_LIST
                 is SdkGameEvent.CrewsEvent,
@@ -449,6 +451,7 @@ class TriggerIndex(
             is com.wingedsheep.engine.core.LibrarySearchedEvent -> SEARCH_LIBRARY_LIST
             is com.wingedsheep.engine.core.LibraryShuffledEvent -> SHUFFLE_LIBRARY_LIST
             is com.wingedsheep.engine.core.BecameSaddledEvent -> BECAME_SADDLED_LIST
+            is com.wingedsheep.engine.core.BecameCrewedEvent -> BECAME_CREWED_LIST
             is com.wingedsheep.engine.core.BecameRenownedEvent -> BECAME_RENOWNED_LIST
             is com.wingedsheep.engine.core.BecameMonstrousEvent -> BECAME_MONSTROUS_LIST
             is CrewOrSaddleContributionEvent -> CREW_OR_SADDLE_CONTRIBUTION_LIST
@@ -608,6 +611,7 @@ class TriggerIndex(
         private val SEARCH_LIBRARY_LIST = listOf(TriggerCategory.SEARCH_LIBRARY)
         private val SHUFFLE_LIBRARY_LIST = listOf(TriggerCategory.SHUFFLE_LIBRARY)
         private val BECAME_SADDLED_LIST = listOf(TriggerCategory.BECAME_SADDLED)
+        private val BECAME_CREWED_LIST = listOf(TriggerCategory.BECAME_CREWED)
         private val BECAME_RENOWNED_LIST = listOf(TriggerCategory.BECAME_RENOWNED)
         private val BECAME_MONSTROUS_LIST = listOf(TriggerCategory.BECAME_MONSTROUS)
         private val CREW_OR_SADDLE_CONTRIBUTION_LIST =

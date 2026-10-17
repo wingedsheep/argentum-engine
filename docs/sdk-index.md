@@ -722,6 +722,7 @@ Families:
 - `BecomeCopyOfLinkedExileEffect(affected: EffectTarget)` — The affected permanent becomes a copy of a creature card exiled with the effect's source (read from the source's linked exile — see `CardSource.FromLinkedExile`), for as long as the source remains…
 - `BecomeCreatureEffect(target: EffectTarget, power: DynamicAmount, toughness: DynamicAmount, keywords: Set<Keyword>, creatureTypes: Set<String>, removeTypes: Set<String>, addTypes: Set<String>, colors: Set<String>?, imageUri: String?, duration: Duration, dynamicPower: DynamicAmount?, dynamicToughness: DynamicAmount?)` — Target permanent becomes a creature with specified characteristics until end of turn.
 - `BecomeCreatureTypeEffect(target: EffectTarget, duration: Duration, excludedTypes: List<String>)` — Target creature becomes the creature type of your choice until end of turn.
+- `BecomeCrewedEffect(target: EffectTarget)` — Target Vehicle becomes crewed (CR 702.122e) — the bookkeeping half of a crew ability's resolution, composed after its "becomes an artifact creature until end of turn".
 - `BecomeMonstrousEffect(target: EffectTarget)` — Target permanent becomes monstrous (CR 701.37b) — the designation half of the monstrosity keyword action.
 - `BecomePreparedEffect(target: EffectTarget)` — Make target become prepared (Secrets of Strixhaven).
 - `BecomeRenownedEffect(target: EffectTarget)` — Target permanent becomes renowned (CR 702.112b) — the designation half of the renown trigger the engine derives from com.wingedsheep.sdk.core.Keyword.RENOWN.
@@ -1138,6 +1139,7 @@ Families:
 - `EventPattern.AbilityTriggeredEvent(player: Player, requireAttackCause: Boolean, sourceFilter: GameObjectFilter?)` — When a triggered ability is put onto the stack (CR 603.3), scoped by whose ability it is and — optionally — by what caused it to trigger.
 - `EventPattern.AnyOf(events: List<EventPattern>)` — Matches when any constituent event pattern matches.
 - `EventPattern.AttackEvent(filter: GameObjectFilter?, requires: Set<AttackPredicate>)` — When a creature attacks.
+- `EventPattern.BecameCrewedEvent(filter: GameObjectFilter, firstTimeEachTurn: Boolean)` — When a Vehicle becomes crewed — "whenever this Vehicle becomes crewed" means "whenever a crew ability of this Vehicle resolves" (CR 702.122e).
 - `EventPattern.BecameMonstrousEvent(filter: GameObjectFilter)` — When a permanent becomes monstrous (CR 701.37b) — a monstrosity ability resolved on a permanent that wasn't yet monstrous.
 - `EventPattern.BecameRenownedEvent(filter: GameObjectFilter)` — When a permanent becomes renowned (CR 702.112b) — a renown trigger resolved on it.
 - `EventPattern.BecameSaddledEvent(filter: GameObjectFilter, firstTimeEachTurn: Boolean)` — When a permanent becomes saddled (CR 702.171b) — a Saddle ability resolved on it.

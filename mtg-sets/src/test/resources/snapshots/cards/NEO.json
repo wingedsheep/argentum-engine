@@ -2658,6 +2658,79 @@
     ]
 }
 
+// Mobilizer Mech
+{
+    "name": "Mobilizer Mech",
+    "manaCost": "{1}{U}",
+    "typeLine": "Artifact — Vehicle",
+    "oracleText": "Flying\nWhenever this Vehicle becomes crewed, up to one other target Vehicle you control becomes an artifact creature until end of turn.\nCrew 3 (Tap any number of creatures you control with total power 3 or more: This Vehicle becomes an artifact creature until end of turn.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING",
+        "CREW"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "CREW",
+            "n": 3
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Mobilizer Mech:1",
+                "trigger": "BecameCrewedEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCardType",
+                            "cardType": "Artifact",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "duration": "EndOfTurn"
+                        },
+                        {
+                            "type": "AddCardType",
+                            "cardType": "Creature",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "duration": "EndOfTurn"
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "permanent Vehicle ctrl:you",
+                        "excludeSelf": true
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Whenever this Vehicle becomes crewed, up to one other target Vehicle you control becomes an artifact creature until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "65",
+        "rarity": "UNCOMMON",
+        "artist": "Jonathan Kuo",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/f/cf4bb9de-ba7c-4916-b8ed-e2e644c06b58.jpg?1783923900"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Moonfolk Puzzlemaker
 {
     "name": "Moonfolk Puzzlemaker",

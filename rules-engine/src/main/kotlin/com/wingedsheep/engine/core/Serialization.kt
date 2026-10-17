@@ -103,6 +103,7 @@ val engineSerializersModule = SerializersModule {
         subclass(EnlistedEvent::class)
         subclass(ExertedEvent::class)
         subclass(BecameSaddledEvent::class)
+        subclass(BecameCrewedEvent::class)
         subclass(CaseSolvedEvent::class)
         subclass(CompanionPutIntoHandEvent::class)
         subclass(BecameRenownedEvent::class)

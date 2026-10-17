@@ -1728,6 +1728,8 @@ is PermanentsSacrificedEvent -> {
             // Internal trigger signal. The tap, activated ability, and resulting continuous effect
             // already provide the player-visible narration and state change.
             is CrewOrSaddleContributionEvent -> null
+            // Trigger bookkeeping only: the Vehicle animating already shows the crew resolving.
+            is com.wingedsheep.engine.core.BecameCrewedEvent -> null
 
             // Internal signal that drives the CR 702.35a madness trigger. The player-visible
             // narration is already complete without it: the CardsDiscardedEvent says the card was

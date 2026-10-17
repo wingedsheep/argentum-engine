@@ -534,6 +534,10 @@ class ObjectTriggerSubject internal constructor(
     fun becomesSaddled(firstTimeEachTurn: Boolean = false): TriggerSpec =
         spec(BecameSaddledEvent(filter = filterOrAny, firstTimeEachTurn = firstTimeEachTurn))
 
+    /** "becomes crewed [for the first time each turn]" — a crew ability of it resolved (CR 702.122e). */
+    fun becomesCrewed(firstTimeEachTurn: Boolean = false): TriggerSpec =
+        spec(BecameCrewedEvent(filter = filterOrAny, firstTimeEachTurn = firstTimeEachTurn))
+
     /** "becomes renowned" (CR 702.112b). */
     fun becomesRenowned(): TriggerSpec = spec(BecameRenownedEvent(filter = filterOrAny))
 

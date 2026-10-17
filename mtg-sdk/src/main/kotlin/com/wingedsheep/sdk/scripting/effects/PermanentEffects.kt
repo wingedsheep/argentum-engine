@@ -281,6 +281,23 @@ data class BecomeSaddledEffect(
 }
 
 /**
+ * Target Vehicle becomes crewed (CR 702.122e) — the bookkeeping half of a crew ability's
+ * resolution, composed after its "becomes an artifact creature until end of turn". Changes no
+ * characteristic: it records the resolution and emits the engine's `BecameCrewedEvent`, which
+ * "whenever this Vehicle becomes crewed [for the first time each turn]" triggers match. The crew
+ * handler composes it; cards don't author it.
+ *
+ * @property target The Vehicle whose crew ability resolved
+ */
+@SerialName("BecomeCrewed")
+@Serializable
+data class BecomeCrewedEffect(
+    val target: EffectTarget = EffectTarget.Self
+) : Effect {
+    override val description: String = "${target.description} becomes crewed"
+}
+
+/**
  * Target permanent becomes solved (CR 719.3b) — the resolving effect of a Case's "To solve"
  * triggered ability. Stamps the engine's `SolvedComponent`, which the Case's "Solved —" abilities
  * read back through `Conditions.SourceIsSolved` / `StatePredicate.IsSolved`.

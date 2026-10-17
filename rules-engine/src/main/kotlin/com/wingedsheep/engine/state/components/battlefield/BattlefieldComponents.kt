@@ -260,7 +260,13 @@ data class CrewSaddleContributorsComponent(
      * enforce a "Crew N. Activate only once each turn." cap (Luxurious Locomotive). Saddle
      * activations don't increment it. Reset with the rest of the component at end of turn.
      */
-    val crewActivations: Int = 0
+    val crewActivations: Int = 0,
+    /**
+     * How many of this permanent's crew abilities have *resolved* this turn — the Vehicle
+     * "becomes crewed" on each resolution (CR 702.122e). Backs the "becomes crewed for the first
+     * time each turn" rider; reset with the rest of the component at end of turn.
+     */
+    val crewResolutions: Int = 0
 ) : Component
 
 /**

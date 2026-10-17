@@ -436,6 +436,22 @@ class TriggerMatcher(
                     )
                 } else true
             }
+            is EventPattern.BecameCrewedEvent -> {
+                // A crewed Vehicle stays on the battlefield, so this matches in the regular
+                // battlefield trigger loop. SELF binding must match the crewed Vehicle.
+                if (event !is com.wingedsheep.engine.core.BecameCrewedEvent) return false
+                if (binding == TriggerBinding.SELF && event.entityId != sourceId) return false
+                if (trigger.firstTimeEachTurn && !event.firstThisTurn) return false
+                if (trigger.filter != GameObjectFilter.Any) {
+                    val predicateContext = com.wingedsheep.engine.handlers.PredicateContext(
+                        controllerId = controllerId,
+                        sourceId = sourceId
+                    )
+                    predicateEvaluator.matches(
+                        state, state.projectedState, event.entityId, trigger.filter, predicateContext
+                    )
+                } else true
+            }
             is EventPattern.BecameRenownedEvent -> {
                 // A renowned creature stays on the battlefield (CR 702.112b), so this matches in
                 // the regular battlefield trigger loop, the same as the saddled designation. SELF

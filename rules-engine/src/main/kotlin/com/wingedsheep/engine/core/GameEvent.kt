@@ -1456,6 +1456,22 @@ data class BecameSaddledEvent(
 ) : GameEvent
 
 /**
+ * A Vehicle became crewed — one of its crew abilities resolved (CR 702.122e). Lets "whenever this
+ * Vehicle becomes crewed" triggers react.
+ *
+ * [firstThisTurn] is true when no earlier crew ability of this permanent resolved this turn
+ * (counted on [com.wingedsheep.engine.state.components.battlefield.CrewSaddleContributorsComponent.crewResolutions]);
+ * drives the "becomes crewed for the first time each turn" rider.
+ */
+@Serializable
+@SerialName("BecameCrewedEvent")
+data class BecameCrewedEvent(
+    val entityId: EntityId,
+    val entityName: String,
+    val firstThisTurn: Boolean = true
+) : GameEvent
+
+/**
  * A Case became solved (CR 719.3b) — its "To solve" trigger resolved with the condition met.
  * Fires once per permanent: the designation is sticky, and the trigger's intervening-if stops an
  * already-solved Case from triggering again, so there is no "already solved" flag to carry.
