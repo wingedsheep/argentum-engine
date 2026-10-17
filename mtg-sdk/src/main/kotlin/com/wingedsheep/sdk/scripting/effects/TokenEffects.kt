@@ -689,6 +689,16 @@ data class CreateTokenCopyOfTargetEffect(
      */
     val attackedPlayer: EffectTarget? = null,
     /**
+     * What an [attacking] copy attacks when the effect names no defender — see
+     * [EnteringAttackDefender]. The default joins the source's attack against a player and asks
+     * nothing; [EnteringAttackDefender.CONTROLLER_CHOOSES] is CR 508.4 as printed for a bare
+     * "tapped and attacking" (Shaun, Father of Synths): the copy's controller picks a defending
+     * player, planeswalker or battle per token. Needs [attacking], no [attackedPlayer], and the
+     * effect's controller as the token controller. An Aura copy (whose host is chosen first)
+     * keeps the default.
+     */
+    val attackDefender: EnteringAttackDefender = EnteringAttackDefender.JOIN_SOURCE,
+    /**
      * The copies' base power, **computed at resolution** — the dynamic form of [overridePower] for
      * an "except its power is …" clause whose number depends on the game (CR 707.9b: a copy
      * exception that sets power is a copiable value). Saw in Half: "except their power is half
@@ -704,6 +714,10 @@ data class CreateTokenCopyOfTargetEffect(
 ) : Effect {
     init {
         require(attackedPlayer == null || attacking) { "attackedPlayer needs attacking = true" }
+        require(attackDefender == EnteringAttackDefender.JOIN_SOURCE ||
+            (attacking && attackedPlayer == null && controller == null)) {
+            "attackDefender = CONTROLLER_CHOOSES needs attacking = true, no attackedPlayer and the effect controller as token controller"
+        }
         require((basePower == null) == (baseToughness == null)) {
             "basePower and baseToughness are set together"
         }

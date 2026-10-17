@@ -3300,6 +3300,10 @@ object Effects {
     /**
      * Create a token that's a copy of a targeted permanent.
      * "Create a token that's a copy of target creature, except it's 1/1."
+     *
+     * @param attackDefender What an [attacking] copy attacks: the source's defending player
+     *   (default) or, with `CONTROLLER_CHOOSES`, a player / planeswalker / battle its controller
+     *   picks per token as it enters (CR 508.4).
      */
     fun CreateTokenCopyOfTarget(
         target: EffectTarget,
@@ -3330,6 +3334,8 @@ object Effects {
         stampCreator: Boolean = false,
         attachedTo: EffectTarget? = null,
         attackedPlayer: EffectTarget? = null,
+        attackDefender: com.wingedsheep.sdk.scripting.effects.EnteringAttackDefender =
+            com.wingedsheep.sdk.scripting.effects.EnteringAttackDefender.JOIN_SOURCE,
         basePower: DynamicAmount? = null,
         baseToughness: DynamicAmount? = null,
     ): Effect = CreateTokenCopyOfTarget(
@@ -3360,6 +3366,7 @@ object Effects {
         stampCreator = stampCreator,
         attachedTo = attachedTo,
         attackedPlayer = attackedPlayer,
+        attackDefender = attackDefender,
         basePower = basePower,
         baseToughness = baseToughness,
     )
@@ -3397,6 +3404,8 @@ object Effects {
         stampCreator: Boolean = false,
         attachedTo: EffectTarget? = null,
         attackedPlayer: EffectTarget? = null,
+        attackDefender: com.wingedsheep.sdk.scripting.effects.EnteringAttackDefender =
+            com.wingedsheep.sdk.scripting.effects.EnteringAttackDefender.JOIN_SOURCE,
         basePower: DynamicAmount? = null,
         baseToughness: DynamicAmount? = null,
     ): Effect = CreateTokenCopyOfTargetEffect(
@@ -3427,6 +3436,7 @@ object Effects {
         stampCreator = stampCreator,
         attachedTo = attachedTo,
         attackedPlayer = attackedPlayer,
+        attackDefender = attackDefender,
         basePower = basePower,
         baseToughness = baseToughness,
     )

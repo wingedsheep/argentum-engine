@@ -18,7 +18,10 @@ import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.effects.CreateTokenCopyOfTargetEffect
 import com.wingedsheep.sdk.scripting.effects.EnteringAttackDefender
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldContainExactly
@@ -66,6 +69,21 @@ class EnteringAttackDefenderChoiceTest : FunSpec({
         }
     }
 
+    // "Create two tapped and attacking tokens that are copies of this creature" — the copy maker.
+    val copyingCaptain = card("Test Copying Captain") {
+        manaCost = "{2}{R}"
+        typeLine = "Creature — Human Soldier"
+        power = 2
+        toughness = 2
+        triggeredAbility {
+            trigger = Triggers.self.attacks()
+            effect = Effects.CreateTokenCopyOfTarget(
+                target = EffectTarget.Self, count = 2, tapped = true, attacking = true,
+                attackDefender = EnteringAttackDefender.CONTROLLER_CHOOSES,
+            )
+        }
+    }
+
     val walker = card("Test Defending Walker") {
         manaCost = "{3}"
         typeLine = "Legendary Planeswalker — Test"
@@ -82,7 +100,7 @@ class EnteringAttackDefenderChoiceTest : FunSpec({
 
     fun newDriver(): GameTestDriver {
         val d = GameTestDriver()
-        d.registerCards(TestCards.all + listOf(captain, legacyCaptain, walker, bulwark))
+        d.registerCards(TestCards.all + listOf(captain, legacyCaptain, copyingCaptain, walker, bulwark))
         d.initMirrorMatch(deck = Deck.of("Forest" to 40), skipMulligans = true, startingPlayer = 0)
         d.passPriorityUntil(Step.PRECOMBAT_MAIN)
         return d
@@ -208,6 +226,48 @@ class EnteringAttackDefenderChoiceTest : FunSpec({
         withClue("the 2/2 captain and the other Soldier hit the player") { d.getLifeTotal(d.player2) shouldBe 17 }
     }
 
+    test("token copies: one choice per copy before any copy exists, each attacking its own defender") {
+        val d = newDriver()
+        val theirWalker = d.walkerFor(d.player2)
+        d.attackWith(d.ready("Test Copying Captain"))
+
+        val first = d.pendingDecision.shouldBeInstanceOf<ChooseTargetsDecision>()
+        first.legalTargets[0]!! shouldContainExactly listOf(d.player2, theirWalker)
+        withClue("chosen as it enters: no copy exists yet") { d.soldierTokens() shouldHaveSize 0 }
+        d.submitTargetSelection(d.player1, listOf(theirWalker)).error shouldBe null
+        d.pendingDecision.shouldBeInstanceOf<ChooseTargetsDecision>()
+        d.submitTargetSelection(d.player1, listOf(d.player2)).error shouldBe null
+
+        d.pendingDecision shouldBe null
+        val copies = d.soldierTokens()
+        copies shouldHaveSize 2
+        copies.map { d.attackedBy(it) } shouldContainExactly listOf(theirWalker, d.player2)
+        copies.forEach {
+            d.state.getEntity(it)!!.has<TappedComponent>() shouldBe true
+            d.state.getEntity(it)!!.get<AttackingComponent>()!!.defendingPlayerId shouldBe d.player2
+        }
+    }
+
+    test("token copies with only the defending player legal: no question") {
+        val d = newDriver()
+        d.attackWith(d.ready("Test Copying Captain"))
+
+        d.pendingDecision shouldBe null
+        d.soldierTokens().map { d.attackedBy(it) } shouldContainExactly listOf(d.player2, d.player2)
+    }
+
+    test("CONTROLLER_CHOOSES on a token copy needs attacking and no named defender") {
+        shouldThrow<IllegalArgumentException> {
+            CreateTokenCopyOfTargetEffect(target = EffectTarget.Self, attackDefender = EnteringAttackDefender.CONTROLLER_CHOOSES)
+        }
+        shouldThrow<IllegalArgumentException> {
+            CreateTokenCopyOfTargetEffect(
+                target = EffectTarget.Self, attacking = true, attackedPlayer = EffectTarget.Controller,
+                attackDefender = EnteringAttackDefender.CONTROLLER_CHOOSES,
+            )
+        }
+    }
+
     test("the default (JOIN_SOURCE) is unchanged: no question, the tokens join the source's attack") {
         val d = newDriver()
         d.walkerFor(d.player2)
@@ -219,7 +279,7 @@ class EnteringAttackDefenderChoiceTest : FunSpec({
 
     test("Two-Headed Giant: the active player's teammate is an attacking player too (CR 805.10a)") {
         val d = GameTestDriver()
-        d.registerCards(TestCards.all + listOf(captain, legacyCaptain, walker, bulwark))
+        d.registerCards(TestCards.all + listOf(captain, legacyCaptain, copyingCaptain, walker, bulwark))
         val p = d.initMultiplayer(
             List(4) { Deck.of("Forest" to 40) },
             format = com.wingedsheep.sdk.core.Format.TwoHeadedGiant(),

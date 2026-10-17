@@ -247,7 +247,7 @@
 - [x] Sentinel Sarah Lyons
 - [x] Sentry Bot
 - [x] Shadowblood Ridge
-- [ ] Shaun, Father of Synths
+- [x] Shaun, Father of Synths
 - [x] Sheltered Thicket
 - [x] Sierra, Nuka's Biggest Fan
 - [x] Silver Shroud Costume

@@ -2668,7 +2668,7 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
 - `CreateTokenCopyOfSelf(count?, overridePower?, overrideToughness?, removeLegendary?)` — token copies
   of the source. `removeLegendary = true` applies the "except it's not legendary" copy clause (Ran and
   Shaw), mirroring `CreateTokenCopyOfEquippedCreature`.
-- `CreateTokenCopyOfTarget(target, count?, overridePower?, overrideToughness?, tapped?, attacking?, triggeredAbilities?, addedKeywords?, addedSupertypes?, removedSupertypes?, overrideColors?, addedColors?, overrideSubtypes?, addedSubtypes?, overrideCardTypes?, activatedAbilities?, addedStaticAbilities?, sacrificeAtStep?, sacrificeOnlyOnControllersTurn?, addCardTypes?, exileAtStep?, exileUnlessSourceIsRingBearer?, controller?, noManaCost?, attachedTo?, attackedPlayer?, basePower?, baseToughness?)` —
+- `CreateTokenCopyOfTarget(target, count?, overridePower?, overrideToughness?, tapped?, attacking?, triggeredAbilities?, addedKeywords?, addedSupertypes?, removedSupertypes?, overrideColors?, addedColors?, overrideSubtypes?, addedSubtypes?, overrideCardTypes?, activatedAbilities?, addedStaticAbilities?, sacrificeAtStep?, sacrificeOnlyOnControllersTurn?, addCardTypes?, exileAtStep?, exileUnlessSourceIsRingBearer?, controller?, noManaCost?, attachedTo?, attackedPlayer?, attackDefender?, basePower?, baseToughness?)` —
   token copy of another permanent (or a card in any zone — the executor copies the target's `CardComponent`,
   so a graveyard/exile card works; pass `EffectTarget.PipelineTarget("name")` to copy a card a prior pipeline
   step exiled/stored, as Nexus of Becoming and Mardu Siegebreaker do).
@@ -2710,7 +2710,12 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   player an attacking copy attacks — "tapped and attacking **that player**" (myriad); null keeps the
   CR 508.4 default (the source's defending player, else an opponent already defending). A named player
   who has left the game or isn't one of the creator's opponents gets no attacker: the copy enters but
-  never attacking (CR 508.4a). `sacrificeAtStep` schedules one delayed `SacrificeTargetEffect`
+  never attacking (CR 508.4a). `attackDefender = EnteringAttackDefender.CONTROLLER_CHOOSES` (requires
+  `attacking`, no `attackedPlayer`, no `controller`) is CR 508.4 as printed for a bare "tapped and attacking"
+  copy (Shaun, Father of Synths): before any copy exists, its controller picks a defending player,
+  planeswalker or battle per token — the same chooser as `CreateTokenEffect.attackDefender`; one legal
+  choice is taken silently, none leaves the copy unattacking. An Aura copy keeps the default.
+  `sacrificeAtStep` schedules one delayed `SacrificeTargetEffect`
   per created copy at that step (the sacrifice sibling of `CreateTokenEffect.sacrificeAtStep`);
   `sacrificeOnlyOnControllersTurn = true` restricts it to "at the beginning of *your* next end step"
   (Mardu Siegebreaker: a tapped+attacking copy of the linked-exiled card, sacrificed at your next end step).

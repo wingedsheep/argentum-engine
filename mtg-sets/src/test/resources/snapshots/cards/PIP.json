@@ -10422,6 +10422,142 @@
     ]
 }
 
+// Shaun, Father of Synths
+{
+    "name": "Shaun, Father of Synths",
+    "manaCost": "{3}{U}{R}",
+    "typeLine": "Legendary Creature — Human Scientist",
+    "oracleText": "Whenever you attack, you may create a tapped and attacking token that's a copy of target attacking legendary creature you control other than Shaun, except it's not legendary and it's a Synth artifact creature in addition to its other types.\nWhen Shaun leaves the battlefield, exile all Synth tokens you control.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Shaun, Father of Synths:1",
+                "trigger": "YouAttackEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "CreateTokenCopyOfTarget",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "tapped": true,
+                        "attacking": true,
+                        "exceptions": {
+                            "removedSupertypes": [
+                                "LEGENDARY"
+                            ],
+                            "addedCardTypes": [
+                                "ARTIFACT",
+                                "CREATURE"
+                            ],
+                            "addedSubtypes": [
+                                "Synth"
+                            ]
+                        },
+                        "attackDefender": "CONTROLLER_CHOOSES"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                "IsLegendary"
+                            ],
+                            "statePredicates": [
+                                "IsAttacking"
+                            ],
+                            "controllerPredicate": "ControlledByYou"
+                        },
+                        "excludeSelf": true
+                    },
+                    "id": "t0"
+                }
+            },
+            {
+                "id": "Shaun, Father of Synths:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "BattlefieldMatching",
+                                "filter": "permanent token Synth ctrl:you"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "119",
+        "rarity": "RARE",
+        "artist": "Zuzanna Wużyk",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/8/68af449f-3c30-43ea-be60-d85061d7adbd.jpg?1783912382",
+        "rulings": [
+            {
+                "date": "2024-03-08",
+                "text": "Except for the noted exceptions, the token copies exactly what was printed on the original creature and nothing else (unless that creature is copying something else or is a token; see below). It doesn't copy whether that creature is tapped or untapped, whether it has any counters on it or Auras and Equipment attached to it, or any non-copy effects that have changed its power, toughness, types, color, and so on."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "If the copied creature has {X} in its mana cost, X is 0."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "If the copied creature is a token, the token that's created copies the original characteristics of that token as stated by the effect that created that token, with the noted exceptions."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "If the copied creature is copying something else, then the token enters the battlefield as whatever that creature copied, with the noted exceptions."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "Any enters-the-battlefield abilities of the copied creature will trigger when the token enters the battlefield. Any \"as [this creature] enters the battlefield\" or \"[this creature] enters the battlefield with\" abilities of the copied creature will also work."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "Although the token is attacking, it was never declared as an attacking creature. This means that abilities that trigger whenever a creature attacks won't trigger when it enters the battlefield attacking."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "You declare which player, planeswalker, or battle the token is attacking as you put it onto the battlefield. It doesn't have to be attacking the same player, planeswalker, or battle that Shaun is attacking."
+            },
+            {
+                "date": "2024-03-08",
+                "text": "Shaun's last ability will exile all Synth tokens you control, not just Synth tokens created by its first ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
+    ]
+}
+
 // Sierra, Nuka's Biggest Fan
 {
     "name": "Sierra, Nuka's Biggest Fan",
