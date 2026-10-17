@@ -423,6 +423,71 @@
     ]
 }
 
+// Black Market Tycoon
+{
+    "name": "Black Market Tycoon",
+    "manaCost": "{R}{G}",
+    "typeLine": "Creature — Cat Rogue",
+    "oracleText": "At the beginning of your upkeep, this creature deals 2 damage to you for each Treasure you control.\n{T}: Create a Treasure token.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Black Market Tycoon:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Multiply",
+                        "amount": {
+                            "type": "AggregateBattlefield",
+                            "player": "You",
+                            "filter": "artifact Treasure"
+                        },
+                        "multiplier": 2
+                    },
+                    "target": "Controller",
+                    "damageSource": "Self"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Black Market Tycoon:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Treasure"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "167",
+        "rarity": "RARE",
+        "artist": "Brock Grossman",
+        "flavorText": "\"I have exactly what you need. The question is, how badly do you need it?\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/8/28d92b13-8b23-4c78-b690-c5d9ca835809.jpg?1783923094",
+        "rulings": [
+            {
+                "date": "2022-04-29",
+                "text": "Black Market Tycoon's ability triggers at the beginning of your upkeep whether or not you actually have any Treasures, and it counts the number of Treasures you have as it resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN"
+    ]
+}
+
 // Body Dropper
 {
     "name": "Body Dropper",
@@ -786,6 +851,71 @@
     "colorIdentityOverride": [
         "GREEN",
         "WHITE"
+    ]
+}
+
+// Bouncer's Beatdown
+{
+    "name": "Bouncer's Beatdown",
+    "manaCost": "{2}{G}",
+    "typeLine": "Instant",
+    "oracleText": "This spell costs {2} less to cast if it targets a black permanent.\nBouncer's Beatdown deals X damage to target creature or planeswalker, where X is the greatest power among creatures you control. If that creature or planeswalker would die this turn, exile it instead.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "creature",
+                        "aggregation": "MAX",
+                        "property": "POWER"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "MarkExileOnDeath",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetCreatureOrPlaneswalker",
+                "id": "t0"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "ReduceGenericBy",
+                    "source": {
+                        "type": "FixedIfAnyTargetMatches",
+                        "amount": 2,
+                        "filter": "permanent black"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "135",
+        "rarity": "UNCOMMON",
+        "artist": "Mathias Kollros",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/4/54772e15-d99d-4eec-ba8d-b9202a7e318b.jpg?1783923110"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -1719,6 +1849,62 @@
         "collectorNumber": "138",
         "artist": "Randy Vargas",
         "imageUri": "https://cards.scryfall.io/normal/front/5/8/58b431d2-33c1-49d8-b45d-690c174bb456.jpg?1783923106"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Capenna Express
+{
+    "name": "Capenna Express",
+    "manaCost": "{3}{G}",
+    "typeLine": "Artifact — Vehicle",
+    "oracleText": "Sacrifice a Treasure: This Vehicle becomes an artifact creature until end of turn.\nCrew 3 (Tap any number of creatures you control with total power 3 or more: This Vehicle becomes an artifact creature until end of turn.)",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "keywords": [
+        "CREW"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "CREW",
+            "n": 3
+        }
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Capenna Express:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomSacrifice",
+                        "filter": "artifact Treasure"
+                    }
+                },
+                "effect": {
+                    "type": "BecomeCreature",
+                    "power": {
+                        "type": "Fixed",
+                        "amount": 6
+                    },
+                    "toughness": {
+                        "type": "Fixed",
+                        "amount": 6
+                    }
+                },
+                "descriptionOverride": "Sacrifice a Treasure: This Vehicle becomes an artifact creature until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "139",
+        "artist": "Viko Menezes",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/5/b5530b04-f086-4d09-97e9-eda45f8b1f7b.jpg?1783923105"
     },
     "colorIdentityOverride": [
         "GREEN"
@@ -3234,6 +3420,78 @@
     ]
 }
 
+// Elegant Entourage
+{
+    "name": "Elegant Entourage",
+    "manaCost": "{3}{G}",
+    "typeLine": "Creature — Elf Druid",
+    "oracleText": "Alliance — Whenever another creature you control enters, target creature other than this creature gets +1/+1 and gains trample until end of turn.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Elegant Entourage:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "TRAMPLE",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature",
+                        "excludeSelf": true
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Alliance — Whenever another creature you control enters, target creature other than this creature gets +1/+1 and gains trample until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "143",
+        "rarity": "UNCOMMON",
+        "artist": "Jodie Muir",
+        "flavorText": "\"Terribly sorry, but this is a private party, and your name isn't on the list.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/9/e9d3500e-09ba-48b6-933f-25b4625b79aa.jpg?1783923104"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Errant, Street Artist
 {
     "name": "Errant, Street Artist",
@@ -4227,6 +4485,83 @@
     ]
 }
 
+// For the Family
+{
+    "name": "For the Family",
+    "manaCost": "{G}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature gets +2/+2 until end of turn. If you control four or more creatures, that creature gets +4/+4 until end of turn instead.",
+    "script": {
+        "spellEffect": {
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "creature"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 4
+                    }
+                }
+            },
+            "then": {
+                "type": "ModifyStats",
+                "powerModifier": {
+                    "type": "Fixed",
+                    "amount": 4
+                },
+                "toughnessModifier": {
+                    "type": "Fixed",
+                    "amount": 4
+                },
+                "target": {
+                    "type": "BoundVariable",
+                    "name": "t0"
+                }
+            },
+            "otherwise": {
+                "type": "ModifyStats",
+                "powerModifier": {
+                    "type": "Fixed",
+                    "amount": 2
+                },
+                "toughnessModifier": {
+                    "type": "Fixed",
+                    "amount": 2
+                },
+                "target": {
+                    "type": "BoundVariable",
+                    "name": "t0"
+                }
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "146",
+        "artist": "Kieran Yanner",
+        "flavorText": "The Cabaretti cultivate an image of harmless hedonism, happy for the other families to underestimate their formidable firepower.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/5/052be93c-1970-4d05-a3d1-e87a6e51c423.jpg?1783923103"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Forge Boss
 {
     "name": "Forge Boss",
@@ -4271,6 +4606,124 @@
     "colorIdentityOverride": [
         "BLACK",
         "RED"
+    ]
+}
+
+// Freelance Muscle
+{
+    "name": "Freelance Muscle",
+    "manaCost": "{4}{G}",
+    "typeLine": "Creature — Rhino Warrior",
+    "oracleText": "Whenever this creature attacks or blocks, it gets +X/+X until end of turn, where X is the greatest power and/or toughness among other creatures you control.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Freelance Muscle:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Max",
+                        "left": {
+                            "type": "AggregateBattlefield",
+                            "player": "You",
+                            "filter": "creature",
+                            "aggregation": "MAX",
+                            "property": "POWER",
+                            "excludeSelf": true
+                        },
+                        "right": {
+                            "type": "AggregateBattlefield",
+                            "player": "You",
+                            "filter": "creature",
+                            "aggregation": "MAX",
+                            "property": "TOUGHNESS",
+                            "excludeSelf": true
+                        }
+                    },
+                    "toughnessModifier": {
+                        "type": "Max",
+                        "left": {
+                            "type": "AggregateBattlefield",
+                            "player": "You",
+                            "filter": "creature",
+                            "aggregation": "MAX",
+                            "property": "POWER",
+                            "excludeSelf": true
+                        },
+                        "right": {
+                            "type": "AggregateBattlefield",
+                            "player": "You",
+                            "filter": "creature",
+                            "aggregation": "MAX",
+                            "property": "TOUGHNESS",
+                            "excludeSelf": true
+                        }
+                    },
+                    "target": "Self"
+                }
+            },
+            {
+                "id": "Freelance Muscle:2",
+                "trigger": "BlockEvent",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Max",
+                        "left": {
+                            "type": "AggregateBattlefield",
+                            "player": "You",
+                            "filter": "creature",
+                            "aggregation": "MAX",
+                            "property": "POWER",
+                            "excludeSelf": true
+                        },
+                        "right": {
+                            "type": "AggregateBattlefield",
+                            "player": "You",
+                            "filter": "creature",
+                            "aggregation": "MAX",
+                            "property": "TOUGHNESS",
+                            "excludeSelf": true
+                        }
+                    },
+                    "toughnessModifier": {
+                        "type": "Max",
+                        "left": {
+                            "type": "AggregateBattlefield",
+                            "player": "You",
+                            "filter": "creature",
+                            "aggregation": "MAX",
+                            "property": "POWER",
+                            "excludeSelf": true
+                        },
+                        "right": {
+                            "type": "AggregateBattlefield",
+                            "player": "You",
+                            "filter": "creature",
+                            "aggregation": "MAX",
+                            "property": "TOUGHNESS",
+                            "excludeSelf": true
+                        }
+                    },
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "147",
+        "rarity": "UNCOMMON",
+        "artist": "Randy Vargas",
+        "flavorText": "He never asks why. Just who, when, and where.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/7/570f7c90-109b-4d6d-8205-d158753719e8.jpg?1783923105"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -5157,6 +5610,61 @@
     "colorIdentityOverride": []
 }
 
+// High-Rise Sawjack
+{
+    "name": "High-Rise Sawjack",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Elf Citizen",
+    "oracleText": "Reach (This creature can block creatures with flying.)\nWhenever this creature blocks a creature with flying, this creature gets +2/+0 until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "REACH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "High-Rise Sawjack:1",
+                "trigger": {
+                    "type": "BlockEvent",
+                    "attackerFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "HasKeyword",
+                                "keyword": "FLYING"
+                            }
+                        ]
+                    }
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "150",
+        "artist": "Randy Vargas",
+        "flavorText": "Slicing girders, rescuing trapped workers, killing gigantic rust flies—one tool does it all!",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/3/2399c6d7-57f9-4100-ad64-3c8897a438f7.jpg?1783923102"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Hold for Ransom
 {
     "name": "Hold for Ransom",
@@ -5983,6 +6491,79 @@
     ]
 }
 
+// Jetmir's Fixer
+{
+    "name": "Jetmir's Fixer",
+    "manaCost": "{R}{G}",
+    "typeLine": "Creature — Cat Warrior",
+    "oracleText": "{R}{G}: This creature gets +1/+1 until end of turn. If mana from a Treasure was spent to activate this ability, put a +1/+1 counter on this creature instead.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Jetmir's Fixer:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{R}{G}"
+                    }
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "ManaSpentFromSubtype",
+                                "subtype": "Treasure",
+                                "payment": "ACTIVATION"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": "Self"
+                    },
+                    "otherwise": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": "Self"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "194",
+        "artist": "John Thacker",
+        "flavorText": "When you lose Jetmir's trust, his family makes sure you lose everything else.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/e/3e5aa701-28e8-47fa-8c26-4da2f943f582.jpg?1783923081"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "RED"
+    ]
+}
+
 // Jetmir's Garden
 {
     "name": "Jetmir's Garden",
@@ -6717,6 +7298,61 @@
         "BLUE",
         "BLACK",
         "RED"
+    ]
+}
+
+// Luxurious Libation
+{
+    "name": "Luxurious Libation",
+    "manaCost": "{X}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature gets +X/+X until end of turn. Create a 1/1 green and white Citizen creature token.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": "XValue",
+                    "toughnessModifier": "XValue",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "GREEN",
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Citizen"
+                    ]
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "152",
+        "rarity": "UNCOMMON",
+        "artist": "Joe Slucher",
+        "flavorText": "\"Crisp, flavorful, and energizing. Perhaps the most elegant offering of Halo in Park Heights. Five stars.\"\n—Conzuelo, restaurant critic",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/3/b3e0e818-db6a-453a-a1f0-a7fade6509d3.jpg?1783923100"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -7567,6 +8203,57 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Most Wanted
+{
+    "name": "Most Wanted",
+    "manaCost": "{2}{G}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Flash\nEnchant creature\nEnchanted creature gets +2/+1.\nWhen enchanted creature dies, create two Treasure tokens.",
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Most Wanted:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Treasure",
+                    "count": 2
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 2,
+                "toughnessBonus": 1
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "153",
+        "artist": "Rémi Jacquot",
+        "flavorText": "Overnight, Elspeth was branded the most dangerous criminal in New Capenna.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/7/573c0f68-9ed8-4657-b709-b7f3804aaa68.jpg?1783923100"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -8698,6 +9385,69 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Prizefight
+{
+    "name": "Prizefight",
+    "manaCost": "{1}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature you control fights target creature you don't control. (Each deals damage equal to its power to the other.)\nCreate a Treasure token. (It's an artifact with \"{T}, Sacrifice this token: Add one mana of any color.\")",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "Fight",
+                    "target1": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "target2": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    }
+                },
+                {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Treasure"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                },
+                "id": "t0"
+            },
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "controllerPredicate": {
+                            "type": "ControllerNot",
+                            "predicate": "ControlledByYou"
+                        }
+                    }
+                },
+                "id": "t1"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "154",
+        "artist": "Deruchenko Alexander",
+        "flavorText": "Underweight, underpaid, underestimated.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/4/544c810b-5f90-4535-aa76-14f8c6b9428a.jpg?1783923100"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -10012,6 +10762,144 @@
     ]
 }
 
+// Rakish Revelers
+{
+    "name": "Rakish Revelers",
+    "manaCost": "{2}{R}{G}{W}",
+    "typeLine": "Creature — Elf Druid Rogue",
+    "oracleText": "When this creature enters, create a 1/1 green and white Citizen creature token.\n{2}, Exile this card from your hand: Target land gains \"{T}: Add {R}, {G}, or {W}\" until this card is cast from exile. You may cast this card for as long as it remains exiled.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Rakish Revelers:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "GREEN",
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Citizen"
+                    ]
+                },
+                "descriptionOverride": "When this creature enters, create a 1/1 green and white Citizen creature token."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Rakish Revelers:3",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}"
+                            }
+                        },
+                        "CostExileSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GrantActivatedAbility",
+                            "ability": {
+                                "id": "Rakish Revelers:2",
+                                "cost": "CostTap",
+                                "effect": {
+                                    "type": "AddManaOfChoice",
+                                    "colorSet": {
+                                        "type": "ManaColorSet.Specific",
+                                        "colors": [
+                                            "RED",
+                                            "GREEN",
+                                            "WHITE"
+                                        ]
+                                    }
+                                },
+                                "timing": "ManaAbility",
+                                "isManaAbility": true
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "duration": "UntilSourceCastFromExile"
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Exile",
+                                        "filter": {
+                                            "statePredicates": [
+                                                "IsSource"
+                                            ]
+                                        }
+                                    },
+                                    "storeAs": "gathered0"
+                                },
+                                {
+                                    "type": "GrantMayPlayFromExile",
+                                    "from": "gathered0",
+                                    "expiry": "Permanent"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "land"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "activateFromZone": "Hand",
+                "descriptionOverride": "{2}, Exile this card from your hand: Target land gains \"{T}: Add {R}, {G}, or {W}\" until this card is cast from exile. You may cast this card for as long as it remains exiled."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "214",
+        "artist": "Alessandra Pisano",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/c/9c74197a-367c-40a4-9eb5-6943490bba09.jpg?1783923073",
+        "rulings": [
+            {
+                "date": "2022-04-29",
+                "text": "You may use the mana ability Rakish Revelers grants to the land while casting Rakish Revelers from exile."
+            },
+            {
+                "date": "2022-04-29",
+                "text": "If Rakish Revelers is removed from exile without being cast, the land will continue to have this ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "RED",
+        "WHITE"
+    ]
+}
+
 // Ready to Rumble
 {
     "name": "Ready to Rumble",
@@ -10396,6 +11284,68 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Rhox Pummeler
+{
+    "name": "Rhox Pummeler",
+    "manaCost": "{5}{G}",
+    "typeLine": "Creature — Rhino Soldier",
+    "oracleText": "This creature enters with a shield counter on it. (If it would be dealt damage or destroyed, remove a shield counter from it instead.)\nThis creature has trample as long as it has a shield counter on it.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 3
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "TRAMPLE",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": {
+                        "statePredicates": [
+                            {
+                                "type": "HasCounter",
+                                "counterType": "SHIELD"
+                            }
+                        ]
+                    }
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "counterType": "SHIELD",
+                "count": 1,
+                "selfOnly": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "155",
+        "artist": "Gabor Szikszai",
+        "flavorText": "When all you have is a warhammer, every face looks like a nail.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/9/c99f5b02-16b9-4672-b0ec-f77662e9de76.jpg?1783923099",
+        "rulings": [
+            {
+                "date": "2022-04-29",
+                "text": "If an attacking Rhox Pummeler with one shield counter on it is blocked by a creature with first strike, the shield counter will be removed in the first combat damage step. In that case, Rhox Pummeler won't have trample when it deals combat damage in the second combat damage step."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -12024,6 +12974,65 @@
     ]
 }
 
+// Stimulus Package
+{
+    "name": "Stimulus Package",
+    "manaCost": "{2}{R}{G}",
+    "typeLine": "Enchantment",
+    "oracleText": "When this enchantment enters, create two Treasure tokens. (They're artifacts with \"{T}, Sacrifice this token: Add one mana of any color.\")\nSacrifice a Treasure: Create a 1/1 green and white Citizen creature token.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Stimulus Package:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Treasure",
+                    "count": 2
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Stimulus Package:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomSacrifice",
+                        "filter": "artifact Treasure"
+                    }
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "GREEN",
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Citizen"
+                    ]
+                },
+                "descriptionOverride": "Sacrifice a Treasure: Create a 1/1 green and white Citizen creature token."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "225",
+        "rarity": "UNCOMMON",
+        "artist": "Robin Olausson",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/c/ecbe7459-8613-4ab8-84dc-deab19c08511.jpg?1783923068"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "RED"
+    ]
+}
+
 // Strangle
 {
     "name": "Strangle",
@@ -12311,6 +13320,83 @@
     "colorIdentityOverride": [
         "BLUE",
         "BLACK"
+    ]
+}
+
+// Take to the Streets
+{
+    "name": "Take to the Streets",
+    "manaCost": "{4}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Creatures you control get +2/+2 until end of turn. Citizens you control get an additional +1/+1 and gain vigilance until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "target": "IterationEntity"
+                    }
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature Citizen ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "ModifyStats",
+                                "powerModifier": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "toughnessModifier": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "target": "IterationEntity"
+                            },
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "VIGILANCE",
+                                "target": "IterationEntity"
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "158",
+        "rarity": "UNCOMMON",
+        "artist": "Matt Forsyth",
+        "flavorText": "No institution, however grand, can withstand the collective will of the people.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/b/2b4a5122-6922-4ab5-aa43-94cf2d7f9c8a.jpg?1783923101"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
