@@ -102,4 +102,18 @@ class BecomesCrewedTriggerTest : FunSpec({
         d.bothPass()
         d.getLifeTotal(d.player1) shouldBe life + 2
     }
+
+    test("a Vehicle that leaves before its crew ability resolves never becomes crewed") {
+        val d = driver()
+        val vehicle = d.putPermanentOnBattlefield(d.player1, "Every-Crew Test Vehicle")
+        val bear = d.putCreatureOnBattlefield(d.player1, "Grizzly Bears")
+        val life = d.getLifeTotal(d.player1)
+
+        d.submitSuccess(CrewVehicle(d.player1, vehicle, listOf(bear)))
+        d.moveToGraveyard(vehicle)
+        d.bothPass()
+
+        d.stackSize shouldBe 0
+        d.getLifeTotal(d.player1) shouldBe life
+    }
 })

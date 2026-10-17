@@ -9,6 +9,8 @@ import com.wingedsheep.mtg.sets.definitions.xln.cards.SleekSchooner
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.model.Deck
 import io.kotest.core.spec.style.FunSpec
+import io.kotest.matchers.collections.shouldContain
+import io.kotest.matchers.collections.shouldNotContain
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 
@@ -45,9 +47,10 @@ class MobilizerMechScenarioTest : FunSpec({
         game.state.projectedState.isCreature(schooner) shouldBe false
     }
 
-    test("can't target itself or an opponent's Vehicle, and may choose no target") {
+    test("only another Vehicle you control is a legal target, and choosing none animates nothing else") {
         val game = driver()
         val mech = game.putPermanentOnBattlefield(game.player1, "Mobilizer Mech")
+        val friendly = game.putPermanentOnBattlefield(game.player1, "Sleek Schooner")
         val opposing = game.putPermanentOnBattlefield(game.player2, "Sleek Schooner")
         val crew = listOf(
             game.putCreatureOnBattlefield(game.player1, "Grizzly Bears"),
@@ -57,16 +60,17 @@ class MobilizerMechScenarioTest : FunSpec({
         game.submitSuccess(CrewVehicle(game.player1, mech, crew))
         game.bothPass()
 
-        val decision = game.pendingDecision
-        if (decision is ChooseTargetsDecision) {
-            val legal = decision.legalTargets.values.flatten()
-            legal.contains(mech) shouldBe false
-            legal.contains(opposing) shouldBe false
-            game.submitTargetSelection(game.player1, emptyList()).error shouldBe null
-        }
+        val decision = game.pendingDecision.shouldBeInstanceOf<ChooseTargetsDecision>()
+        val legal = decision.legalTargets.values.flatten()
+        legal shouldContain friendly
+        legal shouldNotContain mech
+        legal shouldNotContain opposing
+
+        game.submitTargetSelection(game.player1, emptyList()).error shouldBe null
         if (game.stackSize > 0) game.bothPass()
 
         game.state.projectedState.isCreature(mech) shouldBe true
+        game.state.projectedState.isCreature(friendly) shouldBe false
         game.state.projectedState.isCreature(opposing) shouldBe false
     }
 })
