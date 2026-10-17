@@ -1853,6 +1853,10 @@ data class GrantMayPlayFromExileEffect(
      */
     val maxPlays: Int? = null
 ) : Effect {
+    init {
+        require(maxPlays == null || maxPlays >= 1) { "maxPlays must be at least 1, or null for unlimited" }
+    }
+
     override val description: String = buildString {
         val who = when {
             ownerControls -> "its owner"

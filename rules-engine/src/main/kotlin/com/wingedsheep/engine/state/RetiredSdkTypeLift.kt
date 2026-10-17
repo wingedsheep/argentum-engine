@@ -126,6 +126,18 @@ internal object RetiredSdkTypeLift {
         "GrantHexproofFromMulticoloredToGroup" to { old -> hexproofGrant(ProtectionScope.Multicolored, old) },
     )
 
+    /**
+     * Retired *fields* on current types. The may-play `singleUse` flag became a play cap:
+     * `GrantMayPlayFromExileEffect.maxPlays` in a card script, `MayPlayPermission.playsRemaining` on
+     * a stored grant. A true flag is a cap of one; a false one is the uncapped default.
+     */
+    private fun withoutRetiredFields(element: JsonObject, type: String?): JsonObject {
+        val singleUse = element["singleUse"] as? JsonPrimitive ?: return element
+        val capKey = if (type == "GrantMayPlayFromExile") "maxPlays" else "playsRemaining"
+        val rest = element - "singleUse"
+        return JsonObject(if (singleUse.content == "true") rest + (capKey to JsonPrimitive(1)) else rest)
+    }
+
     /** Returns [element] itself (no copy) when nothing in it needs rewriting — the common case. */
     fun lift(element: JsonElement): JsonElement = when (element) {
         is JsonArray -> {
@@ -134,7 +146,7 @@ internal object RetiredSdkTypeLift {
         }
         is JsonObject -> {
             val type = (element["type"] as? JsonPrimitive)?.takeIf { it.isString }?.content
-            val rewritten = type?.let { rewrites[it] }?.invoke(element) ?: element
+            val rewritten = withoutRetiredFields(type?.let { rewrites[it] }?.invoke(element) ?: element, type)
             val children = rewritten.mapValues { (_, value) -> lift(value) }
             if (rewritten === element && children.all { (key, value) -> value === element[key] }) element
             else JsonObject(children)

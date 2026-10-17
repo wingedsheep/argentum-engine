@@ -11,7 +11,10 @@ import com.wingedsheep.sdk.scripting.StaticAbility
 import com.wingedsheep.sdk.scripting.conditions.ComparisonOperator
 import com.wingedsheep.sdk.scripting.conditions.Condition
 import com.wingedsheep.sdk.scripting.conditions.TriggeringEntityWas
+import com.wingedsheep.engine.state.permissions.MayPlayPermission
+import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.effects.Effect
+import com.wingedsheep.sdk.scripting.effects.GrantMayPlayFromExileEffect
 import com.wingedsheep.sdk.scripting.effects.SkipDuration
 import com.wingedsheep.sdk.scripting.effects.SkipStepOrPhaseEffect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
@@ -29,6 +32,7 @@ import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.jsonObject
 
 /**
  * Games persisted before the SDK consolidation hold retired discriminators inside card scripts.
@@ -113,6 +117,24 @@ class RetiredSdkTypeLiftTest : FunSpec({
         )
         RetiredSdkTypeLift.lift(doc) shouldBe
             JsonObject(mapOf("cards" to JsonArray(listOf(JsonObject(mapOf("filter" to expected))))))
+    }
+
+    test("the retired may-play singleUse flag becomes a cap of one play, or drops out when false") {
+        val grant = GrantMayPlayFromExileEffect(from = "exiled", nonLandOnly = true)
+        val encodedGrant = json.encodeToJsonElement(Effect.serializer(), grant).jsonObject
+        lifted(Effect.serializer(), JsonObject(encodedGrant - "maxPlays" + ("singleUse" to JsonPrimitive(true)))) shouldBe
+            grant.copy(maxPlays = 1)
+        lifted(Effect.serializer(), JsonObject(encodedGrant - "maxPlays" + ("singleUse" to JsonPrimitive(false)))) shouldBe
+            grant
+
+        val permission = MayPlayPermission(
+            id = EntityId.of("perm"), cardIds = setOf(EntityId.of("card")), controllerId = EntityId.of("player"), timestamp = 1
+        )
+        val encodedPermission = json.encodeToJsonElement(MayPlayPermission.serializer(), permission).jsonObject
+        lifted(
+            MayPlayPermission.serializer(),
+            JsonObject(encodedPermission - "playsRemaining" + ("singleUse" to JsonPrimitive(true)))
+        ) shouldBe permission.copy(playsRemaining = 1)
     }
 
     test("a document with no retired type passes through as the same instance") {
