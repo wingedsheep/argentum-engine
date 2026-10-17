@@ -14,6 +14,7 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Filters
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Deck
+import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.ActivatedAbility
 import com.wingedsheep.sdk.scripting.GameObjectFilter
@@ -187,6 +188,27 @@ class ReconfigureTest : FunSpec({
         d.state.projectedState.isCreature(sash) shouldBe false
         d.state.projectedState.hasKeyword(other, Keyword.DOUBLE_STRIKE) shouldBe true
         d.state.projectedState.hasKeyword(bears, Keyword.DOUBLE_STRIKE) shouldBe false
+        withClue("the effect from the first host is latched off; only the new host's remains") {
+            d.state.floatingEffects.filter { it.duration == Duration.WhileAffectedAttachedToSource }
+                .map { it.sourceId } shouldBe listOf(other)
+        }
+    }
+
+    test("unattached and re-attached to the same creature: a fresh effect, and still not a creature") {
+        val d = driver()
+        val sash = d.putPermanentOnBattlefield(d.player1, blades.name)
+        val bears = d.putCreatureOnBattlefield(d.player1, "Grizzly Bears")
+
+        d.reconfigureOnto(sash, bears)
+        d.giveColorlessMana(d.player1, 2)
+        d.submit(ActivateAbility(d.player1, sash, unattachAbility.id)).outcome shouldBe Outcome.Done
+        d.bothPass()
+        d.state.projectedState.isCreature(sash) shouldBe true
+        d.state.floatingEffects.count { it.duration == Duration.WhileAffectedAttachedToSource } shouldBe 0
+
+        d.reconfigureOnto(sash, bears)
+        d.state.projectedState.isCreature(sash) shouldBe false
+        d.state.floatingEffects.count { it.duration == Duration.WhileAffectedAttachedToSource } shouldBe 1
     }
 
     test("when the equipped creature dies, the Equipment is unattached and is a creature again") {

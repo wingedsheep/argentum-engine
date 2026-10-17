@@ -63,7 +63,7 @@ object AttachmentMover {
             }
             card.typeLine.isEquipment ->
                 projected.isCreature(hostId) &&
-                    !(projected.isCreature(attachmentId) && !projected.hasKeyword(attachmentId, "RECONFIGURE")) &&
+                    !(projected.isCreature(attachmentId) && !projected.hasKeyword(attachmentId, Keyword.RECONFIGURE)) &&
                     !EnchantRestriction.hostProtectedFromAttachment(
                         state, projected, cardRegistry, attachmentId, card, hostId
                     ) &&
