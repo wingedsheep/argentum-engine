@@ -225,7 +225,10 @@ class PredicateEvaluator(
      * full confidence rather than reporting unknown. There is one caller today
      * ([CardPredicate.AbilitySourceMatches] against
      * [com.wingedsheep.engine.state.components.stack.ActivatedAbilityOnStackComponent.lastKnownSourceSnapshot],
-     * which does exactly that); a second one must too.
+     * which does exactly that). The second, the `firstEachTurn` gate of
+     * [com.wingedsheep.sdk.scripting.ReduceActivatedAbilityCost], reads snapshots built by
+     * `activationSourceSnapshot`, which populates every field this function answers directly; a
+     * third caller must do one or the other.
      */
     fun matchesSnapshot(
         state: GameState,

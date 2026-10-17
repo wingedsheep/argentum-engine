@@ -11045,7 +11045,8 @@ riders, matching how the engine already treats e.g. City of Brass's damage durin
   abilities and applies to every other equip ability its controller activates. Mutually exclusive with
   `onlyOwnEquip`.
 - `ReduceActivatedAbilityCost(filter, amount, manaFloor = 0, exhaustOnly = false, powerUpOnly = false,
-  onlyIfTargetIsSource = false, excludeManaAbilities = false, reach = ActivatedAbilityReach.MATCHING_PERMANENTS)`
+  onlyIfTargetIsSource = false, excludeManaAbilities = false, reach = ActivatedAbilityReach.MATCHING_PERMANENTS,
+  keyword = null, firstEachTurn = false)`
   — the activated abilities of permanents
   matching `filter` cost the dynamic `amount` of generic mana less to activate, with the mana in each
   cost floored
@@ -11101,6 +11102,18 @@ riders, matching how the engine already treats e.g. City of Brass's damage durin
   `ReduceActivatedAbilityCost(GroupFilter(GameObjectFilter.Any), DynamicAmounts.fixed(2), manaFloor = 1, excludeManaAbilities = true, reach = ActivatedAbilityReach.ACTIVATED_BY_YOU)`.
   Cycling and typecycling price through the `ManaCost` overload of
   `CastPermissionUtils.applyActivatedAbilityCostReduction`, after `{X}` is announced.
+  `firstEachTurn = true` narrows it to the **first** activated ability of a permanent matching
+  `filter.baseFilter` that the static's controller activates each turn — Tezzeret, Betrayer of Flesh:
+  "The first activated ability of an artifact you activate each turn costs {2} less to activate" →
+  `ReduceActivatedAbilityCost(GroupFilter(GameObjectFilter.Artifact), DynamicAmounts.fixed(2), firstEachTurn = true)`.
+  Only the controller's own activations are reduced. Every activation of a matching permanent's
+  ability counts toward "first" — mana abilities (manual or tapped by auto-pay), `{T}:` abilities
+  with nothing to reduce, crew and saddle — including ones made before the static's source arrived:
+  the engine records each player's activated permanents per turn
+  (`PermanentAbilitiesActivatedThisTurnComponent`, snapshotted as each activation begins) whether or
+  not such a static is out. The total cost is locked in at announcement, before mana abilities pay
+  it (CR 601.2f–h via CR 602.2b), so the ability being paid for is still the first. Requires the
+  default `MATCHING_PERMANENTS` reach.
 - `IncreaseActivatedAbilityCost(filter, amount)` — the taxing mirror of
   `ReduceActivatedAbilityCost`: activated abilities of sources matching `filter` cost `amount`
   generic mana **more** to activate. The two are summed into a single net delta before either is

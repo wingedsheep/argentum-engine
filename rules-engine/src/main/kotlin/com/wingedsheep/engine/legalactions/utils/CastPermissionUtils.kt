@@ -1095,6 +1095,9 @@ class CastPermissionUtils(
                             if (!targetsSource) continue
                         }
                         val owner = controllerId ?: continue
+                        if (ability.firstEachTurn &&
+                            (activatorId != owner || activatedMatchingPermanentThisTurn(state, entityId, owner, ability.filter))
+                        ) continue
                         val reaches = when (ability.reach) {
                             ActivatedAbilityReach.MATCHING_PERMANENTS -> sourceOnBattlefield &&
                                 activatedAbilityReductionApplies(state, entityId, ability.filter, sourceId)
@@ -1133,6 +1136,31 @@ class CastPermissionUtils(
             }
         }
         return net to floor
+    }
+
+    /**
+     * Whether [playerId] has already activated an ability of a permanent matching [filter] this turn
+     * — the "first … each turn" gate of a `firstEachTurn` [ReduceActivatedAbilityCost] (Tezzeret,
+     * Betrayer of Flesh). Reads the player's
+     * [com.wingedsheep.engine.state.components.player.PermanentAbilitiesActivatedThisTurnComponent],
+     * matching each source as it was when activated, so a permanent that has since left or changed
+     * types still answers as it was. Called while the cost is being determined, before the current
+     * activation is recorded, so the ability being priced never sees itself.
+     */
+    private fun activatedMatchingPermanentThisTurn(
+        state: GameState,
+        staticSourceId: EntityId,
+        playerId: EntityId,
+        filter: com.wingedsheep.sdk.scripting.filters.unified.GroupFilter,
+    ): Boolean {
+        val sources = state.getEntity(playerId)
+            ?.get<com.wingedsheep.engine.state.components.player.PermanentAbilitiesActivatedThisTurnComponent>()
+            ?.sources ?: return false
+        val context = PredicateContext(sourceId = staticSourceId, controllerId = playerId)
+        return sources.any { snapshot ->
+            !(filter.excludeSelf && snapshot.entityId == staticSourceId) &&
+                predicateEvaluator.matchesSnapshot(state, snapshot, filter.baseFilter, context)
+        }
     }
 
     /**

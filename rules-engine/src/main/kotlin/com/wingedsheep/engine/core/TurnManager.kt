@@ -200,6 +200,9 @@ class TurnManager(
                     // Exhaust activations reset each turn (Elvish Refueler's "you haven't
                     // activated an exhaust ability this turn" gate).
                     .with(ExhaustAbilitiesActivatedThisTurnComponent(count = 0))
+                    // Permanents whose abilities were activated reset each turn (Tezzeret, Betrayer
+                    // of Flesh's "first activated ability of an artifact you activate each turn").
+                    .without<com.wingedsheep.engine.state.components.player.PermanentAbilitiesActivatedThisTurnComponent>()
                     // Loyalty activations reset each turn (Kiora of Salt and Sand's gate).
                     .with(LoyaltyAbilitiesActivatedThisTurnComponent(count = 0))
                     // Cards discarded this turn reset for every player (Mayhem gate + Green Goblin count).

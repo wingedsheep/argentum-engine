@@ -1311,6 +1311,30 @@ data class ExhaustAbilitiesActivatedThisTurnComponent(
 ) : Component
 
 /**
+ * The permanents whose activated abilities this player has activated during the current turn,
+ * each as it was when the activation began — mana abilities included, whether activated by hand
+ * or tapped by auto-pay, crew and saddle included. Reset for every player at turn start by
+ * TurnManager.
+ *
+ * Read by a [com.wingedsheep.sdk.scripting.ReduceActivatedAbilityCost] with `firstEachTurn`
+ * (Tezzeret, Betrayer of Flesh — "The first activated ability of an artifact you activate each
+ * turn costs {2} less to activate"): the discount applies only while no recorded source matches
+ * the static's filter. Recording is independent of any such static being on the battlefield, so
+ * activations made before it arrived still count, as its ruling requires.
+ *
+ * Each entry is a lightweight [com.wingedsheep.engine.state.components.stack.EntitySnapshot]
+ * (see `activationSourceSnapshot`) carrying only the identity, controller, projected type line,
+ * sub/supertypes, keywords and token-ness — what `PredicateEvaluator.matchesSnapshot` answers.
+ * Only permanents are recorded: "an artifact" in rules text means an artifact permanent
+ * (CR 109.2), so a cycled artifact card is not one. Identical snapshots are stored once, so a
+ * repeated activation of the same unchanged permanent leaves the component untouched.
+ */
+@Serializable
+data class PermanentAbilitiesActivatedThisTurnComponent(
+    val sources: List<com.wingedsheep.engine.state.components.stack.EntitySnapshot> = emptyList()
+) : Component
+
+/**
  * Number of loyalty abilities (CR 606) this player has activated during the current turn. Reset to
  * 0 for every player at turn start by TurnManager. Backs
  * [com.wingedsheep.sdk.scripting.values.TurnTracker.LOYALTY_ABILITIES_ACTIVATED] — "if you've

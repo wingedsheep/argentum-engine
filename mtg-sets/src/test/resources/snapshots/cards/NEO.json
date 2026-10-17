@@ -5524,6 +5524,210 @@
     ]
 }
 
+// Tezzeret, Betrayer of Flesh
+{
+    "name": "Tezzeret, Betrayer of Flesh",
+    "manaCost": "{2}{U}{U}",
+    "typeLine": "Legendary Planeswalker — Tezzeret",
+    "oracleText": "The first activated ability of an artifact you activate each turn costs {2} less to activate.\n+1: Draw two cards. Then discard two cards unless you discard an artifact card.\n−2: Target artifact becomes an artifact creature. If it isn't a Vehicle, it has base power and toughness 4/4.\n−6: You get an emblem with \"Whenever an artifact you control becomes tapped, draw a card.\"",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Tezzeret, Betrayer of Flesh:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Hand"
+                                    },
+                                    "storeAs": "hand"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "hand",
+                                    "selection": {
+                                        "type": "ChooseExactly",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 2
+                                        }
+                                    },
+                                    "storeSelected": "discarded",
+                                    "prompt": "Choose 2 cards to discard, or 1 artifact card",
+                                    "restrictions": [
+                                        {
+                                            "type": "ReducedMinimumIfMatches",
+                                            "reducedMinimum": 1,
+                                            "filter": "artifact"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "discarded",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Graveyard"
+                                    },
+                                    "moveType": "Discard"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Draw two cards. Then discard two cards unless you discard an artifact card."
+            },
+            {
+                "id": "Tezzeret, Betrayer of Flesh:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -2
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "filter": "permanent Vehicle"
+                        }
+                    },
+                    "then": {
+                        "type": "AddCardType",
+                        "cardType": "CREATURE",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "otherwise": {
+                        "type": "BecomeCreature",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "power": {
+                            "type": "Fixed",
+                            "amount": 4
+                        },
+                        "toughness": {
+                            "type": "Fixed",
+                            "amount": 4
+                        },
+                        "duration": "Permanent"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "artifact"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Target artifact becomes an artifact creature. If it isn't a Vehicle, it has base power and toughness 4/4."
+            },
+            {
+                "id": "Tezzeret, Betrayer of Flesh:4",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -6
+                },
+                "effect": {
+                    "type": "CreateGlobalTriggeredAbility",
+                    "ability": {
+                        "id": "Tezzeret, Betrayer of Flesh:3",
+                        "trigger": {
+                            "type": "TapEvent",
+                            "filter": "artifact ctrl:you"
+                        },
+                        "binding": "ANY",
+                        "effect": {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        "descriptionOverride": "Whenever an artifact you control becomes tapped, draw a card."
+                    },
+                    "descriptionOverride": "Whenever an artifact you control becomes tapped, draw a card."
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "You get an emblem with \"Whenever an artifact you control becomes tapped, draw a card.\""
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ReduceActivatedAbilityCost",
+                "filter": {
+                    "baseFilter": "artifact"
+                },
+                "amount": {
+                    "type": "Fixed",
+                    "amount": 2
+                },
+                "firstEachTurn": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "84",
+        "rarity": "MYTHIC",
+        "artist": "Bryan Sola",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/1/2174d16e-4a78-4d27-b220-1086c40db83e.jpg?1783923892",
+        "rulings": [
+            {
+                "date": "2022-02-18",
+                "text": "Tezzeret, Betrayer of Flesh's first ability reduces the cost of the first activated ability of an artifact that you begin to activate each turn. The second ability (and any subsequent abilities) of an artifact you activate that turn won't cost {2} less to activate, even if the first ability you activated didn't cost any mana to begin with. Notably, this does not exclude mana abilities."
+            },
+            {
+                "date": "2022-02-18",
+                "text": "If you begin to activate an ability that costs mana before activating any mana abilities you need to pay for it, that ability will be the one to get Tezzeret's discount. The total cost for that ability becomes locked in, and then you can activate mana abilities to pay for it."
+            },
+            {
+                "date": "2022-02-18",
+                "text": "If you activate Tezzeret's second loyalty ability targeting a Vehicle, it will have its printed power and toughness."
+            },
+            {
+                "date": "2022-02-18",
+                "text": "If Tezzeret's second loyalty ability causes a Vehicle to become an artifact creature, it doesn't count as \"crewing\" that Vehicle for any ability that would trigger off of a Vehicle becoming crewed."
+            }
+        ]
+    },
+    "startingLoyalty": 4,
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // The Wandering Emperor
 {
     "name": "The Wandering Emperor",

@@ -1138,6 +1138,20 @@ sealed interface UnlockCostTarget {
  * [excludeManaAbilities] leaves mana abilities (CR 605) at full price — the same flag, with the
  * same meaning, as [IncreaseActivatedAbilityCost.excludeManaAbilities].
  *
+ * [firstEachTurn] narrows the reduction to the **first** activated ability of a matching permanent
+ * that the static's controller begins to activate each turn — Tezzeret, Betrayer of Flesh's "The
+ * first activated ability of an artifact you activate each turn costs {2} less to activate." →
+ * `ReduceActivatedAbilityCost(GroupFilter(GameObjectFilter.Artifact), DynamicAmounts.fixed(2), firstEachTurn = true)`.
+ * Only the controller's own activations are reduced ("you activate"), and only while they have
+ * activated no ability of a permanent matching [filter]'s `baseFilter` this turn. Every activation
+ * counts toward "first", whether or not it had mana to reduce: a `{T}:` ability, a mana ability
+ * (tapping an artifact for mana, sacrificing a Treasure — by hand or by auto-pay), crew. So does an
+ * activation made before this static's source was on the battlefield. The total cost is locked in
+ * as the ability is announced, before any mana ability is activated to pay it (CR 601.2f–h, via
+ * CR 602.2b), so the ability being paid for is still the first. It pairs with the default
+ * [ActivatedAbilityReach.MATCHING_PERMANENTS] reach: "an artifact" is an artifact permanent
+ * (CR 109.2), and permanents are what the turn's activations are remembered by.
+ *
  * @property filter Which permanents' activated abilities are cheaper (matched via projected state;
  *   use [GroupFilter.attachedCreature] for an Aura's enchanted permanent, [GroupFilter.source] for
  *   "this permanent's abilities", or a battlefield filter for a group). Under
@@ -1150,6 +1164,8 @@ sealed interface UnlockCostTarget {
  * @property onlyIfTargetIsSource When true, only activations that target this static's source are reduced.
  * @property excludeManaAbilities When true, mana abilities (CR 605) are not reduced.
  * @property reach Which activations the reduction sees — see [ActivatedAbilityReach].
+ * @property firstEachTurn When true, only the controller's first activation this turn of an ability
+ *   of a permanent matching [filter] is reduced (Tezzeret, Betrayer of Flesh).
  * @property keyword When set, only activations of that keyword ability (the ability's
  *   `ActivatedAbility.keyword` marker) are reduced — Silver-Fur Master's "Ninjutsu abilities you
  *   activate cost {1} less to activate" is
@@ -1166,8 +1182,15 @@ data class ReduceActivatedAbilityCost(
     val onlyIfTargetIsSource: Boolean = false,
     val excludeManaAbilities: Boolean = false,
     val reach: ActivatedAbilityReach = ActivatedAbilityReach.MATCHING_PERMANENTS,
-    val keyword: com.wingedsheep.sdk.core.Keyword? = null
+    val keyword: com.wingedsheep.sdk.core.Keyword? = null,
+    val firstEachTurn: Boolean = false
 ) : StaticAbility {
+    init {
+        require(!(firstEachTurn && reach == ActivatedAbilityReach.ACTIVATED_BY_YOU)) {
+            "firstEachTurn counts activations of permanents; use the MATCHING_PERMANENTS reach"
+        }
+    }
+
     override val description: String = buildString {
         val abilities = when {
             keyword != null -> "${keyword.displayName.lowercase()} abilities"
@@ -1175,7 +1198,11 @@ data class ReduceActivatedAbilityCost(
             powerUpOnly -> "power-up abilities"
             else -> "activated abilities"
         }
-        if (reach == ActivatedAbilityReach.ACTIVATED_BY_YOU) {
+        if (firstEachTurn) {
+            val noun = filter.baseFilter.description
+            val article = if (noun.firstOrNull()?.lowercaseChar() in setOf('a', 'e', 'i', 'o', 'u')) "an" else "a"
+            append("The first activated ability of $article $noun you activate each turn")
+        } else if (reach == ActivatedAbilityReach.ACTIVATED_BY_YOU) {
             append(if (keyword != null) "${keyword.displayName} abilities you activate" else "Abilities you activate")
             if (excludeManaAbilities) append(" that aren't mana abilities")
         } else if (onlyIfTargetIsSource) {

@@ -167,9 +167,15 @@ fun tapForMana(
     val tapped = outcome.state
     // Tapping for mana activates the source's mana ability, so auto-pay marks it "activated this
     // turn" exactly as the manual activation pipeline does.
-    val stamped = tapped.updateEntity(sourceId) { c ->
-        c.with((c.get<AbilityActivatedThisTurnComponent>() ?: AbilityActivatedThisTurnComponent()).withAnyActivated())
-    }
+    // ...and records it on the tapper's per-turn activation memory (Tezzeret, Betrayer of Flesh
+    // counts a mana ability as an artifact's first activated ability), snapshotted before the tap.
+    val stamped = recordPermanentActivation(
+        tapped.updateEntity(sourceId) { c ->
+            c.with((c.get<AbilityActivatedThisTurnComponent>() ?: AbilityActivatedThisTurnComponent()).withAnyActivated())
+        },
+        tapperId,
+        activationSourceSnapshot(state, sourceId),
+    )
     return stamped to listOfNotNull(outcome.turnedFaceUp, tapEvent, landTappedForManaEvent(state, sourceId, tapperId, producedColors))
 }
 

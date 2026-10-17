@@ -230,13 +230,18 @@ class ActivateAbilityHandler(
                 }
             }
         }
+        // The source as it was when the activation began — before a sacrifice or tap cost moves or
+        // changes it (a Treasure is gone once paid for) — for the per-turn activation memory.
+        val sourceSnapshot = com.wingedsheep.engine.core.activationSourceSnapshot(state, action.sourceId)
         val payment = when (val paid = costPayer.pay(state, activation, paymentContext)) {
             is ActivationPaymentOutcome.Paid -> paid.payment
             is ActivationPaymentOutcome.Failed -> return ExecutionResult.error(state, paid.reason)
         }
 
         // 4. Activation is complete: record it for the activation limits.
-        val recorded = recordActivation(payment.state, activation)
+        val recorded = com.wingedsheep.engine.core.recordPermanentActivation(
+            recordActivation(payment.state, activation), action.playerId, sourceSnapshot
+        )
 
         // Apply text replacement if the source has a TextReplacementComponent
         val effect = if (modal != null && action.chosenModes?.isEmpty() == true) {

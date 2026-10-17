@@ -196,6 +196,12 @@ class CrewVehicleHandler(
             )
         }
 
+        // ...and on the activator's per-turn memory of permanents whose abilities they activated
+        // (crewing a Vehicle is an artifact's activated ability to Tezzeret, Betrayer of Flesh).
+        currentState = com.wingedsheep.engine.core.recordPermanentActivation(
+            currentState, action.playerId, com.wingedsheep.engine.core.activationSourceSnapshot(state, action.vehicleId)
+        )
+
         // Create the crew ability effect: "this Vehicle becomes an artifact creature until end of
         // turn" (CR 702.122a). Only the CREATURE type is added (the Vehicle is already an artifact);
         // crew does NOT set power and toughness — the Vehicle keeps its printed P/T, so an earlier
