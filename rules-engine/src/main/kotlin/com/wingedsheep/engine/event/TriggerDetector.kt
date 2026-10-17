@@ -3109,9 +3109,12 @@ class TriggerDetector(
                                 }
                         }
                         // Per-permanent template ("a/another permanent") fires once per matching
-                        // batch member (CR 603.2c); batch template ("one or more") fires once.
+                        // batch member (CR 603.2c); batch template ("one or more") fires once,
+                        // binding the source itself when it qualifies (Esoteric Duplicator's "that
+                        // artifact"), else the first matching batch-mate.
                         val triggeringPermanents =
-                            if (trigger.perPermanent) eligible else eligible.take(1)
+                            if (trigger.perPermanent) eligible
+                            else listOfNotNull(eligible.firstOrNull { it == permanentId } ?: eligible.firstOrNull())
                         for (triggeringPermanentId in triggeringPermanents) {
                             triggers.add(
                                 PendingTrigger(
