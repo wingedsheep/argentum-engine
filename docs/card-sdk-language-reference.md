@@ -10146,7 +10146,9 @@ staticAbility {
 - `modification: CostModification` — `ReduceGeneric(amount)`, `ReduceGenericBy(source)` (generic
   reductions reach an `{X}` spell's announced X: CR 601.2f prices X as generic before reductions, so
   Spectral Denial's / Torch Breath's discount keeps paying into X once the printed generic is gone,
-  and the enumerator's `maxAffordableX` counts it — except when `xManaRestriction` keeps X apart),
+  and the hand-cast enumerator's `maxAffordableX` counts it. Applies to the printed and escape
+  costs; face casts and other alternative bases still price X symbolically, and `xManaRestriction`
+  keeps X apart),
   `ReduceColored(symbols)`, `ReduceColoredPerUnit(symbols, source)`,
   `ReduceColoredIfAnyTargetMatches(symbols, filter)` (target-gated **colored** reduction — the
   colored analogue of the `FixedIfAnyTargetMatches` reduction source, which only reduces generic;

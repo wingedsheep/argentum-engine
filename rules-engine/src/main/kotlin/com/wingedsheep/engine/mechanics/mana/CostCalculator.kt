@@ -1046,6 +1046,8 @@ class CostCalculator(
     ): Int {
         val printed = cardDef.manaCost
         if (!printed.hasX || !minCost.hasX || cardDef.script.xManaRestriction.isNotEmpty()) return 0
+        // Generic left over means every reduction found generic to take — nothing spills into X.
+        if (minCost.genericAmount > 0) return 0
         val probeMana = X_CREDIT_PROBE * printed.xCount
         val probed = calculateMinPossibleCost(state, cardDef, casterId, spellId, printed.withXAs(X_CREDIT_PROBE))
         return (probeMana - (probed.genericAmount - minCost.genericAmount)).coerceAtLeast(0)
