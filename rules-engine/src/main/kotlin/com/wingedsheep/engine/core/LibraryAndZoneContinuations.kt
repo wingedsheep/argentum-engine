@@ -490,5 +490,7 @@ data class CastAnyNumberFromCollectionContinuation(
     val maxTotalManaValue: Int? = null,
     /** "Play lands and cast spells from among them": a chosen land is played, not cast. */
     val playLands: Boolean = false,
+    /** Where each spell cast by the loop goes instead of its owner's graveyard ("exile them instead"). */
+    val insteadOfGraveyard: com.wingedsheep.sdk.scripting.effects.AfterResolveDestination? = null,
 ) : AnswerContinuation
 

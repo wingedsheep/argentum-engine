@@ -24,7 +24,8 @@ import kotlin.reflect.KClass
  *
  * Drives the "cast any number of spells from among them for free" loop **during resolution**.
  * One invocation = one loop iteration: it presents the controller a 0..1 [SelectCardsDecision]
- * over the cards in the collection that are still in exile, then pauses. The actual cast and
+ * over the cards in the collection that are still castable from where they were gathered — their
+ * owner's exile, hand or graveyard — then pauses. The actual cast and
  * the next iteration are run by `resumeCastAnyNumberFromCollection`
  * ([com.wingedsheep.engine.handlers.continuations.LibraryAndZoneContinuationResumer]), which
  * re-enters this effect over the remaining cards.
@@ -137,12 +138,15 @@ class CastAnyNumberFromCollectionWithoutPayingCostExecutor(
             maxCasts = effect.maxCasts,
             maxTotalManaValue = effect.maxTotalManaValue,
             playLands = effect.playLands,
+            insteadOfGraveyard = effect.insteadOfGraveyard,
         )
 
         return EffectResult.from(state.withPriority(controllerId).suspendForDecision(decision, continuation, emptyList()))
     }
 
     companion object {
+        private val CASTABLE_ZONES = listOf(Zone.EXILE, Zone.HAND, Zone.GRAVEYARD)
+
         /** A card's mana value off the stack — X counts as 0, which a free cast also forces (CR 107.3b). */
         fun manaValueOf(state: GameState, id: EntityId): Int =
             state.getEntity(id)?.get<CardComponent>()?.manaValue ?: 0
@@ -151,10 +155,14 @@ class CastAnyNumberFromCollectionWithoutPayingCostExecutor(
             state.getEntity(id)?.get<CardComponent>()?.typeLine?.isLand == true
     }
 
-    /** Cards from the collection that are still in their owner's exile (castable from there). */
+    /**
+     * Cards from the collection that are still in their owner's exile, hand or graveyard — the
+     * zones a synthesized cast takes a card from. A card cast earlier in the loop (now on the stack)
+     * or moved anywhere else since it was gathered drops out.
+     */
     private fun stillCastable(state: GameState, ids: List<EntityId>): List<EntityId> =
         ids.filter { id ->
             val ownerId = state.getEntity(id)?.get<OwnerComponent>()?.playerId ?: return@filter false
-            id in state.getZone(ZoneKey(ownerId, Zone.EXILE))
+            CASTABLE_ZONES.any { zone -> id in state.getZone(ZoneKey(ownerId, zone)) }
         }
 }

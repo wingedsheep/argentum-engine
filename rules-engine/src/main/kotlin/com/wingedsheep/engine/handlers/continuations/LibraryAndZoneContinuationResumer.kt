@@ -1391,7 +1391,11 @@ class LibraryAndZoneContinuationResumer(
 
         val effects = listOf(
             if (playsLand) PlayFromCollectionWithoutPayingCostEffect(from = singleKey)
-            else CastFromCollectionWithoutPayingCostEffect(from = singleKey, payManaCost = continuation.payManaCost),
+            else CastFromCollectionWithoutPayingCostEffect(
+                from = singleKey,
+                payManaCost = continuation.payManaCost,
+                insteadOfGraveyard = continuation.insteadOfGraveyard,
+            ),
             CastAnyNumberFromCollectionWithoutPayingCostEffect(
                 from = continuation.from,
                 payManaCost = continuation.payManaCost,
@@ -1407,6 +1411,7 @@ class LibraryAndZoneContinuationResumer(
                     } else budget
                 },
                 playLands = continuation.playLands,
+                insteadOfGraveyard = continuation.insteadOfGraveyard,
             ),
         )
         val result = effectRunner.executeRemainingEffects(state, effects, loopContext)

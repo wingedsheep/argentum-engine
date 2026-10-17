@@ -2123,6 +2123,50 @@
     ]
 }
 
+// Invoke Calamity
+{
+    "name": "Invoke Calamity",
+    "manaCost": "{1}{R}{R}{R}{R}",
+    "typeLine": "Instant",
+    "oracleText": "You may cast up to two instant and/or sorcery spells with total mana value 6 or less from your graveyard and/or hand without paying their mana costs. If those spells would be put into your graveyard, exile them instead. Exile Invoke Calamity.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromMultipleZones",
+                        "zones": [
+                            "Graveyard",
+                            "Hand"
+                        ],
+                        "filter": "instant|sorcery"
+                    },
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "CastAnyNumberFromCollectionWithoutPayingCost",
+                    "from": "gathered0",
+                    "maxCasts": 2,
+                    "maxTotalManaValue": 6,
+                    "insteadOfGraveyard": "EXILE"
+                }
+            ]
+        },
+        "selfExileOnResolve": true
+    },
+    "metadata": {
+        "collectorNumber": "147",
+        "rarity": "RARE",
+        "artist": "Svetlin Velinov",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/e/fe666c86-6734-4c47-9244-bcd26b54068d.jpg?1783923866"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Jukai Naturalist
 {
     "name": "Jukai Naturalist",

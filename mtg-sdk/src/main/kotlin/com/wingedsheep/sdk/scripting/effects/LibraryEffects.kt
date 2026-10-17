@@ -550,7 +550,7 @@ data class PlayFromCollectionWithoutPayingCostEffect(
  * once nothing fits. A free cast has X = 0 (CR 107.3b), so a card's mana value off the stack is the
  * mana value it is cast with. Like [maxCasts], it is only wired for the free form.
  *
- * @property from Name of the collection of already-exiled candidate cards.
+ * @property from Name of the collection of candidate cards (in exile, a hand or a graveyard).
  * @property payManaCost When true, each chosen card is cast paying its normal mana cost.
  * @property maxCasts Maximum number of cards that may still be cast by this loop, or `null`
  *   for no cap. A value of `0` or less makes the effect a no-op. Only meaningful alongside the
@@ -563,9 +563,22 @@ data class PlayFromCollectionWithoutPayingCostEffect(
  * normal land-play path (a special action, CR 116.2a), so it uses up that land play; it is not a
  * spell, so it spends none of a [maxCasts] / [maxTotalManaValue] budget.
  *
+ * **Where the cards may be.** The candidates are cast from wherever they sit in their owner's
+ * exile, hand or graveyard — usually exile (the cards were gathered and exiled upstream), but
+ * Invoke Calamity gathers straight from "your graveyard and/or hand" and casts from there. A card
+ * that has left those zones since it was gathered (cast, put onto the battlefield, back into a
+ * library) is dropped from the pool.
+ *
+ * **Where the spells go.** [insteadOfGraveyard] is the cast-this-way rider "If those spells would
+ * be put into your graveyard, exile them instead" (Invoke Calamity): each spell cast by this loop
+ * goes there instead of its owner's graveyard — on resolution, when countered, or when it fizzles.
+ * The same rider, under the same name, as [CastFromCollectionWithoutPayingCostEffect.insteadOfGraveyard].
+ *
  * @property maxTotalManaValue Remaining total-mana-value budget for the casts, or `null` for no
  *   cap. Only meaningful alongside the default `payManaCost = false`.
  * @property playLands When true, land cards in the collection may be played as lands.
+ * @property insteadOfGraveyard Where each spell cast by this loop goes instead of its owner's
+ *   graveyard, or `null` for the normal destination.
  */
 @SerialName("CastAnyNumberFromCollectionWithoutPayingCost")
 @Serializable
@@ -575,6 +588,7 @@ data class CastAnyNumberFromCollectionWithoutPayingCostEffect(
     val maxCasts: Int? = null,
     val maxTotalManaValue: Int? = null,
     val playLands: Boolean = false,
+    val insteadOfGraveyard: AfterResolveDestination? = null,
 ) : Effect {
     override val description: String = buildString {
         append(if (playLands) "Play lands and cast spells from among " else "Cast ")
@@ -587,6 +601,12 @@ data class CastAnyNumberFromCollectionWithoutPayingCostEffect(
         )
         if (maxTotalManaValue != null) append(" with total mana value $maxTotalManaValue or less")
         if (!payManaCost) append(" without paying their mana costs")
+        when (insteadOfGraveyard) {
+            AfterResolveDestination.EXILE -> append(". If those spells would be put into a graveyard, exile them instead")
+            AfterResolveDestination.BOTTOM_OF_LIBRARY ->
+                append(". If those spells would be put into a graveyard, put them on the bottom of their owners' libraries instead")
+            else -> {}
+        }
     }
 }
 
