@@ -19,7 +19,6 @@ object StreetsOfNewCapennaSet : MtgSet {
     override val code = "SNC"
     override val displayName = "Streets of New Capenna"
     override val releaseDate = "2022-04-29"
-    override val incomplete = true
 
     override val cards: List<CardDefinition> by lazy {
         CardDiscovery.findIn(CARDS_PACKAGE)
