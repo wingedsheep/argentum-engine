@@ -93,9 +93,7 @@ class LethalDamageCheck(private val zones: ZoneTransitionService) : StateBasedAc
                 // "If <it> would be destroyed, instead …" (Crackling Emergence: "whether the
                 // enchanted land would be destroyed due to lethal damage or any other reason").
                 // The rest of the replacement is queued and runs before the next SBA pass.
-                val replacement = ZoneMovementUtils.findDestructionReplacement(
-                    newState, entityId, zones.predicateEvaluator, passStartState
-                )
+                val replacement = ZoneMovementUtils.findDestructionReplacement(passStartState, entityId, zones.predicateEvaluator)
                 if (replacement != null) {
                     newState = ZoneMovementUtils.applyDestructionReplacement(newState, entityId, replacement)
                     continue

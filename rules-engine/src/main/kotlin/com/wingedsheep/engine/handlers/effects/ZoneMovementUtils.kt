@@ -1330,22 +1330,20 @@ object ZoneMovementUtils {
      *        the state before the batch began, so an Aura destroyed by the same wipe still applies.
      */
     fun findDestructionReplacement(
-        state: GameState,
+        lookupState: GameState,
         entityId: EntityId,
-        predicateEvaluator: PredicateEvaluator,
-        lookupState: GameState = state
+        predicateEvaluator: PredicateEvaluator
     ): DestructionReplacement? {
         val projected = lookupState.projectedState
-        for (hostId in lookupState.getBattlefield()) {
-            val replacements = lookupState.getEntity(hostId)?.get<ReplacementEffectSourceComponent>()
-                ?.replacementEffects ?: continue
-            for (replacement in replacements) {
-                if (replacement !is ReplaceDestructionWith) continue
-                val controllerId = projected.getController(hostId) ?: continue
-                val context = PredicateContext(controllerId = controllerId, sourceId = hostId)
-                if (predicateEvaluator.matches(lookupState, projected, entityId, replacement.appliesTo.filter, context)) {
-                    return DestructionReplacement(hostId, controllerId, replacement.replacementEffect)
-                }
+        for (active in com.wingedsheep.engine.replacement.ActiveReplacements.all(lookupState)) {
+            val replacement = active.effect as? ReplaceDestructionWith ?: continue
+            // A printed replacement is one of its host's abilities: gone once the host loses them.
+            if (!active.granted &&
+                (projected.hasLostAllAbilities(active.sourceId) || projected.isFaceDown(active.sourceId))
+            ) continue
+            val context = PredicateContext(controllerId = active.controllerId, sourceId = active.sourceId)
+            if (predicateEvaluator.matches(lookupState, projected, entityId, replacement.appliesTo.filter, context)) {
+                return DestructionReplacement(active.sourceId, active.controllerId, replacement.replacementEffect)
             }
         }
         return null

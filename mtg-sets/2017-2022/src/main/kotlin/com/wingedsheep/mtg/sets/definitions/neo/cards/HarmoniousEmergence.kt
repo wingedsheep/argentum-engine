@@ -68,6 +68,7 @@ val HarmoniousEmergence = card("Harmonious Emergence") {
 
     metadata {
         rarity = Rarity.COMMON
+        flavorText = "Where the spirit and mortal realms overlap, the laws of reality are rewritten."
         collectorNumber = "190"
         artist = "Simon Dominic"
         imageUri = "https://cards.scryfall.io/normal/front/c/9/c92ff968-b436-4313-8375-8a3bb41f9892.jpg?1783923848"

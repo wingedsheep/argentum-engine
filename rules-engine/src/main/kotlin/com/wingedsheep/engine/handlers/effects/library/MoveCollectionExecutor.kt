@@ -955,7 +955,7 @@ class MoveCollectionExecutor(
                 }
                 // "If <it> would be destroyed, instead …" (Crackling Emergence), read off the
                 // pre-batch `state` for the same reason as umbra armor.
-                val replacement = ZoneMovementUtils.findDestructionReplacement(newState, cardId, zones.predicateEvaluator, state)
+                val replacement = ZoneMovementUtils.findDestructionReplacement(state, cardId, zones.predicateEvaluator)
                 if (replacement != null) {
                     newState = ZoneMovementUtils.applyDestructionReplacement(newState, cardId, replacement)
                     continue

@@ -10,8 +10,10 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.LoseAllAbilities
 import com.wingedsheep.sdk.scripting.ReplaceDestructionWith
 import com.wingedsheep.sdk.scripting.effects.SacrificeSelfEffect
+import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.targets.TargetObject
@@ -68,6 +70,15 @@ class ReplaceDestructionWithTest : ScenarioTestBase() {
         keywords(Keyword.INDESTRUCTIBLE)
     }
 
+    private val testSilence = card("Test Enchantment Silence") {
+        manaCost = "{U}"
+        typeLine = "Enchantment"
+        oracleText = "Auras lose all abilities."
+        staticAbility {
+            ability = LoseAllAbilities(GroupFilter(GameObjectFilter.Enchantment.withSubtype("Aura")))
+        }
+    }
+
     private fun baseScenario() = scenario()
         .withPlayers("Player", "Opponent")
         .withCardOnBattlefield(1, "Centaur Courser")
@@ -91,6 +102,7 @@ class ReplaceDestructionWithTest : ScenarioTestBase() {
         cardRegistry.register(testPurge)
         cardRegistry.register(testOffering)
         cardRegistry.register(testWall)
+        cardRegistry.register(testSilence)
 
         test("a destroy effect is replaced: the Aura is sacrificed and the creature gains indestructible") {
             val game = baseScenario()
@@ -171,6 +183,19 @@ class ReplaceDestructionWithTest : ScenarioTestBase() {
 
             game.isOnBattlefield("Test Iron Wall") shouldBe true
             game.isOnBattlefield("Test Emergence") shouldBe true
+        }
+
+        test("an Aura that has lost all its abilities no longer replaces the destruction") {
+            val game = baseScenario()
+                .withCardOnBattlefield(1, "Test Enchantment Silence")
+                .withCardInHand(1, "Doom Blade")
+                .withLandsOnBattlefield(1, "Swamp", 2)
+                .build()
+
+            game.castSpell(1, "Doom Blade", game.courser()).error shouldBe null
+            game.resolveStack()
+
+            game.isInGraveyard(1, "Centaur Courser") shouldBe true
         }
     }
 }

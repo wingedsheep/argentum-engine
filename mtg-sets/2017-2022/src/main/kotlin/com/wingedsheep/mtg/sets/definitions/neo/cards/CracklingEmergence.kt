@@ -64,6 +64,7 @@ val CracklingEmergence = card("Crackling Emergence") {
 
     metadata {
         rarity = Rarity.COMMON
+        flavorText = "The transition from spiritual to material is sometimes as shocking as it is beautiful."
         collectorNumber = "136"
         artist = "Jason Kang"
         imageUri = "https://cards.scryfall.io/normal/front/6/f/6f77f987-ebb7-4105-a67c-0987f50fc676.jpg?1783923870"
