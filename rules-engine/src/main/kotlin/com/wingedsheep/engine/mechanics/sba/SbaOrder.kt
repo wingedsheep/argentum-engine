@@ -24,6 +24,7 @@ object SbaOrder {
     const val BATTLE_DEFENSE = 550          // 704.5v/w (a battle at 0 defense)
     const val BATTLE_PROTECTOR = 560        // 704.5x/y (a battle with no legal protector)
     const val LEGEND_RULE = 600             // 704.5j
+    const val WORLD_RULE = 650              // 704.5k
     const val COUNTER_ANNIHILATION = 700    // 704.5q
     const val UNATTACHED_AURAS = 800        // 704.5m/n/p
     const val SOULBOND_UNPAIRING = 850      // 702.95e (a soulbond pair whose halves no longer qualify)

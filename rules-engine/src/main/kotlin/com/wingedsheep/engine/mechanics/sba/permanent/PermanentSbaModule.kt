@@ -20,6 +20,7 @@ class PermanentSbaModule(
         BattleDefenseCheck(zones),
         BattleProtectorCheck(zones),
         LegendRuleCheck(decisionHandler, cardRegistry, predicateEvaluator = zones.predicateEvaluator),
+        WorldRuleCheck(zones),
         CounterAnnihilationCheck(),
         UnattachedAurasCheck(zones, cardRegistry),
         SoulbondPairingCheck(),

@@ -1662,6 +1662,35 @@
     ]
 }
 
+// Gravity Sphere
+{
+    "name": "Gravity Sphere",
+    "manaCost": "{2}{R}",
+    "typeLine": "World Enchantment",
+    "oracleText": "All creatures lose flying.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "RemoveKeywordStatic",
+                "keyword": "FLYING",
+                "filter": {
+                    "baseFilter": "creature"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "151",
+        "rarity": "RARE",
+        "artist": "Brian Snõddy",
+        "flavorText": "On the morning of the Battle of Gal-Shan, the Sorcerer's cry rang out: \"Let no bird fly, let no creature take wing, let all the battle join as one.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/2/a2749332-e99a-4a0c-b3a3-5578b552fa11.jpg?1783948056"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Greed
 {
     "name": "Greed",
@@ -3748,6 +3777,56 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Storm World
+{
+    "name": "Storm World",
+    "manaCost": "{R}",
+    "typeLine": "World Enchantment",
+    "oracleText": "At the beginning of each player's upkeep, this enchantment deals X damage to that player, where X is 4 minus the number of cards in their hand.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Storm World:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Subtract",
+                        "left": {
+                            "type": "Fixed",
+                            "amount": 4
+                        },
+                        "right": {
+                            "type": "AggregateZone",
+                            "player": "TriggeringPlayer",
+                            "zone": "Hand"
+                        }
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "TriggeringPlayer"
+                    }
+                },
+                "descriptionOverride": "At the beginning of each player's upkeep, Storm World deals damage to that player equal to 4 minus the number of cards in their hand."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "165",
+        "rarity": "RARE",
+        "artist": "Christopher Rush",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/d/cdf0afa6-7003-454d-9b8a-e3328aaf29ed.jpg?1783948052"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 

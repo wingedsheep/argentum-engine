@@ -237,6 +237,9 @@ class ProjectedState(
     /** CR 205.4g — a snow permanent; its mana is the only mana that pays `{S}` (CR 107.4h). */
     fun isSnow(entityId: EntityId): Boolean = hasType(entityId, "SNOW")
 
+    /** CR 205.4f — a world permanent, subject to the world rule (CR 704.5k). */
+    fun isWorld(entityId: EntityId): Boolean = hasType(entityId, "WORLD")
+
     fun getSubtypes(entityId: EntityId): Set<String> = projectedValues[entityId]?.subtypes ?: emptySet()
 
     /**
