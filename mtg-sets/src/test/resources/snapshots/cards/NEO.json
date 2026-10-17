@@ -514,6 +514,81 @@
     "colorIdentityOverride": []
 }
 
+// Crackling Emergence
+{
+    "name": "Crackling Emergence",
+    "manaCost": "{1}{R}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant land you control\nEnchanted land is a 3/3 red Spirit creature with haste. It's still a land.\nIf enchanted land would be destroyed, instead sacrifice this Aura and that land gains indestructible until end of turn.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "AnimateLandGroup",
+                "filter": {
+                    "baseFilter": "land",
+                    "scope": "AttachedTo"
+                },
+                "power": 3,
+                "toughness": 3,
+                "creatureSubtypes": [
+                    "Spirit"
+                ],
+                "colors": [
+                    "RED"
+                ]
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "HASTE",
+                "filter": {
+                    "baseFilter": "land",
+                    "scope": "AttachedTo"
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "ReplaceDestructionWith",
+                "replacementEffect": {
+                    "type": "Composite",
+                    "effects": [
+                        "SacrificeSelf",
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "INDESTRUCTIBLE",
+                            "target": "TriggeringEntity"
+                        }
+                    ]
+                },
+                "appliesTo": {
+                    "filter": {
+                        "cardPredicates": [
+                            "IsLand"
+                        ],
+                        "statePredicates": [
+                            "IsAttachedToBySource"
+                        ]
+                    }
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "land ctrl:you"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "136",
+        "artist": "Jason Kang",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/f/6f77f987-ebb7-4105-a67c-0987f50fc676.jpg?1783923870"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Dockside Chef
 {
     "name": "Dockside Chef",
@@ -1448,6 +1523,89 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Harmonious Emergence
+{
+    "name": "Harmonious Emergence",
+    "manaCost": "{3}{G}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant land you control\nEnchanted land is a 4/5 green Spirit creature with vigilance and haste. It's still a land.\nIf enchanted land would be destroyed, instead sacrifice this Aura and that land gains indestructible until end of turn.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "AnimateLandGroup",
+                "filter": {
+                    "baseFilter": "land",
+                    "scope": "AttachedTo"
+                },
+                "power": 4,
+                "toughness": 5,
+                "creatureSubtypes": [
+                    "Spirit"
+                ],
+                "colors": [
+                    "GREEN"
+                ]
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "VIGILANCE",
+                "filter": {
+                    "baseFilter": "land",
+                    "scope": "AttachedTo"
+                }
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "HASTE",
+                "filter": {
+                    "baseFilter": "land",
+                    "scope": "AttachedTo"
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "ReplaceDestructionWith",
+                "replacementEffect": {
+                    "type": "Composite",
+                    "effects": [
+                        "SacrificeSelf",
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "INDESTRUCTIBLE",
+                            "target": "TriggeringEntity"
+                        }
+                    ]
+                },
+                "appliesTo": {
+                    "filter": {
+                        "cardPredicates": [
+                            "IsLand"
+                        ],
+                        "statePredicates": [
+                            "IsAttachedToBySource"
+                        ]
+                    }
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "land ctrl:you"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "190",
+        "artist": "Simon Dominic",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/9/c92ff968-b436-4313-8375-8a3bb41f9892.jpg?1783923848"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 

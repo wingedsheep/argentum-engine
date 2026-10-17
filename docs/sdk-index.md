@@ -1179,6 +1179,7 @@ Families:
 - `EventPattern.DamageReceivedEvent(source: GameObjectFilter?, recipient: GameObjectFilter?)` — When a permanent is dealt damage.
 - `EventPattern.DealsDamageEvent(damageType: DamageType, recipient: Recipient, sourceFilter: GameObjectFilter?, requires: Set<DamagePredicate>, requireExcess: Boolean, batch: Boolean)` — When a source deals damage.
 - `EventPattern.DesignationTakenEvent(designation: PlayerDesignation, player: Player)` — Whenever a player takes a single-holder designation — "when you take the initiative", "whenever you become the monarch".
+- `EventPattern.DestroyEvent(filter: GameObjectFilter)` — Replacement-only: a permanent matching filter would be **destroyed** (CR 701.8) — by a "destroy" effect or by the lethal-damage / deathtouch state-based actions (CR 704.5g, 704.5h).
 - `EventPattern.DieRolledEvent(player: Player, minimumResult: Int?, maximumResult: Int?)` — Each individual numerical die roll; scopes on its roller and final result.
 - `EventPattern.DiscardEvent(player: Player, cardFilter: GameObjectFilter?, batch: Boolean, firstTimeEachTurn: Boolean)` — When a player would discard a card.
 - `EventPattern.DiscoveredEvent(player: Player)` — Whenever player discovers (CR 701.57).
@@ -1540,6 +1541,7 @@ Families:
 - `RepeatKeywordAction(times: Int, appliesTo: EventPattern)` — Perform a keyword action (CR 701) times times instead of once (CR 614.1a) — "If you would proliferate, proliferate twice instead." The sibling of ModifyKeywordAction: that one puts an extra effect…
 - `ReplaceDamageWithCounters(counterType: CounterType, sacrificeThreshold: Int?, appliesTo: EventPattern, counterRecipient: DamageCounterRecipient, damagedPlayerMills: Boolean)` — Replace damage with counters (CR 614.1a — an "instead" effect, so the damage is never dealt and nothing that keys on damage being dealt sees it; notably *not* a prevention effect, so it still appli…
 - `ReplaceDamageWithMill(appliesTo: EventPattern, miller: Player, multiplier: Int)` — Prevent matched damage and mill multiplier times that many cards — miller does the milling.
+- `ReplaceDestructionWith(replacementEffect: Effect, appliesTo: EventPattern.DestroyEvent)` — "If <permanent> would be destroyed, instead <effect>" — the destruction doesn't happen and replacementEffect runs in its place (CR 614.1a).
 - `ReplaceDrawWith(replacementEffect: Effect, optional: Boolean, appliesTo: EventPattern, restrictions: List<Condition>)` — Replace drawing with another effect.
 - `ReplaceLifeGainWith(replacementEffect: Effect, appliesTo: EventPattern.LifeGainEvent, restrictions: List<Condition>)` — Replace a life-gain event with an effect, without gaining life or using the stack.
 - `ReplaceLifePaymentWithLibraryExile(appliesTo: EventPattern)` — A life *payment* becomes an exile of that many cards off the top of the payer's library, so long as the library is deep enough to cover it.

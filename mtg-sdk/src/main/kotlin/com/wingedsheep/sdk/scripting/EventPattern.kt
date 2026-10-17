@@ -192,6 +192,25 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
         }
     }
 
+    /**
+     * Replacement-only: a permanent matching [filter] would be **destroyed** (CR 701.8) — by a
+     * "destroy" effect or by the lethal-damage / deathtouch state-based actions (CR 704.5g, 704.5h).
+     * Narrower than [ZoneChangeEvent] to the graveyard: a sacrifice, a 0-toughness death (CR
+     * 704.5f) or a legend-rule move is not a destruction and never matches. The filter is evaluated
+     * relative to the replacement's source, so `attachedToBySource()` reads "enchanted permanent".
+     * An indestructible permanent is never destroyed, so it never matches either.
+     */
+    @SerialName("DestroyEvent")
+    @Serializable
+    data class DestroyEvent(val filter: GameObjectFilter = GameObjectFilter.Any) : EventPattern {
+        override val description: String = "${describeObjectForEvent(filter)} would be destroyed"
+
+        override fun applyTextReplacement(replacer: TextReplacer): EventPattern {
+            val newFilter = filter.applyTextReplacement(replacer)
+            return if (newFilter !== filter) copy(filter = newFilter) else this
+        }
+    }
+
     // =========================================================================
     // Counter Events
     // =========================================================================

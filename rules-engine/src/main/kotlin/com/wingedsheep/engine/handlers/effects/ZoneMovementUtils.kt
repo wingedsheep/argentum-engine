@@ -11,6 +11,8 @@ import com.wingedsheep.engine.core.PermanentsSacrificedEvent
 import com.wingedsheep.engine.core.GameEvent as EngineGameEvent
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
+import com.wingedsheep.engine.replacement.PendingReplacementRider
+import com.wingedsheep.sdk.scripting.ReplaceDestructionWith
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
@@ -690,6 +692,11 @@ object ZoneMovementUtils {
             return applyUmbraArmor(zones, state, entityId, auraId, canRegenerate)
         }
 
+        // A printed "if <it> would be destroyed, instead …" (Crackling Emergence).
+        findDestructionReplacement(state, entityId, zones.predicateEvaluator)?.let { found ->
+            return EffectResult.success(applyDestructionReplacement(state, entityId, found))
+        }
+
         // "If it would die this turn, exile it instead" (Fanged Flames) covers destruction by effect too.
         val exiledState = consumeExileOnDeath(state, entityId)
         val result = zones.moveToZone(
@@ -1306,6 +1313,59 @@ object ZoneMovementUtils {
             })
         )
     }
+
+    /** A [ReplaceDestructionWith] that applies: the permanent printing it, its controller, what happens instead. */
+    data class DestructionReplacement(
+        val hostId: EntityId,
+        val controllerId: EntityId,
+        val effect: com.wingedsheep.sdk.scripting.effects.Effect
+    )
+
+    /**
+     * The battlefield [ReplaceDestructionWith] that replaces the destruction of [entityId], or null —
+     * "If enchanted land would be destroyed, instead sacrifice this Aura and …" (Crackling Emergence).
+     * The filter is read relative to the replacement's host, so `attachedToBySource()` is "enchanted".
+     *
+     * @param lookupState as for [findUmbraArmorAura]: for one of a simultaneous batch of destructions,
+     *        the state before the batch began, so an Aura destroyed by the same wipe still applies.
+     */
+    fun findDestructionReplacement(
+        state: GameState,
+        entityId: EntityId,
+        predicateEvaluator: PredicateEvaluator,
+        lookupState: GameState = state
+    ): DestructionReplacement? {
+        val projected = lookupState.projectedState
+        for (hostId in lookupState.getBattlefield()) {
+            val replacements = lookupState.getEntity(hostId)?.get<ReplacementEffectSourceComponent>()
+                ?.replacementEffects ?: continue
+            for (replacement in replacements) {
+                if (replacement !is ReplaceDestructionWith) continue
+                val controllerId = projected.getController(hostId) ?: continue
+                val context = PredicateContext(controllerId = controllerId, sourceId = hostId)
+                if (predicateEvaluator.matches(lookupState, projected, entityId, replacement.appliesTo.filter, context)) {
+                    return DestructionReplacement(hostId, controllerId, replacement.replacementEffect)
+                }
+            }
+        }
+        return null
+    }
+
+    /**
+     * Apply a [ReplaceDestructionWith]: [entityId] is not destroyed, and the printed "instead …" is
+     * queued as a [PendingReplacementRider] — part of the same replacement, so it runs before
+     * anything else happens: at the end of the destroying instruction, or inside the same
+     * state-based-action pass ([com.wingedsheep.engine.mechanics.StateBasedActionChecker]).
+     */
+    fun applyDestructionReplacement(state: GameState, entityId: EntityId, found: DestructionReplacement): GameState =
+        state.copy(
+            pendingReplacementRiders = state.pendingReplacementRiders + PendingReplacementRider(
+                effect = found.effect,
+                hostId = found.hostId,
+                controllerId = found.controllerId,
+                subjectId = entityId
+            )
+        )
 
     /**
      * Apply umbra armor's replacement (CR 702.89a): remove all damage marked on [entityId] and destroy

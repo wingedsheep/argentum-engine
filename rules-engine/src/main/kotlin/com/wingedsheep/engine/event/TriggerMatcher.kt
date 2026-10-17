@@ -859,6 +859,7 @@ class TriggerMatcher(
             is EventPattern.ControlChangeEvent -> false
             // Phase/step triggers are handled separately
             is EventPattern.TurnBeginEvent -> false // replacement-only, before any turn begins
+            is EventPattern.DestroyEvent -> false // replacement-only
             is EventPattern.StepEvent -> false
             // Creature-dealt-damage-by-source-dies triggers are handled separately
             is EventPattern.CreatureDealtDamageBySourceDiesEvent -> false

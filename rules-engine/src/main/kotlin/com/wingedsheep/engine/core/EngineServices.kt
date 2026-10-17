@@ -136,7 +136,7 @@ class EngineServices(
     val mulliganHandler = MulliganHandler(cardRegistry, effectExecutorRegistry::execute)
     val castPermissionUtils = CastPermissionUtils(cardRegistry, predicateEvaluator, conditionEvaluator)
     val legalityKernel = LegalityKernel(cardRegistry, conditionEvaluator)
-    val sbaChecker = StateBasedActionChecker(zones, cardRegistry = cardRegistry)
+    val sbaChecker = StateBasedActionChecker(zones, cardRegistry = cardRegistry, effectExecutor = effectExecutorRegistry::execute)
     val turnManager = TurnManager(
         zones,
         cardRegistry = cardRegistry,

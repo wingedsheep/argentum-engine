@@ -2815,6 +2815,44 @@ data class RedirectZoneChangeWith(
 }
 
 /**
+ * "If <permanent> would be destroyed, instead <effect>" — the destruction doesn't happen and
+ * [replacementEffect] runs in its place (CR 614.1a). Crackling Emergence / Harmonious Emergence:
+ * "If enchanted land would be destroyed, instead sacrifice this Aura and that land gains
+ * indestructible until end of turn."
+ *
+ * Applies to every destruction — a destroy effect, a board wipe, or the lethal-damage / deathtouch
+ * state-based actions — but not to a sacrifice or any other way of dying (the Emergence rulings).
+ * [replacementEffect] is the rest of the replacement: it uses no stack and runs before anything
+ * else happens — at the end of the destroying instruction, or inside the same state-based-action
+ * pass. Its source is this permanent ("this Aura"); the permanent that would have been destroyed is
+ * [com.wingedsheep.sdk.scripting.targets.EffectTarget.TriggeringEntity] ("that land").
+ *
+ * Not [RedirectZoneChangeWith]: that one still moves the permanent somewhere, and matches a zone
+ * change, which a sacrifice also is. Not the umbra armor keyword ([com.wingedsheep.sdk.core.Keyword.UMBRA_ARMOR]):
+ * a keyword's replacement is fixed by the rules (CR 702.89a), this one is whatever the card prints.
+ *
+ * @param replacementEffect what happens instead
+ * @param appliesTo which permanents' destruction this replaces, relative to this permanent
+ */
+@SerialName("ReplaceDestructionWith")
+@Serializable
+data class ReplaceDestructionWith(
+    val replacementEffect: Effect,
+    override val appliesTo: EventPattern.DestroyEvent
+) : ReplacementEffect {
+    override val description: String =
+        "If ${appliesTo.description}, instead ${replacementEffect.description.replaceFirstChar { it.lowercase() }}"
+
+    override fun applyTextReplacement(replacer: TextReplacer): ReplacementEffect {
+        val newAppliesTo = appliesTo.applyTextReplacement(replacer) as EventPattern.DestroyEvent
+        val newEffect = replacementEffect.applyTextReplacement(replacer)
+        return if (newAppliesTo !== appliesTo || newEffect !== replacementEffect)
+            copy(appliesTo = newAppliesTo, replacementEffect = newEffect)
+        else this
+    }
+}
+
+/**
  * When the rider of a [RedirectZoneChangeWith] happens relative to the replaced zone change.
  */
 @Serializable

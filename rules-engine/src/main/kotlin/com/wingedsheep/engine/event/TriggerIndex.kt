@@ -289,6 +289,7 @@ class TriggerIndex(
                 is SdkGameEvent.MutateEvent -> listOf(TriggerCategory.MUTATED)
                 is SdkGameEvent.CreatureTurnedFaceUpEvent -> listOf(TriggerCategory.TURN_FACE_UP)
                 is SdkGameEvent.TurnBeginEvent -> emptyList() // replacement-only
+                is SdkGameEvent.DestroyEvent -> emptyList() // replacement-only
                 is SdkGameEvent.StepEvent -> listOf(TriggerCategory.STEP)
                 is SdkGameEvent.CardsPutIntoGraveyardFromLibraryEvent -> listOf(TriggerCategory.LIBRARY_TO_GRAVEYARD)
                 is SdkGameEvent.CardsPutIntoYourGraveyardEvent -> listOf(TriggerCategory.ANY_TO_GRAVEYARD)

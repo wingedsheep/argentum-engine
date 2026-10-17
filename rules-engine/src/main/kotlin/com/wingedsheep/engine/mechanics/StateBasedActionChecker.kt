@@ -2,6 +2,9 @@ package com.wingedsheep.engine.mechanics
 
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.DecisionHandler
+import com.wingedsheep.engine.handlers.EffectContext
+import com.wingedsheep.engine.replacement.ReplacementRiders
+import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.engine.handlers.effects.ZoneTransitionService
 import com.wingedsheep.engine.mechanics.sba.StateBasedActionRegistry
 import com.wingedsheep.engine.mechanics.sba.creature.CreatureSbaModule
@@ -28,7 +31,13 @@ import com.wingedsheep.engine.state.GameState
  * [com.wingedsheep.engine.mechanics.sba.SbaOrder] order.
  */
 class StateBasedActionChecker(
-    private val registry: StateBasedActionRegistry
+    private val registry: StateBasedActionRegistry,
+    /**
+     * Runs the rest of a replacement effect an SBA applied (see [ReplacementRiders]) — a lethal-damage
+     * destruction replaced by "instead sacrifice this Aura and that land gains indestructible"
+     * (Crackling Emergence). It is part of the same event, so it runs before the next pass looks.
+     */
+    private val effectExecutor: ((GameState, Effect, EffectContext) -> EffectResult)? = null
 ) {
     /**
      * Backward-compatible constructor used by existing call sites.
@@ -36,8 +45,9 @@ class StateBasedActionChecker(
     constructor(
         zones: ZoneTransitionService,
         decisionHandler: DecisionHandler = DecisionHandler(),
-        cardRegistry: com.wingedsheep.engine.registry.CardRegistry
-    ) : this(buildDefaultRegistry(zones, decisionHandler, cardRegistry))
+        cardRegistry: com.wingedsheep.engine.registry.CardRegistry,
+        effectExecutor: ((GameState, Effect, EffectContext) -> EffectResult)? = null
+    ) : this(buildDefaultRegistry(zones, decisionHandler, cardRegistry), effectExecutor)
 
     /**
      * Check and apply all state-based actions until none apply.
@@ -81,14 +91,27 @@ class StateBasedActionChecker(
                 )
             }
 
-            actionsApplied = result.events.isNotEmpty()
-            lastIterationEvents = result.events
-            currentState = result.newState
-            allEvents.addAll(result.events)
+            val riders = runReplacementRiders(result)
+            if (riders.outcome is Outcome.Paused) {
+                return ExecutionResult.propagatePause(riders.state, allEvents + riders.events)
+            }
+
+            actionsApplied = riders.events.isNotEmpty()
+            lastIterationEvents = riders.events
+            currentState = riders.newState
+            allEvents.addAll(riders.events)
             iterations++
         } while (actionsApplied)
 
         return ExecutionResult.success(currentState, allEvents)
+    }
+
+    /** Run the replacement riders [pass] queued, so the next pass sees their result. */
+    private fun runReplacementRiders(pass: ExecutionResult): ExecutionResult {
+        val executor = effectExecutor ?: return pass
+        if (pass.state.pendingReplacementRiders.isEmpty()) return pass
+        val drained = ReplacementRiders.drain(pass.state, executor)
+        return ExecutionResult(drained.state, pass.events + drained.events, drained.outcome)
     }
 
     /**

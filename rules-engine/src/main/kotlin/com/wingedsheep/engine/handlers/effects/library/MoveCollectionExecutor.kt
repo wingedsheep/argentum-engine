@@ -953,6 +953,13 @@ class MoveCollectionExecutor(
                     events.addAll(umbraResult.events)
                     continue
                 }
+                // "If <it> would be destroyed, instead …" (Crackling Emergence), read off the
+                // pre-batch `state` for the same reason as umbra armor.
+                val replacement = ZoneMovementUtils.findDestructionReplacement(newState, cardId, zones.predicateEvaluator, state)
+                if (replacement != null) {
+                    newState = ZoneMovementUtils.applyDestructionReplacement(newState, cardId, replacement)
+                    continue
+                }
             }
 
             // Find current zone for controller override logic

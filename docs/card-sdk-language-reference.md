@@ -16722,6 +16722,20 @@ The priority groups are (CR 616.1a–f):
   from = Zone.BATTLEFIELD, to = Zone.GRAVEYARD))` — the linked cards are then retrieved by a
   `Creature.exiledWithSource()` target (see §7 state predicates). Honored across the same graveyard
   paths as `RedirectZoneChange`.
+- `ReplaceDestructionWith(replacementEffect, appliesTo = EventPattern.DestroyEvent(filter))` — "If <permanent>
+  would be destroyed, instead <effect>" (CR 614.1a). The permanent isn't destroyed and `replacementEffect`
+  runs in its place, as part of the same replacement: no stack, queued as a replacement rider that runs at
+  the end of the destroying instruction, or inside the same state-based-action pass (so a land creature
+  saved from lethal damage is indestructible before the next pass looks). Replaces **every** destruction —
+  a destroy effect, a board wipe (read off the pre-wipe board, so a wipe that also destroys the Aura still
+  saves the permanent), the lethal-damage and deathtouch SBAs — but never a sacrifice or a 0-toughness
+  death, which aren't destructions. An indestructible permanent is never destroyed, so the replacement
+  isn't spent. `DestroyEvent.filter` is read relative to this permanent (`attachedToBySource()` =
+  "enchanted"); inside `replacementEffect`, `EffectTarget.Self` is this permanent and
+  `EffectTarget.TriggeringEntity` is the permanent that would have been destroyed. Crackling Emergence /
+  Harmonious Emergence: `ReplaceDestructionWith(SacrificeSelfEffect then Effects.GrantKeyword(Keyword.INDESTRUCTIBLE,
+  EffectTarget.TriggeringEntity), EventPattern.DestroyEvent(GameObjectFilter.Land.attachedToBySource()))`.
+  Umbra armor (`Keyword.UMBRA_ARMOR`) is the keyworded sibling with a rules-fixed replacement.
 - `ReplacementEffect.IfYouDoBranchEffect(...)` — branch on "if you do" replacement.
 - `OnEnterRun(effect)` — generic "as ~ enters the battlefield, run [effect]". The wrapped effect
   executes via the normal effect-executor pipeline at entry time (so `EffectTarget.Self` resolves to

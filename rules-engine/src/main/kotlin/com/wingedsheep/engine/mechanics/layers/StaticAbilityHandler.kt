@@ -1389,6 +1389,7 @@ class StaticAbilityHandler(
             // Zone changes and turns:
             is com.wingedsheep.sdk.scripting.RedirectZoneChange,
             is com.wingedsheep.sdk.scripting.RedirectZoneChangeWith,
+            is com.wingedsheep.sdk.scripting.ReplaceDestructionWith,
             is com.wingedsheep.sdk.scripting.PreventExtraTurns,
             // Keyword-action modification, consulted from the battlefield when the action happens:
             // explore (Twists and Turns), connive (Leader, Super-Genius), proliferate (Tekuthal).
