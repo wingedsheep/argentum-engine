@@ -118,7 +118,10 @@ class ChaosOrbScenarioTest : ScenarioTestBase() {
             }
 
             test("let go too early and it falls short — onto your own creature in front of you") {
+                // The landing scatters about a centimetre from the game RNG and neighbouring cards sit about
+                // a centimetre apart, so an unlucky roll clips the wrong card. Pin the seed: test the aim.
                 val game = baseScenario()
+                    .withRngSeed(1L)
                     .withCardOnBattlefield(2, "Grizzly Bears")
                     .withCardOnBattlefield(1, "Hill Giant")
                     .build()
@@ -142,7 +145,10 @@ class ChaosOrbScenarioTest : ScenarioTestBase() {
             }
 
             test("let go mid-sway and it pulls sideways — onto the creature next to your target") {
+                // The landing scatters about a centimetre from the game RNG and neighbouring cards sit about
+                // a centimetre apart, so an unlucky roll clips the wrong card. Pin the seed: test the aim.
                 val game = baseScenario()
+                    .withRngSeed(1L)
                     .withCardOnBattlefield(2, "Grizzly Bears")
                     .withCardOnBattlefield(2, "Hill Giant")
                     .build()
