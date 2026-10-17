@@ -236,13 +236,15 @@ data class SpellOnStackComponent(
     /** The spell has both split halves; copied with the spell and cleared when it leaves the stack. */
     val castFused: Boolean = false,
     /**
-     * Names of the "as you cast this spell" condition captures (CR 601.2i) whose condition was true
-     * the moment this spell finished being cast. Frozen here so the resolving effect can branch on
-     * the cast-time board via [com.wingedsheep.sdk.scripting.conditions.CastTimeFlagSet] even after
-     * the board has changed (e.g. Steer Clear's "if you controlled a Mount as you cast this spell").
-     * Declared on the card via the `captureAtCast` DSL.
+     * The "as you cast this spell" captures (CR 601.2i), by name, evaluated the moment this spell
+     * finished being cast. Frozen here so the resolving effect reads the cast-time board via
+     * [com.wingedsheep.sdk.scripting.values.DynamicAmount.CapturedAtCast] (Lethal Exploit's "for
+     * each modified creature you controlled as you cast this spell") or, for a 1/0 condition
+     * capture, [com.wingedsheep.sdk.scripting.conditions.CastTimeFlagSet] (Steer Clear's "if you
+     * controlled a Mount as you cast this spell") even after the board has changed. Declared on the
+     * card via the `captureAtCast` DSL.
      */
-    val castTimeFlags: Set<String> = emptySet()
+    val castTimeValues: Map<String, Int> = emptyMap()
 ) : Component
 
 /**

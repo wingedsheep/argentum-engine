@@ -739,7 +739,7 @@ class CastSpellHandler(
             faceIndex = action.faceIndex,
             castFused = action.castFused,
             spentManaProvenance = paid.payment.spentManaProvenance,
-            castTimeFlags = castTimeFlags(state, action, castTimeScript),
+            castTimeValues = castTimeValues(state, action, castTimeScript),
             // Every enumerated alternative-cost offer names its mechanic explicitly, so this is the
             // declared choice rather than a guess. Descriptive only — the rules consequences of each
             // mechanic ride the `was*` flags above.
@@ -749,17 +749,18 @@ class CastSpellHandler(
     }
 
     /**
-     * Evaluates the "as you cast this spell" condition captures (CR 601.2i). The spell has finished
-     * being cast (costs paid) but isn't on the stack yet; freezing the answers now lets the resolving
-     * effect read the cast-time board even if it has since changed (Steer Clear's "if you controlled
-     * a Mount as you cast this spell"). The caster is the controller; the captured names are carried
-     * onto SpellOnStackComponent.castTimeFlags.
+     * Evaluates the "as you cast this spell" captures (CR 601.2i). The spell has finished being cast
+     * (costs paid) but isn't on the stack yet; freezing the numbers now lets the resolving effect
+     * read the cast-time board even if it has since changed (Steer Clear's "if you controlled a Mount
+     * as you cast this spell", Lethal Exploit's "for each modified creature you controlled as you
+     * cast this spell"). The caster is the controller; the values are carried onto
+     * SpellOnStackComponent.castTimeValues.
      */
-    private fun castTimeFlags(state: GameState, action: CastSpell, castTimeScript: com.wingedsheep.sdk.model.CardScript?): Set<String> {
+    private fun castTimeValues(state: GameState, action: CastSpell, castTimeScript: com.wingedsheep.sdk.model.CardScript?): Map<String, Int> {
         val captures = castTimeScript?.castTimeCaptures.orEmpty()
-        if (captures.isEmpty()) return emptySet()
+        if (captures.isEmpty()) return emptyMap()
         val captureContext = EffectContext(sourceId = action.cardId, controllerId = action.playerId, targets = emptyList(), xValue = 0)
-        return captures.filter { conditionEvaluator.evaluate(state, it.condition, captureContext) }.map { it.flag }.toSet()
+        return captures.associate { it.captureName to conditionEvaluator.amounts.evaluate(state, it.value, captureContext) }
     }
 
     /**

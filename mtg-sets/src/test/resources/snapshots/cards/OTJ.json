@@ -18074,12 +18074,23 @@
         ],
         "castTimeCaptures": [
             {
-                "flag": "controlledMount",
-                "condition": {
-                    "type": "Exists",
-                    "player": "You",
-                    "zone": "Battlefield",
-                    "filter": "creature Mount"
+                "captureName": "controlledMount",
+                "value": {
+                    "type": "Conditional",
+                    "condition": {
+                        "type": "Exists",
+                        "player": "You",
+                        "zone": "Battlefield",
+                        "filter": "creature Mount"
+                    },
+                    "ifTrue": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "ifFalse": {
+                        "type": "Fixed",
+                        "amount": 0
+                    }
                 }
             }
         ]

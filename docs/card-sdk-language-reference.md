@@ -14703,9 +14703,9 @@ Other gates available in both contexts:
   generic slot reader new cards should prefer over per-slot conditions.
 - `CapturedAtCast("flag")` — the named **"as you cast this spell"** condition capture (CR 601.2i) was
   true the moment the spell was cast. Pairs with the spell DSL `captureAtCast("flag", condition)`: the
-  engine evaluates `condition` (caster as controller) as the spell finishes being cast and freezes the
-  names whose condition held onto `SpellOnStackComponent.castTimeFlags`; this reads the frozen answer at
-  resolution, so a later board change can't flip the branch. Distinct from the player-choice slot guards
+  engine evaluates `condition` (caster as controller) as the spell finishes being cast and freezes it as
+  a 1/0 number onto `SpellOnStackComponent.castTimeValues`; this reads the frozen answer at resolution
+  (true when positive), so a later board change can't flip the branch. Distinct from the player-choice slot guards
   above — those read what the player *chose*, this reads whether a game condition *held*. Used by Steer
   Clear ("deals 4 damage instead if you controlled a Mount as you cast this spell"):
 
@@ -14718,6 +14718,21 @@ Other gates available in both contexts:
           effect = Effects.DealDamage(4, creature),
           elseEffect = Effects.DealDamage(2, creature),
       )
+  }
+  ```
+
+  The numeric form is
+  `captureAtCast("name", amount)` read with `DynamicAmounts.capturedAtCast("name")`
+  (`DynamicAmount.CapturedAtCast`) — "for each modified creature you controlled as you cast this
+  spell" (Lethal Exploit) counts the cast-time board:
+
+  ```kotlin
+  spell {
+      captureAtCast("modifiedCreatures", DynamicAmounts.battlefield(Player.You,
+          GameObjectFilter.Creature.withStatePredicate(StatePredicate.IsModified)).count())
+      val creature = target(TargetFilter.Creature)
+      val captured = DynamicAmounts.capturedAtCast("modifiedCreatures")
+      effect = Effects.ModifyStats(-2, -2, creature) then Effects.ModifyStats(-captured, -captured, creature)
   }
   ```
 
@@ -14754,7 +14769,7 @@ forbids `DynamicAmount.X` in card definitions.
   `a / 2` (**rounded down**, like `Int` division), `a divRoundedUp 2` (**rounded up**). Card text
   always says which rounding; pick the matching spelling. `DynamicAmounts.max(a, b)`, `min(a, b)`,
   `nonNegative(a)` (`IfPositive`), `pow(2, x)` (`Power`), `conditional(condition, ifTrue, ifFalse)`.
-- **Named reads**: `xValue()`, `castX()`, `castChoice(slot)`, `convokedCreatureCount()` (the creatures that convoked this object, CR 702.51c), `storedNumber(name)` (a number a
+- **Named reads**: `xValue()`, `castX()`, `castChoice(slot)`, `capturedAtCast(name)` (a number frozen "as you cast this spell" by the spell's `captureAtCast(name, amount)` — see `CapturedAtCast` under Conditions), `convokedCreatureCount()` (the creatures that convoked this object, CR 702.51c), `storedNumber(name)` (a number a
   non-pipeline effect stored), `count(player, zone, filter)`, `battlefield(player, filter,
   excludeSelf).count() / sumPower() / sumToughness() / sumManaValue() / maxPower() / maxToughness() /
   maxManaValue() / minToughness() / distinctValues(p) / distinctNames() / largestSameNameGroup() / distinctColors() /

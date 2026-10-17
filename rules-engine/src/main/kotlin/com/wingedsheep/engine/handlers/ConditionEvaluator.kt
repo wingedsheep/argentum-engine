@@ -885,7 +885,7 @@ class ConditionEvaluator(
                 sourceId != null &&
                     state.getEntity(sourceId)
                         ?.get<com.wingedsheep.engine.state.components.stack.SpellOnStackComponent>()
-                        ?.castTimeFlags?.contains(condition.flag) == true
+                        ?.castTimeValues?.get(condition.flag)?.let { it > 0 } == true
             }
             is SacrificedPermanentHadSubtype -> ifResolution { evaluateSacrificedPermanentHadSubtype(condition, it) }
             is ExiledAsCostHadSubtype -> ifResolution { evaluateExiledAsCostHadSubtype(state, condition, it) }

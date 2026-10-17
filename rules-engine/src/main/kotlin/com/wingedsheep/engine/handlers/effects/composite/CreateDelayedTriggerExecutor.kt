@@ -329,6 +329,7 @@ class CreateDelayedTriggerExecutor(
         is DynamicAmount.AggregateBattlefield,
         is DynamicAmount.AggregateZone,
         is DynamicAmount.CastChoice,
+        is DynamicAmount.CapturedAtCast,
         DynamicAmount.CastX,
         is DynamicAmount.ContextProperty,
         is DynamicAmount.GraveyardRelativeCount,

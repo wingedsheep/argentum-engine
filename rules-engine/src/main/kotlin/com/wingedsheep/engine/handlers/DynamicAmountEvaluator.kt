@@ -173,6 +173,7 @@ class DynamicAmountEvaluator(
         is DynamicAmount.AggregateBattlefield,
         is DynamicAmount.AggregateZone,
         is DynamicAmount.CastChoice,
+        is DynamicAmount.CapturedAtCast,
         DynamicAmount.CastX,
         is DynamicAmount.ContextProperty,
         is DynamicAmount.Count,
@@ -273,6 +274,13 @@ class DynamicAmountEvaluator(
                     ?: context.xValue
                     ?: 0
             }
+
+            // A number frozen as the source spell was cast (CR 601.2i), read off the spell on the
+            // stack — the spell entity keeps its id across the hand→stack boundary, so the
+            // resolving effect's sourceId locates it.
+            is DynamicAmount.CapturedAtCast ->
+                context.sourceId?.let { state.getEntity(it) }
+                    ?.get<SpellOnStackComponent>()?.castTimeValues?.get(amount.captureName) ?: 0
 
             // A numeric value locked in for a ChoiceSlot, read off the durable cast-choices bag on
             // the source, falling back to the resolution context so an instant/sorcery that never

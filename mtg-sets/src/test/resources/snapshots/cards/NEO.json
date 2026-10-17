@@ -2396,6 +2396,107 @@
     ]
 }
 
+// Lethal Exploit
+{
+    "name": "Lethal Exploit",
+    "manaCost": "{1}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature gets -2/-2 until end of turn. It gets an additional -1/-1 until end of turn for each modified creature you controlled as you cast this spell. (Equipment, Auras you control, and counters are modifications.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": -2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": -2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Multiply",
+                        "amount": {
+                            "type": "CapturedAtCast",
+                            "captureName": "modifiedCreatures"
+                        },
+                        "multiplier": -1
+                    },
+                    "toughnessModifier": {
+                        "type": "Multiply",
+                        "amount": {
+                            "type": "CapturedAtCast",
+                            "captureName": "modifiedCreatures"
+                        },
+                        "multiplier": -1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ],
+        "castTimeCaptures": [
+            {
+                "captureName": "modifiedCreatures",
+                "value": {
+                    "type": "AggregateBattlefield",
+                    "player": "You",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "statePredicates": [
+                            "IsModified"
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "107",
+        "artist": "Sam Guay",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/d/8d8edf8f-c2bd-4fd1-8abf-d3162e068b17.jpg?1783923883",
+        "rulings": [
+            {
+                "date": "2022-02-18",
+                "text": "A creature with a counter on it is considered modified no matter what kind of counter it is or which player put it on that creature."
+            },
+            {
+                "date": "2022-02-18",
+                "text": "A creature that is equipped is considered modified no matter who controls the Equipment that's attached to it."
+            },
+            {
+                "date": "2022-02-18",
+                "text": "An Aura controlled by an opponent does not cause a creature you control to be modified."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Lion Sash
 {
     "name": "Lion Sash",

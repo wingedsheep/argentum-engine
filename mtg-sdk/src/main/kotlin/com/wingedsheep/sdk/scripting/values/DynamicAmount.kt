@@ -913,6 +913,22 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
     }
 
     /**
+     * A number frozen *as this spell was cast* (CR 601.2i) under [captureName] by the spell's
+     * `captureAtCast(name, amount)` declaration ([com.wingedsheep.sdk.scripting.CastTimeCapture]),
+     * read back at resolution off the spell on the stack. "For each modified creature you controlled
+     * as you cast this spell" (Lethal Exploit) counts the cast-time board, not the resolution-time
+     * one. Reads 0 when nothing was captured under [captureName] (e.g. the object isn't a cast spell).
+     *
+     * Distinct from [CastChoice]: that reads a number the player *chose* as they cast; this reads a
+     * number the *game state* held as they cast.
+     */
+    @SerialName("CapturedAtCast")
+    @Serializable
+    data class CapturedAtCast(val captureName: String) : DynamicAmount {
+        override val description: String = "the number of $captureName as this spell was cast"
+    }
+
+    /**
      * The total amount of mana paid from the pool to cast the current spell.
      *
      * Sums every per-color and colorless bucket recorded on the spell's stack object.

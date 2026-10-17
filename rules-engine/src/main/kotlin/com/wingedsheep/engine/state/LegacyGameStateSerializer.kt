@@ -13,7 +13,34 @@ class LegacySuspensionSerializationException(message: String) : SerializationExc
 
 /** Reads the former question/continuation representation; writes only the current representation. */
 object LegacyGameStateSerializer : JsonTransformingSerializer<GameState>(GameStateSerializer) {
-    override fun transformDeserialize(element: JsonElement): JsonElement = migrateLegacySuspensions(element)
+    override fun transformDeserialize(element: JsonElement): JsonElement =
+        migrateLegacySuspensions(migrateCastTimeFlags(element))
+}
+
+/**
+ * A spell on the stack used to record its "as you cast this spell" captures as the set of names whose
+ * condition held (`castTimeFlags`); it now records every capture as a number (`castTimeValues`), a
+ * condition capture being 1 when it held. Rewrites the former key wherever it appears.
+ */
+private fun migrateCastTimeFlags(element: JsonElement): JsonElement = when (element) {
+    is JsonArray -> {
+        val children = element.map(::migrateCastTimeFlags)
+        if (children.indices.all { children[it] === element[it] }) element else JsonArray(children)
+    }
+    is JsonObject -> {
+        val flags = element["castTimeFlags"] as? JsonArray
+        val children = element.mapValues { (_, value) -> migrateCastTimeFlags(value) }
+        when {
+            flags != null -> JsonObject(
+                (children - "castTimeFlags") + ("castTimeValues" to JsonObject(
+                    flags.associate { (it as JsonPrimitive).content to JsonPrimitive(1) }
+                ))
+            )
+            children.all { (key, value) -> value === element[key] } -> element
+            else -> JsonObject(children)
+        }
+    }
+    else -> element
 }
 
 private const val CORE = "com.wingedsheep.engine.core."

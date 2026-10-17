@@ -5553,12 +5553,23 @@
         ],
         "castTimeCaptures": [
             {
-                "flag": "controlledFaerie",
-                "condition": {
-                    "type": "Exists",
-                    "player": "You",
-                    "zone": "Battlefield",
-                    "filter": "creature Faerie"
+                "captureName": "controlledFaerie",
+                "value": {
+                    "type": "Conditional",
+                    "condition": {
+                        "type": "Exists",
+                        "player": "You",
+                        "zone": "Battlefield",
+                        "filter": "creature Faerie"
+                    },
+                    "ifTrue": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "ifFalse": {
+                        "type": "Fixed",
+                        "amount": 0
+                    }
                 }
             }
         ]

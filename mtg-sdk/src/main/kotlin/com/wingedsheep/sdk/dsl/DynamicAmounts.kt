@@ -62,6 +62,12 @@ object DynamicAmounts {
      */
     fun castX(): DynamicAmount = DynamicAmount.CastX
 
+    /**
+     * A number frozen as this spell was cast by its `captureAtCast(name, amount)` declaration —
+     * "for each modified creature you controlled as you cast this spell" ([DynamicAmount.CapturedAtCast]).
+     */
+    fun capturedAtCast(captureName: String): DynamicAmount = DynamicAmount.CapturedAtCast(captureName)
+
     /** A number the source locked in as it was cast (a chosen number, a blight amount, …). */
     fun castChoice(slot: com.wingedsheep.sdk.scripting.ChoiceSlot): DynamicAmount = DynamicAmount.CastChoice(slot)
 

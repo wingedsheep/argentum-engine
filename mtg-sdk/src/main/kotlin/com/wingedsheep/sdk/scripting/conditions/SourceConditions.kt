@@ -519,8 +519,8 @@ data class CastChoiceIs(
  * The reader half of the cast-time condition-capture mechanic
  * ([com.wingedsheep.sdk.scripting.CastTimeCapture]). A spell declares, via the `captureAtCast`
  * DSL, one or more named conditions evaluated the moment it finishes being cast; the engine records
- * the names that were true onto the spell on the stack. At resolution the spell's own effect reads
- * the recorded flag through this condition, so "deals 4 damage instead if you controlled a Mount as
+ * each as a 1/0 number onto the spell on the stack. At resolution the spell's own effect reads the
+ * recorded flag through this condition (true when the captured number is positive), so "deals 4 damage instead if you controlled a Mount as
  * you cast this spell" (Steer Clear) stays true even if the Mount has since left — the read is of
  * the frozen cast-time answer, not the current board.
  *

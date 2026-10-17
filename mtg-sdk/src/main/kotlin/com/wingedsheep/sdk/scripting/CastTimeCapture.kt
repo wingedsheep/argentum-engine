@@ -1,28 +1,31 @@
 package com.wingedsheep.sdk.scripting
 
-import com.wingedsheep.sdk.scripting.conditions.Condition
+import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import kotlinx.serialization.Serializable
 
 /**
- * One "as you cast this spell" condition capture (CR 601.2i).
+ * One "as you cast this spell" capture (CR 601.2i).
  *
- * A spell may carry a list of these. The engine evaluates each [condition] against the game state
- * the moment the spell finishes being cast (after costs are paid, before it goes on the stack) with
- * the caster as the controller, and records the [flag] names whose condition was true onto the spell
- * on the stack. The spell's resolving effect then branches on the frozen answer via
- * [com.wingedsheep.sdk.scripting.conditions.CastTimeFlagSet], so a later board change can't alter it.
+ * A spell may carry a list of these. The engine evaluates each [value] against the game state the
+ * moment the spell finishes being cast (after costs are paid, before it becomes cast) with the caster
+ * as the controller, and records the number under [captureName] onto the spell on the stack. The spell's
+ * resolving effect then reads the frozen number, so a later board change can't alter it:
+ *
+ * - a *numeric* capture ("for each modified creature you controlled as you cast this spell",
+ *   Lethal Exploit) is read with [com.wingedsheep.sdk.scripting.values.DynamicAmount.CapturedAtCast];
+ * - a *condition* capture ("if you controlled a Mount as you cast this spell", Steer Clear) is the
+ *   same thing with a 1/0 value — `DynamicAmount.Conditional(condition, 1, 0)` — read with
+ *   [com.wingedsheep.sdk.scripting.conditions.CastTimeFlagSet] (true when the number is positive).
  *
  * This is the cast-time sibling of the player-choice [ChoiceSlot] bag: those record what the player
- * *chose* as they cast; this records whether a game [condition] *held* as they cast. Declared with
- * the `captureAtCast(flag, condition)` DSL on a spell; read with `Conditions.CapturedAtCast(flag)`.
+ * *chose* as they cast; this records what the *game state* was as they cast. Declared with the
+ * `captureAtCast(name, amount)` / `captureAtCast(flag, condition)` DSL on a spell.
  *
- * Used by Steer Clear ("deals 4 damage instead if you controlled a Mount as you cast this spell").
- *
- * @property flag The capture name; the same name is read back by `CastTimeFlagSet`.
- * @property condition The condition to evaluate at cast time (e.g. "you control a Mount").
+ * @property captureName The capture name; the same name is read back by `CapturedAtCast` / `CastTimeFlagSet`.
+ * @property value The amount to evaluate at cast time (e.g. "the number of modified creatures you control").
  */
 @Serializable
 data class CastTimeCapture(
-    val flag: String,
-    val condition: Condition
+    val captureName: String,
+    val value: DynamicAmount
 )

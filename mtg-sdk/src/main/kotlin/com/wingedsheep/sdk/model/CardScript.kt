@@ -416,15 +416,16 @@ data class CardScript(
     val openingHandReveal: Effect? = null,
 
     /**
-     * "As you cast this spell" condition captures (CR 601.2i). Each is a named condition the engine
-     * evaluates the moment this spell finishes being cast; the names whose condition was true are
-     * frozen onto the spell on the stack and read back at resolution via
-     * [com.wingedsheep.sdk.scripting.conditions.CastTimeFlagSet]. Lets a spell branch on the
-     * cast-time board state rather than the (possibly changed) resolution-time board — e.g. Steer
-     * Clear "deals 4 damage instead if you controlled a Mount as you cast this spell".
+     * "As you cast this spell" captures (CR 601.2i). Each is a named amount the engine evaluates
+     * the moment this spell finishes being cast; the numbers are frozen onto the spell on the stack
+     * and read back at resolution via [com.wingedsheep.sdk.scripting.values.DynamicAmount.CapturedAtCast]
+     * (or, for a 1/0 condition capture, [com.wingedsheep.sdk.scripting.conditions.CastTimeFlagSet]).
+     * Lets a spell read the cast-time board state rather than the (possibly changed) resolution-time
+     * board — e.g. Steer Clear "deals 4 damage instead if you controlled a Mount as you cast this
+     * spell", Lethal Exploit "for each modified creature you controlled as you cast this spell".
      *
-     * Declared with the `captureAtCast(flag, condition)` DSL on a spell. Empty for the vast
-     * majority of spells.
+     * Declared with the `captureAtCast(name, amount)` / `captureAtCast(flag, condition)` DSL on a
+     * spell. Empty for the vast majority of spells.
      */
     val castTimeCaptures: List<CastTimeCapture> = emptyList()
 ) {

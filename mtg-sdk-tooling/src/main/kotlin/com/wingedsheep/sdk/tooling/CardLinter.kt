@@ -661,7 +661,7 @@ object CardLinter {
         CHOSEN("chosen value"),
         STRING_LIST("stored string list"),
         SUBTYPE_GROUPS("stored subtype groups"),
-        CAST_FLAG("cast-time flag"),
+        CAST_FLAG("cast-time capture"),
     }
 
     private enum class Kind { READ, WRITE, IGNORE }
@@ -736,7 +736,7 @@ object CardLinter {
         put("NoteCreatureType" to "storeAs", write(Space.CHOSEN))
         put("StoreCardName" to "storeAs", write(Space.CHOSEN))
         put("EachPlayerChoosesCreatureType" to "storeAs", write(Space.STRING_LIST))
-        put(null to "flag", write(Space.CAST_FLAG)) // CastTimeCapture (no discriminator)
+        put(null to "captureName", write(Space.CAST_FLAG)) // CastTimeCapture (no discriminator)
 
         // --- Readers -------------------------------------------------------------------------
         for (type in listOf(
@@ -784,6 +784,7 @@ object CardLinter {
         put("ExcludeSubtypesFromStored" to "storedKey", read(Space.STRING_LIST))
         put("HasSubtypeInEachStoredGroup" to "groupName", read(Space.SUBTYPE_GROUPS))
         put("CastTimeFlagSet" to "flag", read(Space.CAST_FLAG))
+        put("CapturedAtCast" to "captureName", read(Space.CAST_FLAG))
         // "becomes the chosen type/color" effects reading a ChooseOption result.
         for (type in listOf("SetCreatureSubtypes", "AddCreatureType", "AddSubtype", "SetLandType")) {
             put(type to "fromChosenValueKey", read(Space.CHOSEN))
@@ -800,7 +801,7 @@ object CardLinter {
         "from", "collection", "collectionName", "collections", "originalCollection",
         "controllerSnapshot", "pileA", "pileB", "variableName", "otherCollectionName",
         "storedKey", "groupName", "listName", "chosenValueKey", "chosenSubtypeKey",
-        "countVariable", "flag",
+        "countVariable", "flag", "captureName",
     )
 
     private fun isStoreField(field: String) =

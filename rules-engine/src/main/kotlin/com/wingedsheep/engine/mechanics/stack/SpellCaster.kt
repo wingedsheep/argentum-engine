@@ -121,7 +121,7 @@ internal class SpellCaster(
         castFused: Boolean = false,
         spentManaProvenance: com.wingedsheep.engine.mechanics.mana.SpentManaProvenance =
             com.wingedsheep.engine.mechanics.mana.SpentManaProvenance(),
-        castTimeFlags: Set<String> = emptySet(),
+        castTimeValues: Map<String, Int> = emptyMap(),
         alternativeCost: com.wingedsheep.engine.core.AlternativeCostType? = null,
         // Payment can tap or remove the source that made the origin visible. This immutable
         // input is consulted only while capturing the event; the event retains no GameState.
@@ -268,7 +268,7 @@ internal class SpellCaster(
             phyrexianLifePips = phyrexianLifePips,
             faceIndex = faceIndex,
             castFused = castFused,
-            castTimeFlags = castTimeFlags
+            castTimeValues = castTimeValues
         )
         newState = newState.updateEntity(cardId) { c ->
             withSpellComponents(
