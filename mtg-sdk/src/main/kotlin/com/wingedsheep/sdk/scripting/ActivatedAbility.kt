@@ -2,6 +2,7 @@ package com.wingedsheep.sdk.scripting
 
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.CounterType
+import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.conditions.Condition
@@ -133,6 +134,18 @@ data class ActivatedAbility(
      * be activated") both need to pick power-up abilities out of every other activated ability.
      */
     val isPowerUp: Boolean = false,
+    /**
+     * The keyword ability this activated ability *is*, when it is one — e.g. [Keyword.NINJUTSU] for
+     * the hand ability `ninjutsu("{cost}")` builds (CR 702.49a: "Ninjutsu is an activated
+     * ability…"). Null for an ordinary activated ability.
+     *
+     * It is how other cards name a keyword's activations without caring about the cost: "whenever
+     * you activate a ninjutsu ability" (Satoru Umezawa — [EventPattern.AbilityActivatedEvent.keyword])
+     * and "ninjutsu abilities you activate cost {1} less" (Silver-Fur Master —
+     * [ReduceActivatedAbilityCost.keyword]). A *granted* copy of the ability (Satoru's "each
+     * creature card in your hand has ninjutsu") carries the same marker, so it counts too.
+     */
+    val keyword: Keyword? = null,
     /**
      * True for a *boast* ability (Kaldheim, returning in Marvel Super Heroes; CR 702.142).
      * "Boast — [cost]: [effect]" means "[cost]: [effect]. Activate only if this creature attacked

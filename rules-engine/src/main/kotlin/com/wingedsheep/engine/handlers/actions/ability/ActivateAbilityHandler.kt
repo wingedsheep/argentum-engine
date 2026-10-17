@@ -529,6 +529,12 @@ class ActivateAbilityHandler(
             // nothing, so nothing else changes.
             exiledAsCostCards = if (effectiveCost.hasExileAtom()) payment.exiledAsCost else emptyList(),
             exiledAsCostSnapshots = if (effectiveCost.hasExileAtom()) payment.exiledAsCostSnapshots else emptyList(),
+            // Ninjutsu (CR 702.49c): what each attacker returned as the cost was attacking, read
+            // off the pre-payment state — once in hand it is a new object with no combat state.
+            returnedAttackerDefenders = action.costPayment?.bouncedPermanents.orEmpty().mapNotNull {
+                stateBeforeActivation.getEntity(it)
+                    ?.get<com.wingedsheep.engine.state.components.combat.AttackingComponent>()?.defenderId
+            },
             // "The discarded card" (Hisoka, Minamo Sensei) — the activation counterpart of a
             // spell's additional discard cost, read at resolution as EffectTarget.DiscardedAsCost.
             discardedAsCostCards = payment.discardedCards,

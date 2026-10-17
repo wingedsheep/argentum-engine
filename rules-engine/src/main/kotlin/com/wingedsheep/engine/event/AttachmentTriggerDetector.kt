@@ -245,6 +245,7 @@ class AttachmentTriggerDetector(
                 // Mirror the main matcher's two wordings (see TriggerMatcher.AbilityActivatedEvent):
                 // "without {T} in its activation cost" vs. "isn't a mana ability".
                 when {
+                    trigger.keyword != null -> event.keyword == trigger.keyword
                     trigger.requireExhaust -> event.isExhaust
                     trigger.requireNoTapInCost -> !event.costsTap
                     else -> !event.isManaAbility

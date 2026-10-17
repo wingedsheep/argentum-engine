@@ -919,14 +919,16 @@ class CastPermissionUtils(
         isExhaustAbility: Boolean = false,
         isPowerUpAbility: Boolean = false,
         isManaAbility: Boolean = false,
-        chosenTargetIds: List<EntityId>? = emptyList()
+        chosenTargetIds: List<EntityId>? = emptyList(),
+        abilityKeyword: com.wingedsheep.sdk.core.Keyword? = null,
     ): AbilityCost {
         if (sourceId == null) return cost
         val reduced =
             if (isPowerUpAbility) applyPowerUpSelfReduction(cost, state, sourceId) else cost
         val (net, manaFloor) =
             sumActivatedAbilityCostModifications(
-                state, sourceId, activatorId, isExhaustAbility, isPowerUpAbility, isManaAbility, chosenTargetIds
+                state, sourceId, activatorId, isExhaustAbility, isPowerUpAbility, isManaAbility, chosenTargetIds,
+                abilityKeyword
             )
         if (net == 0) return reduced
         // net > 0 reduces (floored), net < 0 taxes. A reduction can only shrink mana that is
@@ -1038,7 +1040,8 @@ class CastPermissionUtils(
      * projected state.
      *
      * An `exhaustOnly` reduction contributes nothing unless [isExhaustAbility] is set, and likewise
-     * a `powerUpOnly` one unless [isPowerUpAbility] is set. An `excludeManaAbilities` *increase*
+     * a `powerUpOnly` one unless [isPowerUpAbility] is set, and a `keyword` one unless
+     * [abilityKeyword] (the ability's `ActivatedAbility.keyword`) is that keyword. An `excludeManaAbilities` *increase*
      * contributes nothing when [isManaAbility] is set (Suppression Field). An
      * `onlyIfTargetIsSource` reduction contributes only when [chosenTargetIds] include the static's
      * own source (see [applyActivatedAbilityCostReduction] for the `null` enumeration case).
@@ -1050,7 +1053,8 @@ class CastPermissionUtils(
         isExhaustAbility: Boolean,
         isPowerUpAbility: Boolean,
         isManaAbility: Boolean,
-        chosenTargetIds: List<EntityId>?
+        chosenTargetIds: List<EntityId>?,
+        abilityKeyword: com.wingedsheep.sdk.core.Keyword?,
     ): Pair<Int, Int> {
         var net = 0
         var floor = 0
@@ -1065,6 +1069,7 @@ class CastPermissionUtils(
                     is com.wingedsheep.sdk.scripting.ReduceActivatedAbilityCost -> {
                         if (ability.exhaustOnly && !isExhaustAbility) continue
                         if (ability.powerUpOnly && !isPowerUpAbility) continue
+                        if (ability.keyword != null && ability.keyword != abilityKeyword) continue
                         if (ability.excludeManaAbilities && isManaAbility) continue
                         if (ability.onlyIfTargetIsSource) {
                             val targetsSource = chosenTargetIds?.contains(entityId)

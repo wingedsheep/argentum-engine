@@ -47,16 +47,6 @@ sealed interface KeywordAbility {
     val keyword: Keyword? get() = null
 
     /**
-     * Non-null for the ninjutsu-family alternative costs ([Sneak], [Ninjutsu]): the mana cost to
-     * put this card onto the battlefield tapped and attacking by returning an unblocked attacker
-     * you control to hand (CR 702.49 / 506.3a). The shared declare-blockers pipeline
-     * ([com.wingedsheep.engine] `SneakWindow` / `SneakCastEnumerator` / the cast handler / the
-     * stack resolver) keys off this single property, so a new reflavor of the mechanic only needs
-     * to override it — no new code path. Null for every other keyword ability.
-     */
-    val ninjutsuStyleCost: ManaCost? get() = null
-
-    /**
      * Simple keyword with no parameters.
      * Examples: Flying, Trample, Haste
      */
@@ -1177,7 +1167,6 @@ sealed interface KeywordAbility {
     @Serializable
     data class Sneak(val cost: ManaCost) : KeywordAbility {
         override val keyword: Keyword = Keyword.SNEAK
-        override val ninjutsuStyleCost: ManaCost get() = cost
         override val description: String = "Sneak $cost"
     }
 
@@ -1190,22 +1179,17 @@ sealed interface KeywordAbility {
      * "[cost], Return an unblocked attacker you control to hand: Put this card onto the
      * battlefield from your hand tapped and attacking."
      *
-     * The canonical rules keyword for the same mechanic [Sneak] reflavors. It's an alternative
-     * cost with a declare-blockers timing permission (CR 702.49b — legal only once blocked/
-     * unblocked status is assigned) and an additional cost (return one unblocked attacker you
-     * control to its owner's hand). A permanent put onto the battlefield this way enters tapped
-     * and attacking the same player/planeswalker/battle the returned creature was attacking
-     * (CR 506.3a) — for a card that isn't a creature as it enters, it just enters tapped.
-     *
-     * Behaviorally unified with [Sneak] via [ninjutsuStyleCost], so the engine's shared sneak
-     * pipeline drives it unchanged. Attach via the `ninjutsu("{cost}")` DSL helper on
-     * [com.wingedsheep.sdk.dsl.CardBuilder].
+     * Ninjutsu is an activated ability that functions only while the card is in its owner's hand
+     * (CR 702.49a) — the card is *put* onto the battlefield, never cast, so it can't be countered
+     * as a spell and "whenever you cast" doesn't see it. [Sneak] (CR 702.190) is the cast-based
+     * cousin. This keyword is the display marker; the behaviour is the hand-zone
+     * [ActivatedAbility] `ninjutsuAbility(cost)` builds, which the `ninjutsu("{cost}")` DSL helper
+     * on [com.wingedsheep.sdk.dsl.CardBuilder] adds alongside it.
      */
     @SerialName("Ninjutsu")
     @Serializable
     data class Ninjutsu(val cost: ManaCost) : KeywordAbility {
         override val keyword: Keyword = Keyword.NINJUTSU
-        override val ninjutsuStyleCost: ManaCost get() = cost
         override val description: String = "Ninjutsu $cost"
     }
 
@@ -1283,8 +1267,8 @@ sealed interface KeywordAbility {
      *
      * An alternative cost (like [Evoke]) whose payment bundles a non-mana portion — returning one
      * tapped creature you control to its owner's hand — alongside the [cost] mana. Unlike the
-     * ninjutsu family ([Sneak] / [Ninjutsu]) it carries **no** timing permission: the spell is
-     * web-slung at its normal timing, so this is not routed through [ninjutsuStyleCost]. The mana
+     * [Sneak] it carries **no** timing permission: the spell is web-slung at its normal timing,
+     * so it is not routed through the sneak window. The mana
      * value is unchanged by web-slinging (CR 118.9c) and any cost increases/reductions still apply
      * on top (CR 118.9d).
      *

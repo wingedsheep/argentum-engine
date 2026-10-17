@@ -27,6 +27,7 @@ import com.wingedsheep.engine.state.components.identity.OwnerComponent
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.effects.Effect
+import com.wingedsheep.sdk.scripting.effects.EnteringAttackDefender
 import com.wingedsheep.sdk.scripting.effects.FaceDownMode
 import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.effects.ZonePlacement
@@ -195,6 +196,10 @@ class MoveToZoneEffectExecutor(
             )
             resultState = counterState
             extraEvents.addAll(counterEvents)
+        }
+
+        if (actualDestZone == Zone.BATTLEFIELD && effect.placement == ZonePlacement.TappedAndAttacking) {
+            resultState = settleEnteringAttack(resultState, targetId, controllerId, effect, context)
         }
 
         // "Exile it with a stash counter on it" — one counter of the named type on the card once it
@@ -382,6 +387,46 @@ class MoveToZoneEffectExecutor(
                 toZone = toZone
             )
         )
+    }
+
+    /**
+     * Finish a tapped-and-attacking entry once the permanent has landed (and taken its entering
+     * counters, so a loyalty-gated animation such as Kaito, Bane of Nightmares' is visible):
+     *  - [EnteringAttackDefender.RETURNED_ATTACKER] re-aims the attack at the defender the creature
+     *    returned to pay the ability's cost was attacking (ninjutsu, CR 702.49c). If that defender
+     *    is no longer a legal attack target the permanent enters but is never attacking
+     *    (CR 506.3c), and likewise when the cost returned no attacker.
+     *  - A permanent that isn't a creature as it enters is never attacking (CR 506.3a).
+     */
+    private fun settleEnteringAttack(
+        state: GameState,
+        entityId: EntityId,
+        controllerId: EntityId,
+        effect: MoveToZoneEffect,
+        context: EffectContext,
+    ): GameState {
+        val defender = when (effect.attackDefender) {
+            EnteringAttackDefender.RETURNED_ATTACKER -> context.returnedAttackerDefenders.firstOrNull()?.takeIf {
+                com.wingedsheep.engine.mechanics.combat.CombatDefenders.isLegalEnteringAttackTarget(state, controllerId, it)
+            }
+            else -> state.getEntity(entityId)
+                ?.get<com.wingedsheep.engine.state.components.combat.AttackingComponent>()?.defenderId
+        }
+        if (defender == null || !state.projectedState.isCreature(entityId)) {
+            return state.updateEntity(entityId) {
+                it.without<com.wingedsheep.engine.state.components.combat.AttackingComponent>()
+            }
+        }
+        if (effect.attackDefender != EnteringAttackDefender.RETURNED_ATTACKER) return state
+        val updated = state.updateEntity(entityId) {
+            it.with(
+                com.wingedsheep.engine.state.components.combat.AttackingComponent(
+                    defender,
+                    defendingPlayerId = com.wingedsheep.engine.mechanics.combat.CombatDefenders.defendingPlayerOf(state, defender),
+                )
+            )
+        }
+        return com.wingedsheep.engine.mechanics.combat.AttackedPermanents.markAttacked(updated, defender)
     }
 
     /**

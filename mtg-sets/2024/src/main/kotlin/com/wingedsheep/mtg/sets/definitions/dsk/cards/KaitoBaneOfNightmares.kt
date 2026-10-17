@@ -34,11 +34,10 @@ import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
  * −2: Tap target creature. Put two stun counters on it.
  *
  * Implementation notes:
- *  - Ninjutsu reuses the engine's shared declare-blockers alternative-cost pipeline (see the
- *    `ninjutsu(...)` helper / `KeywordAbility.ninjutsuStyleCost`). Because Kaito's own static makes
- *    him a creature on your turn, when he's put onto the battlefield via ninjutsu during your
- *    combat he enters tapped and attacking the defender the returned creature was attacking
- *    (CR 506.3a).
+ *  - Ninjutsu is the hand-activated ability the `ninjutsu(...)` helper adds (CR 702.49a). Because
+ *    Kaito's own static makes him a creature on your turn, when he's put onto the battlefield via
+ *    ninjutsu during your combat he enters tapped and attacking the defender the returned
+ *    creature was attacking (CR 702.49c).
  *  - The animation is a *type-setting* continuous effect (CR ruling 2024-09-20): during your turn,
  *    while he has at least one loyalty counter, he stops being a planeswalker and is a 3/4 Ninja
  *    creature with hexproof. Modeled as conditional static abilities that add CREATURE + Ninja,

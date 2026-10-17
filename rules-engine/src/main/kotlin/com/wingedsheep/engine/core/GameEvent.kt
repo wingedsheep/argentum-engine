@@ -916,6 +916,11 @@ data class AbilityActivatedEvent(
      * removed two or more loyalty counters to activate it" (Way of the Mind Sculptor).
      */
     val loyaltyCountersRemoved: Int = 0,
+    /**
+     * The keyword ability the activated ability is (`ActivatedAbility.keyword`) — ninjutsu for a
+     * ninjutsu activation — for "whenever you activate a ninjutsu ability" (Satoru Umezawa).
+     */
+    val keyword: com.wingedsheep.sdk.core.Keyword? = null,
 ) : GameEvent
 
 /**

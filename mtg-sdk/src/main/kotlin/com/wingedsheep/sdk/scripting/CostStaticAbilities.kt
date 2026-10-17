@@ -1150,6 +1150,10 @@ sealed interface UnlockCostTarget {
  * @property onlyIfTargetIsSource When true, only activations that target this static's source are reduced.
  * @property excludeManaAbilities When true, mana abilities (CR 605) are not reduced.
  * @property reach Which activations the reduction sees — see [ActivatedAbilityReach].
+ * @property keyword When set, only activations of that keyword ability (the ability's
+ *   `ActivatedAbility.keyword` marker) are reduced — Silver-Fur Master's "Ninjutsu abilities you
+ *   activate cost {1} less to activate" is
+ *   `ReduceActivatedAbilityCost(GroupFilter(GameObjectFilter.Any), DynamicAmounts.fixed(1), reach = ActivatedAbilityReach.ACTIVATED_BY_YOU, keyword = Keyword.NINJUTSU)`.
  */
 @SerialName("ReduceActivatedAbilityCost")
 @Serializable
@@ -1161,16 +1165,18 @@ data class ReduceActivatedAbilityCost(
     val powerUpOnly: Boolean = false,
     val onlyIfTargetIsSource: Boolean = false,
     val excludeManaAbilities: Boolean = false,
-    val reach: ActivatedAbilityReach = ActivatedAbilityReach.MATCHING_PERMANENTS
+    val reach: ActivatedAbilityReach = ActivatedAbilityReach.MATCHING_PERMANENTS,
+    val keyword: com.wingedsheep.sdk.core.Keyword? = null
 ) : StaticAbility {
     override val description: String = buildString {
         val abilities = when {
+            keyword != null -> "${keyword.displayName.lowercase()} abilities"
             exhaustOnly -> "exhaust abilities"
             powerUpOnly -> "power-up abilities"
             else -> "activated abilities"
         }
         if (reach == ActivatedAbilityReach.ACTIVATED_BY_YOU) {
-            append("Abilities you activate")
+            append(if (keyword != null) "${keyword.displayName} abilities you activate" else "Abilities you activate")
             if (excludeManaAbilities) append(" that aren't mana abilities")
         } else if (onlyIfTargetIsSource) {
             append(abilities.replaceFirstChar { it.uppercase() })

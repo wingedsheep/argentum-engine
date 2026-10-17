@@ -1,7 +1,6 @@
 package com.wingedsheep.engine.scenarios
 
-import com.wingedsheep.engine.core.AlternativeCostType
-import com.wingedsheep.engine.core.CastSpell
+import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.combat.AttackingComponent
@@ -11,6 +10,7 @@ import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.dsl.ninjutsuAbility
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.scripting.AdditionalCostPayment
 import io.kotest.assertions.withClue
@@ -131,23 +131,22 @@ class KaitoBaneOfNightmaresScenarioTest : ScenarioTestBase() {
                     game.passPriority()
                 }
 
-                // Cast Kaito for his ninjutsu cost: pay {1}{U}{B} (auto-tap lands) and return the
-                // unblocked attacker to hand.
+                // Activate Kaito's ninjutsu from hand: pay {1}{U}{B} (auto-tap lands) and return the
+                // unblocked attacker to hand (CR 702.49a — an activated ability, not a cast).
                 val kaitoCardId = game.state.getHand(game.player1Id).first { id ->
                     game.state.getEntity(id)
                         ?.get<com.wingedsheep.engine.state.components.identity.CardComponent>()
                         ?.name == "Kaito, Bane of Nightmares"
                 }
-                val cast = game.execute(
-                    CastSpell(
+                val activation = game.execute(
+                    ActivateAbility(
                         playerId = game.player1Id,
-                        cardId = kaitoCardId,
-                        useAlternativeCost = true,
-                        alternativeCostType = AlternativeCostType.SNEAK,
-                        additionalCostPayment = AdditionalCostPayment(bouncedPermanents = listOf(attacker))
+                        sourceId = kaitoCardId,
+                        abilityId = ninjutsuAbility("{1}{U}{B}").id,
+                        costPayment = AdditionalCostPayment(bouncedPermanents = listOf(attacker))
                     )
                 )
-                withClue("Ninjutsu cast should succeed: ${cast.error}") { cast.error shouldBe null }
+                withClue("Ninjutsu activation should succeed: ${activation.error}") { activation.error shouldBe null }
                 game.resolveStack()
 
                 // The returned attacker is back in its owner's hand.

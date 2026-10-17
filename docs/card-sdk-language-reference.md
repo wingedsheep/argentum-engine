@@ -2632,6 +2632,7 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   One legal choice is taken without asking; none (outside combat, or a token controller who isn't the
   attacking player — CR 506.3b) means the tokens enter but aren't attacking. It needs `attacking = true`
   and `controller = null`, and isn't accepted inside a `CreateTokenBatch`.
+  A third value, `RETURNED_ATTACKER`, belongs to `MoveToZoneEffect` only (token effects reject it) — see that entry.
   `numericKeywords: List<KeywordAbility.Numeric>` gives the token keywords that carry an N, which a bare
   `Keyword` in `keywords` can't — "two 3/3 green Phyrexian Beast creature tokens with toxic 1" (Goliath
   Hatchery) is `numericKeywords = listOf(KeywordAbility.toxic(1))`. They land on the same components a card's
@@ -8092,6 +8093,10 @@ The shapes in this family, with their engine notes.
   `isExhaust` flag. The event is emitted as soon as the exhaust ability is put on the stack, so the triggered
   ability is stacked above it and resolves first (Adrenaline Jockey, Rangers' Aetherhive). This is the plain
   Aetherdrift wording, which counts an exhaust *mana* ability too.
+- `Triggers.you.activatesAbility(keyword = Keyword.NINJUTSU)` — you activate a **ninjutsu** ability (or any keyword
+  ability whose `ActivatedAbility.keyword` is set). Backed by `EventPattern.AbilityActivatedEvent(keyword = …)` and the
+  activation event's `keyword`. Counts a printed or a granted ninjutsu alike; Satoru Umezawa pairs it with
+  `oncePerTurn = true` for "This ability triggers only once each turn."
 - `Triggers.you.activatesAbility(loyalty = true)` / `Triggers.anOpponent.activatesAbility(loyalty = true)` — you / an opponent activates a
   **loyalty ability** (CR 606): `AbilityActivatedEvent(requireLoyalty = true)`, matched against the
   activation event's `isLoyalty` flag (set from `ActivatedAbility.isPlaneswalkerAbility`). Way of the
@@ -11002,6 +11007,10 @@ riders, matching how the engine already treats e.g. City of Brass's damage durin
   `ReduceActivatedAbilityCost(GroupFilter(GameObjectFilter.Creature.youControl(), excludeSelf = true), DynamicAmount.Fixed(3), powerUpOnly = true)`.
   It stacks with power-up's own reduction, which is applied first (CR 601.2f lets multiple reductions
   apply in any order).
+  `keyword = <Keyword>` narrows the reduction to activations of that keyword ability — the activated
+  ability's own `ActivatedAbility.keyword` marker. Silver-Fur Master: "Ninjutsu abilities you activate
+  cost {1} less to activate" →
+  `ReduceActivatedAbilityCost(GroupFilter(GameObjectFilter.Any), DynamicAmounts.fixed(1), reach = ActivatedAbilityReach.ACTIVATED_BY_YOU, keyword = Keyword.NINJUTSU)`.
   `onlyIfTargetIsSource = true` narrows it to activations that **target the static's own source** —
   Bladegraft Aspirant: "Activated abilities of Equipment you control that target this creature cost
   {1} less to activate" →
@@ -13146,19 +13155,28 @@ composite abilities).
   charges the sneak mana, returns the chosen attacker to hand, and stamps the sneak-was-paid flag; `StackResolver` enters a
   resolving permanent tapped and attacking. Read "its sneak cost was paid" via `Conditions.SneakCostWasPaid`.
 - `Ninjutsu(cost)` — `card { ninjutsu("{cost}") }` builder helper (CR 702.49). *"[cost], Return an unblocked attacker you
-  control to hand: Put this card onto the battlefield from your hand tapped and attacking."* **Mechanically identical to
-  `Sneak`** — Ninjutsu is the canonical rules keyword, `Sneak` its reflavor in the custom TMNT set — so both share the
-  engine's declare-blockers alternative-cost pipeline. The two keyword abilities expose their cost through one property,
-  `KeywordAbility.ninjutsuStyleCost`, which `SneakWindow`/`SneakCastEnumerator`/`CastSpellHandler` read; a new reflavor of
-  the mechanic only overrides that property. A card put onto the battlefield this way enters **tapped and attacking** the
-  same defender the returned creature was attacking (CR 506.3a); a card that isn't a creature as it enters (e.g. an
-  un-animated planeswalker) just enters tapped. Used by *Kaito, Bane of Nightmares* (DSK) — a planeswalker with ninjutsu
-  whose own static makes it a creature on your turn, so it can enter attacking.
+  control to hand: Put this card onto the battlefield from your hand tapped and attacking."* An **activated ability of the
+  card in hand** (CR 702.49a) — the card is *put* onto the battlefield, never cast, so it is not `Sneak` (CR 702.190, a
+  cast-based alternative cost) and "whenever you cast" never sees it. The helper adds the `KeywordAbility.Ninjutsu` display
+  marker plus `ninjutsuAbility(cost)`: an `ActivatedAbility` with `activateFromZone = Zone.HAND`, cost
+  `Costs.Composite(Costs.Mana(cost), Costs.ReturnToHand(GameObjectFilter.Creature.attacking().unblocked()))`, effect
+  `Effects.Move(EffectTarget.Self, Zone.BATTLEFIELD, placement = ZonePlacement.TappedAndAttacking, fromZone = Zone.HAND,
+  attackDefender = EnteringAttackDefender.RETURNED_ATTACKER)` and `keyword = Keyword.NINJUTSU`. Its timing is the cost:
+  an unblocked attacker exists from the declare blockers step through end of combat, so all three steps are open. The
+  card enters attacking the same player/planeswalker/battle the returned creature was attacking (CR 702.49c), never
+  attacking if that defender is gone (CR 506.3c), and just tapped if it isn't a creature as it enters (CR 506.3a).
+  `ninjutsuAbility(cost)` is also the grant shape — Satoru Umezawa's "each creature card in your hand has ninjutsu
+  {2}{U}{B}" is `GrantActivatedAbility(ninjutsuAbility("{2}{U}{B}"), GroupFilter(GameObjectFilter.Creature.ownedByYou()),
+  recipientZone = Zone.HAND)`. Name ninjutsu activations through the `keyword` axis:
+  `Triggers.you.activatesAbility(keyword = Keyword.NINJUTSU)` (Satoru) and
+  `ReduceActivatedAbilityCost(..., reach = ActivatedAbilityReach.ACTIVATED_BY_YOU, keyword = Keyword.NINJUTSU)`
+  (Silver-Fur Master). Used by *Kaito, Bane of Nightmares* (DSK) — a planeswalker with ninjutsu whose own static makes it
+  a creature on your turn, so it can enter attacking.
 - `WebSlinging(cost)` — `card { webSlinging("{cost}") }` builder helper (CR 702.188, Marvel's Spider-Man). An
   alternative cost bundling a non-mana portion: *"You may cast this spell by paying [cost] and returning a **tapped**
-  creature you control to its owner's hand rather than paying its mana cost."* Unlike `Sneak`/`Ninjutsu` it grants **no
+  creature you control to its owner's hand rather than paying its mana cost."* Unlike `Sneak` it grants **no
   timing permission** — the spell is web-slung at its **normal timing** (sorcery speed for creatures; any priority for the
-  instant *Spider-Sense*), so it is *not* routed through `ninjutsuStyleCost`. The mana value is unchanged (CR 118.9c) and
+  instant *Spider-Sense*), so it is *not* routed through the sneak window. The mana value is unchanged (CR 118.9c) and
   cost increases/reductions still apply on top (CR 118.9d). The helper attaches the `KeywordAbility.WebSlinging` display
   marker; all behavior is in the engine: the dedicated `WebSlingingCastEnumerator` surfaces a `CastWithAlternativeCost`
   (`AlternativeCostType.WEB_SLINGING`) at the card's normal timing while the player controls a tapped creature, with a
@@ -17396,6 +17414,12 @@ Counter effects live in §4 (`AddCounters`, `RemoveCounters`, `Proliferate`, `Mo
 - `MoveToZoneEffect(target, zone, faceDown?, byDestruction?, linked?)` — single-target move. Card
   definitions construct it via the facade `Effects.Move(target, destination, …)` (or the named
   shortcuts `Effects.Destroy/Exile/ReturnToHand/PutOnTopOfLibrary/ShuffleIntoLibrary/…`).
+  With `placement = ZonePlacement.TappedAndAttacking` onto the battlefield, `attackDefender` picks the
+  defender: `JOIN_SOURCE` (default — a player already defending, else the first opponent) or
+  `RETURNED_ATTACKER` — the player/planeswalker/battle the creature returned to pay the resolving
+  ability's cost was attacking (ninjutsu, CR 702.49c; captured at activation as
+  `returnedAttackerDefenders`). Either way a permanent that isn't a creature as it enters, or whose
+  defender is no longer a legal attack target, enters but is never attacking (CR 506.3a / 506.3c).
 - `MoveTrackedBattlefieldObjectEffect(target, destination, enteredBattlefieldTimestamp?)` — moves
   only the battlefield object identified by both entity ID and entry timestamp. When nested in a
   delayed trigger, target resolution snapshots the timestamp automatically. Use for delayed moves
@@ -17894,7 +17918,7 @@ Card authors rarely reference these directly; they are created/updated by the ma
   end step.", Jaxis) is not the keyword — compose it on `CreateTokenCopyOfTargetEffect`.
 - **Evoke** — `evoke = "{U}"`; pay alt cost, sacrifice on ETB.
 - **Sneak** — `sneak("{1}{U}")`; declare-blockers-step alt cost (pay mana + return an unblocked attacker you control to hand); a resolving permanent enters tapped and attacking the same defender. `Conditions.SneakCostWasPaid` reads the rider flag.
-- **Ninjutsu** — `ninjutsu("{1}{U}{B}")`; the canonical CR 702.49 keyword that **Sneak** reflavors. Same declare-blockers alt cost and tapped-and-attacking entry, shared via `KeywordAbility.ninjutsuStyleCost`. *Kaito, Bane of Nightmares* (DSK).
+- **Ninjutsu** — `ninjutsu("{1}{U}{B}")`; CR 702.49, a hand-activated ability (`ninjutsuAbility(cost)`, `keyword = Keyword.NINJUTSU`) that puts the card onto the battlefield tapped and attacking the returned creature's defender — not a cast, unlike its TMNT cousin **Sneak**. *Kaito, Bane of Nightmares* (DSK), *Satoru Umezawa*, *Silver-Fur Master* (NEO).
 - **Splice** — `splice("{2}{R}{R}")` (CR 702.47); reveal from hand as you cast an Arcane spell, pay the splice cost as an *additional* cost, and that spell gains this card's rules text — the card itself stays in hand. The spell keeps its own characteristics (702.47c); the spliced text resolves after the main spell's (702.47b) with its own targets. *Through the Breach* (CHK / INR).
 - **Earthbend** — `Effects.Earthbend(amount, target)` composes AnimateLand + GrantKeyword + AddCounters + granted
   self-triggers (no fake keyword). `amount` is an `Int` for "Earthbend N" (Earthbending Lesson) or a `DynamicAmount`

@@ -372,6 +372,10 @@ class LegacySuspensionMigrationTest : ScenarioTestBase() {
                 value.getValue("expiresAfterTurn") shouldBe JsonNull
                 value.getValue("expiryControllerId") shouldBe JsonNull
                 value - "expiresAfterTurn" - "expiryControllerId"
+            } else if (value["type"] == JsonPrimitive("MoveToZone")) {
+                // The entering-attack defender choice (ninjutsu, CR 702.49c) postdates the capture.
+                value.getValue("attackDefender") shouldBe JsonPrimitive("JOIN_SOURCE")
+                value - "attackDefender"
             } else value
             JsonObject(fields.mapValues { withoutPostCaptureCardDefaults(it.value) })
         }

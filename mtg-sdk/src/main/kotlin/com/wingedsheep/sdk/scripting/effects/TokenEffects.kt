@@ -76,6 +76,16 @@ enum class EnteringAttackDefender {
      * token enters but isn't attacking.
      */
     CONTROLLER_CHOOSES,
+
+    /**
+     * The same player, planeswalker or battle as the attacking creature returned to its owner's
+     * hand to pay the resolving ability's cost — ninjutsu (CR 702.49c). Only a single-card
+     * [MoveToZoneEffect] onto the battlefield takes it (token creation has no returned attacker to
+     * follow). If that defender is no longer a legal attack target as the card enters (a player
+     * who left, a planeswalker or battle no longer on the battlefield), the card enters but is
+     * never attacking (CR 506.3c).
+     */
+    RETURNED_ATTACKER,
 }
 
 /**
@@ -181,6 +191,7 @@ data class CreateTokenEffect(
     val attackDefender: EnteringAttackDefender = EnteringAttackDefender.JOIN_SOURCE,
 ) : Effect {
     init {
+        require(attackDefender != EnteringAttackDefender.RETURNED_ATTACKER) { "RETURNED_ATTACKER is for MoveToZoneEffect only" }
         require(attackDefender == EnteringAttackDefender.JOIN_SOURCE || (attacking && controller == null)) {
             "attackDefender = CONTROLLER_CHOOSES needs attacking = true and the effect controller as token controller"
         }
@@ -714,6 +725,7 @@ data class CreateTokenCopyOfTargetEffect(
 ) : Effect {
     init {
         require(attackedPlayer == null || attacking) { "attackedPlayer needs attacking = true" }
+        require(attackDefender != EnteringAttackDefender.RETURNED_ATTACKER) { "RETURNED_ATTACKER is for MoveToZoneEffect only" }
         require(attackDefender == EnteringAttackDefender.JOIN_SOURCE ||
             (attacking && attackedPlayer == null && controller == null)) {
             "attackDefender = CONTROLLER_CHOOSES needs attacking = true, no attackedPlayer and the effect controller as token controller"

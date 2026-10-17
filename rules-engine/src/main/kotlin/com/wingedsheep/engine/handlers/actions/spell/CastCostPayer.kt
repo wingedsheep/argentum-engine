@@ -427,7 +427,7 @@ internal class CastCostPayer(
         val action = ledger.action
         val wasSneaked = action.useAlternativeCost && cardDef != null &&
             action.altAllows(AlternativeCostType.SNEAK) &&
-            (cardDef.keywordAbilities.any { it.ninjutsuStyleCost != null } ||
+            (cardDef.keywordAbilities.any { it is com.wingedsheep.sdk.scripting.KeywordAbility.Sneak } ||
                 SneakWindow.graveyardSneakGrantCost(ledger.state, action.playerId, cardRegistry) != null)
         var sneakAttackDefenderId: EntityId? = null
         if (wasSneaked) {

@@ -231,6 +231,15 @@ data class EffectContext(
      * printed characteristics are the right answer.
      */
     val exiledAsCostSnapshots: List<EntitySnapshot> = emptyList(),
+    /**
+     * The players, planeswalkers or battles the attacking creatures returned to hand to pay this
+     * activation's cost were attacking, in payment order — ninjutsu's "enters attacking the same
+     * player, planeswalker, or battle as the creature that was returned" (CR 702.49c), read by a
+     * `MoveToZoneEffect` with `EnteringAttackDefender.RETURNED_ATTACKER`. Captured before the
+     * return, since the creature in hand is a new object with no combat state. Empty when the cost
+     * returned no attacker.
+     */
+    val returnedAttackerDefenders: List<EntityId> = emptyList(),
     /** LKI snapshots for [tappedPermanents] (Rule 113.7a). See [EntitySnapshot]. */
     val tappedEntitySnapshots: List<EntitySnapshot> = emptyList(),
     /**

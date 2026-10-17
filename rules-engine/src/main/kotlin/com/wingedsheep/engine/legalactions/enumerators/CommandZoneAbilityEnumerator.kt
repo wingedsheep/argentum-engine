@@ -71,7 +71,8 @@ class CommandZoneAbilityEnumerator : ActionEnumerator {
                 val effectiveCost = context.castPermissionUtils.applyActivatedAbilityCostReduction(
                     ability.cost, state, entityId, playerId, ability.isExhaust, ability.isPowerUp,
                     ability.isManaAbility,
-                    chosenTargetIds = if (ability.targetRequirements.isEmpty()) emptyList() else null
+                    chosenTargetIds = if (ability.targetRequirements.isEmpty()) emptyList() else null,
+                    abilityKeyword = ability.keyword,
                 )
                 val handCards = state.getZone(playerId, Zone.HAND)
                 val abilityContext = com.wingedsheep.engine.mechanics.mana.buildAbilityPaymentContext(

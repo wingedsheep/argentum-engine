@@ -379,8 +379,24 @@ data class MoveToZoneEffect(
      * artifact that another effect makes a creature on the battlefield (March of the Machines) still
      * gets the counter, as Recommission's ruling requires. Null places the counter unconditionally.
      */
-    val addCounterIf: GameObjectFilter? = null
+    val addCounterIf: GameObjectFilter? = null,
+    /**
+     * What a card put onto the battlefield [ZonePlacement.TappedAndAttacking] attacks. The default,
+     * [EnteringAttackDefender.JOIN_SOURCE], is a defending player already in this combat (else the
+     * first opponent); [EnteringAttackDefender.RETURNED_ATTACKER] is ninjutsu's "the same player,
+     * planeswalker, or battle as the creature that was returned" (CR 702.49c).
+     */
+    val attackDefender: EnteringAttackDefender = EnteringAttackDefender.JOIN_SOURCE
 ) : Effect {
+    init {
+        require(attackDefender != EnteringAttackDefender.CONTROLLER_CHOOSES) {
+            "MoveToZoneEffect has no per-card defender prompt; use JOIN_SOURCE or RETURNED_ATTACKER"
+        }
+        require(attackDefender == EnteringAttackDefender.JOIN_SOURCE || placement == ZonePlacement.TappedAndAttacking) {
+            "attackDefender needs placement = TappedAndAttacking"
+        }
+    }
+
     override val description: String = buildString {
         when {
             byDestruction -> append("Destroy ${target.description}")

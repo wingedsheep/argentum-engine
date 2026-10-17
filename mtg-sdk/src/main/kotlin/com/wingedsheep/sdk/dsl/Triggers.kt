@@ -852,7 +852,9 @@ class PlayerTriggerSubject internal constructor(private val player: Player) {
      * [of] scopes the ability's source permanent; [targeting] is "an ability that targets a creature
      * or player"; [loyalty] / [minLoyaltyRemoved] are loyalty abilities (CR 606.4, a −X counts X);
      * [exhaust] is an exhaust ability (CR 702.177); [withoutTapInCost] is the Antiquities "without {T}
-     * in its activation cost" wording, which ignores the mana-ability split entirely.
+     * in its activation cost" wording, which ignores the mana-ability split entirely. [keyword] is
+     * "a [keyword] ability" — `keyword = Keyword.NINJUTSU` for "whenever you activate a ninjutsu
+     * ability" (Satoru Umezawa).
      */
     fun activatesAbility(
         of: GameObjectFilter? = null,
@@ -863,6 +865,7 @@ class PlayerTriggerSubject internal constructor(private val player: Player) {
         includeManaAbilities: Boolean = false,
         excludeManaAbilities: Boolean = false,
         withoutTapInCost: Boolean = false,
+        keyword: com.wingedsheep.sdk.core.Keyword? = null,
     ): TriggerSpec = spec(
         AbilityActivatedEvent(
             player = player,
@@ -874,6 +877,7 @@ class PlayerTriggerSubject internal constructor(private val player: Player) {
             includeManaAbilities = includeManaAbilities,
             requireLoyalty = loyalty || minLoyaltyRemoved > 0,
             minLoyaltyRemoved = minLoyaltyRemoved,
+            keyword = keyword,
         )
     )
 

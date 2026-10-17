@@ -2718,6 +2718,11 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
      * loyalty counters to activate it"). A [+N] or [0] cost removes none. The number is a fact of
      * the activation, fixed once the cost is paid, so checking it as the trigger is matched is the
      * same as checking it again on resolution. 0 (the default) imposes nothing.
+     *
+     * [keyword] narrows to activations of one keyword ability — the activated ability's own
+     * `ActivatedAbility.keyword` marker. "Whenever you activate a ninjutsu ability" (Satoru
+     * Umezawa) is `keyword = Keyword.NINJUTSU`; it counts a ninjutsu ability activated from hand,
+     * printed or granted, and nothing else. Null (the default) imposes nothing.
      */
     @SerialName("AbilityActivatedEvent")
     @Serializable
@@ -2731,8 +2736,16 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
         val includeManaAbilities: Boolean = false,
         val requireLoyalty: Boolean = false,
         val minLoyaltyRemoved: Int = 0,
+        val keyword: com.wingedsheep.sdk.core.Keyword? = null,
     ) : EventPattern {
         override val description: String = buildString {
+            if (keyword != null) {
+                append(player.description)
+                append(" activates a ")
+                append(keyword.displayName.lowercase())
+                append(" ability")
+                return@buildString
+            }
             if (requireLoyalty) {
                 append(player.description)
                 append(" activates a loyalty ability")

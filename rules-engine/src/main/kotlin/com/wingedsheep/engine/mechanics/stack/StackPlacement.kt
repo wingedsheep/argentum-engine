@@ -326,6 +326,7 @@ internal object StackPlacement {
                     isExhaust = isExhaust,
                     isLoyalty = isLoyalty,
                     loyaltyCountersRemoved = loyaltyCountersRemoved,
+                    keyword = ability.activatedAbility?.keyword,
                 )
             )
         }

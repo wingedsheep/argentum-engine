@@ -4916,7 +4916,9 @@ object Effects {
         linkToSource: Boolean = false,
         positionFromTop: Int? = null,
         addCounterType: CounterType? = null,
-        addCounterIf: GameObjectFilter? = null
+        addCounterIf: GameObjectFilter? = null,
+        attackDefender: com.wingedsheep.sdk.scripting.effects.EnteringAttackDefender =
+            com.wingedsheep.sdk.scripting.effects.EnteringAttackDefender.JOIN_SOURCE
     ): Effect = MoveToZoneEffect(
         target = target,
         destination = destination,
@@ -4928,7 +4930,8 @@ object Effects {
         linkToSource = linkToSource,
         positionFromTop = positionFromTop,
         addCounterType = addCounterType,
-        addCounterIf = addCounterIf
+        addCounterIf = addCounterIf,
+        attackDefender = attackDefender
     )
 
     /**

@@ -101,12 +101,11 @@ object SneakWindow {
         playerId: EntityId,
         cardRegistry: com.wingedsheep.engine.registry.CardRegistry
     ): com.wingedsheep.sdk.core.ManaCost? {
-        // Printed Sneak or Ninjutsu — both expose the cost via `ninjutsuStyleCost` (the engine
-        // calls the whole declare-blockers mechanic family "sneak" for historical reasons; Ninjutsu
-        // is the canonical rules name, Sneak its TMNT reflavor).
+        // Printed Sneak. Ninjutsu is not a cast (CR 702.49a) — it is a hand-activated ability.
         cardDef.keywordAbilities
-            .firstNotNullOfOrNull { it.ninjutsuStyleCost }
-            ?.let { return it }
+            .filterIsInstance<com.wingedsheep.sdk.scripting.KeywordAbility.Sneak>()
+            .firstOrNull()
+            ?.let { return it.cost }
         if (cardDef.typeLine.isCreature && cardId in state.getGraveyard(playerId)) {
             return graveyardSneakGrantCost(state, playerId, cardRegistry)
         }

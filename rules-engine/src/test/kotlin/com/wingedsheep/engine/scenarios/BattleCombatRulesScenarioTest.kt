@@ -1,7 +1,6 @@
 package com.wingedsheep.engine.scenarios
 
-import com.wingedsheep.engine.core.AlternativeCostType
-import com.wingedsheep.engine.core.CastSpell
+import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.core.DeclareAttackers
 import com.wingedsheep.engine.core.DeclareBlockers
 import com.wingedsheep.engine.mechanics.battle.Battles
@@ -16,6 +15,7 @@ import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.dsl.card
+import com.wingedsheep.sdk.dsl.ninjutsuAbility
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AdditionalCostPayment
 import io.kotest.assertions.withClue
@@ -277,12 +277,11 @@ class BattleCombatRulesScenarioTest : ScenarioTestBase() {
                     game.state.getEntity(id)?.get<CardComponent>()?.name == "Azra Smokeshaper"
                 }
                 val cast = game.execute(
-                    CastSpell(
+                    ActivateAbility(
                         playerId = game.player1Id,
-                        cardId = ninjaCard,
-                        useAlternativeCost = true,
-                        alternativeCostType = AlternativeCostType.SNEAK,
-                        additionalCostPayment = AdditionalCostPayment(bouncedPermanents = listOf(bears)),
+                        sourceId = ninjaCard,
+                        abilityId = ninjutsuAbility("{1}{B}").id,
+                        costPayment = AdditionalCostPayment(bouncedPermanents = listOf(bears)),
                     )
                 )
                 withClue("ninjutsu: ${cast.error}") { cast.error shouldBe null }
