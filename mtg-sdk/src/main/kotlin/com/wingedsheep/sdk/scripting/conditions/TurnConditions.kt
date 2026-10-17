@@ -166,8 +166,9 @@ data object IsFirstCombatPhaseOfTurn : Condition {
  * Condition: "before attackers are declared" this turn — the game hasn't yet reached the declare
  * attackers step of the turn's first combat phase (Master Warcraft's ruling: with several combat
  * phases, it can only be cast before the first one's declare attackers step). True from the start
- * of the turn through the beginning of combat step of the first combat; false from its declare
- * attackers step on, including the postcombat main phase and any additional combat phase.
+ * of the turn through the beginning of combat step of the first combat; false from the first
+ * combat's declare attackers step on, through every later phase of the turn. An extra combat inserted
+ * before the natural one (CR 500.8) is the first combat.
  */
 @SerialName("BeforeAttackersDeclaredThisTurn")
 @Serializable

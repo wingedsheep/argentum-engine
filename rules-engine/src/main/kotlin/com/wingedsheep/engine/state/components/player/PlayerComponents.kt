@@ -617,9 +617,9 @@ data object CombatPhaseEndedThisTurnComponent : Component
 
 /**
  * Marker placed on the active player while the game is inside an *inserted* extra combat phase
- * (see [AdditionalPhasesComponent]). It tells the TurnManager that advancing out of that combat
- * phase's end-of-combat step must drain the extra-phase queue rather than fall through into a
- * postcombat main phase — so a combat-only extra phase never grants an unwanted main phase. The
+ * (see [AdditionalPhasesComponent]). Its only reader is [attackerRestriction]'s enforcement
+ * (AdditionalCombatPhaseAttackerRule); the TurnManager's drain-and-resume decides what follows the
+ * phase — so a combat-only extra phase never grants an unwanted main phase. The
  * trailing main phase is added only when an explicit [ExtraPhaseKind.MAIN] is queued. Consumed when
  * the queue is exhausted (the turn resumes at [InsertedPhasesResumeComponent.anchor]) or when a
  * queued main phase begins.
@@ -665,10 +665,10 @@ data class AdditionalUpkeepStepsComponent(
 data object InAdditionalUpkeepStepComponent : Component
 
 /**
- * Marker placed on the active player while the game is inside an *inserted* beginning phase
- * ([ExtraPhaseKind.BEGINNING]). Its draw step must not fall through into a precombat main phase:
- * advancing out of it drains the extra-phase queue instead, or resumes the natural turn when the
- * queue is empty. Consumed by that advance, and swept at end-of-turn cleanup.
+ * Informational marker placed on the active player while the game is inside an *inserted* beginning
+ * phase ([ExtraPhaseKind.BEGINNING]). Nothing decides on it: the TurnManager's drain-and-resume
+ * already keeps the inserted draw step from falling through into a precombat main phase. Cleared
+ * when the next phase is drained or the chain resumes, and swept at end-of-turn cleanup.
  */
 @Serializable
 data object InAdditionalBeginningPhaseComponent : Component

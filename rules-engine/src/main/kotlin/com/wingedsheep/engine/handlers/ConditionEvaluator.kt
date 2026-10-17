@@ -997,10 +997,10 @@ class ConditionEvaluator(
         }
     }
 
-    /** Standard primality test: 0 and 1 are not prime; 2 is the only even prime (CR-agnostic). */
     private fun combatPhaseEndedThisTurn(state: GameState): Boolean =
         state.activePlayerId?.let { state.getEntity(it)?.has<CombatPhaseEndedThisTurnComponent>() } == true
 
+    /** Standard primality test: 0 and 1 are not prime; 2 is the only even prime (CR-agnostic). */
     private fun isPrime(n: Int): Boolean {
         if (n < 2) return false
         if (n < 4) return true

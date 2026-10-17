@@ -3725,8 +3725,8 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   phase after this phase" (Shadow of the Second Sun). Queues one `BEGINNING` phase: a real untap step
   (permanents phase and untap; "doesn't untap during its controller's next untap step" is satisfied by
   it), upkeep step (upkeep triggers fire) and draw step, all within the same turn — "until your next
-  turn" effects don't end — followed by the next queued phase or the end step, never a precombat main
-  phase. Composes with `AddCombatPhase` / `AddMainPhase`. Pair with
+  turn" effects don't end — followed by the next queued phase, or else by whatever follows the phase
+  it was added after; never a precombat main phase. Composes with `AddCombatPhase` / `AddMainPhase`. Pair with
   `Triggers.player(Player.EnchantedPlayer).beginningOf(Step.POSTCOMBAT_MAIN)` for "at the beginning of
   enchanted player's postcombat main phase" — a step trigger keyed to the player the source Aura
   enchants.
@@ -14067,8 +14067,9 @@ that works in both resolution and static-ability (projection) contexts.
   Rhul).
 - `Conditions.BeforeAttackersDeclared` (`BeforeAttackersDeclaredThisTurn`) — "before attackers are
   declared": the turn hasn't reached the declare attackers step of its *first* combat phase (true up
-  to and including that combat's beginning step; false from its declare attackers step on, in the
-  postcombat main phase, and in any inserted extra combat). Master Warcraft's timing line:
+  to and including that combat's beginning step; false from the first combat's declare attackers
+  step on, through every later phase of the turn — an extra combat inserted *before* the natural one
+  is the first combat). Master Warcraft's timing line:
   `castOnlyIf(Conditions.BeforeAttackersDeclared)`.
 - `IsFirstCombatPhaseOfTurn` — the combat analog of `IsFirstEndStepOfTurn`: it's the turn's first
   combat phase, i.e. no combat phase has ended yet this turn — an extra combat inserted *before* the

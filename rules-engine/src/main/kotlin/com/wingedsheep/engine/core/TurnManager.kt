@@ -318,7 +318,12 @@ class TurnManager(
             // The queue entry is still consumed: the phase *was* created, it just never happens,
             // and the next queued entry takes its place. Without this the natural combat phase
             // would be skipped while an Aggravated Assault combat phase sailed through.
-            if (skipsTurnPart(current, step, activePlayer)) {
+            // A "skip all combat phases of your next turn" marker (False Peace) skips an inserted
+            // combat too; it stays for the natural combat phase, which consumes it.
+            val skipped = skipsTurnPart(current, step, activePlayer) ||
+                (next.kind == ExtraPhaseKind.COMBAT &&
+                    current.getEntity(activePlayer)?.has<SkipCombatPhasesComponent>() == true)
+            if (skipped) {
                 current = redirectedState
                 skippedAnEntry = true
                 continue
@@ -359,6 +364,9 @@ class TurnManager(
                 events += StepChangedEvent(step)
             }
 
+            if (next.kind == ExtraPhaseKind.COMBAT) {
+                redirectedState = engageScheduledCombatHijacks(redirectedState, activePlayer, events)
+            }
             if (next.kind == ExtraPhaseKind.BEGINNING) {
                 return runInsertedUntapStep(redirectedState.copy(priorityPlayerId = null), activePlayer, events)
             }
@@ -410,16 +418,51 @@ class TurnManager(
     }
 
     /**
+     * Engage a combat-phase-scoped hijack (Secret of Bloodbending) scheduled on the active player as
+     * a combat phase — natural or inserted — begins: input authority moves to the hijacker for the
+     * duration of this phase. A hijack scheduled while combat was skipped stays SCHEDULED and waits
+     * for a combat phase they actually reach. Every member of the active team — a combat hijack
+     * controls the team (CR 805.8).
+     */
+    private fun engageScheduledCombatHijacks(
+        state: GameState,
+        activePlayer: EntityId,
+        events: MutableList<GameEvent>
+    ): GameState {
+        var newState = state
+        for (member in newState.sharedTurnTeam(activePlayer)) {
+            val combatHijack = newState.getEntity(member)?.get<PlayerTurnHijackedComponent>() ?: continue
+            if (combatHijack.state == PlayerTurnHijackedComponent.HijackState.SCHEDULED &&
+                combatHijack.scope == HijackScope.NextCombatPhase
+            ) {
+                newState = newState.updateEntity(member) { container ->
+                    container.with(combatHijack.copy(state = PlayerTurnHijackedComponent.HijackState.ACTIVE))
+                }
+                events.add(
+                    TurnHijackedEvent(
+                        controllerId = combatHijack.controllerId,
+                        hijackedPlayerId = member,
+                        sourceId = member,
+                        sourceName = "Combat hijack engaged"
+                    )
+                )
+            }
+        }
+        return newState
+    }
+
+    /**
      * Leave the last inserted phase of a chain: the turn continues as though [anchor] — the natural
      * phase the chain was added after — had just ended (CR 500.8), so an extra combat added during the
      * precombat main phase is followed by the natural combat phase and never by an unwanted main phase.
-     * An inserted combat phase ending here is closed first, unless the anchor is itself the end of
-     * combat step, whose natural advance into the postcombat main phase closes it.
+     * An inserted combat phase ending here is closed first. Every combat phase of the chain is then
+     * closed — the natural one was closed as the chain began — so resuming after an end-of-combat
+     * anchor enters the postcombat main phase without closing combat again.
      */
     private fun resumeAfterInsertedPhases(state: GameState, activePlayer: EntityId, anchor: Step): ExecutionResult {
         val events = mutableListOf<GameEvent>()
         var resumed = state
-        if (state.step == Step.END_COMBAT && anchor != Step.END_COMBAT) {
+        if (state.step == Step.END_COMBAT) {
             val closed = closeCombatPhase(resumed)
             if (closed.outcome !is Outcome.Done) return closed
             resumed = closed.newState
@@ -432,7 +475,7 @@ class TurnManager(
                     .without<InsertedPhasesResumeComponent>()
             }
             .copy(step = anchor, phase = anchor.phase)
-        val onward = advanceStepFromEndedStep(resumed)
+        val onward = advanceStepFromEndedStep(resumed, combatAlreadyClosed = anchor == Step.END_COMBAT)
         return onward.copy(events = events + onward.events)
     }
 
@@ -467,7 +510,15 @@ class TurnManager(
                 ?.any { it.covers(step) } == true
         }
 
-    private fun advanceStepFromEndedStep(incomingState: GameState): ExecutionResult {
+    /**
+     * @param combatAlreadyClosed The combat phase that just ended was already closed (resuming after
+     *   a chain of inserted phases anchored at the end of combat), so entering the postcombat main
+     *   phase must not close it a second time.
+     */
+    private fun advanceStepFromEndedStep(
+        incomingState: GameState,
+        combatAlreadyClosed: Boolean = false
+    ): ExecutionResult {
         val currentStep = incomingState.step
         val activePlayer = incomingState.activePlayerId
             ?: return ExecutionResult.error(incomingState, "No active player")
@@ -634,7 +685,7 @@ class TurnManager(
             // The postcombat main phase owns the deferred end-of-combat bookkeeping (see the
             // POSTCOMBAT_MAIN branch below), so skipping the phase must still run it or creatures
             // stay in combat for the rest of the turn.
-            if (nextStep == Step.POSTCOMBAT_MAIN) {
+            if (nextStep == Step.POSTCOMBAT_MAIN && !combatAlreadyClosed) {
                 val endCombatResult = combatManager.endCombat(
                     skipped, combatPhaseRan = !skipsTurnPart(skipped, Step.BEGIN_COMBAT, activePlayer)
                 )
@@ -732,12 +783,14 @@ class TurnManager(
                 // The combat phase has now ended: remove every creature from combat (clear
                 // attacking/blocking and related components). Deferred from the end of combat step
                 // so end-of-combat abilities resolve while their attacking targets are still legal.
-                val endCombatResult = closeCombatPhase(
-                    newState, combatPhaseRan = !skipsTurnPart(newState, Step.BEGIN_COMBAT, activePlayer)
-                )
-                if (endCombatResult.outcome !is Outcome.Done) return endCombatResult
-                newState = endCombatResult.newState
-                events.addAll(endCombatResult.events)
+                if (!combatAlreadyClosed) {
+                    val endCombatResult = closeCombatPhase(
+                        newState, combatPhaseRan = !skipsTurnPart(newState, Step.BEGIN_COMBAT, activePlayer)
+                    )
+                    if (endCombatResult.outcome !is Outcome.Done) return endCombatResult
+                    newState = endCombatResult.newState
+                    events.addAll(endCombatResult.events)
+                }
 
                 newState = newState.withPriority(activePlayer)
             }
@@ -756,31 +809,7 @@ class TurnManager(
                     events.add(StepChangedEvent(Step.POSTCOMBAT_MAIN))
                     return ExecutionResult.success(newState, events)
                 }
-                // Engage a combat-phase-scoped hijack (Secret of Bloodbending) scheduled on the
-                // active player: their combat phase is now beginning, so input authority moves to
-                // the hijacker for the duration of this phase. A hijack scheduled while combat was
-                // skipped stays SCHEDULED and waits for a combat phase they actually reach here.
-                // Every member of the active team — a combat hijack controls the team (CR 805.8).
-                for (member in newState.sharedTurnTeam(activePlayer)) {
-                    val combatHijack = newState.getEntity(member)?.get<PlayerTurnHijackedComponent>() ?: continue
-                    if (combatHijack.state == PlayerTurnHijackedComponent.HijackState.SCHEDULED &&
-                        combatHijack.scope == HijackScope.NextCombatPhase
-                    ) {
-                        newState = newState.updateEntity(member) { container ->
-                            container.with(
-                                combatHijack.copy(state = PlayerTurnHijackedComponent.HijackState.ACTIVE)
-                            )
-                        }
-                        events.add(
-                            TurnHijackedEvent(
-                                controllerId = combatHijack.controllerId,
-                                hijackedPlayerId = member,
-                                sourceId = member,
-                                sourceName = "Combat hijack engaged"
-                            )
-                        )
-                    }
-                }
+                newState = engageScheduledCombatHijacks(newState, activePlayer, events)
                 newState = newState.withPriority(activePlayer)
             }
 

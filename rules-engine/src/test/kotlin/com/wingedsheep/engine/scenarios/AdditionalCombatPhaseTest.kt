@@ -6,6 +6,11 @@ import com.wingedsheep.engine.state.components.player.CombatPhaseEndedThisTurnCo
 import com.wingedsheep.engine.state.components.player.InAdditionalCombatPhaseComponent
 import com.wingedsheep.engine.state.components.player.ExtraPhaseKind
 import com.wingedsheep.engine.state.components.player.QueuedPhase
+import com.wingedsheep.engine.state.components.player.PlayerTurnHijackedComponent
+import com.wingedsheep.engine.handlers.EffectContext
+import com.wingedsheep.sdk.scripting.conditions.BeforeAttackersDeclaredThisTurn
+import com.wingedsheep.sdk.scripting.conditions.IsFirstCombatPhaseOfTurn
+import com.wingedsheep.sdk.scripting.effects.HijackScope
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.sdk.core.Step
@@ -82,8 +87,8 @@ class AdditionalCombatPhaseTest : FunSpec({
 
         // The extra combat phase happens: BEGIN_COMBAT is visited twice (natural + inserted).
         steps.count { it == Step.BEGIN_COMBAT } shouldBe 2
-        // ...but the postcombat main phase is visited only ONCE — the inserted combat phase goes
-        // straight to the end step, granting no additional main phase.
+        // ...but the postcombat main phase is visited only ONCE — the inserted combat phase is
+        // followed by the natural combat, granting no additional main phase.
         steps.count { it == Step.POSTCOMBAT_MAIN } shouldBe 1
         // The queue is fully drained by the time the turn ends.
         driver.state.getEntity(attacker)?.has<AdditionalPhasesComponent>() shouldBe false
@@ -186,5 +191,72 @@ class AdditionalCombatPhaseTest : FunSpec({
         }
         driver.currentStep shouldBe Step.BEGIN_COMBAT
         driver.state.getEntity(attacker)?.has<CombatPhaseEndedThisTurnComponent>() shouldBe true
+    }
+
+    test("a combat queued during an inserted combat keeps the original anchor") {
+        val driver = createDriver()
+        val attacker = driver.activePlayer!!
+
+        driver.queuePhases(attacker, ExtraPhaseKind.COMBAT)
+        driver.passPriorityUntil(Step.BEGIN_COMBAT)
+        driver.state.getEntity(attacker)?.has<InAdditionalCombatPhaseComponent>() shouldBe true
+        // Another combat created during the inserted one comes right after it, and the chain
+        // still resumes at the natural combat after the precombat main phase.
+        driver.replaceState(driver.state.updateEntity(attacker) {
+            it.with(AdditionalPhasesComponent(listOf(QueuedPhase(ExtraPhaseKind.COMBAT))))
+        })
+        val steps = driver.recordStepsThroughTurn()
+
+        phaseMarkers(steps) shouldContainExactly listOf(
+            Step.BEGIN_COMBAT,      // first inserted combat (where the recording started)
+            Step.BEGIN_COMBAT,      // second inserted combat
+            Step.BEGIN_COMBAT,      // natural combat
+            Step.POSTCOMBAT_MAIN,   // natural postcombat main
+            Step.END
+        )
+    }
+
+    test("first-combat conditions hold in an inserted combat ahead of the natural one, not after") {
+        val driver = createDriver()
+        val attacker = driver.activePlayer!!
+        val ctx = EffectContext(sourceId = null, controllerId = attacker)
+        fun holds(condition: com.wingedsheep.sdk.scripting.conditions.Condition) =
+            driver.services.conditionEvaluator.evaluate(driver.state, condition, ctx)
+
+        driver.queuePhases(attacker, ExtraPhaseKind.COMBAT)
+        driver.passPriorityUntil(Step.BEGIN_COMBAT)
+        holds(IsFirstCombatPhaseOfTurn) shouldBe true
+        holds(BeforeAttackersDeclaredThisTurn) shouldBe true
+
+        var guard = 0
+        while (driver.state.getEntity(attacker)?.has<InAdditionalCombatPhaseComponent>() == true && guard++ < 50) {
+            driver.bothPass()
+        }
+        driver.currentStep shouldBe Step.BEGIN_COMBAT
+        holds(IsFirstCombatPhaseOfTurn) shouldBe false
+        holds(BeforeAttackersDeclaredThisTurn) shouldBe false
+    }
+
+    test("a scheduled next-combat hijack engages in an inserted combat ahead of the natural one") {
+        val driver = createDriver()
+        val attacker = driver.activePlayer!!
+        val hijacker = driver.getOpponent(attacker)
+
+        driver.queuePhases(attacker, ExtraPhaseKind.COMBAT)
+        driver.replaceState(driver.state.updateEntity(attacker) {
+            it.with(PlayerTurnHijackedComponent(controllerId = hijacker, scope = HijackScope.NextCombatPhase))
+        })
+        driver.passPriorityUntil(Step.BEGIN_COMBAT)
+        driver.state.getEntity(attacker)?.has<InAdditionalCombatPhaseComponent>() shouldBe true
+        driver.state.getEntity(attacker)?.get<PlayerTurnHijackedComponent>()?.state shouldBe
+            PlayerTurnHijackedComponent.HijackState.ACTIVE
+
+        // The hijack lasts exactly that inserted combat: the natural combat runs unhijacked.
+        var guard = 0
+        while (driver.state.getEntity(attacker)?.has<InAdditionalCombatPhaseComponent>() == true && guard++ < 50) {
+            driver.bothPass()
+        }
+        driver.currentStep shouldBe Step.BEGIN_COMBAT
+        driver.state.getEntity(attacker)?.has<PlayerTurnHijackedComponent>() shouldBe false
     }
 })
