@@ -80,6 +80,7 @@ class EffectAndTriggerContinuationResumer(
                     chosenValues = pipeline?.chosenValues ?: emptyMap(),
                     storedStringLists = pipeline?.storedStringLists ?: emptyMap(),
                     storedSubtypeGroups = pipeline?.storedSubtypeGroups ?: emptyMap(),
+                    storedNumbers = pipeline?.storedNumbers ?: emptyMap(),
                 )
                 val legal = DependentTargetSelection.legalNext(state, requirements, chosen, context, targetFinder = services.targetFinder)
                 val next = requirements[chosen.size]
