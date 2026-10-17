@@ -1,6 +1,6 @@
 package com.wingedsheep.sdk.dsl
 
-import com.wingedsheep.sdk.scripting.ExtraLoyaltyActivation
+import com.wingedsheep.sdk.scripting.LoyaltyActivationPermission
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.StaticAbility
 import com.wingedsheep.sdk.scripting.effects.Effect
@@ -12,17 +12,25 @@ import io.kotest.matchers.string.shouldEndWith
 import kotlinx.serialization.json.Json
 
 class LoyaltyAllowanceSerializationTest : FunSpec({
-    test("old Oath JSON retains its original allowance") {
-        Json.decodeFromString<StaticAbility>("""{"type":"ExtraLoyaltyActivation"}""") shouldBe ExtraLoyaltyActivation()
+    test("a static allowance JSON decodes with its count") {
+        Json.decodeFromString<StaticAbility>("""{"type":"LoyaltyActivationPermission","times":2}""") shouldBe
+            LoyaltyActivationPermission(times = 2)
     }
     test("self and filtered allowances round trip with arbitrary counts") {
         for (filter in listOf(GameObjectFilter.Any.sourceItself(), GameObjectFilter.Planeswalker.youControl())) {
-            val ability: StaticAbility = ExtraLoyaltyActivation(filter, times = 3)
-            Json.decodeFromString<StaticAbility>(Json.encodeToString(ability)) shouldBe ability
+            for (ability in listOf<StaticAbility>(
+                LoyaltyActivationPermission(filter, times = 3),
+                LoyaltyActivationPermission(filter, instantSpeed = true),
+            )) {
+                Json.decodeFromString<StaticAbility>(Json.encodeToString(ability)) shouldBe ability
+            }
         }
     }
-    test("an extra allowance cannot lower the normal limit") {
-        shouldThrow<IllegalArgumentException> { ExtraLoyaltyActivation(times = 1) }
+    test("a static permission must relax timing or the count") {
+        shouldThrow<IllegalArgumentException> { LoyaltyActivationPermission(times = 1) }
+        shouldThrow<IllegalArgumentException> { LoyaltyActivationPermission(instantSpeed = true, times = 0) }
+        LoyaltyActivationPermission(GameObjectFilter.Any.sourceItself(), instantSpeed = true).description shouldEndWith
+            "any time you could cast an instant"
     }
     test("player-wide loyalty permissions round trip on both axes") {
         for (effect in listOf(Effects.ExtraLoyaltyActivations(times = 3), Effects.InstantSpeedLoyaltyAbilities())) {

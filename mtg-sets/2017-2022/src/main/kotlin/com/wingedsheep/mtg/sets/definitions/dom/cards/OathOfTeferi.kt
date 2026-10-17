@@ -4,7 +4,7 @@ import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.dsl.Patterns
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.ExtraLoyaltyActivation
+import com.wingedsheep.sdk.scripting.LoyaltyActivationPermission
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 
@@ -30,7 +30,7 @@ val OathOfTeferi = card("Oath of Teferi") {
     }
 
     staticAbility {
-        ability = ExtraLoyaltyActivation()
+        ability = LoyaltyActivationPermission(times = 2)
     }
 
     metadata {

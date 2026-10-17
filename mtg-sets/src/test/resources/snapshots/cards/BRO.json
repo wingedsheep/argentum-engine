@@ -19594,12 +19594,13 @@
         ],
         "staticAbilities": [
             {
-                "type": "ExtraLoyaltyActivation",
+                "type": "LoyaltyActivationPermission",
                 "filter": {
                     "statePredicates": [
                         "IsSource"
                     ]
-                }
+                },
+                "times": 2
             }
         ]
     },

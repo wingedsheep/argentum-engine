@@ -44,7 +44,7 @@ import com.wingedsheep.sdk.scripting.ActivatedAbilityReach
 import com.wingedsheep.sdk.scripting.ActivationRestriction
 import com.wingedsheep.sdk.scripting.CantCastSpellsSharingColorWithLastCast
 import com.wingedsheep.sdk.scripting.CastSpellTypesFromTopOfLibrary
-import com.wingedsheep.sdk.scripting.ExtraLoyaltyActivation
+import com.wingedsheep.sdk.scripting.LoyaltyActivationPermission
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.EquipAbilitiesAtInstantSpeed
 import com.wingedsheep.sdk.scripting.FreeFirstEquipEachTurn
@@ -584,18 +584,24 @@ class CastPermissionUtils(
      * True when [playerId] holds an instant-speed loyalty permission
      * ([com.wingedsheep.engine.state.components.player.LoyaltyActivationPermissionsComponent] —
      * Jace's Machinations) whose planeswalker filter matches [sourceId], read on projected state
-     * from [playerId]'s perspective. Lifts only the sorcery-timing half of CR 606.3; the caller
-     * still enforces the once-per-turn limit.
+     * from [playerId]'s perspective — or controls [sourceId] while an active instant-speed
+     * [LoyaltyActivationPermission] static covers it (The Wandering Emperor, the turn she entered).
+     * Lifts only the sorcery-timing half of CR 606.3; the caller still enforces the once-per-turn
+     * limit.
      */
     fun canActivateLoyaltyAtInstantSpeed(state: GameState, playerId: EntityId, sourceId: EntityId): Boolean {
         val grants = state.getEntity(playerId)
             ?.get<com.wingedsheep.engine.state.components.player.LoyaltyActivationPermissionsComponent>()
-            ?.grants ?: return false
+            ?.grants.orEmpty()
         val context = PredicateContext(controllerId = playerId, sourceId = sourceId)
-        return grants.any { grant ->
-            grant.instantSpeed &&
-                predicateEvaluator.matches(state, state.projectedState, sourceId, grant.filter, context)
-        }
+        if (grants.any { grant ->
+                grant.instantSpeed &&
+                    predicateEvaluator.matches(state, state.projectedState, sourceId, grant.filter, context)
+            }) return true
+        if (state.projectedState.getController(sourceId) != playerId) return false
+        var instantSpeed = false
+        forEachStaticLoyaltyPermission(state, sourceId) { if (it.instantSpeed) instantSpeed = true }
+        return instantSpeed
     }
 
     /**
@@ -1355,21 +1361,47 @@ class CastPermissionUtils(
         val projected = state.projectedState
         if (projected.getController(walkerId) != playerId) return 1
         var maximum = 1
+        forEachStaticLoyaltyPermission(state, walkerId) { permission ->
+            if (permission.times > maximum) maximum = permission.times
+        }
+        // Resolved player-wide permissions (Urza Assembles the Titans) — held by the player, not a
+        // permanent, so they outlive the spell or Saga that granted them.
+        state.getEntity(playerId)
+            ?.get<com.wingedsheep.engine.state.components.player.LoyaltyActivationPermissionsComponent>()
+            ?.grants?.forEach { grant ->
+                if (grant.times > maximum && predicateEvaluator.matches(state, projected, walkerId, grant.filter,
+                        PredicateContext(controllerId = playerId, sourceId = walkerId))) {
+                    maximum = grant.times
+                }
+            }
+        return maximum
+    }
+
+    /**
+     * Calls [block] with every active [LoyaltyActivationPermission] static — printed, Room-face or
+     * granted, its [com.wingedsheep.sdk.scripting.ConditionalStaticAbility] condition (if any)
+     * holding — whose filter matches [walkerId] from its source controller's perspective.
+     */
+    private fun forEachStaticLoyaltyPermission(
+        state: GameState,
+        walkerId: EntityId,
+        block: (LoyaltyActivationPermission) -> Unit,
+    ) {
+        val projected = state.projectedState
         fun consider(sourceId: EntityId, raw: com.wingedsheep.sdk.scripting.StaticAbility) {
             val controller = projected.getController(sourceId) ?: return
             val ability = when (raw) {
                 is com.wingedsheep.sdk.scripting.ConditionalStaticAbility -> {
-                    if (raw.ability !is ExtraLoyaltyActivation) return
+                    if (raw.ability !is LoyaltyActivationPermission) return
                     if (!conditionEvaluator.evaluate(state, raw.condition,
                             EffectContext(sourceId = sourceId, controllerId = controller), projected)) return
                     raw.ability
                 }
                 else -> raw
-            } as? ExtraLoyaltyActivation ?: return
-            if (ability.times <= maximum) return
+            } as? LoyaltyActivationPermission ?: return
             if (predicateEvaluator.matches(state, projected, walkerId, ability.filter,
                     PredicateContext(controllerId = controller, sourceId = sourceId))) {
-                maximum = ability.times
+                block(ability)
             }
         }
         for (sourceId in state.getBattlefield()) {
@@ -1388,17 +1420,6 @@ class CastPermissionUtils(
                     state, grant.entityId, grant.sourceId, grant.duration)) continue
             consider(grant.entityId, grant.ability)
         }
-        // Resolved player-wide permissions (Urza Assembles the Titans) — held by the player, not a
-        // permanent, so they outlive the spell or Saga that granted them.
-        state.getEntity(playerId)
-            ?.get<com.wingedsheep.engine.state.components.player.LoyaltyActivationPermissionsComponent>()
-            ?.grants?.forEach { grant ->
-                if (grant.times > maximum && predicateEvaluator.matches(state, projected, walkerId, grant.filter,
-                        PredicateContext(controllerId = playerId, sourceId = walkerId))) {
-                    maximum = grant.times
-                }
-            }
-        return maximum
     }
 
     fun hasGraveyardPlayPermissionForType(

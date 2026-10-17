@@ -371,7 +371,7 @@ data class BecomeMonstrousEffect(
  * "You may activate loyalty abilities of [target] [times] times this turn rather than only once"
  * — a one-shot, per-planeswalker relaxation of the once-per-turn loyalty rule (CR 606.3) for the
  * rest of the turn (Kaito, Dancing Shadow). The per-permanent sibling of the controller-wide
- * static [com.wingedsheep.sdk.scripting.ExtraLoyaltyActivation] (Oath of Teferi).
+ * static [com.wingedsheep.sdk.scripting.LoyaltyActivationPermission] (Oath of Teferi).
  *
  * Not additive: resolving it twice, or alongside Oath of Teferi, still allows [times]
  * activations — the allowance is the largest one granted, not a sum. Activations already made

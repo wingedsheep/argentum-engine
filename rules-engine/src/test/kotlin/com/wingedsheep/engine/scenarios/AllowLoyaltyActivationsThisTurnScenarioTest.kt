@@ -8,7 +8,7 @@ import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.scripting.AbilityCost
-import com.wingedsheep.sdk.scripting.ExtraLoyaltyActivation
+import com.wingedsheep.sdk.scripting.LoyaltyActivationPermission
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import io.kotest.assertions.withClue
 import io.kotest.matchers.nulls.shouldNotBeNull
@@ -58,7 +58,7 @@ class AllowLoyaltyActivationsThisTurnScenarioTest : ScenarioTestBase() {
         manaCost = "{3}"
         typeLine = "Enchantment"
         oracleText = "You may activate the loyalty abilities of planeswalkers you control twice each turn rather than only once."
-        staticAbility { ability = ExtraLoyaltyActivation() }
+        staticAbility { ability = LoyaltyActivationPermission(times = 2) }
     }
 
     private fun board(vararg extra: String, rushes: Int = 1): TestGame {

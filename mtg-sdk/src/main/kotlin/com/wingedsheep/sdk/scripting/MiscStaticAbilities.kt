@@ -1589,24 +1589,41 @@ data class UntapLimitPerStep(
 }
 
 /**
- * Sets the maximum loyalty activations each turn for permanents matching [filter].
- * Defaults to Oath of Teferi's planeswalkers you control; `GameObjectFilter.Any.sourceItself()`
- * expresses Urza, Planeswalker's self-only permission. Multiple permissions take the largest
- * [times], never their sum, and do not change timing, costs, or activation prohibitions.
+ * A static loyalty-activation permission for permanents matching [filter] — the battlefield
+ * counterpart of [com.wingedsheep.sdk.scripting.effects.GrantLoyaltyActivationPermissionEffect],
+ * relaxing one or both halves of CR 606.3 for as long as its source's ability applies:
+ *
+ * - [times] raises the count half: the maximum loyalty activations each turn. Oath of Teferi:
+ *   `LoyaltyActivationPermission(times = 2)` over its default planeswalkers you control;
+ *   `GameObjectFilter.Any.sourceItself()` expresses Urza, Planeswalker's self-only permission.
+ *   Multiple permissions take the largest [times], never their sum.
+ * - [instantSpeed] lifts the timing half: activate any time you could cast an instant. The
+ *   Wandering Emperor wraps `LoyaltyActivationPermission(GameObjectFilter.Any.sourceItself(),
+ *   instantSpeed = true)` in a [ConditionalStaticAbility] on `Conditions.SourceEnteredThisTurn`.
+ *
+ * Neither axis changes loyalty costs or activation prohibitions.
  */
-@SerialName("ExtraLoyaltyActivation")
+@SerialName("LoyaltyActivationPermission")
 @Serializable
-data class ExtraLoyaltyActivation(
+data class LoyaltyActivationPermission(
     val filter: GameObjectFilter = GameObjectFilter.Planeswalker.youControl(),
-    val times: Int = 2,
+    val instantSpeed: Boolean = false,
+    val times: Int = 1,
 ) : StaticAbility {
     init {
-        require(times >= 2) { "A loyalty activation allowance must be at least two" }
+        require(times >= 1) { "LoyaltyActivationPermission.times must be at least 1, was $times" }
+        require(instantSpeed || times >= 2) {
+            "LoyaltyActivationPermission must lift timing or allow at least two activations"
+        }
     }
 
     override val description: String
-        get() = "You may activate loyalty abilities of ${filter.description} " +
-            (if (times == 2) "twice" else "$times times") + " each turn rather than only once"
+        get() = buildString {
+            append("You may activate loyalty abilities of ${filter.description}")
+            if (times >= 2) append(if (times == 2) " twice each turn" else " $times times each turn")
+            if (instantSpeed) append(" any time you could cast an instant")
+            if (times >= 2) append(" rather than only once")
+        }
 
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
         val replaced = filter.applyTextReplacement(replacer)

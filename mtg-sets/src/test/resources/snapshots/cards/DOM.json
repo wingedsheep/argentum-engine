@@ -8678,7 +8678,10 @@
             }
         ],
         "staticAbilities": [
-            "ExtraLoyaltyActivation"
+            {
+                "type": "LoyaltyActivationPermission",
+                "times": 2
+            }
         ]
     },
     "metadata": {

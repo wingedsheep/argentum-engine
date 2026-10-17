@@ -3353,20 +3353,27 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
     `planeswalkerFilter = GameObjectFilter.Planeswalker.withSubtype("Jace").youControl()`.
   - `Effects.ExtraLoyaltyActivations(times = 2, planeswalkerFilter = Planeswalker.youControl(), duration, target)` —
     "you may activate the loyalty abilities of planeswalkers you control twice this turn rather than only once".
-    Lifts only the count half; sorcery timing still applies. Like the static `ExtraLoyaltyActivation`, allowances
+    Lifts only the count half; sorcery timing still applies. Like the static `LoyaltyActivationPermission`, allowances
     take the largest, never a sum. **Urza Assembles the Titans** III: `Effects.ExtraLoyaltyActivations()`.
-- `ExtraLoyaltyActivation(filter = GameObjectFilter.Planeswalker.youControl(), times = 2)` — a static
-  maximum loyalty-activation allowance for matching permanents. `GameObjectFilter.Any.sourceItself()`
-  scopes it to its own permanent (Urza, Planeswalker); the default preserves Oath of Teferi. Multiple
-  static and resolved allowances take the largest maximum, never add together. Both legal actions and
-  validation read the same projected filter/controller query; removal of the granting ability removes
-  its permission immediately. Timing, loyalty costs, and activation bans still apply.
+- `LoyaltyActivationPermission(filter = GameObjectFilter.Planeswalker.youControl(), instantSpeed = false, times = 1)` —
+  the static counterpart of `GrantLoyaltyActivationPermissionEffect`: a permission for matching permanents that lasts
+  only while its source's ability applies. It must relax at least one half of CR 606.3.
+  - `times` raises the count half: the maximum loyalty activations each turn. **Oath of Teferi**:
+    `LoyaltyActivationPermission(times = 2)`; `GameObjectFilter.Any.sourceItself()` scopes it to its own permanent
+    (**Urza, Planeswalker**). Multiple static and resolved allowances take the largest maximum, never add together.
+  - `instantSpeed = true` lifts the timing half: activate any time you could cast an instant (on any player's
+    turn), and only the controller of the matching permanent benefits. **The Wandering Emperor**:
+    `ConditionalStaticAbility(LoyaltyActivationPermission(GameObjectFilter.Any.sourceItself(), instantSpeed = true),
+    Conditions.SourceEnteredThisTurn)` — the once-per-turn limit still applies.
+  Both legal actions and validation read the same projected filter/controller query; a `ConditionalStaticAbility`
+  condition is re-evaluated against the source each time, and removal of the granting ability removes its permission
+  immediately. Loyalty costs and activation bans still apply.
 - `AllowLoyaltyActivationsThisTurnEffect(target = Self, times = 2)` — the *count* half of CR 606.3, relaxed for
   one permanent: "you may activate loyalty abilities of [target] twice this turn rather than only once". Facade:
   `Effects.AllowLoyaltyActivationsThisTurn(times = 2, target = Self)`. A resolution-time one-shot that raises the
   permanent's own allowance on its turn-scoped `AbilityActivatedThisTurnComponent`, so it lapses at cleanup and when
   the permanent leaves the battlefield. **Not additive**: a second grant, or a grant alongside the controller-wide
-  static `ExtraLoyaltyActivation` (Oath of Teferi), still allows `times` — the allowance is the largest granted, not a
+  static `LoyaltyActivationPermission` (Oath of Teferi), still allows `times` — the allowance is the largest granted, not a
   sum. Activations already made count against it, so a grant after one activation allows exactly one more.
   **Kaito, Dancing Shadow**: `Effects.IfYouDo(Pipeline { filter(triggerCaptured, on battlefield) → chooseUpTo(1) →
   move to hand }, then = Effects.AllowLoyaltyActivationsThisTurn())` on a

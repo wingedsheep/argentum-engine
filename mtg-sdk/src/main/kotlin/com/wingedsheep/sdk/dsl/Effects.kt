@@ -6027,7 +6027,7 @@ object Effects {
      * this turn rather than only once" for [duration] (Urza Assembles the Titans III). Lifts only the
      * once-per-turn half of CR 606.3, for every matching planeswalker including ones that arrive
      * later; the largest allowance wins, never a sum. For one named permanent use
-     * [AllowLoyaltyActivationsThisTurn]; for a static on a permanent, `ExtraLoyaltyActivation`.
+     * [AllowLoyaltyActivationsThisTurn]; for a static on a permanent, `LoyaltyActivationPermission`.
      */
     fun ExtraLoyaltyActivations(
         times: Int = 2,

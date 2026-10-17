@@ -9,7 +9,7 @@ import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.dsl.Conditions
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
-import com.wingedsheep.sdk.scripting.ExtraLoyaltyActivation
+import com.wingedsheep.sdk.scripting.LoyaltyActivationPermission
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import io.kotest.matchers.shouldBe
@@ -20,7 +20,7 @@ class StaticLoyaltyAllowanceScenarioTest : ScenarioTestBase() {
     private val selfWalker = card("Self Allowance Walker") {
         typeLine = "Planeswalker — Test"
         startingLoyalty = 5
-        staticAbility { ability = ExtraLoyaltyActivation(GameObjectFilter.Any.sourceItself()) }
+        staticAbility { ability = LoyaltyActivationPermission(GameObjectFilter.Any.sourceItself(), times = 2) }
         loyaltyAbility(0) { effect = Effects.GainLife(1) }
         loyaltyAbility(-6) { effect = Effects.GainLife(6) }
     }
@@ -32,13 +32,13 @@ class StaticLoyaltyAllowanceScenarioTest : ScenarioTestBase() {
     private fun grant(name: String, times: Int) = card(name) {
         manaCost = "{0}"
         typeLine = "Enchantment"
-        staticAbility { ability = ExtraLoyaltyActivation(times = times) }
+        staticAbility { ability = LoyaltyActivationPermission(times = times) }
     }
     private val conditional = card("Conditional Allowance") {
         typeLine = "Enchantment"
         staticAbility {
             ability = com.wingedsheep.sdk.scripting.ConditionalStaticAbility(
-                ability = ExtraLoyaltyActivation(), condition = Conditions.LifeAtLeast(21))
+                ability = LoyaltyActivationPermission(times = 2), condition = Conditions.LifeAtLeast(21))
         }
     }
     private val gift = card("Gift Allowance") {
@@ -46,7 +46,7 @@ class StaticLoyaltyAllowanceScenarioTest : ScenarioTestBase() {
         typeLine = "Instant"
         spell {
             val t = target(TargetFilter.Permanent)
-            effect = Effects.GrantStaticAbility(ExtraLoyaltyActivation(GameObjectFilter.Any.sourceItself()), t)
+            effect = Effects.GrantStaticAbility(LoyaltyActivationPermission(GameObjectFilter.Any.sourceItself(), times = 2), t)
         }
     }
     private val ban = card("Ban Allowance") {

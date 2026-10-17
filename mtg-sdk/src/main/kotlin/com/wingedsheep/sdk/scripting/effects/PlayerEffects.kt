@@ -710,7 +710,7 @@ data class CantActivateLoyaltyAbilitiesEffect(
  * - [times] raises the count half. Urza Assembles the Titans III: "You may activate the loyalty
  *   abilities of planeswalkers you control twice this turn rather than only once." —
  *   `planeswalkerFilter = Planeswalker.youControl()`, `times = 2`. Like the static
- *   [com.wingedsheep.sdk.scripting.ExtraLoyaltyActivation], allowances take the largest, never a
+ *   [com.wingedsheep.sdk.scripting.LoyaltyActivationPermission], allowances take the largest, never a
  *   sum.
  *
  * A resolution-time one-shot that records the grant on the player, so it outlives the spell or
@@ -718,7 +718,7 @@ data class CantActivateLoyaltyAbilitiesEffect(
  * state each time an ability is offered and activated, so a planeswalker that enters later in the
  * turn is covered. Narrower than the per-permanent
  * [AllowLoyaltyActivationsThisTurnEffect] (one object, lapses when it leaves) and than the static
- * `ExtraLoyaltyActivation` (lasts only while its source does).
+ * `LoyaltyActivationPermission` (lasts only while its source does).
  */
 @SerialName("GrantLoyaltyActivationPermission")
 @Serializable

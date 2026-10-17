@@ -6,7 +6,7 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Patterns
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.ExtraLoyaltyActivation
+import com.wingedsheep.sdk.scripting.LoyaltyActivationPermission
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
@@ -20,7 +20,7 @@ val UrzaPlaneswalker = card("Urza, Planeswalker") {
     startingLoyalty = 7
     oracleText = "You may activate the loyalty abilities of Urza twice each turn rather than only once.\n+2: Artifact, instant, and sorcery spells you cast this turn cost {2} less to cast. You gain 2 life.\n+1: Draw two cards, then discard a card.\n0: Create two 1/1 colorless Soldier artifact creature tokens.\n−3: Exile target nonland permanent.\n−10: Artifacts and planeswalkers you control gain indestructible until end of turn. Destroy all nonland permanents."
 
-    staticAbility { ability = ExtraLoyaltyActivation(GameObjectFilter.Any.sourceItself()) }
+    staticAbility { ability = LoyaltyActivationPermission(GameObjectFilter.Any.sourceItself(), times = 2) }
 
     loyaltyAbility(+2) {
         description = "+2: Artifact, instant, and sorcery spells you cast this turn cost {2} less to cast. You gain 2 life."
