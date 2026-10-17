@@ -33,7 +33,7 @@ class TheWanderingEmperorScenarioTest : ScenarioTestBase() {
         state = state.copy(priorityPlayerId = player1Id)
     }
 
-    /** Bob is attacking with a tapped Grizzly Bears; Alice holds the Emperor and four Plains. */
+    /** Bob's postcombat main, his Grizzly Bears tapped; Alice flashes the Emperor in off four Plains. */
     private fun flashedIn(): TestGame {
         val game = scenario().withPlayers("Alice", "Bob")
             .withCardInHand(1, name)
