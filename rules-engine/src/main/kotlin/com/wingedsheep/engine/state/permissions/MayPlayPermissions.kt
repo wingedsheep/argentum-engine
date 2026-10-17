@@ -55,21 +55,31 @@ fun GameState.removeMayPlayPermissionsForCard(cardId: EntityId): GameState =
     )
 
 /**
- * Spend every [MayPlayPermission.singleUse] permission [playerId] holds over [cardId]: the card was
- * just cast or played through it, so the rest of its group loses the grant too ("cast a spell from
- * among those cards" — one spell, not one each). Call only at a play site, never when a card
- * merely leaves exile.
+ * Spend one play from every capped ([MayPlayPermission.playsRemaining]) permission [playerId] holds
+ * over [cardId]: the card was just cast or played through it. A grant left with plays drops the
+ * card that was played; one whose last play this was is revoked for the rest of its group too
+ * ("cast a spell from among those cards" — one spell, not one each). Call only at a play site,
+ * never when a card merely leaves exile.
  *
  * When an ordinary, unconditional stored grant also covers the card, the play is attributed to
- * that one and the single-use grant is left for the rest of its group — the player chooses which
- * permission they use, and spending the scarce one would never be their choice. A conditional
- * grant doesn't shield it: its gate isn't re-evaluated here, so it may not have authorized the play.
+ * that one and the capped grant is left untouched — the player chooses which permission they use,
+ * and spending the scarce one would never be their choice. A conditional grant doesn't shield it:
+ * its gate isn't re-evaluated here, so it may not have authorized the play.
  */
-fun GameState.consumeSingleUseMayPlayFor(cardId: EntityId, playerId: EntityId): GameState {
+fun GameState.spendCappedMayPlayFor(cardId: EntityId, playerId: EntityId): GameState {
     fun covers(permission: MayPlayPermission) = permission.controllerId == playerId && cardId in permission.cardIds
-    if (mayPlayPermissions.none { it.singleUse && covers(it) }) return this
-    if (mayPlayPermissions.any { !it.singleUse && it.condition == null && covers(it) }) return this
-    return copy(mayPlayPermissions = mayPlayPermissions.filterNot { it.singleUse && covers(it) })
+    if (mayPlayPermissions.none { it.playsRemaining != null && covers(it) }) return this
+    if (mayPlayPermissions.any { it.playsRemaining == null && it.condition == null && covers(it) }) return this
+    return copy(
+        mayPlayPermissions = mayPlayPermissions.mapNotNull { permission ->
+            val plays = permission.playsRemaining
+            when {
+                plays == null || !covers(permission) -> permission
+                plays <= 1 -> null
+                else -> permission.copy(playsRemaining = plays - 1, cardIds = permission.cardIds - cardId)
+            }
+        }
+    )
 }
 
 /**
@@ -77,7 +87,7 @@ fun GameState.consumeSingleUseMayPlayFor(cardId: EntityId, playerId: EntityId): 
  * spends, or null when the play spends none. Read against the state *before* the play, while the
  * card is still in exile and its grants can still be found.
  *
- * As with [consumeSingleUseMayPlayFor], an unlimited grant covering the card wins: the player
+ * As with [spendCappedMayPlayFor], an unlimited grant covering the card wins: the player
  * chooses which permission they use, and burning the scarce one would never be their choice.
  * Unlike the stored grants there, every candidate here was already gate-checked by
  * [activeMayPlayFor], so a conditional unlimited grant shields the allowance too. A shield must

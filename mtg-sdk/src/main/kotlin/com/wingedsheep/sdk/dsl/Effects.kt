@@ -1596,8 +1596,9 @@ object Effects {
      * grantee, and a turn-keyed [expiry] follows that owner's turns), and [castColorRestriction]
      * for "you may cast red spells from among them" — a cast-time check on the face being cast,
      * not a filter over the exiled cards ([castColorCount] is the same check for "spells with
-     * exactly three colors", Meeting of the Five). Set [singleUse] for "you may cast **a** spell from among
-     * them" — one play spends the grant for the whole group (Chandra, Hope's Beacon).
+     * exactly three colors", Meeting of the Five). Set [maxPlays] to cap the plays the grant authorises
+     * across the whole group: `1` for "you may cast **a** spell from among them" (Chandra, Hope's
+     * Beacon), `2` for "you may play up to two of those cards" (March of Reckless Joy).
      *
      * Set [landEntersTapped] for "each land played this way enters tapped" clauses
      * (Lightstall Inquisitor). Pair with [GrantPlayWithCostIncrease] to also tax
@@ -1626,7 +1627,7 @@ object Effects {
         ownerControls: Boolean = false,
         castColorRestriction: Color? = null,
         castColorCount: Int? = null,
-        singleUse: Boolean = false,
+        maxPlays: Int? = null,
         colorlessAsAnyColor: Boolean = false,
         withAnyManaColor: Boolean = false
     ): Effect = GrantMayPlayFromExileEffect(
@@ -1644,7 +1645,7 @@ object Effects {
         ownerControls = ownerControls,
         castColorRestriction = castColorRestriction,
         castColorCount = castColorCount,
-        singleUse = singleUse
+        maxPlays = maxPlays
     )
 
     /**
@@ -4746,7 +4747,7 @@ object Effects {
         castColorCount: Int? = null,
         recipient: EffectTarget = EffectTarget.Controller,
         asThoughFlash: Boolean = false,
-        singleUse: Boolean = false,
+        maxPlays: Int? = null,
         colorlessAsAnyColor: Boolean = false,
         withAnyManaColor: Boolean = false
     ): Effect = GrantMayPlayFromExileEffect(
@@ -4766,7 +4767,7 @@ object Effects {
         castFaceIndex = castFaceIndex,
         castColorRestriction = castColorRestriction,
         castColorCount = castColorCount,
-        singleUse = singleUse
+        maxPlays = maxPlays
     )
 
     /** Waterbend-cast the cards in [from] from exile (see the String overload). */

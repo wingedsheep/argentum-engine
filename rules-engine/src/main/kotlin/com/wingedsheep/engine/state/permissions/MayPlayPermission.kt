@@ -206,14 +206,16 @@ data class MayPlayPermission(
      */
     val turnsFaceUpInstead: Boolean = false,
     /**
-     * When true, playing any one card in [cardIds] through this permission revokes it for the
-     * whole group — "you may cast an instant or sorcery spell from among those cards" (Chandra,
-     * Hope's Beacon). Mirrors [com.wingedsheep.sdk.scripting.effects.GrantMayPlayFromExileEffect
-     * .singleUse]. Consumed by [consumeSingleUseMayPlayFor] at the cast site (`SpellCaster`) and the
-     * land-play site (`PlayLandHandler`), regardless of [permanent]; a card leaving exile any other
-     * way only drops that card, as for an ordinary grant.
+     * How many more plays this permission authorises across the whole group; null is unlimited.
+     * Each card in [cardIds] cast or played through it spends one, and spending the last revokes it
+     * for the rest of the group — "you may cast an instant or sorcery spell from among those cards"
+     * (Chandra, Hope's Beacon: 1), "you may play up to two of those cards" (March of Reckless Joy: 2).
+     * Seeded from [com.wingedsheep.sdk.scripting.effects.GrantMayPlayFromExileEffect.maxPlays].
+     * Spent by [spendCappedMayPlayFor] at the cast site (`SpellCaster`) and the land-play site
+     * (`PlayLandHandler`), regardless of [permanent]; a card leaving exile any other way only drops
+     * that card, as for an ordinary grant.
      */
-    val singleUse: Boolean = false,
+    val playsRemaining: Int? = null,
     /**
      * When true, this permission is a derived `MayPlayCardsFromExile(oncePerTurn = true)` grant
      * (Evelyn, the Covetous): a play through it spends [sourceId]'s once-per-turn allowance, marked

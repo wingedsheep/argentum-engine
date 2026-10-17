@@ -341,9 +341,10 @@ class LegacySuspensionMigrationTest : ScenarioTestBase() {
                 // The direct lands-played count postdates the capture.
                 value.getValue("playedThisTurn") shouldBe JsonPrimitive(0)
                 value - "playedThisTurn"
-            } else if ("colorlessAsAnyColor" in value && "singleUse" in value) {
-                // MayPlayPermission's any-color, colorless-as-any-color, face-down, once-per-turn and
-                // color-count riders postdate the capture.
+            } else if ("colorlessAsAnyColor" in value && "playsRemaining" in value) {
+                // MayPlayPermission's any-color, colorless-as-any-color, face-down, once-per-turn,
+                // color-count and play-cap riders postdate the capture.
+                value.getValue("playsRemaining") shouldBe JsonNull
                 value.getValue("withAnyManaColor") shouldBe JsonPrimitive(false)
                 value.getValue("colorlessAsAnyColor") shouldBe JsonPrimitive(false)
                 value.getValue("castFaceDown") shouldBe JsonPrimitive(false)
@@ -351,7 +352,7 @@ class LegacySuspensionMigrationTest : ScenarioTestBase() {
                 value.getValue("oncePerTurn") shouldBe JsonPrimitive(false)
                 value.getValue("castColorCount") shouldBe JsonNull
                 value - "withAnyManaColor" - "colorlessAsAnyColor" - "castFaceDown" - "turnsFaceUpInstead" - "oncePerTurn" -
-                    "castColorCount"
+                    "castColorCount" - "playsRemaining"
             } else if (value["type"] == JsonPrimitive(
                     "com.wingedsheep.engine.state.components.stack.SpellOnStackComponent"
                 )) {
@@ -395,7 +396,22 @@ class LegacySuspensionMigrationTest : ScenarioTestBase() {
     private fun encodeState(state: GameState): JsonObject = json.parseToJsonElement(json.encodeToString(state)).jsonObject
     private fun encodedStack(state: GameState): JsonArray = encodeState(state).getValue("continuationStack") as JsonArray
     private fun fixtureStack(fixture: String): JsonArray = fixtureObject(fixture, "state.json").getValue("continuationStack") as JsonArray
-    private fun fixtureObject(fixture: String, name: String): JsonObject = json.parseToJsonElement(fixtureText(fixture, name)).jsonObject
+    private fun fixtureObject(fixture: String, name: String): JsonObject =
+        withoutRetiredFields(json.parseToJsonElement(fixtureText(fixture, name))).jsonObject
+
+    /**
+     * Fields these captures carry that the engine has since retired. A may-play permission's
+     * `singleUse` flag became the `playsRemaining` cap; every captured permission is uncapped, so the
+     * flag is false and drops out (its replacement defaults to null).
+     */
+    private fun withoutRetiredFields(value: JsonElement): JsonElement = when (value) {
+        is JsonObject -> {
+            if ("singleUse" in value) value.getValue("singleUse") shouldBe JsonPrimitive(false)
+            JsonObject((value - "singleUse").mapValues { (_, child) -> withoutRetiredFields(child) })
+        }
+        is JsonArray -> JsonArray(value.map { withoutRetiredFields(it) })
+        else -> value
+    }
     private fun fixtureText(fixture: String, name: String): String =
         checkNotNull(javaClass.getResource("/legacy-suspensions/$fixture/$name")) { "Missing captured fixture $fixture/$name" }.readText()
 

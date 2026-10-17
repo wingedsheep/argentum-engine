@@ -3015,7 +3015,7 @@
                                 "includeCurrentTurn": false
                             },
                             "nonLandOnly": true,
-                            "singleUse": true
+                            "maxPlays": 1
                         }
                     ]
                 },

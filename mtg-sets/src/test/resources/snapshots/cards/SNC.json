@@ -18522,7 +18522,7 @@
                                 "type": "UntilControllerStep",
                                 "step": "END"
                             },
-                            "singleUse": true
+                            "maxPlays": 1
                         }
                     ]
                 },

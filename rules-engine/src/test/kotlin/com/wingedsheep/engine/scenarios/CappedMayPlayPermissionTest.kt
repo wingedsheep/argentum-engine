@@ -25,16 +25,17 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 
 /**
- * Mechanic-level tests for `singleUse` on [Effects.GrantMayPlayFromExile] / [MayPlayPermission] —
- * "you may cast **an** instant or sorcery spell from among those exiled cards" (Chandra, Hope's
- * Beacon): one play through the grant spends it for the whole group, where an ordinary multi-card
- * grant keeps authorising the rest. Two inline granters differ only in `singleUse`, so the contrast
- * test pins what the flag actually changes.
+ * Mechanic-level tests for `maxPlays` on [Effects.GrantMayPlayFromExile] /
+ * [MayPlayPermission.playsRemaining] — "you may cast **an** instant or sorcery spell from among those
+ * exiled cards" (Chandra, Hope's Beacon: 1) and "you may play **up to two** of those cards" (March of
+ * Reckless Joy: 2): each play through the grant spends one, and the last revokes it for the whole
+ * group, where an ordinary multi-card grant keeps authorising the rest. The inline granters differ
+ * only in `maxPlays`, so the contrast tests pin what the cap actually changes.
  */
-class SingleUseMayPlayPermissionTest : ScenarioTestBase() {
+class CappedMayPlayPermissionTest : ScenarioTestBase() {
 
     init {
-        fun granter(name: String, singleUse: Boolean) = card(name) {
+        fun granter(name: String, maxPlays: Int?, exileCount: Int = 2) = card(name) {
             manaCost = "{1}{G}"
             typeLine = "Creature — Shapeshifter"
             power = 1
@@ -42,27 +43,28 @@ class SingleUseMayPlayPermissionTest : ScenarioTestBase() {
             triggeredAbility {
                 trigger = Triggers.self.enters()
                 effect = GatherCardsEffect(
-                    source = CardSource.TopOfLibrary(DynamicAmount.Fixed(2), player = Player.You),
+                    source = CardSource.TopOfLibrary(DynamicAmount.Fixed(exileCount), player = Player.You),
                     storeAs = "exiled"
                 ) then
                     MoveCollectionEffect(
                         from = "exiled",
                         destination = CardDestination.ToZone(Zone.EXILE, player = Player.You)
                     ) then
-                    Effects.GrantMayPlayFromExile(from = "exiled", singleUse = singleUse)
+                    Effects.GrantMayPlayFromExile(from = "exiled", maxPlays = maxPlays)
             }
         }
 
         cardRegistry.register(listOf(
-            granter("Test SingleUse Granter", singleUse = true),
-            granter("Test Group Granter", singleUse = false)
+            granter("Test SingleUse Granter", maxPlays = 1),
+            granter("Test Two-Play Granter", maxPlays = 2, exileCount = 3),
+            granter("Test Group Granter", maxPlays = null)
         ))
 
         fun setup(granterName: String, vararg library: String): TestGame {
             val builder = scenario()
                 .withPlayers("Player1", "Player2")
                 .withCardInHand(1, granterName)
-                .withLandsOnBattlefield(1, "Forest", 6)
+                .withLandsOnBattlefield(1, "Forest", 8)
                 .withActivePlayer(1)
                 .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
             library.forEach { builder.withCardInLibrary(1, it) }
@@ -123,7 +125,7 @@ class SingleUseMayPlayPermissionTest : ScenarioTestBase() {
             }
         }
 
-        test("without singleUse, every card in the group stays castable after one is cast") {
+        test("without maxPlays, every card in the group stays castable after one is cast") {
             val game = setup("Test Group Granter", "Grizzly Bears", "Grizzly Bears")
             val (first, second) = exiledCardsNamed(game, "Grizzly Bears")
 
@@ -132,6 +134,43 @@ class SingleUseMayPlayPermissionTest : ScenarioTestBase() {
 
             withClue("An ordinary multi-card grant keeps authorising the remaining cards") {
                 canCast(game, second) shouldBe true
+            }
+        }
+
+        test("a two-play grant authorises a second card, then revokes the third") {
+            val game = setup("Test Two-Play Granter", "Grizzly Bears", "Grizzly Bears", "Grizzly Bears")
+            val (first, second, third) = exiledCardsNamed(game, "Grizzly Bears")
+
+            game.execute(CastSpell(playerId = game.player1Id, cardId = first)).error shouldBe null
+            game.resolveStack()
+
+            withClue("One play left: both remaining cards are still offered") {
+                canCast(game, second) shouldBe true
+                canCast(game, third) shouldBe true
+                game.state.mayPlayPermissions.single { third in it.cardIds }.playsRemaining shouldBe 1
+            }
+
+            game.execute(CastSpell(playerId = game.player1Id, cardId = second)).error shouldBe null
+            game.resolveStack()
+
+            withClue("The second play spent the grant: the third card stays in exile, unplayable") {
+                canCast(game, third) shouldBe false
+                game.execute(CastSpell(playerId = game.player1Id, cardId = third)).error shouldNotBe null
+                game.state.getExile(game.player1Id).contains(third) shouldBe true
+            }
+        }
+
+        test("a land play counts toward a two-play cap") {
+            val game = setup("Test Two-Play Granter", "Mountain", "Grizzly Bears", "Grizzly Bears")
+            val mountain = exiledCardsNamed(game, "Mountain").single()
+            val (first, second) = exiledCardsNamed(game, "Grizzly Bears")
+
+            game.execute(PlayLand(playerId = game.player1Id, cardId = mountain)).error shouldBe null
+            game.execute(CastSpell(playerId = game.player1Id, cardId = first)).error shouldBe null
+            game.resolveStack()
+
+            withClue("The land and one spell were the two plays") {
+                canCast(game, second) shouldBe false
             }
         }
 

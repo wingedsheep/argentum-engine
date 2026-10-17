@@ -2716,6 +2716,65 @@
     ]
 }
 
+// March of Reckless Joy
+{
+    "name": "March of Reckless Joy",
+    "manaCost": "{X}{R}",
+    "typeLine": "Instant",
+    "oracleText": "As an additional cost to cast this spell, you may exile any number of red cards from your hand. This spell costs {2} less to cast for each card exiled this way.\nExile the top X cards of your library. You may play up to two of those cards until the end of your next turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "TopOfLibrary",
+                        "count": "XValue"
+                    },
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "gathered0",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Exile"
+                    }
+                },
+                {
+                    "type": "GrantMayPlayFromExile",
+                    "from": "gathered0",
+                    "expiry": {
+                        "type": "UntilControllerStep",
+                        "step": "CLEANUP",
+                        "includeCurrentTurn": false
+                    },
+                    "maxPlays": 2
+                }
+            ]
+        },
+        "additionalCosts": [
+            {
+                "type": "AnyNumberForCostReduction",
+                "action": "EXILE",
+                "filter": "red",
+                "reductionPerUnit": 2,
+                "fromZone": "HAND"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "154",
+        "rarity": "RARE",
+        "artist": "Fiona Hsieh",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/8/780e1bf1-e392-40f2-9e84-764dedc5fcd4.jpg?1783923863"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Master's Rebuke
 {
     "name": "Master's Rebuke",

@@ -1840,16 +1840,18 @@ data class GrantMayPlayFromExileEffect(
      */
     val castColorCount: Int? = null,
     /**
-     * When true, the permission over the whole collection is **used up by one play**: casting (or
-     * playing, for a land) any one granted card revokes it for every other card in the group.
-     * Models "you may cast **an** instant or sorcery spell from among those cards" (Chandra, Hope's
-     * Beacon's +1) — a single spell, not any number of them — as distinct from the default, where a
+     * Caps how many plays the permission over the whole collection authorises; null (the default)
+     * is unlimited. Each cast (or land play) of a granted card spends one, and the last one revokes
+     * the grant for every card still in the group. `1` models "you may cast **an** instant or sorcery
+     * spell from among those cards" (Chandra, Hope's Beacon's +1); `2` models "you may play **up to
+     * two** of those cards" (March of Reckless Joy) — as distinct from the default, where a
      * multi-card grant keeps authorising the remaining cards after each cast (Light Up the Stage's
-     * "you may play those cards"). The permission is consumed as the spell is cast, so a spell that
-     * is later countered back into exile cannot be recast through it; a card that leaves exile any
-     * other way does not spend it. Honoured by the cast path and the land-play path alike.
+     * "you may play those cards"). A play is spent as the spell is cast, so a spell that is later
+     * countered back into exile cannot be recast through it; a card that leaves exile any other way
+     * spends nothing. Honoured by the cast path and the land-play path alike. With [ownerControls]
+     * the cap applies to each owner's grant separately.
      */
-    val singleUse: Boolean = false
+    val maxPlays: Int? = null
 ) : Effect {
     override val description: String = buildString {
         val who = when {
@@ -1859,11 +1861,13 @@ data class GrantMayPlayFromExileEffect(
         }
         val verb = if (nonLandOnly) "cast" else "play"
         val what = when {
-            castColorRestriction != null && singleUse -> "a ${castColorRestriction.name.lowercase()} spell from among them"
+            castColorRestriction != null && maxPlays == 1 -> "a ${castColorRestriction.name.lowercase()} spell from among them"
             castColorRestriction != null -> "${castColorRestriction.name.lowercase()} spells among them"
             castColorCount != null -> "spells with exactly $castColorCount colors from among them"
-            singleUse && nonLandOnly -> "a spell from among those cards"
-            singleUse -> "one of those cards"
+            maxPlays == 1 && nonLandOnly -> "a spell from among those cards"
+            maxPlays == 1 -> "one of those cards"
+            maxPlays != null && nonLandOnly -> "up to ${numberToWord(maxPlays)} spells from among those cards"
+            maxPlays != null -> "up to ${numberToWord(maxPlays)} of those cards"
             nonLandOnly -> "that card"
             else -> "those cards"
         }

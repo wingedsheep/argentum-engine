@@ -23,7 +23,7 @@ import com.wingedsheep.engine.state.components.identity.PlayWithoutPayingCostCom
 import com.wingedsheep.engine.state.components.identity.RevealedToComponent
 import com.wingedsheep.engine.state.components.stack.*
 import com.wingedsheep.engine.state.nameVisibleToAll
-import com.wingedsheep.engine.state.permissions.consumeSingleUseMayPlayFor
+import com.wingedsheep.engine.state.permissions.spendCappedMayPlayFor
 import com.wingedsheep.engine.state.permissions.removeMayPlayPermissionsForCard
 import com.wingedsheep.engine.view.EventPresentationFactory
 import com.wingedsheep.sdk.core.Color
@@ -487,7 +487,7 @@ internal class SpellCaster(
         // "Cast a spell from among those cards" (Chandra, Hope's Beacon): a single-use grant is
         // spent for its whole group by this cast — permanent or not, and before the per-card
         // pruning below, which would otherwise leave the rest of the group castable.
-        var newState = state.consumeSingleUseMayPlayFor(cardId, casterId)
+        var newState = state.spendCappedMayPlayFor(cardId, casterId)
         // Consume one-shot free-cast permissions used to play this spell. If the
         // spell is later countered or fizzles and AfterResolveDestinationComponent sends
         // it back to exile, the permission must already be gone — otherwise the

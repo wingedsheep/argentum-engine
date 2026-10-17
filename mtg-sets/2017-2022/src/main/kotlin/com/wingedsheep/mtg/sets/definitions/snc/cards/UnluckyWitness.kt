@@ -18,7 +18,7 @@ import com.wingedsheep.sdk.scripting.effects.MayPlayExpiry
  * When this creature dies, exile the top two cards of your library. Until your next end step,
  * you may play one of those cards.
  *
- * Impulse exile of two with a `singleUse` grant: playing either card (casting it, or playing it
+ * Impulse exile of two with a `maxPlays = 1` grant: playing either card (casting it, or playing it
  * as a land) spends the permission for the other. The window is [MayPlayExpiry.UntilNextEndStep],
  * keyed to the controller's own end step.
  */
@@ -39,7 +39,7 @@ val UnluckyWitness = card("Unlucky Witness") {
             run(Effects.GrantMayPlayFromExile(
                 from = exiled,
                 expiry = MayPlayExpiry.UntilNextEndStep,
-                singleUse = true
+                maxPlays = 1
             ))
         }
         description = "When this creature dies, exile the top two cards of your library. " +

@@ -19,7 +19,7 @@ import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.permissions.activeMayPlayFor
-import com.wingedsheep.engine.state.permissions.consumeSingleUseMayPlayFor
+import com.wingedsheep.engine.state.permissions.spendCappedMayPlayFor
 import com.wingedsheep.engine.state.permissions.oncePerTurnGranterToSpend
 import com.wingedsheep.engine.state.permissions.hasMayPlayFor
 import com.wingedsheep.engine.state.permissions.removeMayPlayPermissionsForCard
@@ -375,7 +375,7 @@ class PlayLandHandler(
         // A single-use grant ("play one of those cards") is spent for its whole group, from exile or
         // a graveyard alike — before the per-card cleanup below drops this card from it.
         if (fromZone == Zone.EXILE || fromZone == Zone.GRAVEYARD) {
-            newState = newState.consumeSingleUseMayPlayFor(action.cardId, action.playerId)
+            newState = newState.spendCappedMayPlayFor(action.cardId, action.playerId)
         }
         if (fromZone == Zone.EXILE) {
             // Record once-per-turn linked-exile permission usage (Hauken's Insight — "Once during

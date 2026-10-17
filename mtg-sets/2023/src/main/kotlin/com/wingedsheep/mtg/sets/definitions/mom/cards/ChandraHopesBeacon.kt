@@ -24,7 +24,7 @@ import com.wingedsheep.sdk.core.Zone
  * instant or sorcery spell from among those exiled cards.
  * −X: Chandra deals X damage to each of up to two targets.
  *
- * The +1 is a `singleUse` grant over the filtered pile: casting any one of the exiled instants or
+ * The +1 is a `maxPlays = 1` grant over the filtered pile: casting any one of the exiled instants or
  * sorceries spends the permission for the rest of them.
  */
 val ChandraHopesBeacon = card("Chandra, Hope's Beacon") {
@@ -59,7 +59,7 @@ val ChandraHopesBeacon = card("Chandra, Hope's Beacon") {
                 from = spells,
                 expiry = MayPlayExpiry.UntilEndOfNextTurn,
                 nonLandOnly = true,
-                singleUse = true
+                maxPlays = 1
             ))
         }
         description = "Exile the top five cards of your library. Until the end of your next turn, " +
