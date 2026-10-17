@@ -3474,9 +3474,9 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   (Flickerform), "put an Aura or Equipment card … onto the battlefield attached to Danitha". Legality is
   `AttachmentMover.couldAttachCard`, the same reading as `.couldAttachTo(ref)`. An Aura the host can't
   legally enchant (enchant restriction or protection from its color), or every Aura when the host isn't
-  on the battlefield, stays where it is (CR 303.4g); an Equipment/Fortification that can't be attached
+  on the battlefield, stays where it is (CR 303.4i); an Equipment/Fortification that can't be attached
   (a noncreature host, protection, its own `EquipmentAttachRestriction`, a creature card) **enters
-  unattached** (Danitha's ruling), and every other card moves normally. When the wording keeps the
+  unattached** (CR 301.5e, Danitha's ruling), and every other card moves normally. When the wording keeps the
   unattachable ones behind instead ("any targets that couldn't be legally attached … stay in your
   graveyard", Mantle of the Ancients), add `filter = GameObjectFilter.Any.couldAttachTo(host)`. `markEnteredViaSourceAbility = true` stamps each
   card that lands on the battlefield with `EnteredViaAbilityComponent(this source)` so a later

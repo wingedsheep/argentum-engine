@@ -137,7 +137,7 @@ class MoveCollectionExecutor(
 
         val attachTo = effect.attachTo
         if (attachTo != null && destination is CardDestination.ToZone && destination.zone == Zone.BATTLEFIELD) {
-            return withDepartedPermanents(state, moveAurasAttachedTo(state, context, cards, destination, attachTo, effect), cards)
+            return withDepartedPermanents(state, moveAttachmentsAttachedTo(state, context, cards, destination, attachTo, effect), cards)
         }
 
         var result = when (destination) {
@@ -225,10 +225,10 @@ class MoveCollectionExecutor(
      * enters the battlefield attached to the named host — no enchant choice, the effect specifies
      * it (CR 303.4f). Legality is [AttachmentMover.couldAttachCard]'s. An Aura the host can't
      * legally carry, or every Aura when the host has left the battlefield, stays where it is
-     * (CR 303.4g); an Equipment or Fortification that can't be attached instead enters unattached,
-     * with the rest of the collection, which moves through the ordinary path.
+     * (CR 303.4i); an Equipment or Fortification that can't be attached instead enters unattached
+     * (CR 301.5e), with the rest of the collection, which moves through the ordinary path.
      */
-    private fun moveAurasAttachedTo(
+    private fun moveAttachmentsAttachedTo(
         state: GameState,
         context: EffectContext,
         cards: List<EntityId>,
@@ -243,31 +243,29 @@ class MoveCollectionExecutor(
         } else defaultControllerId
         fun cardOf(cardId: EntityId): CardComponent? =
             if (context.entryCopies[cardId]?.copiedCard != null) null else state.getEntity(cardId)?.get<CardComponent>()
-        val auras = cards.filter { cardOf(it)?.typeLine?.isAura == true }
-        // An Equipment or Fortification that couldn't be attached enters unattached (CR 301.5c,
-        // 301.6), so it joins the ordinary move rather than staying behind like an Aura.
-        val attaching = auras + cards.filter { cardId ->
+        // Every card is judged against the battlefield as it was before this one simultaneous
+        // entry, not against the attachments that land ahead of it in the loop below. An Aura
+        // that couldn't be attached stays in its zone (CR 303.4i); an Equipment or Fortification
+        // enters unattached (CR 301.5e, and 301.6 for Fortifications), joining the ordinary move.
+        val attachable = cards.filter { cardId ->
             val card = cardOf(cardId) ?: return@filter false
-            hostId != null && (card.typeLine.isEquipment || card.typeLine.isFortification) &&
+            hostId != null && (card.typeLine.isAura || card.typeLine.isEquipment || card.typeLine.isFortification) &&
                 AttachmentMover.couldAttachCard(
                     state, predicateEvaluator, cardRegistry, cardId, card, hostId, controllerOf(cardId, card)
                 )
         }
-        val others = cards.filter { it !in attaching }.toMutableList()
+        val attaching = attachable.toSet()
+        val others = cards.filter { it !in attaching && cardOf(it)?.typeLine?.isAura != true }.toMutableList()
         var newState = state
         val events = mutableListOf<GameEvent>()
         val moved = mutableListOf<EntityId>()
         if (hostId != null) {
-            for (cardId in cards.filter { it in attaching }) {
+            for (cardId in attachable) {
                 val card = newState.getEntity(cardId)?.get<CardComponent>() ?: continue
                 val controllerId = controllerOf(cardId, card)
-                // Re-asked against the state after the earlier entries: an attachment that entered
-                // first can change what the host may carry (a protection-granting Aura). An Aura
-                // that no longer could stays in its zone (CR 303.4g); an Equipment enters unattached.
-                val legal = AttachmentMover.couldAttachCard(
-                    newState, predicateEvaluator, cardRegistry, cardId, card, hostId, controllerId
-                )
-                if (!legal || hostId !in newState.getBattlefield()) {
+                // The host can leave mid-loop (an earlier entrant's replacement effect); the rest
+                // then behave as if it were already gone.
+                if (hostId !in newState.getBattlefield()) {
                     if (!card.typeLine.isAura) others.add(cardId)
                     continue
                 }

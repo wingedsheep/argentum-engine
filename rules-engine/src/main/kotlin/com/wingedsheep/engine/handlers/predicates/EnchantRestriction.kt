@@ -47,7 +47,7 @@ object EnchantRestriction {
      * enchant restriction **and** doesn't have protection from one of the Aura's colors (CR 702.16c —
      * a permanent with protection can't be enchanted by Auras with that quality). The one question
      * behind "an Aura card that could enchant it" and an effect that names an Aura's host
-     * (`MoveCollectionEffect.attachTo`): an Aura that fails it stays where it is (CR 303.4g) rather
+     * (`MoveCollectionEffect.attachTo`): an Aura that fails it stays where it is (CR 303.4i) rather
      * than attaching and then being put into the graveyard. Fails closed (false) when the restriction
      * can't be judged.
      */

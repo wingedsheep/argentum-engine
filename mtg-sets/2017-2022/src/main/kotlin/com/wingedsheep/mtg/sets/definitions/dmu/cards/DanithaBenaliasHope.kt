@@ -23,9 +23,9 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * The pick is a `chooseUpTo(1)` over hand + graveyard — choosing nothing *is* the "you may". The
  * move is `MoveCollectionEffect.attachTo = Self`, which splits along the two rulings:
  *  - An **Aura** enters attached to Danitha with no enchant choice, or — when Danitha has left the
- *    battlefield or can't legally be enchanted by it — stays in its previous zone (CR 303.4g).
+ *    battlefield or can't legally be enchanted by it — stays in its previous zone (CR 303.4i).
  *  - An **Equipment** enters attached to Danitha, or — when Danitha has left the battlefield or
- *    can't legally be equipped by it — enters unattached.
+ *    can't legally be equipped by it — enters unattached (CR 301.5e).
  */
 val DanithaBenaliasHope = card("Danitha, Benalia's Hope") {
     manaCost = "{4}{W}"

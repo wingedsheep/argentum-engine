@@ -83,7 +83,7 @@ object AttachmentMover {
      * a creature host (CR 301.5) and can't be a creature card itself (CR 301.5c); a Fortification
      * needs a land host and can't be a creature card (CR 301.6); and neither can enter attached to a
      * permanent with protection from it (CR 702.16c/d) or one its own [EquipmentAttachRestriction]
-     * rules out. Anything else can't be attached (CR 701.3b). Doesn't ask whether [hostId] is on the
+     * rules out. Anything else can't be attached. Doesn't ask whether [hostId] is on the
      * battlefield — callers that move the card check that themselves.
      */
     fun couldAttachCard(

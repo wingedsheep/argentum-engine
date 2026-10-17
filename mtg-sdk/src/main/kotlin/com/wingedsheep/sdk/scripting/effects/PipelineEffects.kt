@@ -1419,8 +1419,8 @@ data class MoveCollectionEffect(
      * creature" (Flickerform), "an Aura or Equipment card … attached to Danitha". The effect names
      * the host, so no enchant choice is offered (CR 303.4f). An Aura that host can't legally carry —
      * or every Aura, when the host is no longer on the battlefield — can't enter and stays in its
-     * current zone (CR 303.4g); an Equipment or Fortification that can't be attached enters
-     * unattached. Pair with a `CardPredicate.CouldAttachTo` [filter] when the unattachable ones stay
+     * current zone (CR 303.4i); an Equipment or Fortification that can't be attached enters
+     * unattached (CR 301.5e). Pair with a `CardPredicate.CouldAttachTo` [filter] when the unattachable ones stay
      * behind instead (Mantle of the Ancients). Other cards move normally. Null (the default) leaves
      * each Aura's host to the player's choice.
      */

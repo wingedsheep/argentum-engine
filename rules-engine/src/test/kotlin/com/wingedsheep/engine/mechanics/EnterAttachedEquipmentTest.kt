@@ -24,8 +24,8 @@ import io.kotest.matchers.shouldBe
  *  - An Equipment put onto the battlefield attached to a creature enters attached (Danitha,
  *    Benalia's Hope ruling 2022-09-09) — no separate attach step.
  *  - One that can't legally equip that creature enters **unattached** rather than staying in its
- *    zone (same ruling; contrast the Aura rule, CR 303.4g): its own "can be attached only to …"
- *    restriction (CR 301.5), an Equipment that is also a creature (CR 301.5c), a Fortification,
+ *    zone (CR 301.5e; contrast the Aura rule, CR 303.4i): its own "can be attached only to …"
+ *    restriction, an Equipment that is also a creature (CR 301.5c), a Fortification,
  *    which can be attached only to a land (CR 301.6).
  *  - With a `couldAttachTo(host)` filter, those cards don't move at all (Mantle of the Ancients
  *    ruling 2021-07-23) while the attachable ones still enter attached.
@@ -94,7 +94,7 @@ class EnterAttachedEquipmentTest : ScenarioTestBase() {
             val host = game.findPermanent("Test Gear Returner")!!
             game.attachedTo("Bonesplitter") shouldBe host
             game.state.projectedState.getPower(host) shouldBe 3
-            withClue("Konda's Banner can be attached only to a legendary creature (CR 301.5)") {
+            withClue("Konda's Banner can be attached only to a legendary creature") {
                 game.isOnBattlefield("Konda's Banner") shouldBe true
                 game.attachedTo("Konda's Banner") shouldBe null
             }
