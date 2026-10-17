@@ -23,8 +23,13 @@ class BoonOfBoseijuScenarioTest : FunSpec({
         typeLine = "Artifact"
     }
 
+    val opposingColossus = card("Boon Test Colossus") {
+        manaCost = "{7}"
+        typeLine = "Artifact"
+    }
+
     fun driver() = GameTestDriver().apply {
-        registerCards(TestCards.all + BoonOfBoseiju + bigArtifact)
+        registerCards(TestCards.all + BoonOfBoseiju + bigArtifact + opposingColossus)
         initMirrorMatch(deck = Deck.of("Forest" to 30))
         passPriorityUntil(Step.PRECOMBAT_MAIN)
     }
@@ -34,8 +39,8 @@ class BoonOfBoseijuScenarioTest : FunSpec({
         val p1 = d.player1
         val lions = d.putCreatureOnBattlefield(p1, "Savannah Lions") // 1/1, MV 1
         d.putPermanentOnBattlefield(p1, bigArtifact.name) // MV 5 — the greatest
-        // An opposing permanent with a bigger mana value doesn't count.
-        d.putCreatureOnBattlefield(d.player2, "Savannah Lions")
+        // An opposing permanent with a bigger mana value (7) doesn't count.
+        d.putPermanentOnBattlefield(d.player2, opposingColossus.name)
         d.tapPermanent(lions)
 
         val boon = d.putCardInHand(p1, BoonOfBoseiju.name)

@@ -70,6 +70,8 @@ class GeothermalKamiScenarioTest : FunSpec({
         castKami(d)
 
         if (d.pendingDecision != null) d.submitYesNo(d.player1, true)
+        // Nothing of the opponent's is offered for the bounce.
+        d.pendingDecision shouldBe null
 
         d.getHand(d.player2) shouldNotContain theirs
         d.getLifeTotal(d.player1) shouldBe 20
