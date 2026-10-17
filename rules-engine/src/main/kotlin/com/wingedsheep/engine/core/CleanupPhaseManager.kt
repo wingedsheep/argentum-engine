@@ -313,6 +313,18 @@ class CleanupPhaseManager(
                 result = result.updateEntity(playerId) { it.without<CantCastFromNonHandZonesComponent>() }
             }
         }
+        // Living Breakthrough's "your opponents can't cast spells … until your next turn" lapses on
+        // the same post-untap hook, keyed off the ban's controller rather than the banned player.
+        for (playerId in result.turnOrder) {
+            val bans = result.getEntity(playerId)?.get<CantCastSpellsComponent>() ?: continue
+            val remaining = bans.restrictions.filterNot {
+                it.removeOn == PlayerEffectRemoval.UntilYourNextTurn && (it.controllerId ?: playerId) in activeTeam
+            }
+            if (remaining.size == bans.restrictions.size) continue
+            result = result.updateEntity(playerId) {
+                if (remaining.isEmpty()) it.without<CantCastSpellsComponent>() else it.with(CantCastSpellsComponent(remaining))
+            }
+        }
         // Teferi, Time Raveler's "until your next turn, you may cast sorcery spells as though they
         // had flash" lapses on the same post-untap hook, keyed off the granting player.
         for (playerId in result.turnOrder) {
