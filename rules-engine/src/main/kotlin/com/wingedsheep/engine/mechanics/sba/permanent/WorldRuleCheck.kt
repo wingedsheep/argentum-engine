@@ -17,11 +17,13 @@ import com.wingedsheep.sdk.model.EntityId
  * graveyards; on a tie for the shortest time, all of them are.
  *
  * Unlike the legend rule this spans every player's battlefield and asks nobody to choose. The
- * world supertype is read from the projected state, and "for the shortest amount of time" is the
- * newest [BattlefieldEntryTimestampComponent] — no effect grants the world supertype, so a world
- * permanent has had it since it entered. Every entry ticks the global timestamp, so a tie only
- * arises when stamps coincide (e.g. permanents placed without an entry stamp, which count as
- * oldest).
+ * world supertype is read from the projected state, and "for the shortest amount of time" is
+ * measured from battlefield entry ([BattlefieldEntryTimestampComponent]): no implemented effect
+ * grants the world supertype to a permanent already on the battlefield (a copy effect such as
+ * Mirrorweave would — revisit this when one lands). Every entry ticks the global timestamp, so
+ * permanents that entered in one simultaneous event (Open the Vaults returning two world
+ * enchantments) carry different stamps; their shared
+ * [BattlefieldEntryTimestampComponent.simultaneousEntryGroup] is what makes them a tie.
  */
 class WorldRuleCheck(private val zones: ZoneTransitionService) : StateBasedActionCheck {
     override val name = "704.5k World Rule"
@@ -32,11 +34,15 @@ class WorldRuleCheck(private val zones: ZoneTransitionService) : StateBasedActio
         val worlds = state.getBattlefield().filter { projected.isWorld(it) }
         if (worlds.size < 2) return ExecutionResult.success(state)
 
-        fun entryStamp(entityId: EntityId): Long =
-            state.getEntity(entityId)?.get<BattlefieldEntryTimestampComponent>()?.timestamp ?: Long.MIN_VALUE
-
-        val newest = worlds.maxOf { entryStamp(it) }
-        val survivor = worlds.singleOrNull { entryStamp(it) == newest }
+        val entries = worlds.associateWith { state.getEntity(it)?.get<BattlefieldEntryTimestampComponent>() }
+        fun stamp(entityId: EntityId): Long = entries[entityId]?.timestamp ?: Long.MIN_VALUE
+        val newest = worlds.maxBy { stamp(it) }
+        val newestGroup = entries[newest]?.simultaneousEntryGroup
+        val tied = worlds.any { other ->
+            other != newest && (stamp(other) == stamp(newest) ||
+                (newestGroup != null && entries[other]?.simultaneousEntryGroup == newestGroup))
+        }
+        val survivor = if (tied) null else newest
 
         var newState = state
         val events = mutableListOf<GameEvent>()

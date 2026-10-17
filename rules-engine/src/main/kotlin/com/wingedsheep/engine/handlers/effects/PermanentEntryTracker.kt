@@ -42,9 +42,15 @@ object PermanentEntryTracker {
      * Record that [entityId] just entered the battlefield under [controllerId]. The
      * recorded card types are read from the projected state, which the caller is
      * responsible for having brought up to date (i.e. [entityId] must already be on the
-     * battlefield with its identity components in place).
+     * battlefield with its identity components in place). [simultaneousEntryGroup] marks an
+     * entry that is part of one simultaneous event with other permanents.
      */
-    fun record(state: GameState, controllerId: EntityId, entityId: EntityId): GameState {
+    fun record(
+        state: GameState,
+        controllerId: EntityId,
+        entityId: EntityId,
+        simultaneousEntryGroup: String? = null
+    ): GameState {
         // Object-identity stamp (CR 400.7): every battlefield entry funnels through here, so
         // this is where the entering permanent gets its entry timestamp. Delayed triggers that
         // track a specific permanent (CR 603.7c) snapshot this value and compare it at
@@ -54,7 +60,7 @@ object PermanentEntryTracker {
         // a value — a blink resolving at the same timestamp as the original entry would collide
         // with the snapshot. Ticking here makes every entry stamp unique unconditionally.
         val stamped = state.updateEntity(entityId) { container ->
-            container.with(BattlefieldEntryTimestampComponent(state.timestamp))
+            container.with(BattlefieldEntryTimestampComponent(state.timestamp, simultaneousEntryGroup))
         }.tick()
         val cardTypes = projectedCardTypes(stamped, entityId)
         if (cardTypes.isEmpty()) return stamped

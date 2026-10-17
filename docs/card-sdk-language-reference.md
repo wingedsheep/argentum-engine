@@ -91,7 +91,8 @@ multi-paragraph entry down the same way when you touch it.
   (CR 704.5k), also from the type line alone: `WorldRuleCheck` is a state-based action that, when two
   or more world permanents are on the battlefield (any controllers), keeps only the one that entered
   most recently and puts the rest into their owners' graveyards — no choice, unlike the legend rule;
-  a tie for most recent puts all of them there. Storm World, Gravity Sphere, Concordant Crossroads.
+  permanents that entered in one simultaneous event (a mass return) tie, and a tie for most recent
+  puts all of them there. Storm World, Gravity Sphere, Concordant Crossroads.
 - `oracleText: String` — rules text; auto-generated from abilities if omitted.
 - `power: Int?`, `toughness: Int?` — base P/T for creatures.
 - `dynamicPower`, `dynamicToughness` — characteristic-defining P/T (e.g. `*/*` Tarmogoyf), as

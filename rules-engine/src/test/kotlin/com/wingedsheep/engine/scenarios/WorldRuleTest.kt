@@ -1,12 +1,17 @@
 package com.wingedsheep.engine.scenarios
 
-import com.wingedsheep.engine.state.components.battlefield.BattlefieldEntryTimestampComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.core.Zone
+import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Deck
+import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.effects.CardDestination
+import com.wingedsheep.sdk.scripting.effects.CardSource
+import com.wingedsheep.sdk.scripting.references.Player
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldNotContain
@@ -33,9 +38,22 @@ class WorldRuleTest : FunSpec({
         typeLine = "Enchantment"
     }
 
+    val returnAllEnchantments = card("Test Return All Enchantments") {
+        manaCost = "{G}"
+        typeLine = "Sorcery"
+        spell {
+            effect = Effects.Pipeline {
+                val returning = gather(
+                    CardSource.FromZone(zone = Zone.GRAVEYARD, player = Player.Each, filter = GameObjectFilter.Enchantment)
+                )
+                move(returning, CardDestination.ToZone(Zone.BATTLEFIELD), underOwnersControl = true)
+            }
+        }
+    }
+
     fun newDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(worldA, worldB, plainEnchantment))
+        driver.registerCards(TestCards.all + listOf(worldA, worldB, plainEnchantment, returnAllEnchantments))
         driver.initMirrorMatch(deck = Deck.of("Forest" to 40))
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
         return driver
@@ -91,20 +109,30 @@ class WorldRuleTest : FunSpec({
 
     test("a tie for the shortest time puts every world permanent into the graveyard") {
         val driver = newDriver()
-        val a = driver.putPermanentOnBattlefield(driver.player1, "Test World A")
-        val b = driver.putPermanentOnBattlefield(driver.player2, "Test World B")
-        driver.replaceState(
-            driver.state
-                .updateEntity(a) { it.with(BattlefieldEntryTimestampComponent(42L)) }
-                .updateEntity(b) { it.with(BattlefieldEntryTimestampComponent(42L)) }
-        )
+        val older = driver.castAndResolve("Test World A")
+        val returnedA = driver.putCardInGraveyard(driver.player1, "Test World A")
+        val returnedB = driver.putCardInGraveyard(driver.player2, "Test World B")
 
-        // State-based actions are checked before the next player receives priority.
-        driver.castAndResolve("Test Plain Enchantment")
+        // Both return in one simultaneous event: they tie for the shortest time, and the
+        // world that was already on the battlefield is older than both.
+        driver.castAndResolve("Test Return All Enchantments")
 
-        driver.getGraveyard(driver.player1) shouldContain a
-        driver.getGraveyard(driver.player2) shouldContain b
+        driver.getGraveyard(driver.player1) shouldContain older
+        driver.getGraveyard(driver.player1) shouldContain returnedA
+        driver.getGraveyard(driver.player2) shouldContain returnedB
         (driver.getPermanents(driver.player1) + driver.getPermanents(driver.player2))
             .filter { driver.getCardName(it)?.startsWith("Test World") == true } shouldBe emptyList()
+    }
+
+    test("a world entering alone after a simultaneous group is the newest and survives") {
+        val driver = newDriver()
+        driver.putCardInGraveyard(driver.player1, "Test World A")
+        driver.putCardInGraveyard(driver.player2, "Test World B")
+        driver.castAndResolve("Test Return All Enchantments")
+        val newest = driver.castAndResolve("Test World A")
+
+        driver.getPermanents(driver.player1) shouldContain newest
+        (driver.getPermanents(driver.player1) + driver.getPermanents(driver.player2))
+            .filter { driver.getCardName(it)?.startsWith("Test World") == true } shouldBe listOf(newest)
     }
 })

@@ -696,10 +696,16 @@ data class TimestampComponent(
  * every battlefield entry (which then ticks the global timestamp, so every entry stamp
  * is unique); stripped on leave. Sibling of [TimestampComponent] — see its note on why
  * the two aren't unified.
+ *
+ * [simultaneousEntryGroup] is the opaque group shared by every permanent that entered in the
+ * same simultaneous event (a mass return or batch put-onto-battlefield); `null` for a lone entry.
+ * The stamps still differ inside a group, so it is the only way to tell that those permanents
+ * have been on the battlefield for the same amount of time (the world rule's tie, CR 704.5k).
  */
 @Serializable
 data class BattlefieldEntryTimestampComponent(
-    val timestamp: Long
+    val timestamp: Long,
+    val simultaneousEntryGroup: String? = null
 ) : Component
 
 /**
