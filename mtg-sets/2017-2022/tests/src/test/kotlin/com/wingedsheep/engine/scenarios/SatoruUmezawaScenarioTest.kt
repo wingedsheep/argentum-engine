@@ -12,6 +12,8 @@ import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.mtg.sets.definitions.neo.cards.SatoruUmezawa
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.dsl.card
+import com.wingedsheep.sdk.dsl.ninjutsu
 import com.wingedsheep.sdk.dsl.ninjutsuAbility
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
@@ -26,8 +28,16 @@ class SatoruUmezawaScenarioTest : FunSpec({
 
     val grantedNinjutsu = ninjutsuAbility("{2}{U}{B}").id
 
+    val printedNinja = card("Test Ninja") {
+        manaCost = "{3}{U}"
+        typeLine = "Creature — Human Ninja"
+        power = 2
+        toughness = 2
+        ninjutsu("{U}")
+    }
+
     fun driver() = GameTestDriver().apply {
-        registerCards(TestCards.all + SatoruUmezawa)
+        registerCards(TestCards.all + listOf(SatoruUmezawa, printedNinja))
         initMirrorMatch(deck = Deck.of("Island" to 40), startingPlayer = 0)
     }
 
@@ -112,6 +122,29 @@ class SatoruUmezawaScenarioTest : FunSpec({
         (island in sources) shouldBe false
     }
 
+    test("a printed ninjutsu triggers it too") {
+        val d = driver()
+        val (lion) = d.unblockedLions(1)
+        val ninja = d.putCardInHand(d.player1, "Test Ninja")
+        d.giveMana(d.player1, Color.BLUE, 1)
+        val offered = LegalActionEnumerator.create(d.cardRegistry).enumerate(d.state, d.player1)
+            .mapNotNull { it.action as? ActivateAbility }
+            .filter { it.sourceId == ninja }
+            .map { it.abilityId }
+        offered shouldContain ninjutsuAbility("{U}").id
+        d.submit(
+            ActivateAbility(
+                playerId = d.player1,
+                sourceId = ninja,
+                abilityId = ninjutsuAbility("{U}").id,
+                costPayment = AdditionalCostPayment(bouncedPermanents = listOf(lion)),
+                paymentStrategy = PaymentStrategy.FromPool,
+            )
+        ).outcome shouldBe Outcome.Done
+        d.resolveAll() shouldBe 1
+        d.findPermanent(d.player1, "Test Ninja").shouldNotBeNull()
+    }
+
     test("triggers only once each turn") {
         val d = driver()
         val (first, second) = d.unblockedLions(2)
@@ -123,5 +156,6 @@ class SatoruUmezawaScenarioTest : FunSpec({
         d.activateGranted(lionsInHand, second)
         d.resolveAll() shouldBe 0
         d.findPermanent(d.player1, "Centaur Courser").shouldNotBeNull()
+        withClue("the second ninjutsu still resolved") { d.getCreatures(d.player1).size shouldBe 3 }
     }
 })

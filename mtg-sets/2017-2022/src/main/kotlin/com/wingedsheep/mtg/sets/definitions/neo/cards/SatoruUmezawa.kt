@@ -26,7 +26,8 @@ import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
  * Ninjutsu is a hand-activated ability tagged `keyword = NINJUTSU` (CR 702.49a), so the trigger
  * keys off that marker and counts a printed or a granted ninjutsu alike. The grant hands every
  * creature card in your hand the same [ninjutsuAbility] a printed `ninjutsu("{2}{U}{B}")` builds;
- * a card with its own ninjutsu keeps both and you pick which to activate.
+ * a card with its own ninjutsu at a different cost keeps both and you pick which to activate (at
+ * the same cost the two are one ability — the id is keyword-and-cost scoped).
  */
 val SatoruUmezawa = card("Satoru Umezawa") {
     manaCost = "{1}{U}{B}"

@@ -8,6 +8,8 @@ import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.mtg.sets.definitions.neo.cards.SilverFurMaster
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.dsl.Costs
+import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.dsl.ninjutsu
 import com.wingedsheep.sdk.dsl.ninjutsuAbility
@@ -28,6 +30,15 @@ class SilverFurMasterScenarioTest : FunSpec({
         ninjutsu("{1}{B}")
     }
 
+    val pinger = card("Test Pinger") {
+        manaCost = "{2}"
+        typeLine = "Artifact"
+        activatedAbility {
+            cost = Costs.Mana("{1}")
+            effect = Effects.GainLife(1)
+        }
+    }
+
     val rogue = card("Test Rogue") {
         manaCost = "{1}"
         typeLine = "Creature — Human Rogue"
@@ -36,7 +47,7 @@ class SilverFurMasterScenarioTest : FunSpec({
     }
 
     fun driver() = GameTestDriver().apply {
-        registerCards(TestCards.all + listOf(SilverFurMaster, ninja, rogue))
+        registerCards(TestCards.all + listOf(SilverFurMaster, ninja, rogue, pinger))
         initMirrorMatch(deck = Deck.of("Swamp" to 40), startingPlayer = 0)
     }
 
@@ -85,6 +96,22 @@ class SilverFurMasterScenarioTest : FunSpec({
                 sourceId = testNinja,
                 abilityId = ninjutsuAbility("{1}{B}").id,
                 costPayment = AdditionalCostPayment(bouncedPermanents = listOf(lion)),
+                paymentStrategy = PaymentStrategy.FromPool,
+            )
+        )
+    }
+
+    test("only ninjutsu abilities are cheaper: a {1} ability still needs its mana") {
+        val d = driver()
+        d.passPriorityUntil(Step.PRECOMBAT_MAIN)
+        d.putCreatureOnBattlefield(d.player1, "Silver-Fur Master")
+        val pinger = d.putPermanentOnBattlefield(d.player1, "Test Pinger")
+        val abilityId = d.cardRegistry.getCard("Test Pinger")!!.script.activatedAbilities.single().id
+        d.submitExpectFailure(
+            ActivateAbility(
+                playerId = d.player1,
+                sourceId = pinger,
+                abilityId = abilityId,
                 paymentStrategy = PaymentStrategy.FromPool,
             )
         )

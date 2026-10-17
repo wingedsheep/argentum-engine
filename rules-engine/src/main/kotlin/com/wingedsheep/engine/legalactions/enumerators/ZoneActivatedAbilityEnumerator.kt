@@ -171,7 +171,11 @@ class ZoneActivatedAbilityEnumerator(
                         if (blightCreatures.isEmpty()) costCanBePaid = false
                     }
                     is AbilityCost.Composite -> {
-                        for (subCost in effectiveCost.costs) {
+                        // Cheap structural checks (an unblocked attacker to return for ninjutsu, a
+                        // card to discard) before the mana solve, so a hand full of ninjutsu cards
+                        // outside combat costs no solver run per priority pass.
+                        val cheapFirst = effectiveCost.costs.sortedBy { (it as? AbilityCost.Atom)?.atom is CostAtom.Mana }
+                        for (subCost in cheapFirst) {
                             when (subCost) {
                                 is AbilityCost.Atom -> when (val atom = subCost.atom) {
                                     is CostAtom.Mana -> {

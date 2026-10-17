@@ -450,7 +450,10 @@ object Keywords {
         costKeyword("cleave", { KeywordAbility.cleave(it.toString()) }) { (it as? KeywordAbility.Cleave)?.cost },
         costKeyword("harmonize", { KeywordAbility.harmonize(it.toString()) }) { (it as? KeywordAbility.Harmonize)?.cost },
         costKeyword("mayhem", { KeywordAbility.mayhem(it.toString()) }) { (it as? KeywordAbility.Mayhem)?.cost },
-        costKeyword("ninjutsu", { KeywordAbility.ninjutsu(it.toString()) }) { (it as? KeywordAbility.Ninjutsu)?.cost },
+        // No "ninjutsu {cost}" rule: ninjutsu is a hand-activated ability (CR 702.49a) — the
+        // `ninjutsu(cost)` DSL helper pairs the display-only KeywordAbility.Ninjutsu with
+        // `ninjutsuAbility(cost)`. A keyword-line rule would emit only the marker, a ninja that
+        // can't ninjutsu, so the line declines until a band teaches Assay the activated ability.
         costKeyword("sneak", { KeywordAbility.sneak(it.toString()) }) { (it as? KeywordAbility.Sneak)?.cost },
         costKeyword("web-slinging", { KeywordAbility.webSlinging(it.toString()) }) {
             (it as? KeywordAbility.WebSlinging)?.cost

@@ -200,6 +200,10 @@ class KeywordGrammarTest : StringSpec({
         declined.reason shouldBe com.wingedsheep.assay.syntax.DeclineReason.NO_PARSE
     }
 
+    "ninjutsu declines: the keyword alone is display-only, the ability is a hand activation" {
+        Grammar.abilityLine.parseLine("Ninjutsu {1}{U}").shouldBeInstanceOf<ParseOutcome.Declined>()
+    }
+
     "a mana symbol the SDK cannot express declines rather than throwing" {
         Grammar.abilityLine.parseLine("Cycling {HW}").shouldBeInstanceOf<ParseOutcome.Declined>()
     }
@@ -213,7 +217,7 @@ class KeywordGrammarTest : StringSpec({
             "Affinity for artifacts", "Affinity for Lizards", "Conspire", "Flanking", "Increment",
             "Foretell {1}{U}", "Plot {2}{G}", "Disturb {1}{W}", "Evoke {3}{B}", "Emerge {6}{U}",
             "Miracle {W}", "Dash {1}{R}", "Warp {2}{U}", "Cleave {3}{U}{U}", "Harmonize {4}{G}",
-            "Mayhem {1}{B}", "Ninjutsu {1}{U}", "Sneak {B}", "Web-slinging {2}{W}",
+            "Mayhem {1}{B}", "Sneak {B}", "Web-slinging {2}{W}",
             "Disguise {1}{U}", "Offspring {2}", "Madness {1}{R}", "Hideaway 4", "Saddle 2",
             "Start your engines!", "Ascend", "Riot", "Bushido 1", "Modular 3", "Fading 5",
             "Vanishing 3", "Renown 1", "Fabricate 2", "Tribute 3", "Mobilize 1", "Firebending 2",
