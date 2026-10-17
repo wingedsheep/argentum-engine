@@ -37,7 +37,7 @@ import com.wingedsheep.sdk.scripting.values.DynamicAmount
 class CostEnumerationUtils(
     private val manaSolver: ManaSolver,
     private val costCalculator: CostCalculator,
-    private val predicateEvaluator: PredicateEvaluator,
+    val predicateEvaluator: PredicateEvaluator,
     private val cardRegistry: CardRegistry
 ) {
     // --- Sacrifice targets ---

@@ -159,7 +159,10 @@ sealed interface AdditionalCost : TextReplaceable<AdditionalCost> {
      * consume *different* payment fields (sacrifice vs. discard vs. exile) disambiguate cleanly. Two
      * options that consume the *same* field (e.g. two different Sacrifice filters) are not
      * distinguishable by payment alone — declare [Choice.choiceSlot] to require an explicit
-     * branch selection and retain it for later effects.
+     * branch selection and retain it for later effects. An option that consumes *no* payment field
+     * — pay N life (Dusk Mangler: "sacrifice a creature, discard a card, or pay 4 life") — can't be
+     * recovered from the payment at all, so a [Choice] with a pay-life option must name its branch
+     * slot (enforced at construction).
      */
     @SerialName("ChoiceCost")
     @Serializable
@@ -168,6 +171,12 @@ sealed interface AdditionalCost : TextReplaceable<AdditionalCost> {
         /** Store the explicitly chosen zero-based branch in this durable cast-choice slot. */
         val choiceSlot: ChoiceSlot? = null,
     ) : AdditionalCost {
+        init {
+            require(choiceSlot != null || options.none { (it as? Atom)?.atom is CostAtom.PayLife }) {
+                "A Choice with a pay-life option must declare a choiceSlot: paying life fills no payment field"
+            }
+        }
+
         override val description: String get() = options.joinToString(" or ") { it.description }
 
         override fun applyTextReplacement(replacer: TextReplacer): AdditionalCost {

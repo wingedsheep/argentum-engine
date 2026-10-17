@@ -1,12 +1,11 @@
 package com.wingedsheep.mtg.sets.definitions.lci.cards
 
-import com.wingedsheep.sdk.dsl.Effects
-import com.wingedsheep.sdk.dsl.card
-import com.wingedsheep.sdk.dsl.mode
-import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.effects.ModalEffect
 import com.wingedsheep.sdk.dsl.Costs
+import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Targets
+import com.wingedsheep.sdk.dsl.card
+import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.scripting.ChoiceSlot
 
 /**
  * Bitter Triumph
@@ -15,12 +14,6 @@ import com.wingedsheep.sdk.dsl.Targets
  *
  * As an additional cost to cast this spell, discard a card or pay 3 life.
  * Destroy target creature or planeswalker.
- *
- * Modeled with [ModalEffect] for the binary cost fork (discard a card or
- * pay 3 life), matching Feed the Cycle's "forage or pay {B}" pattern.
- * The spell is NOT modal in MTG terms — there is no "Choose one — • X • Y"
- * wording. `countsAsModalSpell = false` keeps Riku of Many Paths and
- * other "Whenever you cast a modal spell" triggers from misreading it.
  */
 val BitterTriumph = card("Bitter Triumph") {
     manaCost = "{1}{B}"
@@ -28,22 +21,14 @@ val BitterTriumph = card("Bitter Triumph") {
     typeLine = "Instant"
     oracleText = "As an additional cost to cast this spell, discard a card or pay 3 life.\nDestroy target creature or planeswalker."
 
+    additionalCost(Costs.additional.Choice(
+        Costs.additional.DiscardCards(1),
+        Costs.additional.PayLife(3),
+        choiceSlot = ChoiceSlot.ADDITIONAL_COST_BRANCH,
+    ))
     spell {
-        effect = ModalEffect.chooseOne(
-            // Mode 1: Discard a card
-            mode("Discard a card — destroy target creature or planeswalker") {
-                val creatureOrPlaneswalker = target(Targets.CreatureOrPlaneswalker)
-                additionalCosts = listOf(Costs.additional.DiscardCards(count = 1))
-                effect = Effects.Destroy(creatureOrPlaneswalker)
-            },
-            // Mode 2: Pay 3 life
-            mode("Pay 3 life — destroy target creature or planeswalker") {
-                val creatureOrPlaneswalker = target(Targets.CreatureOrPlaneswalker)
-                additionalCosts = listOf(Costs.additional.PayLife(amount = 3))
-                effect = Effects.Destroy(creatureOrPlaneswalker)
-            },
-            countsAsModalSpell = false
-        )
+        val creatureOrPlaneswalker = target(Targets.CreatureOrPlaneswalker)
+        effect = Effects.Destroy(creatureOrPlaneswalker)
     }
 
     metadata {

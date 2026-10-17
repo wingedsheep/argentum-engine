@@ -858,8 +858,8 @@ object Costs {
         /**
          * Cost-vs-cost — the caster pays exactly one of [options] ("discard a card **or** sacrifice a
          * permanent"; Souls of the Lost). For options that are each independently payable non-mana
-         * costs; use the `*OrPay` family instead when one branch pays extra *mana*. See
-         * [AdditionalCost.Choice].
+         * costs; use the `*OrPay` family instead when one branch pays extra *mana*. A pay-life option
+         * ("… or pay 4 life"; Dusk Mangler) requires [choiceSlot]. See [AdditionalCost.Choice].
          */
         fun Choice(
             vararg options: AdditionalCost,

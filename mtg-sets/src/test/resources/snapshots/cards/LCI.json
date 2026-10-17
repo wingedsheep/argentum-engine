@@ -1585,65 +1585,42 @@
     "oracleText": "As an additional cost to cast this spell, discard a card or pay 3 life.\nDestroy target creature or planeswalker.",
     "script": {
         "spellEffect": {
-            "type": "Modal",
-            "modes": [
-                {
-                    "effect": {
-                        "type": "MoveToZone",
-                        "target": {
-                            "type": "BoundVariable",
-                            "name": "t0"
-                        },
-                        "destination": "Graveyard",
-                        "byDestruction": true
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "destination": "Graveyard",
+            "byDestruction": true
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetCreatureOrPlaneswalker",
+                "id": "t0"
+            }
+        ],
+        "additionalCosts": [
+            {
+                "type": "ChoiceCost",
+                "options": [
+                    {
+                        "type": "AdditionalAtom",
+                        "atom": "AtomDiscard"
                     },
-                    "targetRequirements": [
-                        {
-                            "type": "TargetCreatureOrPlaneswalker",
-                            "id": "t0"
-                        }
-                    ],
-                    "description": "Discard a card — destroy target creature or planeswalker",
-                    "additionalCosts": [
-                        {
-                            "type": "AdditionalAtom",
-                            "atom": "AtomDiscard"
-                        }
-                    ]
-                },
-                {
-                    "effect": {
-                        "type": "MoveToZone",
-                        "target": {
-                            "type": "BoundVariable",
-                            "name": "t1"
-                        },
-                        "destination": "Graveyard",
-                        "byDestruction": true
-                    },
-                    "targetRequirements": [
-                        {
-                            "type": "TargetCreatureOrPlaneswalker",
-                            "id": "t1"
-                        }
-                    ],
-                    "description": "Pay 3 life — destroy target creature or planeswalker",
-                    "additionalCosts": [
-                        {
-                            "type": "AdditionalAtom",
-                            "atom": {
-                                "type": "AtomPayLife",
-                                "amount": {
-                                    "type": "Fixed",
-                                    "amount": 3
-                                }
+                    {
+                        "type": "AdditionalAtom",
+                        "atom": {
+                            "type": "AtomPayLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 3
                             }
                         }
-                    ]
-                }
-            ],
-            "countsAsModalSpell": false
-        }
+                    }
+                ],
+                "choiceSlot": "ADDITIONAL_COST_BRANCH"
+            }
+        ]
     },
     "metadata": {
         "collectorNumber": "91",

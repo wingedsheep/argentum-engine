@@ -3,6 +3,7 @@ package com.wingedsheep.engine.handlers.costs
 import com.wingedsheep.engine.legalactions.AdditionalCostData
 import com.wingedsheep.engine.legalactions.utils.CostEnumerationUtils
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.LifePaymentPurpose
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AdditionalCost
 import com.wingedsheep.sdk.scripting.costs.CostAtom
@@ -19,9 +20,9 @@ import com.wingedsheep.sdk.scripting.costs.CostAtom
  * expanded cast action. Named choices also carry the original option index on that action;
  * unnamed choices retain their legacy inference from distinct payment fields.
  *
- * Only options that map to a client-rendered cost picker are emitted; an option whose atom has no
- * picker (or which can't currently be paid) is dropped, so a [Choice] with no payable option yields
- * an empty list and the card is not castable.
+ * Only options that map to a client-rendered cost picker (or, like pay-life, need none) are
+ * emitted; an option whose atom has no picker (or which can't currently be paid) is dropped, so a
+ * [Choice] with no payable option yields an empty list and the card is not castable.
  */
 object ChoiceCostResolver {
 
@@ -77,6 +78,14 @@ object ChoiceCostResolver {
                     exileMinCount = atom.count,
                     exileMaxCount = atom.count,
                 )
+            }
+            // Pay N life fills no payment field — the declared branch (the SDK requires a choiceSlot
+            // for this option) carries it, and there is nothing to pick (costType "PayLife").
+            // CR 119.4 — offered only while the caster's life total is at least N.
+            is CostAtom.PayLife -> {
+                val life = CostAtomAmounts.life(state, atom, playerId, costUtils.predicateEvaluator, cardId)
+                if (!CostAtomAmounts.canPayLife(state, playerId, life, LifePaymentPurpose.CAST_SPELL)) return null
+                AdditionalCostData(description = "Pay $life life", costType = "PayLife")
             }
             // Other atoms don't yet have a cost-vs-cost picker; add them here alongside a client
             // costType when a future Choice card needs one.

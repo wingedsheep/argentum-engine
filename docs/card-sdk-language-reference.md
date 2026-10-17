@@ -1106,7 +1106,12 @@ cast action advertises the first selection cost as `additionalCostInfo` and the 
   `Conditions.YouDiscardedThisCardThisTurn` (Mayhem).
 - `Costs.additional.Choice(vararg options, choiceSlot = null)` — pay exactly one additional
   non-mana cost. `Sacrifice`, `Discard`, and `ExileFrom` alternatives use their existing payment
-  pickers. `OrPay` remains the spelling for an alternative that adds mana instead.
+  pickers; a `PayLife(n)` alternative needs no picker (`costType = "PayLife"`) and is offered only
+  while the caster has at least `n` life (CR 119.4). Paying life fills no payment field, so a
+  `Choice` with a pay-life option **must** declare `choiceSlot = ChoiceSlot.ADDITIONAL_COST_BRANCH`
+  (enforced at construction) — Dusk Mangler ("sacrifice a creature, discard a card, or pay 4
+  life"), Bitter Triumph ("discard a card or pay 3 life"). `OrPay` remains the spelling for an
+  alternative that adds mana instead.
   With `choiceSlot = ChoiceSlot.ADDITIONAL_COST_BRANCH`, each offered cast action carries the
   **original zero-based option index** in `CastSpell.additionalCostChoices`. This distinguishes
   alternatives that use the same payment field, including overlapping sacrifice filters:
