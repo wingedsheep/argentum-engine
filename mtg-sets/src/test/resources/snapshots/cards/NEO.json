@@ -3865,6 +3865,67 @@
     "colorIdentityOverride": []
 }
 
+// Peerless Samurai
+{
+    "name": "Peerless Samurai",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Human Samurai",
+    "oracleText": "Menace (This creature can't be blocked except by two or more creatures.)\nWhenever a Samurai or Warrior you control attacks alone, the next spell you cast this turn costs {1} less to cast.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "MENACE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Peerless Samurai:1",
+                "trigger": {
+                    "type": "AttackEvent",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "HasAnyOfSubtypes",
+                                "subtypes": [
+                                    "Samurai",
+                                    "Warrior"
+                                ]
+                            }
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    },
+                    "requires": [
+                        "AttacksAlone"
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ModifySpellCosts",
+                    "spellFilter": {},
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "nextSpellOnly": true
+                },
+                "descriptionOverride": "Whenever a Samurai or Warrior you control attacks alone, the next spell you cast this turn costs {1} less to cast."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "156",
+        "artist": "Micah Epstein",
+        "flavorText": "\"I fear I have run out of worthy opponents.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/5/e5b2176d-8925-4474-9d3e-1c97192715fb.jpg?1783923862"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Repel the Vile
 {
     "name": "Repel the Vile",

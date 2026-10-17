@@ -37,6 +37,9 @@ import kotlinx.serialization.Serializable
  * @property duration How long the discount lasts: [Duration.EndOfTurn] or
  *   [Duration.UntilYourNextTurn].
  * @property increase `true` for a tax ("cost {N} more"), `false` for a discount.
+ * @property nextSpellOnly `true` for a one-shot "the next spell you cast this turn costs {N} less"
+ *   (Peerless Samurai): the first matching spell [controllerId] casts spends it, in
+ *   [com.wingedsheep.engine.handlers.actions.spell.CastTriggers.consumeNextSpellRiders].
  */
 @Serializable
 data class SpellCostModifier(
@@ -47,4 +50,5 @@ data class SpellCostModifier(
     val sourceName: String,
     val duration: Duration = Duration.EndOfTurn,
     val increase: Boolean = false,
+    val nextSpellOnly: Boolean = false,
 )

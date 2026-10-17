@@ -60,6 +60,7 @@ class ModifySpellCostsExecutor(
                     sourceName = sourceName,
                     duration = effect.duration,
                     increase = effect.increase,
+                    nextSpellOnly = effect.nextSpellOnly,
                 )
             }
         return EffectResult.success(

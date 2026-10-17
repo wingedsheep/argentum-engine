@@ -338,6 +338,7 @@ internal class CastTriggers(
         newState = consumeAffinityRiders(newState, spell)
         newState = consumeKeywordRiders(newState, spell)
         newState = consumeFreeCastRiders(newState, spell)
+        newState = consumeNextSpellCostModifiers(newState, spell)
         return ExecutionResult.success(newState, events + copyEvents)
     }
 
@@ -438,6 +439,20 @@ internal class CastTriggers(
         val matching = state.pendingFreeCastSpells.filter { spellMatchesRider(state, spell, it.controllerId, it.sourceId, it.spellFilter) }
         if (matching.isEmpty()) return state
         return state.copy(pendingFreeCastSpells = state.pendingFreeCastSpells.filter { it !in matching })
+    }
+
+    /**
+     * One-shot "the next spell you cast this turn costs {N} less" modifiers (Peerless Samurai). The
+     * cost calculator already applied them while they were present; consuming every matching one
+     * here means only the *next* matching spell is discounted — several stacked instances all go to
+     * that one spell. Repeating modifiers (`nextSpellOnly = false`) are left alone.
+     */
+    private fun consumeNextSpellCostModifiers(state: GameState, spell: CastSpellOnStack): GameState {
+        val matching = state.spellCostModifiers.filter {
+            it.nextSpellOnly && spellMatchesRider(state, spell, it.controllerId, it.sourceId, it.spellFilter)
+        }
+        if (matching.isEmpty()) return state
+        return state.copy(spellCostModifiers = state.spellCostModifiers.filter { it !in matching })
     }
 
     /** The rider's own sourceId goes into the context so `EffectTarget.Self` resolves to it. */

@@ -1346,6 +1346,9 @@ data class GrantNextSpellKeywordEffect(
  * @property duration How long the modifier lasts.
  * @property player Whose spells are affected, resolved at execution time.
  * @property increase `true` for a tax ("cost {X} more"), `false` for a discount.
+ * @property nextSpellOnly `true` for the one-shot "the next spell you cast this turn [that matches]
+ *   costs {X} less" (Peerless Samurai): the first matching spell the player casts this turn spends
+ *   the modifier, whether or not it needed the discount. Only valid with [Duration.EndOfTurn].
  */
 @SerialName("ModifySpellCosts")
 @Serializable
@@ -1355,8 +1358,12 @@ data class ModifySpellCostsEffect(
     val duration: Duration = Duration.EndOfTurn,
     val player: Player = Player.You,
     val increase: Boolean = false,
+    val nextSpellOnly: Boolean = false,
 ) : Effect {
     init {
+        require(!nextSpellOnly || duration == Duration.EndOfTurn) {
+            "ModifySpellCostsEffect.nextSpellOnly supports only EndOfTurn, not $duration"
+        }
         require(duration == Duration.EndOfTurn || duration == Duration.UntilYourNextTurn) {
             "ModifySpellCostsEffect supports EndOfTurn or UntilYourNextTurn, not $duration"
         }
@@ -1366,11 +1373,19 @@ data class ModifySpellCostsEffect(
     }
 
     override val description: String = buildString {
-        append("Spells ")
-        append(if (player == Player.You) "you cast " else "${player.description} casts ")
-        append(if (duration == Duration.EndOfTurn) "this turn" else duration.description)
-        append(" that are ${spellFilter.description}")
-        append(" cost ")
+        if (nextSpellOnly) {
+            append("The next ")
+            if (spellFilter != GameObjectFilter.Any) append("${spellFilter.description} ")
+            append("spell ")
+            append(if (player == Player.You) "you cast" else "${player.description} casts")
+            append(" this turn costs ")
+        } else {
+            append("Spells ")
+            append(if (player == Player.You) "you cast " else "${player.description} casts ")
+            append(if (duration == Duration.EndOfTurn) "this turn" else duration.description)
+            append(" that are ${spellFilter.description}")
+            append(" cost ")
+        }
         val direction = if (increase) "more" else "less"
         val fixed = (amount as? DynamicAmount.Fixed)?.amount
         if (fixed != null) append("{$fixed} $direction to cast")

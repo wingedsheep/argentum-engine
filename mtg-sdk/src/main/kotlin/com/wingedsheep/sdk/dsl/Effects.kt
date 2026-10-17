@@ -5639,6 +5639,19 @@ object Effects {
     ): Effect = com.wingedsheep.sdk.scripting.effects.ModifySpellCostsEffect(spellFilter, amount, duration)
 
     /**
+     * "The next spell you cast this turn [that matches [spellFilter]] costs {X} less to cast, where
+     * X is [amount]" (Peerless Samurai) — the one-shot form of [ReduceSpellCosts]. [amount] is
+     * locked in on resolution; the first matching spell cast this turn spends the discount, whether
+     * or not it needed it, and an unused one ends with the turn.
+     */
+    fun ReduceNextSpellCost(
+        amount: DynamicAmount,
+        spellFilter: GameObjectFilter = GameObjectFilter.Any,
+    ): Effect = com.wingedsheep.sdk.scripting.effects.ModifySpellCostsEffect(
+        spellFilter, amount, Duration.EndOfTurn, nextSpellOnly = true
+    )
+
+    /**
      * "Spells [player] casts this turn that match [spellFilter] cost {X} more to cast, where X is
      * [amount]" — the tax mirror of [ReduceSpellCosts]. Academy Loremaster: "spells they cast this
      * turn cost {2} more", with `player = Player.TriggeringPlayer`.
