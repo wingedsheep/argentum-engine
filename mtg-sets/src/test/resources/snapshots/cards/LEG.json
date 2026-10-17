@@ -3304,7 +3304,9 @@
         "staticAbilities": [
             {
                 "type": "SuppressLandwalkForGroup",
-                "landwalk": "SWAMPWALK"
+                "landwalks": [
+                    "SWAMPWALK"
+                ]
             }
         ]
     },
@@ -4392,7 +4394,9 @@
         "staticAbilities": [
             {
                 "type": "SuppressLandwalkForGroup",
-                "landwalk": "SWAMPWALK"
+                "landwalks": [
+                    "SWAMPWALK"
+                ]
             }
         ]
     },

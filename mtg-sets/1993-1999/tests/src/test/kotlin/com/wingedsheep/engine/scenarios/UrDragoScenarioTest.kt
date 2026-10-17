@@ -13,7 +13,7 @@ class UrDragoScenarioTest : ScenarioTestBase() {
 
     init {
         context("Ur-Drago") {
-            test("blocks a swampwalker despite its controller's Swamp, and first strike kills it first") {
+            test("blocks a swampwalker despite its controller's Swamp and kills it") {
                 val game = scenario()
                     .withPlayers("Player1", "Player2")
                     .withCardOnBattlefield(1, "Marsh Goblins")

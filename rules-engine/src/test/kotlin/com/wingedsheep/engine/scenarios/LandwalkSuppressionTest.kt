@@ -57,6 +57,31 @@ class LandwalkSuppressionTest : FunSpec({
         keywords(Keyword.FORESTWALK, Keyword.ISLANDWALK)
     }
 
+    val nonbasicWalker = card("Test Nonbasic Walker") {
+        manaCost = "{1}{B}"
+        typeLine = "Creature — Shade"
+        power = 2
+        toughness = 2
+        keywords(Keyword.NONBASIC_LANDWALK)
+    }
+
+    val nonbasicLand = card("Test Nonbasic Land") {
+        typeLine = "Land"
+    }
+
+    // One sentence naming two landwalks (the Staff of the Ages shape).
+    val bothSuppressor = card("Test Forest Island Wall") {
+        manaCost = "{3}"
+        typeLine = "Artifact"
+        staticAbility { ability = SuppressLandwalkForGroup(setOf(Keyword.FORESTWALK, Keyword.ISLANDWALK)) }
+    }
+
+    val nonbasicSuppressor = card("Test Nonbasic Shield") {
+        manaCost = "{2}"
+        typeLine = "Artifact"
+        staticAbility { ability = SuppressLandwalkForGroup(Keyword.NONBASIC_LANDWALK) }
+    }
+
     val mute = card("Test Mute") {
         manaCost = "{0}"
         typeLine = "Instant"
@@ -80,6 +105,7 @@ class LandwalkSuppressionTest : FunSpec({
         driver.registerCard(ownForestwalkSuppressor)
         driver.registerCard(doubleWalker)
         driver.registerCard(mute)
+        listOf(nonbasicWalker, nonbasicLand, bothSuppressor, nonbasicSuppressor).forEach(driver::registerCard)
         driver.registerCard(forestPath)
         driver.initMirrorMatch(
             deck = Deck.of("Forest" to 20, "Island" to 10, "Grizzly Bears" to 10),
@@ -160,6 +186,26 @@ class LandwalkSuppressionTest : FunSpec({
         result.error shouldBe null
     }
 
+    test("one instance can name several landwalks") {
+        val driver = createDriver()
+        val (_, result) = driver.attackAndBlock("Test Forest Island Walker", listOf("Forest", "Island")) {
+            putPermanentOnBattlefield(player2, "Test Forest Island Wall")
+        }
+        result.error shouldBe null
+    }
+
+    test("nonbasic landwalk is suppressed the same way") {
+        val driver = createDriver()
+        val (_, unsuppressed) = driver.attackAndBlock("Test Nonbasic Walker", listOf("Test Nonbasic Land"))
+        unsuppressed.error shouldContainIgnoringCase "nonbasic landwalk"
+
+        val other = createDriver()
+        val (_, result) = other.attackAndBlock("Test Nonbasic Walker", listOf("Test Nonbasic Land")) {
+            putPermanentOnBattlefield(player2, "Test Nonbasic Shield")
+        }
+        result.error shouldBe null
+    }
+
     test("the creature keeps the keyword — only blocking is affected") {
         val driver = createDriver()
         val walker = driver.putCreatureOnBattlefield(driver.player1, "Forest Walker")
@@ -215,5 +261,6 @@ class LandwalkSuppressionTest : FunSpec({
 
     test("only landwalk keywords are accepted") {
         shouldThrow<IllegalArgumentException> { SuppressLandwalkForGroup(Keyword.FLYING) }
+        shouldThrow<IllegalArgumentException> { SuppressLandwalkForGroup(emptySet()) }
     }
 })

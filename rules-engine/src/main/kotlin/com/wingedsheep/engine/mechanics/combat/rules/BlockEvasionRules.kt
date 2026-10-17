@@ -149,25 +149,26 @@ class LandwalkRule(
     )
 
     override fun check(ctx: BlockCheckContext): String? {
-        if (Keyword.LANDWALK.none { ctx.projected.hasKeyword(ctx.attackerId, it) }) return null
-        val attackerName = ctx.state.getEntity(ctx.attackerId)?.get<CardComponent>()?.name ?: "Creature"
-        val suppressed = LandwalkSuppression.suppressedLandwalks(
-            ctx.state, ctx.attackerId, ctx.cardRegistry, predicateEvaluator
-        )
+        // The suppression scan runs only once a landwalk would actually apply.
+        val suppressed by lazy(LazyThreadSafetyMode.NONE) {
+            LandwalkSuppression.suppressedLandwalks(ctx.state, ctx.attackerId, ctx.cardRegistry, predicateEvaluator)
+        }
+        val attackerName = { ctx.state.getEntity(ctx.attackerId)?.get<CardComponent>()?.name ?: "Creature" }
         for ((landwalkKeyword, landSubtype) in landwalkToSubtype) {
-            if (landwalkKeyword !in suppressed && ctx.projected.hasKeyword(ctx.attackerId, landwalkKeyword)) {
-                if (playerControlsLandWithSubtype(ctx, landSubtype)) {
-                    return "$attackerName has ${landwalkKeyword.displayName} and cannot be blocked"
-                }
+            if (ctx.projected.hasKeyword(ctx.attackerId, landwalkKeyword) &&
+                playerControlsLandWithSubtype(ctx, landSubtype) &&
+                landwalkKeyword !in suppressed
+            ) {
+                return "${attackerName()} has ${landwalkKeyword.displayName} and cannot be blocked"
             }
         }
         // Nonbasic landwalk (CR 702.14 family): unblockable while the defending player controls any
         // land that isn't a basic land.
-        if (Keyword.NONBASIC_LANDWALK !in suppressed &&
-            ctx.projected.hasKeyword(ctx.attackerId, Keyword.NONBASIC_LANDWALK) &&
-            playerControlsNonbasicLand(ctx)
+        if (ctx.projected.hasKeyword(ctx.attackerId, Keyword.NONBASIC_LANDWALK) &&
+            playerControlsNonbasicLand(ctx) &&
+            Keyword.NONBASIC_LANDWALK !in suppressed
         ) {
-            return "$attackerName has ${Keyword.NONBASIC_LANDWALK.displayName} and cannot be blocked"
+            return "${attackerName()} has ${Keyword.NONBASIC_LANDWALK.displayName} and cannot be blocked"
         }
         return null
     }

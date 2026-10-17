@@ -371,7 +371,7 @@ internal class EffectApplicator(
                             if (!card.typeLine.isCreature) continue
                             for (keyword in card.baseKeywords) {
                                 if (keyword.name in mod.keywords ||
-                                    (mod.anyLandwalk && keyword.name.endsWith("WALK"))
+                                    (mod.anyLandwalk && keyword in Keyword.LANDWALK)
                                 ) {
                                     values.keywords.add(keyword.name)
                                 }

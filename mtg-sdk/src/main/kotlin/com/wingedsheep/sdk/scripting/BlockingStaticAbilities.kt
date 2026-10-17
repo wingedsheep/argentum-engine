@@ -1,6 +1,7 @@
 package com.wingedsheep.sdk.scripting
 
 import com.wingedsheep.sdk.core.Keyword
+import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.filters.unified.Scope
 import com.wingedsheep.sdk.scripting.text.TextReplacer
@@ -372,8 +373,8 @@ data class CanBlockAsThoughUntapped(
 }
 
 /**
- * Creatures matching [filter] can be blocked as though they didn't have [landwalk] — the landwalk
- * evasion of CR 702.14 is ignored for them, and nothing else about the keyword changes.
+ * Creatures matching [filter] can be blocked as though they didn't have [landwalks] — the landwalk
+ * evasion of CR 702.14 is ignored for them, and nothing else about the keywords changes.
  *
  *  - Battlefield scope (the default) — "Creatures with swampwalk can be blocked as though they
  *    didn't have swampwalk." (Quagmire, Ur-Drago): `SuppressLandwalkForGroup(Keyword.SWAMPWALK)`.
@@ -384,39 +385,56 @@ data class CanBlockAsThoughUntapped(
  *    `GroupFilter.source()` is also the shape to hand `Effects.GrantStaticAbility` for "target
  *    creature can be blocked as though it didn't have <X>walk this turn".
  *
+ * One printed sentence is one instance: Lord Magnus's two sentences are two instances, while a
+ * single sentence naming several landwalks takes them all in [landwalks].
+ *
  * The creature still *has* the keyword: it still counts for "creatures with swampwalk" and can
  * still be granted or lose it. Only the block-legality check changes, so it's read at block
- * declaration by `LandwalkSuppression`, never through projection. A permanent that lists several
- * landwalks (Lord Magnus) carries one instance per keyword.
+ * declaration by `LandwalkSuppression`, never through projection. A text change (Magical Hack)
+ * rewrites the land type a basic landwalk names, the way it rewrites the keyword itself.
  *
  * Closest neighbours: [SuppressHexproofForGroup] suppresses a keyword for *targeting*, and
  * [CanBlockAsThoughUntapped] lifts one blocking rule for the *blocker*; neither reads an attacker's
  * evasion keyword.
  *
- * @property landwalk One of the landwalk keywords (Swampwalk … Desertwalk, Nonbasic landwalk).
+ * @property landwalks Landwalk keywords (members of [Keyword.LANDWALK]) whose evasion is ignored.
  * @property filter Which attacking creatures lose the evasion (default: all creatures).
  */
 @SerialName("SuppressLandwalkForGroup")
 @Serializable
 data class SuppressLandwalkForGroup(
-    val landwalk: Keyword,
+    val landwalks: Set<Keyword>,
     val filter: GroupFilter = GroupFilter.AllCreatures
 ) : StaticAbility {
+    constructor(landwalk: Keyword, filter: GroupFilter = GroupFilter.AllCreatures) : this(setOf(landwalk), filter)
+
     init {
-        require(landwalk in Keyword.LANDWALK) { "SuppressLandwalkForGroup needs a landwalk keyword, got $landwalk" }
+        require(landwalks.isNotEmpty() && landwalks.all { it in Keyword.LANDWALK }) {
+            "SuppressLandwalkForGroup needs landwalk keywords, got $landwalks"
+        }
     }
 
     override val description: String = run {
-        val walk = landwalk.displayName.lowercase()
-        if (filter.scope is Scope.Self) {
-            "can be blocked as though it didn't have $walk"
-        } else {
-            "Creatures with $walk can be blocked as though they didn't have $walk"
+        val walks = landwalks.joinToString(" or ") { it.displayName.lowercase() }
+        when (filter.scope) {
+            is Scope.Self -> "can be blocked as though it didn't have $walks"
+            is Scope.AttachedTo -> "Enchanted creature can be blocked as though it didn't have $walks"
+            else -> if (filter == GroupFilter.AllCreatures) {
+                "Creatures with $walks can be blocked as though they didn't have $walks"
+            } else {
+                "${filter.description.replaceFirstChar { it.uppercase() }} can be blocked as though they didn't have $walks"
+            }
         }
     }
 
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
         val newFilter = filter.applyTextReplacement(replacer)
-        return if (newFilter !== filter) copy(filter = newFilter) else this
+        val newLandwalks = landwalks.mapTo(LinkedHashSet()) { walk ->
+            val landType = Subtype.ALL_BASIC_LAND_TYPES.firstOrNull { "${it.uppercase()}WALK" == walk.name }
+                ?: return@mapTo walk
+            Keyword.entries.firstOrNull { it.name == "${replacer.replaceCreatureType(landType).uppercase()}WALK" } ?: walk
+        }
+        return if (newFilter === filter && newLandwalks == landwalks) this
+        else copy(landwalks = newLandwalks, filter = newFilter)
     }
 }
