@@ -184,7 +184,7 @@ class SaddleMountHandler(
         }
 
         // ...and on the activator's per-turn memory of permanents whose abilities they activated
-        // (crewing a Vehicle is an artifact's activated ability to Tezzeret, Betrayer of Flesh).
+        // (saddling a Mount is an activated ability of that permanent, so it counts as "first" too).
         currentState = com.wingedsheep.engine.core.recordPermanentActivation(
             currentState, action.playerId, com.wingedsheep.engine.core.activationSourceSnapshot(state, action.mountId)
         )
