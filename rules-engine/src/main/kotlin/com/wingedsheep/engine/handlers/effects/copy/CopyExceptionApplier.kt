@@ -85,6 +85,7 @@ object CopyExceptionApplier {
         val addedTriggers = exceptions.addedTriggeredAbilities +
             if (exceptions.retainResolvingTriggeredAbility && resolvingTrigger != null) listOf(resolvingTrigger)
             else emptyList()
+        val typeLine = typeLine(base.typeLine, exceptions)
         return base.copy(
             flipSide = base.flipSide?.let { apply(it, exceptions, resolvingTrigger, copierColors, copierStats) },
             copyNumericKeywords = base.copyNumericKeywords + exceptions.addedNumericKeywords,
@@ -101,11 +102,11 @@ object CopyExceptionApplier {
                     "copy_act:${base.copyActivatedAbilities.size + index}:${ability.id.value}"
                 ))
             },
-            typeLine = typeLine(base.typeLine, exceptions),
+            typeLine = typeLine,
             // "Its power and toughness are equal to this creature's" keeps the copier's own base
             // P/T — a prototyped copier's included (CR 718.3b). No copier (a minted token): unchanged.
             baseStats = if (exceptions.retainPowerToughness && copierStats != null) copierStats
-                else baseStats(base.baseStats, exceptions),
+                else baseStats(base.baseStats, typeLine, exceptions),
             // Color is already derived from the indicator/CDA in the stored characteristics.
             // A color exception also omits the copied color-defining keyword (CR 707.9d).
             baseKeywords = (if (exceptions.retainColors || exceptions.overrideColors != null ||
@@ -150,11 +151,18 @@ object CopyExceptionApplier {
      * stats when the copied object had none: Absorbing Man copying a land becomes "a legendary 4/4
      * Human Villain creature in addition to its other types", so the 4/4 has to come from nowhere.
      * A half-specified override keeps the copied value on the other half.
+     *
+     * It creates them only when the copy's [typeLine] (other exceptions applied) is a creature:
+     * a copy effect can't give a P/T to a permanent whose copiable values have neither a creature
+     * type nor a printed P/T (CR 208.3). Mindlink Mech copying a crewing animated land ("except
+     * it's 4/3, it's a Vehicle artifact") is a noncreature with no P/T, so the crew effect that
+     * makes it a creature leaves it 0/0 — the card's own ruling.
      */
-    private fun baseStats(base: CreatureStats?, exceptions: CopyExceptions): CreatureStats? {
+    private fun baseStats(base: CreatureStats?, typeLine: TypeLine, exceptions: CopyExceptions): CreatureStats? {
         val power = exceptions.powerOverride
         val toughness = exceptions.toughnessOverride
         if (power == null && toughness == null) return base
+        if (base == null && !typeLine.isCreature) return null
         return CreatureStats(
             power = power?.let { CharacteristicValue.Fixed(it) }
                 ?: base?.power

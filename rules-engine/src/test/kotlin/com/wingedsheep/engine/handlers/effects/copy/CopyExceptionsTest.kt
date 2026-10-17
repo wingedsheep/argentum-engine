@@ -160,14 +160,25 @@ class CopyExceptionsTest : FunSpec({
         result.colors shouldBe setOf(Color.GREEN, Color.RED)
     }
 
-    test("P/T overrides are conjured even when the copied object had none") {
+    test("P/T overrides are conjured when the copied object had none but the copy is a creature") {
         val result = CopyExceptionApplier.apply(
             plainArtifact(),
-            CopyExceptions(powerOverride = 4, toughnessOverride = 4),
+            CopyExceptions(addedCardTypes = setOf(CardType.CREATURE), powerOverride = 4, toughnessOverride = 4),
         )
         val stats = result.baseStats.shouldNotBeNull()
         stats.power shouldBe CharacteristicValue.Fixed(4)
         stats.toughness shouldBe CharacteristicValue.Fixed(4)
+    }
+
+    test("P/T overrides give nothing to a noncreature copy with no printed P/T (CR 208.3)") {
+        // Mindlink Mech's ruling: copying a crewing animated land "except it's 4/3, it's a Vehicle
+        // artifact" leaves it without P/T, so the crew effect makes it a 0/0.
+        val result = CopyExceptionApplier.apply(
+            plainArtifact(),
+            CopyExceptions(addedSubtypes = setOf(Subtype.VEHICLE), powerOverride = 4, toughnessOverride = 3),
+        )
+        result.baseStats shouldBe null
+        result.typeLine.subtypes shouldBe setOf(Subtype.VEHICLE)
     }
 
     test("a half-specified P/T override keeps the copied value on the other half") {

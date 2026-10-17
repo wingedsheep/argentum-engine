@@ -2829,6 +2829,87 @@
     ]
 }
 
+// Mindlink Mech
+{
+    "name": "Mindlink Mech",
+    "manaCost": "{2}{U}",
+    "typeLine": "Artifact — Vehicle",
+    "oracleText": "Flying\nWhenever this Vehicle becomes crewed for the first time each turn, until end of turn, this Vehicle becomes a copy of target nonlegendary creature that crewed it this turn, except it's 4/3, it's a Vehicle artifact in addition to its other types, and it has flying.\nCrew 1 (Tap any number of creatures you control with total power 1 or more: This Vehicle becomes an artifact creature until end of turn.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING",
+        "CREW"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "CREW",
+            "n": 1
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Mindlink Mech:1",
+                "trigger": {
+                    "type": "BecameCrewedEvent",
+                    "firstTimeEachTurn": true
+                },
+                "effect": {
+                    "type": "EachPermanentBecomesCopyOfTarget",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "duration": "EndOfTurn",
+                    "affected": "Self",
+                    "exceptions": {
+                        "addedKeywords": [
+                            "FLYING"
+                        ],
+                        "addedCardTypes": [
+                            "ARTIFACT"
+                        ],
+                        "addedSubtypes": [
+                            "Vehicle"
+                        ],
+                        "powerOverride": 4,
+                        "toughnessOverride": 3
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                "IsNonlegendary"
+                            ],
+                            "statePredicates": [
+                                "CrewedOrSaddledSourceThisTurn"
+                            ]
+                        }
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Whenever this Vehicle becomes crewed for the first time each turn, until end of turn, this Vehicle becomes a copy of target nonlegendary creature that crewed it this turn, except it's 4/3, it's a Vehicle artifact in addition to its other types, and it has flying."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "62",
+        "rarity": "RARE",
+        "artist": "Robbie Trevino",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/8/28273a5b-57b3-4b7a-b017-5886c171c9c9.jpg?1783923900"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Mobilizer Mech
 {
     "name": "Mobilizer Mech",
