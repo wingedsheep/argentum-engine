@@ -264,13 +264,19 @@ sealed interface CostAtom : TextReplaceable<CostAtom> {
             if (minCount == 1 && maxCount == 1) {
                 append(if (excludeSelf) "another ${filter.description}" else quantify(1, filter.description))
                 append(" you control")
-                if (xMeasure == VariableCostMeasure.TOTAL_MANA_VALUE) append(" with mana value X")
-                if (xMeasure == VariableCostMeasure.TOTAL_POWER) append(" with power X")
+                when {
+                    minMeasure > 0 && xMeasure == VariableCostMeasure.TOTAL_MANA_VALUE -> append(" with mana value $minMeasure or more")
+                    minMeasure > 0 && xMeasure == VariableCostMeasure.TOTAL_POWER -> append(" with power $minMeasure or more")
+                    xMeasure == VariableCostMeasure.TOTAL_MANA_VALUE -> append(" with mana value X")
+                    xMeasure == VariableCostMeasure.TOTAL_POWER -> append(" with power X")
+                    else -> {}
+                }
                 return@buildString
             }
             append(when {
                 maxCount != null && maxCount == minCount -> "$minCount "
-                maxCount != null -> "${maxOf(minCount, 0)} to $maxCount "
+                maxCount != null && minCount <= 0 -> "up to $maxCount "
+                maxCount != null -> "$minCount to $maxCount "
                 minCount <= 0 -> "any number of "
                 minCount == 1 -> "one or more "
                 else -> "$minCount or more "

@@ -19,7 +19,7 @@ import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.scripting.AdditionalCostPayment
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
-import io.kotest.matchers.shouldNotBe
+import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.types.shouldBeInstanceOf
 
 /**
@@ -100,8 +100,9 @@ class ScrapWelderScenarioTest : FunSpec({
                 costPayment = AdditionalCostPayment(variableCostPermanents = listOf(sac)),
             )
         )
-        result.error shouldNotBe null
+        result.error!! shouldContain "mana value less than X"
         d.state.getZone(ZoneKey(you, Zone.BATTLEFIELD)).contains(sac) shouldBe true
+        d.isTapped(welder) shouldBe false
     }
 
     test("sacrificing two artifacts to sum X is rejected — the cost is one artifact") {
@@ -119,20 +120,23 @@ class ScrapWelderScenarioTest : FunSpec({
                 costPayment = AdditionalCostPayment(variableCostPermanents = listOf(a, b)),
             )
         )
-        result.error shouldNotBe null
+        result.error!! shouldContain "at most 1"
+        d.isTapped(welder) shouldBe false
         d.state.getZone(ZoneKey(you, Zone.BATTLEFIELD)).contains(a) shouldBe true
         d.state.getZone(ZoneKey(you, Zone.BATTLEFIELD)).contains(b) shouldBe true
         d.state.getZone(ZoneKey(you, Zone.GRAVEYARD)).contains(gy2) shouldBe true
     }
 
-    test("with no artifact whose mana value exceeds a graveyard artifact's, the activation stops before any cost") {
+    test("with no artifact whose mana value exceeds a graveyard artifact's, the ability isn't offered") {
         val d = setup()
         val you = d.activePlayer!!
         val welder = d.welder(you)
         val sac = d.putPermanentOnBattlefield(you, "Test MV2 Artifact")
         d.putCardInGraveyard(you, "Test MV3 Artifact")
 
-        d.submit(ActivateAbility(playerId = you, sourceId = welder, abilityId = abilityId)).error shouldNotBe null
+        d.legalActions(you).none { (it.action as? ActivateAbility)?.sourceId == welder } shouldBe true
+        d.submit(ActivateAbility(playerId = you, sourceId = welder, abilityId = abilityId))
+            .error!! shouldContain "leaves a legal target"
         d.state.getZone(ZoneKey(you, Zone.BATTLEFIELD)).contains(sac) shouldBe true
         d.state.getZone(ZoneKey(you, Zone.BATTLEFIELD)).contains(welder) shouldBe true
     }

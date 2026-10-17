@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.legalactions.enumerators
 
+import com.wingedsheep.engine.handlers.actions.ability.extractVariablePermanentsCost
 import com.wingedsheep.engine.state.LifePaymentPurpose
 
 import com.wingedsheep.engine.handlers.effects.AnnouncedDivision
@@ -1076,6 +1077,20 @@ class ActivatedAbilityEnumerator(
                     // then for the X-bounded target, in order. (The satisfiability gate above still
                     // applies — no artifact card in the graveyard means no legal target at any X.)
                     if (costContainsVariablePermanents(effectiveCost)) {
+                        // A single-permanent cost ("sacrifice an artifact with mana value X" —
+                        // Scrap Welder) is unpayable when no pick leaves its X-bounded target a
+                        // legal choice; the selection pause offers the same viable picks.
+                        val single = effectiveCost.extractVariablePermanentsCost()?.takeIf { it.maxCount == 1 }
+                        if (single != null) {
+                            val eligible = context.costUtils.findAbilitySacrificeTargets(
+                                state, playerId, single.filter, if (single.excludeSelf) entityId else null, sourceId = entityId
+                            )
+                            val viable = com.wingedsheep.engine.mechanics.cost.VariablePermanentsCost.viableSinglePicks(
+                                state, single, eligible, targetReqs, playerId, entityId,
+                                com.wingedsheep.engine.handlers.TargetFinder(context.predicateEvaluator)
+                            )
+                            if (viable.size < single.minCount) continue
+                        }
                         result.add(LegalAction(
                             actionType = "ActivateAbility",
                             description = displayDescription,

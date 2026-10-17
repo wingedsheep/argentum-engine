@@ -4,6 +4,9 @@ import com.wingedsheep.engine.core.GameEvent
 import com.wingedsheep.engine.core.tap
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
+import com.wingedsheep.engine.handlers.TargetFinder
+import com.wingedsheep.engine.handlers.TargetingSourceType
+import com.wingedsheep.engine.mechanics.targeting.NumericTargetEquality
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
@@ -12,6 +15,8 @@ import com.wingedsheep.sdk.scripting.TapReason
 import com.wingedsheep.sdk.scripting.costs.CostAtom
 import com.wingedsheep.sdk.scripting.costs.PermanentCostAction
 import com.wingedsheep.sdk.scripting.costs.VariableCostMeasure
+import com.wingedsheep.sdk.scripting.targets.TargetChooser
+import com.wingedsheep.sdk.scripting.targets.TargetRequirement
 
 /**
  * The shared answer to "which permanents can pay a [CostAtom.VariablePermanents] cost, and how much
@@ -43,6 +48,46 @@ object VariablePermanentsCost {
         PermanentCostAction.EXILE -> "exile"
         PermanentCostAction.SACRIFICE -> "sacrifice"
         PermanentCostAction.TAP -> "tap"
+    }
+
+    /**
+     * The [candidates] a single-permanent cost ([CostAtom.VariablePermanents.maxCount] `== 1`) may
+     * really be paid with: the ones whose own measure, as X, leaves every mandatory
+     * controller-chosen requirement in [targetRequirements] enough legal targets. "Sacrifice an
+     * artifact with mana value X: return target artifact card with mana value less than X"
+     * (Scrap Welder) — the pick announces X (CR 601.2b), so a pick that leaves no target is an
+     * activation that can't be completed (CR 601.2c via CR 602.2b). Any other shape returns
+     * [candidates] unchanged. Legality is checked once per distinct X.
+     *
+     * Shared by the activated-ability enumerator (the ability isn't offered when this is empty)
+     * and the activation's selection pause (only these are offered), so the two can't disagree.
+     */
+    fun viableSinglePicks(
+        state: GameState,
+        atom: CostAtom.VariablePermanents,
+        candidates: List<EntityId>,
+        targetRequirements: List<TargetRequirement>,
+        playerId: EntityId,
+        sourceId: EntityId,
+        targetFinder: TargetFinder,
+    ): List<EntityId> {
+        if (atom.maxCount != 1) return candidates
+        val mandatory = targetRequirements.filter { it.chooser == TargetChooser.Controller && it.effectiveMinCount > 0 }
+        if (mandatory.isEmpty()) return candidates
+        val viableByX = mutableMapOf<Int, Boolean>()
+        return candidates.filter { id ->
+            val x = measure(state, atom.xMeasure, listOf(id))
+            viableByX.getOrPut(x) {
+                val context = PredicateContext(controllerId = playerId, sourceId = sourceId, xValue = x)
+                mandatory.all { req ->
+                    val legal = targetFinder.findLegalTargets(
+                        state, req, playerId, sourceId,
+                        targetingSourceType = TargetingSourceType.ACTIVATED_ABILITY, pipelineContext = context
+                    )
+                    NumericTargetEquality.eligible(state, legal, req).size >= req.effectiveMinCount
+                }
+            }
+        }
     }
 
     /** Human name of the measured quantity, for "falls short of the required total power" errors. */

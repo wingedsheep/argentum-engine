@@ -486,18 +486,12 @@ internal class ActivationChoicePauses(
                 sourceId = action.sourceId,
             )
             .let { if (variablePermanentsCost.excludeSelf) it.filter { id -> id != action.sourceId } else it }
-            .let { all ->
-                // A single-permanent cost ("sacrifice an artifact with mana value X" — Scrap Welder)
-                // announces X by which permanent is picked, so offer only the picks that leave the
-                // X-bounded target pause below something to choose; any other pick would be an
-                // activation that can't be completed (CR 601.2c via CR 602.2b).
-                if (variablePermanentsCost.maxCount == 1) {
-                    all.filter { id ->
-                        hasLegalControllerTargets(
-                            state, activation, VariablePermanentsCost.measure(state, variablePermanentsCost.xMeasure, listOf(id))
-                        )
-                    }
-                } else all
+            // A single-permanent cost announces X by its pick: offer only picks that leave a target.
+            .let {
+                VariablePermanentsCost.viableSinglePicks(
+                    state, variablePermanentsCost, it, activation.targetRequirements,
+                    action.playerId, action.sourceId, targetFinder
+                )
             }
         val minCount = variablePermanentsCost.minCount
         val maxCount = variablePermanentsCost.maxCount
@@ -530,25 +524,6 @@ internal class ActivationChoicePauses(
             },
             answer = continuation
         )
-    }
-
-    /**
-     * Whether every mandatory controller-chosen target of [activation] would have enough legal
-     * choices with X bound to [x] — the same check [variablePermanentsTargetChoice] makes once the
-     * cost choice is known, asked ahead of it for each candidate pick.
-     */
-    private fun hasLegalControllerTargets(state: GameState, activation: Activation, x: Int): Boolean {
-        val action = activation.action
-        val context = PredicateContext(controllerId = action.playerId, sourceId = action.sourceId, xValue = x)
-        return activation.targetRequirements
-            .filter { it.chooser == TargetChooser.Controller && it.effectiveMinCount > 0 }
-            .all { req ->
-                val legal = targetFinder.findLegalTargets(
-                    state, req, action.playerId, action.sourceId,
-                    targetingSourceType = TargetingSourceType.ACTIVATED_ABILITY, pipelineContext = context
-                )
-                com.wingedsheep.engine.mechanics.targeting.NumericTargetEquality.eligible(state, legal, req).size >= req.effectiveMinCount
-            }
     }
 
     // -------------------------------------------------------------------
