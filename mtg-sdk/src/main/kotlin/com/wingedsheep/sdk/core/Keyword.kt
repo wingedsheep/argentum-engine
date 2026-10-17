@@ -1014,6 +1014,12 @@ enum class Keyword(val displayName: String) {
     TEAMWORK("Teamwork");
 
     companion object {
+        /** The landwalk family (CR 702.14): every keyword that makes a creature unblockable
+         *  while the defending player controls a land of the named kind. */
+        val LANDWALK: Set<Keyword> = setOf(
+            SWAMPWALK, FORESTWALK, ISLANDWALK, MOUNTAINWALK, PLAINSWALK, DESERTWALK, NONBASIC_LANDWALK
+        )
+
         fun fromString(value: String): Keyword? =
             entries.find { it.displayName.equals(value, ignoreCase = true) }
 

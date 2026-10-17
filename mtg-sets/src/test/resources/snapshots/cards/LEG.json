@@ -3294,6 +3294,31 @@
     ]
 }
 
+// Quagmire
+{
+    "name": "Quagmire",
+    "manaCost": "{2}{B}",
+    "typeLine": "Enchantment",
+    "oracleText": "Creatures with swampwalk can be blocked as though they didn't have swampwalk.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "SuppressLandwalkForGroup",
+                "landwalk": "SWAMPWALK"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "115",
+        "rarity": "UNCOMMON",
+        "artist": "Dan Frazier",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/4/94e2aa9e-af6a-41c6-99a8-ca9335730ddb.jpg?1783948064"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Raging Bull
 {
     "name": "Raging Bull",
@@ -4347,6 +4372,39 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Ur-Drago
+{
+    "name": "Ur-Drago",
+    "manaCost": "{3}{U}{U}{B}{B}",
+    "typeLine": "Legendary Creature — Elemental",
+    "oracleText": "First strike\nCreatures with swampwalk can be blocked as though they didn't have swampwalk.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FIRST_STRIKE"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "SuppressLandwalkForGroup",
+                "landwalk": "SWAMPWALK"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "268",
+        "rarity": "RARE",
+        "artist": "Christopher Rush",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/1/81a40f34-fc26-4d05-9c52-6ffbf1766a3b.jpg?1783948030"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
     ]
 }
 

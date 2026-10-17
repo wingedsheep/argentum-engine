@@ -9994,6 +9994,17 @@ in the declare-blockers step, even before the turn-based block action has comple
   `TurnManager.getValidBlockers` (the offered blockers), `BlockPhaseManager` (validation and the
   block-requirement checks, so Lure/provoke reach a covered tapped creature) and the client's
   "Can block as though it were untapped" badge — never through projection.
+- `SuppressLandwalkForGroup(landwalk, filter = GroupFilter.AllCreatures)` — creatures matching
+  `filter` can be blocked as though they didn't have `landwalk` (one of `Keyword.LANDWALK`: Swampwalk
+  … Desertwalk, Nonbasic landwalk; anything else is rejected at construction). Only the CR 702.14
+  block-legality check changes: the creature keeps the keyword (it still counts for "creatures with
+  swampwalk"). Quagmire / Ur-Drago — `SuppressLandwalkForGroup(Keyword.SWAMPWALK)`; Lord Magnus lists
+  two, one instance per keyword. Symmetric by default (it reaches the suppressor's controller's
+  walkers too); narrow it with the filter — matched against the attacker with the holder as predicate
+  source, so `youControl()` is the holder's controller. The until-end-of-turn form is
+  `Effects.GrantStaticAbility(SuppressLandwalkForGroup(kw, GroupFilter.source()), target)`. Read at block
+  declaration by `LandwalkSuppression` (printed statics, honouring face-down and lost abilities, plus
+  live runtime grants) — shared by the engine's `LandwalkRule` and the AI's `CombatMath`.
 - `CantAttackYou(filter = GroupFilter.source(), coversPlaneswalkers = false)` — the **attacker-side,
   player-scoped** restriction (CR 508.1c): the creatures `filter` covers can't attack "you" — and,
   with `coversPlaneswalkers = true`, planeswalkers you control — but stay free to attack every other

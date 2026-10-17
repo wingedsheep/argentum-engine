@@ -1120,6 +1120,7 @@ class StaticAbilityHandler(
             is CanBlockAnyNumber,
             is com.wingedsheep.sdk.scripting.MustBlockEachAttacker,
             is com.wingedsheep.sdk.scripting.CanBlockAsThoughUntapped,
+            is com.wingedsheep.sdk.scripting.SuppressLandwalkForGroup,
             is CantAttackUnless,
             is com.wingedsheep.sdk.scripting.CantAttackUnlessSacrifice,
             is com.wingedsheep.sdk.scripting.ExertAsItAttacks,

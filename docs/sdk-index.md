@@ -1914,6 +1914,7 @@ Families:
 - `StationUsingToughness` — Creatures this permanent's controller controls that are tapped to activate a Station ability contribute their toughness (rather than their power), as long as toughness is greater than power.
 - `SuppressEntersTriggers(filter: GameObjectFilter, abilitiesOf: GameObjectFilter?)` — Permanents matching filter entering the battlefield don't cause abilities to trigger (CR 603.6 enters-the-battlefield triggers are suppressed).
 - `SuppressHexproofForGroup(filter: GroupFilter)` — Creatures matching filter can be the targets of spells and abilities as though they didn't have hexproof.
+- `SuppressLandwalkForGroup(landwalk: Keyword, filter: GroupFilter)` — Creatures matching filter can be blocked as though they didn't have landwalk — the landwalk evasion of CR 702.14 is ignored for them, and nothing else about the keyword changes.
 - `SuppressWardForGroup(filter: GroupFilter)` — Ward abilities of creatures matching filter don't trigger.
 - `TransformPermanent(setCardTypes: Set<String>, setSubtypes: Set<String>, setColors: Set<Color>?, setName: String?, clearSubtypes: Boolean, filter: GroupFilter)` — Transforms the enchanted permanent into a completely different card type identity.
 - `UntapDuringOtherUntapSteps` — Untap all permanents you control during each other player's untap step.
