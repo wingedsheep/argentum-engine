@@ -310,7 +310,9 @@ class CreateDelayedTriggerExecutor(
         is DynamicAmount.DistinctCardTypesInCollections,
         is DynamicAmount.ManaValueSumOfCollection,
         is DynamicAmount.StoredCardManaValue,
-        is DynamicAmount.VariableReference -> true
+        is DynamicAmount.VariableReference,
+        // Read off the spell on the stack, which is gone by the time a delayed trigger fires.
+        is DynamicAmount.CapturedAtCast -> true
 
         is DynamicAmount.Add -> readsPipeline(amount.left) || readsPipeline(amount.right)
         is DynamicAmount.Subtract -> readsPipeline(amount.left) || readsPipeline(amount.right)
@@ -329,7 +331,6 @@ class CreateDelayedTriggerExecutor(
         is DynamicAmount.AggregateBattlefield,
         is DynamicAmount.AggregateZone,
         is DynamicAmount.CastChoice,
-        is DynamicAmount.CapturedAtCast,
         DynamicAmount.CastX,
         is DynamicAmount.ContextProperty,
         is DynamicAmount.GraveyardRelativeCount,

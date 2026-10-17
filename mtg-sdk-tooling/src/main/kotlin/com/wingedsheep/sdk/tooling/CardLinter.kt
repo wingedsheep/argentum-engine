@@ -661,7 +661,7 @@ object CardLinter {
         CHOSEN("chosen value"),
         STRING_LIST("stored string list"),
         SUBTYPE_GROUPS("stored subtype groups"),
-        CAST_FLAG("cast-time capture"),
+        CAST_CAPTURE("cast-time capture"),
     }
 
     private enum class Kind { READ, WRITE, IGNORE }
@@ -675,7 +675,7 @@ object CardLinter {
     /**
      * `(type discriminator | null, field name)` → how that field participates in dataflow.
      * A `null` type matches any node (for fields on non-polymorphic classes, which carry no
-     * discriminator — e.g. `CastTimeCapture.flag`, `GroupFilter.chosenSubtypeKey`). Type-keyed
+     * discriminator — e.g. `CastTimeCapture.captureName`, `GroupFilter.chosenSubtypeKey`). Type-keyed
      * entries win over field-keyed ones.
      */
     private val dataflowFields: Map<Pair<String?, String>, Classification> = buildMap {
@@ -736,7 +736,7 @@ object CardLinter {
         put("NoteCreatureType" to "storeAs", write(Space.CHOSEN))
         put("StoreCardName" to "storeAs", write(Space.CHOSEN))
         put("EachPlayerChoosesCreatureType" to "storeAs", write(Space.STRING_LIST))
-        put(null to "captureName", write(Space.CAST_FLAG)) // CastTimeCapture (no discriminator)
+        put(null to "captureName", write(Space.CAST_CAPTURE)) // CastTimeCapture (no discriminator)
 
         // --- Readers -------------------------------------------------------------------------
         for (type in listOf(
@@ -783,8 +783,7 @@ object CardLinter {
         put("HasSubtypeInStoredList" to "listName", read(Space.STRING_LIST))
         put("ExcludeSubtypesFromStored" to "storedKey", read(Space.STRING_LIST))
         put("HasSubtypeInEachStoredGroup" to "groupName", read(Space.SUBTYPE_GROUPS))
-        put("CastTimeFlagSet" to "flag", read(Space.CAST_FLAG))
-        put("CapturedAtCast" to "captureName", read(Space.CAST_FLAG))
+        put("CapturedAtCast" to "captureName", read(Space.CAST_CAPTURE))
         // "becomes the chosen type/color" effects reading a ChooseOption result.
         for (type in listOf("SetCreatureSubtypes", "AddCreatureType", "AddSubtype", "SetLandType")) {
             put(type to "fromChosenValueKey", read(Space.CHOSEN))

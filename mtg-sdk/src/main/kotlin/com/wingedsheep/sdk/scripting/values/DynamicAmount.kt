@@ -925,7 +925,7 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
     @SerialName("CapturedAtCast")
     @Serializable
     data class CapturedAtCast(val captureName: String) : DynamicAmount {
-        override val description: String = "the number of $captureName as this spell was cast"
+        override val description: String = "the number counted as this spell was cast"
     }
 
     /**

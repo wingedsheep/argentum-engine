@@ -11,6 +11,7 @@ import com.wingedsheep.sdk.scripting.StaticAbility
 import com.wingedsheep.sdk.scripting.conditions.ComparisonOperator
 import com.wingedsheep.sdk.scripting.conditions.Condition
 import com.wingedsheep.sdk.scripting.conditions.TriggeringEntityWas
+import com.wingedsheep.engine.state.components.stack.SpellOnStackComponent
 import com.wingedsheep.engine.state.permissions.MayPlayPermission
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.effects.Effect
@@ -135,6 +136,18 @@ class RetiredSdkTypeLiftTest : FunSpec({
             MayPlayPermission.serializer(),
             JsonObject(encodedPermission - "playsRemaining" + ("singleUse" to JsonPrimitive(true)))
         ) shouldBe permission.copy(playsRemaining = 1)
+    }
+
+    test("the cast-time flag reader becomes a comparison over the numeric capture") {
+        lifted(Condition.serializer(), old("CastTimeFlagSet", "flag" to JsonPrimitive("controlledMount"))) shouldBe
+            Conditions.CapturedAtCast("controlledMount")
+    }
+
+    test("a spell's retired castTimeFlags become castTimeValues of one") {
+        val spell = SpellOnStackComponent(casterId = EntityId.of("player"), castTimeValues = mapOf("controlledMount" to 1))
+        val encoded = json.encodeToJsonElement(SpellOnStackComponent.serializer(), spell).jsonObject
+        val legacy = JsonObject(encoded - "castTimeValues" + ("castTimeFlags" to JsonArray(listOf(JsonPrimitive("controlledMount")))))
+        lifted(SpellOnStackComponent.serializer(), legacy) shouldBe spell
     }
 
     test("a document with no retired type passes through as the same instance") {

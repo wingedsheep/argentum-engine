@@ -1305,7 +1305,7 @@ class SpellBuilder(private val declaredTargets: TargetList = TargetList()) : Tar
     /**
      * Capture, *as this spell is cast* (CR 601.2i), whether [condition] holds, storing the answer
      * under [flag]. The spell's effect reads it back at resolution via
-     * `Conditions.CapturedAtCast(flag)` ([com.wingedsheep.sdk.scripting.conditions.CastTimeFlagSet]),
+     * `Conditions.CapturedAtCast(flag)` (a `Compare` over [DynamicAmount.CapturedAtCast]),
      * so the branch reflects the cast-time board even if it has since changed.
      *
      * Used for "if you controlled a Mount as you cast this spell" (Steer Clear).

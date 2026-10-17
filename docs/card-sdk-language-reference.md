@@ -14704,8 +14704,9 @@ Other gates available in both contexts:
 - `CapturedAtCast("flag")` — the named **"as you cast this spell"** condition capture (CR 601.2i) was
   true the moment the spell was cast. Pairs with the spell DSL `captureAtCast("flag", condition)`: the
   engine evaluates `condition` (caster as controller) as the spell finishes being cast and freezes it as
-  a 1/0 number onto `SpellOnStackComponent.castTimeValues`; this reads the frozen answer at resolution
-  (true when positive), so a later board change can't flip the branch. Distinct from the player-choice slot guards
+  a 1/0 number onto `SpellOnStackComponent.castTimeValues`; this facade reads the frozen answer at
+  resolution as `Compare(DynamicAmount.CapturedAtCast(flag), GT, 0)`, so a later board change can't
+  flip the branch. Distinct from the player-choice slot guards
   above — those read what the player *chose*, this reads whether a game condition *held*. Used by Steer
   Clear ("deals 4 damage instead if you controlled a Mount as you cast this spell"):
 

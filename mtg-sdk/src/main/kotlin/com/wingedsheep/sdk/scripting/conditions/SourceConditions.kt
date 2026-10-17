@@ -514,29 +514,6 @@ data class CastChoiceIs(
 }
 
 /**
- * Condition: the named cast-time capture [flag] was true *as the source spell was cast* (CR 601.2i).
- *
- * The reader half of the cast-time condition-capture mechanic
- * ([com.wingedsheep.sdk.scripting.CastTimeCapture]). A spell declares, via the `captureAtCast`
- * DSL, one or more named conditions evaluated the moment it finishes being cast; the engine records
- * each as a 1/0 number onto the spell on the stack. At resolution the spell's own effect reads the
- * recorded flag through this condition (true when the captured number is positive), so "deals 4 damage instead if you controlled a Mount as
- * you cast this spell" (Steer Clear) stays true even if the Mount has since left — the read is of
- * the frozen cast-time answer, not the current board.
- *
- * Distinct from the player-choice slot conditions [CastChoiceMade] / [CastChoiceIs]: those read a
- * value the player *chose* (a color, a mode); this reads whether an automatically-evaluated game
- * condition *held* at cast time.
- *
- * @property flag The capture name to read (matches the name given to `captureAtCast`).
- */
-@SerialName("CastTimeFlagSet")
-@Serializable
-data class CastTimeFlagSet(val flag: String) : Condition {
-    override val description: String = "if \"$flag\" was true as this spell was cast"
-}
-
-/**
  * Condition: "If a [subtype] was sacrificed this way"
  * Checks whether any permanent sacrificed as part of the cost had the given subtype
  * (using projected subtypes snapshotted at time of sacrifice).

@@ -102,7 +102,6 @@ import com.wingedsheep.sdk.scripting.conditions.SourceIsModified
 import com.wingedsheep.sdk.scripting.conditions.SourceChosenModeIs
 import com.wingedsheep.sdk.scripting.conditions.CastChoiceMade
 import com.wingedsheep.sdk.scripting.conditions.CastChoiceIs
-import com.wingedsheep.sdk.scripting.conditions.CastTimeFlagSet
 import com.wingedsheep.engine.state.components.battlefield.CastForImpendingComponent
 import com.wingedsheep.sdk.scripting.ChoiceSlot
 import com.wingedsheep.sdk.scripting.conditions.WasCast
@@ -295,7 +294,6 @@ class ConditionEvaluator(
             BlightWasPaid,
             is CastChoiceIs,
             is CastChoiceMade,
-            is CastTimeFlagSet,
             is CollectionContainsMatch,
             is CollectionSharesCardType,
             is ColorIsMostCommon,
@@ -875,17 +873,6 @@ class ConditionEvaluator(
                 } else {
                     sourceId != null && castChoiceMatches(state.getEntity(sourceId), condition.slot, condition.value)
                 }
-            }
-            is CastTimeFlagSet -> {
-                // The "as you cast this spell" capture, frozen onto the spell on the stack at cast
-                // (CR 601.2i). Read here at resolution so the answer reflects the cast-time board
-                // even after a later change (Steer Clear). The spell entity keeps its id across the
-                // hand→stack boundary, so the resolving effect's sourceId locates it.
-                val sourceId = ctx.sourceId
-                sourceId != null &&
-                    state.getEntity(sourceId)
-                        ?.get<com.wingedsheep.engine.state.components.stack.SpellOnStackComponent>()
-                        ?.castTimeValues?.get(condition.flag)?.let { it > 0 } == true
             }
             is SacrificedPermanentHadSubtype -> ifResolution { evaluateSacrificedPermanentHadSubtype(condition, it) }
             is ExiledAsCostHadSubtype -> ifResolution { evaluateExiledAsCostHadSubtype(state, condition, it) }

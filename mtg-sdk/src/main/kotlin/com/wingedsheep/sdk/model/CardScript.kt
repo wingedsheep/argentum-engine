@@ -419,7 +419,7 @@ data class CardScript(
      * "As you cast this spell" captures (CR 601.2i). Each is a named amount the engine evaluates
      * the moment this spell finishes being cast; the numbers are frozen onto the spell on the stack
      * and read back at resolution via [com.wingedsheep.sdk.scripting.values.DynamicAmount.CapturedAtCast]
-     * (or, for a 1/0 condition capture, [com.wingedsheep.sdk.scripting.conditions.CastTimeFlagSet]).
+     * (or, for a 1/0 condition capture, the `Conditions.CapturedAtCast(flag)` facade).
      * Lets a spell read the cast-time board state rather than the (possibly changed) resolution-time
      * board — e.g. Steer Clear "deals 4 damage instead if you controlled a Mount as you cast this
      * spell", Lethal Exploit "for each modified creature you controlled as you cast this spell".

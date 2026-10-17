@@ -105,6 +105,8 @@ internal object RetiredSdkTypeLift {
                 ?: throw UnsupportedGameStateFormatException("Unsupported GameState format: TriggeringEntityHadCardType($cardType)")
             condition(TriggeringEntityWas(filter))
         },
+        // Condition — the cast-time flag reader, now a comparison over the numeric capture
+        "CastTimeFlagSet" to { old -> condition(Conditions.CapturedAtCast(old.string("flag"))) },
         // Effect — the skip effects, now one type over a duration
         "SkipNextDrawStep" to { old -> skipEffect(TurnPart.DRAW_STEP, SkipDuration.NEXT, old["target"]) },
         "SkipNextUntapStep" to { old -> skipEffect(TurnPart.UNTAP_STEP, SkipDuration.NEXT, old["target"]) },
@@ -131,7 +133,21 @@ internal object RetiredSdkTypeLift {
      * `GrantMayPlayFromExileEffect.maxPlays` in a card script, `MayPlayPermission.playsRemaining` on
      * a stored grant. A true flag is a cap of one; a false one is the uncapped default.
      */
-    private fun withoutRetiredFields(element: JsonObject, type: String?): JsonObject {
+    private fun withoutRetiredFields(element: JsonObject, type: String?): JsonObject =
+        withoutCastTimeFlags(withoutSingleUse(element, type))
+
+    /**
+     * A spell on the stack recorded its "as you cast this spell" captures as the names whose
+     * condition held (`castTimeFlags`); it now records every capture as a number (`castTimeValues`),
+     * a condition capture being 1 when it held.
+     */
+    private fun withoutCastTimeFlags(element: JsonObject): JsonObject {
+        val flags = element["castTimeFlags"] as? JsonArray ?: return element
+        val values = JsonObject(flags.associate { it.jsonPrimitive.content to JsonPrimitive(1) })
+        return JsonObject(element - "castTimeFlags" + ("castTimeValues" to values))
+    }
+
+    private fun withoutSingleUse(element: JsonObject, type: String?): JsonObject {
         val singleUse = element["singleUse"] as? JsonPrimitive ?: return element
         val capKey = if (type == "GrantMayPlayFromExile") "maxPlays" else "playsRemaining"
         val rest = element - "singleUse"

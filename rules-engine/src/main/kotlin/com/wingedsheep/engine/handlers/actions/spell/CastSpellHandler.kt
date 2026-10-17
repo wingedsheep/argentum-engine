@@ -739,7 +739,7 @@ class CastSpellHandler(
             faceIndex = action.faceIndex,
             castFused = action.castFused,
             spentManaProvenance = paid.payment.spentManaProvenance,
-            castTimeValues = castTimeValues(state, action, castTimeScript),
+            castTimeValues = castTimeValues(state, action, castTimeScript, ledger.costDefinedX ?: action.xValue ?: 0),
             // Every enumerated alternative-cost offer names its mechanic explicitly, so this is the
             // declared choice rather than a guess. Descriptive only — the rules consequences of each
             // mechanic ride the `was*` flags above.
@@ -756,10 +756,15 @@ class CastSpellHandler(
      * cast this spell"). The caster is the controller; the values are carried onto
      * SpellOnStackComponent.castTimeValues.
      */
-    private fun castTimeValues(state: GameState, action: CastSpell, castTimeScript: com.wingedsheep.sdk.model.CardScript?): Map<String, Int> {
+    private fun castTimeValues(
+        state: GameState,
+        action: CastSpell,
+        castTimeScript: com.wingedsheep.sdk.model.CardScript?,
+        xValue: Int
+    ): Map<String, Int> {
         val captures = castTimeScript?.castTimeCaptures.orEmpty()
         if (captures.isEmpty()) return emptyMap()
-        val captureContext = EffectContext(sourceId = action.cardId, controllerId = action.playerId, targets = emptyList(), xValue = 0)
+        val captureContext = EffectContext(sourceId = action.cardId, controllerId = action.playerId, targets = emptyList(), xValue = xValue)
         return captures.associate { it.captureName to conditionEvaluator.amounts.evaluate(state, it.value, captureContext) }
     }
 

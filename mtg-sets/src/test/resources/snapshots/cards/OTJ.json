@@ -18023,8 +18023,16 @@
             "gate": {
                 "type": "Gate.WhenCondition",
                 "condition": {
-                    "type": "CastTimeFlagSet",
-                    "flag": "controlledMount"
+                    "type": "Compare",
+                    "left": {
+                        "type": "CapturedAtCast",
+                        "captureName": "controlledMount"
+                    },
+                    "operator": "GT",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 0
+                    }
                 }
             },
             "then": {

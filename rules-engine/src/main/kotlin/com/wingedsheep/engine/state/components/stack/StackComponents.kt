@@ -240,7 +240,7 @@ data class SpellOnStackComponent(
      * finished being cast. Frozen here so the resolving effect reads the cast-time board via
      * [com.wingedsheep.sdk.scripting.values.DynamicAmount.CapturedAtCast] (Lethal Exploit's "for
      * each modified creature you controlled as you cast this spell") or, for a 1/0 condition
-     * capture, [com.wingedsheep.sdk.scripting.conditions.CastTimeFlagSet] (Steer Clear's "if you
+     * capture, the `Conditions.CapturedAtCast(flag)` facade (Steer Clear's "if you
      * controlled a Mount as you cast this spell") even after the board has changed. Declared on the
      * card via the `captureAtCast` DSL.
      */

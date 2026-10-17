@@ -351,7 +351,6 @@ Families:
 - `BlightWasPaid` — Condition: "If this spell's blight additional cost was paid" Used for Lorwyn Eclipsed cards (e.g., Cinder Strike) where the effect changes based on whether the optional Blight additional cost was a…
 - `CastChoiceIs(slot: ChoiceSlot, value: String)` — Condition: the value locked in for slot equals value (compared as text).
 - `CastChoiceMade(slot: ChoiceSlot)` — Condition: a value was locked in for slot when the source was cast / as it entered.
-- `CastTimeFlagSet(flag: String)` — Condition: the named cast-time capture flag was true *as the source spell was cast* (CR 601.2i).
 - `CollectionContainsMatch(collection: String, filter: GameObjectFilter)` — Condition: "if a card in the named collection matches filter" Checks whether any entity in a stored pipeline collection matches the given filter.
 - `CollectionSharesCardType(collection: String)` — Condition: "if two cards in the named collection share a card type".
 - `ColorIsMostCommon(color: Color)` — Condition: "As long as color is the most common color among all permanents, or is tied for most common".

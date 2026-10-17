@@ -33,7 +33,6 @@ import com.wingedsheep.sdk.scripting.conditions.MayhemCostWasPaid as MayhemCostW
 import com.wingedsheep.sdk.scripting.conditions.Escaped as EscapedCondition
 import com.wingedsheep.sdk.scripting.conditions.CastChoiceMade as CastChoiceMadeCondition
 import com.wingedsheep.sdk.scripting.conditions.CastChoiceIs as CastChoiceIsCondition
-import com.wingedsheep.sdk.scripting.conditions.CastTimeFlagSet as CastTimeFlagSetCondition
 import com.wingedsheep.sdk.scripting.conditions.EntityMatches
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.conditions.SourceIsRingBearer as SourceIsRingBearerCondition
@@ -1261,12 +1260,13 @@ object Conditions {
 
     /**
      * If the named cast-time capture [flag] was true *as the source spell was cast* (CR 601.2i).
-     * Pairs with the `captureAtCast(flag, condition)` spell DSL: the engine freezes the cast-time
-     * answer onto the spell, and this reads it back at resolution regardless of later board changes.
-     * Used by Steer Clear ("deals 4 damage instead if you controlled a Mount as you cast this spell").
+     * Pairs with the `captureAtCast(flag, condition)` spell DSL, which freezes the answer onto the
+     * spell as a 1/0 number; this reads it back at resolution regardless of later board changes —
+     * `CompareAmounts(capturedAtCast(flag) > 0)`. Used by Steer Clear ("deals 4 damage instead if
+     * you controlled a Mount as you cast this spell").
      */
     fun CapturedAtCast(flag: String): ConditionInterface =
-        CastTimeFlagSetCondition(flag)
+        CompareAmounts(DynamicAmount.CapturedAtCast(flag), ComparisonOperator.GT, 0)
 
     /**
      * If specific colored or colorless mana was spent to cast this spell.
