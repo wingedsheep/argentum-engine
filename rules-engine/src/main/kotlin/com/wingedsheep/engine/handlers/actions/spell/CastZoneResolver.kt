@@ -865,7 +865,11 @@ class CastZoneResolver(
                 if (unwrapped !is CastSpellTypesFromTopOfLibrary ||
                     !matchesCardFilter(cardComponent, unwrapped.filter, state, entityId)
                 ) continue
-                val maxCasts = unwrapped.maxCastsPerTurn ?: return null
+                // An unlimited cost-free grant wins outright. An unlimited *costed* one (Falco Spara)
+                // doesn't: a limited free grant covering the card is what waives that cost, so its
+                // use must be spent.
+                val maxCasts = unwrapped.maxCastsPerTurn
+                    ?: if (unwrapped.additionalCost == null) return null else continue
                 val uses = state.getEntity(entityId)
                     ?.get<CastFromTopOfLibraryUsesThisTurnComponent>()?.uses ?: 0
                 if (uses < maxCasts && limitedSource == null) limitedSource = entityId
