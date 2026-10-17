@@ -118,7 +118,7 @@ object Amounts {
      * whole battlefield — and the hand-written corpus spells it the first way
      * (`battlefield(Player.EachOpponent, …)`, Gaea's Avenger, Angry Mob, Pygmy Kavu).
      */
-    private val ROWED_CONTROLLERS = setOf(ControllerPredicate.ControlledByYou, ControllerPredicate.ControlledByOpponent)
+    private val ROWED_CONTROLLERS = setOf<ControllerPredicate>(ControllerPredicate.ControlledByYou, ControllerPredicate.ControlledByOpponent)
 
     /** The layer itself. Adding a row here reaches every family that counts. */
     val scopes: List<Scope> = listOf(

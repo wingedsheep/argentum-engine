@@ -1,0 +1,10 @@
+# Keep the upstream global Gradle semaphore; no JVM engine build is involved.
+build:
+    cd ../.. && scripts/gradle-locked -p oracle-assay/browser compileProductionExecutableKotlinWasmJs --console=plain
+    node package.mjs
+
+test: build
+    node test.mjs
+
+test-jvm:
+    cd ../.. && scripts/gradle-locked :oracle-assay:test --tests '*CardCompilerTest' --tests '*AmountsTest' --tests '*TouchstoneTest' --tests '*NormalizerTest' --console=plain

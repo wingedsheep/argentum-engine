@@ -80,7 +80,7 @@ object SentenceCase {
             if (c.isLowerCase()) return null
             if (c.isUpperCase()) chars[at] = c.lowercaseChar()
         }
-        return String(chars)
+        return chars.concatToString()
     }
 
     /** Inverse of [decapitalize]: the printed line as Oracle templating spells it. */
@@ -90,7 +90,7 @@ object SentenceCase {
             val c = chars[at]
             if (c.isLowerCase()) chars[at] = c.uppercaseChar()
         }
-        return String(chars)
+        return chars.concatToString()
     }
 
     /**

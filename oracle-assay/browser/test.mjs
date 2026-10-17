@@ -1,0 +1,15 @@
+import assert from 'node:assert/strict';
+import {resolve} from 'node:path';
+import {pathToFileURL} from 'node:url';
+const {checkOracleCard}=await import(pathToFileURL(resolve(process.argv[2]||'dist','assay-oracle.mjs')));
+const base={name:'Probe',layout:'normal',type_line:'Sorcery',mana_cost:'{U}'};
+const check=card=>JSON.parse(checkOracleCard(JSON.stringify(card)));
+assert.equal(check({...base,oracle_text:'Draw two cards.'}).parse_complete,true);
+assert.equal(check({...base,oracle_text:'Draw two cards. Gobble the moon.'}).parse_complete,false);
+assert.equal(check({...base,type_line:'Creature — Bird',power:'1',toughness:'1',oracle_text:'Flying, vigilance'}).parse_complete,true);
+assert.equal(check({...base,type_line:'Creature — Bird',oracle_text:'Flying'}).parse_complete,false);
+assert.equal(check({...base,layout:'transform',card_faces:[{...base,oracle_text:'Draw two cards.'},{...base,oracle_text:'Draw a card.'}]}).parse_complete,false);
+assert.equal(JSON.parse(checkOracleCard('{}')).parse_complete,false);
+assert.equal(JSON.parse(checkOracleCard('not json')).parse_complete,false);
+assert.equal(JSON.parse(checkOracleCard('x'.repeat(25000))).status,'invalid_input');
+console.log('PASS optimized browser WASM: whole card, header, keyword, garbage, layout and input bounds');
