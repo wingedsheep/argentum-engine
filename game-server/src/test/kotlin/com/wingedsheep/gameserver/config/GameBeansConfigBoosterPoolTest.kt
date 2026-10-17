@@ -54,6 +54,36 @@ class GameBeansConfigBoosterPoolTest : FunSpec({
         (mythics.toDouble() / packs) shouldBe (0.125 plusOrMinus 0.03)
     }
 
+    test("Streets of New Capenna draft pack is 10 commons, 3 uncommons and one rare or mythic from its booster pool") {
+        // Draft Booster: 1 rare/mythic, 3 uncommons, 10 commons, 1 basic land (a full-art Metropolis
+        // basic in a third of packs; the generator supplies basics at deck building) and a foil
+        // replacing a common in a third of packs (cosmetic, not modelled).
+        val snc = boosterGenerator.availableSets["SNC"].shouldNotBeNull()
+        snc.fullyImplemented shouldBe true
+        snc.boosterStrategy shouldBe StandardBooster(commons = 10)
+        val eligible = snc.cards.filter { it.metadata.inBooster && !it.typeLine.isBasicLand }
+        // Scryfall `set:snc is:booster -t:basic`.
+        eligible.groupingBy { it.metadata.rarity }.eachCount() shouldBe mapOf(
+            Rarity.COMMON to 101, Rarity.UNCOMMON to 80, Rarity.RARE to 60, Rarity.MYTHIC to 20,
+        )
+        val eligibleNames = eligible.map { it.name }.toSet()
+        var mythics = 0
+        val packs = 2000
+        repeat(packs) {
+            val pack = boosterGenerator.generateBooster("SNC")
+            pack.size shouldBe 14
+            pack.map { it.name }.toSet().size shouldBe 14
+            withClue("pack ${pack.map { it.name }} holds an off-sheet card") {
+                pack.all { it.name in eligibleNames } shouldBe true
+            }
+            pack.count { it.metadata.rarity == Rarity.COMMON } shouldBe 10
+            pack.count { it.metadata.rarity == Rarity.UNCOMMON } shouldBe 3
+            mythics += pack.count { it.metadata.rarity == Rarity.MYTHIC }
+        }
+        // 1 in 8 rare slots upgrades to a mythic.
+        (mythics.toDouble() / packs) shouldBe (0.125 plusOrMinus 0.03)
+    }
+
     test("every Dominaria United draft pack opens exactly one legendary creature from its booster pool") {
         val dmu = boosterGenerator.availableSets["DMU"].shouldNotBeNull()
         dmu.fullyImplemented shouldBe true

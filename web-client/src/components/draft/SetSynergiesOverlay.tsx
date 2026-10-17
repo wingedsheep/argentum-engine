@@ -1646,6 +1646,73 @@ const SET_SYNERGIES: Record<string, SetSynergies> = {
       },
     ],
   },
+  SNC: {
+    setCode: 'SNC',
+    setName: 'Streets of New Capenna',
+    archetypes: [
+      {
+        name: 'Brokers',
+        colors: ['W', 'U', 'G'],
+        keyCard: 'Disciplined Duelist',
+        description: 'Protect your best creatures with shield counters and keep them in play, trading favorably while their counters soak up removal and combat damage. A resilient midrange deck that grinds out value from a few well-guarded threats.',
+      },
+      {
+        name: 'Obscura',
+        colors: ['W', 'U', 'B'],
+        keyCard: 'Queza, Augur of Agonies',
+        description: 'Connive to loot through your deck and grow your evasive Rogues, while disruption picks apart the opponent\'s hand. A tempo deck that flies over the top and turns every card drawn into pressure.',
+      },
+      {
+        name: 'Maestros',
+        colors: ['U', 'B', 'R'],
+        keyCard: 'Cormela, Glamour Thief',
+        description: 'Sacrifice creatures to casualty for copied spells, and lean on instants and sorceries to control the board. A spell-heavy control deck whose removal and card selection buy time for doubled payoffs.',
+      },
+      {
+        name: 'Riveteers',
+        colors: ['B', 'R', 'G'],
+        keyCard: 'Mr. Orfeo, the Boulder',
+        description: 'Blitz in hasty creatures that draw cards when they die, and feed expendable bodies to sacrifice payoffs. An aggressive attrition deck that keeps the hand full while it attacks every turn.',
+      },
+      {
+        name: 'Cabaretti',
+        colors: ['R', 'G', 'W'],
+        keyCard: 'Rocco, Cabaretti Caterer',
+        description: 'Flood the board with Citizen tokens and creatures, turning every arrival into an alliance bonus. A go-wide aggro deck that pumps its crowd and swarms past blockers.',
+      },
+      {
+        name: 'Counters Flyers',
+        colors: ['W', 'U'],
+        keyCard: 'Metropolis Angel',
+        description: 'Put shield and +1/+1 counters on your creatures, then reward attacking with them. An evasive tempo deck that draws cards each time its marked creatures go in.',
+      },
+      {
+        name: 'Graveyard Value',
+        colors: ['U', 'B'],
+        keyCard: 'Syndicate Infiltrator',
+        description: 'Fill your graveyard with cards of many different mana values to switch on bonuses that need five or more. A patient control deck that loots, trades and grows stronger the longer the game goes.',
+      },
+      {
+        name: 'Sacrifice',
+        colors: ['B', 'R'],
+        keyCard: 'Forge Boss',
+        description: 'Sacrifice creatures for value and to fuel casualty, draining or burning the opponent each time something goes to the graveyard. An aggressive deck that turns every expendable body into damage.',
+      },
+      {
+        name: 'Treasure Ramp',
+        colors: ['R', 'G'],
+        keyCard: 'Stimulus Package',
+        description: 'Make Treasure tokens, crack them for ramp and fixing, and spend them on big threats or payoffs that care about sacrificing them. A midrange ramp deck that outsizes opponents ahead of schedule.',
+      },
+      {
+        name: 'Citizens',
+        colors: ['G', 'W'],
+        keyCard: 'Darling of the Masses',
+        description: 'Create a stream of Citizen tokens and pump them with Citizen lords and Equipment. A go-wide aggro deck that overwhelms blockers with a growing crowd.',
+        creatureTypes: ['Citizen'],
+      },
+    ],
+  },
   DMU: {
     setCode: 'DMU',
     setName: 'Dominaria United',

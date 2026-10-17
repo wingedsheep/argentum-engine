@@ -734,6 +734,33 @@ object SetArchetypes {
                     "Hit every land drop and play the modal double-faced spell lands as either half, rewarding landfall and lands entering with card advantage. A flexible value deck that never misses a beat."),
             )
         ),
+        "SNC" to SetSynergies(
+            setCode = "SNC",
+            setName = "Streets of New Capenna",
+            archetypes = listOf(
+                Archetype("Brokers", listOf(Color.WHITE, Color.BLUE, Color.GREEN),
+                    "Protect your best creatures with shield counters and keep them in play, trading favorably while their counters soak up removal and combat damage. A resilient midrange deck that grinds out value from a few well-guarded threats."),
+                Archetype("Obscura", listOf(Color.WHITE, Color.BLUE, Color.BLACK),
+                    "Connive to loot through your deck and grow your evasive Rogues, while disruption picks apart the opponent's hand. A tempo deck that flies over the top and turns every card drawn into pressure."),
+                Archetype("Maestros", listOf(Color.BLUE, Color.BLACK, Color.RED),
+                    "Sacrifice creatures to casualty for copied spells, and lean on instants and sorceries to control the board. A spell-heavy control deck whose removal and card selection buy time for doubled payoffs."),
+                Archetype("Riveteers", listOf(Color.BLACK, Color.RED, Color.GREEN),
+                    "Blitz in hasty creatures that draw cards when they die, and feed expendable bodies to sacrifice payoffs. An aggressive attrition deck that keeps the hand full while it attacks every turn."),
+                Archetype("Cabaretti", listOf(Color.RED, Color.GREEN, Color.WHITE),
+                    "Flood the board with Citizen tokens and creatures, turning every arrival into an alliance bonus. A go-wide aggro deck that pumps its crowd and swarms past blockers."),
+                Archetype("Counters Flyers", listOf(Color.WHITE, Color.BLUE),
+                    "Put shield and +1/+1 counters on your creatures, then reward attacking with them. An evasive tempo deck that draws cards each time its marked creatures go in."),
+                Archetype("Graveyard Value", listOf(Color.BLUE, Color.BLACK),
+                    "Fill your graveyard with cards of many different mana values to switch on bonuses that need five or more. A patient control deck that loots, trades and grows stronger the longer the game goes."),
+                Archetype("Sacrifice", listOf(Color.BLACK, Color.RED),
+                    "Sacrifice creatures for value and to fuel casualty, draining or burning the opponent each time something goes to the graveyard. An aggressive deck that turns every expendable body into damage."),
+                Archetype("Treasure Ramp", listOf(Color.RED, Color.GREEN),
+                    "Make Treasure tokens, crack them for ramp and fixing, and spend them on big threats or payoffs that care about sacrificing them. A midrange ramp deck that outsizes opponents ahead of schedule."),
+                Archetype("Citizens", listOf(Color.GREEN, Color.WHITE),
+                    "Create a stream of Citizen tokens and pump them with Citizen lords and Equipment. A go-wide aggro deck that overwhelms blockers with a growing crowd.",
+                    creatureTypes = listOf("Citizen")),
+            )
+        ),
         "DMU" to SetSynergies(
             setCode = "DMU",
             setName = "Dominaria United",

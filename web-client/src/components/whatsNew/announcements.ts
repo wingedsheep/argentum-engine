@@ -30,6 +30,16 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: readonly Announcement[] = [
   {
+    id: 'set-snc',
+    date: '2026-10-17',
+    kind: 'set',
+    setCode: 'SNC',
+    title: 'Streets of New Capenna is complete',
+    body:
+      'Pick a crime family and run the streets of an art-deco city of demons and angels: the Brokers guard their creatures with shield counters, the Obscura connive, the Maestros cast spells with casualty, the Riveteers blitz in hasty bruisers, and the Cabaretti throw Citizen parties. Three-colour decks are the norm, held together by tri-lands and Treasure.',
+    tryIf: 'three-colour decks, sacrifice-for-value and go-wide token swarms',
+  },
+  {
     id: 'feature-playing-for-ante',
     date: '2026-10-17',
     kind: 'feature',

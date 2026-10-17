@@ -152,6 +152,24 @@ class SetArchetypesTest : StringSpec({
         SetArchetypes.getMatchingArchetypes("INR", setOf(Color.WHITE, Color.BLUE))
             .map { it.name } shouldContainExactly listOf("Spirits Tempo")
     }
+    "Streets of New Capenna exposes its five families and five allied-pair archetypes" {
+        val synergies = SetArchetypes.getForSet("SNC")!!
+
+        synergies.setName shouldBe "Streets of New Capenna"
+        synergies.archetypes.associate { it.name to it.colors.toSet() } shouldBe mapOf(
+            "Brokers" to setOf(Color.WHITE, Color.BLUE, Color.GREEN),
+            "Obscura" to setOf(Color.WHITE, Color.BLUE, Color.BLACK),
+            "Maestros" to setOf(Color.BLUE, Color.BLACK, Color.RED),
+            "Riveteers" to setOf(Color.BLACK, Color.RED, Color.GREEN),
+            "Cabaretti" to setOf(Color.RED, Color.GREEN, Color.WHITE),
+            "Counters Flyers" to setOf(Color.WHITE, Color.BLUE),
+            "Graveyard Value" to setOf(Color.BLUE, Color.BLACK),
+            "Sacrifice" to setOf(Color.BLACK, Color.RED),
+            "Treasure Ramp" to setOf(Color.RED, Color.GREEN),
+            "Citizens" to setOf(Color.GREEN, Color.WHITE),
+        )
+        synergies.archetypes.single { it.name == "Citizens" }.creatureTypes shouldContainExactly listOf("Citizen")
+    }
 })
 
 private val ALL_COLOR_PAIRS = linkedSetOf(
