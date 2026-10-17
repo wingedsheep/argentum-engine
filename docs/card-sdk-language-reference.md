@@ -11506,7 +11506,12 @@ concerns — the `ClientStateTransformer` reveals the top card for `PlayFromTopO
   the top; no land play, no full public reveal. `maxCastsPerTurn` limits each granting permanent's
   permission independently and resets at cleanup; when that permanent leaves and returns, the new
   object has a fresh allowance. (Precognition Field = unlimited instants/sorceries; Johann,
-  Apprentice Sorcerer = one instant/sorcery each turn.)
+  Apprentice Sorcerer = one instant/sorcery each turn.) `additionalCost` is paid on top of the
+  spell's other costs when the cast goes through this permission — Falco Spara, Pactweaver = `CastSpellTypesFromTopOfLibrary(
+  GameObjectFilter.Nonland, additionalCost = Costs.additional.RemoveCounters(counterType = null,
+  count = 1, filter = GameObjectFilter.Creature))`. It is surfaced and checked like any zone-cast
+  additional cost, and isn't owed when a cost-free permission (Future Sight, a costless grant, a
+  card-specific MayPlay) also covers the card.
 - `LookAtTopOfLibrary` — *private*: the controller may look at their own top card any time (revealed
   only to them, not opponents). (Lens of Clarity, Vizier of the Menagerie)
 - `PlotFromTopOfLibrary(filter = Nonland)` — the controller may **plot** (CR 718) the top card of

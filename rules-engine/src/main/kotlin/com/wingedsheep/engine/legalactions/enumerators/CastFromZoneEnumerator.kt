@@ -289,18 +289,24 @@ class CastFromZoneEnumerator(
         }
 
         // Non-land spell on top of library
-        val topCardMatchesFilter = canPlayAllFromTop ||
-            castFromTopGrants.any { (grantSourceId, grantFilter) ->
-                context.predicateEvaluator.matches(
-                    state, state.projectedState, topCardId, grantFilter,
-                    PredicateContext(controllerId = playerId, sourceId = grantSourceId)
-                )
-            } ||
-            castFilteredFromTopFilters.any { filter ->
-                context.predicateEvaluator.matches(
-                    state, state.projectedState, topCardId, filter, PredicateContext(controllerId = playerId)
-                )
-            }
+        val matchingCastFromTopGrants = castFromTopGrants.filter { grant ->
+            context.predicateEvaluator.matches(
+                state, state.projectedState, topCardId, grant.filter,
+                PredicateContext(controllerId = playerId, sourceId = grant.sourceId)
+            )
+        }
+        val castFilteredFromTopMatches = castFilteredFromTopFilters.any { filter ->
+            context.predicateEvaluator.matches(
+                state, state.projectedState, topCardId, filter, PredicateContext(controllerId = playerId)
+            )
+        }
+        val topCardMatchesFilter = canPlayAllFromTop || matchingCastFromTopGrants.isNotEmpty() || castFilteredFromTopMatches
+        // Falco Spara: a costed cast-from-top permission owes its additional cost only when no
+        // cost-free permission covers the card (mirrors CastZoneResolver.topOfLibraryGrantAdditionalCost).
+        val costFreeTopCast = canPlayAllFromTop || castFilteredFromTopMatches ||
+            matchingCastFromTopGrants.any { it.additionalCost == null } ||
+            state.hasMayPlayFor(topCardId, playerId, context.conditionEvaluator, context.cardRegistry)
+        val topGrantAdditionalCost = if (costFreeTopCast) null else matchingCastFromTopGrants.firstNotNullOfOrNull { it.additionalCost }
 
         if (!topCardComponent.typeLine.isLand && topCardMatchesFilter) {
             // Check timing
@@ -323,9 +329,12 @@ class CastFromZoneEnumerator(
                     val payLifeMv = topAltCost?.additionalCost is AdditionalCost.PayLifeEqualToManaValueOfSpell
                     val lifeForThisCard = if (payLifeMv) topCardComponent.manaCost.cmc else 0
                     val lifeAffordable = !payLifeMv || context.canPayLife(lifeForThisCard)
+                    val (grantCostInfo, canPayGrantCost) = if (topGrantAdditionalCost != null) {
+                        presentOwedCosts(context, topCardId, listOf(topGrantAdditionalCost))
+                    } else null to true
                     val topAltAdditionalCostInfo = if (payLifeMv) {
                         AdditionalCostData(description = "Pay $lifeForThisCard life", costType = "PayLife")
-                    } else null
+                    } else grantCostInfo
 
                     val topEffectiveCost = if (topCardDef != null) {
                         context.costCalculator.calculateEffectiveCost(state, topCardDef, playerId)
@@ -341,7 +350,7 @@ class CastFromZoneEnumerator(
                     val cachedSources = context.availableManaSources
                     val canAfford = (freeCastFromTop ||
                         context.manaSolver.canPay(state, playerId, topPayableCost, precomputedSources = cachedSources)) &&
-                        lifeAffordable
+                        lifeAffordable && canPayGrantCost
                     // A battlefield `MayCastWithoutPayingManaCost` source whose zones include the
                     // library (One with the Multiverse) frees this cast. Offered as its own variant
                     // (CR 118.9a) alongside the pay path; X is treated as 0 (CR 107.3b). Not stacked
@@ -360,7 +369,9 @@ class CastFromZoneEnumerator(
                     fun castAction(free: Boolean, manaCostString: String, hasXCost: Boolean, maxAffordableX: Int?, autoTapPreview: List<EntityId>?): LegalAction {
                         val action = CastSpell(playerId, topCardId, useWithoutPayingManaCost = free)
                         val description = if (free) "Cast ${topCardComponent.name} (Free)" else "Cast ${topCardComponent.name}"
-                        val additionalCostInfo = if (free) null else topAltAdditionalCostInfo
+                        // A permission's additional cost (Falco Spara) is still owed on a free cast;
+                        // Gwenom's pay-life is the alternative cost a free cast replaces.
+                        val additionalCostInfo = if (free) grantCostInfo else topAltAdditionalCostInfo
                         if (targetReqs.isEmpty()) {
                             return LegalAction(
                                 actionType = "CastSpell",
@@ -415,7 +426,7 @@ class CastFromZoneEnumerator(
                         }
                         result.add(castAction(free = false, manaCostString, hasXCost, maxAffordableX, autoTapPreview))
                     }
-                    if (freeCastFromSource && targetsSatisfied) {
+                    if (freeCastFromSource && canPayGrantCost && targetsSatisfied) {
                         result.add(castAction(free = true, "{0}", hasXCost = false, maxAffordableX = null, autoTapPreview = null))
                     }
                 }

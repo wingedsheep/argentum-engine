@@ -152,6 +152,10 @@ class CastAdditionalCosts(
         // Gwenom: pay-life additional cost for a spell cast from the top of the library.
         zoneResolver.topOfLibraryAlternativeGrant(state, action.playerId, action.cardId)
             ?.additionalCost?.let { add(it) }
+
+        // Falco Spara: a costed cast-from-top permission's additional cost ("by removing a counter
+        // from a creature you control"), owed only when it is the permission the cast goes through.
+        zoneResolver.topOfLibraryGrantAdditionalCost(state, action.playerId, action.cardId)?.let { add(it) }
     }
 
 }

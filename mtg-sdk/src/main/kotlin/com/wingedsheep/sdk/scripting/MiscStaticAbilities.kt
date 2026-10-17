@@ -583,6 +583,10 @@ data class PlayFromTopWithAlternativeCost(
  * Used for Precognition Field (instant and sorcery only).
  *
  * @property filter The filter that spells on top of library must match to be castable
+ * @property additionalCost A cost paid in addition to the spell's other costs when it is cast
+ *   through this permission — Falco Spara, Pactweaver's "by removing a counter from a creature you
+ *   control in addition to paying their other costs". Not owed when another cost-free permission
+ *   (Future Sight, a costless grant) also covers the card. Null for none.
  */
 @SerialName("CastSpellTypesFromTopOfLibrary")
 @Serializable
@@ -593,17 +597,24 @@ data class CastSpellTypesFromTopOfLibrary(
      * Null means unlimited. Usage belongs to the granting object, so a permanent that leaves
      * and returns supplies a fresh permission.
      */
-    val maxCastsPerTurn: Int? = null
+    val maxCastsPerTurn: Int? = null,
+    val additionalCost: AdditionalCost? = null,
 ) : StaticAbility {
-    override val description: String =
+    override val description: String = buildString {
         if (maxCastsPerTurn == 1) {
-            "Once each turn, you may cast a ${filter.description} spell from the top of your library."
+            append("Once each turn, you may cast a ${filter.description} spell from the top of your library")
         } else {
-            "You may cast ${filter.description} spells from the top of your library."
+            append("You may cast ${filter.description} spells from the top of your library")
         }
+        if (additionalCost != null) {
+            append(" by ${additionalCost.description.replaceFirstChar { it.lowercase() }} in addition to paying their other costs")
+        }
+        append(".")
+    }
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
         val newFilter = filter.applyTextReplacement(replacer)
-        return if (newFilter !== filter) copy(filter = newFilter) else this
+        val newCost = additionalCost?.applyTextReplacement(replacer)
+        return if (newFilter !== filter || newCost !== additionalCost) copy(filter = newFilter, additionalCost = newCost) else this
     }
 }
 

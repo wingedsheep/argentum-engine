@@ -519,12 +519,14 @@ class CastPermissionUtils(
      * because a filter can be *source-relative* — Cemetery Illuminator's "shares a card type with a
      * card exiled with this creature" reads the granting permanent's own linked-exile pile, and
      * folding two permanents' filters into one loses which pile to read. The caller matches the top
-     * card against each pair in turn; matching any of them is permission enough.
+     * card against each pair in turn; matching any of them is permission enough. Each entry carries
+     * the permission's additional cost (Falco Spara's "by removing a counter from a creature you
+     * control"), owed only when no cost-free permission also covers the card.
      */
     fun getCastFromTopOfLibraryGrants(
         state: GameState,
         playerId: EntityId
-    ): List<Pair<EntityId, GameObjectFilter>> = buildList {
+    ): List<TopOfLibraryCastGrant> = buildList {
         for (entityId in state.getBattlefield(playerId)) {
             val card = state.getEntity(entityId)?.get<CardComponent>() ?: continue
             val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
@@ -534,7 +536,7 @@ class CastPermissionUtils(
                         ?.get<CastFromTopOfLibraryUsesThisTurnComponent>()?.uses ?: 0
                     val maxCasts = ability.maxCastsPerTurn
                     if (maxCasts != null && uses >= maxCasts) continue
-                    add(entityId to ability.filter)
+                    add(TopOfLibraryCastGrant(entityId, ability.filter, ability.additionalCost))
                 }
             }
         }
@@ -2131,3 +2133,10 @@ fun chosenLinkedExiledTriggeredAbilities(
     cardRegistry: CardRegistry
 ): List<com.wingedsheep.sdk.scripting.TriggeredAbility> =
     chosenLinkedExiledCardDef(state, sourceId, cardRegistry)?.script?.triggeredAbilities ?: emptyList()
+
+/** One live [CastSpellTypesFromTopOfLibrary] permission: its granting permanent, filter and cost. */
+data class TopOfLibraryCastGrant(
+    val sourceId: EntityId,
+    val filter: GameObjectFilter,
+    val additionalCost: com.wingedsheep.sdk.scripting.AdditionalCost?,
+)

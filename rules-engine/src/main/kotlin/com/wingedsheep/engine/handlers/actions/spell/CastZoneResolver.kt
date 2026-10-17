@@ -874,6 +874,50 @@ class CastZoneResolver(
         return limitedSource
     }
 
+    /**
+     * The additional cost a top-of-library cast of [cardId] owes through a costed
+     * [CastSpellTypesFromTopOfLibrary] permission — Falco Spara, Pactweaver's "by removing a counter
+     * from a creature you control in addition to paying their other costs" — or null. A cost-free
+     * permission covering the same card (Future Sight, Gwenom, a costless grant, a card-specific
+     * MayPlay) is the one the cast goes through, so nothing is owed then. Mirrors the enumerator's
+     * `topGrantAdditionalCost`.
+     */
+    fun topOfLibraryGrantAdditionalCost(
+        state: GameState,
+        playerId: EntityId,
+        cardId: EntityId
+    ): AdditionalCost? {
+        if (state.getLibrary(playerId).firstOrNull() != cardId) return null
+        val cardComponent = state.getEntity(cardId)?.get<CardComponent>() ?: return null
+        if (state.hasMayPlayFor(cardId, playerId, conditionEvaluator, cardRegistry)) return null
+        if (hasPlayFromTopOfLibrary(state, playerId)) return null
+        var owed: AdditionalCost? = null
+        for (entityId in state.getBattlefield(playerId)) {
+            val sourceCard = state.getEntity(entityId)?.get<CardComponent>() ?: continue
+            val cardDef = cardRegistry.getCard(sourceCard.cardDefinitionId) ?: continue
+            for (ability in cardDef.liveStaticAbilities(state, entityId)) {
+                val unwrapped = if (ability is ConditionalStaticAbility) {
+                    val ctx = EffectContext(sourceId = entityId, controllerId = playerId)
+                    if (!conditionEvaluator.evaluate(state, ability.condition, ctx)) continue
+                    ability.ability
+                } else ability
+                if (unwrapped is PlayLandsAndCastFilteredFromTopOfLibrary &&
+                    unwrapped.spellFilter?.let { matchesCardFilter(cardComponent, it) } == true
+                ) return null
+                if (unwrapped !is CastSpellTypesFromTopOfLibrary ||
+                    !matchesCardFilter(cardComponent, unwrapped.filter, state, entityId)
+                ) continue
+                val maxCasts = unwrapped.maxCastsPerTurn
+                val uses = state.getEntity(entityId)
+                    ?.get<CastFromTopOfLibraryUsesThisTurnComponent>()?.uses ?: 0
+                if (maxCasts != null && uses >= maxCasts) continue
+                val cost = unwrapped.additionalCost ?: return null
+                if (owed == null) owed = cost
+            }
+        }
+        return owed
+    }
+
     private fun hasPlayFromTopOfLibrary(state: GameState, playerId: EntityId): Boolean {
         for (entityId in state.getBattlefield(playerId)) {
             val card = state.getEntity(entityId)?.get<CardComponent>() ?: continue
