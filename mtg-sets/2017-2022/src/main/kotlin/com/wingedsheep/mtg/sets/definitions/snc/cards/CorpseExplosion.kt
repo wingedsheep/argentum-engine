@@ -47,6 +47,7 @@ val CorpseExplosion = card("Corpse Explosion") {
         rarity = Rarity.RARE
         collectorNumber = "179"
         artist = "Greg Staples"
+        flavorText = "\"Well, that's one way to scatter her ashes.\"\n—Calvey, funeral director"
         imageUri = "https://cards.scryfall.io/normal/front/c/7/c700eff3-138b-4d4c-ba36-58b98986168c.jpg?1783923088"
     }
 }

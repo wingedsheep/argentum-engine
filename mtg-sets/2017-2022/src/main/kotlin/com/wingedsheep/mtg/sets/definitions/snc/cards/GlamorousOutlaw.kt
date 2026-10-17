@@ -38,6 +38,7 @@ import com.wingedsheep.sdk.scripting.values.ManaColorSet
  */
 val GlamorousOutlaw = card("Glamorous Outlaw") {
     manaCost = "{3}{U}{B}{R}"
+    colorIdentity = "UBR"
     typeLine = "Creature — Vampire Rogue"
     power = 4
     toughness = 5

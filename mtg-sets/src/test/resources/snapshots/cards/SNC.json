@@ -2417,6 +2417,7 @@
         "collectorNumber": "179",
         "rarity": "RARE",
         "artist": "Greg Staples",
+        "flavorText": "\"Well, that's one way to scatter her ashes.\"\n—Calvey, funeral director",
         "imageUri": "https://cards.scryfall.io/normal/front/c/7/c700eff3-138b-4d4c-ba36-58b98986168c.jpg?1783923088"
     },
     "colorIdentityOverride": [
@@ -4620,7 +4621,12 @@
                 "text": "If Glamorous Outlaw is removed from exile without being cast, the land will continue to have this ability."
             }
         ]
-    }
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK",
+        "RED"
+    ]
 }
 
 // Glittering Stockpile
@@ -4819,6 +4825,7 @@
         "collectorNumber": "81",
         "rarity": "UNCOMMON",
         "artist": "Liiga Smilshkalne",
+        "flavorText": "\"Up and at 'em, buddy. We've got more work to do.\"",
         "imageUri": "https://cards.scryfall.io/normal/front/3/9/394d7fb3-44ee-409f-a992-27e5aabd9c2b.jpg?1783923129",
         "rulings": [
             {

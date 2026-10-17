@@ -35,6 +35,7 @@ val GraveyardShift = card("Graveyard Shift") {
         rarity = Rarity.UNCOMMON
         collectorNumber = "81"
         artist = "Liiga Smilshkalne"
+        flavorText = "\"Up and at 'em, buddy. We've got more work to do.\""
         imageUri = "https://cards.scryfall.io/normal/front/3/9/394d7fb3-44ee-409f-a992-27e5aabd9c2b.jpg?1783923129"
         ruling(
             "2022-04-29",
