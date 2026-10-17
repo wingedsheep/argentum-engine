@@ -1564,7 +1564,9 @@ class ActivatedAbilityEnumerator(
             is SetBaseStatsEffect,
             is SetCreatureSubtypesEffect,
             is AnimateLandEffect,
-            is RegenerateEffect -> false
+            is RegenerateEffect,
+            // Unattaching is idempotent: a second activation finds it already unattached (reconfigure).
+            is UnattachEquipmentEffect -> false
             is CompositeEffect -> effect.effects.all { effectStacksOnRepeat(it) }
             is ModalEffect -> effect.modes.all { effectStacksOnRepeat(it.effect) }
             else -> true

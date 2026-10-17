@@ -13508,6 +13508,22 @@ composite abilities).
   sorcery-speed and targets a single creature you control, renders as its printed `Equip …` line with
   no frozen cost, and — when its target label is narrower than the plain `"creature you control"` —
   declares the matching `equipQuality`.
+- `Reconfigure(cost)` — CR 702.151 (Kamigawa: Neon Dynasty). Written `reconfigure("{2}")`, which declares
+  `Keyword.RECONFIGURE` and adds the two abilities CR 702.151a says it is — the lowering is
+  `ActivatedAbility.reconfigure(cost, attachId?, unattachId?)`: "`{2}`: attach this permanent to another
+  target creature you control" (`AttachEquipmentEffect` over `TargetFilter.OtherCreatureYouControl`) and
+  "`{2}`: unattach this permanent" (`UnattachEquipmentEffect(Self)`, gated by
+  `ActivationRestriction.OnlyIfCondition(EntityMatches(Self, Any.attachedTo(Creature)))`), both
+  sorcery speed. Neither sets `isEquipAbility` — reconfigure isn't an equip ability (rulings), so
+  equip cost reductions and instant-speed-equip permissions don't reach it. Nothing else to author:
+  the keyword lets an Equipment creature equip at all (CR 301.5c, `AttachmentMover.canAttach` and
+  `UnattachedAurasCheck`), and **`AttachmentMover.attach`** — the one attach operation — makes an
+  Equipment with reconfigure that becomes attached to a creature *by any means* stop being a creature
+  until it becomes unattached from that creature (CR 702.151b): a layer-4 `RemoveType(CREATURE)` floating
+  effect sourced from the host, with `Duration.WhileAffectedAttachedToSource`. Being an effect of the
+  attaching rather than an ability of the Equipment, it keeps applying if the Equipment loses its
+  abilities while attached (ruling); its creature subtypes go with the type (CR 205.1a). Lion Sash,
+  Lizard Blades.
 - `Fortify(cost)` — CR 702.67a: "[cost]: Attach this Fortification to target land you control.
   Activate only as a sorcery." Written `fortifyAbility("{3}")`; the lowering is
   `ActivatedAbility.fortify(cost, id?)` — the same `AttachEquipmentEffect` equip uses, targeting

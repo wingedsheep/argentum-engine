@@ -1747,6 +1747,266 @@
     ]
 }
 
+// Lion Sash
+{
+    "name": "Lion Sash",
+    "manaCost": "{1}{W}",
+    "typeLine": "Artifact Creature — Equipment Cat",
+    "oracleText": "{W}: Exile target card from a graveyard. If it was a permanent card, put a +1/+1 counter on this permanent.\nEquipped creature gets +1/+1 for each +1/+1 counter on this Equipment.\nReconfigure {2} ({2}: Attach to target creature you control; or unattach from a creature. Reconfigure only as a sorcery. While attached, this isn't a creature.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "RECONFIGURE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Lion Sash:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{W}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "destination": "Exile"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "EntityMatches",
+                                    "entity": {
+                                        "type": "ContextTarget",
+                                        "index": 0
+                                    },
+                                    "filter": "permanent"
+                                }
+                            },
+                            "then": {
+                                "type": "AddCounters",
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "count": 1,
+                                "target": "Self"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {},
+                            "zone": "Graveyard"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{W}: Exile target card from a graveyard. If it was a permanent card, put a +1/+1 counter on this permanent."
+            },
+            {
+                "id": "Lion Sash:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "another creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you",
+                            "excludeSelf": true
+                        },
+                        "id": "another creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "descriptionOverride": "Reconfigure {2}: Attach to target creature you control"
+            },
+            {
+                "id": "Lion Sash:3",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}"
+                    }
+                },
+                "effect": "UnattachEquipment",
+                "timing": "SorcerySpeed",
+                "restrictions": [
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": "Self",
+                            "filter": {
+                                "statePredicates": [
+                                    {
+                                        "type": "IsAttachedTo",
+                                        "filter": "creature"
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                ],
+                "descriptionOverride": "Reconfigure {2}: Unattach from the creature"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantDynamicStats",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                },
+                "powerBonus": {
+                    "type": "EntityProperty",
+                    "entity": "Self",
+                    "numericProperty": {
+                        "type": "CounterCount",
+                        "counterType": "PLUS_ONE_PLUS_ONE"
+                    }
+                },
+                "toughnessBonus": {
+                    "type": "EntityProperty",
+                    "entity": "Self",
+                    "numericProperty": {
+                        "type": "CounterCount",
+                        "counterType": "PLUS_ONE_PLUS_ONE"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "26",
+        "rarity": "RARE",
+        "artist": "Yongjae Choi",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/e/3e1766e9-2fa7-4446-a255-7beea1467ece.jpg?1783923917"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Lizard Blades
+{
+    "name": "Lizard Blades",
+    "manaCost": "{1}{R}",
+    "typeLine": "Artifact Creature — Equipment Lizard",
+    "oracleText": "Double strike\nEquipped creature has double strike.\nReconfigure {2} ({2}: Attach to target creature you control; or unattach from a creature. Reconfigure only as a sorcery. While attached, this isn't a creature.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "DOUBLE_STRIKE",
+        "RECONFIGURE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Lizard Blades:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "another creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you",
+                            "excludeSelf": true
+                        },
+                        "id": "another creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "descriptionOverride": "Reconfigure {2}: Attach to target creature you control"
+            },
+            {
+                "id": "Lizard Blades:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}"
+                    }
+                },
+                "effect": "UnattachEquipment",
+                "timing": "SorcerySpeed",
+                "restrictions": [
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": "Self",
+                            "filter": {
+                                "statePredicates": [
+                                    {
+                                        "type": "IsAttachedTo",
+                                        "filter": "creature"
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                ],
+                "descriptionOverride": "Reconfigure {2}: Unattach from the creature"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "DOUBLE_STRIKE"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "153",
+        "rarity": "RARE",
+        "artist": "Jason Kang",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/7/a747e6cf-c687-4c4f-8e07-d51165d6cb62.jpg?1783923864"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Lucky Offering
 {
     "name": "Lucky Offering",

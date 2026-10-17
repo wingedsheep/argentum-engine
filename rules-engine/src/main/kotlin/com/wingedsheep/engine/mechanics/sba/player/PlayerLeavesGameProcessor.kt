@@ -128,7 +128,8 @@ object PlayerLeavesGameProcessor {
                     is Duration.WhileSourceTapped,
                     is Duration.WhileSourceTappedAndAffectedPowerAtMostSource,
                     is Duration.WhileYouControlSourceAndSourceTapped,
-                    Duration.WhileSourceAttachedToAffected -> sourceLeft
+                    Duration.WhileSourceAttachedToAffected,
+                    Duration.WhileAffectedAttachedToSource -> sourceLeft
                     Duration.WhileControlledByController -> fe.controllerId == leaver
                     else -> false
                 }

@@ -143,7 +143,8 @@ class EndedDurationExpiryCheck : StateBasedActionCheck {
             // equivalent to all-or-nothing for the two gates that ignore the affected object.
             is Duration.WhileSourceTapped,
             is Duration.WhileSourceOnBattlefield,
-            Duration.WhileSourceAttachedToAffected ->
+            Duration.WhileSourceAttachedToAffected,
+            Duration.WhileAffectedAttachedToSource ->
                 all.filterTo(LinkedHashSet()) {
                     sourceGateHolds(state, floating.duration, floating.sourceId, it)
                 }

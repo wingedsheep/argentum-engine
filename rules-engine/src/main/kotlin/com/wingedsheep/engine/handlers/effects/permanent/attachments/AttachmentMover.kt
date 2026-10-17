@@ -2,6 +2,10 @@ package com.wingedsheep.engine.handlers.effects.permanent.attachments
 
 import com.wingedsheep.engine.core.GameEvent
 import com.wingedsheep.engine.core.PermanentAttachedEvent
+import com.wingedsheep.engine.handlers.EffectContext
+import com.wingedsheep.engine.mechanics.layers.Layer
+import com.wingedsheep.engine.mechanics.layers.SerializableModification
+import com.wingedsheep.engine.mechanics.layers.addFloatingEffect
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.handlers.effects.ZoneMovementUtils
@@ -13,7 +17,9 @@ import com.wingedsheep.engine.state.components.battlefield.AttachmentsComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
+import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.EquipmentAttachRestriction
 
 /**
@@ -174,10 +180,16 @@ object AttachmentMover {
             }
         }
 
+        // Read before the attach: whether this is an Equipment with reconfigure going onto a creature.
+        val reconfigures = reconfiguresOnto(state, attachmentId, hostId)
+
         newState = newState.updateEntity(attachmentId) { it.with(AttachedToComponent(hostId)) }
         newState = newState.updateEntity(hostId) { container ->
             val existing = container.get<AttachmentsComponent>()?.attachedIds ?: emptyList()
             container.with(AttachmentsComponent(existing + attachmentId))
+        }
+        if (reconfigures) {
+            newState = stopBeingACreatureWhileAttached(newState, attachmentId, hostId, fallbackControllerId)
         }
 
         val container = newState.getEntity(attachmentId)
@@ -188,5 +200,45 @@ object AttachmentMover {
             controllerId = container?.get<ControllerComponent>()?.playerId ?: fallbackControllerId,
         )
         return newState to events
+    }
+
+    /**
+     * Whether attaching [attachmentId] to [hostId] is attaching an Equipment with reconfigure to a
+     * creature — the event CR 702.151b keys off. Any attach counts, not just the reconfigure ability
+     * (ruling: Brass Squire attaching it works the same way). Reads the projected state, so a granted
+     * or lost reconfigure and a host that has stopped being a creature are both seen.
+     */
+    private fun reconfiguresOnto(state: GameState, attachmentId: EntityId, hostId: EntityId): Boolean {
+        val projected = state.projectedState
+        return projected.hasSubtype(attachmentId, "Equipment") &&
+            projected.hasKeyword(attachmentId, Keyword.RECONFIGURE) &&
+            projected.isCreature(hostId)
+    }
+
+    /**
+     * CR 702.151b: "Attaching an Equipment with reconfigure to another creature causes the Equipment
+     * to stop being a creature until it becomes unattached from that creature." A layer-4 floating
+     * effect created by the attaching itself — not a static ability of the Equipment — so it keeps
+     * applying if the Equipment loses its abilities while attached (ruling). Its source is the host
+     * and its duration [Duration.WhileAffectedAttachedToSource], so it ends the moment the Equipment
+     * comes off that creature, however that happens. Losing the creature type takes the Equipment's
+     * creature subtypes with it (CR 205.1a; handled by the projector).
+     */
+    private fun stopBeingACreatureWhileAttached(
+        state: GameState,
+        attachmentId: EntityId,
+        hostId: EntityId,
+        fallbackControllerId: EntityId
+    ): GameState {
+        val ticked = state.tick()
+        val controllerId = state.projectedState.getController(attachmentId) ?: fallbackControllerId
+        return ticked.addFloatingEffect(
+            layer = Layer.TYPE,
+            modification = SerializableModification.RemoveType("CREATURE"),
+            affectedEntities = setOf(attachmentId),
+            duration = Duration.WhileAffectedAttachedToSource,
+            context = EffectContext(sourceId = hostId, controllerId = controllerId),
+            timestamp = ticked.timestamp
+        )
     }
 }

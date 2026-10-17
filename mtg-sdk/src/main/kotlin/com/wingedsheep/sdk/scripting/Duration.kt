@@ -159,6 +159,26 @@ sealed interface Duration {
     }
 
     /**
+     * Effect lasts for as long as each affected permanent remains attached to the effect's source —
+     * the mirror of [WhileSourceAttachedToAffected], with the attachment and the host swapped: here
+     * the *affected* object is the Aura/Equipment and the *source* is the permanent it is attached to.
+     * Per-affected and one-way: an affected entity drops out the instant it becomes unattached from
+     * the source, is attached to something else, or the source leaves the battlefield, and
+     * `EndedDurationExpiryCheck` latches that off so re-attaching doesn't resurrect it.
+     *
+     * The engine's own duration for reconfigure's "stops being a creature until it becomes unattached
+     * from that creature" (CR 702.151b): the effect is created by the attaching, not by an ability of
+     * the Equipment, so it keeps applying if the Equipment loses its abilities while attached.
+     * [WhileSourceAttachedToAffected] can't carry it — its source is the attachment, and the
+     * effect's object is that same attachment.
+     */
+    @SerialName("WhileAffectedAttachedToSource")
+    @Serializable
+    data object WhileAffectedAttachedToSource : Duration {
+        override val description = "for as long as it remains attached to it"
+    }
+
+    /**
      * Effect lasts for as long as each affected permanent has at least one counter of
      * [counterType] on it (CR 611.2b "for as long as …"). This is the *affected-object*
      * analogue of the source-keyed `While*` durations: the gate watches a counter on the

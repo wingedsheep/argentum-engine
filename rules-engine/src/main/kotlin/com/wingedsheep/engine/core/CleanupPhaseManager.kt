@@ -639,6 +639,13 @@ class CleanupPhaseManager(
                     val sourceId = floatingEffect.sourceId
                     sourceId != null && newState.getBattlefield().contains(sourceId)
                 }
+                Duration.WhileAffectedAttachedToSource -> {
+                    // Keep while the host (the source) is on the battlefield; the per-affected
+                    // "still attached to it" half is gated per-frame by StateProjector and latched
+                    // off by EndedDurationExpiryCheck.
+                    val sourceId = floatingEffect.sourceId
+                    sourceId != null && newState.getBattlefield().contains(sourceId)
+                }
                 is Duration.WhileControlledByController -> true  // Gated at projection by controller; cleared on leaving play
                 is Duration.WhileAffectedHasCounter -> true  // Gated per-frame by StateProjector (counter present); latched off by EndedDurationExpiryCheck when the counter leaves
                 is Duration.WhileAffectedTapped -> true  // Gated per-frame by StateProjector / activation-legality checks; latched off by EndedDurationExpiryCheck when the permanent untaps

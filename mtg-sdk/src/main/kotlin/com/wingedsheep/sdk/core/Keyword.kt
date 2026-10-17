@@ -790,6 +790,21 @@ enum class Keyword(val displayName: String) {
      */
     RAVENOUS("Ravenous"),
 
+    /**
+     * Reconfigure [cost] (CR 702.151, Kamigawa: Neon Dynasty). Two activated abilities: "[Cost]:
+     * Attach this permanent to another target creature you control. Activate only as a sorcery" and
+     * "[Cost]: Unattach this permanent. Activate only if this permanent is attached to a creature
+     * and only as a sorcery" (CR 702.151a).
+     *
+     * The keyword is what the engine's attachment rules read: an Equipment that's also a creature
+     * can equip a creature only if it has reconfigure (CR 301.5c), and attaching an Equipment that
+     * has reconfigure to a creature — by its own ability or any other effect — makes it stop being
+     * a creature until it becomes unattached from that creature (CR 702.151b). The `reconfigure(cost)`
+     * DSL helper on [com.wingedsheep.sdk.dsl.CardBuilder] declares the keyword and adds both
+     * abilities ([com.wingedsheep.sdk.scripting.ActivatedAbility.reconfigure]).
+     */
+    RECONFIGURE("Reconfigure"),
+
     // ── Damage modification ──────────────────────────────
     WITHER("Wither"),
     TOXIC("Toxic"),

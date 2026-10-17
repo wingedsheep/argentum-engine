@@ -28,6 +28,7 @@ import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.core.AbilityFlag
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.scripting.Duration
+import com.wingedsheep.engine.mechanics.durations.GrantDurationGate
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.model.CharacteristicValue
@@ -1025,6 +1026,15 @@ class StateProjector {
                 validAffectedEntities = validAffectedEntities.filterTo(LinkedHashSet()) { id ->
                         (state.getEntity(id)?.get<CountersComponent>()?.getCount(dur.counterType) ?: 0) > 0
                     }
+            }
+
+            // [Duration.WhileAffectedAttachedToSource] (reconfigure's "isn't a creature while
+            // attached", CR 702.151b): keep only affected attachments still attached to the source
+            // host, which must still be on the battlefield. Latched off by EndedDurationExpiryCheck.
+            if (floating.duration == Duration.WhileAffectedAttachedToSource) {
+                validAffectedEntities = validAffectedEntities.filterTo(LinkedHashSet()) { id ->
+                    GrantDurationGate.sourceGateHolds(state, floating.duration, floating.sourceId, id)
+                }
             }
 
             // "for as long as it remains tapped" (Braided Net): keep only affected entities that

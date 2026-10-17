@@ -710,6 +710,17 @@ class CardBuilder(private val name: String) {
         activatedAbilities.add(ActivatedAbility.fortify(cost = ManaCost.parse(cost)))
     }
 
+    /**
+     * "Reconfigure [cost]" (CR 702.151) — declares the [Keyword.RECONFIGURE] keyword and adds its two
+     * activated abilities ([ActivatedAbility.reconfigure]): attach to another target creature you
+     * control, and unattach, both for [cost] at sorcery speed. The engine makes the permanent stop
+     * being a creature while it is attached to a creature (CR 702.151b) — nothing to author.
+     */
+    fun reconfigure(cost: String) {
+        keywordSet.add(Keyword.RECONFIGURE)
+        activatedAbilities.addAll(ActivatedAbility.reconfigure(cost = ManaCost.parse(cost)))
+    }
+
     // =========================================================================
     // Additional Costs
     // =========================================================================

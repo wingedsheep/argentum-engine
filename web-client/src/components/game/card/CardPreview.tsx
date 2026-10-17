@@ -2,7 +2,7 @@ import { useMemo, useState, useEffect, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import { useGameStore } from '@/store/gameStore.ts'
 import { selectGameState, selectViewingPlayerId, useCardLegalActions } from '@/store/selectors.ts'
-import { AbilityFlagDisplayNames, ZoneType, zoneIdEquals } from '@/types'
+import { AbilityFlagDisplayNames, KeywordDisplayNames, ZoneType, zoneIdEquals } from '@/types'
 import { getCardImageUrl } from '@/utils/cardImages.ts'
 import { AbilityArtTile, isArtlessAbility } from './AbilityArtTile'
 import { DfcFlipHint } from '@/components/ui/useDfcHoverFlip'
@@ -414,7 +414,7 @@ export function CardPreview() {
         <div style={styles.cardPreviewKeywords}>
           {card.keywords.map((keyword) => (
             <div key={keyword} style={styles.cardPreviewKeyword}>
-              <span style={styles.cardPreviewKeywordName}>{keyword}</span>
+              <span style={styles.cardPreviewKeywordName}>{KeywordDisplayNames[keyword] ?? keyword}</span>
             </div>
           ))}
           {/* Ability flags are engine enum names, not printed keywords — a raw "DOESNT_UNTAP" chip

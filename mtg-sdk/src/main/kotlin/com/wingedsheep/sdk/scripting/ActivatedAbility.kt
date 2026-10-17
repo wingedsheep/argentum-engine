@@ -5,10 +5,12 @@ import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.conditions.Condition
+import com.wingedsheep.sdk.scripting.conditions.EntityMatches
 import com.wingedsheep.sdk.scripting.costs.CostAtom
 import com.wingedsheep.sdk.scripting.costs.manaCostOrNull
 import com.wingedsheep.sdk.scripting.effects.AttachEquipmentEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
+import com.wingedsheep.sdk.scripting.effects.UnattachEquipmentEffect
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.targets.TargetObject
@@ -371,6 +373,56 @@ data class ActivatedAbility(
             isFortifyAbility = true,
             timing = TimingRule.SorcerySpeed,
         )
+
+        /**
+         * The two abilities "Reconfigure [cost]" *is* (CR 702.151a): "[Cost]: Attach this permanent
+         * to another target creature you control. Activate only as a sorcery" and "[Cost]: Unattach
+         * this permanent. Activate only if this permanent is attached to a creature and only as a
+         * sorcery." Lowered here rather than in [com.wingedsheep.sdk.dsl.CardBuilder.reconfigure] for
+         * the same reason as [equip]: a reader of the printed line needs the same body.
+         *
+         * Neither is an equip ability (rulings: equip cost reductions and instant-speed-equip
+         * permissions don't reach reconfigure), so neither sets [isEquipAbility]. What stops the
+         * permanent being a creature while attached isn't part of either ability — it is the
+         * engine's rule for attaching an Equipment that has the [com.wingedsheep.sdk.core.Keyword.RECONFIGURE]
+         * keyword (CR 702.151b), which applies however it became attached.
+         *
+         * Each ability is labelled with the printed keyword ("Reconfigure {2}: …"), the way an equip
+         * ability renders "Equip {1}", so the activation menu names the mechanic the card prints.
+         *
+         * [attachId] and [unattachId] are parameters for the reason [equip]'s id is.
+         */
+        fun reconfigure(
+            cost: ManaCost,
+            attachId: AbilityId = AbilityId.next(),
+            unattachId: AbilityId = AbilityId.next(),
+        ): List<ActivatedAbility> = listOf(
+            ActivatedAbility(
+                id = attachId,
+                cost = AbilityCost.Atom(CostAtom.Mana(cost)),
+                effect = AttachEquipmentEffect(EffectTarget.BoundVariable(RECONFIGURE_TARGET_LABEL)),
+                targetRequirements = listOf(
+                    TargetObject(filter = TargetFilter.OtherCreatureYouControl, id = RECONFIGURE_TARGET_LABEL)
+                ),
+                timing = TimingRule.SorcerySpeed,
+                descriptionOverride = "Reconfigure $cost: Attach to target creature you control",
+            ),
+            ActivatedAbility(
+                id = unattachId,
+                cost = AbilityCost.Atom(CostAtom.Mana(cost)),
+                effect = UnattachEquipmentEffect(EffectTarget.Self),
+                timing = TimingRule.SorcerySpeed,
+                descriptionOverride = "Reconfigure $cost: Unattach from the creature",
+                restrictions = listOf(
+                    ActivationRestriction.OnlyIfCondition(
+                        EntityMatches(EffectTarget.Self, GameObjectFilter.Any.attachedTo(GameObjectFilter.Creature))
+                    )
+                ),
+            ),
+        )
+
+        /** The label a reconfigure attach ability's target requirement and its attach effect share. */
+        const val RECONFIGURE_TARGET_LABEL: String = "another creature you control"
 
         /** The label a fortify ability's target requirement and its attach effect share. */
         const val FORTIFY_TARGET_LABEL: String = "land you control"

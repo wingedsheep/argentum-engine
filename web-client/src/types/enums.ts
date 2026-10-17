@@ -271,6 +271,7 @@ export enum Keyword {
   EVOLVE = 'EVOLVE',
   // Enters with X +1/+1 counters, draws at X >= 5 (CR 702.156)
   RAVENOUS = 'RAVENOUS',
+  RECONFIGURE = 'RECONFIGURE',
   // Day/night transforming DFCs (Innistrad, CR 702.145)
   DAYBOUND = 'DAYBOUND',
   NIGHTBOUND = 'NIGHTBOUND',
@@ -413,6 +414,7 @@ export const KeywordDisplayNames: Record<Keyword, string> = {
   [Keyword.MENTOR]: 'Mentor',
   [Keyword.EVOLVE]: 'Evolve',
   [Keyword.RAVENOUS]: 'Ravenous',
+  [Keyword.RECONFIGURE]: 'Reconfigure',
   [Keyword.DAYBOUND]: 'Daybound',
   [Keyword.NIGHTBOUND]: 'Nightbound',
   [Keyword.JOB_SELECT]: 'Job select',
