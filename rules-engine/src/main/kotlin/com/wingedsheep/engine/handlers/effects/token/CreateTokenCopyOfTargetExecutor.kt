@@ -129,7 +129,10 @@ class CreateTokenCopyOfTargetExecutor(
                     // carries "your next end step" and "unless it's your Ring-bearer".
                     val created = substituteExecutor.createSubstituteTokens(
                         state, lookup, context, tokenCount, controllerId,
-                        riders = TokenRiders(tapped = effect.tapped, attacking = effect.attacking),
+                        riders = TokenRiders(
+                            tapped = effect.tapped, attacking = effect.attacking,
+                            attackDefender = effect.attackDefender,
+                        ),
                         rootEffect = effect
                     )
                     if (created.outcome !is com.wingedsheep.engine.core.Outcome.Done) created
