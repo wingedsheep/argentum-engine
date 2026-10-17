@@ -2009,6 +2009,104 @@
     ]
 }
 
+// Cabaretti Ascendancy
+{
+    "name": "Cabaretti Ascendancy",
+    "manaCost": "{R}{G}{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "At the beginning of your upkeep, look at the top card of your library. If it's a creature or planeswalker card, you may reveal it and put it into your hand. If you don't put the card into your hand, you may put it on the bottom of your library.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Cabaretti Ascendancy:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "filter": "creature|planeswalker",
+                            "storeSelected": "selected1",
+                            "storeRemainder": "remainder1",
+                            "prompt": "Reveal the creature or planeswalker card and put it into your hand?",
+                            "selectedLabel": "Reveal and put into your hand",
+                            "remainderLabel": "Leave it"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            },
+                            "revealed": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "remainder1",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected3",
+                            "selectedLabel": "Put on bottom",
+                            "remainderLabel": "Leave on top"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected3",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Bottom"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "At the beginning of your upkeep, look at the top card of your library. If it's a creature or planeswalker card, you may reveal it and put it into your hand. If you don't put the card into your hand, you may put it on the bottom of your library."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "172",
+        "rarity": "RARE",
+        "artist": "Kari Christensen",
+        "flavorText": "\"Whatever you're looking for—food, family, Halo—we've got the best in town.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/7/9738d616-b38f-4968-89d6-805ae368e2d4.jpg?1783923094"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN",
+        "WHITE"
+    ]
+}
+
 // Cabaretti Charm
 {
     "name": "Cabaretti Charm",
@@ -2309,6 +2407,57 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Call In a Professional
+{
+    "name": "Call In a Professional",
+    "manaCost": "{2}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Players can't gain life this turn. Damage can't be prevented this turn. Call In a Professional deals 3 damage to any target. (Shield counters don't prevent this damage as they're removed.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "LockLifeGain",
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "Each"
+                    },
+                    "duration": "EndOfTurn"
+                },
+                "DamageCantBePreventedThisTurn",
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "AnyTarget",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "103",
+        "rarity": "UNCOMMON",
+        "artist": "Filip Burburan",
+        "flavorText": "For the next week, Park Heights smelled of burnt oil paint and brimstone.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/a/ead68c0a-eed1-4a9c-a790-56f8a79b444c.jpg?1783923120"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -2615,6 +2764,195 @@
         "imageUri": "https://cards.scryfall.io/normal/front/b/1/b1100dba-de2d-481e-b29c-71f6d34663ba.jpg"
     },
     "colorIdentityOverride": []
+}
+
+// Cemetery Tampering
+{
+    "name": "Cemetery Tampering",
+    "manaCost": "{2}{B}",
+    "typeLine": "Enchantment",
+    "oracleText": "Hideaway 5 (When this enchantment enters, look at the top five cards of your library, exile one face down, then put the rest on the bottom in a random order.)\nAt the beginning of your upkeep, you may mill three cards. Then if there are twenty or more cards in your graveyard, you may play the exiled card without paying its mana cost.",
+    "keywords": [
+        "HIDEAWAY"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "HIDEAWAY",
+            "n": 5
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Cemetery Tampering:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 5
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected1",
+                            "storeRemainder": "remainder1",
+                            "prompt": "Choose a card to exile face down",
+                            "selectedLabel": "Exile face down",
+                            "remainderLabel": "Put on bottom of library"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            },
+                            "linkToSource": true,
+                            "faceDown": "HIDDEN"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "remainder1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Bottom"
+                            },
+                            "order": "Random"
+                        }
+                    ]
+                }
+            },
+            {
+                "id": "Cemetery Tampering:2",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "Gated",
+                            "gate": "Gate.MayDecide",
+                            "then": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "TopOfLibrary",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 3
+                                            },
+                                            "isMill": true
+                                        },
+                                        "storeAs": "milled"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "milled",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Graveyard"
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "Count",
+                                        "player": "You",
+                                        "zone": "Graveyard"
+                                    },
+                                    "operator": "GTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 20
+                                    }
+                                }
+                            },
+                            "then": {
+                                "type": "Gated",
+                                "gate": "Gate.MayDecide",
+                                "then": {
+                                    "type": "Composite",
+                                    "effects": [
+                                        {
+                                            "type": "GatherCards",
+                                            "source": "FromLinkedExile",
+                                            "storeAs": "gathered0"
+                                        },
+                                        {
+                                            "type": "PlayFromCollectionWithoutPayingCost",
+                                            "from": "gathered0"
+                                        }
+                                    ]
+                                },
+                                "descriptionOverride": "Play the exiled card without paying its mana cost"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "At the beginning of your upkeep, you may mill three cards. Then if there are twenty or more cards in your graveyard, you may play the exiled card without paying its mana cost."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "69",
+        "rarity": "RARE",
+        "artist": "Taras Susak",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/c/6c6e8d37-badd-4b9a-94e5-2d50ec78182c.jpg?1783923138",
+        "rulings": [
+            {
+                "date": "2022-04-29",
+                "text": "\"Hideaway N\" means \"When this permanent enters the battlefield, look at the top N cards of your library. Exile one of them face down and put the rest on the bottom of your library in a random order. The exiled card gains 'The player who controls the permanent that exiled this card may look at this card in the exile zone.'\""
+            },
+            {
+                "date": "2022-04-29",
+                "text": "Any player who has controlled a permanent with a hideaway ability since a card was exiled with it may look at that card."
+            },
+            {
+                "date": "2022-04-29",
+                "text": "Previously, permanents with hideaway entered the battlefield tapped. This ability has been removed from the definition of hideaway. Older cards have received errata to have an additional paragraph that reads \"[This permanent] enters the battlefield tapped,\" and they now have hideaway 4."
+            },
+            {
+                "date": "2022-04-29",
+                "text": "Hideaway now causes you to put the rest of the cards on the bottom of your library in a random order instead of any order."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
 }
 
 // Ceremonial Groundbreaker
@@ -3547,6 +3885,151 @@
     ]
 }
 
+// Cut Your Losses
+{
+    "name": "Cut Your Losses",
+    "manaCost": "{4}{U}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Casualty 2 (As you cast this spell, you may sacrifice a creature with power 2 or greater. When you do, copy this spell and you may choose a new target for the copy.)\nTarget player mills half their library, rounded down.",
+    "keywords": [
+        "CASUALTY"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Casualty",
+            "threshold": 2
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "TopOfLibrary",
+                        "count": {
+                            "type": "Divide",
+                            "numerator": {
+                                "type": "AggregateZone",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "zone": "Library"
+                            },
+                            "denominator": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "roundUp": false
+                        },
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "isMill": true
+                    },
+                    "storeAs": "milled"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "milled",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetPlayer",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "38",
+        "rarity": "RARE",
+        "artist": "Dominik Mayer",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/1/31184dd0-4080-44c1-a3e0-f6d10a4d1fcb.jpg?1783923147",
+        "rulings": [
+            {
+                "date": "2022-04-29",
+                "text": "If you cast Cut Your Losses and copy it targeting the same player, that player will mill half their library, then mill half of what remains after that. They do not mill their entire library."
+            },
+            {
+                "date": "2022-04-29",
+                "text": "If you pay the casualty cost of a spell, the copy will resolve before the original spell."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Cut of the Profits
+{
+    "name": "Cut of the Profits",
+    "manaCost": "{X}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Casualty 3 (As you cast this spell, you may sacrifice a creature with power 3 or greater. When you do, copy this spell.)\nYou draw X cards and you lose X life.",
+    "keywords": [
+        "CASUALTY"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Casualty",
+            "threshold": 3
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DrawCards",
+                    "count": "XValue"
+                },
+                {
+                    "type": "LoseLife",
+                    "amount": "XValue",
+                    "target": "Controller"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "72",
+        "rarity": "RARE",
+        "artist": "Donato Giancola",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/0/80e86078-1629-40dc-88a9-102c543255b8.jpg?1783923136",
+        "rulings": [
+            {
+                "date": "2022-04-29",
+                "text": "X will be the same for both the original spell and the copy you create with the casualty ability."
+            },
+            {
+                "date": "2022-04-29",
+                "text": "If you pay the casualty cost of a spell, the copy will resolve before the original spell."
+            },
+            {
+                "date": "2022-04-29",
+                "text": "The copy of the spell is created on the stack, so it's not \"cast.\" Abilities that trigger when a player casts a spell won't trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Cutthroat Contender
 {
     "name": "Cutthroat Contender",
@@ -4317,6 +4800,54 @@
     ]
 }
 
+// Endless Detour
+{
+    "name": "Endless Detour",
+    "manaCost": "{G}{W}{U}",
+    "typeLine": "Instant",
+    "oracleText": "The owner of target spell, nonland permanent, or card in a graveyard puts it on their choice of the top or bottom of their library.",
+    "script": {
+        "spellEffect": {
+            "type": "PutOnLibraryPositionOfChoice",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {},
+                    "zone": "Stack",
+                    "alternatives": [
+                        {
+                            "baseFilter": "nonland permanent"
+                        },
+                        {
+                            "baseFilter": {},
+                            "zone": "Graveyard"
+                        }
+                    ]
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "183",
+        "rarity": "RARE",
+        "artist": "Eddie Mendoza",
+        "flavorText": "After diverting around the eleventh construction barrier, the taxi driver began to suspect she was being herded into a trap.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/3/13798c8c-1aa5-4f95-979b-b971e73d715f.jpg?1783923087"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE",
+        "BLUE"
+    ]
+}
+
 // Errant, Street Artist
 {
     "name": "Errant, Street Artist",
@@ -4467,6 +4998,59 @@
         "BLUE",
         "BLACK",
         "RED"
+    ]
+}
+
+// Even the Score
+{
+    "name": "Even the Score",
+    "manaCost": "{X}{U}{U}{U}",
+    "typeLine": "Instant",
+    "oracleText": "This spell costs {U}{U}{U} less to cast if an opponent has drawn four or more cards this turn.\nDraw X cards.",
+    "script": {
+        "spellEffect": {
+            "type": "DrawCards",
+            "count": "CastX"
+        },
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "ReduceColored",
+                    "symbols": "{U}{U}{U}"
+                },
+                "gating": {
+                    "type": "OnlyIf",
+                    "condition": {
+                        "type": "Compare",
+                        "left": {
+                            "type": "GreatestAmongPlayers",
+                            "players": "EachOpponent",
+                            "inner": {
+                                "type": "TurnTracking",
+                                "player": "You",
+                                "tracker": "CARDS_DRAWN"
+                            }
+                        },
+                        "operator": "GTE",
+                        "right": {
+                            "type": "Fixed",
+                            "amount": 4
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "42",
+        "rarity": "MYTHIC",
+        "artist": "Greg Opalinski",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/6/c629217f-4a10-4d92-86f8-22dc4067a724.jpg?1783923145"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -5603,6 +6187,80 @@
         "artist": "Randy Vargas",
         "flavorText": "He never asks why. Just who, when, and where.",
         "imageUri": "https://cards.scryfall.io/normal/front/5/7/570f7c90-109b-4d6d-8205-d158753719e8.jpg?1783923105"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Gala Greeters
+{
+    "name": "Gala Greeters",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Elf Druid",
+    "oracleText": "Alliance — Whenever another creature you control enters, choose one that hasn't been chosen this turn —\n• Put a +1/+1 counter on this creature.\n• Create a tapped Treasure token.\n• You gain 2 life.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Gala Greeters:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "AddCounters",
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "count": 1,
+                                "target": "Self"
+                            },
+                            "description": "Put a +1/+1 counter on this creature"
+                        },
+                        {
+                            "effect": {
+                                "type": "CreatePredefinedToken",
+                                "tokenType": "Treasure",
+                                "tapped": true
+                            },
+                            "description": "Create a tapped Treasure token"
+                        },
+                        {
+                            "effect": {
+                                "type": "GainLife",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
+                            },
+                            "description": "You gain 2 life"
+                        }
+                    ],
+                    "excludeModesChosenThisTurn": true,
+                    "countsAsModalSpell": false
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "148",
+        "rarity": "RARE",
+        "artist": "Bud Cook",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/c/3c1baaa2-bd0b-4627-b93a-0753e0acd0f2.jpg?1783923104",
+        "rulings": [
+            {
+                "date": "2022-04-29",
+                "text": "If multiple creatures enter the battlefield simultaneously, you must still choose different modes for each instance of the triggered ability that's put onto the stack. If more than three creatures enter the battlefield simultaneously, that choice is made only for the first three."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "GREEN"
@@ -8018,6 +8676,139 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Lagrella, the Magpie
+{
+    "name": "Lagrella, the Magpie",
+    "manaCost": "{G}{W}{U}",
+    "typeLine": "Legendary Creature — Human Soldier",
+    "oracleText": "When Lagrella enters, exile any number of other target creatures controlled by different players until Lagrella leaves the battlefield. When an exiled card enters under your control this way, put two +1/+1 counters on it.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Lagrella, the Magpie:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": "IterationSpace.Targets",
+                    "body": {
+                        "type": "ExileUntilLeaves",
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        }
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "unlimited": true,
+                    "filter": {
+                        "baseFilter": "creature",
+                        "excludeSelf": true
+                    },
+                    "id": "t0",
+                    "differentControllers": true
+                }
+            },
+            {
+                "id": "Lagrella, the Magpie:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "FromLinkedExile",
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "ConditionalOnCollection",
+                            "collection": "gathered0",
+                            "ifNotEmpty": {
+                                "type": "ReflexiveTrigger",
+                                "action": {
+                                    "type": "Composite",
+                                    "effects": [
+                                        {
+                                            "type": "GatherCards",
+                                            "source": "FromLinkedExile",
+                                            "storeAs": "gathered0"
+                                        },
+                                        {
+                                            "type": "MoveCollection",
+                                            "from": "gathered0",
+                                            "destination": {
+                                                "type": "ToZone",
+                                                "zone": "Battlefield"
+                                            },
+                                            "storeMovedAs": "moved1",
+                                            "underOwnersControl": true
+                                        },
+                                        {
+                                            "type": "FilterCollection",
+                                            "from": "moved1",
+                                            "filter": "ctrl:you",
+                                            "storeMatching": "lagrellaReturnedYours"
+                                        }
+                                    ]
+                                },
+                                "optional": false,
+                                "reflexiveEffect": {
+                                    "type": "AddCountersToCollection",
+                                    "collectionName": "lagrellaReturnedYours",
+                                    "counterType": "PLUS_ONE_PLUS_ONE",
+                                    "count": 2
+                                },
+                                "descriptionOverride": "Return the cards exiled with Lagrella to the battlefield under their owners' control. When an exiled card enters under your control this way, put two +1/+1 counters on it"
+                            },
+                            "ifEmpty": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": "FromLinkedExile",
+                                        "storeAs": "gathered0"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "gathered0",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Battlefield"
+                                        },
+                                        "underOwnersControl": true
+                                    }
+                                ]
+                            },
+                            "filter": "own:you"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "196",
+        "rarity": "UNCOMMON",
+        "artist": "Donato Giancola",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/d/dd20f271-26c8-429f-a422-e7d95f3bda74.jpg?1783923080"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE",
+        "BLUE"
     ]
 }
 
@@ -12983,6 +13774,70 @@
     ]
 }
 
+// Rigo, Streetwise Mentor
+{
+    "name": "Rigo, Streetwise Mentor",
+    "manaCost": "{G/W}{W}{W/U}",
+    "typeLine": "Legendary Creature — Cat Citizen",
+    "oracleText": "Rigo enters with a shield counter on it. (If it would be dealt damage or destroyed, remove a shield counter from it instead.)\nWhenever you attack a player or planeswalker with one or more creatures with power 1 or less, draw a card.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Rigo, Streetwise Mentor:1",
+                "trigger": {
+                    "type": "YouAttackEvent",
+                    "attackerFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "PowerAtMost",
+                                "max": 1
+                            }
+                        ],
+                        "statePredicates": [
+                            {
+                                "type": "StateNot",
+                                "predicate": "IsAttackingABattle"
+                            }
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "counterType": "SHIELD",
+                "count": 1,
+                "selfOnly": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "215",
+        "rarity": "RARE",
+        "artist": "Scott Murphy",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/7/67c6aef6-d846-4e02-a5f9-6eb0b2212208.jpg?1783923073"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE",
+        "BLUE"
+    ]
+}
+
 // Riveteers Ascendancy
 {
     "name": "Riveteers Ascendancy",
@@ -13518,6 +14373,100 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Rocco, Cabaretti Caterer
+{
+    "name": "Rocco, Cabaretti Caterer",
+    "manaCost": "{X}{R}{G}{W}",
+    "typeLine": "Legendary Creature — Elf Druid",
+    "oracleText": "When Rocco enters, if you cast it, you may search your library for a creature card with mana value X or less, put it onto the battlefield, then shuffle.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Rocco, Cabaretti Caterer:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Library",
+                                    "filter": {
+                                        "cardPredicates": [
+                                            "IsCreature",
+                                            {
+                                                "type": "ManaValueAtMostDynamic",
+                                                "amount": "CastX"
+                                            }
+                                        ]
+                                    }
+                                },
+                                "storeAs": "searchable",
+                                "search": true
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "searchable",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "found",
+                                "prompt": "Search your library for a creature card with mana value X or less to put onto the battlefield",
+                                "selectedLabel": "Put onto the battlefield"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "found",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Battlefield"
+                                }
+                            },
+                            "ShuffleLibrary",
+                            "EmitLibrarySearchedEvent"
+                        ]
+                    }
+                },
+                "interveningIf": "WasCast",
+                "descriptionOverride": "When Rocco enters, if you cast it, you may search your library for a creature card with mana value X or less, put it onto the battlefield, then shuffle."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "218",
+        "rarity": "UNCOMMON",
+        "artist": "Chris Seaman",
+        "flavorText": "They wouldn't admit it, but some people join the Cabaretti just for the food.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/6/b6cf8b35-2a81-40fd-b383-becb81bef806.jpg?1783923072",
+        "rulings": [
+            {
+                "date": "2022-04-29",
+                "text": "If an effect allows you to cast Rocco without paying its mana cost, X is 0."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN",
+        "WHITE"
     ]
 }
 
@@ -14413,6 +15362,122 @@
     ]
 }
 
+// Shadow of Mortality
+{
+    "name": "Shadow of Mortality",
+    "manaCost": "{13}{B}{B}",
+    "typeLine": "Creature — Avatar",
+    "oracleText": "If your life total is less than your starting life total, this spell costs {X} less to cast, where X is the difference.",
+    "creatureStats": {
+        "power": 7,
+        "toughness": 7
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "ReduceGenericBy",
+                    "source": {
+                        "type": "Dynamic",
+                        "amount": {
+                            "type": "Subtract",
+                            "left": {
+                                "type": "StartingLifeTotal",
+                                "player": "You"
+                            },
+                            "right": "YourLifeTotal"
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "94",
+        "rarity": "RARE",
+        "artist": "Robin Olausson",
+        "flavorText": "\"Build your towers as tall as you want. The shadow always reaches higher.\"\n—Message scrawled on an alley wall",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/0/40cbb0db-94e9-4988-b900-ced4f9e6d4ed.jpg?1783923125",
+        "rulings": [
+            {
+                "date": "2022-04-29",
+                "text": "In a Two-Headed Giant game, your starting life total is the life total your team started at, and your current life total is your team's current life total."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Shakedown Heavy
+{
+    "name": "Shakedown Heavy",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Ogre Warrior",
+    "oracleText": "Menace\nWhenever this creature attacks, defending player may have you draw a card. If they do, untap this creature and remove it from combat.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 4
+    },
+    "keywords": [
+        "MENACE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Shakedown Heavy:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayDecide",
+                        "prompt": "Have Shakedown Heavy's controller draw a card? If you do, it's removed from combat."
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            {
+                                "type": "TapUntap",
+                                "target": "Self",
+                                "tap": false
+                            },
+                            {
+                                "type": "RemoveFromCombat",
+                                "target": "Self"
+                            }
+                        ]
+                    },
+                    "decisionMaker": {
+                        "type": "PlayerRef",
+                        "player": "DefendingPlayer"
+                    },
+                    "descriptionOverride": "Defending player may have you draw a card. If they do, untap this creature and remove it from combat."
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "95",
+        "rarity": "RARE",
+        "artist": "Randy Vargas",
+        "flavorText": "\"Look, we both get what we want. I get your Halo. You get to keep your kneecaps.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/e/ce418184-a672-46bc-a17d-c559614defb5.jpg?1783923123"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Shattered Seraph
 {
     "name": "Shattered Seraph",
@@ -15026,6 +16091,95 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Soul of Emancipation
+{
+    "name": "Soul of Emancipation",
+    "manaCost": "{4}{G}{W}{U}",
+    "typeLine": "Creature — Avatar",
+    "oracleText": "When this creature enters, destroy up to three other target nonland permanents. For each of those permanents, its controller creates a 3/3 white Angel creature token with flying.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 7
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Soul of Emancipation:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": "IterationSpace.Targets",
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "MoveToZone",
+                                "target": {
+                                    "type": "ContextTarget",
+                                    "index": 0
+                                },
+                                "destination": "Graveyard",
+                                "byDestruction": true
+                            },
+                            {
+                                "type": "CreateToken",
+                                "power": 3,
+                                "toughness": 3,
+                                "colors": [
+                                    "WHITE"
+                                ],
+                                "creatureTypes": [
+                                    "Angel"
+                                ],
+                                "keywords": [
+                                    "FLYING"
+                                ],
+                                "imageUri": "https://cards.scryfall.io/normal/front/3/9/39bae778-0dee-47d5-a7cd-f2be11b5e79b.jpg?1783922964",
+                                "controller": "TargetController"
+                            }
+                        ]
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "count": 3,
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "nonland permanent",
+                        "excludeSelf": true
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "223",
+        "rarity": "RARE",
+        "artist": "Eric Deschamps",
+        "flavorText": "Light poured from every crack as the sleepers awoke from their long stone slumber.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/5/35b13b82-0650-48f2-9e42-3610b43e2e10.jpg?1783923068",
+        "rulings": [
+            {
+                "date": "2022-04-29",
+                "text": "If a permanent is no longer a legal target as Soul of Emancipation's triggered ability resolves, that target's controller will not create an Angel for that permanent."
+            },
+            {
+                "date": "2022-04-29",
+                "text": "If a permanent is still a legal target as Soul of Emancipation's triggered ability resolves but it isn't destroyed, perhaps because it had a shield counter, its controller will create an Angel token for that permanent."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE",
+        "BLUE"
     ]
 }
 
@@ -15853,6 +17007,140 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Titan of Industry
+{
+    "name": "Titan of Industry",
+    "manaCost": "{4}{G}{G}{G}",
+    "typeLine": "Creature — Elemental",
+    "oracleText": "Reach, trample\nWhen this creature enters, choose two —\n• Destroy target artifact or enchantment.\n• Target player gains 5 life.\n• Create a 4/4 green Rhino Warrior creature token.\n• Put a shield counter on a creature you control.",
+    "creatureStats": {
+        "power": 7,
+        "toughness": 7
+    },
+    "keywords": [
+        "REACH",
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Titan of Industry:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "MoveToZone",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "destination": "Graveyard",
+                                "byDestruction": true
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": "artifact|enchantment"
+                                    },
+                                    "id": "t0"
+                                }
+                            ],
+                            "description": "Destroy target artifact or enchantment."
+                        },
+                        {
+                            "effect": {
+                                "type": "GainLife",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 5
+                                },
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t1"
+                                }
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetPlayer",
+                                    "id": "t1"
+                                }
+                            ],
+                            "description": "Target player gains 5 life."
+                        },
+                        {
+                            "effect": {
+                                "type": "CreateToken",
+                                "power": 4,
+                                "toughness": 4,
+                                "colors": [
+                                    "GREEN"
+                                ],
+                                "creatureTypes": [
+                                    "Rhino",
+                                    "Warrior"
+                                ],
+                                "imageUri": "https://cards.scryfall.io/normal/front/2/3/230419f9-a9f7-441d-bad7-0ed867326aa1.jpg?1783922959"
+                            },
+                            "description": "Create a 4/4 green Rhino Warrior creature token."
+                        },
+                        {
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "ControlledPermanents",
+                                            "filter": "creature"
+                                        },
+                                        "storeAs": "gathered0"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "gathered0",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "selected1",
+                                        "prompt": "Choose a creature you control to put a shield counter on",
+                                        "useTargetingUI": true
+                                    },
+                                    {
+                                        "type": "AddCountersToCollection",
+                                        "collectionName": "selected1",
+                                        "counterType": "SHIELD"
+                                    }
+                                ]
+                            },
+                            "description": "Put a shield counter on a creature you control."
+                        }
+                    ],
+                    "chooseCount": 2
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "159",
+        "rarity": "MYTHIC",
+        "artist": "Lucas Staniec",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/b/5b6f03c1-9e9d-4a0c-af3b-9753b440cd9f.jpg?1783923097"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
