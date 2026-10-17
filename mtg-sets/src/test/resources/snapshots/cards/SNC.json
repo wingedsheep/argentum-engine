@@ -2165,6 +2165,266 @@
     ]
 }
 
+// Cormela, Glamour Thief
+{
+    "name": "Cormela, Glamour Thief",
+    "manaCost": "{1}{U}{B}{R}",
+    "typeLine": "Legendary Creature — Vampire Rogue",
+    "oracleText": "Haste\n{1}, {T}: Add {U}{B}{R}. Spend this mana only to cast instant and/or sorcery spells.\nWhen Cormela dies, return up to one target instant or sorcery card from your graveyard to your hand.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "keywords": [
+        "HASTE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Cormela, Glamour Thief:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Hand"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "instant|sorcery own:you",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "When Cormela dies, return up to one target instant or sorcery card from your graveyard to your hand."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Cormela, Glamour Thief:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddMana",
+                            "color": "BLUE",
+                            "restriction": "InstantOrSorceryOnly"
+                        },
+                        {
+                            "type": "AddMana",
+                            "color": "BLACK",
+                            "restriction": "InstantOrSorceryOnly"
+                        },
+                        {
+                            "type": "AddMana",
+                            "color": "RED",
+                            "restriction": "InstantOrSorceryOnly"
+                        }
+                    ]
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "177",
+        "rarity": "UNCOMMON",
+        "artist": "Bram Sels",
+        "flavorText": "She sees the world as a gift meant for her.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/2/221ac34a-94ed-4c49-afad-b19cac541731.jpg?1783923089"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED",
+        "BLUE"
+    ]
+}
+
+// Corpse Appraiser
+{
+    "name": "Corpse Appraiser",
+    "manaCost": "{U}{B}{R}",
+    "typeLine": "Creature — Vampire Rogue",
+    "oracleText": "When this creature enters, exile up to one target creature card from a graveyard. If a card is put into exile this way, look at the top three cards of your library, then put one of those cards into your hand and the rest into your graveyard.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Corpse Appraiser:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "ChosenTargets",
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            },
+                            "storeMovedAs": "moved1"
+                        },
+                        {
+                            "type": "ConditionalOnCollection",
+                            "collection": "moved1",
+                            "ifNotEmpty": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "TopOfLibrary",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 3
+                                            }
+                                        },
+                                        "storeAs": "looked"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "looked",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "kept",
+                                        "storeRemainder": "rest",
+                                        "selectedLabel": "Put in hand",
+                                        "remainderLabel": "Put in graveyard"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "kept",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Hand"
+                                        }
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "rest",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Graveyard"
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "creature",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this creature enters, exile up to one target creature card from a graveyard. If a card is put into exile this way, look at the top three cards of your library, then put one of those cards into your hand and the rest into your graveyard."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "178",
+        "rarity": "UNCOMMON",
+        "artist": "Josh Hass",
+        "flavorText": "\"Scarcely a mark. A true work of art!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/0/e0f254bb-ec77-4147-ab9c-559bc7fba8cd.jpg?1783923090"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK",
+        "RED"
+    ]
+}
+
+// Corpse Explosion
+{
+    "name": "Corpse Explosion",
+    "manaCost": "{1}{B}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "As an additional cost to cast this spell, exile a creature card from your graveyard.\nCorpse Explosion deals damage equal to the exiled card's power to each creature and each planeswalker.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": {
+                "type": "IterationSpace.Group",
+                "filter": {
+                    "baseFilter": "creature|planeswalker"
+                }
+            },
+            "body": {
+                "type": "DealDamage",
+                "amount": {
+                    "type": "EntityProperty",
+                    "entity": "ExiledAsCost",
+                    "numericProperty": "Power"
+                },
+                "target": "IterationEntity"
+            }
+        },
+        "additionalCosts": [
+            {
+                "type": "AdditionalAtom",
+                "atom": {
+                    "type": "AtomExileFrom",
+                    "zone": "Graveyard",
+                    "filter": "creature"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "179",
+        "rarity": "RARE",
+        "artist": "Greg Staples",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/7/c700eff3-138b-4d4c-ba36-58b98986168c.jpg?1783923088"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
+    ]
+}
+
 // Courier's Briefcase
 {
     "name": "Courier's Briefcase",
@@ -2754,6 +3014,96 @@
     ]
 }
 
+// Dig Up the Body
+{
+    "name": "Dig Up the Body",
+    "manaCost": "{2}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Casualty 1 (As you cast this spell, you may sacrifice a creature with power 1 or greater. When you do, copy this spell.)\nMill two cards, then you may return a creature card from your graveyard to your hand. (To mill a card, put the top card of your library into your graveyard.)",
+    "keywords": [
+        "CASUALTY"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Casualty",
+            "threshold": 1
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                },
+                                "isMill": true
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Graveyard",
+                        "filter": "creature"
+                    },
+                    "storeAs": "gathered1"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered1",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "storeSelected": "selected2",
+                    "prompt": "You may return a creature card from your graveyard to your hand",
+                    "selectedLabel": "Return to hand",
+                    "remainderLabel": "Leave in graveyard",
+                    "showAllCards": true
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "selected2",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "76",
+        "artist": "Greg Staples",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/0/902abe4d-5c19-4c96-b825-e6cd4d954a84.jpg?1783923131"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Disciplined Duelist
 {
     "name": "Disciplined Duelist",
@@ -3295,6 +3645,108 @@
     ]
 }
 
+// Extract the Truth
+{
+    "name": "Extract the Truth",
+    "manaCost": "{1}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Choose one —\n• Target opponent reveals their hand. You may choose a creature, enchantment, or planeswalker card from it. That player discards that card.\n• Target opponent sacrifices an enchantment of their choice.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "RevealHand",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand",
+                                    "player": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    }
+                                },
+                                "storeAs": "gathered1"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "gathered1",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "filter": "creature|enchantment|planeswalker",
+                                "storeSelected": "selected2",
+                                "prompt": "You may choose a creature, enchantment, or planeswalker card to discard",
+                                "showAllCards": true,
+                                "alwaysPrompt": true
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "selected2",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard",
+                                    "player": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    }
+                                },
+                                "moveType": "Discard"
+                            }
+                        ]
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetOpponent",
+                            "id": "t0"
+                        }
+                    ],
+                    "description": "Target opponent reveals their hand; you may choose a creature, enchantment, or planeswalker card for them to discard"
+                },
+                {
+                    "effect": {
+                        "type": "ForceSacrifice",
+                        "filter": "enchantment",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t1"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetOpponent",
+                            "id": "t1"
+                        }
+                    ],
+                    "description": "Target opponent sacrifices an enchantment of their choice"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "78",
+        "artist": "Josu Hernaiz",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/b/2bdb9df1-4475-45e7-bc9c-40937c8c1722.jpg?1783923131"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Extraction Specialist
 {
     "name": "Extraction Specialist",
@@ -3465,6 +3917,111 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Fatal Grudge
+{
+    "name": "Fatal Grudge",
+    "manaCost": "{B}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "As an additional cost to cast this spell, sacrifice a nonland permanent.\nEach opponent chooses a permanent they control that shares a card type with the sacrificed permanent and sacrifices it.\nDraw a card.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "EachOpponent"
+                    },
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "ControlledPermanents",
+                                    "filter": {
+                                        "cardPredicates": [
+                                            "IsPermanent",
+                                            {
+                                                "type": "SharesCardTypeWith",
+                                                "entity": "SacrificedAsCost"
+                                            }
+                                        ]
+                                    }
+                                },
+                                "storeAs": "gathered1"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "gathered1",
+                                "selection": {
+                                    "type": "ChooseExactly",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "selected2",
+                                "prompt": "Choose a permanent that shares a card type with the sacrificed permanent to sacrifice",
+                                "useTargetingUI": true
+                            }
+                        ]
+                    },
+                    "collectCollections": {
+                        "selected2": "collected3"
+                    }
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "collected3",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard"
+                    },
+                    "moveType": "Sacrifice"
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            ]
+        },
+        "additionalCosts": [
+            {
+                "type": "AdditionalAtom",
+                "atom": {
+                    "type": "AtomSacrifice",
+                    "filter": "nonland permanent"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "187",
+        "rarity": "UNCOMMON",
+        "artist": "Cristi Balanescu",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/c/ec7de8d6-edad-4845-9868-781351480258.jpg?1783923087",
+        "rulings": [
+            {
+                "date": "2022-04-29",
+                "text": "If an effect allows a player to cast Fatal Grudge without paying its mana cost, that player must still pay the additional cost of sacrificing a nonland permanent."
+            },
+            {
+                "date": "2022-04-29",
+                "text": "If a player copies Fatal Grudge, the characteristics of the permanent that was sacrificed to pay for the original spell are used to determine which permanents each opponent may choose."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
     ]
 }
 
@@ -3925,6 +4482,147 @@
     ]
 }
 
+// Glamorous Outlaw
+{
+    "name": "Glamorous Outlaw",
+    "manaCost": "{3}{U}{B}{R}",
+    "typeLine": "Creature — Vampire Rogue",
+    "oracleText": "When this creature enters, it deals 2 damage to each opponent and you scry 2.\n{2}, Exile this card from your hand: Target land gains \"{T}: Add {U}, {B}, or {R}\" until this card is cast from exile. You may cast this card for as long as it remains exiled.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Glamorous Outlaw:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "EachOpponent"
+                            }
+                        },
+                        {
+                            "type": "Scry",
+                            "count": 2
+                        }
+                    ]
+                },
+                "descriptionOverride": "When this creature enters, it deals 2 damage to each opponent and you scry 2."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Glamorous Outlaw:3",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}"
+                            }
+                        },
+                        "CostExileSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GrantActivatedAbility",
+                            "ability": {
+                                "id": "Glamorous Outlaw:2",
+                                "cost": "CostTap",
+                                "effect": {
+                                    "type": "AddManaOfChoice",
+                                    "colorSet": {
+                                        "type": "ManaColorSet.Specific",
+                                        "colors": [
+                                            "BLUE",
+                                            "BLACK",
+                                            "RED"
+                                        ]
+                                    }
+                                },
+                                "timing": "ManaAbility",
+                                "isManaAbility": true
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "duration": "UntilSourceCastFromExile"
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Exile",
+                                        "filter": {
+                                            "statePredicates": [
+                                                "IsSource"
+                                            ]
+                                        }
+                                    },
+                                    "storeAs": "gathered0"
+                                },
+                                {
+                                    "type": "GrantMayPlayFromExile",
+                                    "from": "gathered0",
+                                    "expiry": "Permanent"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "land"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "activateFromZone": "Hand",
+                "descriptionOverride": "{2}, Exile this card from your hand: Target land gains \"{T}: Add {U}, {B}, or {R}\" until this card is cast from exile. You may cast this card for as long as it remains exiled."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "190",
+        "artist": "Maria Zolotukhina",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/5/452abab0-cf23-4b9d-831a-7b9fa1fd582a.jpg?1783923086",
+        "rulings": [
+            {
+                "date": "2022-04-29",
+                "text": "You may use the mana ability Glamorous Outlaw grants to the land while casting Glamorous Outlaw from exile."
+            },
+            {
+                "date": "2022-04-29",
+                "text": "If Glamorous Outlaw is removed from exile without being cast, the land will continue to have this ability."
+            }
+        ]
+    }
+}
+
 // Glittering Stockpile
 {
     "name": "Glittering Stockpile",
@@ -4073,6 +4771,72 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Graveyard Shift
+{
+    "name": "Graveyard Shift",
+    "manaCost": "{4}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "This spell has flash as long as there are five or more mana values among cards in your graveyard.\nReturn target creature card from your graveyard to the battlefield.",
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "destination": "Battlefield"
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature own:you",
+                    "zone": "Graveyard"
+                },
+                "id": "t0"
+            }
+        ],
+        "conditionalFlash": {
+            "type": "Compare",
+            "left": {
+                "type": "AggregateZone",
+                "player": "You",
+                "zone": "Graveyard",
+                "aggregation": "DISTINCT_VALUES",
+                "property": "MANA_VALUE"
+            },
+            "operator": "GTE",
+            "right": {
+                "type": "Fixed",
+                "amount": 5
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "81",
+        "rarity": "UNCOMMON",
+        "artist": "Liiga Smilshkalne",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/9/394d7fb3-44ee-409f-a992-27e5aabd9c2b.jpg?1783923129",
+        "rulings": [
+            {
+                "date": "2022-04-29",
+                "text": "The game checks whether it is legal to cast a spell before costs are determined or mana abilities are activated while casting it. If cards are removed from your graveyard after that point, such as by exiling Jack-o'-Lantern from your graveyard to pay for its mana ability, this won't affect whether you can legally cast Graveyard Shift, even if that reduces the number of mana values in your graveyard to below five."
+            },
+            {
+                "date": "2022-04-29",
+                "text": "If an effect allows you to cast Graveyard Shift from your graveyard, you may cast it any time you could cast an instant if you have five or more mana values among cards in your graveyard immediately before you begin to cast it, even if moving it to the stack would reduce that number to four."
+            },
+            {
+                "date": "2022-04-29",
+                "text": "“Five or more mana values among cards in your graveyard” means there are at least five mana values among those cards."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -4415,6 +5179,103 @@
     ]
 }
 
+// Hostile Takeover
+{
+    "name": "Hostile Takeover",
+    "manaCost": "{2}{U}{B}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Up to one target creature has base power and toughness 1/1 until end of turn. Up to one other target creature has base power and toughness 4/4 until end of turn. Then Hostile Takeover deals 3 damage to each creature.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "SetBaseStats",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "power": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughness": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "duration": "EndOfTurn"
+                },
+                {
+                    "type": "SetBaseStats",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    },
+                    "power": {
+                        "type": "Fixed",
+                        "amount": 4
+                    },
+                    "toughness": {
+                        "type": "Fixed",
+                        "amount": 4
+                    },
+                    "duration": "EndOfTurn"
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature"
+                        }
+                    },
+                    "body": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 3
+                        },
+                        "target": "IterationEntity"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "optional": true,
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            },
+            {
+                "type": "TargetOther",
+                "baseRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "creature"
+                    }
+                },
+                "id": "t1"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "191",
+        "rarity": "RARE",
+        "artist": "Vincent Proce",
+        "flavorText": "Ob Nixilis smiled. It had been over one thousand years since his last conquest.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/d/bd7df727-50ea-4ea8-bdb9-d7ef16199d8a.jpg?1783923084"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK",
+        "RED"
+    ]
+}
+
 // Hypnotic Grifter
 {
     "name": "Hypnotic Grifter",
@@ -4705,6 +5566,70 @@
         "GREEN",
         "RED",
         "WHITE"
+    ]
+}
+
+// Incriminate
+{
+    "name": "Incriminate",
+    "manaCost": "{1}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Choose two target creatures controlled by the same player. That player sacrifices one of them of their choice.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": "ChosenTargets",
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered0",
+                    "selection": {
+                        "type": "ChooseExactly",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "chooser": "ControllerOfSelection",
+                    "storeSelected": "selected1",
+                    "prompt": "Choose one of the two creatures to sacrifice",
+                    "useTargetingUI": true
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "selected1",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard"
+                    },
+                    "moveType": "Sacrifice"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "count": 2,
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0",
+                "sameController": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "84",
+        "artist": "Kieran Yanner",
+        "flavorText": "\"If I were you, I'd check that elf's coat. I saw him slipping something into his pocket just before you arrived.\"\n—Krandal, freelance instigator",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/9/198ec497-4e95-4386-9ca4-35d2d3f59733.jpg?1783923130"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -5571,6 +6496,219 @@
     ]
 }
 
+// Lord Xander, the Collector
+{
+    "name": "Lord Xander, the Collector",
+    "manaCost": "{4}{U}{B}{R}",
+    "typeLine": "Legendary Creature — Vampire Demon Noble",
+    "oracleText": "When Lord Xander enters, target opponent discards half the cards in their hand, rounded down.\nWhenever Lord Xander attacks, defending player mills half their library, rounded down.\nWhen Lord Xander dies, target opponent sacrifices half the nonland permanents they control of their choice, rounded down.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Lord Xander, the Collector:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "storeAs": "hand"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "hand",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Divide",
+                                    "numerator": {
+                                        "type": "AggregateZone",
+                                        "player": {
+                                            "type": "BoundVariable",
+                                            "name": "t0"
+                                        },
+                                        "zone": "Hand"
+                                    },
+                                    "denominator": {
+                                        "type": "Fixed",
+                                        "amount": 2
+                                    },
+                                    "roundUp": false
+                                }
+                            },
+                            "chooser": "TargetPlayer",
+                            "storeSelected": "discarded",
+                            "prompt": "Choose cards to discard"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "discarded",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "moveType": "Discard"
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponent",
+                    "id": "t0"
+                }
+            },
+            {
+                "id": "Lord Xander, the Collector:2",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Divide",
+                                    "numerator": {
+                                        "type": "AggregateZone",
+                                        "player": "DefendingPlayer",
+                                        "zone": "Library"
+                                    },
+                                    "denominator": {
+                                        "type": "Fixed",
+                                        "amount": 2
+                                    },
+                                    "roundUp": false
+                                },
+                                "player": "DefendingPlayer",
+                                "isMill": true
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": "DefendingPlayer"
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "id": "Lord Xander, the Collector:3",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "ForceSacrifice",
+                    "filter": "nonland permanent",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    },
+                    "dynamicCount": {
+                        "type": "Divide",
+                        "numerator": {
+                            "type": "AggregateBattlefield",
+                            "player": {
+                                "type": "BoundVariable",
+                                "name": "t1"
+                            },
+                            "filter": "nonland permanent"
+                        },
+                        "denominator": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "roundUp": false
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponent",
+                    "id": "t1"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "197",
+        "rarity": "MYTHIC",
+        "artist": "Martina Fačková",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/e/ee0a078d-045f-401b-a561-dcb1ad02bf62.jpg?1783923082"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK",
+        "RED"
+    ]
+}
+
+// Maestros Ascendancy
+{
+    "name": "Maestros Ascendancy",
+    "manaCost": "{U}{B}{R}",
+    "typeLine": "Enchantment",
+    "oracleText": "Once during each of your turns, you may cast an instant or sorcery spell from your graveyard by sacrificing a creature in addition to paying its other costs. If a spell cast this way would be put into your graveyard, exile it instead.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "MayCastFromGraveyard",
+                "filter": "instant|sorcery",
+                "duringYourTurnOnly": true,
+                "oncePerTurn": true,
+                "exileInsteadOfGraveyard": true,
+                "additionalCost": {
+                    "type": "AdditionalAtom",
+                    "atom": {
+                        "type": "AtomSacrifice",
+                        "filter": "creature"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "198",
+        "rarity": "RARE",
+        "artist": "Jodie Muir",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/6/469a0f03-7874-453d-b9e4-275c13244f4a.jpg?1783923080",
+        "rulings": [
+            {
+                "date": "2022-04-29",
+                "text": "If you cast an Adventure spell from your graveyard this way, it's exiled as it resolves with the replacement effect created by the Adventure rules and you may cast the creature card from exile later."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK",
+        "RED"
+    ]
+}
+
 // Maestros Charm
 {
     "name": "Maestros Charm",
@@ -5690,6 +6828,90 @@
         "BLACK",
         "RED",
         "BLUE"
+    ]
+}
+
+// Maestros Diabolist
+{
+    "name": "Maestros Diabolist",
+    "manaCost": "{U}{B}{R}",
+    "typeLine": "Creature — Vampire Warrior",
+    "oracleText": "Deathtouch, haste\nWhenever this creature attacks, if you don't control a Devil token, create a tapped and attacking 1/1 red Devil creature token with \"When this token dies, it deals 1 damage to any target.\"",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 4
+    },
+    "keywords": [
+        "DEATHTOUCH",
+        "HASTE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Maestros Diabolist:2",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "RED"
+                    ],
+                    "creatureTypes": [
+                        "Devil"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/e/c/ec75fdab-818c-4f3a-94c1-fd3f577a87f5.jpg?1783922960",
+                    "tapped": true,
+                    "attacking": true,
+                    "triggeredAbilities": [
+                        {
+                            "id": "Maestros Diabolist:1",
+                            "trigger": {
+                                "type": "ZoneChangeEvent",
+                                "from": "Battlefield",
+                                "to": "Graveyard"
+                            },
+                            "effect": {
+                                "type": "DealDamage",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "targetRequirement": {
+                                "type": "AnyTarget",
+                                "id": "t0"
+                            },
+                            "descriptionOverride": "When this token dies, it deals 1 damage to any target."
+                        }
+                    ]
+                },
+                "interveningIf": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": "permanent Devil token",
+                    "negate": true
+                },
+                "descriptionOverride": "Whenever this creature attacks, if you don't control a Devil token, create a tapped and attacking 1/1 red Devil creature token with \"When this token dies, it deals 1 damage to any target.\""
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "200",
+        "rarity": "RARE",
+        "artist": "Bastien L. Deharme",
+        "flavorText": "\"Where did I find my horned friend? Now there's a story worth telling. . . .\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/2/7206db10-e248-420d-bf92-4d57bc72da56.jpg?1783923079"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK",
+        "RED"
     ]
 }
 
@@ -10942,6 +12164,153 @@
     },
     "colorIdentityOverride": [
         "BLUE",
+        "BLACK"
+    ]
+}
+
+// Tainted Indulgence
+{
+    "name": "Tainted Indulgence",
+    "manaCost": "{U}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Draw two cards. Then discard a card unless there are five or more mana values among cards in your graveyard.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Not",
+                            "condition": {
+                                "type": "Compare",
+                                "left": {
+                                    "type": "AggregateZone",
+                                    "player": "You",
+                                    "zone": "Graveyard",
+                                    "aggregation": "DISTINCT_VALUES",
+                                    "property": "MANA_VALUE"
+                                },
+                                "operator": "GTE",
+                                "right": {
+                                    "type": "Fixed",
+                                    "amount": 5
+                                }
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand"
+                                },
+                                "storeAs": "hand"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "hand",
+                                "selection": {
+                                    "type": "ChooseExactly",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "discarded",
+                                "prompt": "Choose 1 card to discard"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "discarded",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                },
+                                "moveType": "Discard"
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "227",
+        "rarity": "UNCOMMON",
+        "artist": "Inka Schulz",
+        "flavorText": "Their toast to good health went immediately, horribly awry.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/4/347d883c-84ab-4547-813b-f4385366fbce.jpg?1783923067"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
+    ]
+}
+
+// Tavern Swindler
+{
+    "name": "Tavern Swindler",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Human Rogue",
+    "oracleText": "{T}, Pay 3 life: Flip a coin. If you win the flip, you gain 6 life.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Tavern Swindler:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomPayLife",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                }
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "FlipCoin",
+                    "wonEffect": {
+                        "type": "GainLife",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 6
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "96",
+        "rarity": "UNCOMMON",
+        "artist": "Pauline Voss",
+        "flavorText": "\"Only a chump stops after one unlucky loss. You're not a chump, are you?\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/1/b17114ed-f98f-4b82-ba03-ef7ec5f572ba.jpg?1783923124"
+    },
+    "colorIdentityOverride": [
         "BLACK"
     ]
 }
