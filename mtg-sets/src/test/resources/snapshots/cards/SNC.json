@@ -14918,6 +14918,55 @@
     ]
 }
 
+// Torch Breath
+{
+    "name": "Torch Breath",
+    "manaCost": "{X}{R}",
+    "typeLine": "Instant",
+    "oracleText": "This spell costs {2} less to cast if it targets a blue permanent.\nThis spell can't be countered.\nTorch Breath deals X damage to target creature or planeswalker.",
+    "script": {
+        "spellEffect": {
+            "type": "DealDamage",
+            "amount": "XValue",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetCreatureOrPlaneswalker",
+                "id": "t0"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "ReduceGenericBy",
+                    "source": {
+                        "type": "FixedIfAnyTargetMatches",
+                        "amount": 2,
+                        "filter": "permanent blue"
+                    }
+                }
+            }
+        ],
+        "cantBeCountered": true
+    },
+    "metadata": {
+        "collectorNumber": "127",
+        "rarity": "UNCOMMON",
+        "artist": "Cristi Balanescu",
+        "flavorText": "\"Fried squid, comin' up!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/9/d9fbd4a8-c44c-42fc-b946-bdc7e20e1668.jpg?1783923112"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Tramway Station
 {
     "name": "Tramway Station",

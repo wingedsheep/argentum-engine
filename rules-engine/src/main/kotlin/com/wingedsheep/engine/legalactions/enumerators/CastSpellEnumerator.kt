@@ -279,6 +279,9 @@ class CastSpellEnumerator(
             // Uses minimum possible cost so target-conditional reductions (e.g., Dire Downdraft)
             // mark the spell as castable when a valid discounted target exists.
             var effectiveCost = context.costCalculator.calculateMinPossibleCost(state, cardDef, playerId, cardId)
+            // Generic reduction the printed generic can't absorb pays the announced X instead
+            // (CR 601.2f) — Spectral Denial's discounts raise its X ceiling.
+            val xCredit = context.costCalculator.minPossibleXCredit(state, cardDef, playerId, cardId, effectiveCost)
 
             // Apply maximum possible sacrifice cost reduction for affordability check
             if (offer.variableSacrificeTargets.isNotEmpty() && offer.variableSacrificeReduction > 0) {
@@ -625,7 +628,7 @@ class CastSpellEnumerator(
                 } else 0
                 val fixedCost = effectiveCost.cmc  // X contributes 0 to CMC
                 val xSymbolCount = effectiveCost.xCount.coerceAtLeast(1)
-                ((availableSources + delveAvailable + waterbendAvailable + convokeAvailable + improviseAvailable - fixedCost) / xSymbolCount)
+                ((availableSources + delveAvailable + waterbendAvailable + convokeAvailable + improviseAvailable + xCredit - fixedCost) / xSymbolCount)
                     .coerceAtLeast(0)
             } else null
 

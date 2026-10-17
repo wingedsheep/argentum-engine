@@ -995,7 +995,8 @@ class CostCalculator(
         state: GameState,
         cardDef: CardDefinition,
         casterId: EntityId,
-        spellId: EntityId
+        spellId: EntityId,
+        baseCost: ManaCost = cardDef.manaCost,
     ): ManaCost {
         val optimisticTargets = mutableListOf<EntityId>()
         var legalTargets: List<EntityId>? = null
@@ -1024,7 +1025,30 @@ class CostCalculator(
             if (!targetMatchesSpell(ability.target, cardDef, casterId, sourceId, state)) continue
             addOptimisticMatch(src, sourceId)
         }
-        return calculateEffectiveCost(state, cardDef, casterId, optimisticTargets, modifiers = modifiers)
+        return calculateEffectiveCost(state, cardDef, casterId, optimisticTargets, baseCost = baseCost, modifiers = modifiers)
+    }
+
+    /**
+     * How much of an announced X the spell's generic reductions would pay (CR 601.2f): the
+     * reduction left over once [minCost] — this spell's [calculateMinPossibleCost], {X} still
+     * symbolic — has no generic left to take it. "Costs {1} less for each …" on `{X}{U}` with
+     * three discounts and no printed generic credits 3, so the affordable-X ceiling rises by 3.
+     * Measured by pricing a probe X, which catches every reduction shape (overflowing coloured
+     * reductions, mana-value floors) the way the cast itself prices it. Zero when the X must stay
+     * apart ("spend only black mana on X"), matching `CastCostTotaller`.
+     */
+    fun minPossibleXCredit(
+        state: GameState,
+        cardDef: CardDefinition,
+        casterId: EntityId,
+        spellId: EntityId,
+        minCost: ManaCost,
+    ): Int {
+        val printed = cardDef.manaCost
+        if (!printed.hasX || !minCost.hasX || cardDef.script.xManaRestriction.isNotEmpty()) return 0
+        val probeMana = X_CREDIT_PROBE * printed.xCount
+        val probed = calculateMinPossibleCost(state, cardDef, casterId, spellId, printed.withXAs(X_CREDIT_PROBE))
+        return (probeMana - (probed.genericAmount - minCost.genericAmount)).coerceAtLeast(0)
     }
 
     /** Every legal target of any of the spell's declared target requirements, in any zone. */
@@ -2093,6 +2117,9 @@ class CostCalculator(
     }
 
     companion object {
+        /** The X [minPossibleXCredit] prices at — far above any reduction a board can supply. */
+        private const val X_CREDIT_PROBE = 1000
+
         /**
          * Check if a card has any cost reduction abilities.
          */

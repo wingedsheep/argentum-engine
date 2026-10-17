@@ -10143,7 +10143,10 @@ staticAbility {
   expresses Defiler of Dreams. This is a real additional cost, including when the reduction removes
   nothing; it does not change a spell's mana symbols to Phyrexian symbols. Multiple instances are
   independent. The source's projected abilities and controller determine availability.
-- `modification: CostModification` — `ReduceGeneric(amount)`, `ReduceGenericBy(source)`,
+- `modification: CostModification` — `ReduceGeneric(amount)`, `ReduceGenericBy(source)` (generic
+  reductions reach an `{X}` spell's announced X: CR 601.2f prices X as generic before reductions, so
+  Spectral Denial's / Torch Breath's discount keeps paying into X once the printed generic is gone,
+  and the enumerator's `maxAffordableX` counts it — except when `xManaRestriction` keeps X apart),
   `ReduceColored(symbols)`, `ReduceColoredPerUnit(symbols, source)`,
   `ReduceColoredIfAnyTargetMatches(symbols, filter)` (target-gated **colored** reduction — the
   colored analogue of the `FixedIfAnyTargetMatches` reduction source, which only reduces generic;

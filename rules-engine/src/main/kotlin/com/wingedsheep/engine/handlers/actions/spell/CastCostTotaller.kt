@@ -300,7 +300,7 @@ internal class CastCostTotaller(
                 costCalculator.calculateEffectiveCost(
                     state, spell, action.playerId, action.targets.map { it.toEntityId() },
                     fromZone = Zone.GRAVEYARD, declaredCostSlot = action.declaredCostSlot,
-                    baseCost = escape.cost, card = cardDef,
+                    baseCost = withAnnouncedX(escape.cost, action, cardDef), card = cardDef,
                 )
             }
             castFace != null && cardDef != null ->
@@ -336,10 +336,25 @@ internal class CastCostTotaller(
                     // Price the branch the player actually announced — a "costs {2} less to cast if
                     // it's bargained" reduction is gated on the declaration (CR 702.166).
                     declaredCostSlot = action.declaredCostSlot,
+                    baseCost = withAnnouncedX(cardDef.manaCost, action, cardDef),
                 )
             }
             else -> cardComponent.manaCost
         }
+    }
+
+    /**
+     * [cost] with the announced X folded in as generic mana. CR 601.2f locks the total cost with
+     * X's value in place of the {X}, *then* applies reductions — so "costs {1} less for each …" on
+     * an `{X}{U}` spell (Spectral Denial) keeps paying into the X once the printed generic is gone.
+     * With the X materialized the cost has no {X} left, so [paymentXValue] charges no separate X.
+     * Kept symbolic when "spend only <colour> mana on X" (Drain Life) needs the X apart from the
+     * rest of the cost.
+     */
+    private fun withAnnouncedX(cost: ManaCost, action: CastSpell, cardDef: CardDefinition): ManaCost {
+        val x = action.xValue ?: return cost
+        if (!cost.hasX || cardDef.script.xManaRestriction.isNotEmpty()) return cost
+        return cost.withXAs(x)
     }
 
     private class AlternativeBaseQuery(val state: GameState, val action: CastSpell, val cardDef: CardDefinition) {

@@ -53,6 +53,54 @@ class SpectralDenialScenarioTest : ScenarioTestBase() {
                     game.isOnBattlefield("Grizzly Bears") shouldBe false
                 }
             }
+
+            test("its discount keeps paying into X once the printed generic is gone (CR 601.2f)") {
+                // Two power-4 creatures take {2} off a {X}{U} spell with no printed generic: with a
+                // single Island Player 1 can still cast it for X = 2, and the offer advertises X = 2.
+                val game = scenario()
+                    .withPlayers("Player1", "Player2")
+                    .withCardInHand(1, "Spectral Denial")
+                    .withLandsOnBattlefield(1, "Island", 1)
+                    .withCardOnBattlefield(1, "Craw Wurm")
+                    .withCardOnBattlefield(1, "Craw Wurm")
+                    .withCardOnBattlefield(1, "Hill Giant") // power 3 — no discount
+                    .withCardInHand(2, "Grizzly Bears")
+                    .withLandsOnBattlefield(2, "Forest", 2)
+                    .withActivePlayer(2)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                game.castSpell(2, "Grizzly Bears").error shouldBe null
+                game.passPriority()
+
+                val offer = game.getLegalActions(1).first {
+                    it.actionType == "CastSpell" && it.description.contains("Spectral Denial")
+                }
+                withClue("one Island plus the {2} discount affords X = 2") {
+                    offer.maxAffordableX shouldBe 2
+                }
+
+                val targetSpell = game.state.stack.first {
+                    game.state.getEntity(it)?.get<CardComponent>()?.name == "Grizzly Bears"
+                }
+                val cast = game.execute(
+                    CastSpell(
+                        game.player1Id,
+                        game.findCardsInHand(1, "Spectral Denial").first(),
+                        listOf(ChosenTarget.Spell(targetSpell)),
+                        xValue = 2,
+                    )
+                )
+                withClue("Spectral Denial for X = 2 should cost just {U}: ${cast.error}") { cast.error shouldBe null }
+                game.resolveStack()
+                if (game.hasPendingDecision()) {
+                    game.skipSelection()
+                    game.resolveStack()
+                }
+                withClue("Grizzly Bears should be countered") {
+                    game.isOnBattlefield("Grizzly Bears") shouldBe false
+                }
+            }
         }
     }
 }
