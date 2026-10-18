@@ -7,6 +7,7 @@ import com.wingedsheep.engine.core.DamageDealtEvent
 import com.wingedsheep.engine.core.PermanentsSacrificedEvent
 import com.wingedsheep.engine.core.ZoneChangeEvent
 import com.wingedsheep.engine.state.components.battlefield.ClassLevelComponent
+import com.wingedsheep.engine.state.components.stack.captureLastKnown
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.mtg.sets.definitions.blb.cards.BuildersTalent
@@ -118,6 +119,18 @@ class TriggerDetectorBatchTriggerTest : FunSpec({
         toughness = 1
         triggeredAbility {
             trigger = Triggers.you.sacrificesAnother(GameObjectFilter.Creature, batch = true)
+            effect = LoseLifeEffect(1, EffectTarget.PlayerRef(Player.EachOpponent))
+        }
+    }
+
+    // "Whenever one or more creatures deal combat damage to you, …" (Witch-king of Angmar shape).
+    val combatDamageToYouWatcher = card("Combat Damage To You Watcher") {
+        manaCost = "{1}"
+        typeLine = "Creature — Human Soldier"
+        power = 1
+        toughness = 1
+        triggeredAbility {
+            trigger = Triggers.oneOrMore(GameObjectFilter.Creature).dealCombatDamageToYou()
             effect = LoseLifeEffect(1, EffectTarget.PlayerRef(Player.EachOpponent))
         }
     }
@@ -543,6 +556,80 @@ class TriggerDetectorBatchTriggerTest : FunSpec({
 
             triggers.filter {
                 it.ability.trigger is EventPattern.OneOrMoreDealCombatDamageToPlayerEvent
+            }.shouldBeEmpty()
+        }
+    }
+
+    context("combat-damage batch: a source that died to the same damage (last-known information)") {
+
+        test("a Bird that died before detection still fires Kastral from its snapshot") {
+            val driver = createDriver(KastralTheWindcrested, birdCreature)
+            driver.putCreatureOnBattlefield(driver.player1, "Kastral, the Windcrested")
+            val bird = driver.putCreatureOnBattlefield(driver.player1, "Test Sparrow")
+            val lastKnown = captureLastKnown(driver.state, bird)
+            // Combat-damage SBAs move the dead source before trigger detection runs.
+            driver.moveToGraveyard(bird)
+
+            val event = DamageDealtEvent(
+                bird, driver.player2, 1, isCombatDamage = true, targetIsPlayer = true,
+                sourceLastKnown = lastKnown
+            )
+            val triggers = detectorFor(driver).detectTriggers(driver.state, listOf(event))
+
+            triggers.filter {
+                it.ability.trigger is EventPattern.OneOrMoreDealCombatDamageToPlayerEvent
+            } shouldHaveSize 1
+        }
+
+        test("the snapshot is still held to the source filter") {
+            val driver = createDriver(KastralTheWindcrested, nonBirdCreature)
+            driver.putCreatureOnBattlefield(driver.player1, "Kastral, the Windcrested")
+            val squirrel = driver.putCreatureOnBattlefield(driver.player1, "Test Squirrel")
+            val lastKnown = captureLastKnown(driver.state, squirrel)
+            driver.moveToGraveyard(squirrel)
+
+            val event = DamageDealtEvent(
+                squirrel, driver.player2, 1, isCombatDamage = true, targetIsPlayer = true,
+                sourceLastKnown = lastKnown
+            )
+            val triggers = detectorFor(driver).detectTriggers(driver.state, listOf(event))
+
+            triggers.filter {
+                it.ability.trigger is EventPattern.OneOrMoreDealCombatDamageToPlayerEvent
+            }.shouldBeEmpty()
+        }
+
+        test("a dead attacker still fires \"one or more creatures deal combat damage to you\"") {
+            val driver = createDriver(combatDamageToYouWatcher)
+            driver.putCreatureOnBattlefield(driver.player2, "Combat Damage To You Watcher")
+            val bears = driver.putCreatureOnBattlefield(driver.player1, "Grizzly Bears")
+            val lastKnown = captureLastKnown(driver.state, bears)
+            driver.moveToGraveyard(bears)
+
+            val event = DamageDealtEvent(
+                bears, driver.player2, 2, isCombatDamage = true, targetIsPlayer = true,
+                sourceLastKnown = lastKnown
+            )
+            val triggers = detectorFor(driver).detectTriggers(driver.state, listOf(event))
+
+            val fired = triggers.filter {
+                it.ability.trigger is EventPattern.OneOrMoreDealCombatDamageToYouEvent
+            }
+            fired shouldHaveSize 1
+            fired[0].controllerId shouldBe driver.player2
+        }
+
+        test("a source gone from the battlefield without a snapshot does not fire") {
+            val driver = createDriver(combatDamageToYouWatcher)
+            driver.putCreatureOnBattlefield(driver.player2, "Combat Damage To You Watcher")
+            val bears = driver.putCreatureOnBattlefield(driver.player1, "Grizzly Bears")
+            driver.moveToGraveyard(bears)
+
+            val event = DamageDealtEvent(bears, driver.player2, 2, isCombatDamage = true, targetIsPlayer = true)
+            val triggers = detectorFor(driver).detectTriggers(driver.state, listOf(event))
+
+            triggers.filter {
+                it.ability.trigger is EventPattern.OneOrMoreDealCombatDamageToYouEvent
             }.shouldBeEmpty()
         }
     }

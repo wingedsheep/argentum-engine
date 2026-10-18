@@ -1340,7 +1340,8 @@ internal class CombatDamageManager(
         val sourceName = state.getEntity(sourceId)?.get<CardComponent>()?.name ?: "Creature"
         events.add(DamageDealtEvent(sourceId, targetId, effectiveAmount, true,
             sourceName = sourceName, targetName = "Player", targetIsPlayer = true,
-            sourceAttachmentIds = attachmentIdsOf(state, sourceId)))
+            sourceAttachmentIds = attachmentIdsOf(state, sourceId),
+            sourceLastKnown = captureLastKnown(state, sourceId)))
         events.add(LifeChangedEvent(targetId, currentLife, newLife, LifeChangeReason.DAMAGE))
 
         // Commander damage (CR 903.10a)
@@ -1452,7 +1453,8 @@ internal class CombatDamageManager(
         events.add(DamageDealtEvent(sourceId, targetId, amount, true,
             sourceName = sourceName, targetName = targetName, targetIsPlayer = false,
             targetLastKnown = captureLastKnown(state, targetId), excessAmount = excess,
-            sourceAttachmentIds = attachmentIdsOf(state, sourceId)))
+            sourceAttachmentIds = attachmentIdsOf(state, sourceId),
+            sourceLastKnown = captureLastKnown(state, sourceId)))
         val removed = amount.coerceAtMost(currentCount)
         if (counterType == com.wingedsheep.sdk.core.CounterType.LOYALTY) {
             events.add(LoyaltyChangedEvent(targetId, targetName, -removed))
@@ -1589,7 +1591,8 @@ internal class CombatDamageManager(
             val sourceName = newState.getEntity(sourceId)?.get<CardComponent>()?.name ?: "Creature"
             events.add(DamageDealtEvent(sourceId, targetId, amount, true,
                 sourceName = sourceName, targetName = "Player", targetIsPlayer = true,
-                sourceAttachmentIds = attachmentIdsOf(newState, sourceId)))
+                sourceAttachmentIds = attachmentIdsOf(newState, sourceId),
+                sourceLastKnown = captureLastKnown(newState, sourceId)))
             events.add(LifeChangedEvent(targetId, currentLife, newLife, LifeChangeReason.DAMAGE))
 
             // Commander damage (CR 903.10a)
@@ -1791,7 +1794,8 @@ internal class CombatDamageManager(
         val sourceName = state.getEntity(sourceId)?.get<CardComponent>()?.name ?: "Creature"
         events.add(DamageDealtEvent(sourceId, attackerController, originalAmount, true,
             sourceName = sourceName, targetName = "Player", targetIsPlayer = true,
-            sourceAttachmentIds = attachmentIdsOf(state, sourceId)))
+            sourceAttachmentIds = attachmentIdsOf(state, sourceId),
+            sourceLastKnown = captureLastKnown(state, sourceId)))
         events.add(LifeChangedEvent(attackerController, attackerControllerLife, newLife, LifeChangeReason.DAMAGE))
 
         // Commander damage (CR 903.10a) — reflection still counts as combat damage from the commander

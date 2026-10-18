@@ -43,6 +43,7 @@ import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.identity.PlayWithFixedAlternativeManaCostComponent
 import com.wingedsheep.engine.state.components.identity.MadnessExiledComponent
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.engine.state.components.stack.EntitySnapshot
 import com.wingedsheep.sdk.scripting.SuppressEntersTriggers
 import com.wingedsheep.engine.state.components.identity.RoomComponent
 import com.wingedsheep.engine.state.components.identity.RoomFaceId
@@ -3515,6 +3516,29 @@ class TriggerDetector(
      * unfiltered batch triggers (Kastral, the Windcrested; Yarus, Roar of the Old Gods) miss
      * whenever a morphed, manifested, disguised or cloaked creature connected.
      */
+    /**
+     * Whether a combat-damage source is a creature matching [filter]: read live while it is on the
+     * battlefield, or from [lastKnown] — its snapshot at the instant it dealt the damage — once the
+     * same combat damage has killed it (CR 603.10).
+     */
+    private fun combatDamageSourceMatches(
+        state: GameState,
+        projected: ProjectedState,
+        sourceId: EntityId,
+        lastKnown: EntitySnapshot?,
+        filter: GameObjectFilter,
+        context: PredicateContext
+    ): Boolean {
+        if (lastKnown != null) {
+            if (lastKnown.typeLine?.isCreature != true) return false
+            return predicateEvaluator.matchesSnapshot(state, lastKnown, filter, context)
+        }
+        val sourceContainer = state.getEntity(sourceId) ?: return false
+        sourceContainer.get<CardComponent>() ?: return false
+        if (!projected.isCreature(sourceId)) return false
+        return predicateEvaluator.matches(state, projected, sourceId, filter, context)
+    }
+
     private fun detectCombatDamageBatchTriggers(
         state: GameState,
         events: List<EngineGameEvent>,
@@ -3526,7 +3550,18 @@ class TriggerDetector(
         // source (offensive batch) and, separately, by the damaged player (defensive batch).
         // Damage to a battle is collected alongside, flagged, for the "to a player or battle"
         // variant only; every other batch here is about players.
-        data class CombatDamageInfo(val sourceId: EntityId, val targetPlayerId: EntityId, val toBattle: Boolean = false)
+        //
+        // A source still on the battlefield is read live. One that died to the same combat damage
+        // (a trampler that traded with its blocker) is already in the graveyard — or, as a token,
+        // gone — by the time detection runs, so it is read from the event's last-known snapshot
+        // instead (CR 603.10): it still dealt the damage, and its controller then is the one
+        // whose "creatures you control" batch it joins.
+        data class CombatDamageInfo(
+            val sourceId: EntityId,
+            val targetPlayerId: EntityId,
+            val toBattle: Boolean = false,
+            val lastKnown: EntitySnapshot? = null,
+        )
         val combatDamageByController = mutableMapOf<EntityId, MutableList<CombatDamageInfo>>()
         val combatDamageByDamagedPlayer = mutableMapOf<EntityId, MutableList<CombatDamageInfo>>()
         for (event in events) {
@@ -3535,9 +3570,14 @@ class TriggerDetector(
             // Read the recipient's snapshot: a battle the same damage defeated is already gone
             // (combat-damage SBAs run before detection), but it was still dealt the damage.
             if (!toPlayer && event.targetLastKnown?.typeLine?.isBattle != true) continue
-            val sourceContainer = state.getEntity(event.sourceId) ?: continue
-            val controller = sourceContainer.get<ControllerComponent>()?.playerId ?: continue
-            val info = CombatDamageInfo(event.sourceId, event.targetId, toBattle = !toPlayer)
+            val onBattlefield = event.sourceId in state.getBattlefield()
+            val lastKnown = if (onBattlefield) null else event.sourceLastKnown
+            val controller = if (onBattlefield) {
+                state.getEntity(event.sourceId)?.get<ControllerComponent>()?.playerId
+            } else {
+                lastKnown?.controllerId
+            } ?: continue
+            val info = CombatDamageInfo(event.sourceId, event.targetId, toBattle = !toPlayer, lastKnown = lastKnown)
             combatDamageByController.getOrPut(controller) { mutableListOf() }.add(info)
             if (toPlayer) combatDamageByDamagedPlayer.getOrPut(event.targetId) { mutableListOf() }.add(info)
         }
@@ -3553,11 +3593,8 @@ class TriggerDetector(
                     val controllerId = entry.controllerId
                     val damageEvents = combatDamageByDamagedPlayer[controllerId] ?: continue
                     val firstMatchingInfo = damageEvents.firstOrNull { info ->
-                        val sourceContainer = state.getEntity(info.sourceId) ?: return@firstOrNull false
-                        sourceContainer.get<CardComponent>() ?: return@firstOrNull false
-                        if (!projected.isCreature(info.sourceId)) return@firstOrNull false
-                        predicateEvaluator.matches(
-                            state, projected, info.sourceId, trigger.sourceFilter,
+                        combatDamageSourceMatches(
+                            state, projected, info.sourceId, info.lastKnown, trigger.sourceFilter,
                             PredicateContext(controllerId = controllerId, sourceId = entry.entityId)
                         )
                     }
@@ -3609,15 +3646,8 @@ class TriggerDetector(
                 // honored — not just the handful of card predicates handled inline.
                 val matchingInfos = damageEvents.filter { info ->
                     if (info.toBattle && !trigger.orBattle) return@filter false
-                    val sourceContainer = state.getEntity(info.sourceId) ?: return@filter false
-                    sourceContainer.get<CardComponent>() ?: return@filter false
-                    if (!projected.isCreature(info.sourceId)) return@filter false
-
-                    predicateEvaluator.matches(
-                        state,
-                        projected,
-                        info.sourceId,
-                        trigger.sourceFilter,
+                    combatDamageSourceMatches(
+                        state, projected, info.sourceId, info.lastKnown, trigger.sourceFilter,
                         PredicateContext(controllerId = controllerId, sourceId = entry.entityId)
                     )
                 }

@@ -203,6 +203,15 @@ data class DamageDealtEvent(
      * Cloak's Equipment kin) finds its Equipment through this snapshot rather than the live links.
      */
     val sourceAttachmentIds: List<EntityId> = emptyList(),
+    /**
+     * The damage source as it was at the instant combat damage was dealt to a player or battle
+     * (CR 603.10). Combat-damage state-based actions move a source that died in the same step —
+     * a trampler that traded with its blocker, a creature dealt damage by a first-striker's
+     * double-striking partner — before trigger detection runs, so the batched "one or more
+     * creatures deal combat damage to you / to a player" triggers read its controller and
+     * characteristics from here. `null` for noncombat damage and damage to creatures.
+     */
+    val sourceLastKnown: com.wingedsheep.engine.state.components.stack.EntitySnapshot? = null,
 ) : GameEvent
 
 /**

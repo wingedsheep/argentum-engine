@@ -8192,6 +8192,89 @@
     ]
 }
 
+// Risona, Asari Commander
+{
+    "name": "Risona, Asari Commander",
+    "manaCost": "{1}{R}{W}",
+    "typeLine": "Legendary Creature — Human Samurai",
+    "oracleText": "Haste\nWhenever Risona deals combat damage to a player, if it doesn't have an indestructible counter on it, put an indestructible counter on it.\nWhenever combat damage is dealt to you, remove an indestructible counter from Risona.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "HASTE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Risona, Asari Commander:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "INDESTRUCTIBLE",
+                    "count": 1,
+                    "target": "Self"
+                },
+                "interveningIf": {
+                    "type": "Not",
+                    "condition": {
+                        "type": "EntityMatches",
+                        "entity": "Self",
+                        "filter": {
+                            "statePredicates": [
+                                {
+                                    "type": "HasCounter",
+                                    "counterType": "INDESTRUCTIBLE"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "descriptionOverride": "Whenever Risona deals combat damage to a player, if it doesn't have an indestructible counter on it, put an indestructible counter on it."
+            },
+            {
+                "id": "Risona, Asari Commander:2",
+                "trigger": "OneOrMoreDealCombatDamageToYouEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "RemoveCounters",
+                    "counterType": "INDESTRUCTIBLE",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": "Self"
+                },
+                "descriptionOverride": "Whenever combat damage is dealt to you, remove an indestructible counter from Risona."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "233",
+        "rarity": "RARE",
+        "artist": "Ekaterina Burmak",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/1/51d8f1fa-ca92-4e2e-91e8-195bdad82def.jpg?1783923831",
+        "rulings": [
+            {
+                "date": "2022-02-18",
+                "text": "Removing the indestructible counter from Risona may cause it to die if it has taken lethal damage, usually because it blocked in the same combat that you took damage."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
+    ]
+}
+
 // Roadside Reliquary
 {
     "name": "Roadside Reliquary",
