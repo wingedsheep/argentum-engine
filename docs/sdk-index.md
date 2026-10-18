@@ -285,6 +285,7 @@ Families:
 - `CardPredicate.ToughnessEquals(value: Int)`
 - `CardPredicate.ToughnessEqualsDynamic(amount: DynamicAmount)` — Toughness *exactly* equal to a DynamicAmount resolved when the predicate is checked — the dynamic counterpart of ToughnessEquals.
 - `CardPredicate.ToughnessGreaterThanPower` — Toughness is strictly greater than power
+- `CardPredicate.WouldDestroy(subfilter: GameObjectFilter)` — Matches a spell or ability on the stack that **would destroy** at least one permanent matching subfilter if it resolved right now — "counter target spell if it would destroy a land you control" (Eq…
 
 ## CardSource
 

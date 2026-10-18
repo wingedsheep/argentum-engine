@@ -1488,6 +1488,76 @@
     ]
 }
 
+// Equinox
+{
+    "name": "Equinox",
+    "manaCost": "{W}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant land\nEnchanted land has \"{T}: Counter target spell if it would destroy a land you control.\"",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantActivatedAbility",
+                "ability": {
+                    "id": "Equinox:1",
+                    "cost": "CostTap",
+                    "effect": {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.WhenCondition",
+                            "condition": {
+                                "type": "EntityMatches",
+                                "entity": {
+                                    "type": "ContextTarget",
+                                    "index": 0
+                                },
+                                "filter": {
+                                    "cardPredicates": [
+                                        {
+                                            "type": "WouldDestroy",
+                                            "subfilter": {
+                                                "cardPredicates": [
+                                                    "IsLand"
+                                                ],
+                                                "controllerPredicate": "ControlledByYou"
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        },
+                        "then": "Counter",
+                        "descriptionOverride": "Counter target spell if it would destroy a land you control"
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": {},
+                                "zone": "Stack"
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "land"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "13",
+        "artist": "Susan Van Camp",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/4/840c6586-a7a9-4ae8-96be-a995a0693eb6.jpg?1783948086"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Eternal Warrior
 {
     "name": "Eternal Warrior",

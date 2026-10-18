@@ -1243,6 +1243,7 @@ class CastZoneResolver(
                 is CardPredicate.DoesNotShareLandTypeWithPermanentYouControl,
                 is CardPredicate.TargetsMatching,
                 is CardPredicate.TargetsPlayer,
+                is CardPredicate.WouldDestroy,
                 is CardPredicate.AbilitySourceMatches,
                 is CardPredicate.IsActivatedOrTriggeredAbility,
                 is CardPredicate.IsTriggeredAbility,

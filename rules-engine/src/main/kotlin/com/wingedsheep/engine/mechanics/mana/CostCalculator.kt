@@ -1819,6 +1819,7 @@ class CostCalculator(
             CardPredicate.IsActivatedAbility -> false
             is CardPredicate.TargetsMatching -> false
             is CardPredicate.TargetsPlayer -> false
+            is CardPredicate.WouldDestroy -> false
             is CardPredicate.AbilitySourceMatches -> false
         }
     }

@@ -106,7 +106,7 @@ internal class NonPermanentSpellResolver(
         val events = mutableListOf<GameEvent>()
 
         val resolvedCardDef = cardComponent?.let { cardRegistry.getCard(it.name) }
-        val spellEffect = selectSpellEffect(state, spellId, spellComponent, cardComponent, resolvedCardDef)
+        val spellEffect = resolvingSpellEffect(state, spellId, spellComponent, cardComponent, resolvedCardDef)
         // Splice (CR 702.47): the spliced cards' text is a tail that runs after the main spell's own
         // effects (CR 702.47b). Its targets were appended to the end of the flat list at cast time, so
         // the same tail is peeled off here — the main spell must see only its own targets, or an effect
@@ -185,48 +185,6 @@ internal class NonPermanentSpellResolver(
             finishNonPermanentSpell(newState, spellId, spellComponent, cardComponent)
         else ExecutionResult.success(newState)
         return completed.copy(events = events + completed.events)
-    }
-
-    /**
-     * The effect the spell resolves with: the cast face's (Adventure / split, CR 715 / 709), the
-     * kicked or cleaved variant, or the card's own — with any text-changing effect applied.
-     */
-    private fun selectSpellEffect(
-        state: GameState,
-        spellId: EntityId,
-        spellComponent: SpellOnStackComponent,
-        cardComponent: CardComponent?,
-        resolvedCardDef: com.wingedsheep.sdk.model.CardDefinition?
-    ): Effect? {
-        // Execute the spell effect if present, applying text replacement if the spell
-        // was modified by a text-changing effect (e.g., Artificial Evolution)
-        // Use kickerSpellEffect when the spell was kicked and an alternate effect is defined.
-        // Adventure / split face cast (CR 715 / 709) — when the spell was cast as a face, read
-        // the face's spell effect from `cardDef.cardFaces[faceIndex].script.spellEffect`.
-        val faceSpellEffect = spellComponent.faceIndex?.let { idx ->
-            resolvedCardDef?.cardFaces?.getOrNull(idx)?.script?.spellEffect
-        }
-        val baseSpellEffect = when {
-            faceSpellEffect != null -> faceSpellEffect
-            spellComponent.declaredCostSlot != null && cardComponent != null ->
-                resolvedCardDef?.script?.kickerSpellEffect ?: cardComponent.spellEffect
-            // Cleave (CR 702.148): a spell cast for its cleave cost resolves with its
-            // brackets-removed effect variant, applied structurally at cast time rather than by
-            // editing text — so e.g. a bracketed delayed-trigger clause is never created.
-            spellComponent.wasCleaved && cardComponent != null ->
-                resolvedCardDef?.script?.cleaveSpellEffect ?: cardComponent.spellEffect
-            // Overload (CR 702.96a): "target" reads "each" — the author-written untargeted variant.
-            spellComponent.wasOverloaded && cardComponent != null ->
-                resolvedCardDef?.script?.overloadSpellEffect ?: cardComponent.spellEffect
-            else -> cardComponent?.spellEffect
-        }
-        val rawSpellEffect = baseSpellEffect
-        val textReplacement = TextChanges.forSpell(state, spellId)
-        return if (rawSpellEffect != null && textReplacement != null) {
-            rawSpellEffect.applyTextReplacement(textReplacement)
-        } else {
-            rawSpellEffect
-        }
     }
 
     private fun fusedEntries(
@@ -861,5 +819,48 @@ internal class NonPermanentSpellResolver(
             events.add(CountersAddedEvent(cardId, counterType, 1, cardName))
         }
         return updated
+    }
+}
+
+/**
+ * The effect the spell resolves with: the cast face's (Adventure / split, CR 715 / 709), the
+ * kicked or cleaved variant, or the card's own — with any text-changing effect applied. Shared
+ * with [com.wingedsheep.sdk.scripting.predicates.CardPredicate.WouldDestroy], which previews it.
+ */
+internal fun resolvingSpellEffect(
+    state: GameState,
+    spellId: EntityId,
+    spellComponent: SpellOnStackComponent,
+    cardComponent: CardComponent?,
+    resolvedCardDef: com.wingedsheep.sdk.model.CardDefinition?
+): Effect? {
+    // Execute the spell effect if present, applying text replacement if the spell
+    // was modified by a text-changing effect (e.g., Artificial Evolution)
+    // Use kickerSpellEffect when the spell was kicked and an alternate effect is defined.
+    // Adventure / split face cast (CR 715 / 709) — when the spell was cast as a face, read
+    // the face's spell effect from `cardDef.cardFaces[faceIndex].script.spellEffect`.
+    val faceSpellEffect = spellComponent.faceIndex?.let { idx ->
+        resolvedCardDef?.cardFaces?.getOrNull(idx)?.script?.spellEffect
+    }
+    val baseSpellEffect = when {
+        faceSpellEffect != null -> faceSpellEffect
+        spellComponent.declaredCostSlot != null && cardComponent != null ->
+            resolvedCardDef?.script?.kickerSpellEffect ?: cardComponent.spellEffect
+        // Cleave (CR 702.148): a spell cast for its cleave cost resolves with its
+        // brackets-removed effect variant, applied structurally at cast time rather than by
+        // editing text — so e.g. a bracketed delayed-trigger clause is never created.
+        spellComponent.wasCleaved && cardComponent != null ->
+            resolvedCardDef?.script?.cleaveSpellEffect ?: cardComponent.spellEffect
+        // Overload (CR 702.96a): "target" reads "each" — the author-written untargeted variant.
+        spellComponent.wasOverloaded && cardComponent != null ->
+            resolvedCardDef?.script?.overloadSpellEffect ?: cardComponent.spellEffect
+        else -> cardComponent?.spellEffect
+    }
+    val rawSpellEffect = baseSpellEffect
+    val textReplacement = TextChanges.forSpell(state, spellId)
+    return if (rawSpellEffect != null && textReplacement != null) {
+        rawSpellEffect.applyTextReplacement(textReplacement)
+    } else {
+        rawSpellEffect
     }
 }

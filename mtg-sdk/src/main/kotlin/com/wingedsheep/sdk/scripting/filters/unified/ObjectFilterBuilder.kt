@@ -115,6 +115,14 @@ interface ObjectFilterBuilder<out Self> {
         withCardPredicate(CardPredicate.TargetsPlayer(player))
 
     /**
+     * Restrict to spells/abilities on the stack that would destroy a permanent matching
+     * [subfilter] if they resolved right now — "if it would destroy a land you control"
+     * (Equinox). See [CardPredicate.WouldDestroy].
+     */
+    fun wouldDestroy(subfilter: GameObjectFilter) =
+        withCardPredicate(CardPredicate.WouldDestroy(subfilter))
+
+    /**
      * Restrict to activated/triggered abilities on the stack whose *source* (CR 113.7) matches
      * [subfilter] — "from a creature source" (Echo, Perceptive Prodigy), "from an artifact source"
      * (Scientist Supreme of A.I.M.). Read with last known information when the source has already

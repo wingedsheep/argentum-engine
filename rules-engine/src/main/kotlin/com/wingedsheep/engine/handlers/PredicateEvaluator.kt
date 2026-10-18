@@ -474,6 +474,7 @@ class PredicateEvaluator(
             is CardPredicate.SharesNameWithPermanentYouControl,
             is CardPredicate.TargetsMatching,
             is CardPredicate.TargetsPlayer,
+            is CardPredicate.WouldDestroy,
             is CardPredicate.TotalPowerAndToughnessAtMost,
             is CardPredicate.ToughnessAtLeast,
             is CardPredicate.ToughnessAtMost,
@@ -739,6 +740,14 @@ class PredicateEvaluator(
                 chosen is ChosenTarget.Player &&
                     matchesPlayer(state, projected, predicate.player, chosen.playerId, subContext)
             }
+        }
+        // "A spell that would destroy a land you control" (Equinox): preview what the stack object's
+        // effect would destroy if it resolved now, then match those permanents against the subfilter
+        // in the outer context, as TargetsMatching does for its chosen targets.
+        if (predicate is CardPredicate.WouldDestroy) {
+            val subContext = context ?: return false
+            return com.wingedsheep.engine.handlers.predicates.stackObjectWouldDestroy(state, entityId, this, cardRegistry)
+                .any { matches(state, projected, it, predicate.subfilter, subContext) }
         }
         // Ability-source predicate ("copy target ability ... from a creature source"): an ability on
         // the stack is its own object with no characteristics of its own (CR 113.3b/c), so the match
@@ -1445,6 +1454,7 @@ class PredicateEvaluator(
             CardPredicate.IsActivatedAbility -> false
             is CardPredicate.TargetsMatching -> false
             is CardPredicate.TargetsPlayer -> false
+            is CardPredicate.WouldDestroy -> false
             is CardPredicate.AbilitySourceMatches -> false
         }
     }
@@ -2729,6 +2739,7 @@ class PredicateEvaluator(
             // chosen-target snapshot, so this always returns false here.
             is CardPredicate.TargetsMatching -> false
             is CardPredicate.TargetsPlayer -> false
+            is CardPredicate.WouldDestroy -> false
 
             // Ability-source predicate — a cast-spell record is not an ability and has no source
             // object to inspect.

@@ -5553,6 +5553,9 @@ for "an instant or sorcery spell that targets a creature" — Forum Necroscribe,
 that is a player `player` names, read relative to the filter's chooser — `CardPredicate.TargetsPlayer`;
 `TargetFilter.InstantOrSorcerySpellOnStack.targetsPlayer(Player.You)` is "target instant or sorcery spell
 that targets you" — Shell of the Last Kappa; `Player.EachOpponent` is "that targets an opponent");
+`.wouldDestroy(subfilter)` (a spell/ability on the stack that would destroy a permanent matching `subfilter`
+if it resolved right now — `CardPredicate.WouldDestroy`; `GameObjectFilter.Any.wouldDestroy(GameObjectFilter.Land.youControl())`
+is Equinox's "counter target spell if it would destroy a land you control", tested at resolution with `Effects.If`);
 `.abilitySourceMatches(subfilter)` (an activated/triggered ability on the stack whose *source* matches
 `subfilter` — `CardPredicate.AbilitySourceMatches`; e.g.
 `TargetFilter.ActivatedOrTriggeredAbilityOnStack.youControl().abilitySourceMatches(GameObjectFilter.Creature)`
@@ -6843,6 +6846,15 @@ work for abilities-on-stack (which carry no `CardComponent`).
   includes at least one chosen target matching `subfilter`. Player targets are skipped. The
   subfilter inherits the outer `PredicateContext`, so `Land.youControl()` inside the subfilter
   resolves against the outer chooser. Used by Teferi's Response.
+- `CardPredicate.WouldDestroy(subfilter)` — true when the stack object (spell, activated or
+  triggered ability) would destroy a battlefield permanent matching `subfilter` if it resolved right
+  now. The engine previews the object's effect against its chosen targets, modes and X: a
+  destroy aimed at a target or bound object, a "destroy all/each" sweep (group iteration or
+  gather-then-destroy pipeline), sequences and per-target iteration. A destroy behind a "may", a
+  condition, a resolution-time choice or a random outcome, a sacrifice, exile, or damage the game
+  rules later turn into destruction never counts (the Equinox rulings). Like `TargetsMatching`, the
+  subfilter reads the outer chooser. Used by **Equinox**:
+  `Effects.If(Conditions.TargetMatchesFilter(GameObjectFilter.Any.wouldDestroy(Land.youControl())), Effects.CounterSpell())`.
 - `CardPredicate.AbilitySourceMatches(subfilter)` — true when the stack object is an **activated or
   triggered ability** whose *source* (CR 113.7 — the object that generated it) matches `subfilter`.
   The "from a creature source" / "from an artifact source" clause: **Echo, Perceptive Prodigy**,

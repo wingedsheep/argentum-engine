@@ -1392,6 +1392,36 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
     }
 
     /**
+     * Matches a spell or ability on the stack that **would destroy** at least one permanent
+     * matching [subfilter] if it resolved right now — "counter target spell if it would destroy a
+     * land you control" (Equinox). Where [TargetsMatching] reads only the chosen targets, this
+     * reads what the object's effect does: a destroy aimed at one of its targets, or a "destroy
+     * all/each …" sweep whose group currently holds a matching permanent.
+     *
+     * Only destruction the text performs directly and unconditionally counts (the Equinox
+     * rulings): a destroy behind a "may", a choice, a condition or a random outcome, a sacrifice,
+     * or lethal damage (the game rules destroy that creature, not the spell) never matches.
+     * The subfilter is evaluated in the outer [com.wingedsheep.engine.handlers.PredicateContext],
+     * so `Land.youControl()` is relative to the filter's chooser, as in [TargetsMatching].
+     */
+    @SerialName("WouldDestroy")
+    @Serializable
+    data class WouldDestroy(val subfilter: GameObjectFilter) : CardPredicate {
+        /** "that would destroy a land you control" — the controller scope after the noun, as printed. */
+        override val description: String
+            get() {
+                val noun = subfilter.copy(controllerPredicate = null)
+                val scope = subfilter.controllerPredicate?.description?.takeIf { it.isNotEmpty() }
+                return listOfNotNull("that would destroy ${noun.indefiniteArticle} ${noun.description}", scope)
+                    .joinToString(" ")
+            }
+        override fun applyTextReplacement(replacer: TextReplacer): CardPredicate {
+            val newSubfilter = subfilter.applyTextReplacement(replacer)
+            return if (newSubfilter !== subfilter) copy(subfilter = newSubfilter) else this
+        }
+    }
+
+    /**
      * Matches an **activated or triggered ability on the stack** whose *source* (CR 113.7 — the
      * object that generated it) matches [subfilter]. The "from a creature source" / "from an
      * artifact source" clause: Echo, Perceptive Prodigy and Scientist Supreme of A.I.M.
