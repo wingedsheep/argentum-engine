@@ -49,11 +49,16 @@ value class CounterType(val name: String) {
      * counters, so a new printed size only needs its constant, never an engine change.
      */
     val ptDelta: Pair<Int, Int>?
-        get() = PT_DELTAS.getOrPut(name) {
-            STAT_ID.matchEntire(name)?.destructured?.let { (sign1, n1, sign2, n2) ->
-                signed(sign1, NUMBERS.indexOf(n1)) to signed(sign2, NUMBERS.indexOf(n2))
-            } ?: NOT_A_STAT
-        }.takeIf { it !== NOT_A_STAT }
+        get() {
+            // Split rather than regex: the layer system reads this for every counter on every projection.
+            if (!name.startsWith("PLUS_") && !name.startsWith("MINUS_")) return null
+            val parts = name.split('_')
+            if (parts.size != 4) return null
+            val power = NUMBERS.indexOf(parts[1])
+            val toughness = NUMBERS.indexOf(parts[3])
+            if (power < 0 || toughness < 0 || parts[0] !in SIGNS || parts[2] !in SIGNS) return null
+            return signed(parts[0], power) to signed(parts[2], toughness)
+        }
 
     override fun toString(): String = name
 
@@ -931,8 +936,6 @@ value class CounterType(val name: String) {
         private val SIGNS = mapOf("PLUS" to "+", "MINUS" to "-")
         private val SIGN_WORDS = SIGNS.entries.associate { (word, sign) -> sign to word }
         private val STAT_ID = NUMBERS.joinToString("|").let { n -> Regex("""(PLUS|MINUS)_($n)_(PLUS|MINUS)_($n)""") }
-        private val NOT_A_STAT = 0 to 0
-        private val PT_DELTAS = java.util.concurrent.ConcurrentHashMap<String, Pair<Int, Int>>()
         private fun signed(sign: String, n: Int) = if (sign == "MINUS") -n else n
         private val STAT_PRINTED = Regex("""([+-])(\d)/([+-])(\d)""")
     }
