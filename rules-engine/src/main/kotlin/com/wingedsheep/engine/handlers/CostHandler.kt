@@ -1036,26 +1036,32 @@ class CostHandler(private val zones: ZoneTransitionService) {
                     state, sourceId, counterType, atom.count, placerId = controllerId,
                     predicateEvaluator = predicateEvaluator, byEffect = false
                 )
-                val firstThisTurn = DamageUtils.isFirstCounterThisTurn(state, sourceId)
-                val firstOfTypeThisTurn = DamageUtils.isFirstCounterOfTypeThisTurn(state, sourceId, counterType)
-                val newState = state.updateEntity(sourceId) { c ->
-                    c.with(current.withAdded(counterType, modifiedCount))
-                }.let {
-                    DamageUtils.markCounterPlacedOnCreature(
-                        it, controllerId, sourceId, counterType
+                // A replacement or a holder's limit can cut the placement to nothing: then no
+                // counter is put on it and nothing is announced, but the cost is still paid.
+                if (modifiedCount <= 0) {
+                    CostPaymentResult.success(state, manaPool)
+                } else {
+                    val firstThisTurn = DamageUtils.isFirstCounterThisTurn(state, sourceId)
+                    val firstOfTypeThisTurn = DamageUtils.isFirstCounterOfTypeThisTurn(state, sourceId, counterType)
+                    val newState = state.updateEntity(sourceId) { c ->
+                        c.with(current.withAdded(counterType, modifiedCount))
+                    }.let {
+                        DamageUtils.markCounterPlacedOnCreature(
+                            it, controllerId, sourceId, counterType
+                        )
+                    }
+                    val entityName = state.getEntity(sourceId)?.get<CardComponent>()?.name ?: ""
+                    CostPaymentResult.success(
+                        newState,
+                        manaPool,
+                        events = listOf(
+                            CountersAddedEvent(
+                                sourceId, counterType, modifiedCount, entityName,
+                                firstThisTurn, firstOfTypeThisTurn = firstOfTypeThisTurn, placedBy = controllerId,
+                            )
+                        ),
                     )
                 }
-                val entityName = state.getEntity(sourceId)?.get<CardComponent>()?.name ?: ""
-                CostPaymentResult.success(
-                    newState,
-                    manaPool,
-                    events = listOf(
-                        CountersAddedEvent(
-                            sourceId, counterType, modifiedCount, entityName,
-                            firstThisTurn, firstOfTypeThisTurn = firstOfTypeThisTurn, placedBy = controllerId,
-                        )
-                    ),
-                )
             }
         }
         is CostAtom.PayPlayerCounters -> {

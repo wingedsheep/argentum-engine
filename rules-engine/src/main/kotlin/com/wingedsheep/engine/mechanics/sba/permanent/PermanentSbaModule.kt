@@ -22,6 +22,7 @@ class PermanentSbaModule(
         LegendRuleCheck(decisionHandler, cardRegistry, predicateEvaluator = zones.predicateEvaluator),
         WorldRuleCheck(zones),
         CounterAnnihilationCheck(),
+        CounterLimitCheck(),
         UnattachedAurasCheck(zones, cardRegistry),
         SoulbondPairingCheck(),
         SagaSacrificeCheck(zones, cardRegistry),

@@ -30,6 +30,7 @@ import io.kotest.matchers.shouldBe
  * | applies after placement replacements (a doubler can't push past it) | "a doubled entry is still capped" |
  * | proliferate is a placement too | "proliferate can't add past the limit" |
  * | read off projected statics: a granted limit counts | "a granted limit caps the holder" |
+ * | more than N anyway → all but N removed as a state-based action (CR 704.5r) | "excess counters are removed as a state-based action" |
  */
 class MaxCountersScenarioTest : ScenarioTestBase() {
 
@@ -150,11 +151,26 @@ class MaxCountersScenarioTest : ScenarioTestBase() {
             val game = board().withCardOnBattlefield(1, "Test Charge Entrant")
                 .withCardInHand(1, "Test Limit Proliferate").build()
             val id = game.findPermanent("Test Charge Entrant")!!
-            game.state = game.state.updateEntity(id) { it.with(CountersComponent().withAdded(CounterType.CHARGE, 3)) }
+            game.state = game.state.updateEntity(id) {
+                it.with(CountersComponent().withAdded(CounterType.CHARGE, 3).withAdded(CounterType.PLUS_ONE_PLUS_ONE, 1))
+            }
             game.castSpell(1, "Test Limit Proliferate").error shouldBe null
             game.resolveStack()
-            if (game.hasPendingDecision()) game.selectCards(listOf(id))
+            game.hasPendingDecision() shouldBe true
+            game.selectCards(listOf(id)).error shouldBe null
             game.countersOn(id, CounterType.CHARGE) shouldBe 3
+            game.countersOn(id, CounterType.PLUS_ONE_PLUS_ONE) shouldBe 2
+        }
+
+        test("excess counters are removed as a state-based action") {
+            val game = board().withCardOnBattlefield(1, "Test Charge Limit").build()
+            val id = game.findPermanent("Test Charge Limit")!!
+            game.state = game.state.updateEntity(id) {
+                it.with(CountersComponent().withAdded(CounterType.CHARGE, 5).withAdded(CounterType.PLUS_ONE_PLUS_ONE, 5))
+            }
+            game.checkStateBasedActions()
+            game.countersOn(id, CounterType.CHARGE) shouldBe 3
+            game.countersOn(id, CounterType.PLUS_ONE_PLUS_ONE) shouldBe 5
         }
 
         test("a granted limit caps the holder") {

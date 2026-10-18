@@ -284,7 +284,8 @@ data class CantReceiveCounters(
  * many counters as fit, after every counter-placement replacement has applied (Doubling Season can't
  * push it past the limit), and one on a holder already at the limit doesn't happen at all — no
  * counters, no event. That includes the counters it enters with, so a doubled entry is still capped.
- * Other kinds are unaffected, and counters already on it above the limit stay.
+ * Other kinds are unaffected. A permanent that holds more than [max] anyway (it gained the limit
+ * later) has the excess removed as a state-based action (CR 704.5r).
  *
  * A [ProjectedStaticAbility]: the engine's one counter-placement chokepoint
  * (`ReplacementEffectUtils.applyCounterPlacementModifiers`) reads it off the holder's projected

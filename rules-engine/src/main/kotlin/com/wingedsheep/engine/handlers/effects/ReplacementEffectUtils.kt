@@ -11,6 +11,7 @@ import com.wingedsheep.engine.state.components.battlefield.ReplacementEffectSour
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.sdk.core.CounterType
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.engine.state.components.player.CountersLockedThisTurnComponent
 import com.wingedsheep.sdk.scripting.CapCounterPlacementThisTurn
@@ -187,7 +188,7 @@ object ReplacementEffectUtils {
      * off the continuous-effect component stamped as it became a permanent.
      */
     private fun maxCountersLimit(state: GameState, targetId: EntityId, counterType: CounterType): Int? {
-        val statics = if (targetId in state.getBattlefield()) state.projectedState.getStaticAbilities(targetId)
+        val statics = if (state.logicalZone(targetId)?.zoneType == Zone.BATTLEFIELD) state.projectedState.getStaticAbilities(targetId)
         else state.getEntity(targetId)?.get<ContinuousEffectSourceComponent>()?.effects.orEmpty()
             .filter { it.affectsFilter == AffectsFilter.Self }
             .mapNotNull { (it.modification as? Modification.GrantStaticAbility)?.ability }

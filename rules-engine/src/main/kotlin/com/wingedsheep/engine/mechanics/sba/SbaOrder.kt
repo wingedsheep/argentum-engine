@@ -26,6 +26,7 @@ object SbaOrder {
     const val LEGEND_RULE = 600             // 704.5j
     const val WORLD_RULE = 650              // 704.5k
     const val COUNTER_ANNIHILATION = 700    // 704.5q
+    const val COUNTER_LIMIT = 710           // 704.5r
     const val UNATTACHED_AURAS = 800        // 704.5m/n/p
     const val SOULBOND_UNPAIRING = 850      // 702.95e (a soulbond pair whose halves no longer qualify)
     const val SAGA_SACRIFICE = 900          // 714.4

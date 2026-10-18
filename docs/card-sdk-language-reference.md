@@ -9765,7 +9765,10 @@ staticAbility {
   counter-placement chokepoint (`ReplacementEffectUtils.applyCounterPlacementModifiers`) after every
   placement replacement: only the counters that fit are put on it, one at the limit doesn't happen,
   and the counters it enters with are capped too (a doubled entry still stops at `max`). Other kinds
-  are unaffected; grant it with `GrantStaticAbility` to cap others.
+  are unaffected; grant it with `GrantStaticAbility` to cap others. A permanent holding more than
+  `max` anyway (it gained the limit later) loses the excess as a state-based action
+  (`CounterLimitCheck`, CR 704.5r). A cast entrant's own printed limit caps its entry counters;
+  limits granted to it by other permanents apply once it is on the battlefield.
 - `CantBeSacrificed(filter)` — matching permanents can't be sacrificed (projects the
   `AbilityFlag.CANT_BE_SACRIFICED` flag, honored by the sacrifice executor — a sacrifice that can't
   happen simply no-ops). Wrap in `ConditionalStaticAbility` for time-restricted forms, e.g. Zurgo,
