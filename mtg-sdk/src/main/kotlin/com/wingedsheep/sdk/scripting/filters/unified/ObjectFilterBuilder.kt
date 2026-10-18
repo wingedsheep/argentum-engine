@@ -600,6 +600,9 @@ interface ObjectFilterBuilder<out Self> {
      */
     fun attackingEnchantedPlayer() = withStatePredicate(StatePredicate.IsAttackingEnchantedPlayer)
 
+    /** Was on the battlefield untapped, as this same object, when this turn began. */
+    fun startedTurnUntapped() = withStatePredicate(StatePredicate.StartedTurnUntapped)
+
     /** Current controller has controlled this battlefield object continuously since this turn began. */
     fun controlledSinceTurnBegan() = withStatePredicate(StatePredicate.ControlledSinceTurnBegan)
 

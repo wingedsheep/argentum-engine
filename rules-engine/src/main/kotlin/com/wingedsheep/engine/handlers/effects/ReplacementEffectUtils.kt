@@ -2,7 +2,11 @@ package com.wingedsheep.engine.handlers.effects
 
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
+import com.wingedsheep.engine.mechanics.layers.AffectsFilter
+import com.wingedsheep.engine.mechanics.layers.ContinuousEffectSourceComponent
+import com.wingedsheep.engine.mechanics.layers.Modification
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.battlefield.ReplacementEffectSourceComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
@@ -11,6 +15,7 @@ import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.engine.state.components.player.CountersLockedThisTurnComponent
 import com.wingedsheep.sdk.scripting.CapCounterPlacementThisTurn
 import com.wingedsheep.sdk.scripting.DoubleCounterPlacement
+import com.wingedsheep.sdk.scripting.MaxCounters
 import com.wingedsheep.sdk.scripting.ModifyCounterPlacement
 import com.wingedsheep.sdk.scripting.PreventExtraTurns
 import com.wingedsheep.sdk.scripting.events.Recipient
@@ -49,7 +54,8 @@ object ReplacementEffectUtils {
      *    an entrant ([replacementSourceState] given), on the battlefield before the entry plus the
      *    entrant's own `Recipient.Self` replacements (CR 614.12);
      *  - temporary, controller-scoped [GameState.activeCounterPlacementModifiers] (Prairie Dog);
-     *  - [CapCounterPlacementThisTurn] (Melira), always last.
+     *  - [CapCounterPlacementThisTurn] (Melira) and the recipient's own [MaxCounters] limit
+     *    (Rasputin Dreamweaver), always last.
      *
      * **Ordering (CR 616.1).** With several of these applying, the affected object's controller
      * (or the affected player) chooses the order, and the order is observable once additive and
@@ -163,8 +169,29 @@ object ReplacementEffectUtils {
         //    doubler or an additive modifier can't push a capped placement past the cap.
         val cap = counterPlacementCap(state, targetId, counterType, predicateEvaluator, sources)
         if (cap != null) modifiedCount = minOf(modifiedCount, cap)
+        // …and so does a holder's "can't have more than N" limit (MaxCounters): only the counters
+        // that fit are put on it, its entry counters included.
+        val limit = maxCountersLimit(state, targetId, counterType)
+        if (limit != null) {
+            val already = state.getEntity(targetId)?.get<CountersComponent>()?.getCount(counterType) ?: 0
+            modifiedCount = minOf(modifiedCount, limit - already)
+        }
 
         return modifiedCount.coerceAtLeast(0)
+    }
+
+    /**
+     * The tightest [MaxCounters] limit on [targetId] for [counterType]. A permanent reads its
+     * projected statics (printed, granted, lost with its abilities); an entrant isn't in the
+     * battlefield zone yet while its entry counters are placed, so it reads its own printed limits
+     * off the continuous-effect component stamped as it became a permanent.
+     */
+    private fun maxCountersLimit(state: GameState, targetId: EntityId, counterType: CounterType): Int? {
+        val statics = if (targetId in state.getBattlefield()) state.projectedState.getStaticAbilities(targetId)
+        else state.getEntity(targetId)?.get<ContinuousEffectSourceComponent>()?.effects.orEmpty()
+            .filter { it.affectsFilter == AffectsFilter.Self }
+            .mapNotNull { (it.modification as? Modification.GrantStaticAbility)?.ability }
+        return statics.filterIsInstance<MaxCounters>().filter { it.counterType == counterType }.minOfOrNull { it.max }
     }
 
     /**

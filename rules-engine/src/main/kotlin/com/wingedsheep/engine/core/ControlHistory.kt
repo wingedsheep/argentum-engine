@@ -4,7 +4,9 @@ import com.wingedsheep.engine.mechanics.layers.ContinuousEffectSourceComponent
 import com.wingedsheep.engine.mechanics.layers.Layer
 import com.wingedsheep.engine.mechanics.layers.ProjectedState
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.ObjectRef
 import com.wingedsheep.engine.state.TurnStartControl
+import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.battlefield.EnteredThisTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.PhasedOutComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
@@ -13,10 +15,36 @@ import com.wingedsheep.sdk.model.EntityId
 
 /** A turn-start snapshot only loses entries: losing control and regaining it cannot restore continuity. */
 object ControlHistory {
-    fun beginTurn(state: GameState): GameState = state.copy(controlAtTurnStart = snapshot(state))
+    fun beginTurn(state: GameState): GameState =
+        state.copy(controlAtTurnStart = snapshot(state), untappedAtTurnStart = untappedSnapshot(state))
 
-    fun initialize(state: GameState): GameState =
-        if (state.controlAtTurnStart != null) state else state.copy(controlAtTurnStart = snapshot(state, imported = true))
+    fun initialize(state: GameState): GameState {
+        val control = state.controlAtTurnStart ?: snapshot(state, imported = true)
+        val untapped = state.untappedAtTurnStart ?: untappedSnapshot(state, imported = true)
+        return if (control === state.controlAtTurnStart && untapped === state.untappedAtTurnStart) state
+        else state.copy(controlAtTurnStart = control, untappedAtTurnStart = untapped)
+    }
+
+    /**
+     * The objects on the battlefield untapped as the turn begins — before the untap step, so
+     * untapping during it doesn't count. Phased-out permanents are treated as though they don't
+     * exist (CR 702.26b), so they didn't start the turn untapped. Unlike the control snapshot this
+     * never loses entries: tapping later, or changing control, doesn't change how the turn started.
+     */
+    private fun untappedSnapshot(state: GameState, imported: Boolean = false): Set<ObjectRef> =
+        state.getBattlefield().mapNotNullTo(HashSet()) { id ->
+            val container = state.getEntity(id) ?: return@mapNotNullTo null
+            if (container.has<TappedComponent>() || container.has<PhasedOutComponent>() ||
+                (imported && container.has<EnteredThisTurnComponent>())) return@mapNotNullTo null
+            state.objectRef(id)
+        }
+
+    /** `StatePredicate.StartedTurnUntapped`: this very object was untapped on the battlefield as the turn began. */
+    fun startedTurnUntapped(state: GameState, id: EntityId): Boolean {
+        if (state.logicalZone(id)?.zoneType != Zone.BATTLEFIELD) return false
+        val ref = state.objectRef(id) ?: return false
+        return state.untappedAtTurnStart?.contains(ref) ?: return false
+    }
 
     private fun snapshot(state: GameState, imported: Boolean = false): Map<EntityId, TurnStartControl> {
         val projected = state.projectedState

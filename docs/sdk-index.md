@@ -1732,6 +1732,7 @@ Families:
 - `StatePredicate.PutIntoGraveyardThisTurn` — This card is currently in a graveyard *and* was put there during the current turn, from any zone — the battlefield, but equally the library (mill), the hand (discard), or the stack (a countered or…
 - `StatePredicate.ReceivedCounterThisTurn(counterType: CounterType?, placedByController: Boolean)` — One or more counters were put on this permanent during the current turn — the filter-level form of "…that you've put one or more +1/+1 counters on this turn".
 - `StatePredicate.SharesNameWithSpellCastThisTurn` — Shares a name with a spell cast by any player during the current turn.
+- `StatePredicate.StartedTurnUntapped` — Was on the battlefield **untapped when this turn began**, as the same object it is now — "if Rasputin started the turn untapped".
 - `StatePredicate.WasCast(fromZone: Zone?)` — A spell on the stack that was cast — from fromZone when it is set, from anywhere when it is null.
 - `StatePredicate.WasCastForWarp` — Permanent on the battlefield that was cast for its warp cost (CR 702.185).
 - `StatePredicate.WasDealtDamageBySourceThisTurn` — Was dealt damage this turn by the effect's *source* — the recipient-side view of the source's per-turn damaged-creature record (the same record `Triggers` "a creature dealt damage by this creature…
@@ -1872,6 +1873,7 @@ Families:
 - `LoseAllAbilities(filter: GroupFilter)` — Causes the target permanent to lose all abilities.
 - `LoyaltyActivationPermission(filter: GameObjectFilter, instantSpeed: Boolean, times: Int)` — A static loyalty-activation permission for permanents matching filter — the battlefield counterpart of com.wingedsheep.sdk.scripting.effects.GrantLoyaltyActivationPermissionEffect, relaxing one or…
 - `ManaAbilitiesCostAdditionalLife(amount: Int, filter: GroupFilter)` — The mana abilities of permanents matching filter cost an additional amount life to activate — Thran Portal's "Mana abilities of this land cost an additional 1 life to activate." The life is an extr…
+- `MaxCounters(counterType: CounterType, max: Int)` — "This permanent can't have more than max counterType counters on it" (Rasputin Dreamweaver).
 - `MayCastFromGraveyard(filter: GameObjectFilter, lifeCost: Int, duringYourTurnOnly: Boolean, entersWithCounter: CounterType?, addedSubtypeOnEntry: String?, oncePerTurn: Boolean, exileInsteadOfGraveyard: Boolean, fromAnyGraveyard: Boolean, additionalCost: AdditionalCost?, playsLands: Boolean, grantedAbilityOnEntry: TriggeredAbility?)` — You may cast spells matching filter from your graveyard, optionally by paying lifeCost life in addition to their other costs.
 - `MayCastSelfFromZones(zones: List<Zone>, condition: Condition?, additionalCost: AdditionalCost?, castUsing: Keyword?, alternativeManaCost: ManaCost?)` — You may cast this card from specified zones (e.g., graveyard, exile).
 - `MayCastWithoutPayingManaCost(controllerOnly: Boolean, firstSpellOfTurnOnly: Boolean, spellFilter: GameObjectFilter, oncePerTurn: Boolean, fromZones: Set<Zone>?)` — Generic "may cast a spell without paying its mana cost" battlefield permission.

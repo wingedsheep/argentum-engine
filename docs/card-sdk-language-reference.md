@@ -9760,6 +9760,12 @@ staticAbility {
   face up."
 - `CantReceiveCounters(filter)` — matching permanents can't have counters put on them (projects the
   `AbilityFlag.CANT_RECEIVE_COUNTERS` flag).
+- `MaxCounters(counterType, max)` — "This permanent can't have more than `max` `counterType` counters
+  on it" (Rasputin Dreamweaver). A `ProjectedStaticAbility` on the holder, read by the
+  counter-placement chokepoint (`ReplacementEffectUtils.applyCounterPlacementModifiers`) after every
+  placement replacement: only the counters that fit are put on it, one at the limit doesn't happen,
+  and the counters it enters with are capped too (a doubled entry still stops at `max`). Other kinds
+  are unaffected; grant it with `GrantStaticAbility` to cap others.
 - `CantBeSacrificed(filter)` — matching permanents can't be sacrificed (projects the
   `AbilityFlag.CANT_BE_SACRIFICED` flag, honored by the sacrifice executor — a sacrifice that can't
   happen simply no-ops). Wrap in `ConditionalStaticAbility` for time-restricted forms, e.g. Zurgo,
@@ -18579,6 +18585,17 @@ and `Not`. They delegate that relational comparison to the shared predicate eval
 intermediate projection, preserving colorless results instead of falling back to printed colors.
 Public library-reveal statics follow projected control, so stealing a reveal source switches which
 player's top card is visible.
+
+### Started the turn untapped
+
+`StatePredicate.StartedTurnUntapped` and the fluent `.startedTurnUntapped()` filter match a
+permanent that was on the battlefield untapped, as the same object, when the current turn began —
+Rasputin Dreamweaver's `interveningIf = Conditions.SourceMatches(GameObjectFilter.Permanent.startedTurnUntapped())`.
+`ControlHistory` snapshots the untapped permanents with its control snapshot, before the untap
+step, so a permanent the untap step untaps doesn't match, and tapping or untapping it later in the
+turn doesn't change the answer. A permanent that entered this turn (or left and came back) never
+matches; phased-out permanents don't count; control changes don't matter. An imported board treats
+permanents marked as entered this turn as new.
 
 ### Continuous control during the current turn
 

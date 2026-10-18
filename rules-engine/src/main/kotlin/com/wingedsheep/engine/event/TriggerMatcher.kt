@@ -2664,6 +2664,9 @@ class TriggerMatcher(
                     ?: state.getEntity(entityId)?.get<CardComponent>()?.name
             )
 
+        com.wingedsheep.sdk.scripting.predicates.StatePredicate.StartedTurnUntapped ->
+            com.wingedsheep.engine.core.ControlHistory.startedTurnUntapped(state, entityId)
+
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.ControlledSinceTurnBegan ->
             com.wingedsheep.engine.core.ControlHistory.matches(state, state.projectedState, entityId)
 

@@ -2081,6 +2081,9 @@ class PredicateEvaluator(
                     ?.matchesAny(predicate.sourceFilter, you) == true
             }
 
+            StatePredicate.StartedTurnUntapped ->
+                com.wingedsheep.engine.core.ControlHistory.startedTurnUntapped(state, entityId)
+
             StatePredicate.ControlledSinceTurnBegan ->
                 com.wingedsheep.engine.core.ControlHistory.matches(state, projected, entityId)
 

@@ -75,7 +75,7 @@ class SuspensionTraceTest : ScenarioTestBase() {
             val action = json.decodeFromString<List<GameAction>>(fixtureText(fixture, "actions.json")).single()
             val result = actionProcessor.process(state, action).result
             result.error shouldBe null
-            result.state.copy(controlAtTurnStart = null) shouldBe
+            result.state.copy(controlAtTurnStart = null, untappedAtTurnStart = null) shouldBe
                 json.decodeFromString<GameState>(fixtureText(fixture, "after-1.json"))
             result.events shouldBe json.decodeFromString<List<GameEvent>>(fixtureText(fixture, "events-1.json"))
             result.state.pendingDecision shouldBe null
@@ -108,7 +108,7 @@ class SuspensionTraceTest : ScenarioTestBase() {
      * Exact mana units also postdate the capture; ActivationManaProvenanceTest pins those snapshots.
      */
     private fun normalizeRouting(value: JsonElement, root: Boolean = false): JsonElement = when (value) {
-        is JsonObject -> JsonObject(((if (root) value - "controlAtTurnStart" else value) - "targetObjectRefs" - "referencedObjects" - "manaUnits" -
+        is JsonObject -> JsonObject(((if (root) value - "controlAtTurnStart" - "untappedAtTurnStart" else value) - "targetObjectRefs" - "referencedObjects" - "manaUnits" -
             // The graveyard turn history (Crawling Sensation) postdates the capture, as does the
             // per-card stamp on a resolved spell; CardsPutIntoGraveyardThisTurnTrackerTest pins both.
             "com.wingedsheep.engine.state.components.player.CardsPutIntoGraveyardThisTurnComponent" -

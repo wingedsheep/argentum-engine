@@ -104,6 +104,14 @@ data class GameState(
     /** Uninterrupted battlefield visits from the start of this turn; null for a fresh imported board. */
     val controlAtTurnStart: Map<EntityId, TurnStartControl>? = null,
 
+    /**
+     * The permanents that were on the battlefield untapped (and phased in) when this turn began,
+     * as rules objects — `StatePredicate.StartedTurnUntapped`. Captured with [controlAtTurnStart]
+     * by [com.wingedsheep.engine.core.ControlHistory], before the untap step; null like it for a
+     * fresh imported board.
+     */
+    val untappedAtTurnStart: Set<ObjectRef>? = null,
+
     /** Current phase */
     val phase: Phase = Phase.BEGINNING,
 

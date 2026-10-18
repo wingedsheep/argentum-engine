@@ -4264,6 +4264,116 @@
     ]
 }
 
+// Rasputin Dreamweaver
+{
+    "name": "Rasputin Dreamweaver",
+    "manaCost": "{4}{W}{U}",
+    "typeLine": "Legendary Creature — Human Wizard",
+    "oracleText": "Rasputin enters with seven dream counters on it.\nRemove a dream counter from Rasputin: Add {C}.\nRemove a dream counter from Rasputin: Prevent the next 1 damage that would be dealt to Rasputin this turn.\nAt the beginning of your upkeep, if Rasputin started the turn untapped, put a dream counter on it.\nRasputin can't have more than seven dream counters on it.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Rasputin Dreamweaver:3",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "DREAM",
+                    "count": 1,
+                    "target": "Self"
+                },
+                "interveningIf": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsPermanent"
+                        ],
+                        "statePredicates": [
+                            "StartedTurnUntapped"
+                        ]
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Rasputin Dreamweaver:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomRemoveCounters",
+                        "counterType": "DREAM",
+                        "self": true
+                    }
+                },
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true,
+                "descriptionOverride": "Remove a dream counter from Rasputin: Add {C}."
+            },
+            {
+                "id": "Rasputin Dreamweaver:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomRemoveCounters",
+                        "counterType": "DREAM",
+                        "self": true
+                    }
+                },
+                "effect": {
+                    "type": "PreventDamageShield",
+                    "target": "Self",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "descriptionOverride": "Remove a dream counter from Rasputin: Prevent the next 1 damage that would be dealt to Rasputin this turn."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "MaxCounters",
+                "counterType": "DREAM",
+                "max": 7
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "counterType": "DREAM",
+                "count": 7,
+                "selfOnly": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "253",
+        "rarity": "RARE",
+        "artist": "Andi Rusu",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/0/503256f8-3aab-49d0-b78b-6502aa29ce52.jpg?1783948034"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
+    ]
+}
+
 // Rebirth
 {
     "name": "Rebirth",

@@ -1,6 +1,7 @@
 package com.wingedsheep.sdk.scripting
 
 import com.wingedsheep.sdk.core.CardType
+import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.scripting.effects.protectionDescription
@@ -274,6 +275,34 @@ data class CantReceiveCounters(
         val newFilter = filter.applyTextReplacement(replacer)
         return if (newFilter !== filter) copy(filter = newFilter) else this
     }
+}
+
+/**
+ * "This permanent can't have more than [max] [counterType] counters on it" (Rasputin Dreamweaver).
+ *
+ * A rule on the holder, not a replacement: a placement that would take it past [max] puts only as
+ * many counters as fit, after every counter-placement replacement has applied (Doubling Season can't
+ * push it past the limit), and one on a holder already at the limit doesn't happen at all — no
+ * counters, no event. That includes the counters it enters with, so a doubled entry is still capped.
+ * Other kinds are unaffected, and counters already on it above the limit stay.
+ *
+ * A [ProjectedStaticAbility]: the engine's one counter-placement chokepoint
+ * (`ReplacementEffectUtils.applyCounterPlacementModifiers`) reads it off the holder's projected
+ * statics, so a granted copy counts and one lost with the holder's abilities doesn't.
+ *
+ * Closest types: [CantReceiveCounters] is an all-kinds prohibition over a [GroupFilter], projected as
+ * a flag that cost-legality checks read (CR 614.17b) — it has no kind and no number to carry a limit;
+ * `CapCounterPlacementThisTurn` is a replacement that caps one placement and then locks the recipient
+ * for the turn, with no notion of how many counters it already has.
+ */
+@SerialName("MaxCounters")
+@Serializable
+data class MaxCounters(
+    val counterType: CounterType,
+    val max: Int,
+) : ProjectedStaticAbility {
+    override val description: String =
+        "This permanent can't have more than $max ${counterType.printed} counters on it"
 }
 
 /**

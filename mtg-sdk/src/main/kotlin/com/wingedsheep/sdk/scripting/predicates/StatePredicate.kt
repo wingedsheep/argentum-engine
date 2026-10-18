@@ -660,6 +660,24 @@ sealed interface StatePredicate {
         override val description: String = "dealt damage this turn by a ${sourceFilter.description} source"
     }
 
+    /**
+     * Was on the battlefield **untapped when this turn began**, as the same object it is now — "if
+     * Rasputin started the turn untapped". Read off a snapshot of untapped permanents taken at turn
+     * start, before the untap step, so untapping during it doesn't count; a permanent that entered
+     * this turn (or left and returned) never matches, and tapping or untapping it later in the turn
+     * doesn't change the answer. A phased-out permanent is treated as though it doesn't exist
+     * then, so it didn't start the turn untapped. Control changes don't matter.
+     *
+     * Closest types: [ControlledSinceTurnBegan] reads the same turn-start identity snapshot but asks
+     * about control continuity, which a control change breaks and tapping doesn't; [IsTapped] is the
+     * live state, which the untap step has already rewritten by the upkeep.
+     */
+    @SerialName("StartedTurnUntapped")
+    @Serializable
+    data object StartedTurnUntapped : History {
+        override val description: String = "started the turn untapped"
+    }
+
     /** Controlled by its current controller without interruption since this turn began, regardless of haste. */
     @SerialName("ControlledSinceTurnBegan")
     @Serializable
