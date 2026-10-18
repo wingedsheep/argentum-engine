@@ -53,11 +53,12 @@ class Visibility(
         isSpectator: Boolean = false,
     ): Boolean = when (zoneKey.zoneType) {
         Zone.LIBRARY -> false
-        Zone.HAND -> debugMode || (!isSpectator && (
+        // A symmetric reveal is public, so spectators receive it too.
+        Zone.HAND -> debugMode || revealsAllHands(state) || (!isSpectator && (
             zoneKey.ownerId == viewingPlayerId ||
                 state.actorFor(zoneKey.ownerId) == viewingPlayerId ||
                 zoneKey.ownerId in state.teammatesOf(viewingPlayerId) ||
-                (zoneKey.ownerId != viewingPlayerId && revealsHandTo(state, viewingPlayerId))
+                (zoneKey.ownerId != viewingPlayerId && revealsOpponentHandsTo(state, viewingPlayerId))
             ))
         Zone.SIDEBOARD -> debugMode || (!isSpectator && (
             zoneKey.ownerId == viewingPlayerId ||
@@ -349,16 +350,18 @@ class Visibility(
     private fun hasLookAtTopOfLibrary(state: GameState, playerId: EntityId): Boolean =
         hasActiveStaticAbility(state, playerId) { it is LookAtTopOfLibrary }
 
+    private fun revealsOpponentHandsTo(state: GameState, playerId: EntityId): Boolean =
+        hasActiveStaticAbility(state, playerId) { it is OpponentsPlayWithHandsRevealed }
+
     /**
-     * Whether another player's hand is face up to [viewingPlayerId]: either the viewer controls an
-     * [OpponentsPlayWithHandsRevealed] (Seer's Vision), or *any* player controls a symmetric
-     * [PlayersPlayWithHandsRevealed] (Revelation), which opens every hand to every player.
+     * Whether every hand is face up to everyone: *any* player controls a symmetric
+     * [PlayersPlayWithHandsRevealed] (Revelation), which opens every player's hand, including the
+     * hands of players who control nothing.
      */
-    private fun revealsHandTo(state: GameState, viewingPlayerId: EntityId): Boolean =
-        hasActiveStaticAbility(state, viewingPlayerId) { it is OpponentsPlayWithHandsRevealed } ||
-            state.turnOrder.any { controllerId ->
-                hasActiveStaticAbility(state, controllerId) { it is PlayersPlayWithHandsRevealed }
-            }
+    private fun revealsAllHands(state: GameState): Boolean =
+        state.turnOrder.any { controllerId ->
+            hasActiveStaticAbility(state, controllerId) { it is PlayersPlayWithHandsRevealed }
+        }
 
     private fun hasActiveStaticAbility(
         state: GameState,

@@ -167,13 +167,13 @@ class CardIdentityVisibilityTest : ScenarioTestBase() {
                     }
                 }
             }
-            withClue("spectators still see no hand") {
+            withClue("the reveal is public, so spectators see it too") {
                 visibility.isZoneVisibleTo(
                     state,
                     ZoneKey(base.player1Id, Zone.HAND),
                     bystander,
                     isSpectator = true,
-                ) shouldBe false
+                ) shouldBe true
             }
 
             val controllerCard = state.getHand(base.player1Id).single()
