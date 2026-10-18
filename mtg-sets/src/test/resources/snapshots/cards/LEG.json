@@ -333,6 +333,65 @@
     ]
 }
 
+// Arboria
+{
+    "name": "Arboria",
+    "manaCost": "{2}{G}{G}",
+    "typeLine": "World Enchantment",
+    "oracleText": "Creatures can't attack a player unless that player cast a spell or put a nontoken permanent onto the battlefield during their last turn.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CantAttackUnless",
+                "condition": {
+                    "type": "Any",
+                    "conditions": [
+                        {
+                            "type": "Compare",
+                            "left": {
+                                "type": "ActivityDuringTheirLastTurn",
+                                "player": "DefendingPlayer",
+                                "activity": "SPELLS_CAST"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "Compare",
+                            "left": {
+                                "type": "ActivityDuringTheirLastTurn",
+                                "player": "DefendingPlayer",
+                                "activity": "NONTOKEN_PERMANENTS_PUT_ONTO_BATTLEFIELD"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    ]
+                },
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "coversPlaneswalkers": false
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "174",
+        "rarity": "UNCOMMON",
+        "artist": "Daniel Gelon",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/9/095078b0-0f26-442f-9d3b-45e30cdb33c4.jpg?1783948051"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Azure Drake
 {
     "name": "Azure Drake",

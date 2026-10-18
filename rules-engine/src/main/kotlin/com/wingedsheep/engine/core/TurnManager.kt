@@ -214,6 +214,24 @@ class TurnManager(
             }
         }
 
+        // "During their last turn" (Arboria): the outgoing active side's own turn ends here, so roll
+        // what each of them did into their last-turn record. Everyone else keeps the record of their
+        // own last turn across this boundary; the this-turn put count then restarts for all.
+        val outgoingSide = state.activePlayerId?.let(state::sharedTurnTeam).orEmpty()
+        for (pid in state.turnOrder) {
+            newState = newState.updateEntity(pid) { container ->
+                val withRecord = if (pid in outgoingSide) container.with(
+                    com.wingedsheep.engine.state.components.player.LastTurnActivityComponent(
+                        spellsCast = state.playerSpellsCastThisTurn[pid] ?: 0,
+                        nontokenPermanentsPutOntoBattlefield = container
+                            .get<com.wingedsheep.engine.state.components.player.NontokenPermanentsPutOntoBattlefieldThisTurnComponent>()
+                            ?.count ?: 0
+                    )
+                ) else container
+                withRecord.without<com.wingedsheep.engine.state.components.player.NontokenPermanentsPutOntoBattlefieldThisTurnComponent>()
+            }
+        }
+
         // Increment the turn-taken counter for every player on the active team. CR 500.11 / 614.10a
         // make a skipped turn "proceed past as though it didn't exist", so a skipped turn should not
         // count — the increment lives here, downstream of the SkipNextTurn consumption path. In a

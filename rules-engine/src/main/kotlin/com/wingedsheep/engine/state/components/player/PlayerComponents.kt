@@ -1955,6 +1955,32 @@ data class PermanentsEnteredUnderControlThisTurnComponent(
 }
 
 /**
+ * How many nontoken permanents this player **put** onto the battlefield during the current turn —
+ * the actor, not the controller the permanent entered under (Arboria's second ruling). Counted by
+ * `PermanentEntryTracker.record`, which knows who put each permanent there: the caster of a
+ * resolving permanent spell, the player playing a land, or the controller of the spell or ability
+ * whose effect moved it. Rolled into [LastTurnActivityComponent] for the outgoing active player and
+ * reset for everyone by `TurnManager.startTurn` — at the turn boundary rather than in cleanup,
+ * because a turn can run a second cleanup step after something happened in the first.
+ */
+@Serializable
+data class NontokenPermanentsPutOntoBattlefieldThisTurnComponent(
+    val count: Int = 0
+) : Component
+
+/**
+ * What this player did during **their own** most recent turn, snapshotted by
+ * `TurnManager.startTurn` when that turn ends and kept until their next turn ends — a player's
+ * record survives every other player's turn in between. Absent until the player has finished a
+ * turn. Backs `DynamicAmount.ActivityDuringTheirLastTurn` (Arboria).
+ */
+@Serializable
+data class LastTurnActivityComponent(
+    val spellsCast: Int = 0,
+    val nontokenPermanentsPutOntoBattlefield: Int = 0
+) : Component
+
+/**
  * The kinds of counter this player has put on a creature this turn. Cleared at end of turn by
  * CleanupPhaseManager.
  *

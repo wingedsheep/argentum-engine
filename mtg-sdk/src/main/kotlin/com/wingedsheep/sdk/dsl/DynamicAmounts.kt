@@ -1014,6 +1014,15 @@ object DynamicAmounts {
     /** The total number of spells cast during the immediately preceding turn. */
     fun spellsCastLastTurn(): DynamicAmount = DynamicAmount.SpellsCastLastTurn
 
+    /**
+     * How many times [player] did [activity] during their own last turn (Arboria). See
+     * [DynamicAmount.ActivityDuringTheirLastTurn].
+     */
+    fun activityDuringTheirLastTurn(
+        player: Player,
+        activity: com.wingedsheep.sdk.scripting.values.LastTurnActivity
+    ): DynamicAmount = DynamicAmount.ActivityDuringTheirLastTurn(player, activity)
+
     /** The starting life total of a player (20 in standard, 40 in commander). */
     fun startingLifeTotal(player: Player = Player.You): DynamicAmount =
         DynamicAmount.StartingLifeTotal(player)

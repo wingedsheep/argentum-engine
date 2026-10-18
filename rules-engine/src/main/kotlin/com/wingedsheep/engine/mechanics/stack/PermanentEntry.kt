@@ -144,8 +144,10 @@ internal class PermanentEntry(
                 .updateEntity(spellId) { it.with(bestowed.copy(entered = true)) }
         }
         newState = newState.removeMayPlayPermissionsForCard(spellId)
+        // The spell's controller is the player putting it onto the battlefield, even when it enters
+        // under another player's control.
         newState = com.wingedsheep.engine.handlers.effects.BattlefieldEntry
-            .place(newState, controllerId, spellId)
+            .place(newState, controllerId, spellId, putBy = spellComponent.casterId)
 
         val spellRef = state.objectRef(spellId)
         val permanentRef = newState.objectRef(spellId)

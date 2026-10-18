@@ -30,11 +30,13 @@ import com.wingedsheep.sdk.model.EntityId
 object BattlefieldEntry {
 
     /**
-     * Add [entityId] to [controllerId]'s battlefield and record the ETB-by-type.
+     * Add [entityId] to [controllerId]'s battlefield and record the ETB-by-type. [putBy] names the
+     * player putting it there when that isn't read off the resolving object (a permanent spell's
+     * caster — see [PermanentEntryTracker.record]).
      */
-    fun place(state: GameState, controllerId: EntityId, entityId: EntityId): GameState {
+    fun place(state: GameState, controllerId: EntityId, entityId: EntityId, putBy: EntityId? = null): GameState {
         val battlefieldZone = ZoneKey(controllerId, Zone.BATTLEFIELD)
         val withZone = state.addToZone(battlefieldZone, entityId)
-        return PermanentEntryTracker.record(withZone, controllerId, entityId)
+        return PermanentEntryTracker.record(withZone, controllerId, entityId, putBy = putBy)
     }
 }

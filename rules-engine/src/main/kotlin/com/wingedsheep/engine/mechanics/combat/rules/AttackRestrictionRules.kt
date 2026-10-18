@@ -192,37 +192,57 @@ class NotAlreadyAttackingRule : AttackRestrictionRule {
 // =========================================================================
 
 /**
- * CantAttackUnless: creature can't attack unless a condition is met relative
- * to the defender (e.g., Goblin Goon — "can't attack unless you control more
- * creatures than defending player").
+ * [CantAttackUnless]: the attacker is covered by a restriction whose condition must hold against
+ * the defender it is declared against (CR 508.1c) — the creature's own (Goblin Goon's "can't attack
+ * unless you control more creatures than defending player", Deep-Sea Serpent) or a global one
+ * printed on another permanent (Arboria's "creatures can't attack a player unless that player …").
+ *
+ * Every battlefield permanent's printed statics are read, the way [CantAttackYouDefenderRule] reads
+ * them: the filter and condition are resolved relative to the holder ("you" is its projected
+ * controller), the defending player is bound into the condition's context, and a face-down or
+ * ability-stripped holder contributes nothing (CR 708.2). With `coversPlaneswalkers = false` the
+ * restriction only speaks about attacking a player — planeswalkers and battles stay attackable.
  */
 class CantAttackUnlessDefenderRule(
     private val predicateEvaluator: PredicateEvaluator
 ) : AttackDefenderRule {
     override fun check(ctx: AttackCheckContext, defenderId: EntityId): String? {
-        val container = ctx.state.getEntity(ctx.attackerId) ?: return null
-        if (container.has<FaceDownComponent>()) return null
-        val cardComponent = container.get<CardComponent>() ?: return null
-        val cardDef = ctx.cardRegistry.getCard(cardComponent.cardDefinitionId) ?: return null
-
-        val restriction = cardDef.staticAbilities
-            .filterIsInstance<CantAttackUnless>()
-            .firstOrNull { it.filter.scope is com.wingedsheep.sdk.scripting.filters.unified.Scope.Self } ?: return null
-
+        val state = ctx.state
+        val projected = ctx.projected
+        val attackingAPlayer = state.getEntity(defenderId)?.has<LifeTotalComponent>() == true
         val defendingPlayer = findDefendingPlayer(ctx, defenderId)
 
-        val effectContext = EffectContext(
-            sourceId = ctx.attackerId,
-            controllerId = ctx.attackingPlayer,
-            defendingPlayerId = defendingPlayer,
-        )
-        if (!predicateEvaluator.conditions.evaluate(ctx.state, restriction.condition, effectContext)) {
-            return "${cardComponent.name} ${restriction.description}"
+        fun violated(holder: EntityId, you: EntityId, ability: StaticAbility): CantAttackUnless? = when (ability) {
+            is ConditionalStaticAbility ->
+                if (predicateEvaluator.conditions.evaluate(state, ability.condition,
+                        EffectContext(sourceId = holder, controllerId = you))) {
+                    violated(holder, you, ability.ability)
+                } else null
+            is CompositeStaticAbility -> ability.abilities.firstNotNullOfOrNull { violated(holder, you, it) }
+            is CantAttackUnless -> ability.takeIf {
+                (attackingAPlayer || it.coversPlaneswalkers) &&
+                    coversAttacker(predicateEvaluator, ctx, holder, you, it.filter) &&
+                    !predicateEvaluator.conditions.evaluate(state, it.condition,
+                        EffectContext(sourceId = holder, controllerId = you, defendingPlayerId = defendingPlayer))
+            }
+            else -> null
+        }
+
+        for (holder in state.getBattlefield()) {
+            val container = state.getEntity(holder) ?: continue
+            if (container.has<FaceDownComponent>() || projected.hasLostAllAbilities(holder)) continue
+            val cardComponent = container.get<CardComponent>() ?: continue
+            val cardDef = ctx.cardRegistry.getCard(cardComponent.cardDefinitionId) ?: continue
+            val you = projected.getController(holder) ?: continue
+            val text = TextChanges.of(state, holder)
+            for (ability in RoomFaceStatics.activeStaticAbilities(container, cardDef)) {
+                val restriction = violated(holder, you, if (text == null) ability else ability.applyTextReplacement(text))
+                    ?: continue
+                val name = state.getEntity(ctx.attackerId)?.get<CardComponent>()?.name ?: "Creature"
+                return "$name ${restriction.description}"
+            }
         }
         return null
-    }
-
-    companion object {
     }
 }
 
@@ -341,7 +361,7 @@ class CantAttackYouDefenderRule(
             is CompositeStaticAbility -> ability.abilities.any { violates(holder, you, it) }
             is CantAttackYou ->
                 you == defendingPlayer && (isPlayer || ability.coversPlaneswalkers) &&
-                    covers(ctx, holder, you, ability)
+                    coversAttacker(predicateEvaluator, ctx, holder, you, ability.filter)
             else -> false
         }
 
@@ -371,22 +391,6 @@ class CantAttackYouDefenderRule(
             if (violates(grant.entityId, you, grant.ability)) return error()
         }
         return null
-    }
-
-    private fun covers(ctx: AttackCheckContext, holder: EntityId, you: EntityId, ability: CantAttackYou): Boolean {
-        val filter = ability.filter
-        val attacker = ctx.attackerId
-        val inScope = when (val scope = filter.scope) {
-            Scope.Self -> holder == attacker
-            Scope.Battlefield -> true
-            Scope.AttachedTo -> ctx.state.getEntity(holder)?.get<AttachedToComponent>()?.targetId == attacker
-            Scope.SoulbondPair -> SoulbondPairing.isInPairOf(ctx.state, holder, attacker)
-            Scope.ChosenCreature -> ctx.state.chosenCreatureOf(holder) == attacker
-            is Scope.Specific -> scope.entityId == attacker
-        }
-        return inScope && !(filter.excludeSelf && holder == attacker) &&
-            predicateEvaluator.matches(ctx.state, ctx.projected, attacker, filter.baseFilter,
-                PredicateContext(sourceId = holder, controllerId = you))
     }
 }
 
@@ -431,6 +435,33 @@ class AttackModeDefenderRule : AttackDefenderRule {
 // =========================================================================
 // Shared helpers
 // =========================================================================
+
+
+/**
+ * Whether a restriction's [filter], printed on [holder] (controlled by [you]), covers the attacker:
+ * its scope (the holder itself, everything, the creature it's attached to, …) plus the base filter,
+ * matched on projected state.
+ */
+private fun coversAttacker(
+    predicateEvaluator: PredicateEvaluator,
+    ctx: AttackCheckContext,
+    holder: EntityId,
+    you: EntityId,
+    filter: com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
+): Boolean {
+    val attacker = ctx.attackerId
+    val inScope = when (val scope = filter.scope) {
+        Scope.Self -> holder == attacker
+        Scope.Battlefield -> true
+        Scope.AttachedTo -> ctx.state.getEntity(holder)?.get<AttachedToComponent>()?.targetId == attacker
+        Scope.SoulbondPair -> SoulbondPairing.isInPairOf(ctx.state, holder, attacker)
+        Scope.ChosenCreature -> ctx.state.chosenCreatureOf(holder) == attacker
+        is Scope.Specific -> scope.entityId == attacker
+    }
+    return inScope && !(filter.excludeSelf && holder == attacker) &&
+        predicateEvaluator.matches(ctx.state, ctx.projected, attacker, filter.baseFilter,
+            PredicateContext(sourceId = holder, controllerId = you))
+}
 
 private fun findDefendingPlayer(ctx: AttackCheckContext, defenderId: EntityId): EntityId {
     if (ctx.state.getEntity(defenderId)?.has<LifeTotalComponent>() == true) {

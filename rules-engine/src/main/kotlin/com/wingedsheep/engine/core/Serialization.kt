@@ -803,6 +803,8 @@ val engineSerializersModule = SerializersModule {
         subclass(ScriedOrSurveiledThisTurnComponent::class)
         subclass(SacrificedArtifactThisTurnComponent::class)
         subclass(PermanentsEnteredUnderControlThisTurnComponent::class)
+        subclass(com.wingedsheep.engine.state.components.player.NontokenPermanentsPutOntoBattlefieldThisTurnComponent::class)
+        subclass(com.wingedsheep.engine.state.components.player.LastTurnActivityComponent::class)
         subclass(SpellsCantBeCounteredComponent::class)
         subclass(FlashGrantsComponent::class)
         subclass(RetainUnspentManaComponent::class)

@@ -205,6 +205,7 @@ class DynamicAmountEvaluator(
         is DynamicAmount.Speed,
         is DynamicAmount.DungeonsCompleted,
         DynamicAmount.SpellsCastLastTurn,
+        is DynamicAmount.ActivityDuringTheirLastTurn,
         is DynamicAmount.SpellsCastThisTurn,
         is DynamicAmount.StartingLifeTotal,
         DynamicAmount.StationCharge,
@@ -1036,6 +1037,18 @@ class DynamicAmountEvaluator(
 
             DynamicAmount.SpellsCastLastTurn ->
                 state.previousTurnActiveTeamSpellCounts.values.sum()
+
+            is DynamicAmount.ActivityDuringTheirLastTurn ->
+                resolveUnifiedPlayerIds(state, amount.player, context, projectedState).sumOf { playerId ->
+                    val record = state.getEntity(playerId)
+                        ?.get<com.wingedsheep.engine.state.components.player.LastTurnActivityComponent>()
+                    when (amount.activity) {
+                        com.wingedsheep.sdk.scripting.values.LastTurnActivity.SPELLS_CAST ->
+                            record?.spellsCast ?: 0
+                        com.wingedsheep.sdk.scripting.values.LastTurnActivity.NONTOKEN_PERMANENTS_PUT_ONTO_BATTLEFIELD ->
+                            record?.nontokenPermanentsPutOntoBattlefield ?: 0
+                    }
+                }
 
             is DynamicAmount.CraftedMaterialsTotalPower -> {
                 val sourceId = context.sourceId

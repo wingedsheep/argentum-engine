@@ -10245,6 +10245,19 @@ in the declare-blockers step, even before the turn-based block action has comple
   `ZoneTransitionService.moveToZone`, so every effect-driven entry (lone or batch) honours it; the card
   is matched in the zone it is leaving and simply stays there. A permanent spell enters from the
   stack, so a zone-scoped lock never stops one cast from a graveyard.
+- `CantAttackUnless(condition, filter = GroupFilter.source(), coversPlaneswalkers = true)` — the
+  creatures `filter` covers can't attack unless `condition` holds against the defender each one is
+  declared against (CR 508.1c); `Player.DefendingPlayer` in the condition is the attacked player, or
+  the controller / protector of the attacked planeswalker / battle. The default filter is the
+  creature's own restriction (Goblin Goon, Deep-Sea Serpent via
+  `Conditions.DefendingPlayerControlsLandType`); any other filter is a **global** restriction printed on
+  another permanent and resolved relative to it. `coversPlaneswalkers = false` is the "can't attack
+  **a player** unless …" wording: planeswalkers and battles stay attackable. Enforced by
+  `CantAttackUnlessDefenderRule`, which reads every battlefield permanent's printed statics (a
+  face-down or ability-stripped holder contributes nothing). Arboria = `CantAttackUnless(Conditions.Any(
+  CompareAmounts(activityDuringTheirLastTurn(DefendingPlayer, SPELLS_CAST), GTE, 1),
+  CompareAmounts(activityDuringTheirLastTurn(DefendingPlayer, NONTOKEN_PERMANENTS_PUT_ONTO_BATTLEFIELD), GTE, 1)),
+  GroupFilter.AllCreatures, coversPlaneswalkers = false)`.
 - `CantAttackUnlessSacrifice(sacrificeFilter, count = 1)` — a **non-mana** attack cost, paid as
   attackers are declared: Leviathan's "this creature can't attack unless you sacrifice two Islands".
   The clause is a restriction (CR 508.1c) whose cost is determined and paid at CR 508.1h–j — not an
@@ -15205,6 +15218,16 @@ both spellings, and the ability its bare-noun line grants says "Regenerate this 
   models the original Innistrad werewolf front-face trigger, while `>= 2` models its back-face
   trigger. It is deliberately turn-global rather than controller-scoped, matching "no spells were
   cast last turn" and "a player cast two or more spells last turn."
+- `ActivityDuringTheirLastTurn(player, activity: LastTurnActivity)` (facade
+  `DynamicAmounts.activityDuringTheirLastTurn(player, activity)`) — how many times `player` did
+  `activity` during **their own** most recent turn: `SPELLS_CAST` (countered or not) or
+  `NONTOKEN_PERMANENTS_PUT_ONTO_BATTLEFIELD` (permanents the player *put* there — resolving their
+  permanent spell, playing a land, or an effect of a spell or ability they controlled — whoever's
+  control it entered under, and whether or not it stayed). In multiplayer "their last turn" can lie
+  several turns back; what they did during other players' turns never counts, and a player who
+  hasn't taken a turn reads 0. Snapshotted into `LastTurnActivityComponent` by `TurnManager.startTurn`
+  as the player's turn ends. Not `SpellsCastLastTurn` (the previous *game* turn, side-wide). Arboria's
+  defender-relative condition.
 - `CardsCycledThisGame(player = Player.You, cardName = null)` (facade
   `DynamicAmounts.cardsCycledThisGame(cardName, player)`) — how many times `player` has cycled a card
   **this game**, typecycling included (CR 702.29f). Counted when the card is discarded to pay the cost,

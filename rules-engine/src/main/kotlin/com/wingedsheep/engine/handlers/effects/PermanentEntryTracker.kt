@@ -1,9 +1,14 @@
 package com.wingedsheep.engine.handlers.effects
 
+import com.wingedsheep.engine.core.FinishResolvingAbilityContinuation
+import com.wingedsheep.engine.core.FinishResolvingSpellContinuation
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.BattlefieldEntryTimestampComponent
 import com.wingedsheep.engine.state.components.identity.TokenComponent
 import com.wingedsheep.engine.state.components.player.EnteredPermanentRecord
+import com.wingedsheep.engine.state.components.player.NontokenPermanentsPutOntoBattlefieldThisTurnComponent
+import com.wingedsheep.engine.state.components.stack.ActivatedAbilityOnStackComponent
+import com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComponent
 import com.wingedsheep.engine.state.components.player.PermanentsEnteredUnderControlThisTurnComponent
 import com.wingedsheep.sdk.core.CardType
 import com.wingedsheep.sdk.model.EntityId
@@ -43,13 +48,17 @@ object PermanentEntryTracker {
      * recorded card types are read from the projected state, which the caller is
      * responsible for having brought up to date (i.e. [entityId] must already be on the
      * battlefield with its identity components in place). [simultaneousEntryGroup] marks an
-     * entry that is part of one simultaneous event with other permanents.
+     * entry that is part of one simultaneous event with other permanents. [putBy] is the player
+     * who put the permanent there when the caller knows it (a resolving permanent spell's caster);
+     * otherwise it is read off the innermost resolving spell or ability, falling back to
+     * [controllerId] for a move with nothing resolving (a land play).
      */
     fun record(
         state: GameState,
         controllerId: EntityId,
         entityId: EntityId,
-        simultaneousEntryGroup: String? = null
+        simultaneousEntryGroup: String? = null,
+        putBy: EntityId? = null
     ): GameState {
         // Object-identity stamp (CR 400.7): every battlefield entry funnels through here, so
         // this is where the entering permanent gets its entry timestamp. Delayed triggers that
@@ -61,7 +70,7 @@ object PermanentEntryTracker {
         // with the snapshot. Ticking here makes every entry stamp unique unconditionally.
         val stamped = state.updateEntity(entityId) { container ->
             container.with(BattlefieldEntryTimestampComponent(state.timestamp, simultaneousEntryGroup))
-        }.tick()
+        }.tick().let { recordPut(it, putBy ?: resolvingController(it) ?: controllerId, entityId) }
         val cardTypes = projectedCardTypes(stamped, entityId)
         if (cardTypes.isEmpty()) return stamped
         val subtypes = stamped.projectedState.getSubtypes(entityId)
@@ -79,6 +88,40 @@ object PermanentEntryTracker {
                 )
             )
         }
+    }
+
+    /**
+     * Credit [actor] with putting a nontoken permanent onto the battlefield this turn
+     * ([NontokenPermanentsPutOntoBattlefieldThisTurnComponent]). A token's entry is its creation,
+     * not a put of a nontoken permanent, so it is skipped.
+     */
+    private fun recordPut(state: GameState, actor: EntityId, entityId: EntityId): GameState {
+        if (state.getEntity(entityId)?.has<TokenComponent>() != false) return state
+        if (state.getEntity(actor) == null) return state
+        return state.updateEntity(actor) { container ->
+            val count = container.get<NontokenPermanentsPutOntoBattlefieldThisTurnComponent>()?.count ?: 0
+            container.with(NontokenPermanentsPutOntoBattlefieldThisTurnComponent(count + 1))
+        }
+    }
+
+    /**
+     * The controller of the innermost spell or ability now resolving — the player whose effect is
+     * putting things onto the battlefield. Each resolving object keeps its finishing frame on the
+     * continuation stack until its effect is done (CR 608.2n), so the newest such frame is it.
+     */
+    private fun resolvingController(state: GameState): EntityId? {
+        for (frame in state.continuationStack.asReversed()) {
+            when (frame) {
+                is FinishResolvingSpellContinuation -> return frame.spellComponent.casterId
+                is FinishResolvingAbilityContinuation -> {
+                    val ability = state.getEntity(frame.abilityObject.entityId) ?: return null
+                    return ability.get<TriggeredAbilityOnStackComponent>()?.controllerId
+                        ?: ability.get<ActivatedAbilityOnStackComponent>()?.controllerId
+                }
+                else -> {}
+            }
+        }
+        return null
     }
 
     private fun projectedCardTypes(state: GameState, entityId: EntityId): Set<CardType> {

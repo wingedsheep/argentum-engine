@@ -95,6 +95,7 @@ internal enum class AmountSign {
             is DynamicAmount.PlayerCount, is DynamicAmount.CountPlayersWith, is DynamicAmount.GraveyardRelativeCount,
             is DynamicAmount.Count, is DynamicAmount.UnlockedDoors, is DynamicAmount.StationCharge,
             is DynamicAmount.TurnTracking, is DynamicAmount.SpellsCastThisTurn, is DynamicAmount.SpellsCastLastTurn,
+            is DynamicAmount.ActivityDuringTheirLastTurn,
             is DynamicAmount.CraftedMaterialsTotalPower, is DynamicAmount.CraftedMaterialsTotalManaValue,
             is DynamicAmount.CraftedMaterialsColorCount, is DynamicAmount.CreaturesThatCrewedOrSaddledThisTurn,
             is DynamicAmount.CardTypeEnteredUnderControlThisTurn, is DynamicAmount.SubtypeEnteredUnderControlThisTurn,

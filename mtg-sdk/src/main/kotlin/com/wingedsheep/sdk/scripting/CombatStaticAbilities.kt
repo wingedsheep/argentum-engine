@@ -404,11 +404,30 @@ data class CantAttackUnlessSacrifice(
     }
 }
 
+/**
+ * The creatures [filter] covers can't attack unless [condition] holds, read relative to the
+ * defender each attacker is declared against (CR 508.1c): `Player.DefendingPlayer` in the condition
+ * is the player being attacked (or the controller/protector of the attacked planeswalker/battle).
+ *
+ * The default `GroupFilter.source()` is the creature's own restriction (Deep-Sea Serpent, Goblin
+ * Goon); any other filter is a global restriction printed on another permanent, resolved relative
+ * to that permanent — "Creatures can't attack a player unless that player cast a spell or put a
+ * nontoken permanent onto the battlefield during their last turn" (Arboria) is
+ * `CantAttackUnless(condition, GroupFilter.AllCreatures, coversPlaneswalkers = false)`.
+ */
 @SerialName("CantAttackUnless")
 @Serializable
 data class CantAttackUnless(
     val condition: Condition,
-    val filter: GroupFilter = GroupFilter.source()
+    val filter: GroupFilter = GroupFilter.source(),
+    /**
+     * Whether the restriction also governs attacking a planeswalker or battle. `true` (the
+     * default) reads the condition against the defending player whichever of their objects is
+     * attacked ("can't attack unless defending player controls an Island"); `false` is the
+     * "can't attack **a player** unless …" wording, which leaves planeswalkers and battles free
+     * to attack (Arboria). Same axis as [CantAttackYou.coversPlaneswalkers].
+     */
+    val coversPlaneswalkers: Boolean = true
 ) : StaticAbility {
     override val description: String = "can't attack unless ${condition.description}"
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
