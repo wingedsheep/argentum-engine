@@ -240,7 +240,7 @@ class PredicateEvaluator(
         filter.controllerPredicate?.let { controllerPred ->
             if (!matchesSnapshotController(state, snapshot, controllerPred, context)) return false
         }
-        if (!filter.statePredicates.all { matchesSnapshotState(snapshot, it) == true }) return false
+        if (!filter.statePredicates.all { matchesSnapshotState(state, snapshot, it) == true }) return false
         if (!filter.cardPredicates.all { matchesSnapshotPredicate(snapshot, it) == true }) return false
         if (filter.anyOf.isNotEmpty()) {
             return filter.anyOf.any { matchesSnapshot(state, snapshot, it, context) }
@@ -317,23 +317,25 @@ class PredicateEvaluator(
      * Tri-state evaluation of one [StatePredicate] against frozen last-known information — the
      * state-predicate sibling of [matchesSnapshotPredicate], with the same null-means-unknown
      * discipline. Only the status [EntitySnapshot] freezes is answered: attacking
-     * ([EntitySnapshot.wasAttacking]), blocking ([EntitySnapshot.wasBlocking]) and modified
-     * ([EntitySnapshot.wasModified]).
+     * ([EntitySnapshot.wasAttacking]), blocking ([EntitySnapshot.wasBlocking]), modified
+     * ([EntitySnapshot.wasModified]), face-down ([EntitySnapshot.wasFaceDown]) and entered this
+     * turn ([EntitySnapshot.enteredOnTurn], compared against the current turn).
      */
-    private fun matchesSnapshotState(snapshot: EntitySnapshot, predicate: StatePredicate): Boolean? =
+    private fun matchesSnapshotState(state: GameState, snapshot: EntitySnapshot, predicate: StatePredicate): Boolean? =
         when (predicate) {
             StatePredicate.IsAttacking -> snapshot.wasAttacking
             StatePredicate.IsBlocking -> snapshot.wasBlocking
             StatePredicate.IsModified -> snapshot.wasModified
             StatePredicate.IsFaceDown -> snapshot.wasFaceDown
             StatePredicate.IsFaceUp -> !snapshot.wasFaceDown
-            is StatePredicate.Not -> matchesSnapshotState(snapshot, predicate.predicate)?.not()
+            StatePredicate.EnteredThisTurn -> snapshot.enteredOnTurn == state.turnNumber
+            is StatePredicate.Not -> matchesSnapshotState(state, snapshot, predicate.predicate)?.not()
             is StatePredicate.And -> {
-                val results = predicate.predicates.map { matchesSnapshotState(snapshot, it) }
+                val results = predicate.predicates.map { matchesSnapshotState(state, snapshot, it) }
                 if (false in results) false else if (null in results) null else true
             }
             is StatePredicate.Or -> {
-                val results = predicate.predicates.map { matchesSnapshotState(snapshot, it) }
+                val results = predicate.predicates.map { matchesSnapshotState(state, snapshot, it) }
                 if (true in results) true else if (null in results) null else false
             }
             else -> null
@@ -1982,9 +1984,12 @@ class PredicateEvaluator(
             }
 
             // Summoning sickness / ETB
-            StatePredicate.EnteredThisTurn -> {
-                container.has<EnteredThisTurnComponent>()
-            }
+            // Live marker on the battlefield; once the permanent has left, the marker is gone and
+            // the frozen last-known snapshot answers (CR 608.2h) — "unless this creature entered
+            // this turn" (Moon-Circuit Hacker) after the Ninja was bounced in response.
+            StatePredicate.EnteredThisTurn ->
+                container.has<EnteredThisTurnComponent>() ||
+                    container.get<LastKnownPermanentComponent>()?.snapshot?.enteredOnTurn == state.turnNumber
             StatePredicate.ActivatedThisTurn ->
                 container.get<AbilityActivatedThisTurnComponent>()?.anyActivated == true
 

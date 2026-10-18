@@ -14462,7 +14462,10 @@ that works in both resolution and static-ability (projection) contexts.
 - `SourceIsPrepared` — source is prepared (`SourceMatches(Any.prepared())`). `Not(SourceIsPrepared)`
   is the intervening-if of "At the beginning of your upkeep, if this creature isn't prepared, it
   becomes prepared" (Woodwork Prodigy, Paradox Shaper).
-- `SourceEnteredThisTurn` — source entered the battlefield this turn.
+- `SourceEnteredThisTurn` — source entered the battlefield this turn. A source that has since
+  left the battlefield answers from last-known information (CR 608.2h) — the battlefield-exit
+  snapshot freezes the turn it entered — so "discard a card unless this creature entered this
+  turn" (Moon-Circuit Hacker) still reads true after the Ninja is bounced in response.
 - `SourceIsSaddled` — source is saddled (CR 702.171b). Gates Mount payoffs on "while saddled" /
   "as long as it's saddled"; evaluates identically at resolution and during projection.
 - `SourceIsRenowned` — source has the renowned designation (CR 702.112b). The gate behind every

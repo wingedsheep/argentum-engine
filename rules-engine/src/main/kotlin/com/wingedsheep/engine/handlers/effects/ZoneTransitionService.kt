@@ -541,6 +541,9 @@ class ZoneTransitionService(
                 damageSources = lastKnownDamageSources,
                 wasFaceDown = lastKnownWasFaceDown,
                 wasBlitzed = container.has<com.wingedsheep.engine.state.components.battlefield.BlitzedComponent>(),
+                enteredOnTurn = state.turnNumber.takeIf {
+                    container.has<com.wingedsheep.engine.state.components.battlefield.EnteredThisTurnComponent>()
+                },
                 chosenCreature = container.chosenCreatureChoice(),
                 copyTriggeredAbilities = com.wingedsheep.engine.state.components.stack.captureCopyTriggeredAbilities(state, entityId),
                 lookBackGrants = (options.lookBackGrants

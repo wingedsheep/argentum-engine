@@ -257,6 +257,18 @@ data class EntitySnapshot(
     @OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
     @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
     val wasBlitzed: Boolean = false,
+    /**
+     * The turn number in which this permanent entered the battlefield, set only when it still
+     * carried the entered-this-turn marker at capture (null otherwise). Frozen because the marker
+     * is stripped on departure, yet "unless this creature entered this turn" (Moon-Circuit Hacker)
+     * resolving after the creature left reads last-known information (CR 608.2h). A turn number
+     * rather than a flag so the information can't go stale on a card that sits in a graveyard
+     * into later turns. Backs the last-known leg of
+     * [com.wingedsheep.sdk.scripting.predicates.StatePredicate.EnteredThisTurn].
+     */
+    @OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
+    @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
+    val enteredOnTurn: Int? = null,
     /** Copy-added rules text, frozen before the original identity is restored on departure. */
     val copyTriggeredAbilities: List<com.wingedsheep.sdk.scripting.TriggeredAbility> = emptyList(),
     /**
@@ -448,6 +460,9 @@ fun captureLastKnown(state: GameState, entityId: EntityId): EntitySnapshot {
         textChanges = TextChanges.of(state, entityId),
         wasAttacking = container?.has<AttackingComponent>() ?: false,
         wasBlocking = container?.has<BlockingComponent>() ?: false,
+        enteredOnTurn = state.turnNumber.takeIf {
+            container?.has<com.wingedsheep.engine.state.components.battlefield.EnteredThisTurnComponent>() == true
+        },
         // CR 700.9, frozen like the zone-exit snapshot: a cost that sacrifices or exiles the
         // source wipes its counters and attachments before "if it's modified" is read.
         wasModified = com.wingedsheep.engine.handlers.predicates.isModified(state, entityId) {
