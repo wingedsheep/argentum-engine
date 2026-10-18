@@ -766,7 +766,7 @@ counts a hybrid Phyrexian pip paid with life like any other Phyrexian pip.
   validation. Client-side that is why the evidence picker runs **after** the targeting step for this
   cost: the enumerator ships `AdditionalCostData.exileWeightPerTarget` (what each legal target would
   add), whose presence is both the per-target price list and the instruction to defer — the same
-  deferral `manaCostPerExtraTarget` already does for mana-source selection. With no targets chosen X
+  deferral `manaCostByTargetCount` already does for mana-source selection. With no targets chosen X
   is 0, which collects evidence 0: legal, exiles nothing, and still counts as having collected
   evidence per the 2024-02-02 ruling.
 
@@ -10460,8 +10460,8 @@ staticAbility {
   requires under an increase — and sends the client every count's price
   (`manaCostByTargetCount`) so a manual mana pick is charged for the targets actually chosen. Pair
   with `ReduceGenericBy` / `IncreaseGenericBy` for a generic amount or `IncreaseColoredPerUnit` for
-  a colored tax. Note that a per-target *increase* survives a free cast: "without paying its mana
-  cost" waives the mana cost, not the increases applied to the total cost (CR 601.2f), which
+  a colored tax. Note that a self-cast per-target *increase* survives a free cast: "without paying
+  its mana cost" waives the mana cost, not the increases applied to the total cost (CR 601.2f), which
   Officious Interrogation's 2024-02-02 ruling states outright — the cast pipeline adds
   `CostCalculator.selfPerTargetTax` on top of the free-cast branch. The life-cost sibling for the
   same wording is `AdditionalCost.PayLifePerTarget`, Phyrexian Purge),

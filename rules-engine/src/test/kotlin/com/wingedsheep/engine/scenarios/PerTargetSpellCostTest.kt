@@ -11,6 +11,7 @@ import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
+import com.wingedsheep.sdk.dsl.mode
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.CostModification
@@ -19,6 +20,7 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.ModifySpellCost
 import com.wingedsheep.sdk.scripting.SpellCostTarget
+import com.wingedsheep.sdk.scripting.effects.ModalEffect
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.TargetObject
 import io.kotest.core.spec.style.FunSpec
@@ -91,9 +93,36 @@ class PerTargetSpellCostTest : FunSpec({
         keywordAbility(KeywordAbility.flashback("{2}{G}"))
     }
 
+    val twoWayCharm = card("Two-Way Charm") {
+        manaCost = "{2}{G}"
+        typeLine = "Instant"
+        oracleText = "Choose one —\n• Target creature gets +1/+1 until end of turn.\n• Draw a card."
+        spell {
+            effect = ModalEffect.chooseOne(
+                mode("Target creature gets +1/+1 until end of turn") {
+                    effect = Effects.ModifyStats(1, 1, target(TargetFilter.Creature))
+                },
+                mode("Draw a card") { effect = Effects.DrawCards(1) },
+            )
+        }
+    }
+
+    val biteTest = card("Bite Test") {
+        manaCost = "{2}{G}"
+        typeLine = "Sorcery"
+        oracleText = "Target creature you control gets +1/+1 until end of turn. " +
+            "Target creature you don't control gets -1/-1 until end of turn."
+        spell {
+            effect = Effects.ModifyStats(1, 1, target(TargetFilter.CreatureYouControl)) then
+                Effects.ModifyStats(-1, -1, target(TargetFilter.CreatureOpponentControls))
+        }
+    }
+
     fun newGame(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(discounter, taxer, twinBoost, spreadBoost, flashbackBoost))
+        driver.registerCards(
+            TestCards.all + listOf(discounter, taxer, twinBoost, spreadBoost, flashbackBoost, twoWayCharm, biteTest)
+        )
         driver.initMirrorMatch(deck = Deck.of("Forest" to 40), skipMulligans = true)
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
         return driver
@@ -207,6 +236,67 @@ class PerTargetSpellCostTest : FunSpec({
         val action = driver.castAction(me, spell).shouldNotBeNull()
         ManaCost.parse(action.manaCostString!!).cmc shouldBe 4
         action.manaCostByTargetCount shouldBe mapOf(0 to action.manaCostString)
+    }
+
+    fun GameTestDriver.canCastMode(me: EntityId, spell: EntityId, mode: Int) = legalActions(me).any {
+        val cast = it.action as? CastSpell
+        cast?.cardId == spell && cast.chosenModes == listOf(mode) && it.affordable
+    }
+
+    test("each mode of a modal spell is priced by its own targets under a reduction") {
+        val driver = newGame()
+        val me = driver.activePlayer!!
+        driver.putPermanentOnBattlefield(me, "Target Discounter")
+        driver.putCreatureOnBattlefield(me, "Grizzly Bears")
+        val spell = driver.putCardInHand(me, "Two-Way Charm")
+        repeat(2) { driver.putLandOnBattlefield(me, "Forest") }
+
+        // The targeted mode is {1}{G}; the untargeted one is still {2}{G}.
+        driver.canCastMode(me, spell, 0) shouldBe true
+        driver.canCastMode(me, spell, 1) shouldBe false
+    }
+
+    test("each mode of a modal spell is priced by its own targets under an increase") {
+        val driver = newGame()
+        val me = driver.activePlayer!!
+        driver.putPermanentOnBattlefield(driver.getOpponent(me), "Target Taxer")
+        driver.putCreatureOnBattlefield(me, "Grizzly Bears")
+        val spell = driver.putCardInHand(me, "Two-Way Charm")
+        repeat(3) { driver.putLandOnBattlefield(me, "Forest") }
+
+        // The untargeted mode is {2}{G}; the targeted one owes {1} more.
+        driver.canCastMode(me, spell, 1) shouldBe true
+        driver.canCastMode(me, spell, 0) shouldBe false
+    }
+
+    test("requirements whose legal targets can't overlap need a target each") {
+        val driver = newGame()
+        val me = driver.activePlayer!!
+        driver.putPermanentOnBattlefield(driver.getOpponent(me), "Target Taxer")
+        driver.putCreatureOnBattlefield(me, "Grizzly Bears")
+        driver.putCreatureOnBattlefield(driver.getOpponent(me), "Savannah Lions")
+        val spell = driver.putCardInHand(me, "Bite Test")
+        repeat(4) { driver.putLandOnBattlefield(me, "Forest") }
+
+        // Your creature and theirs are two targets: {2}{G} plus {2}.
+        driver.canCast(me, spell) shouldBe false
+        driver.putLandOnBattlefield(me, "Forest")
+        driver.canCast(me, spell) shouldBe true
+    }
+
+    test("requirements whose legal targets can't overlap reach their sum under a reduction") {
+        val driver = newGame()
+        val me = driver.activePlayer!!
+        driver.putPermanentOnBattlefield(me, "Target Discounter")
+        driver.putCreatureOnBattlefield(me, "Grizzly Bears")
+        driver.putCreatureOnBattlefield(driver.getOpponent(me), "Savannah Lions")
+        val spell = driver.putCardInHand(me, "Bite Test")
+        driver.putLandOnBattlefield(me, "Forest")
+
+        // Two targets take {2} off {2}{G}.
+        driver.canCast(me, spell) shouldBe true
+        val byCount = driver.castAction(me, spell).shouldNotBeNull().manaCostByTargetCount.shouldNotBeNull()
+        byCount.keys shouldBe setOf(2)
     }
 
     test("an alternative cost is priced with the chosen targets") {

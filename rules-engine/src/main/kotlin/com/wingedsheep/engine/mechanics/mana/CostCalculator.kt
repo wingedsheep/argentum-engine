@@ -1005,34 +1005,57 @@ class CostCalculator(
         casterId: EntityId,
         spellId: EntityId,
         baseCost: ManaCost = cardDef.manaCost,
-    ): ManaCost {
-        val pricing = TargetPricing(state, cardDef, casterId, spellId, baseCost)
-        val range = pricing.countRange ?: return pricing.priced(pricing.optimisticTargets)
-        return listOf(range.first, range.last).map(pricing::pricedAt).minBy { it.cmc }
-    }
+    ): ManaCost = priceByTargets(state, cardDef, casterId, spellId, baseCost, withTable = false).min
+
+    /** Whether any modifier that applies to [cardDef] cast by [casterId] is priced per target. */
+    fun pricedPerTarget(state: GameState, cardDef: CardDefinition, casterId: EntityId): Boolean =
+        targetCountDirections(state, cardDef, casterId, scanModifySpellCost(state)).isNotEmpty()
 
     /**
-     * What the spell costs for each number of different targets it can be cast with — only for a
-     * spell some applicable modifier prices per target ([CostReductionSource.ChosenTargets]), null
-     * for every other. The client charges a manual mana-source pick from this once targets are
-     * chosen, because the advertised cost is only the cheapest reachable count.
+     * A spell's pre-target price: [min] is [calculateMinPossibleCost]'s cheapest reachable cost,
+     * and [byCount] — only when an applicable modifier prices the spell per target
+     * ([CostReductionSource.ChosenTargets]) — what it costs for each number of different targets
+     * it can be cast with. The client charges a manual mana-source pick from [byCount] once
+     * targets are chosen, because [min] is only the cheapest count.
      */
-    fun costsByTargetCount(
+    class TargetPricedCost(val min: ManaCost, val byCount: Map<Int, ManaCost>?)
+
+    /**
+     * Price [cardDef] before its targets are chosen, against [baseCost] (its mana cost or an
+     * alternative cost) and the target [requirements] the cast announces — the script's own by
+     * default, or one mode's for a modal cast. A modal spell priced without a mode is priced at
+     * its cheapest mode, and carries no per-count table (each mode's offer carries its own).
+     */
+    fun priceByTargets(
         state: GameState,
         cardDef: CardDefinition,
         casterId: EntityId,
         spellId: EntityId,
         baseCost: ManaCost = cardDef.manaCost,
-    ): Map<Int, ManaCost>? {
-        val pricing = TargetPricing(state, cardDef, casterId, spellId, baseCost)
-        val range = pricing.countRange ?: return null
-        return range.associateWith(pricing::pricedAt)
+        requirements: List<TargetRequirement>? = null,
+        withTable: Boolean = true,
+    ): TargetPricedCost {
+        val modifiers = scanModifySpellCost(state)
+        val countsTargets = targetCountDirections(state, cardDef, casterId, modifiers).isNotEmpty()
+        val declared = requirements ?: castRequirements(cardDef)
+        val modes = (cardDef.script.spellEffect as? ModalEffect)?.modes
+        if (countsTargets && requirements == null && declared.isEmpty() && !modes.isNullOrEmpty()) {
+            val cheapest = modes.map {
+                priceByTargets(state, cardDef, casterId, spellId, baseCost, it.targetRequirements, withTable = false).min
+            }.minBy { it.cmc }
+            return TargetPricedCost(cheapest, null)
+        }
+        val pricing = TargetPricing(state, cardDef, casterId, spellId, baseCost, declared, modifiers)
+        if (!countsTargets) return TargetPricedCost(pricing.priced(pricing.optimisticTargets), null)
+        val range = pricing.countRange()
+        val min = listOf(range.first, range.last).map(pricing::pricedAt).minBy { it.cmc }
+        return TargetPricedCost(min, if (withTable) range.associateWith(pricing::pricedAt) else null)
     }
 
     /**
-     * The optimistic, pre-target pricing of one spell: the discount-earning target the
-     * target-conditional reductions assume, and — when a modifier counts targets — the range of
-     * different-target counts to price over, padded from the spell's legal targets.
+     * The optimistic, pre-target pricing of one spell against one set of target [requirements]:
+     * the discount-earning target the target-conditional reductions assume, and the range of
+     * different-target counts a per-target modifier is priced over, padded from the legal targets.
      */
     private inner class TargetPricing(
         private val state: GameState,
@@ -1040,12 +1063,16 @@ class CostCalculator(
         private val casterId: EntityId,
         private val spellId: EntityId,
         private val baseCost: ManaCost,
+        private val requirements: List<TargetRequirement>,
+        private val modifiers: List<Pair<EntityId, ModifySpellCost>>,
     ) {
-        private val modifiers = scanModifySpellCost(state)
-        private val legalTargets: List<EntityId> by lazy { spellLegalTargets(state, cardDef, casterId, spellId) }
+        private val legalByRequirement: List<List<EntityId>> by lazy {
+            requirements.map { targetFinder.findLegalTargets(state, it, casterId, sourceId = spellId).distinct() }
+        }
+        private val legalTargets: List<EntityId> by lazy { legalByRequirement.flatten().distinct() }
         val optimisticTargets: List<EntityId> = buildList {
             fun addOptimisticMatch(src: CostReductionSource.FixedIfAnyTargetMatches, modifierSourceId: EntityId?) {
-                val match = if (cardDef.script.targetRequirements.isEmpty() && cardDef.script.castAuraTarget == null) {
+                val match = if (requirements.isEmpty()) {
                     findAnyBattlefieldMatch(state, casterId, src.filter, modifierSourceId)
                 } else {
                     findAnyMatch(state, casterId, legalTargets, src.filter, modifierSourceId)
@@ -1067,9 +1094,30 @@ class CostCalculator(
                 addOptimisticMatch(src, sourceId)
             }
         }
-        val countRange: IntRange? =
-            if (targetCountDirections(state, cardDef, casterId, modifiers).isEmpty()) null
-            else targetCountRange(cardDef, legalTargets)
+
+        /**
+         * The numbers of different targets this cast can announce. The most: every requirement
+         * filled as far as its own legal targets allow, capped by how many different targets exist
+         * between them. The fewest: each requirement's own targets are different objects, but
+         * requirements whose legal targets overlap may share them, so each overlapping group needs
+         * only its largest minimum (a fight spell's "creature you control" and "creature you
+         * don't control" never overlap, so it needs two).
+         */
+        fun countRange(): IntRange {
+            val caps = requirements.zip(legalByRequirement) { req, legal ->
+                if (req.unlimited) legal.size else minOf(req.count, legal.size)
+            }
+            val most = minOf(caps.sum(), legalTargets.size)
+            val groups = mutableListOf<Pair<MutableSet<EntityId>, Int>>()
+            requirements.zip(legalByRequirement).forEach { (req, legal) ->
+                val joined = groups.filter { (pool, _) -> legal.any(pool::contains) }
+                groups.removeAll(joined)
+                groups += (joined.flatMapTo(legal.toMutableSet()) { it.first }) to
+                    (joined.maxOfOrNull { it.second } ?: 0).coerceAtLeast(req.effectiveMinCount)
+            }
+            val fewest = groups.sumOf { it.second }
+            return fewest.coerceAtMost(most)..most
+        }
 
         fun priced(targets: List<EntityId>): ManaCost =
             calculateEffectiveCost(state, cardDef, casterId, targets, baseCost = baseCost, modifiers = modifiers)
@@ -1103,26 +1151,9 @@ class CostCalculator(
         return (probeMana - (probed.genericAmount - minCost.genericAmount)).coerceAtLeast(0)
     }
 
-    /** Every legal target of any of the spell's declared target requirements, in any zone. */
-    private fun spellLegalTargets(
-        state: GameState,
-        cardDef: CardDefinition,
-        casterId: EntityId,
-        spellId: EntityId
-    ): List<EntityId> =
-        // An Aura's enchant target is declared apart from its other requirements; include it so a
-        // discount for "Aura spells that target X" is only offered when the Aura can target X.
-        pricingRequirements(cardDef)
-            .flatMap { targetFinder.findLegalTargets(state, it, casterId, sourceId = spellId) }
-
-    /**
-     * The target requirements a cast of [cardDef] may announce — the script's own plus an Aura's
-     * enchant target, or, for a modal spell (which declares targets per mode), every mode's.
-     */
-    private fun pricingRequirements(cardDef: CardDefinition): List<TargetRequirement> =
-        (cardDef.script.targetRequirements + listOfNotNull(cardDef.script.castAuraTarget)).ifEmpty {
-            (cardDef.script.spellEffect as? ModalEffect)?.modes?.flatMap { it.targetRequirements }.orEmpty()
-        }
+    /** The script's target requirements plus an Aura's enchant target, which is declared apart. */
+    private fun castRequirements(cardDef: CardDefinition): List<TargetRequirement> =
+        cardDef.script.targetRequirements + listOfNotNull(cardDef.script.castAuraTarget)
 
     private fun sourceFromModification(modification: CostModification): CostReductionSource? = when (modification) {
         is CostModification.ReduceGenericBy -> modification.source
@@ -1199,25 +1230,6 @@ class CostCalculator(
         }
     }
 
-    /**
-     * The numbers of different targets [cardDef] can be cast with, as far as pricing goes: from
-     * the fewest its requirements force (each requirement's own targets are different objects, but
-     * two requirements may share one) to the most its requirements allow, capped by how many
-     * different legal targets exist. A modal spell declares its targets per mode, so it reads
-     * every mode's requirements as one pool and is never forced to target — the cast still prices
-     * the targets actually chosen.
-     */
-    private fun targetCountRange(
-        cardDef: CardDefinition,
-        legalTargets: List<EntityId>,
-    ): IntRange {
-        val requirements = cardDef.script.targetRequirements + listOfNotNull(cardDef.script.castAuraTarget)
-        val pool = pricingRequirements(cardDef)
-        val fewest = requirements.maxOfOrNull { it.effectiveMinCount } ?: 0
-        val available = legalTargets.distinct().size
-        val most = if (pool.any { it.unlimited }) available else minOf(pool.sumOf { it.count }, available)
-        return fewest.coerceAtMost(most)..most
-    }
 
     /**
      * Check whether any of the given targets (which may be in any zone, but typically

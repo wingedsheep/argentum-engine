@@ -85,8 +85,7 @@ Still client-derived, and the shape of the fix for each:
   checked on Confirm. The client submits and the server rejects — the right direction of
   failure, but a per-attacker `validBlockersFor` on the `DeclareBlockers` legal action would let
   the drop highlight say so first.
-- The **per-extra-target mana tax** is summed client-side from `manaCostPerExtraTarget`; the
-  **delve / tap caps** (`maxDelve`, improvise `maxTaps` with an X in the cost) are derived from
+- The **delve / tap caps** (`maxDelve`, improvise `maxTaps` with an X in the cost) are derived from
   the cost string; the harmonize reduction is applied in a different order than the engine's.
   All display-only today, all trivially server-sendable.
 

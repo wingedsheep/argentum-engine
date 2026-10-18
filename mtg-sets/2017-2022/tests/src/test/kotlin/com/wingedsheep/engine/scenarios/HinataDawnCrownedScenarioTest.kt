@@ -59,6 +59,32 @@ class HinataDawnCrownedScenarioTest : ScenarioTestBase() {
                 game.getLifeTotal(2) shouldBe 17
             }
 
+            test("your discount is generic-only, so it can't touch a spell's colored pips") {
+                fun board(plains: Int) = scenario()
+                    .withPlayers("Hinata", "Opponent")
+                    .withCardOnBattlefield(1, "Hinata, Dawn-Crowned")
+                    .withCardOnBattlefield(1, "Grizzly Bears")
+                    .withCardOnBattlefield(1, "Savannah Lions")
+                    .withCardOnBattlefield(2, "Centaur Courser")
+                    .withCardInHand(1, "Seeds of Strength")
+                    .withLandsOnBattlefield(1, "Forest", 1)
+                    .withLandsOnBattlefield(1, "Plains", plains)
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                fun TestGame.threeCreatures() = listOf("Grizzly Bears", "Savannah Lions", "Centaur Courser")
+                    .map { ChosenTarget.Permanent(findPermanent(it)!!) }
+
+                val short = board(0)
+                withClue("three targets take {3} off {G}{W}, which has no generic to lose") {
+                    short.cast(1, "Seeds of Strength", short.threeCreatures()).error.shouldNotBeNull()
+                }
+                val paid = board(1)
+                val cast = paid.cast(1, "Seeds of Strength", paid.threeCreatures())
+                withClue("{G}{W} is still owed in full: ${cast.error}") { cast.error.shouldBeNull() }
+            }
+
             test("your spell with no target costs full price") {
                 val game = scenario()
                     .withPlayers("Hinata", "Opponent")
