@@ -15,6 +15,9 @@ import com.wingedsheep.sdk.scripting.targets.TargetObject
  * Enchantment — Aura
  * Enchant creature
  * Whenever enchanted creature becomes tapped, put a -0/-2 counter on it.
+ *
+ * "It" is the creature that became tapped — the attachment trigger binds it as the triggering
+ * entity — so the counter still lands if the Aura leaves while the trigger is on the stack.
  */
 val SpiritShackle = card("Spirit Shackle") {
     manaCost = "{B}{B}"
@@ -26,7 +29,7 @@ val SpiritShackle = card("Spirit Shackle") {
 
     triggeredAbility {
         trigger = Triggers.attached.becomesTapped()
-        effect = Effects.AddCounters(CounterType.MINUS_ZERO_MINUS_TWO, 1, EffectTarget.EnchantedCreature)
+        effect = Effects.AddCounters(CounterType.MINUS_ZERO_MINUS_TWO, 1, EffectTarget.TriggeringEntity)
     }
 
     metadata {

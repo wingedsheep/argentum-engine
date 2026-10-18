@@ -15,8 +15,8 @@ import io.kotest.matchers.shouldBe
  * Whenever enchanted creature becomes tapped, put a -0/-2 counter on it.
  *
  * Pinned: tapping by any means triggers it (attacking, a {T} ability); a vigilant attacker never
- * becomes tapped, so it doesn't; the -0/-2 counter lowers toughness only, and stays after the Aura
- * is gone — it's on the creature, not granted by the Aura.
+ * becomes tapped, so it doesn't; the -0/-2 counter lowers toughness only, and still lands on the
+ * tapped creature — and stays — when the Aura is destroyed with the trigger on the stack.
  */
 class SpiritShackleScenarioTest : ScenarioTestBase() {
 
@@ -37,6 +37,27 @@ class SpiritShackleScenarioTest : ScenarioTestBase() {
                 val giant = game.findPermanent("Hill Giant")!!
                 game.state.getEntity(giant)?.get<CountersComponent>()?.getCount(CounterType.MINUS_ZERO_MINUS_TWO) shouldBe 1
                 game.state.projectedState.getPower(giant) shouldBe 3
+                game.state.projectedState.getToughness(giant) shouldBe 1
+            }
+
+            test("destroying the Aura in response doesn't stop the counter, and the counter stays") {
+                val game = scenario()
+                    .withPlayers("Attacker", "Defender")
+                    .withCardOnBattlefield(1, "Hill Giant", summoningSickness = false)
+                    .withCardAttachedTo(2, "Spirit Shackle", "Hill Giant")
+                    .withCardInHand(1, "Disenchant")
+                    .withLandsOnBattlefield(1, "Plains", 2)
+                    .withActivePlayer(1)
+                    .inPhase(Phase.COMBAT, Step.DECLARE_ATTACKERS)
+                    .build()
+
+                game.declareAttackers(mapOf("Hill Giant" to 2)).error shouldBe null
+                game.castSpell(1, "Disenchant", game.findPermanent("Spirit Shackle")!!).error shouldBe null
+                game.resolveStack()
+
+                withClue("Disenchant resolved first") { game.isInGraveyard(2, "Spirit Shackle") shouldBe true }
+                val giant = game.findPermanent("Hill Giant")!!
+                game.state.getEntity(giant)?.get<CountersComponent>()?.getCount(CounterType.MINUS_ZERO_MINUS_TWO) shouldBe 1
                 game.state.projectedState.getToughness(giant) shouldBe 1
             }
 

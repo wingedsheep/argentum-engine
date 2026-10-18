@@ -5197,7 +5197,7 @@
                     "type": "AddCounters",
                     "counterType": "MINUS_ZERO_MINUS_TWO",
                     "count": 1,
-                    "target": "EnchantedCreature"
+                    "target": "TriggeringEntity"
                 }
             }
         ],
