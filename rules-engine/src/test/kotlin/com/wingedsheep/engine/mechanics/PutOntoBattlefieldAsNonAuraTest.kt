@@ -49,7 +49,7 @@ class PutOntoBattlefieldAsNonAuraTest : FunSpec({
                 grantedTriggeredAbilities = listOf(
                     TriggeredAbility.create(
                         trigger = Triggers.player(Player.ChosenPlayer).beginningOf(Step.UPKEEP),
-                        effect = Effects.DealDamage(1, EffectTarget.PlayerRef(Player.ChosenPlayer)),
+                        effect = Effects.DealDamage(1, EffectTarget.PlayerRef(Player.TriggeringPlayer)),
                     )
                 ),
                 chosenPlayer = EffectTarget.ControllerOfTriggeringEntity,
@@ -127,14 +127,29 @@ class PutOntoBattlefieldAsNonAuraTest : FunSpec({
         d.passPriorityUntil(Step.UPKEEP)
         d.activePlayer shouldBe opp
         d.state.stack.size shouldBe 1
+        // Gone in response, the ping still finds "that player" — the step's active player.
+        d.moveToGraveyard(aura)
         d.bothPass()
         d.getLifeTotal(opp) shouldBe 19
         d.getLifeTotal(me) shouldBe 20
 
+    }
+
+    test("neither the granted trigger nor the printed attached-timed one fires on its controller's upkeep") {
+        val d = driver()
+        val me = d.activePlayer!!
+        val opp = d.getOpponent(me)
+        val victim = d.putCreatureOnBattlefield(opp, "Grizzly Bears")
+        val aura = d.putPermanentOnBattlefield(me, "Test NonAura Maggot")
+        d.attach(aura, victim)
+        d.destroy(victim)
+
+        d.passPriorityUntil(Step.END)
+        d.passPriorityUntil(Step.UPKEEP)
+        d.bothPass()
         d.passPriorityUntil(Step.END)
         d.passPriorityUntil(Step.UPKEEP)
         d.activePlayer shouldBe me
-        // Neither the granted trigger nor the printed attached-timed one fires on my upkeep.
         d.state.stack.size shouldBe 0
         d.getLifeTotal(me) shouldBe 20
     }

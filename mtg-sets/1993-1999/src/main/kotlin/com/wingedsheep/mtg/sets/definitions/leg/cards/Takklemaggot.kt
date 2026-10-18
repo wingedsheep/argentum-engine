@@ -57,7 +57,7 @@ val Takklemaggot = card("Takklemaggot") {
                 grantedTriggeredAbilities = listOf(
                     TriggeredAbility.create(
                         trigger = Triggers.player(Player.ChosenPlayer).beginningOf(Step.UPKEEP),
-                        effect = Effects.DealDamage(1, EffectTarget.PlayerRef(Player.ChosenPlayer)),
+                        effect = Effects.DealDamage(1, EffectTarget.PlayerRef(Player.TriggeringPlayer)),
                     )
                 ),
                 chosenPlayer = EffectTarget.ControllerOfTriggeringEntity,

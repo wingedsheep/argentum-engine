@@ -1923,7 +1923,7 @@ uses `Patterns.Exile.impulse()`; playing the card follows ordinary costs and tim
   stays on the battlefield. `chosenPlayer` is resolved at resolution and recorded on the permanent as its
   `ChoiceSlot.PLAYER` choice, read back as `Player.ChosenPlayer`. **Takklemaggot**'s fallback, run after the
   attach step when the card is still in the graveyard: `PutOntoBattlefieldAsNonAura(listOf(TriggeredAbility.create(
-  Triggers.player(Player.ChosenPlayer).beginningOf(UPKEEP), Effects.DealDamage(1, PlayerRef(Player.ChosenPlayer)))),
+  Triggers.player(Player.ChosenPlayer).beginningOf(UPKEEP), Effects.DealDamage(1, PlayerRef(Player.TriggeringPlayer)))),
   chosenPlayer = EffectTarget.ControllerOfTriggeringEntity)`.
 - `ReturnSelfToBattlefieldAttached(target, transformed = false)` — return source attached to target
   (Aura recursion). [target] may resolve to a **player** as well as a permanent, and the two cases

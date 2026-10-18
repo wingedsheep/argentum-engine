@@ -4791,7 +4791,7 @@
                                             },
                                             "target": {
                                                 "type": "PlayerRef",
-                                                "player": "ChosenPlayer"
+                                                "player": "TriggeringPlayer"
                                             }
                                         }
                                     }

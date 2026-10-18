@@ -72,7 +72,7 @@ object ResolutionPlayerBaker {
         is EffectTarget.PipelineTarget, is EffectTarget.ContextTarget, is EffectTarget.BoundVariable -> true
         is EffectTarget.PlayerRef -> when (target.player) {
             Player.TargetPlayer, Player.TargetOpponent, Player.Any, Player.TriggeringPlayer,
-            Player.DefendingPlayer, Player.ChosenOpponent,
+            Player.DefendingPlayer, Player.ChosenOpponent, Player.ChosenPlayer,
             is Player.ContextPlayer, is Player.BoundVariable -> true
             else -> false
         }

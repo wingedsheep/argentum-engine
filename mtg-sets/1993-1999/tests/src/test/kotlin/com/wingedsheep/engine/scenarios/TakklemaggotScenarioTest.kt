@@ -9,6 +9,7 @@ import com.wingedsheep.sdk.core.Step
 import io.kotest.assertions.withClue
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 
 /**
@@ -86,7 +87,7 @@ class TakklemaggotScenarioTest : ScenarioTestBase() {
 
                 val takk = game.findPermanent("Takklemaggot")
                 withClue("it is back, an unattached non-Aura enchantment under my control") {
-                    takk shouldBe game.findPermanent("Takklemaggot")!!
+                    takk shouldNotBe null
                     game.state.getEntity(takk!!)?.get<AttachedToComponent>() shouldBe null
                     game.state.projectedState.hasSubtype(takk, "Aura") shouldBe false
                     game.state.projectedState.hasType(takk, "ENCHANTMENT") shouldBe true
@@ -100,9 +101,7 @@ class TakklemaggotScenarioTest : ScenarioTestBase() {
                 game.passUntilPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
                 game.passUntilPhase(Phase.BEGINNING, Step.UPKEEP)
                 game.state.activePlayerId shouldBe game.player1Id
-                withClue("stack: ${game.state.stack.map { game.state.getEntity(it)?.get<com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComponent>()?.let { t -> t.sourceName + "|" + t.description } }}") {
-                    game.state.stack.size shouldBe 0
-                }
+                game.state.stack.size shouldBe 0
                 game.getLifeTotal(1) shouldBe 20
 
                 // Player 2's next upkeep: 1 damage to player 2.
