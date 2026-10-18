@@ -5376,8 +5376,7 @@ object Effects {
     fun CounterUnlessPays(
         cost: String,
         onPaid: Effect? = null,
-        target: com.wingedsheep.sdk.scripting.effects.CounterTarget =
-            com.wingedsheep.sdk.scripting.effects.CounterTarget.Spell
+        target: CounterTarget = CounterTarget.Spell
     ): Effect =
         CounterEffect(target = target, condition = CounterCondition.UnlessPaysMana(ManaCost.parse(cost), onPaid))
 

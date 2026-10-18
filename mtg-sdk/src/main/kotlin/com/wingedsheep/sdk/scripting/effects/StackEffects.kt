@@ -182,10 +182,13 @@ data class CounterEffect(
 ) : Effect {
     override val description: String = buildString {
         when (target) {
-            CounterTarget.Ability -> append(
-                if (targetSource == CounterTargetSource.TriggeringEntity) "Counter that ability"
-                else "Counter target activated or triggered ability"
-            )
+            CounterTarget.Ability -> {
+                append(
+                    if (targetSource == CounterTargetSource.TriggeringEntity) "Counter that ability"
+                    else "Counter target activated or triggered ability"
+                )
+                appendUnlessPays()
+            }
             CounterTarget.SpellOrAbility -> {
                 if (filter != null) {
                     append("Counter target ${filter.baseFilter.description}")
