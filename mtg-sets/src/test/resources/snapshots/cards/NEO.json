@@ -229,6 +229,122 @@
     ]
 }
 
+// Ao, the Dawn Sky
+{
+    "name": "Ao, the Dawn Sky",
+    "manaCost": "{3}{W}{W}",
+    "typeLine": "Legendary Creature — Dragon Spirit",
+    "oracleText": "Flying, vigilance\nWhen Ao dies, choose one —\n• Look at the top seven cards of your library. Put any number of nonland permanent cards with total mana value 4 or less from among them onto the battlefield. Put the rest on the bottom of your library in a random order.\n• Put two +1/+1 counters on each permanent you control that's a creature or Vehicle.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING",
+        "VIGILANCE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ao, the Dawn Sky:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "TopOfLibrary",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 7
+                                            }
+                                        },
+                                        "storeAs": "gathered0"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "gathered0",
+                                        "selection": "ChooseAnyNumber",
+                                        "filter": "nonland permanent",
+                                        "storeSelected": "selected1",
+                                        "storeRemainder": "remainder1",
+                                        "prompt": "Put any number of nonland permanent cards with total mana value 4 or less onto the battlefield",
+                                        "selectedLabel": "Put onto the battlefield",
+                                        "remainderLabel": "Put on the bottom of your library",
+                                        "showAllCards": true,
+                                        "restrictions": [
+                                            {
+                                                "type": "TotalManaValueAtMost",
+                                                "max": 4
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "selected1",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Battlefield"
+                                        }
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "remainder1",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Library",
+                                            "placement": "Bottom"
+                                        },
+                                        "order": "Random"
+                                    }
+                                ]
+                            },
+                            "description": "Look at the top seven cards of your library. Put any number of nonland permanent cards with total mana value 4 or less from among them onto the battlefield. Put the rest on the bottom of your library in a random order."
+                        },
+                        {
+                            "effect": {
+                                "type": "ForEach",
+                                "space": {
+                                    "type": "IterationSpace.Group",
+                                    "filter": {
+                                        "baseFilter": "creature|Vehicle ctrl:you"
+                                    }
+                                },
+                                "body": {
+                                    "type": "AddCounters",
+                                    "counterType": "PLUS_ONE_PLUS_ONE",
+                                    "count": 2,
+                                    "target": "IterationEntity"
+                                }
+                            },
+                            "description": "Put two +1/+1 counters on each permanent you control that's a creature or Vehicle."
+                        }
+                    ]
+                },
+                "descriptionOverride": "When Ao dies, choose one — • Look at the top seven cards of your library. Put any number of nonland permanent cards with total mana value 4 or less from among them onto the battlefield. Put the rest on the bottom of your library in a random order. • Put two +1/+1 counters on each permanent you control that's a creature or Vehicle."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "2",
+        "rarity": "MYTHIC",
+        "artist": "Chris Rahn",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/d/8d2c4063-7322-4041-a870-b95598a03e29.jpg?1783923928"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Armguard Familiar
 {
     "name": "Armguard Familiar",
@@ -336,6 +452,90 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Asari Captain
+{
+    "name": "Asari Captain",
+    "manaCost": "{3}{R}{W}",
+    "typeLine": "Creature — Human Samurai",
+    "oracleText": "Haste\nWhenever a Samurai or Warrior you control attacks alone, it gets +1/+0 until end of turn for each Samurai or Warrior you control.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "keywords": [
+        "HASTE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Asari Captain:1",
+                "trigger": {
+                    "type": "AttackEvent",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "HasAnyOfSubtypes",
+                                "subtypes": [
+                                    "Samurai",
+                                    "Warrior"
+                                ]
+                            }
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    },
+                    "requires": [
+                        "AttacksAlone"
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                {
+                                    "type": "HasAnyOfSubtypes",
+                                    "subtypes": [
+                                        "Samurai",
+                                        "Warrior"
+                                    ]
+                                }
+                            ]
+                        }
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": "TriggeringEntity"
+                },
+                "descriptionOverride": "Whenever a Samurai or Warrior you control attacks alone, it gets +1/+0 until end of turn for each Samurai or Warrior you control."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "215",
+        "rarity": "UNCOMMON",
+        "artist": "Donato Giancola",
+        "flavorText": "\"Go! Show them your fury!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/3/834b4e6a-1812-4399-8fe4-bb1686ba49ef.jpg?1783923838",
+        "rulings": [
+            {
+                "date": "2022-02-18",
+                "text": "Asari Captain's triggered ability gives the solitary attacker +1/+0 for each creature you control that is either a Samurai or a Warrior as it resolves, including the attacker itself, if applicable. A creature that is both a Samurai and a Warrior is only counted once."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
     ]
 }
 
@@ -580,6 +780,129 @@
                 "text": "You may cast Banishing Slash without choosing a target. If you do, and you control both an artifact and an enchantment as it resolves, you'll just create a Samurai token. However, if you do choose a target and that target is an illegal target as Banishing Slash tries to resolve, Banishing Slash won't resolve and none of its effects will happen. The illegal target won't be destroyed and you won't create a Samurai token."
             }
         ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Befriending the Moths
+{
+    "name": "Befriending the Moths",
+    "manaCost": "{3}{W}",
+    "typeLine": "Enchantment — Saga",
+    "oracleText": "(As this Saga enters and after your draw step, add a lore counter.)\nI, II — Target creature you control gets +1/+1 and gains flying until end of turn.\nIII — Exile this Saga, then return it to the battlefield transformed under your control.",
+    "script": {
+        "sagaChapters": [
+            {
+                "chapter": 1,
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "FLYING",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you"
+                    },
+                    "id": "t0"
+                }
+            },
+            {
+                "chapter": 2,
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t1"
+                            }
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "FLYING",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t1"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you"
+                    },
+                    "id": "t1"
+                }
+            },
+            {
+                "chapter": 3,
+                "effect": "ExileAndReturnTransformed"
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Imperial Moth",
+        "manaCost": "",
+        "typeLine": "Enchantment Creature — Insect",
+        "oracleText": "Flying",
+        "creatureStats": {
+            "power": 2,
+            "toughness": 4
+        },
+        "keywords": [
+            "FLYING"
+        ],
+        "metadata": {
+            "collectorNumber": "4",
+            "artist": "Matt Stewart",
+            "flavorText": "\"The moths of Eiganjo were once no different from any other great beast of Kamigawa's wilds. It took years of patience and dedication to convince them to bear riders.\"\n—*History of the Empire*",
+            "imageUri": "https://cards.scryfall.io/normal/back/8/a/8ad44884-ae0d-40ae-87a9-bad043d4e9ad.jpg?1783923933"
+        },
+        "colorIdentityOverride": [
+            "WHITE"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "4",
+        "artist": "Matt Stewart",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/a/8ad44884-ae0d-40ae-87a9-bad043d4e9ad.jpg?1783923933"
     },
     "colorIdentityOverride": [
         "WHITE"
@@ -2275,6 +2598,97 @@
     ]
 }
 
+// Eiganjo Uprising
+{
+    "name": "Eiganjo Uprising",
+    "manaCost": "{X}{R}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Create X 2/2 white Samurai creature tokens with vigilance. They gain menace and haste until end of turn.\nEach opponent creates X minus one 2/2 white Samurai creature tokens with vigilance.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "CreateToken",
+                    "count": "XValue",
+                    "power": 2,
+                    "toughness": 2,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Samurai"
+                    ],
+                    "keywords": [
+                        "VIGILANCE"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/f/6/f68e5337-6e44-4f8f-a102-2f97b433beea.jpg?1783923716"
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Collection",
+                        "collection": "createdTokens"
+                    },
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "MENACE",
+                                "target": "IterationEntity"
+                            },
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "HASTE",
+                                "target": "IterationEntity"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "Subtract",
+                        "left": "XValue",
+                        "right": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "power": 2,
+                    "toughness": 2,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Samurai"
+                    ],
+                    "keywords": [
+                        "VIGILANCE"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/f/6/f68e5337-6e44-4f8f-a102-2f97b433beea.jpg?1783923716",
+                    "controller": {
+                        "type": "PlayerRef",
+                        "player": "EachOpponent"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "217",
+        "rarity": "RARE",
+        "artist": "Johan Grenier",
+        "flavorText": "Two different visions of freedom clashed at the gates of the Imperial Palace.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/5/35203138-5237-49aa-a335-7a32829548a1.jpg?1783923838"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
+    ]
+}
+
 // Eiganjo, Seat of the Empire
 {
     "name": "Eiganjo, Seat of the Empire",
@@ -2404,6 +2818,70 @@
     "colorIdentityOverride": [
         "BLUE",
         "RED"
+    ]
+}
+
+// Era of Enlightenment
+{
+    "name": "Era of Enlightenment",
+    "manaCost": "{1}{W}",
+    "typeLine": "Enchantment — Saga",
+    "oracleText": "(As this Saga enters and after your draw step, add a lore counter.)\nI — Scry 2.\nII — You gain 2 life.\nIII — Exile this Saga, then return it to the battlefield transformed under your control.",
+    "script": {
+        "sagaChapters": [
+            {
+                "chapter": 1,
+                "effect": {
+                    "type": "Scry",
+                    "count": 2
+                }
+            },
+            {
+                "chapter": 2,
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                }
+            },
+            {
+                "chapter": 3,
+                "effect": "ExileAndReturnTransformed"
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Hand of Enlightenment",
+        "manaCost": "",
+        "typeLine": "Enchantment Creature — Human Monk",
+        "oracleText": "First strike",
+        "creatureStats": {
+            "power": 2,
+            "toughness": 2
+        },
+        "keywords": [
+            "FIRST_STRIKE"
+        ],
+        "metadata": {
+            "collectorNumber": "11",
+            "artist": "Amayagido",
+            "flavorText": "\"We have endured lifetimes of war and carved our way to peace by blade and conquest. Now, united at last under Kyodai's guidance, we lay down our weapons and open our minds.\"\n—Aoha, general of the First Emperor",
+            "imageUri": "https://cards.scryfall.io/normal/back/7/4/74f43827-2b9b-4fc9-a6e2-c682dfbf14f7.jpg?1783923930"
+        },
+        "colorIdentityOverride": [
+            "WHITE"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "11",
+        "artist": "Amayagido",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/4/74f43827-2b9b-4fc9-a6e2-c682dfbf14f7.jpg?1783923930"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -3921,6 +4399,78 @@
     ]
 }
 
+// Invoke Justice
+{
+    "name": "Invoke Justice",
+    "manaCost": "{1}{W}{W}{W}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Return target permanent card from your graveyard to the battlefield, then distribute four +1/+1 counters among any number of creatures and/or Vehicles target player controls.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Battlefield",
+                    "fromZone": "Graveyard"
+                },
+                {
+                    "type": "DistributeCountersAmongFiltered",
+                    "totalCounters": 4,
+                    "filter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    "IsCreature",
+                                    {
+                                        "type": "HasSubtype",
+                                        "subtype": "Vehicle"
+                                    }
+                                ]
+                            }
+                        ],
+                        "controllerPredicate": {
+                            "type": "ControlledByReferencedPlayer",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t1"
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "permanent own:you",
+                    "zone": "Graveyard"
+                },
+                "id": "t0"
+            },
+            {
+                "type": "TargetPlayer",
+                "id": "t1"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "21",
+        "rarity": "RARE",
+        "artist": "Kekai Kotaki",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/a/3a598ab6-3254-49fe-b69f-e7c759129599.jpg?1783923919"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Jukai Naturalist
 {
     "name": "Jukai Naturalist",
@@ -4221,6 +4771,92 @@
     ]
 }
 
+// Kyodai, Soul of Kamigawa
+{
+    "name": "Kyodai, Soul of Kamigawa",
+    "manaCost": "{3}{W}",
+    "typeLine": "Legendary Creature — Dragon Spirit",
+    "oracleText": "Flash\nFlying\nWhen Kyodai enters, another target permanent gains indestructible for as long as you control Kyodai.\n{W}{U}{B}{R}{G}: Kyodai gets +5/+5 until end of turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLASH",
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Kyodai, Soul of Kamigawa:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "INDESTRUCTIBLE",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "duration": {
+                        "type": "WhileYouControlSource",
+                        "sourceDescription": "Kyodai, Soul of Kamigawa"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "excludeSelf": true
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "When Kyodai enters, another target permanent gains indestructible for as long as you control Kyodai."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Kyodai, Soul of Kamigawa:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{W}{U}{B}{R}{G}"
+                    }
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 5
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 5
+                    },
+                    "target": "Self"
+                },
+                "descriptionOverride": "{W}{U}{B}{R}{G}: Kyodai gets +5/+5 until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "23",
+        "rarity": "RARE",
+        "artist": "Daniel Zrom",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/b/cbbfd21e-96f1-4e5b-8546-73bb5a887b98.jpg?1783923918"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE",
+        "BLACK",
+        "RED",
+        "GREEN"
+    ]
+}
+
 // Leech Gauntlet
 {
     "name": "Leech Gauntlet",
@@ -4488,6 +5124,108 @@
         "artist": "Benjamin Ee",
         "flavorText": "\"That way lies death. This way, a chance.\"",
         "imageUri": "https://cards.scryfall.io/normal/front/3/a/3a2fd960-c4ec-4dfa-a61d-f8577b9d3519.jpg?1783923919"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Light-Paws, Emperor's Voice
+{
+    "name": "Light-Paws, Emperor's Voice",
+    "manaCost": "{1}{W}",
+    "typeLine": "Legendary Creature — Fox Advisor",
+    "oracleText": "Whenever an Aura you control enters, if you cast it, you may search your library for an Aura card with mana value less than or equal to that Aura and with a different name than each Aura you control, put that card onto the battlefield attached to Light-Paws, then shuffle.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Light-Paws, Emperor's Voice:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "enchantment Aura ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Library",
+                                    "filter": {
+                                        "cardPredicates": [
+                                            "IsEnchantment",
+                                            {
+                                                "type": "HasSubtype",
+                                                "subtype": "Aura"
+                                            },
+                                            {
+                                                "type": "ManaValueAtMostEntity",
+                                                "reference": "TriggeringEntity"
+                                            },
+                                            {
+                                                "type": "Not",
+                                                "predicate": {
+                                                    "type": "SharesNameWithPermanentYouControl",
+                                                    "filter": "enchantment Aura"
+                                                }
+                                            }
+                                        ]
+                                    }
+                                },
+                                "storeAs": "gathered0"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "gathered0",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "selected1",
+                                "prompt": "Search for an Aura card to put onto the battlefield attached to Light-Paws"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "selected1",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Battlefield"
+                                },
+                                "attachTo": "Self"
+                            },
+                            "ShuffleLibrary",
+                            "EmitLibrarySearchedEvent"
+                        ]
+                    }
+                },
+                "interveningIf": "TriggeringEntityWasCast"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "25",
+        "rarity": "RARE",
+        "artist": "Randy Vargas",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/9/39555a72-a57b-45ee-9222-ce3b9e8de126.jpg?1791803693",
+        "rulings": [
+            {
+                "date": "2022-02-18",
+                "text": "If the Aura card you find can't be attached to Light-Paws for any reason, it stays in your library and does not enter the battlefield."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "WHITE"
@@ -5396,6 +6134,127 @@
     "colorIdentityOverride": []
 }
 
+// Michiko's Reign of Truth
+{
+    "name": "Michiko's Reign of Truth",
+    "manaCost": "{1}{W}",
+    "typeLine": "Enchantment — Saga",
+    "oracleText": "(As this Saga enters and after your draw step, add a lore counter.)\nI, II — Target creature gets +1/+1 until end of turn for each artifact and/or enchantment you control.\nIII — Exile this Saga, then return it to the battlefield transformed under your control.",
+    "script": {
+        "sagaChapters": [
+            {
+                "chapter": 1,
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "artifact|enchantment"
+                    },
+                    "toughnessModifier": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "artifact|enchantment"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                }
+            },
+            {
+                "chapter": 2,
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "artifact|enchantment"
+                    },
+                    "toughnessModifier": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "artifact|enchantment"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t1"
+                }
+            },
+            {
+                "chapter": 3,
+                "effect": "ExileAndReturnTransformed"
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Portrait of Michiko",
+        "manaCost": "",
+        "typeLine": "Enchantment Creature — Human Noble",
+        "oracleText": "This creature gets +1/+1 for each artifact and/or enchantment you control.",
+        "creatureStats": {
+            "power": 0,
+            "toughness": 0
+        },
+        "script": {
+            "staticAbilities": [
+                {
+                    "type": "GrantDynamicStats",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    },
+                    "powerBonus": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "artifact|enchantment"
+                    },
+                    "toughnessBonus": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "artifact|enchantment"
+                    }
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "29",
+            "rarity": "UNCOMMON",
+            "artist": "Volkan Baǵa",
+            "imageUri": "https://cards.scryfall.io/normal/back/7/4/74f12c23-5c15-4ae6-8f4d-c5e6c1878817.jpg?1783923921"
+        },
+        "colorIdentityOverride": [
+            "WHITE"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "29",
+        "rarity": "UNCOMMON",
+        "artist": "Volkan Baǵa",
+        "flavorText": "Long ago, as the first mortal to bond with Kyodai, Michiko Konda brought an end to the Kami War and guided Kamigawa into an age of truth and harmony.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/4/74f12c23-5c15-4ae6-8f4d-c5e6c1878817.jpg?1783923921"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Mindlink Mech
 {
     "name": "Mindlink Mech",
@@ -5819,6 +6678,118 @@
         "imageUri": "https://cards.scryfall.io/normal/front/0/a/0adf3293-c1e0-447c-8231-26fa9476a262.jpg?1783923879"
     },
     "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Naomi, Pillar of Order
+{
+    "name": "Naomi, Pillar of Order",
+    "manaCost": "{3}{W}{B}",
+    "typeLine": "Legendary Creature — Human Advisor",
+    "oracleText": "Whenever Naomi enters or attacks, if you control an artifact and an enchantment, create a 2/2 white Samurai creature token with vigilance.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Naomi, Pillar of Order:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 2,
+                    "toughness": 2,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Samurai"
+                    ],
+                    "keywords": [
+                        "VIGILANCE"
+                    ]
+                },
+                "interveningIf": {
+                    "type": "All",
+                    "conditions": [
+                        {
+                            "type": "Exists",
+                            "player": "You",
+                            "zone": "Battlefield",
+                            "filter": "artifact"
+                        },
+                        {
+                            "type": "Exists",
+                            "player": "You",
+                            "zone": "Battlefield",
+                            "filter": "enchantment"
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever Naomi enters or attacks, if you control an artifact and an enchantment, create a 2/2 white Samurai creature token with vigilance."
+            },
+            {
+                "id": "Naomi, Pillar of Order:2",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 2,
+                    "toughness": 2,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Samurai"
+                    ],
+                    "keywords": [
+                        "VIGILANCE"
+                    ]
+                },
+                "interveningIf": {
+                    "type": "All",
+                    "conditions": [
+                        {
+                            "type": "Exists",
+                            "player": "You",
+                            "zone": "Battlefield",
+                            "filter": "artifact"
+                        },
+                        {
+                            "type": "Exists",
+                            "player": "You",
+                            "zone": "Battlefield",
+                            "filter": "enchantment"
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever Naomi enters or attacks, if you control an artifact and an enchantment, create a 2/2 white Samurai creature token with vigilance."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "229",
+        "rarity": "UNCOMMON",
+        "artist": "Joshua Raphael",
+        "flavorText": "\"Progress comes only when we rise above our petty quarrels.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/4/4400fd66-1a24-47fb-bc94-37e0aae0e610.jpg?1783923834",
+        "rulings": [
+            {
+                "date": "2022-02-18",
+                "text": "The artifact and the enchantment may be the same permanent."
+            },
+            {
+                "date": "2022-02-18",
+                "text": "If you don't control both an artifact and an enchantment at the moment Naomi, Pillar of Order enters the battlefield or attacks, its ability won't trigger at all. If the ability triggers, it will check again as it tries to resolve. If you don't control both at that time, the ability won't do anything."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
         "BLACK"
     ]
 }
@@ -6802,6 +7773,78 @@
     ]
 }
 
+// Prodigy's Prototype
+{
+    "name": "Prodigy's Prototype",
+    "manaCost": "{1}{W}{U}",
+    "typeLine": "Artifact — Vehicle",
+    "oracleText": "Whenever one or more Vehicles you control attack, create a 1/1 colorless Pilot creature token with \"This token crews Vehicles as though its power were 2 greater.\"\nCrew 2 (Tap any number of creatures you control with total power 2 or more: This Vehicle becomes an artifact creature until end of turn.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "keywords": [
+        "CREW"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "CREW",
+            "n": 2
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Prodigy's Prototype:1",
+                "trigger": {
+                    "type": "YouAttackEvent",
+                    "attackerFilter": {
+                        "cardPredicates": [
+                            "IsPermanent",
+                            {
+                                "type": "HasSubtype",
+                                "subtype": "Vehicle"
+                            }
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [],
+                    "creatureTypes": [
+                        "Pilot"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/b/e/be84f259-2809-48c9-9c70-861437f08c23.jpg?1783923717",
+                    "staticAbilities": [
+                        {
+                            "type": "CrewSaddleContribution",
+                            "modifier": 2,
+                            "costs": [
+                                "CREW"
+                            ]
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever one or more Vehicles you control attack, create a 1/1 colorless Pilot creature token with \"This token crews Vehicles as though its power were 2 greater.\""
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "231",
+        "rarity": "UNCOMMON",
+        "artist": "Ryan Pancoast",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/e/be046e0a-6509-450b-b34f-29d5a5e3472e.jpg?1783923831"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
+    ]
+}
+
 // Rabbit Battery
 {
     "name": "Rabbit Battery",
@@ -6898,6 +7941,88 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Raiyuu, Storm's Edge
+{
+    "name": "Raiyuu, Storm's Edge",
+    "manaCost": "{2}{R}{W}",
+    "typeLine": "Legendary Creature — Human Samurai",
+    "oracleText": "First strike\nWhenever a Samurai or Warrior you control attacks alone, untap it. If it's the first combat phase of the turn, there is an additional combat phase after this phase.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "FIRST_STRIKE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Raiyuu, Storm's Edge:1",
+                "trigger": {
+                    "type": "AttackEvent",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "HasAnyOfSubtypes",
+                                "subtypes": [
+                                    "Samurai",
+                                    "Warrior"
+                                ]
+                            }
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    },
+                    "requires": [
+                        "AttacksAlone"
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "TapUntap",
+                            "target": "TriggeringEntity",
+                            "tap": false
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": "IsFirstCombatPhaseOfTurn"
+                            },
+                            "then": "AddCombatPhase"
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever a Samurai or Warrior you control attacks alone, untap it. If it's the first combat phase of the turn, there is an additional combat phase after this phase."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "232",
+        "rarity": "RARE",
+        "artist": "Heonhwa",
+        "flavorText": "\"The tempest is the only ally I need.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/7/37748b74-0eda-4b20-a08f-faa418adb9ff.jpg?1783923831",
+        "rulings": [
+            {
+                "date": "2022-02-18",
+                "text": "A creature attacks alone if it's the only creature declared as an attacker during the declare attackers step. For example, Raiyuu's triggered ability won't trigger if you attack with multiple creatures and all but one of them are removed from combat."
+            },
+            {
+                "date": "2022-02-18",
+                "text": "Notably, the triggered ability doesn't give you any additional main phases. This means that you will move directly from the end of combat step of one combat phase to the beginning of combat step of the next one."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
     ]
 }
 
@@ -7291,6 +8416,137 @@
     "colorIdentityOverride": [
         "BLUE",
         "BLACK"
+    ]
+}
+
+// Satsuki, the Living Lore
+{
+    "name": "Satsuki, the Living Lore",
+    "manaCost": "{G}{W}",
+    "typeLine": "Legendary Creature — Human Druid",
+    "oracleText": "{T}: Put a lore counter on each Saga you control. Activate only as a sorcery.\nWhen Satsuki dies, choose up to one —\n• Return target Saga or enchantment creature you control to its owner's hand.\n• Return target Saga card from your graveyard to your hand.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Satsuki, the Living Lore:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "MoveToZone",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "destination": "Hand"
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": {
+                                            "cardPredicates": [
+                                                {
+                                                    "type": "Or",
+                                                    "predicates": [
+                                                        {
+                                                            "type": "And",
+                                                            "predicates": [
+                                                                "IsEnchantment",
+                                                                {
+                                                                    "type": "HasSubtype",
+                                                                    "subtype": "Saga"
+                                                                }
+                                                            ]
+                                                        },
+                                                        {
+                                                            "type": "And",
+                                                            "predicates": [
+                                                                "IsEnchantment",
+                                                                "IsCreature"
+                                                            ]
+                                                        }
+                                                    ]
+                                                }
+                                            ],
+                                            "controllerPredicate": "ControlledByYou"
+                                        }
+                                    },
+                                    "id": "t0"
+                                }
+                            ],
+                            "description": "Return target Saga or enchantment creature you control to its owner's hand"
+                        },
+                        {
+                            "effect": {
+                                "type": "MoveToZone",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t1"
+                                },
+                                "destination": "Hand"
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": "enchantment Saga own:you",
+                                        "zone": "Graveyard"
+                                    },
+                                    "id": "t1"
+                                }
+                            ],
+                            "description": "Return target Saga card from your graveyard to your hand"
+                        }
+                    ],
+                    "minChooseCount": 0,
+                    "countsAsModalSpell": false
+                },
+                "descriptionOverride": "When Satsuki dies, choose up to one — Return target Saga or enchantment creature you control to its owner's hand, or return target Saga card from your graveyard to your hand."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Satsuki, the Living Lore:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "enchantment Saga ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "AddCounters",
+                        "counterType": "LORE",
+                        "count": 1,
+                        "target": "IterationEntity"
+                    }
+                },
+                "timing": "SorcerySpeed"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "235",
+        "rarity": "RARE",
+        "artist": "Ryan Pancoast",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/1/0152575b-31b0-4142-9cc2-b87a81bd51a8.jpg?1783923830"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE"
     ]
 }
 
@@ -9360,6 +10616,191 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// The Restoration of Eiganjo
+{
+    "name": "The Restoration of Eiganjo",
+    "manaCost": "{2}{W}",
+    "typeLine": "Enchantment — Saga",
+    "oracleText": "(As this Saga enters and after your draw step, add a lore counter.)\nI — Search your library for a basic Plains card, reveal it, put it into your hand, then shuffle.\nII — You may discard a card. When you do, return target permanent card with mana value 2 or less from your graveyard to the battlefield tapped.\nIII — Exile this Saga, then return it to the battlefield transformed under your control.",
+    "script": {
+        "sagaChapters": [
+            {
+                "chapter": 1,
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Library",
+                                "filter": "basicland Plains"
+                            },
+                            "storeAs": "searchable",
+                            "search": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "searchable",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "found",
+                            "prompt": "Search your library for a basic Plains card to put into your hand",
+                            "selectedLabel": "Put into your hand"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "found",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            },
+                            "revealed": true
+                        },
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
+                    ]
+                }
+            },
+            {
+                "chapter": 2,
+                "effect": {
+                    "type": "ReflexiveTrigger",
+                    "action": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand"
+                                },
+                                "storeAs": "hand"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "hand",
+                                "selection": {
+                                    "type": "ChooseExactly",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "discarded",
+                                "prompt": "Choose 1 card to discard"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "discarded",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                },
+                                "moveType": "Discard"
+                            }
+                        ]
+                    },
+                    "reflexiveEffect": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "destination": "Battlefield",
+                        "placement": "Tapped",
+                        "fromZone": "Graveyard"
+                    },
+                    "reflexiveTargetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "permanent mv<=2 own:you",
+                                "zone": "Graveyard"
+                            },
+                            "id": "t0"
+                        }
+                    ]
+                }
+            },
+            {
+                "chapter": 3,
+                "effect": "ExileAndReturnTransformed"
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Architect of Restoration",
+        "manaCost": "",
+        "typeLine": "Enchantment Creature — Fox Monk",
+        "oracleText": "Vigilance\nWhenever this creature attacks or blocks, create a 1/1 colorless Spirit creature token.",
+        "creatureStats": {
+            "power": 3,
+            "toughness": 4
+        },
+        "keywords": [
+            "VIGILANCE"
+        ],
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "Architect of Restoration:1",
+                    "trigger": "AttackEvent",
+                    "effect": {
+                        "type": "CreateToken",
+                        "power": 1,
+                        "toughness": 1,
+                        "colors": [],
+                        "creatureTypes": [
+                            "Spirit"
+                        ]
+                    },
+                    "descriptionOverride": "Whenever this creature attacks, create a 1/1 colorless Spirit creature token."
+                },
+                {
+                    "id": "Architect of Restoration:2",
+                    "trigger": "BlockEvent",
+                    "effect": {
+                        "type": "CreateToken",
+                        "power": 1,
+                        "toughness": 1,
+                        "colors": [],
+                        "creatureTypes": [
+                            "Spirit"
+                        ]
+                    },
+                    "descriptionOverride": "Whenever this creature blocks, create a 1/1 colorless Spirit creature token."
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "34",
+            "rarity": "RARE",
+            "artist": "Titus Lunter",
+            "flavorText": "\"A visionary looks at rubble and sees not only what was, but also what could be.\"\n—Onyx-Eye, architect of Eiganjo",
+            "imageUri": "https://cards.scryfall.io/normal/back/a/1/a11a33ae-e7fa-4bd4-8cd8-3a3239a29bcc.jpg?1783923920"
+        },
+        "colorIdentityOverride": [
+            "WHITE"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "34",
+        "rarity": "RARE",
+        "artist": "Titus Lunter",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/1/a11a33ae-e7fa-4bd4-8cd8-3a3239a29bcc.jpg?1783923920"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
