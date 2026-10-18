@@ -25,6 +25,7 @@ import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
 import com.wingedsheep.sdk.scripting.LookAtFaceDownCreatures
 import com.wingedsheep.sdk.scripting.LookAtTopOfLibrary
 import com.wingedsheep.sdk.scripting.OpponentsPlayWithHandsRevealed
+import com.wingedsheep.sdk.scripting.PlayersPlayWithHandsRevealed
 import com.wingedsheep.sdk.scripting.PlayFromTopOfLibrary
 import com.wingedsheep.sdk.scripting.PlayersRevealTopOfLibrary
 import com.wingedsheep.sdk.scripting.RevealTopOfLibrary
@@ -56,7 +57,7 @@ class Visibility(
             zoneKey.ownerId == viewingPlayerId ||
                 state.actorFor(zoneKey.ownerId) == viewingPlayerId ||
                 zoneKey.ownerId in state.teammatesOf(viewingPlayerId) ||
-                (zoneKey.ownerId != viewingPlayerId && revealsOpponentHandsTo(state, viewingPlayerId))
+                (zoneKey.ownerId != viewingPlayerId && revealsHandTo(state, viewingPlayerId))
             ))
         Zone.SIDEBOARD -> debugMode || (!isSpectator && (
             zoneKey.ownerId == viewingPlayerId ||
@@ -348,8 +349,16 @@ class Visibility(
     private fun hasLookAtTopOfLibrary(state: GameState, playerId: EntityId): Boolean =
         hasActiveStaticAbility(state, playerId) { it is LookAtTopOfLibrary }
 
-    private fun revealsOpponentHandsTo(state: GameState, playerId: EntityId): Boolean =
-        hasActiveStaticAbility(state, playerId) { it is OpponentsPlayWithHandsRevealed }
+    /**
+     * Whether another player's hand is face up to [viewingPlayerId]: either the viewer controls an
+     * [OpponentsPlayWithHandsRevealed] (Seer's Vision), or *any* player controls a symmetric
+     * [PlayersPlayWithHandsRevealed] (Revelation), which opens every hand to every player.
+     */
+    private fun revealsHandTo(state: GameState, viewingPlayerId: EntityId): Boolean =
+        hasActiveStaticAbility(state, viewingPlayerId) { it is OpponentsPlayWithHandsRevealed } ||
+            state.turnOrder.any { controllerId ->
+                hasActiveStaticAbility(state, controllerId) { it is PlayersPlayWithHandsRevealed }
+            }
 
     private fun hasActiveStaticAbility(
         state: GameState,

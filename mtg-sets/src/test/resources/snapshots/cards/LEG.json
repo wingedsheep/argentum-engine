@@ -3995,6 +3995,29 @@
     ]
 }
 
+// Revelation
+{
+    "name": "Revelation",
+    "manaCost": "{G}",
+    "typeLine": "World Enchantment",
+    "oracleText": "Players play with their hands revealed.",
+    "script": {
+        "staticAbilities": [
+            "PlayersPlayWithHandsRevealed"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "202",
+        "rarity": "RARE",
+        "artist": "Kaja Foglio",
+        "flavorText": "\"Many are in high place, and of renown: but mysteries are revealed unto the meek.\" —Ecclesiastes 3:19",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/7/07892b6c-08d2-47b5-8d64-0e4d1bdc3080.jpg?1783948045"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Reverberation
 {
     "name": "Reverberation",

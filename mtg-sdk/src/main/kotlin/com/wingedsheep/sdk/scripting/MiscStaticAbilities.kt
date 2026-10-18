@@ -764,6 +764,20 @@ data object OpponentsPlayWithHandsRevealed : StaticAbility {
 }
 
 /**
+ * **Every** player plays with their hand revealed (to all players). Used for Revelation.
+ *
+ * The all-players sibling of [OpponentsPlayWithHandsRevealed], as [PlayersRevealTopOfLibrary] is
+ * of [RevealTopOfLibrary]: whoever controls it, every player's hand is visible to every other
+ * player — including the controller's own hand, which [OpponentsPlayWithHandsRevealed] never
+ * opens. Visibility-only; it grants no other game effect.
+ */
+@SerialName("PlayersPlayWithHandsRevealed")
+@Serializable
+data object PlayersPlayWithHandsRevealed : StaticAbility {
+    override val description: String = "Players play with their hands revealed."
+}
+
+/**
  * You may cast this card from specified zones (e.g., graveyard, exile).
  * This is an intrinsic property of the card, checked when the card is in a matching zone.
  * Used for Squee, the Immortal (graveyard + exile).

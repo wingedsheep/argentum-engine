@@ -11785,6 +11785,9 @@ concerns — the `ClientStateTransformer` reveals the top card for `PlayFromTopO
   `RevealTopOfLibrary`: each opponent of the controller plays with their hand publicly visible to
   that controller (no other game effect). Handled entirely by the client state transformer's
   hand-masking seam. (**Seer's Vision**)
+- `PlayersPlayWithHandsRevealed` — the symmetric sibling (as `PlayersRevealTopOfLibrary` is of
+  `RevealTopOfLibrary`): whoever controls it, *every* player's hand is visible to every other player,
+  the controller's own included. Visibility-only, same seam. (**Revelation**)
 
 > Multiple lord effects on one card → multiple `staticAbility { }` blocks.
 

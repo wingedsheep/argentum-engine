@@ -20,6 +20,7 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.LookAtTopOfLibrary
 import com.wingedsheep.sdk.scripting.OpponentsPlayWithHandsRevealed
+import com.wingedsheep.sdk.scripting.PlayersPlayWithHandsRevealed
 import com.wingedsheep.sdk.scripting.RevealTopOfLibrary
 import io.kotest.assertions.withClue
 import io.kotest.matchers.collections.shouldContain
@@ -42,6 +43,12 @@ class CardIdentityVisibilityTest : ScenarioTestBase() {
         staticAbility { ability = OpponentsPlayWithHandsRevealed }
     }
 
+    private val openTable = card("Open Table") {
+        manaCost = "{1}"
+        typeLine = "Artifact"
+        staticAbility { ability = PlayersPlayWithHandsRevealed }
+    }
+
     private val publicTop = card("Public Top") {
         manaCost = "{1}"
         typeLine = "Artifact"
@@ -58,7 +65,7 @@ class CardIdentityVisibilityTest : ScenarioTestBase() {
         get() = Visibility(cardRegistry, conditionEvaluator = services.conditionEvaluator)
 
     init {
-        cardRegistry.register(listOf(openThoughts, publicTop, privateTop))
+        cardRegistry.register(listOf(openThoughts, openTable, publicTop, privateTop))
 
         test("a player knows their own hand and not an opponent's") {
             val game = scenario()
@@ -140,6 +147,38 @@ class CardIdentityVisibilityTest : ScenarioTestBase() {
                 ZoneKey(game.player1Id, Zone.HAND),
                 game.player2Id,
             ) shouldBe false
+        }
+
+        test("a symmetric whole-hand reveal opens every hand to every player, whoever controls it") {
+            val base = scenario()
+                .withPlayers()
+                .withCardOnBattlefield(1, openTable.name)
+                .withCardInHand(1, "Forest")
+                .withCardInHand(2, "Mountain")
+                .build()
+            val bystander = EntityId.of("player-3")
+            val state = addBystander(base.state, bystander)
+            val players = listOf(base.player1Id, base.player2Id, bystander)
+
+            for (owner in players) {
+                for (viewer in players) {
+                    withClue("$viewer sees $owner's hand") {
+                        visibility.isZoneVisibleTo(state, ZoneKey(owner, Zone.HAND), viewer) shouldBe true
+                    }
+                }
+            }
+            withClue("spectators still see no hand") {
+                visibility.isZoneVisibleTo(
+                    state,
+                    ZoneKey(base.player1Id, Zone.HAND),
+                    bystander,
+                    isSpectator = true,
+                ) shouldBe false
+            }
+
+            val controllerCard = state.getHand(base.player1Id).single()
+            ClientStateTransformer(cardRegistry, predicateEvaluator = services.predicateEvaluator)
+                .transform(state, base.player2Id).cards.keys shouldContain controllerCard
         }
 
         test("a private top-card effect tells only its controller; a public one tells everyone") {

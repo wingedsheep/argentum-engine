@@ -1275,6 +1275,7 @@ class StaticAbilityHandler(
             is LookAtFaceDownCreatures,
             is LookAtTopOfLibrary,
             is OpponentsPlayWithHandsRevealed,
+            is com.wingedsheep.sdk.scripting.PlayersPlayWithHandsRevealed,
             is RevealFirstDrawEachTurn,
             is RevealTopOfLibrary,
             is com.wingedsheep.sdk.scripting.PlayersRevealTopOfLibrary,
