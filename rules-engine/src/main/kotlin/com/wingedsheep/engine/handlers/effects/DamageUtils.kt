@@ -602,15 +602,18 @@ object DamageUtils {
                     ))
                 }
             }
+            // Only the part actually dealt to the creature counts toward its tallies: excess
+            // redirected to its controller (Gandalf's Sanction) was dealt to the player instead.
+            val dealtToCreature = if (excessToController) effectiveAmount - creatureExcessDamage else effectiveAmount
             // Track damage source for "creature dealt damage by this dies" triggers
             if (sourceId != null) {
                 newState = trackDamageDealtToCreature(newState, sourceId, targetId)
-                newState = trackDamageSourceLki(newState, sourceId, targetId, effectiveAmount)
+                newState = trackDamageSourceLki(newState, sourceId, targetId, dealtToCreature)
                 newState = applyDoomedRidersToDamagedCreature(newState, sourceId, targetId)
             }
             // Track per-player damage dealt to this entity this turn (Grothama LTB).
             if (sourceId != null) {
-                newState = trackDamageDealtByPlayer(newState, sourceId, targetId, effectiveAmount)
+                newState = trackDamageDealtByPlayer(newState, sourceId, targetId, dealtToCreature)
             }
         }
 
@@ -1356,7 +1359,7 @@ object DamageUtils {
             sourceWasCreature = projected.isCreature(sourceId),
             sourceName = state.getEntity(sourceId)
                 ?.takeUnless { it.has<com.wingedsheep.engine.state.components.identity.FaceDownComponent>() }
-                ?.get<CardComponent>()?.name,
+                ?.let { projected.getName(sourceId) ?: it.get<CardComponent>()?.name },
             amount = amount,
         )
         return state.updateEntity(targetCreatureId) { container ->

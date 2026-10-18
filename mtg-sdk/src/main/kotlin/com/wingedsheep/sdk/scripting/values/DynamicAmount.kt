@@ -871,7 +871,8 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
             if (sourceFilter != null || excludeSelf) {
                 append(" by ")
                 if (excludeSelf) append("other ")
-                append(sourceFilter?.let { "${it.description} sources" } ?: "sources")
+                append("sources")
+                sourceFilter?.let { append(" ").append(it.description) }
             }
         }
     }
