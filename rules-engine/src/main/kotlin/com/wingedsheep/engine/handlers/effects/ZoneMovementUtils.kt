@@ -1141,14 +1141,18 @@ object ZoneMovementUtils {
         }
         // Card-scoped hand restrictions on the redirected card (Firestorm Phoenix): it is now a new
         // object in its owner's hand, and the restriction is pinned to that object.
-        if (entityId != null && effect is com.wingedsheep.sdk.scripting.effects.CantPlayCardsFromHandEffect) {
+        if (entityId != null && effect is com.wingedsheep.sdk.scripting.effects.CantPlayCardsFromHandEffect &&
+            effect.target == com.wingedsheep.sdk.scripting.targets.EffectTarget.Self
+        ) {
             return com.wingedsheep.engine.mechanics.HandObjectRestrictions.apply(
                 state, entityId,
                 com.wingedsheep.engine.state.components.identity.HandObjectRestrictionKind.CANT_BE_PLAYED,
                 effect.duration, controllerId
             ) ?: (state to emptyList())
         }
-        if (entityId != null && effect is com.wingedsheep.sdk.scripting.effects.RevealCardInHandEffect) {
+        if (entityId != null && effect is com.wingedsheep.sdk.scripting.effects.RevealCardInHandEffect &&
+            effect.target == com.wingedsheep.sdk.scripting.targets.EffectTarget.Self
+        ) {
             return com.wingedsheep.engine.mechanics.HandObjectRestrictions.apply(
                 state, entityId,
                 com.wingedsheep.engine.state.components.identity.HandObjectRestrictionKind.REVEALED,

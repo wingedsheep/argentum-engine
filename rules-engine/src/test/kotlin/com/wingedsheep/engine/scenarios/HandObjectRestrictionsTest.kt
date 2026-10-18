@@ -61,6 +61,14 @@ class HandObjectRestrictionsTest : FunSpec({
         keywords(Keyword.FLASH)
         replacementEffect(rebirth())
     }
+    val morphBird = card("Test Rebirth Morph") {
+        manaCost = "{R}"
+        typeLine = "Creature — Phoenix"
+        power = 3
+        toughness = 2
+        morph = "{R}"
+        replacementEffect(rebirth())
+    }
     val dryad = card("Test Rebirth Dryad") {
         typeLine = "Land Creature — Forest Dryad"
         power = 1
@@ -92,7 +100,7 @@ class HandObjectRestrictionsTest : FunSpec({
         }
     }
 
-    val cards = TestCards.all + listOf(bird, dryad, doom, steal, recall)
+    val cards = TestCards.all + listOf(bird, morphBird, dryad, doom, steal, recall)
 
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
@@ -170,6 +178,22 @@ class HandObjectRestrictionsTest : FunSpec({
         d.passPriorityUntil(Step.PRECOMBAT_MAIN, p1)
         d.landOffers(p1, land).isNotEmpty() shouldBe true
         d.playLand(p1, land).error shouldBe null
+    }
+
+    test("can't play it covers casting it face down") {
+        val d = createDriver()
+        val p1 = d.player1
+        val morph = d.putCreatureOnBattlefield(p1, morphBird.name)
+
+        d.castAndResolve(p1, doom.name, morph)
+        d.getHand(p1) shouldContain morph
+        d.giveMana(p1, Color.RED, 3)
+        withClue("no face-down cast offered for the locked card") {
+            d.castOffers(p1, morph).filter { (it.action as CastSpell).castFaceDown } shouldBe emptyList()
+        }
+        withClue("and a submitted face-down cast is rejected") {
+            d.submit(CastSpell(p1, morph, castFaceDown = true)).error shouldNotBe null
+        }
     }
 
     test("the lock and reveal belong to that hand object: gone once the card leaves the hand and comes back") {
