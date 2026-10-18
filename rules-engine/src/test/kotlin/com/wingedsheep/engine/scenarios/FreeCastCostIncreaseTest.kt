@@ -8,11 +8,13 @@ import com.wingedsheep.engine.core.YesNoResponse
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.sdk.core.Color
+import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.AlternativePaymentChoice
 import com.wingedsheep.sdk.scripting.CostModification
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.MayCastWithoutPayingManaCost
@@ -76,9 +78,19 @@ class FreeCastCostIncreaseTest : FunSpec({
         }
     }
 
+    // An improvise sorcery: tapped artifacts pay generic mana in its total cost (CR 702.126a).
+    val improviseRitual = card("Test Improvise Ritual") {
+        manaCost = "{3}{U}"
+        typeLine = "Sorcery"
+        keywords(Keyword.IMPROVISE)
+        spell {
+            effect = Effects.GainLife(1)
+        }
+    }
+
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(taxSphere, discountEngine, freeCaster, discoverRitual))
+        driver.registerCards(TestCards.all + listOf(taxSphere, discountEngine, freeCaster, discoverRitual, improviseRitual))
         driver.initMirrorMatch(deck = Deck.of("Forest" to 40), startingLife = 20)
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
         return driver
@@ -182,5 +194,21 @@ class FreeCastCostIncreaseTest : FunSpec({
         driver.submitDecision(player, YesNoResponse(yesNo.id, choice = true)).error shouldBe null
         driver.findPermanent(player, "Grizzly Bears") shouldBe null
         driver.getHand(player).any { driver.getCardName(it) == "Grizzly Bears" } shouldBe true
+    }
+
+    test("improvise can tap an artifact to pay a free cast's tax") {
+        val driver = createDriver()
+        val player = driver.activePlayer!!
+        driver.putPermanentOnBattlefield(player, "Test Free Caster")
+        val sphere = driver.putPermanentOnBattlefield(player, "Test Tax Sphere")
+        val ritual = driver.putCardInHand(player, "Test Improvise Ritual")
+
+        driver.submit(
+            CastSpell(
+                player, ritual, useWithoutPayingManaCost = true, paymentStrategy = PaymentStrategy.FromPool,
+                alternativePayment = AlternativePaymentChoice(tapForGenericPermanents = setOf(sphere)),
+            )
+        ).outcome shouldBe Outcome.Done
+        withClue("the tapped Sphere paid its own {1} tax") { driver.isTapped(sphere) shouldBe true }
     }
 })

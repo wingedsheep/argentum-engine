@@ -304,7 +304,7 @@ internal class CastCostPayer(
         // spell's total cost. Unlike waterbend there is no separate amount to cap at — improvise is
         // not a cost of its own (CR 702.126b) — so it runs only when no waterbend cost claimed the
         // taps, and the handler re-checks the keyword before tapping anything.
-        if (waterbendPaidAmount == 0 && !playForFree && cardDef != null &&
+        if (waterbendPaidAmount == 0 && cardDef != null &&
             alternativePayment != null && alternativePayment.tapForGenericPermanents.isNotEmpty()
         ) {
             val result = alternativePaymentHandler.applyImproviseForSpell(

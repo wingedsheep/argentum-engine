@@ -143,14 +143,15 @@ internal class CastCostTotaller(
             if (fixedAltCost != null) {
                 effectiveCost = fixedAltCost.fixedCost
             }
-            // Apply runtime mana tax from exile permissions (e.g., Soul Partition) on top of
-            // whichever base applies (printed cost, or the fixed alternative above).
-            val runtimeCostIncrease = state.getEntity(action.cardId)
-                ?.get<PlayWithCostIncreaseComponent>()
-                ?.takeIf { it.controllerId == action.playerId }
-            if (runtimeCostIncrease != null) {
-                effectiveCost = effectiveCost + runtimeCostIncrease.cost
-            }
+        }
+        // Apply runtime mana tax from exile permissions (e.g., Soul Partition) on top of whichever
+        // base applies (printed cost, the fixed alternative above, or a free cast's {0} — an
+        // increase survives "without paying its mana cost", CR 601.2f).
+        val runtimeCostIncrease = state.getEntity(action.cardId)
+            ?.get<PlayWithCostIncreaseComponent>()
+            ?.takeIf { it.controllerId == action.playerId }
+        if (runtimeCostIncrease != null) {
+            effectiveCost = effectiveCost + runtimeCostIncrease.cost
         }
 
         // Splice (CR 702.47a): every revealed splice card's cost is an *additional* cost, so it lands
@@ -240,7 +241,7 @@ internal class CastCostTotaller(
         // Account for improvise (CR 702.126): each tapped artifact pays {1} of the generic in the
         // spell's *total* cost, with no cap beyond that generic. Shares the tap-for-generic carrier
         // with waterbend, and no card has both — the cap above being 0 is what tells them apart.
-        val costAfterImprovise = if (!playForFree && cardDef != null && validateWaterbendCap == 0 &&
+        val costAfterImprovise = if (cardDef != null && validateWaterbendCap == 0 &&
             action.alternativePayment != null && action.alternativePayment.tapForGenericPermanents.isNotEmpty()
         ) {
             alternativePaymentHandler.calculateReducedCostForImprovise(

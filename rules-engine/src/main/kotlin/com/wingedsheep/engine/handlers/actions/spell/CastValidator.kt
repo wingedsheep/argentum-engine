@@ -785,17 +785,20 @@ internal class CastValidator(
         }
         // The engine, not the client, decides what a convoke/delve/improvise choice is worth: every
         // chosen permanent or card must be one the payment could actually use, or the cost stage
-        // would price a payment `execute` then silently declines to apply. A free cast has no
-        // generic to pay, so `execute` ignores tap-for-generic permanents on one; validation ignores
+        // would price a payment `execute` then silently declines to apply. A free cast owes no
+        // waterbend, so `execute` ignores tap-for-generic permanents on one unless they improvise
+        // (they can pay a cost increase the free cast still owes, CR 601.2f); validation ignores
         // them the same way rather than rejecting a cast whose taps simply do nothing.
+        val improvises = cardDef != null &&
+            grantedKeywordResolver.hasKeyword(state, action.playerId, cardDef, Keyword.IMPROVISE, action.cardId)
         val alternativePayment = action.alternativePayment
-            ?.let { if (playForFree) it.copy(tapForGenericPermanents = emptySet()) else it }
+            ?.let { if (playForFree && !improvises) it.copy(tapForGenericPermanents = emptySet()) else it }
         if (alternativePayment != null && !alternativePayment.isEmpty && cardDef != null) {
             val waterbendCap = castCostTotaller.spellWaterbendAmount(cardDef, action) +
                 castCostTotaller.fixedAltWaterbendAmount(state, action, playForFree)
             val tapForGeneric = when {
                 waterbendCap > 0 -> TapForGeneric.WATERBEND
-                grantedKeywordResolver.hasKeyword(state, action.playerId, cardDef, Keyword.IMPROVISE, action.cardId) -> TapForGeneric.IMPROVISE
+                improvises -> TapForGeneric.IMPROVISE
                 else -> null
             }
             alternativePaymentHandler.validateForSpell(
