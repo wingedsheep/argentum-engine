@@ -146,7 +146,8 @@ class PutOntoBattlefieldAttachedToChosenExecutor(
         val cardName = cardComponent.name
         val requirementInfo = TargetRequirementInfo(
             index = 0,
-            description = effect.hostFilter.description,
+            // Not a target: say what the pick is for ("creature for Takklemaggot to attach to").
+            description = "${effect.hostFilter.description} for $cardName to attach to",
             minTargets = 1,
             maxTargets = 1
         )
