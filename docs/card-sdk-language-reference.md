@@ -9517,6 +9517,20 @@ staticAbility {
   spell) whose source has that card type, **regardless of who controls the source**. Deliberately not
   protection-from-[type] (which would also stop equipping/enchanting/blocking/damage). (Artifact Ward, with
   `CardType.ARTIFACT`)
+- `CantBeTargetedBy(quality: UntargetableBy, filter = source())` — "[filter] can't be the target of
+  [quality]" for a *kind* of spell or ability that isn't a color, card type or controller. Qualities:
+  - `UntargetableBy.SpellsWithSubtype(Subtype("Aura"))` — "can't be the target of Aura spells" (Tetsuo
+    Umezawa). Spells only: an Aura's *ability* may target it, and an Aura put onto the battlefield without
+    being cast doesn't target, so it may still be attached.
+  - `UntargetableBy.TargetingOnly(Subtype.WALL, spells = true, abilities = true)` — "can't be the target of
+    spells that can target only Walls or of abilities that can target only Walls" (Wall of Shadows). The
+    target requirement being used must structurally demand the subtype (a top-level `HasSubtype` in a
+    plain object requirement, or one shared by every `anyOf` branch — "target Wall", "enchant Wall"); "target
+    creature" or "target Wall or player" can reach a non-Wall and doesn't count.
+
+  Not controller-gated (binds its own controller's spells and abilities too). Projected as one keyword per
+  quality; enforced at legal-target enumeration, cast/activation validation and the resolution re-check by
+  the shared engine helper `UntargetableByRules`.
 - `GrantCardType(cardType, filter)` / `RemoveCardType(cardType, filter)` — Layer 4 type-changing statics that add or
   remove a card type (e.g. `"CREATURE"`). `RemoveCardType` backs Impending's "isn't a creature while it has a time
   counter" (wrapped in a `ConditionalStaticAbility`); reuse it for any "it's no longer a [type]" effect — the Theros

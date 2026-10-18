@@ -4364,6 +4364,89 @@
     ]
 }
 
+// Tetsuo Umezawa
+{
+    "name": "Tetsuo Umezawa",
+    "manaCost": "{U}{B}{R}",
+    "typeLine": "Legendary Creature — Human Archer",
+    "oracleText": "Tetsuo Umezawa can't be the target of Aura spells.\n{U}{B}{B}{R}, {T}: Destroy target tapped or blocking creature.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Tetsuo Umezawa:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{U}{B}{B}{R}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ],
+                                "statePredicates": [
+                                    {
+                                        "type": "StateOr",
+                                        "predicates": [
+                                            "IsTapped",
+                                            "IsBlocking"
+                                        ]
+                                    }
+                                ]
+                            }
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "CantBeTargetedBy",
+                "quality": {
+                    "type": "UntargetableBy.SpellsWithSubtype",
+                    "subtype": "Aura"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "262",
+        "rarity": "RARE",
+        "artist": "Julie Baroh",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/3/8384f87b-26c2-45b7-98ef-352c384f205e.jpg?1783948032"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK",
+        "RED"
+    ]
+}
+
 // The Abyss
 {
     "name": "The Abyss",

@@ -76,6 +76,7 @@ Families:
 - [TargetRequirement](#targetrequirement)
 - [TimingRule](#timingrule)
 - [UnlockCostTarget](#unlockcosttarget)
+- [UntargetableBy](#untargetableby)
 - [WardCost](#wardcost)
 
 ## AbilityCost
@@ -1771,6 +1772,7 @@ Families:
 - `CantBeBlockedUnlessDefenderSharesCreatureType(minSharedCount: Int, filter: GroupFilter)` — This creature can't be blocked unless defending player controls N or more creatures that share a creature type.
 - `CantBeBlockedWhilePropertyAtMost(maxValue: Int, properties: Set<EntityNumericProperty>, filter: GroupFilter)` — Creatures matching filter can't be blocked while every stat in properties is at most maxValue — the "small creatures slip through" evasion, in both the scopes it is printed in: - **Tetsuko Umezawa,…
 - `CantBeSacrificed(filter: GroupFilter)` — Permanents matching filter can't be sacrificed.
+- `CantBeTargetedBy(quality: UntargetableBy, filter: GroupFilter)` — Permanents matching filter (default: this one) can't be the target of spells or abilities of the quality kind — "Tetsuo Umezawa can't be the target of Aura spells", "This creature can't be the targ…
 - `CantBeTargetedByOpponentAbilities` — This permanent can't be the target of abilities your opponents control.
 - `CantBeTargetedBySourceTypeAbilities(sourceType: CardType, filter: GroupFilter)` — Creatures matching filter can't be the target of *abilities from sources of a given card type* (sourceType) — hexproof keyed to a source *category* (the source's card type) rather than a controller…
 - `CantBeTurnedFaceUp(filter: GroupFilter)` — The affected permanent can't be turned face up.
@@ -1964,6 +1966,11 @@ Families:
 ## UnlockCostTarget
 
 - `UnlockCostTarget.YouUnlock` — Door-unlock special actions performed by the source's controller ("unlock costs you pay").
+
+## UntargetableBy
+
+- `UntargetableBy.SpellsWithSubtype(subtype: Subtype)` — Spells with subtype — "can't be the target of Aura spells" (Tetsuo Umezawa, Bartel Runeaxe).
+- `UntargetableBy.TargetingOnly(subtype: Subtype, spells: Boolean, abilities: Boolean)` — Spells and/or abilities that can target only objects with subtype — "spells that can target only Walls or … abilities that can target only Walls" (Wall of Shadows).
 
 ## WardCost
 

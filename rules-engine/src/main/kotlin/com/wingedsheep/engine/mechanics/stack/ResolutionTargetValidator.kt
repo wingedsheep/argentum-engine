@@ -271,7 +271,8 @@ internal class ResolutionTargetValidator(
         val entityController = projected.getController(target.entityId)
             ?: state.getEntity(target.entityId)?.get<ControllerComponent>()?.playerId
         return passesTargetingRestrictions(
-            state, projected, target, entityController, controllerId, sourceId, sourceColors, targetingSourceType
+            state, projected, target, entityController, controllerId, sourceId, sourceColors, targetingSourceType,
+            getRequirementForTargetIndex(index, targetRequirements)
         ) &&
             passesProtection(state, projected, target, entityController, controllerId, sourceId, sourceColors, sourceSubtypes) &&
             stillMatchesRequirementFilter(state, projected, index, target, targetRequirements, predicateContext)
@@ -286,7 +287,8 @@ internal class ResolutionTargetValidator(
         controllerId: EntityId,
         sourceId: EntityId?,
         sourceColors: Set<Color>,
-        targetingSourceType: TargetingSourceType
+        targetingSourceType: TargetingSourceType,
+        requirement: TargetRequirement?
     ): Boolean {
         // Check shroud — can't be targeted by anyone (Rule 702.18)
         if (projected.hasKeyword(target.entityId, "SHROUD")) return false
@@ -297,6 +299,15 @@ internal class ResolutionTargetValidator(
         // permanent that gained the restriction after being targeted is dropped here.
         if (targetingSourceType == TargetingSourceType.SPELL &&
             projected.hasKeyword(target.entityId, AbilityFlag.CANT_BE_TARGETED_BY_SPELLS)
+        ) {
+            return false
+        }
+
+        // "Can't be the target of Aura spells / of spells or abilities that can target only
+        // Walls" — the same reading as at targeting (Tetsuo Umezawa, Wall of Shadows).
+        if (com.wingedsheep.engine.mechanics.targeting.UntargetableByRules.targetingError(
+                state, target.entityId, sourceId, targetingSourceType, requirement
+            ) != null
         ) {
             return false
         }

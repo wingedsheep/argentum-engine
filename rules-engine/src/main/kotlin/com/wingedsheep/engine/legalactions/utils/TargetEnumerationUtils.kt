@@ -15,6 +15,7 @@ import com.wingedsheep.engine.mechanics.targeting.HexproofSuppression
 import com.wingedsheep.engine.mechanics.targeting.PlayerTargetRestriction
 import com.wingedsheep.engine.mechanics.targeting.SourceKindProtection
 import com.wingedsheep.engine.mechanics.targeting.StackObjectTargeting
+import com.wingedsheep.engine.mechanics.targeting.UntargetableByRules
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
@@ -45,6 +46,21 @@ class TargetEnumerationUtils(
         requirement: TargetRequirement,
         sourceId: EntityId? = null,
         targetingSourceType: TargetingSourceType = TargetingSourceType.ANY
+    ): List<EntityId> {
+        val candidates = findCandidateTargets(state, playerId, requirement, sourceId, targetingSourceType)
+        // "Can't be the target of Aura spells / of spells that can target only Walls" — keyed on
+        // the source's kind and on this requirement, so computed once for the whole candidate set.
+        val untargetableKeywords = UntargetableByRules.blockingKeywords(state, sourceId, targetingSourceType, requirement)
+        return if (untargetableKeywords.isEmpty()) candidates
+        else candidates.filterNot { UntargetableByRules.isBlocked(state, it, untargetableKeywords) }
+    }
+
+    private fun findCandidateTargets(
+        state: GameState,
+        playerId: EntityId,
+        requirement: TargetRequirement,
+        sourceId: EntityId?,
+        targetingSourceType: TargetingSourceType
     ): List<EntityId> {
         return when (requirement) {
             is TargetPlayer -> state.turnOrder.filter { state.hasEntity(it) && !playerHasShroud(state, it) &&

@@ -15,6 +15,7 @@ import com.wingedsheep.engine.mechanics.layers.ProjectedState
 import com.wingedsheep.engine.mechanics.targeting.ControllerHexproof
 import com.wingedsheep.engine.mechanics.targeting.ControllerShroud
 import com.wingedsheep.engine.mechanics.targeting.SourceKindProtection
+import com.wingedsheep.engine.mechanics.targeting.UntargetableByRules
 import com.wingedsheep.engine.mechanics.targeting.PlayerTargetRestriction
 import com.wingedsheep.engine.mechanics.targeting.StackObjectTargeting
 import com.wingedsheep.sdk.core.Keyword
@@ -148,13 +149,17 @@ class TargetFinder(
         val sourceColors = sourceId?.takeIf { state.hasEntity(it) }?.let { id ->
             sourceColorNames(state, projected, id)
         }
+        // "Can't be the target of Aura spells / of spells that can target only Walls" — keyed on
+        // the source's kind and on this requirement, so computed once for the whole candidate set.
+        val untargetableKeywords = UntargetableByRules.blockingKeywords(state, sourceId, targetingSourceType, requirement)
         return candidates.filter { id ->
             if (id in state.turnOrder) {
                 !PlayerProtectionRules.isProtectedFromSource(
                     state, id, sourceId, controllerId, predicateEvaluator = predicateEvaluator
                 )
             } else {
-                sourceColors == null || !ColorProtection.isProtected(projected, id, sourceColors)
+                (sourceColors == null || !ColorProtection.isProtected(projected, id, sourceColors)) &&
+                    !UntargetableByRules.isBlocked(state, id, untargetableKeywords)
             }
         }
     }

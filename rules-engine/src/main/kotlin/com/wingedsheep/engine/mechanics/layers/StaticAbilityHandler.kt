@@ -823,6 +823,16 @@ class StaticAbilityHandler(
                     affectsFilter = convertGroupFilter(ability.filter)
                 )
             }
+            is com.wingedsheep.sdk.scripting.CantBeTargetedBy -> {
+                // Projected as one keyword per quality; enforced at every targeting site by
+                // UntargetableByRules (Tetsuo Umezawa, Wall of Shadows).
+                ContinuousEffectData(
+                    modification = Modification.GrantKeyword(
+                        com.wingedsheep.engine.mechanics.targeting.UntargetableByRules.keyword(ability.quality)
+                    ),
+                    affectsFilter = convertGroupFilter(ability.filter)
+                )
+            }
             is ModifyStats -> {
                 ContinuousEffectData(
                     modification = Modification.ModifyPowerToughness(ability.powerBonus, ability.toughnessBonus),

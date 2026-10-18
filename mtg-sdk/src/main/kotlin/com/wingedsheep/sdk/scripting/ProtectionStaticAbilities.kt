@@ -2,6 +2,7 @@ package com.wingedsheep.sdk.scripting
 
 import com.wingedsheep.sdk.core.CardType
 import com.wingedsheep.sdk.core.Color
+import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.scripting.effects.protectionDescription
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.text.TextReplacer
@@ -421,6 +422,95 @@ data class CantBeTargetedBySourceTypeAbilities(
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
         val newFilter = filter.applyTextReplacement(replacer)
         return if (newFilter !== filter) copy(filter = newFilter) else this
+    }
+}
+
+/**
+ * The *kind* of spell or ability a [CantBeTargetedBy] permanent is untargetable by — a kind named
+ * by something other than the source's color, card type or controller (those are protection,
+ * hexproof-from and [CantBeTargetedBySourceTypeAbilities]).
+ */
+@Serializable
+sealed interface UntargetableBy {
+    val description: String
+    fun applyTextReplacement(replacer: TextReplacer): UntargetableBy = this
+
+    /**
+     * Spells with [subtype] — "can't be the target of Aura spells" (Tetsuo Umezawa, Bartel
+     * Runeaxe). Only spells: an ability of an Aura may still target it, and an Aura put onto the
+     * battlefield without being cast doesn't target, so it may still be attached.
+     */
+    @SerialName("UntargetableBy.SpellsWithSubtype")
+    @Serializable
+    data class SpellsWithSubtype(val subtype: Subtype) : UntargetableBy {
+        override val description: String = "${subtype.value} spells"
+        override fun applyTextReplacement(replacer: TextReplacer): UntargetableBy {
+            val new = replacer.replaceSubtype(subtype)
+            return if (new == subtype) this else copy(subtype = new)
+        }
+    }
+
+    /**
+     * Spells and/or abilities that can target only objects with [subtype] — "spells that can target
+     * only Walls or … abilities that can target only Walls" (Wall of Shadows). A target requirement
+     * counts when its filter structurally demands [subtype] ("target Wall", "enchant Wall"); a
+     * generic "target creature" can also reach a non-Wall, so it doesn't.
+     */
+    @SerialName("UntargetableBy.TargetingOnly")
+    @Serializable
+    data class TargetingOnly(
+        val subtype: Subtype,
+        val spells: Boolean = true,
+        val abilities: Boolean = true
+    ) : UntargetableBy {
+        init {
+            require(spells || abilities) { "TargetingOnly must restrict spells, abilities, or both" }
+        }
+
+        override val description: String
+            get() {
+                val plural = "${subtype.value}s"
+                return listOfNotNull(
+                    "spells that can target only $plural".takeIf { spells },
+                    "abilities that can target only $plural".takeIf { abilities }
+                ).joinToString(" or of ")
+            }
+
+        override fun applyTextReplacement(replacer: TextReplacer): UntargetableBy {
+            val new = replacer.replaceSubtype(subtype)
+            return if (new == subtype) this else copy(subtype = new)
+        }
+    }
+}
+
+/**
+ * Permanents matching [filter] (default: this one) can't be the target of spells or abilities of
+ * the [quality] kind — "Tetsuo Umezawa can't be the target of Aura spells", "This creature can't be
+ * the target of spells that can target only Walls or of abilities that can target only Walls".
+ *
+ * Closest neighbours: [CantBeTargetedBySourceTypeAbilities] keys on the source's *card type* and
+ * only blocks abilities; [CantBeTargetedByOpponentAbilities] is controller-gated. Neither can say
+ * "Aura spells" (a subtype, spells only) or "can target only Walls" (a property of the targeting
+ * requirement, not the source). Like protection and unlike hexproof, this is not controller-gated:
+ * it applies to its own controller's spells and abilities too.
+ *
+ * Projected as a keyword per [quality] (so losing all abilities drops it); enforced at every
+ * targeting site — legal-target enumeration, cast/activation validation, and the resolution
+ * re-check — by one shared engine helper.
+ */
+@SerialName("CantBeTargetedBy")
+@Serializable
+data class CantBeTargetedBy(
+    val quality: UntargetableBy,
+    val filter: GroupFilter = GroupFilter.source()
+) : StaticAbility {
+    override val description: String =
+        "${filter.description.replaceFirstChar { it.uppercase() }} can't be the target of ${quality.description}"
+
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
+        val newQuality = quality.applyTextReplacement(replacer)
+        val newFilter = filter.applyTextReplacement(replacer)
+        return if (newQuality !== quality || newFilter !== filter) copy(quality = newQuality, filter = newFilter) else this
     }
 }
 
