@@ -45,6 +45,7 @@ val HeikoYamazakiTheGeneral = card("Heiko Yamazaki, the General") {
             run(Effects.GrantMayPlayFromExile(
                 from = chosen,
                 expiry = MayPlayExpiry.EndOfTurn,
+                nonLandOnly = true,
             ))
         }
         description = "Whenever a Samurai or Warrior you control attacks alone, you may cast target " +
