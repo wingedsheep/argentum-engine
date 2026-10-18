@@ -1134,6 +1134,7 @@ class ConditionEvaluator(
         EffectTarget.ChosenCreature,
         EffectTarget.Controller,
         EffectTarget.ControllerOfDamageSource,
+        EffectTarget.DamageSource,
         is EffectTarget.ControllerOfPipelineTarget,
         EffectTarget.ControllerOfTriggeringEntity,
         EffectTarget.EachDamagedBySourceThisGame,

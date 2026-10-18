@@ -5235,6 +5235,14 @@ A resolving nonpermanent spell retains its stack instance through serialized eff
   object that did the targeting (`TriggerContext.targetingSourceEntityId`), where `TriggeringEntity` is
   the permanent it targeted. The object sibling of `Player.ControllerOfTargetingSource`. Mirror-Shield
   Hoplite copies it with `CopyTargetTriggeredAbility(TargetingSource)`.
+- `EffectTarget.DamageSource` — "it" in a deals-damage trigger: the object that dealt the damage
+  (`TriggerContext.damageSourceId`), where `TriggeringEntity` is the damage's recipient. Fixed when the
+  trigger fires, so on an ATTACHED-bound trigger it still names the creature that dealt the damage after
+  the Equipment moved or left in response — unlike `EquippedCreature`, which re-reads the attachment at
+  resolution. Read live (a departed source makes the effect a no-op). Ogre-Head Helm: "whenever
+  equipped creature deals combat damage to a player, you may sacrifice it" is
+  `Effects.SacrificeTarget(EffectTarget.DamageSource)`. The trigger-side sibling of
+  `ControllerOfDamageSource` (the damage-replacement reading).
 - `EffectTarget.TargetController` — the controller of the spell/ability's first chosen target
   ("its controller creates two Map tokens", "its controller gains 4 life"). Control-change effects
   are honored (projected controller first), and a target that has already left the battlefield —

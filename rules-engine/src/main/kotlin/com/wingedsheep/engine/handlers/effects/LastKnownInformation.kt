@@ -85,6 +85,8 @@ fun lkiPolicyFor(reference: EffectTarget.SingleEntity): LkiPolicy = when (refere
     is EffectTarget.DiscardedAsCost,
     // The spell or ability that did the targeting is a stack object, never a permanent.
     EffectTarget.TargetingSource,
+    // The damage source is read where it is now; a departed one is simply gone (no snapshot taken).
+    EffectTarget.DamageSource,
     -> LkiPolicy.LIVE_ONLY
 }
 

@@ -171,6 +171,7 @@ class DamageTriggerDetector(
                     controllerId = controllerId,
                     triggerContext = TriggerContext(
                         triggeringEntityId = sourceId,
+                        damageSourceId = sourceId,
                         damageAmount = event.amount
                     )
                 )
@@ -220,6 +221,7 @@ class DamageTriggerDetector(
                             controllerId = entry.controllerId,
                             triggerContext = TriggerContext(
                                 triggeringEntityId = damageSourceId,
+                                damageSourceId = damageSourceId,
                                 damageAmount = event.amount
                             )
                         )
@@ -341,6 +343,7 @@ class DamageTriggerDetector(
             // to the damaged player rather than the source.
             TriggerContext(
                 triggeringEntityId = event.sourceId,
+                damageSourceId = event.sourceId,
                 triggeringPlayerId = event.targetId.takeIf { it in state.turnOrder },
                 damageAmount = event.amount,
                 recipientToughnessAtDamage = event.targetToughnessAtDamage
@@ -447,6 +450,7 @@ class DamageTriggerDetector(
                                 controllerId = entry.controllerId,
                                 triggerContext = TriggerContext(
                                     triggeringEntityId = damagedPlayerId,
+                                    damageSourceId = damageSourceId,
                                     damageAmount = event.amount
                                 )
                             )

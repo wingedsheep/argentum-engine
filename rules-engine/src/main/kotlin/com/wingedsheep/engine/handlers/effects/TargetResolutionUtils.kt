@@ -107,6 +107,7 @@ object TargetResolutionUtils {
         is EffectTarget.SpecificEntity -> target.entityId
         EffectTarget.TriggeringEntity -> context.triggeringEntityId
         EffectTarget.TargetingSource -> context.triggerContext?.targetingSourceEntityId
+        EffectTarget.DamageSource -> context.triggerContext?.damageSourceId
         is EffectTarget.DiscardedAsCost -> context.discardedAsCostCards.getOrNull(target.index)
         is EffectTarget.RevealedAsCost -> context.revealedAsCostSnapshots.getOrNull(target.index)?.entityId
         is EffectTarget.SacrificedAsCost -> context.sacrificedPermanents.getOrNull(target.index)?.entityId

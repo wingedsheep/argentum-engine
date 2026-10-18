@@ -892,6 +892,7 @@ EffectTarget.Controller — EffectTarget
 EffectTarget.ControllerOfDamageSource — EffectTarget
 EffectTarget.ControllerOfPipelineTarget — EffectTarget
 EffectTarget.ControllerOfTriggeringEntity — EffectTarget
+EffectTarget.DamageSource — EffectTarget
 EffectTarget.DiscardedAsCost — EffectTarget
 EffectTarget.EachDamagedBySourceThisGame — EffectTarget
 EffectTarget.EnchantedCreature — EffectTarget

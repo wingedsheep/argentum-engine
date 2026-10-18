@@ -320,6 +320,24 @@ sealed interface EffectTarget {
     }
 
     /**
+     * DAMAGE SOURCE: the object that dealt the damage of a deals-damage trigger — "it" in "whenever
+     * equipped creature deals combat damage to a player, you may sacrifice it" (Ogre-Head Helm).
+     * Only meaningful inside a [com.wingedsheep.sdk.scripting.EventPattern.DealsDamageEvent]
+     * trigger, where [TriggeringEntity] is the damage's *recipient*.
+     *
+     * Unlike [EquippedCreature]/[EnchantedCreature], which re-read the attachment at resolution,
+     * this is fixed when the trigger fires, so it still names the creature that dealt the damage
+     * after the Equipment moved or left in response. Read live: once that creature has left the
+     * battlefield, an effect on it does nothing. The trigger-side sibling of
+     * [ControllerOfDamageSource], which is the damage-replacement reading.
+     */
+    @SerialName("DamageSource")
+    @Serializable
+    data object DamageSource : SingleEntity {
+        override val description: String = "that creature"
+    }
+
+    /**
      * CONTROLLER OF TRIGGERING ENTITY: Refers to the controller/owner of the
      * entity that caused the trigger to fire.
      * Used for effects like Tephraderm: "deals that much damage to that spell's controller"

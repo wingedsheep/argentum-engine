@@ -78,6 +78,8 @@ data class TriggerContext(
     val minusOneMinusOneCounterCount: Int? = null,
     /** The spell or ability entity that targeted a permanent (for ward triggers) */
     val targetingSourceEntityId: EntityId? = null,
+    /** The object that dealt the triggering damage (`EffectTarget.DamageSource`); null outside damage triggers. */
+    val damageSourceId: EntityId? = null,
     /** Last known power when the triggering entity left the battlefield (for dies/leaves triggers) */
     val lastKnownPower: Int? = null,
     /** Last known toughness when the triggering entity left the battlefield (for dies/leaves triggers) */
@@ -363,6 +365,7 @@ data class TriggerContext(
                 )
                 is DamageDealtEvent -> TriggerContext(
                     triggeringEntityId = event.targetId,
+                    damageSourceId = event.sourceId,
                     triggeringPlayerId = event.targetLastKnown?.controllerId,
                     damageAmount = event.amount,
                     excessDamageAmount = event.excessAmount.takeIf { it > 0 },
