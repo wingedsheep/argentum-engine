@@ -18,14 +18,14 @@ import io.kotest.matchers.shouldBe
 
 /**
  * Feature test for [com.wingedsheep.sdk.scripting.effects.IterationSpace.CounterKindsOn],
- * `RemoveCountersOfChosenKind`, and a `ChooseAction` inside a counter-kind loop — "for each kind
+ * `RemoveCountersOfIteratedKind`, and a `ChooseAction` inside a counter-kind loop — "for each kind
  * of counter on target permanent, put another counter of that kind on it or remove one from it"
  * (Dramatist's Puppet), driven through an inline sorcery.
  *
  * Proves: one add-or-remove prompt per kind on the target (and only the target), each label
  * naming its kind through `{counter}`; the chosen option still sees the kind after the decision;
- * removing the last counter of a kind takes it off; a target without counters asks nothing; and
- * `RemoveCountersOfChosenKind(kindFrom = RECIPIENT)` asks which kind only when there are two.
+ * a target without counters asks nothing; and the iterated-kind removal outside a counter-kind
+ * loop removes nothing.
  */
 class CounterKindsOnScenarioTest : ScenarioTestBase() {
 
@@ -42,7 +42,7 @@ class CounterKindsOnScenarioTest : ScenarioTestBase() {
                         EffectChoice("Put another {counter} counter on it",
                             Effects.AddCountersOfChosenKind(t, kindFrom = CounterKindSource.ITERATION)),
                         EffectChoice("Remove a {counter} counter from it",
-                            Effects.RemoveCountersOfChosenKind(t, kindFrom = CounterKindSource.ITERATION))
+                            Effects.RemoveCountersOfIteratedKind(t))
                     )
                 )
             )
@@ -52,10 +52,10 @@ class CounterKindsOnScenarioTest : ScenarioTestBase() {
     private val pluck = card("Test Counter Pluck") {
         manaCost = "{1}"
         typeLine = "Sorcery"
-        oracleText = "Remove a counter from target permanent."
+        oracleText = "Remove a counter of that kind from target permanent."
         spell {
             val t = target(TargetFilter.Permanent)
-            effect = Effects.RemoveCountersOfChosenKind(t)
+            effect = Effects.RemoveCountersOfIteratedKind(t)
         }
     }
 
@@ -126,21 +126,7 @@ class CounterKindsOnScenarioTest : ScenarioTestBase() {
             counters(game, bears) shouldBe emptyMap()
         }
 
-        test("remove a counter of a chosen kind: prompt for two kinds, none for one") {
-            val game = board("Test Counter Pluck")
-            val bears = game.findPermanent("Grizzly Bears")!!
-            seed(game, bears, CounterType.PLUS_ONE_PLUS_ONE, 2)
-            seed(game, bears, CounterType.STUN, 1)
-
-            game.castSpell(1, "Test Counter Pluck", targetId = bears).error shouldBe null
-            game.resolveStack()
-            val decision = game.getPendingDecision() as ChooseOptionDecision
-            decision.options.toSet() shouldBe setOf(CounterType.PLUS_ONE_PLUS_ONE.printed, CounterType.STUN.printed)
-            game.answer(CounterType.PLUS_ONE_PLUS_ONE.printed)
-            counters(game, bears) shouldBe mapOf(CounterType.PLUS_ONE_PLUS_ONE to 1, CounterType.STUN to 1)
-        }
-
-        test("remove a counter of a chosen kind: a single kind is removed without a prompt") {
+        test("the iterated-kind removal outside a counter-kind loop removes nothing") {
             val game = board("Test Counter Pluck")
             val bears = game.findPermanent("Grizzly Bears")!!
             seed(game, bears, CounterType.STUN, 1)
@@ -149,7 +135,7 @@ class CounterKindsOnScenarioTest : ScenarioTestBase() {
             game.resolveStack()
 
             game.hasPendingDecision() shouldBe false
-            counters(game, bears) shouldBe emptyMap()
+            counters(game, bears) shouldBe mapOf(CounterType.STUN to 1)
         }
     }
 }

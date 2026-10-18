@@ -40,7 +40,7 @@ val DramatistsPuppet = card("Dramatist's Puppet") {
                     ),
                     EffectChoice(
                         "Remove a {counter} counter from it",
-                        Effects.RemoveCountersOfChosenKind(permanent, kindFrom = CounterKindSource.ITERATION)
+                        Effects.RemoveCountersOfIteratedKind(permanent)
                     )
                 )
             )

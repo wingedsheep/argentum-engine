@@ -2304,18 +2304,17 @@ object Effects {
         com.wingedsheep.sdk.scripting.effects.AddCountersOfChosenKindEffect(target, count, kindFrom)
 
     /**
-     * "Remove [count] counter(s) of a chosen kind from [target]" — the removing sibling of
-     * [AddCountersOfChosenKind], with the same [kindFrom] contract: the player picks among the
-     * kinds already there (no prompt when only one), or the kind an enclosing counter-kind loop
-     * is visiting. Dramatist's Puppet.
+     * "Remove [count] counter(s) of that kind from [target]" — the kind an enclosing
+     * [ForEachCounterKindOn] / [ForEachCounterKindAmong] loop is visiting (Dramatist's Puppet's
+     * "or remove one from it"); the removing counterpart of
+     * `AddCountersOfChosenKind(kindFrom = ITERATION)`. For a player-chosen kind use
+     * [RemoveCounterOfAnyKind].
      */
-    fun RemoveCountersOfChosenKind(
+    fun RemoveCountersOfIteratedKind(
         target: EffectTarget = EffectTarget.ContextTarget(0),
-        count: Int = 1,
-        kindFrom: com.wingedsheep.sdk.scripting.effects.CounterKindSource =
-            com.wingedsheep.sdk.scripting.effects.CounterKindSource.RECIPIENT
+        count: Int = 1
     ): Effect =
-        com.wingedsheep.sdk.scripting.effects.RemoveCountersOfChosenKindEffect(target, count, kindFrom)
+        com.wingedsheep.sdk.scripting.effects.RemoveCountersOfIteratedKindEffect(target, count)
 
     /**
      * Put every counter that was on the triggering source onto a target.
@@ -4226,7 +4225,7 @@ object Effects {
 
     /**
      * Run [effect] once per **kind of counter** on [entity] (a single permanent — usually the
-     * target), with that kind exposed to [AddCountersOfChosenKind] / [RemoveCountersOfChosenKind]
+     * target), with that kind exposed to [AddCountersOfChosenKind] / [RemoveCountersOfIteratedKind]
      * via `kindFrom = CounterKindSource.ITERATION` and to a `{counter}` placeholder in a
      * `ChooseAction` label or selection prompt. "For each kind of counter on target permanent,
      * put another counter of that kind on it or remove one from it" (Dramatist's Puppet) is a

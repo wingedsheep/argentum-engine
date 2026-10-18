@@ -114,7 +114,7 @@ data class AddCountersUpToEffect(
  * currently on the target at resolution: none is a no-op, exactly one is placed without a prompt,
  * and two or more ask the effect's controller to pick one through a `ChooseOptionDecision`.
  * With [CounterKindSource.ITERATION] the kind is the one an enclosing
- * `ForEachEffect(IterationSpace.CounterKindsAmong)` is visiting — "put a counter of that kind on
+ * `ForEachEffect(IterationSpace.CounterKindsAmong / CounterKindsOn)` is visiting — "put a counter of that kind on
  * either of those tokens" (Exotic Pets) — and no choice is asked; outside such a loop it is a
  * no-op. Either way the counters are placed through the standard [AddCountersEffect] path, so
  * counter-placement replacements (Hardened Scales) and counter-placed triggers apply. A recipient
@@ -143,33 +143,26 @@ data class AddCountersOfChosenKindEffect(
 }
 
 /**
- * "Remove [count] counter(s) of a chosen kind from [target]" — the removing sibling of
- * [AddCountersOfChosenKindEffect], with the same [kindFrom] contract. With
- * [CounterKindSource.RECIPIENT] the controller picks among the kinds on the target ("remove a
- * counter from target permanent"; no prompt when only one kind is there); with
- * [CounterKindSource.ITERATION] the kind is the one an enclosing counter-kind loop is visiting —
- * "for each kind of counter on target permanent, put another counter of that kind on it or remove
- * one from it" (Dramatist's Puppet). Removal goes through [RemoveCountersEffect], so it removes
- * only what is there (never below zero) and emits the usual counter-removed events.
+ * "Remove [count] counter(s) of that kind from [target]", where the kind is the one an enclosing
+ * counter-kind loop (`IterationSpace.CounterKindsOn` / `CounterKindsAmong`) is visiting — "for each
+ * kind of counter on target permanent, put another counter of that kind on it or remove one from
+ * it" (Dramatist's Puppet). The removing counterpart of
+ * `AddCountersOfChosenKindEffect(kindFrom = ITERATION)`; outside such a loop it removes nothing.
+ * A player-chosen kind ("remove a counter from target permanent") is already
+ * `Effects.RemoveCounterOfAnyKind`. Removal goes through [RemoveCountersEffect], so it removes only
+ * what is there (never below zero) and emits the usual counter-removed event.
  *
  * @property target The permanent (or player) losing the counters.
  * @property count How many counters of the kind to remove.
- * @property kindFrom Where the kind comes from: chosen among the target's own, or the loop's.
  */
-@SerialName("RemoveCountersOfChosenKind")
+@SerialName("RemoveCountersOfIteratedKind")
 @Serializable
-data class RemoveCountersOfChosenKindEffect(
+data class RemoveCountersOfIteratedKindEffect(
     val target: EffectTarget = EffectTarget.ContextTarget(0),
-    val count: Int = 1,
-    val kindFrom: CounterKindSource = CounterKindSource.RECIPIENT
+    val count: Int = 1
 ) : Effect {
-    override val description: String = when (kindFrom) {
-        CounterKindSource.RECIPIENT ->
-            "Remove " + (if (count == 1) "a counter" else "$count counters") + " from ${target.description}"
-        CounterKindSource.ITERATION ->
-            "Remove " + (if (count == 1) "a counter" else "$count counters") +
-                " of that kind from ${target.description}"
-    }
+    override val description: String =
+        "Remove " + (if (count == 1) "a counter" else "$count counters") + " of that kind from ${target.description}"
 }
 
 /** Where [AddCountersOfChosenKindEffect] takes its counter kind from. */

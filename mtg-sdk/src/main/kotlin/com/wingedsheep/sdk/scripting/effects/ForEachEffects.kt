@@ -138,7 +138,7 @@ sealed interface IterationSpace {
      * off [entity] (its current counters, only kinds with at least one counter), snapshotted
      * before the first iteration in canonical id order, and each is exposed through the
      * chosen-counter-kind context exactly as [CounterKindsAmong] exposes it — so
-     * `AddCountersOfChosenKind` / `RemoveCountersOfChosenKind` with `kindFrom = ITERATION`, a
+     * `AddCountersOfChosenKind(kindFrom = ITERATION)` / `RemoveCountersOfIteratedKind`, a
      * `{counter}` placeholder in a body prompt or a `ChooseAction` label, all read the visited
      * kind. An unresolvable entity or one without counters → zero iterations.
      */

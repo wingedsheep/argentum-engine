@@ -2467,17 +2467,17 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   counters of it are placed through `AddCounters`, so placement replacements and counter-placed triggers
   apply. Works on a player target (poison) as well as a permanent. Pass
   `kindFrom = CounterKindSource.ITERATION` to place the kind an enclosing
-  `ForEachCounterKindAmong` loop is visiting instead — no choice is asked, and outside such a loop
+  `ForEachCounterKindAmong` / `ForEachCounterKindOn` loop is visiting instead — no choice is asked, and outside such a loop
   it places nothing (Exotic Pets).
-- `RemoveCountersOfChosenKind(target?, count = 1, kindFrom = RECIPIENT)` — the removing sibling of
-  `AddCountersOfChosenKind`, same kind contract: "remove a counter from target permanent" asks the
-  controller which kind (no prompt for a single kind, no-op with none); with
-  `kindFrom = CounterKindSource.ITERATION` it removes the kind an enclosing counter-kind loop is
-  visiting. Removal goes through `RemoveCounters` (never below zero, usual counter-removed event).
-  "For each kind of counter on target permanent, put another counter of that kind on it or remove one
-  from it" (Dramatist's Puppet) is `ForEachCounterKindOn(ContextTarget(0), ChooseAction(
+- `RemoveCountersOfIteratedKind(target?, count = 1)` — remove `count` counters of the kind an enclosing
+  counter-kind loop (`ForEachCounterKindOn` / `ForEachCounterKindAmong`) is visiting; the removing
+  counterpart of `AddCountersOfChosenKind(kindFrom = ITERATION)`, a no-op outside such a loop. Removal
+  goes through `RemoveCounters` (never below zero, usual counter-removed event). A player-chosen kind
+  ("remove a counter from target permanent") is `RemoveCounterOfAnyKind`. "For each kind of counter on
+  target permanent, put another counter of that kind on it or remove one from it" (Dramatist's Puppet)
+  is `ForEachCounterKindOn(ContextTarget(0), ChooseAction(
   EffectChoice("Put another {counter} counter on it", AddCountersOfChosenKind(kindFrom = ITERATION)),
-  EffectChoice("Remove a {counter} counter from it", RemoveCountersOfChosenKind(kindFrom = ITERATION))))`.
+  EffectChoice("Remove a {counter} counter from it", RemoveCountersOfIteratedKind())))`.
 - `AddCountersToCollection(name, type, count)` — add counters to cards held in a pipeline collection.
   An overload takes a `DynamicAmount` instead of an `Int` count, evaluated once at resolution — "create
   a token, then put X +1/+1 counters on it, where X is …" over the `CREATED_TOKENS` collection (Emil,

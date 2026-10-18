@@ -1032,12 +1032,11 @@
                             {
                                 "label": "Remove a {counter} counter from it",
                                 "effect": {
-                                    "type": "RemoveCountersOfChosenKind",
+                                    "type": "RemoveCountersOfIteratedKind",
                                     "target": {
                                         "type": "BoundVariable",
                                         "name": "t0"
-                                    },
-                                    "kindFrom": "ITERATION"
+                                    }
                                 }
                             }
                         ]

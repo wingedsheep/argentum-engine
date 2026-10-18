@@ -695,7 +695,7 @@ data class CreateTokenCopyRemainingContinuation(
  * @property namedTargets Named targets from the pipeline state
  * @property triggeringEntityId The entity that triggered the ability
  * @property chosenCounterType The kind an enclosing counter-kind loop is visiting, so a chosen
- *   `RemoveCountersOfChosenKind` / `AddCountersOfChosenKind(kindFrom = ITERATION)` still reads it
+ *   `RemoveCountersOfIteratedKind` / `AddCountersOfChosenKind(kindFrom = ITERATION)` still reads it
  */
 @Serializable
 data class ChooseActionContinuation(

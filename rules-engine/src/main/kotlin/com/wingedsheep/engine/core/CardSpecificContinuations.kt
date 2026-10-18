@@ -164,10 +164,9 @@ data class RemoveAnyNumberOfCountersContinuation(
 
 /**
  * Resume after the controller picks which kind of counter on [recipientId] to add [count] more of,
- * for `AddCountersOfChosenKindEffect` (Ichormoon Gauntlet) — or, with [remove], to take [count]
- * off, for `RemoveCountersOfChosenKindEffect`. `OptionChosenResponse.optionIndex` indexes
- * [counterKinds], the kinds shown in the decision. Placement goes through the standard
- * `AddCountersEffect` path, removal through `RemoveCountersEffect`.
+ * for `AddCountersOfChosenKindEffect` (Ichormoon Gauntlet). `OptionChosenResponse.optionIndex`
+ * indexes [counterKinds], the kinds shown in the decision. Placement goes through the standard
+ * `AddCountersEffect` path.
  */
 @Serializable
 data class AddCountersOfChosenKindContinuation(
@@ -177,7 +176,6 @@ data class AddCountersOfChosenKindContinuation(
     val count: Int,
     val sourceId: EntityId?,
     val objectReferences: com.wingedsheep.engine.handlers.ObjectReferenceEnvironment = com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(),
-    val remove: Boolean = false,
 ) : AnswerContinuation
 
 /**

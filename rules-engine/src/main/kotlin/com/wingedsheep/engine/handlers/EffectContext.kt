@@ -345,7 +345,7 @@ data class EffectContext(
     /**
      * The kind of counter an enclosing
      * [com.wingedsheep.sdk.scripting.effects.IterationSpace.CounterKindsAmong] or `CounterKindsOn` loop is visiting.
-     * Read by `AddCountersOfChosenKind` / `RemoveCountersOfChosenKind` (`kindFrom = ITERATION`) and by
+     * Read by `AddCountersOfChosenKind(kindFrom = ITERATION)` / `RemoveCountersOfIteratedKind` and by
      * the `{counter}` placeholder in a body `SelectFromCollection` prompt or `ChooseAction` label. Null outside such a loop.
      */
     val chosenCounterType: com.wingedsheep.sdk.core.CounterType? = null,
