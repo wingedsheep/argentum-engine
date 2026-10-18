@@ -149,8 +149,7 @@ class TargetFinder(
         val sourceColors = sourceId?.takeIf { state.hasEntity(it) }?.let { id ->
             sourceColorNames(state, projected, id)
         }
-        // "Can't be the target of Aura spells / of spells that can target only Walls" — keyed on
-        // the source's kind and on this requirement, so computed once for the whole candidate set.
+        // CantBeTargetedBy: keyed on the source and this requirement, so computed once.
         val untargetableKeywords = UntargetableByRules.blockingKeywords(state, sourceId, targetingSourceType, requirement)
         return candidates.filter { id ->
             if (id in state.turnOrder) {

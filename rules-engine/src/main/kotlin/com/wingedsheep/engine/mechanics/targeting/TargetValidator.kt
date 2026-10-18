@@ -499,11 +499,11 @@ class TargetValidator(
         val spellTargetingError = checkCantBeTargetedBySpells(state, target, targetingSourceType)
         if (spellTargetingError != null) return spellTargetingError
 
-        // "Can't be the target of Aura spells / of spells or abilities that can target only
-        // Walls" (Tetsuo Umezawa, Wall of Shadows) — not controller-gated.
+        // CantBeTargetedBy (Tetsuo Umezawa) — read against the face being cast.
         if (target is ChosenTarget.Permanent) {
-            UntargetableByRules.targetingError(state, target.entityId, sourceId, targetingSourceType, requirement)
-                ?.let { return it }
+            UntargetableByRules.targetingError(
+                state, target.entityId, sourceId, targetingSourceType, requirement, sourceSubtypes.ifEmpty { null }
+            )?.let { return it }
         }
 
         // Check hexproof from a quality — color, non-color, card type (Rule 702.11d)

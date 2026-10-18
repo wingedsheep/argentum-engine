@@ -72,6 +72,8 @@ class TetsuoUmezawaScenarioTest : ScenarioTestBase() {
                     .build()
 
                 val tetsuo = game.findPermanent("Tetsuo Umezawa")!!
+                game.passPriority()
+                game.isOnBattlefield("Giant Strength") shouldBe true
                 game.state.projectedState.getPower(tetsuo) shouldBe 5
             }
         }
@@ -105,6 +107,36 @@ class TetsuoUmezawaScenarioTest : ScenarioTestBase() {
                 game.resolveStack()
                 game.isInGraveyard(2, "Grizzly Bears") shouldBe true
                 game.isOnBattlefield("Hill Giant") shouldBe true
+            }
+
+            test("destroys an untapped creature that is blocking") {
+                val game = scenario()
+                    .withPlayers("Player1", "Player2")
+                    .withCardOnBattlefield(2, "Tetsuo Umezawa")
+                    .withCardOnBattlefield(2, "Hill Giant")
+                    .withLandsOnBattlefield(2, "Island", 1)
+                    .withLandsOnBattlefield(2, "Swamp", 2)
+                    .withLandsOnBattlefield(2, "Mountain", 1)
+                    .withCardOnBattlefield(1, "Grizzly Bears")
+                    .withActivePlayer(2)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                game.passUntilPhase(Phase.COMBAT, Step.DECLARE_ATTACKERS)
+                game.declareAttackers(mapOf("Hill Giant" to 1)).error shouldBe null
+                game.passUntilPhase(Phase.COMBAT, Step.DECLARE_BLOCKERS)
+                game.declareBlockers(mapOf("Grizzly Bears" to listOf("Hill Giant"))).error shouldBe null
+
+                val tetsuo = game.findPermanent("Tetsuo Umezawa")!!
+                val bears = game.findPermanent("Grizzly Bears")!!
+                val activation = game.execute(
+                    ActivateAbility(game.player2Id, tetsuo, tetsuoAbilityId, listOf(ChosenTarget.Permanent(bears)))
+                )
+                withClue("An untapped blocking creature is a legal target: ${activation.error} prio=${game.state.priorityPlayerId} p1=${game.player1Id} step=${game.state.step} pending=${game.state.pendingDecision}") {
+                    activation.error shouldBe null
+                }
+                game.resolveStack()
+                game.isInGraveyard(1, "Grizzly Bears") shouldBe true
             }
         }
     }

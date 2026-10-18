@@ -31,14 +31,8 @@ object UntargetableByRules {
     fun keyword(quality: UntargetableBy): String = when (quality) {
         is UntargetableBy.SpellsWithSubtype ->
             "CANT_BE_TARGETED_BY_SUBTYPE_SPELLS_${quality.subtype.value.uppercase()}"
-        is UntargetableBy.TargetingOnly -> {
-            val kinds = when {
-                quality.spells && quality.abilities -> "SPELLS_AND_ABILITIES"
-                quality.spells -> "SPELLS"
-                else -> "ABILITIES"
-            }
-            "CANT_BE_TARGETED_BY_${kinds}_TARGETING_ONLY_${quality.subtype.value.uppercase()}"
-        }
+        is UntargetableBy.TargetingOnly ->
+            "CANT_BE_TARGETED_BY_TARGETING_ONLY_${quality.subtype.value.uppercase()}"
     }
 
     /**
@@ -46,12 +40,17 @@ object UntargetableByRules {
      * [requirement]. Empty — the common case — when nothing could apply, so callers skip the
      * per-candidate check. An ANY-typed caller is resolved to "spell" only when the source is a
      * spell on the stack; otherwise the restriction is never applied on a guess.
+     *
+     * [spellSubtypes] is the face actually being cast, when the caller knows it — a disturb card
+     * cast as its Aura back (Lanterns' Lift) is still its front face on the entity. Null falls back
+     * to the source's projected or printed subtypes.
      */
     fun blockingKeywords(
         state: GameState,
         sourceId: EntityId?,
         targetingSourceType: TargetingSourceType,
-        requirement: TargetRequirement?
+        requirement: TargetRequirement?,
+        spellSubtypes: Set<String>? = null
     ): List<String> {
         val isSpell = when (targetingSourceType) {
             TargetingSourceType.SPELL -> true
@@ -60,20 +59,23 @@ object UntargetableByRules {
                 if (sourceId != null && SourceKindProtection.isSpell(state, sourceId)) true else return emptyList()
         }
         val required = requirement?.let(::soleTargetFilter)?.let(::requiredSubtypes).orEmpty()
-        val spellSubtypes = if (isSpell && sourceId != null) spellSubtypes(state, sourceId) else emptySet()
-        if (required.isEmpty() && spellSubtypes.isEmpty()) return emptyList()
-        return buildList {
-            spellSubtypes.forEach { add(keyword(UntargetableBy.SpellsWithSubtype(Subtype(it)))) }
-            required.forEach { subtype ->
-                add(keyword(UntargetableBy.TargetingOnly(subtype, spells = true, abilities = true)))
-                add(keyword(UntargetableBy.TargetingOnly(subtype, spells = isSpell, abilities = !isSpell)))
-            }
+        val subtypes = when {
+            !isSpell -> emptySet()
+            spellSubtypes != null -> spellSubtypes
+            sourceId != null -> sourceSubtypes(state, sourceId)
+            else -> emptySet()
         }
+        if (required.isEmpty() && subtypes.isEmpty()) return emptyList()
+        return subtypes.map { keyword(UntargetableBy.SpellsWithSubtype(Subtype(it))) } +
+            required.map { keyword(UntargetableBy.TargetingOnly(it)) }
     }
 
-    /** True when [targetId] carries any of [keywords] (from [blockingKeywords]). */
+    /**
+     * True when [targetId] carries any of [keywords] (from [blockingKeywords]). Only battlefield
+     * permanents have projected keywords, so no zone check is needed.
+     */
     fun isBlocked(state: GameState, targetId: EntityId, keywords: List<String>): Boolean {
-        if (keywords.isEmpty() || targetId !in state.getBattlefield()) return false
+        if (keywords.isEmpty()) return false
         val projected = state.projectedState
         return keywords.any { projected.hasKeyword(targetId, it) }
     }
@@ -84,9 +86,11 @@ object UntargetableByRules {
         targetId: EntityId,
         sourceId: EntityId?,
         targetingSourceType: TargetingSourceType,
-        requirement: TargetRequirement?
+        requirement: TargetRequirement?,
+        spellSubtypes: Set<String>? = null
     ): String? {
-        if (!isBlocked(state, targetId, blockingKeywords(state, sourceId, targetingSourceType, requirement))) return null
+        val keywords = blockingKeywords(state, sourceId, targetingSourceType, requirement, spellSubtypes)
+        if (!isBlocked(state, targetId, keywords)) return null
         val name = state.getEntity(targetId)?.get<CardComponent>()?.name ?: "That permanent"
         return "$name can't be the target of this ${if (targetingSourceType == TargetingSourceType.SPELL) "spell" else "ability"}"
     }
@@ -116,7 +120,7 @@ object UntargetableByRules {
     }
 
     /** A spell's subtypes — projected when present, else its printed type line (at cast it's still in hand). */
-    private fun spellSubtypes(state: GameState, sourceId: EntityId): Set<String> =
+    private fun sourceSubtypes(state: GameState, sourceId: EntityId): Set<String> =
         state.projectedState.getSubtypes(sourceId).ifEmpty {
             state.getEntity(sourceId)?.get<CardComponent>()?.typeLine?.subtypes?.mapTo(mutableSetOf()) { it.value }.orEmpty()
         }

@@ -1,6 +1,8 @@
 package com.wingedsheep.engine.mechanics.targeting
 
 import com.wingedsheep.engine.core.ActivateAbility
+import com.wingedsheep.engine.core.AlternativeCostType
+import com.wingedsheep.engine.core.PaymentStrategy
 import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.core.GameAction
 import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
@@ -14,6 +16,8 @@ import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
+import com.wingedsheep.sdk.dsl.disturb
+import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.CantBeTargetedBy
@@ -119,9 +123,27 @@ class CantBeTargetedByKindTest : FunSpec({
         }
     }
 
+    // A disturb card whose back face is an Aura (Lanterns' Lift's shape): in the graveyard the
+    // entity is its front face, a Spirit creature, but the spell cast is the Aura back.
+    val lanternFront = card("Test Ward Lantern") {
+        manaCost = "{U}"
+        typeLine = "Creature — Spirit"
+        power = 1
+        toughness = 1
+        disturb("{1}")
+    }
+    val lanternBack = card("Test Ward Lantern Aura") {
+        manaCost = ""
+        colorIndicator = "U"
+        typeLine = "Enchantment — Aura"
+        auraTarget = TargetObject(filter = TargetFilter.Creature)
+        staticAbility { ability = ModifyStats(1, 1) }
+    }
+    val lantern = CardDefinition.doubleFacedPermanent(lanternFront, lanternBack)
+
     fun driver() = GameTestDriver().also {
         it.registerCards(
-            TestCards.all + listOf(auraProof, shadowWall, plainWall, strength, wallBreaker, murder, wallSmasher, pinger, auraWardLord, wallWardLord)
+            TestCards.all + listOf(auraProof, shadowWall, plainWall, strength, wallBreaker, murder, wallSmasher, pinger, auraWardLord, wallWardLord, lantern)
         )
         it.initMirrorMatch(Deck.of("Forest" to 40), skipMulligans = true, startingPlayer = 0)
         it.passPriorityUntil(Step.PRECOMBAT_MAIN)
@@ -159,6 +181,26 @@ class CantBeTargetedByKindTest : FunSpec({
             d.giveMana(d.player1, Color.RED, 1)
             d.offeredToCast(d.player1, bolt).contains(archer) shouldBe true
             d.castSpell(d.player1, bolt, listOf(archer)).error shouldBe null
+        }
+
+        test("a disturb Aura back cast from the graveyard is an Aura spell, so it can't target it") {
+            val d = driver()
+            val archer = d.putCreatureOnBattlefield(d.player2, auraProof.name)
+            val bear = d.putCreatureOnBattlefield(d.player2, "Grizzly Bears")
+            val card = d.putCardInGraveyard(d.player1, lanternFront.name)
+            d.giveColorlessMana(d.player1, 1)
+            val offered = d.offeredTargets(d.player1) {
+                it is CastSpell && it.cardId == card && it.alternativeCostType == AlternativeCostType.DISTURB
+            }
+            offered.contains(archer) shouldBe false
+            offered.contains(bear) shouldBe true
+            d.submit(
+                CastSpell(
+                    d.player1, card, listOf(ChosenTarget.Permanent(archer)),
+                    useAlternativeCost = true, alternativeCostType = AlternativeCostType.DISTURB,
+                    paymentStrategy = PaymentStrategy.FromPool
+                )
+            ).error shouldNotBe null
         }
 
         test("not controller-gated: its own controller's Aura spell can't target it either") {

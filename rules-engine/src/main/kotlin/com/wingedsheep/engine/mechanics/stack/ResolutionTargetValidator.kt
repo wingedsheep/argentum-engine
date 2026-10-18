@@ -14,6 +14,7 @@ import com.wingedsheep.engine.mechanics.ControllerGrants
 import com.wingedsheep.engine.mechanics.layers.ProjectedState
 import com.wingedsheep.engine.mechanics.targeting.HexproofSuppression
 import com.wingedsheep.engine.mechanics.targeting.SourceKindProtection
+import com.wingedsheep.engine.mechanics.targeting.UntargetableByRules
 import com.wingedsheep.engine.mechanics.targeting.PlayerTargetRestriction
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
@@ -272,7 +273,7 @@ internal class ResolutionTargetValidator(
             ?: state.getEntity(target.entityId)?.get<ControllerComponent>()?.playerId
         return passesTargetingRestrictions(
             state, projected, target, entityController, controllerId, sourceId, sourceColors, targetingSourceType,
-            getRequirementForTargetIndex(index, targetRequirements)
+            getRequirementForTargetIndex(index, targetRequirements), sourceSubtypes
         ) &&
             passesProtection(state, projected, target, entityController, controllerId, sourceId, sourceColors, sourceSubtypes) &&
             stillMatchesRequirementFilter(state, projected, index, target, targetRequirements, predicateContext)
@@ -288,7 +289,8 @@ internal class ResolutionTargetValidator(
         sourceId: EntityId?,
         sourceColors: Set<Color>,
         targetingSourceType: TargetingSourceType,
-        requirement: TargetRequirement?
+        requirement: TargetRequirement?,
+        sourceSubtypes: Set<String>
     ): Boolean {
         // Check shroud — can't be targeted by anyone (Rule 702.18)
         if (projected.hasKeyword(target.entityId, "SHROUD")) return false
@@ -303,10 +305,9 @@ internal class ResolutionTargetValidator(
             return false
         }
 
-        // "Can't be the target of Aura spells / of spells or abilities that can target only
-        // Walls" — the same reading as at targeting (Tetsuo Umezawa, Wall of Shadows).
-        if (com.wingedsheep.engine.mechanics.targeting.UntargetableByRules.targetingError(
-                state, target.entityId, sourceId, targetingSourceType, requirement
+        // CantBeTargetedBy (Tetsuo Umezawa) — read against the face on the stack.
+        if (UntargetableByRules.targetingError(
+                state, target.entityId, sourceId, targetingSourceType, requirement, sourceSubtypes.ifEmpty { null }
             ) != null
         ) {
             return false

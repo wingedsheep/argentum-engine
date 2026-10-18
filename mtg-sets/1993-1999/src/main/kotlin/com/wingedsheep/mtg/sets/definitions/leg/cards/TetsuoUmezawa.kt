@@ -19,8 +19,8 @@ import com.wingedsheep.sdk.scripting.predicates.StatePredicate
  * {U}{B}{B}{R}, {T}: Destroy target tapped or blocking creature.
  *
  * [CantBeTargetedBy] with [UntargetableBy.SpellsWithSubtype] — only Aura *spells*: an Aura's
- * abilities may still target him, and an Aura put onto the battlefield without being cast (or moved
- * onto him) may still be attached.
+ * abilities may still target him, and an Aura put onto the battlefield without being cast may still
+ * be attached.
  */
 val TetsuoUmezawa = card("Tetsuo Umezawa") {
     manaCost = "{U}{B}{R}"

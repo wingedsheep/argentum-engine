@@ -1970,7 +1970,7 @@ Families:
 ## UntargetableBy
 
 - `UntargetableBy.SpellsWithSubtype(subtype: Subtype)` — Spells with subtype — "can't be the target of Aura spells" (Tetsuo Umezawa, Bartel Runeaxe).
-- `UntargetableBy.TargetingOnly(subtype: Subtype, spells: Boolean, abilities: Boolean)` — Spells and/or abilities that can target only objects with subtype — "spells that can target only Walls or … abilities that can target only Walls" (Wall of Shadows).
+- `UntargetableBy.TargetingOnly(subtype: Subtype)` — Spells and abilities that can target only objects with subtype — "spells that can target only Walls or … abilities that can target only Walls" (Wall of Shadows).
 
 ## WardCost
 

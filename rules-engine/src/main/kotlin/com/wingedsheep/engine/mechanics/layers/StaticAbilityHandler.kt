@@ -6,6 +6,7 @@ import com.wingedsheep.engine.state.components.battlefield.ManaSpendingGrant
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.ComponentContainer
 import com.wingedsheep.engine.state.components.battlefield.CantBeBlockedWhilePropertyAtMostComponent
+import com.wingedsheep.engine.mechanics.targeting.UntargetableByRules
 import com.wingedsheep.engine.state.components.battlefield.CantBeTargetedByOpponentAbilitiesComponent
 import com.wingedsheep.engine.state.components.battlefield.ClassLevelComponent
 import com.wingedsheep.engine.state.components.battlefield.GrantsCantLoseGameComponent
@@ -79,6 +80,7 @@ import com.wingedsheep.sdk.scripting.SetBasePowerToughnessDynamicStatic
 import com.wingedsheep.sdk.scripting.SetBasePowerToughnessStatic
 import com.wingedsheep.sdk.scripting.SetBaseToughnessForCreatureGroup
 import com.wingedsheep.engine.handlers.SourceTypeTargeting
+import com.wingedsheep.sdk.scripting.CantBeTargetedBy
 import com.wingedsheep.sdk.scripting.CantBeTargetedBySourceTypeAbilities
 import com.wingedsheep.sdk.scripting.CantBeTargetedByOpponentAbilities
 import com.wingedsheep.sdk.scripting.CantBeSacrificed
@@ -823,13 +825,10 @@ class StaticAbilityHandler(
                     affectsFilter = convertGroupFilter(ability.filter)
                 )
             }
-            is com.wingedsheep.sdk.scripting.CantBeTargetedBy -> {
-                // Projected as one keyword per quality; enforced at every targeting site by
-                // UntargetableByRules (Tetsuo Umezawa, Wall of Shadows).
+            is CantBeTargetedBy -> {
+                // Enforced at every targeting site by UntargetableByRules.
                 ContinuousEffectData(
-                    modification = Modification.GrantKeyword(
-                        com.wingedsheep.engine.mechanics.targeting.UntargetableByRules.keyword(ability.quality)
-                    ),
+                    modification = Modification.GrantKeyword(UntargetableByRules.keyword(ability.quality)),
                     affectsFilter = convertGroupFilter(ability.filter)
                 )
             }

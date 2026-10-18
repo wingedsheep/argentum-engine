@@ -451,30 +451,16 @@ sealed interface UntargetableBy {
     }
 
     /**
-     * Spells and/or abilities that can target only objects with [subtype] — "spells that can target
+     * Spells and abilities that can target only objects with [subtype] — "spells that can target
      * only Walls or … abilities that can target only Walls" (Wall of Shadows). A target requirement
      * counts when its filter structurally demands [subtype] ("target Wall", "enchant Wall"); a
      * generic "target creature" can also reach a non-Wall, so it doesn't.
      */
     @SerialName("UntargetableBy.TargetingOnly")
     @Serializable
-    data class TargetingOnly(
-        val subtype: Subtype,
-        val spells: Boolean = true,
-        val abilities: Boolean = true
-    ) : UntargetableBy {
-        init {
-            require(spells || abilities) { "TargetingOnly must restrict spells, abilities, or both" }
-        }
-
+    data class TargetingOnly(val subtype: Subtype) : UntargetableBy {
         override val description: String
-            get() {
-                val plural = "${subtype.value}s"
-                return listOfNotNull(
-                    "spells that can target only $plural".takeIf { spells },
-                    "abilities that can target only $plural".takeIf { abilities }
-                ).joinToString(" or of ")
-            }
+            get() = "spells that can target only ${subtype.value}s or of abilities that can target only ${subtype.value}s"
 
         override fun applyTextReplacement(replacer: TextReplacer): UntargetableBy {
             val new = replacer.replaceSubtype(subtype)

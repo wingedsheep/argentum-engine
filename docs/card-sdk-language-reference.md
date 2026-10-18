@@ -9522,7 +9522,7 @@ staticAbility {
   - `UntargetableBy.SpellsWithSubtype(Subtype("Aura"))` — "can't be the target of Aura spells" (Tetsuo
     Umezawa). Spells only: an Aura's *ability* may target it, and an Aura put onto the battlefield without
     being cast doesn't target, so it may still be attached.
-  - `UntargetableBy.TargetingOnly(Subtype.WALL, spells = true, abilities = true)` — "can't be the target of
+  - `UntargetableBy.TargetingOnly(Subtype.WALL)` — "can't be the target of
     spells that can target only Walls or of abilities that can target only Walls" (Wall of Shadows). The
     target requirement being used must structurally demand the subtype (a top-level `HasSubtype` in a
     plain object requirement, or one shared by every `anyOf` branch — "target Wall", "enchant Wall"); "target
