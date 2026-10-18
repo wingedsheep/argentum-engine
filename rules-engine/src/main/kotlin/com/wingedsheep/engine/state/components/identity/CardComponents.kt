@@ -264,7 +264,7 @@ data object CantBeCopiedComponent : Component
  *
  * Stamped by `DrawLoop` on every drawn card. A card that later leaves the hand gets a new
  * generation on its next zone entry (CR 400.7 — it is a new object), so the stamp stops matching
- * without any strip on the way out; `BeginningPhaseManager` wipes the stamps at every untap step
+ * without any strip on the way out; `TurnManager.startTurn` wipes the stamps at every turn start
  * so the "this turn" window follows MTG turn boundaries.
  */
 @Serializable

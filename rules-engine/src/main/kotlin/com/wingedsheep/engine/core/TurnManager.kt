@@ -189,6 +189,17 @@ class TurnManager(
             }
         )
 
+        // "Drawn this turn" stamps (Sylvan Library) end with the turn they were drawn in. Cleared
+        // here rather than in the untap step, which a "may choose not to untap" prompt can pause.
+        val drawnStamped = newState.entities.filter { (_, container) ->
+            container.has<com.wingedsheep.engine.state.components.identity.DrawnThisTurnComponent>()
+        }.keys
+        for (entityId in drawnStamped) {
+            newState = newState.updateEntity(entityId) {
+                it.without<com.wingedsheep.engine.state.components.identity.DrawnThisTurnComponent>()
+            }
+        }
+
         // Reset cards-drawn-this-turn count for ALL players (not just active player)
         // because "each turn" means every turn transition resets the count
         for (pid in state.turnOrder) {

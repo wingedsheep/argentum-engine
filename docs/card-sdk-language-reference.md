@@ -7313,8 +7313,8 @@ work for abilities-on-stack (which carry no `CardComponent`).
   being drawn this turn (CR 121.1): Sylvan Library's "choose two cards in your hand drawn this turn"
   (`gather(CardSource.FromZone(Zone.HAND, Player.You, GameObjectFilter.Any.drawnThisTurn()))`). A card
   put into a hand any other way, or a drawn card that left the hand and came back, doesn't count.
-  Backed by a per-card `DrawnThisTurnComponent` stamped by `DrawLoop`, stripped when the card leaves
-  its hand and wiped from every card in each untap step.
+  Backed by a per-card `DrawnThisTurnComponent` stamped by `DrawLoop` and pinned to the hand object's
+  generation (a later zone change mints a new object, so it stops matching); wiped at every turn start.
 - `MilledThisTurn` (filter builder `milledThisTurn()`) — card currently in a graveyard that got
   there by being milled this turn (CR 701.17): Raul, Trouble Shooter; Tato Farmer ("target land card
   in a graveyard that was milled this turn"). Surveil or an unworded "put the top card into your

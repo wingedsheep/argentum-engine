@@ -872,8 +872,8 @@ sealed interface StatePredicate {
      * that left the hand and came back (CR 400.7 — it is a new object).
      *
      * The hand-side sibling of [MilledThisTurn]: a per-card `DrawnThisTurnComponent` stamped by
-     * every draw, stripped when the card leaves its hand and wiped from every card at the start of
-     * each turn.
+     * every draw and pinned to the hand object it produced (any later zone change mints a new
+     * object, so the stamp stops matching), and wiped from every card at the start of each turn.
      */
     @SerialName("DrawnThisTurn")
     @Serializable

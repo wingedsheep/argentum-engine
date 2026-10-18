@@ -141,6 +141,45 @@ class SylvanLibraryScenarioTest : ScenarioTestBase() {
                 game.state.getHand(game.player1Id) shouldNotContain swamp
             }
 
+            test("cards drawn on the opponent's turn aren't offered, even when the untap step pauses") {
+                val builder = scenario()
+                    .withPlayers("Library Player", "Opponent")
+                    .withCardOnBattlefield(1, "Sylvan Library")
+                    // "You may choose not to untap" pauses the untap step for a decision.
+                    .withCardOnBattlefield(1, "Old Man of the Sea", tapped = true)
+                    .withCardInHand(1, "Ancestral Recall")
+                    .withLandsOnBattlefield(1, "Island", 1)
+                    .withActivePlayer(2)
+                    .withPriorityPlayer(1)
+                    .withTurnNumber(4)
+                    .inPhase(Phase.ENDING, Step.END)
+                repeat(3) { builder.withCardInLibrary(1, "Plains") }
+                builder.withCardInLibrary(1, "Forest")
+                builder.withCardInLibrary(1, "Island")
+                builder.withCardInLibrary(1, "Swamp")
+                repeat(10) {
+                    builder.withCardInLibrary(1, "Mountain")
+                    builder.withCardInLibrary(2, "Mountain")
+                }
+                val game = builder.build()
+
+                game.castSpellTargetingPlayer(1, "Ancestral Recall", 1).error shouldBe null
+                game.resolveStack()
+                val drawnLastTurn = game.findCardsInHand(1, "Plains")
+                drawnLastTurn.size shouldBe 3
+
+                var passes = 0
+                while (game.state.pendingDecision !is YesNoDecision && passes < 30) {
+                    if (game.state.pendingDecision is SelectCardsDecision) game.skipSelection() // untap Old Man
+                    else game.passPriority()
+                    passes++
+                }
+                game.answerYesNo(true)
+
+                val choose = game.state.pendingDecision.shouldBeInstanceOf<SelectCardsDecision>()
+                choose.options shouldContainExactlyInAnyOrder listOf(game.drawn("Forest"), game.drawn("Island"), game.drawn("Swamp"))
+            }
+
             test("declining the extra draws does nothing else") {
                 val game = setUp()
                 game.passToTrigger()
