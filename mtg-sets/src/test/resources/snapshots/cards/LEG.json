@@ -860,6 +860,64 @@
     ]
 }
 
+// Clergy of the Holy Nimbus
+{
+    "name": "Clergy of the Holy Nimbus",
+    "manaCost": "{W}",
+    "typeLine": "Creature — Human Cleric",
+    "oracleText": "If this creature would be destroyed, regenerate it.\n{1}: This creature can't be regenerated this turn. Only your opponents may activate this ability.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Clergy of the Holy Nimbus:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}"
+                    }
+                },
+                "effect": {
+                    "type": "CantBeRegenerated",
+                    "target": "Self"
+                },
+                "restrictions": [
+                    {
+                        "type": "ActivationAll",
+                        "restrictions": [
+                            "AnyPlayerMay",
+                            {
+                                "type": "ActivationOnlyIfCondition",
+                                "condition": {
+                                    "type": "EntityMatches",
+                                    "entity": "Self",
+                                    "filter": "ctrl:opponent"
+                                }
+                            }
+                        ]
+                    }
+                ],
+                "descriptionOverride": "{1}: This creature can't be regenerated this turn. Only your opponents may activate this ability."
+            }
+        ],
+        "replacementEffects": [
+            "RegenerateInsteadOfDestruction"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "6",
+        "artist": "Daniel Gelon",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/b/db1f578f-fa3b-4447-953b-1490852b6c80.jpg?1783948087"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Concordant Crossroads
 {
     "name": "Concordant Crossroads",

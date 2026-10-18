@@ -2853,6 +2853,37 @@ data class ReplaceDestructionWith(
 }
 
 /**
+ * "If <permanent> would be destroyed, regenerate it" — static regeneration (CR 701.19b). Each time a
+ * matching permanent would be destroyed, instead remove all damage marked on it, its controller taps
+ * it, and it's removed from combat. Mossbridge Troll, Clergy of the Holy Nimbus.
+ *
+ * Unlike a regeneration shield ([com.wingedsheep.sdk.scripting.effects.RegenerateEffect]) nothing is
+ * spent: it applies to every destruction for as long as the ability exists. It *is* regeneration, so
+ * "can't be regenerated" (a CantBeRegenerated effect, or a Wrath-style "they can't be regenerated")
+ * switches it off, and it reaches every destruction a shield does — destroy effects, board wipes and
+ * the lethal-damage / deathtouch state-based actions.
+ *
+ * Not [ReplaceDestructionWith]: that one's "instead" is whatever the card prints and runs as a rider
+ * after the destroying instruction, which "can't be regenerated" doesn't touch; regeneration is fixed
+ * by the rules and gated by it. Not RegenerateEffect: a shield is one-shot and lasts until end of turn.
+ *
+ * @param appliesTo which permanents regenerate, relative to this permanent (default: itself)
+ */
+@SerialName("RegenerateInsteadOfDestruction")
+@Serializable
+data class RegenerateInsteadOfDestruction(
+    override val appliesTo: EventPattern.DestroyEvent =
+        EventPattern.DestroyEvent(GameObjectFilter.Any.sourceItself())
+) : ReplacementEffect {
+    override val description: String = "If ${appliesTo.description}, regenerate it"
+
+    override fun applyTextReplacement(replacer: TextReplacer): ReplacementEffect {
+        val newAppliesTo = appliesTo.applyTextReplacement(replacer) as EventPattern.DestroyEvent
+        return if (newAppliesTo !== appliesTo) copy(appliesTo = newAppliesTo) else this
+    }
+}
+
+/**
  * When the rider of a [RedirectZoneChangeWith] happens relative to the replaced zone change.
  */
 @Serializable

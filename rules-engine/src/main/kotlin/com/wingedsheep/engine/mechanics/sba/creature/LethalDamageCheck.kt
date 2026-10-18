@@ -59,8 +59,10 @@ class LethalDamageCheck(private val zones: ZoneTransitionService) : StateBasedAc
             val hasDeathtouch = damageComponent.deathtouchDamageReceived
 
             if (hasLethalDamage || hasDeathtouch) {
-                // Check for regeneration shields
-                val (shieldState, wasRegenerated) = ZoneMovementUtils.applyRegenerationShields(newState, entityId)
+                // Regeneration — a shield, or a static "would be destroyed, regenerate it" read
+                // off `passStartState` (every destruction in this pass is simultaneous, CR 704.3).
+                val (shieldState, wasRegenerated) =
+                    ZoneMovementUtils.applyRegeneration(newState, entityId, zones.predicateEvaluator, passStartState)
                 if (wasRegenerated) {
                     val regenResult = ZoneMovementUtils.applyRegenerationReplacement(shieldState, entityId)
                     newState = regenResult.newState

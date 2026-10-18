@@ -12,6 +12,7 @@ import com.wingedsheep.engine.core.GameEvent as EngineGameEvent
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.replacement.PendingReplacementRider
+import com.wingedsheep.sdk.scripting.RegenerateInsteadOfDestruction
 import com.wingedsheep.sdk.scripting.ReplaceDestructionWith
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
@@ -676,7 +677,7 @@ object ZoneMovementUtils {
 
         // Check for regeneration shields
         if (canRegenerate) {
-            val (shieldState, wasRegenerated) = applyRegenerationShields(state, entityId)
+            val (shieldState, wasRegenerated) = applyRegeneration(state, entityId, zones.predicateEvaluator)
             if (wasRegenerated) {
                 return applyRegenerationReplacement(shieldState, entityId)
             }
@@ -1156,6 +1157,51 @@ object ZoneMovementUtils {
     }
 
     /**
+     * Whether [entityId] regenerates instead of being destroyed, and the state afterwards: a static
+     * "if it would be destroyed, regenerate it" (CR 701.19b) applies without being spent, and is
+     * preferred over a shield (CR 616.1 lets the controller order them, and keeping the shield costs
+     * nothing); otherwise one regeneration shield is consumed. "Can't be regenerated" stops both.
+     * The caller still performs the regeneration itself ([applyRegenerationReplacement]).
+     *
+     * @param lookupState the state whose battlefield decides which static regenerations apply — for
+     *        one of a simultaneous batch of destructions, the state before the batch began.
+     */
+    fun applyRegeneration(
+        state: GameState,
+        entityId: EntityId,
+        predicateEvaluator: PredicateEvaluator,
+        lookupState: GameState = state
+    ): Pair<GameState, Boolean> {
+        if (isRegenerationPrevented(state, entityId)) return state to false
+        if (hasStaticRegeneration(lookupState, entityId, predicateEvaluator)) return state to true
+        return applyRegenerationShields(state, entityId)
+    }
+
+    private fun isRegenerationPrevented(state: GameState, entityId: EntityId): Boolean =
+        state.floatingEffects.any { effect ->
+            effect.effect.modification is SerializableModification.CantBeRegenerated &&
+                entityId in effect.effect.affectedEntities
+        }
+
+    /** Whether a battlefield [RegenerateInsteadOfDestruction] covers [entityId]. */
+    private fun hasStaticRegeneration(
+        lookupState: GameState,
+        entityId: EntityId,
+        predicateEvaluator: PredicateEvaluator
+    ): Boolean {
+        val projected = lookupState.projectedState
+        return com.wingedsheep.engine.replacement.ActiveReplacements.all(lookupState).any { active ->
+            val replacement = active.effect as? RegenerateInsteadOfDestruction ?: return@any false
+            // A printed replacement is one of its host's abilities: gone once the host loses them.
+            if (!active.granted &&
+                (projected.hasLostAllAbilities(active.sourceId) || projected.isFaceDown(active.sourceId))
+            ) return@any false
+            val context = PredicateContext(controllerId = active.controllerId, sourceId = active.sourceId)
+            predicateEvaluator.matches(lookupState, projected, entityId, replacement.appliesTo.filter, context)
+        }
+    }
+
+    /**
      * Check for regeneration shields on an entity and consume one if found.
      *
      * Regeneration shields are floating effects with RegenerationShield modification.
@@ -1166,12 +1212,7 @@ object ZoneMovementUtils {
      * @return Pair of (updated state with consumed shield, whether regeneration occurred)
      */
     fun applyRegenerationShields(state: GameState, entityId: EntityId): Pair<GameState, Boolean> {
-        // Check if the entity has a CantBeRegenerated floating effect
-        val cantRegenerate = state.floatingEffects.any { effect ->
-            effect.effect.modification is SerializableModification.CantBeRegenerated &&
-                entityId in effect.effect.affectedEntities
-        }
-        if (cantRegenerate) return state to false
+        if (isRegenerationPrevented(state, entityId)) return state to false
 
         // Find the first regeneration shield targeting this entity
         val shieldIndex = state.floatingEffects.indexOfFirst { effect ->

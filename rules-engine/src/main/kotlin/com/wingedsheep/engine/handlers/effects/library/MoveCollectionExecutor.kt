@@ -935,7 +935,7 @@ class MoveCollectionExecutor(
                     continue
                 }
                 if (!noRegenerate) {
-                    val (shieldState, wasRegenerated) = ZoneMovementUtils.applyRegenerationShields(newState, cardId)
+                    val (shieldState, wasRegenerated) = ZoneMovementUtils.applyRegeneration(newState, cardId, zones.predicateEvaluator, state)
                     if (wasRegenerated) {
                         // Regeneration's tap emits a TappedEvent (CR 701.19a); fold it in so
                         // "becomes tapped" triggers fire on this path too, not just the SBA one.

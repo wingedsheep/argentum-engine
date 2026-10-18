@@ -11964,6 +11964,10 @@ before `genericCostReduction` and the battlefield statics. Kami of Jealous Thirs
 **`ActivationRestriction`**
 
 - `AnyPlayerMay` — permits opponents to activate the source. Free, mana-only, and standalone discard costs are offered through the ordinary legal-action flow; discard choices and affordability use the activating player's hand, including filtered, multiple-card, and random discard costs.
+  Narrow it with a companion `OnlyIfCondition`, whose "you" is the **activating** player: *"Only your
+  opponents may activate this ability"* (Clergy of the Holy Nimbus) is `All(AnyPlayerMay,
+  OnlyIfCondition(Conditions.SourceMatches(GameObjectFilter.Any.opponentControls())))`; Merseine's
+  "only the controller of the enchanted creature" is the same shape with `EnchantedPermanentMatches`.
 
 - `MaxPerTurn(n)` — at most N activations per turn.
 - `OncePerTurn` — once each turn (resets at end of turn).
@@ -17079,6 +17083,14 @@ The priority groups are (CR 616.1a–f):
   Harmonious Emergence: `ReplaceDestructionWith(SacrificeSelfEffect then Effects.GrantKeyword(Keyword.INDESTRUCTIBLE,
   EffectTarget.TriggeringEntity), EventPattern.DestroyEvent(GameObjectFilter.Land.attachedToBySource()))`.
   Umbra armor (`Keyword.UMBRA_ARMOR`) is the keyworded sibling with a rules-fixed replacement.
+- `RegenerateInsteadOfDestruction(appliesTo = EventPattern.DestroyEvent(GameObjectFilter.Any.sourceItself()))` —
+  *"If <permanent> would be destroyed, regenerate it"*: static regeneration (CR 701.19b). Each time a
+  matching permanent would be destroyed, it regenerates instead (damage removed, tapped, removed from
+  combat) — nothing is spent, so it works every time. It *is* regeneration: `Effects.CantBeRegenerated`
+  and Wrath-style "can't be regenerated" destructions switch it off, and it reaches every destruction a
+  regeneration shield does (destroy effects, board wipes, lethal-damage / deathtouch SBAs). Preferred over
+  a banked shield, which stays for later. `appliesTo` defaults to the permanent itself and is read
+  relative to it. Clergy of the Holy Nimbus: `replacementEffect(RegenerateInsteadOfDestruction())`.
 - `ReplacementEffect.IfYouDoBranchEffect(...)` — branch on "if you do" replacement.
 - `OnEnterRun(effect)` — generic "as ~ enters the battlefield, run [effect]". The wrapped effect
   executes via the normal effect-executor pipeline at entry time (so `EffectTarget.Self` resolves to
