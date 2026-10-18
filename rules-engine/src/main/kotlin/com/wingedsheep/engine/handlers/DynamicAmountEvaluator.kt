@@ -795,6 +795,13 @@ class DynamicAmountEvaluator(
                             ?.get<com.wingedsheep.engine.state.components.player.DamageReceivedFromArtifactsThisTurnComponent>()
                             ?.amount ?: 0
                     }
+                    // Read off the source's own damage memory, which survives its move off the
+                    // battlefield as last-known information (CR 113.7a).
+                    TurnTracker.DAMAGE_RECEIVED_FROM_SOURCE -> {
+                        val memory = context.sourceId?.let { state.getEntity(it) }
+                            ?.get<com.wingedsheep.engine.state.components.battlefield.DealtDamageToThisGameComponent>()
+                        playerIds.sumOf { playerId -> memory?.damageDealtToOnTurn(playerId, state.turnNumber) ?: 0 }
+                    }
                     TurnTracker.LIFE_GAINED -> playerIds.sumOf { playerId ->
                         state.getEntity(playerId)
                             ?.get<com.wingedsheep.engine.state.components.player.LifeGainedAmountThisTurnComponent>()

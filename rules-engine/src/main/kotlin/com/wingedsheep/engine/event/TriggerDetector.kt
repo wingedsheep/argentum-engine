@@ -3417,6 +3417,13 @@ class TriggerDetector(
      * raised for the same ability and recipient, summing the damage. Returns the triggers still
      * to add. The per-source form ("a source deals damage to this") is untouched — it triggers
      * once per source by its own wording (Nested Ghoul's ruling).
+     *
+     * The source side folds the same way: "whenever this deals [combat] damage" with no recipient
+     * restriction ([EventPattern.DealsDamageEvent] with [Recipient.Any]) triggers once when its
+     * creature deals combat damage to several recipients at once — trample, or several blockers
+     * (Vessel of the All-Consuming's and Umezawa's Jitte's rulings) — with "that much" the total.
+     * A recipient-restricted form ("deals damage to a player / to a creature") stays per recipient,
+     * since its effect may name the damaged one.
      */
     private fun foldSimultaneousDamage(
         detected: List<PendingTrigger>,
@@ -3427,12 +3434,17 @@ class TriggerDetector(
         if (event !is DamageDealtEvent || !event.isCombatDamage) return detected
         val kept = mutableListOf<PendingTrigger>()
         for (pending in detected) {
-            val trigger = pending.ability.trigger
-            if (trigger !is EventPattern.DamageReceivedEvent || trigger.source != null) {
+            val key = when (val trigger = pending.ability.trigger) {
+                is EventPattern.DamageReceivedEvent -> if (trigger.source == null)
+                    listOf(pending.sourceId, pending.ability.id, pending.granterId, event.targetId) else null
+                is EventPattern.DealsDamageEvent -> if (!trigger.batch && trigger.recipient == Recipient.Any)
+                    listOf(pending.sourceId, pending.ability.id, pending.granterId, "dealt-by", event.sourceId) else null
+                else -> null
+            }
+            if (key == null) {
                 kept.add(pending)
                 continue
             }
-            val key = listOf(pending.sourceId, pending.ability.id, pending.granterId, event.targetId)
             val slot = slots[key]
             if (slot == null) {
                 // The caller appends `kept` to `triggers` in order, so this is its final slot.

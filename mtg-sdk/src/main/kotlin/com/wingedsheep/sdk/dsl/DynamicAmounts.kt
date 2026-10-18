@@ -777,6 +777,13 @@ object DynamicAmounts {
     fun damageReceivedFromArtifactsThisTurn(player: Player = Player.You): DynamicAmount =
         DynamicAmount.TurnTracking(player, TurnTracker.DAMAGE_RECEIVED_FROM_ARTIFACTS)
 
+    /**
+     * Damage this ability's source has dealt to [player] this turn (combat and noncombat) —
+     * "if it has dealt 10 or more damage to that player this turn" (Vessel of the All-Consuming).
+     */
+    fun damageDealtBySourceThisTurn(player: Player = Player.TriggeringPlayer): DynamicAmount =
+        DynamicAmount.TurnTracking(player, TurnTracker.DAMAGE_RECEIVED_FROM_SOURCE)
+
     fun nonTokenCreaturesDiedThisTurn(player: Player = Player.You): DynamicAmount =
         DynamicAmount.TurnTracking(player, TurnTracker.NONTOKEN_CREATURES_DIED)
 

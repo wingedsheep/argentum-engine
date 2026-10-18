@@ -1502,18 +1502,32 @@ data class DamageDealtThisTurnComponent(
  *
  * Both combat and noncombat damage count, and it records planeswalkers alongside players; the
  * consumer filters to what the card asks for.
+ *
+ * [damageOnLastTurnByRecipient] carries the *amount* dealt to each recipient on its stamped turn —
+ * "if it has dealt 10 or more damage to that player this turn" (Vessel of the All-Consuming). It
+ * restarts from zero whenever the stamp moves to a new turn, so like the stamp it never needs
+ * clearing.
  */
 @Serializable
 data class DealtDamageToThisGameComponent(
-    val lastDamageTurnByRecipient: Map<EntityId, Int> = emptyMap()
+    val lastDamageTurnByRecipient: Map<EntityId, Int> = emptyMap(),
+    val damageOnLastTurnByRecipient: Map<EntityId, Int> = emptyMap()
 ) : Component {
     val recipientIds: Set<EntityId> get() = lastDamageTurnByRecipient.keys
 
     fun dealtDamageToOnTurn(recipientId: EntityId, turnNumber: Int): Boolean =
         lastDamageTurnByRecipient[recipientId] == turnNumber
 
-    fun withDamageTo(recipientId: EntityId, turnNumber: Int): DealtDamageToThisGameComponent =
-        copy(lastDamageTurnByRecipient = lastDamageTurnByRecipient + (recipientId to turnNumber))
+    /** Total damage dealt to [recipientId] during [turnNumber]; 0 when its stamp is another turn. */
+    fun damageDealtToOnTurn(recipientId: EntityId, turnNumber: Int): Int =
+        if (dealtDamageToOnTurn(recipientId, turnNumber)) damageOnLastTurnByRecipient[recipientId] ?: 0 else 0
+
+    fun withDamageTo(recipientId: EntityId, turnNumber: Int, amount: Int): DealtDamageToThisGameComponent =
+        copy(
+            lastDamageTurnByRecipient = lastDamageTurnByRecipient + (recipientId to turnNumber),
+            damageOnLastTurnByRecipient = damageOnLastTurnByRecipient +
+                (recipientId to damageDealtToOnTurn(recipientId, turnNumber) + amount)
+        )
 }
 
 /**

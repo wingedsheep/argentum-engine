@@ -1813,6 +1813,164 @@
     ]
 }
 
+// Hidetsugu Consumes All
+{
+    "name": "Hidetsugu Consumes All",
+    "manaCost": "{1}{B}{R}",
+    "typeLine": "Enchantment — Saga",
+    "oracleText": "(As this Saga enters and after your draw step, add a lore counter.)\nI — Destroy each nonland permanent with mana value 1 or less.\nII — Exile all graveyards.\nIII — Exile this Saga, then return it to the battlefield transformed under your control.",
+    "script": {
+        "sagaChapters": [
+            {
+                "chapter": 1,
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "BattlefieldMatching",
+                                "filter": "nonland permanent mv<=1"
+                            },
+                            "storeAs": "destroyAll_gathered"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "destroyAll_gathered",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Destroy"
+                        }
+                    ]
+                }
+            },
+            {
+                "chapter": 2,
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Graveyard",
+                                "player": "Each"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "chapter": 3,
+                "effect": "ExileAndReturnTransformed"
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Vessel of the All-Consuming",
+        "manaCost": "",
+        "typeLine": "Enchantment Creature — Ogre Shaman",
+        "oracleText": "Trample\nWhenever this creature deals damage, put a +1/+1 counter on it.\nWhenever this creature deals damage to a player, if it has dealt 10 or more damage to that player this turn, they lose the game.",
+        "creatureStats": {
+            "power": 3,
+            "toughness": 3
+        },
+        "keywords": [
+            "TRAMPLE"
+        ],
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "Vessel of the All-Consuming:1",
+                    "trigger": "DealsDamageEvent",
+                    "effect": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": "Self"
+                    }
+                },
+                {
+                    "id": "Vessel of the All-Consuming:2",
+                    "trigger": {
+                        "type": "DealsDamageEvent",
+                        "recipient": {
+                            "type": "RecipientPlayer",
+                            "player": "Any"
+                        }
+                    },
+                    "effect": {
+                        "type": "LoseGame",
+                        "target": {
+                            "type": "PlayerRef",
+                            "player": "TriggeringPlayer"
+                        }
+                    },
+                    "interveningIf": {
+                        "type": "Compare",
+                        "left": {
+                            "type": "TurnTracking",
+                            "player": "TriggeringPlayer",
+                            "tracker": "DAMAGE_RECEIVED_FROM_SOURCE"
+                        },
+                        "operator": "GTE",
+                        "right": {
+                            "type": "Fixed",
+                            "amount": 10
+                        }
+                    }
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "221",
+            "rarity": "MYTHIC",
+            "artist": "Chris Cold",
+            "imageUri": "https://cards.scryfall.io/normal/back/8/e/8e910464-329a-4de1-930a-be85b1956676.jpg?1783923841"
+        },
+        "colorIdentityOverride": [
+            "BLACK",
+            "RED"
+        ],
+        "colorIndicator": [
+            "BLACK",
+            "RED"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "221",
+        "rarity": "MYTHIC",
+        "artist": "Chris Cold",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/e/8e910464-329a-4de1-930a-be85b1956676.jpg?1783923841",
+        "rulings": [
+            {
+                "date": "2022-02-18",
+                "text": "Vessel of the All-Consuming's first triggered ability will trigger whenever it deals any damage, not just combat damage. If it deals damage to multiple players and/or permanents at the same time (perhaps because of trample or because it was blocked by multiple creatures), that ability triggers only once."
+            },
+            {
+                "date": "2022-02-18",
+                "text": "If Vessel of the All-Consuming is dealt lethal damage at the same time it deals damage, it will be destroyed before the first triggered ability resolves, so the +1/+1 counter won't be put on it in time to potentially save it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
+    ]
+}
+
 // High-Speed Hoverbike
 {
     "name": "High-Speed Hoverbike",

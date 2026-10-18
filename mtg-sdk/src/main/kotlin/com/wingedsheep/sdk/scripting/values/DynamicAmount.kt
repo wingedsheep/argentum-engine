@@ -41,6 +41,13 @@ enum class TurnTracker {
     DAMAGE_RECEIVED,
     /** Total damage dealt to the player this turn by artifact sources (Reverse Polarity). */
     DAMAGE_RECEIVED_FROM_ARTIFACTS,
+    /**
+     * Total damage the ability's own source has dealt to the player this turn, combat and
+     * noncombat alike — "if it has dealt 10 or more damage to that player this turn" (Vessel of
+     * the All-Consuming). A permanent that left the battlefield and returned is a new object and
+     * starts from zero (CR 400.7).
+     */
+    DAMAGE_RECEIVED_FROM_SOURCE,
     /** Total amount of life the player has gained this turn. */
     LIFE_GAINED,
     /**
@@ -370,6 +377,7 @@ enum class TurnTracker {
         OPPONENTS_WHO_LOST_LIFE -> "the number of opponents who lost life this turn"
         DAMAGE_RECEIVED -> "the damage already dealt to that player this turn"
         DAMAGE_RECEIVED_FROM_ARTIFACTS -> "the damage dealt to ${player.description} so far this turn by artifacts"
+        DAMAGE_RECEIVED_FROM_SOURCE -> "the damage this has dealt to ${player.description} this turn"
         LIFE_GAINED -> "the amount of life ${player.possessive} gained this turn"
         LIFE_LOST -> "whether ${player.description} lost life this turn"
         LIFE_LOST_AMOUNT -> "the amount of life ${player.possessive} lost this turn"

@@ -1443,7 +1443,7 @@ internal class CombatDamageManager(
         // Planeswalkers (not battles) join the source's "dealt damage to this game" memory, the
         // player half of which is recorded in DamageUtils.trackDamageReceivedByPlayer (The Fallen).
         if (counterType == com.wingedsheep.sdk.core.CounterType.LOYALTY) {
-            newState = DamageUtils.markDealtDamageToThisGame(newState, sourceId, targetId)
+            newState = DamageUtils.markDealtDamageToThisGame(newState, sourceId, targetId, amount)
         }
 
         val sourceName = newState.getEntity(sourceId)?.get<CardComponent>()?.name ?: "Creature"

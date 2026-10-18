@@ -487,7 +487,7 @@ object DamageUtils {
             events.add(LifeChangedEvent(targetId, currentLife, newLife, LifeChangeReason.DAMAGE))
         } else if (projected.isPlaneswalker(targetId)) {
             // It's a planeswalker - remove loyalty counters equal to damage dealt
-            if (sourceId != null) newState = markDealtDamageToThisGame(newState, sourceId, targetId)
+            if (sourceId != null) newState = markDealtDamageToThisGame(newState, sourceId, targetId, effectiveAmount)
             val counters = newState.getEntity(targetId)?.get<CountersComponent>() ?: CountersComponent()
             val currentLoyalty = counters.getCount(CounterType.LOYALTY)
             // CR 120.4a — excess damage to a planeswalker is the amount above its loyalty,
@@ -762,7 +762,7 @@ object DamageUtils {
         // here, so it is the one place to record the source's "has dealt damage to this player this
         // game" memory (The Fallen). Planeswalkers are recorded separately, at their own two
         // loyalty-removal sites.
-        val marked = sourceId?.let { markDealtDamageToThisGame(state, it, playerId) } ?: state
+        val marked = sourceId?.let { markDealtDamageToThisGame(state, it, playerId, amount) } ?: state
         // Is the source an artifact at the moment it dealt the damage? For a source still on the
         // battlefield, its projected types are authoritative (a continuous effect may have added or
         // stripped artifact-ness). Only for a source that has already left do we fall back to its
@@ -1277,6 +1277,27 @@ object DamageUtils {
     }
 
     /**
+     * Record on [sourceId] that it has dealt damage to [recipientId] this turn — the accumulating
+     * memory behind The Fallen ("this game") and the per-turn "dealt damage to you / by this creature
+     * this turn" readings, which compare the recorded turn stamp, plus the [amount] dealt to that
+     * recipient this turn ("if it has dealt 10 or more damage to that player this turn" — Vessel of
+     * the All-Consuming). [recipientId] is a player or a planeswalker; the consumer decides which of
+     * them the printed line cares about.
+     *
+     * A no-op when the source entity is gone. Never cleared per turn; it outlives the source's move
+     * off the battlefield as last-known information and is dropped on the card's next zone change
+     * (see `DealtDamageToThisGameComponent`), so a permanent that leaves and returns starts over
+     * (CR 400.7).
+     */
+    fun markDealtDamageToThisGame(state: GameState, sourceId: EntityId, recipientId: EntityId, amount: Int): GameState {
+        if (state.getEntity(sourceId) == null || amount <= 0) return state
+        return state.updateEntity(sourceId) { c ->
+            val current = c.get<DealtDamageToThisGameComponent>() ?: DealtDamageToThisGameComponent()
+            c.with(current.withDamageTo(recipientId, state.turnNumber, amount))
+        }
+    }
+
+    /**
      * Record [sourceId] as a source that dealt damage this turn, on the player who controls it
      * **right now** — i.e. at the moment the damage is dealt, which is the only moment Case of the
      * Burning Masks's "sources you controlled dealt damage this turn" cares about.
@@ -1286,27 +1307,6 @@ object DamageUtils {
      * new object it is (CR 400.7). A source that isn't a permanent — a spell resolving off the
      * stack — carries no timestamp and is identified by its entity alone.
      */
-    /**
-     * Record on [sourceId] that it has dealt damage to [recipientId] this turn — the accumulating
-     * memory behind The Fallen ("this game") and the per-turn "dealt damage to you / by this creature
-     * this turn" readings, which compare the recorded turn stamp. [recipientId] is a player or a
-     * planeswalker; the consumer decides which of them the printed line cares about.
-     *
-     * A no-op when the source entity is gone. Never cleared per turn; it outlives the source's move
-     * off the battlefield as last-known information and is dropped on the card's next zone change
-     * (see `DealtDamageToThisGameComponent`), so a permanent that leaves and returns starts over
-     * (CR 400.7).
-     */
-    fun markDealtDamageToThisGame(state: GameState, sourceId: EntityId, recipientId: EntityId): GameState {
-        val container = state.getEntity(sourceId) ?: return state
-        val existing = container.get<DealtDamageToThisGameComponent>()
-        if (existing?.dealtDamageToOnTurn(recipientId, state.turnNumber) == true) return state
-        return state.updateEntity(sourceId) { c ->
-            val current = c.get<DealtDamageToThisGameComponent>() ?: DealtDamageToThisGameComponent()
-            c.with(current.withDamageTo(recipientId, state.turnNumber))
-        }
-    }
-
     fun trackDamageSourceForController(state: GameState, sourceId: EntityId): GameState {
         val container = state.getEntity(sourceId) ?: return state
         val controllerId = state.projectedState.getController(sourceId)
