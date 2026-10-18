@@ -694,6 +694,8 @@ data class CreateTokenCopyRemainingContinuation(
  * @property targets Original targets from the effect context (preserved for ContextTarget resolution)
  * @property namedTargets Named targets from the pipeline state
  * @property triggeringEntityId The entity that triggered the ability
+ * @property chosenCounterType The kind an enclosing counter-kind loop is visiting, so a chosen
+ *   `RemoveCountersOfChosenKind` / `AddCountersOfChosenKind(kindFrom = ITERATION)` still reads it
  */
 @Serializable
 data class ChooseActionContinuation(
@@ -707,4 +709,5 @@ data class ChooseActionContinuation(
     val triggeringEntityId: EntityId? = null,
     val objectReferences: com.wingedsheep.engine.handlers.ObjectReferenceEnvironment = com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(),
     val resolvingTriggeredAbility: com.wingedsheep.sdk.scripting.TriggeredAbility? = null,
+    val chosenCounterType: com.wingedsheep.sdk.core.CounterType? = null,
 ) : AnswerContinuation

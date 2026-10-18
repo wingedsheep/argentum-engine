@@ -142,13 +142,46 @@ data class AddCountersOfChosenKindEffect(
     }
 }
 
+/**
+ * "Remove [count] counter(s) of a chosen kind from [target]" — the removing sibling of
+ * [AddCountersOfChosenKindEffect], with the same [kindFrom] contract. With
+ * [CounterKindSource.RECIPIENT] the controller picks among the kinds on the target ("remove a
+ * counter from target permanent"; no prompt when only one kind is there); with
+ * [CounterKindSource.ITERATION] the kind is the one an enclosing counter-kind loop is visiting —
+ * "for each kind of counter on target permanent, put another counter of that kind on it or remove
+ * one from it" (Dramatist's Puppet). Removal goes through [RemoveCountersEffect], so it removes
+ * only what is there (never below zero) and emits the usual counter-removed events.
+ *
+ * @property target The permanent (or player) losing the counters.
+ * @property count How many counters of the kind to remove.
+ * @property kindFrom Where the kind comes from: chosen among the target's own, or the loop's.
+ */
+@SerialName("RemoveCountersOfChosenKind")
+@Serializable
+data class RemoveCountersOfChosenKindEffect(
+    val target: EffectTarget = EffectTarget.ContextTarget(0),
+    val count: Int = 1,
+    val kindFrom: CounterKindSource = CounterKindSource.RECIPIENT
+) : Effect {
+    override val description: String = when (kindFrom) {
+        CounterKindSource.RECIPIENT ->
+            "Remove " + (if (count == 1) "a counter" else "$count counters") + " from ${target.description}"
+        CounterKindSource.ITERATION ->
+            "Remove " + (if (count == 1) "a counter" else "$count counters") +
+                " of that kind from ${target.description}"
+    }
+}
+
 /** Where [AddCountersOfChosenKindEffect] takes its counter kind from. */
 @Serializable
 enum class CounterKindSource {
     /** The controller chooses among the kinds already on the recipient (Ichormoon Gauntlet). */
     RECIPIENT,
 
-    /** The kind an enclosing `IterationSpace.CounterKindsAmong` loop is visiting (Exotic Pets). */
+    /**
+     * The kind an enclosing `IterationSpace.CounterKindsAmong` (Exotic Pets) or
+     * `IterationSpace.CounterKindsOn` (Dramatist's Puppet) loop is visiting.
+     */
     ITERATION
 }
 

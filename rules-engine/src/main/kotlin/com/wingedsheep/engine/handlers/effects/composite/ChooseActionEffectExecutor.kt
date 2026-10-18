@@ -49,8 +49,14 @@ class ChooseActionEffectExecutor(
             ?: return EffectResult.error(state, "Could not resolve player for ChooseActionEffect")
 
         // Filter to feasible choices
+        // Inside a counter-kind loop, `{counter}` in a label names the kind being visited
+        // ("Put another {counter} counter on it" — Dramatist's Puppet), so each per-kind
+        // prompt says which kind it is about.
         val feasibleChoices = effect.choices.filter { choice ->
             isFeasible(state, choosingPlayerId, choice.feasibilityCheck)
+        }.map { choice ->
+            context.chosenCounterType?.let { kind -> choice.copy(label = choice.label.replace("{counter}", kind.printed)) }
+                ?: choice
         }
 
         if (feasibleChoices.isEmpty()) {
@@ -89,7 +95,8 @@ class ChooseActionEffectExecutor(
             choices = feasibleChoices,
             targets = context.targets,
             namedTargets = context.pipeline.namedTargets,
-            triggeringEntityId = context.triggeringEntityId
+            triggeringEntityId = context.triggeringEntityId,
+            chosenCounterType = context.chosenCounterType
         )
 
         return EffectResult.from(state.suspendForDecision(decision, continuation))

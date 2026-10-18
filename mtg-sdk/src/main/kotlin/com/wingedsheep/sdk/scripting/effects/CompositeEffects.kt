@@ -1398,7 +1398,9 @@ sealed interface FeasibilityCheck {
 /**
  * A labeled option in a [ChooseActionEffect].
  *
- * @property label Human-readable label shown in the UI (e.g., "Sacrifice a nonland permanent")
+ * @property label Human-readable label shown in the UI (e.g., "Sacrifice a nonland permanent").
+ *   Inside a counter-kind loop (`ForEachCounterKindOn` / `ForEachCounterKindAmong`), `{counter}`
+ *   is replaced by the visited kind's printed name ("Put another {counter} counter on it").
  * @property effect The effect executed when this option is chosen
  * @property feasibilityCheck Optional check — if non-null and the check fails, this option is hidden
  */

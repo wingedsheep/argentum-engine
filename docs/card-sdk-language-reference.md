@@ -2469,6 +2469,15 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   `kindFrom = CounterKindSource.ITERATION` to place the kind an enclosing
   `ForEachCounterKindAmong` loop is visiting instead — no choice is asked, and outside such a loop
   it places nothing (Exotic Pets).
+- `RemoveCountersOfChosenKind(target?, count = 1, kindFrom = RECIPIENT)` — the removing sibling of
+  `AddCountersOfChosenKind`, same kind contract: "remove a counter from target permanent" asks the
+  controller which kind (no prompt for a single kind, no-op with none); with
+  `kindFrom = CounterKindSource.ITERATION` it removes the kind an enclosing counter-kind loop is
+  visiting. Removal goes through `RemoveCounters` (never below zero, usual counter-removed event).
+  "For each kind of counter on target permanent, put another counter of that kind on it or remove one
+  from it" (Dramatist's Puppet) is `ForEachCounterKindOn(ContextTarget(0), ChooseAction(
+  EffectChoice("Put another {counter} counter on it", AddCountersOfChosenKind(kindFrom = ITERATION)),
+  EffectChoice("Remove a {counter} counter from it", RemoveCountersOfChosenKind(kindFrom = ITERATION))))`.
 - `AddCountersToCollection(name, type, count)` — add counters to cards held in a pipeline collection.
   An overload takes a `DynamicAmount` instead of an `Int` count, evaluated once at resolution — "create
   a token, then put X +1/+1 counters on it, where X is …" over the `CREATED_TOKENS` collection (Emil,
@@ -4246,6 +4255,11 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
     (Exotic Pets) is `run(CreateToken(…, count = 2))` then `forEachCounterKindAmong(AllCreaturesYouControl)
     { val fish = chooseExactly(1, CollectionSlot.CreatedTokens, prompt = "Choose a Fish to get a {counter} counter",
     useTargetingUI = true); run(AddCountersOfChosenKind(fish.asTarget(0), kindFrom = ITERATION)) }`.
+  - `ForEachCounterKindOnEffect(entity, effect)` / facade `Effects.ForEachCounterKindOn(...)` →
+    `IterationSpace.CounterKindsOn(entity)` — per kind of counter on **one** referenced permanent
+    (usually `ContextTarget(0)`), same canonical order and the same chosen-counter-kind binding as
+    `CounterKindsAmong`. A `ChooseAction` in the body may write `{counter}` in its labels to name the
+    visited kind, and the chosen option still sees the kind after the decision (Dramatist's Puppet).
 
   Every space snapshots its items before the first iteration (entities destroyed mid-loop stay in
   the list) and every space is **pause-safe**: a body that pauses for a decision resumes the

@@ -988,6 +988,81 @@
     ]
 }
 
+// Dramatist's Puppet
+{
+    "name": "Dramatist's Puppet",
+    "manaCost": "{4}",
+    "typeLine": "Artifact Creature — Construct",
+    "oracleText": "When this creature enters, for each kind of counter on target permanent, put another counter of that kind on it or remove one from it.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Dramatist's Puppet:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.CounterKindsOn",
+                        "entity": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "body": {
+                        "type": "ChooseAction",
+                        "choices": [
+                            {
+                                "label": "Put another {counter} counter on it",
+                                "effect": {
+                                    "type": "AddCountersOfChosenKind",
+                                    "target": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    },
+                                    "kindFrom": "ITERATION"
+                                }
+                            },
+                            {
+                                "label": "Remove a {counter} counter from it",
+                                "effect": {
+                                    "type": "RemoveCountersOfChosenKind",
+                                    "target": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    },
+                                    "kindFrom": "ITERATION"
+                                }
+                            }
+                        ]
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "permanent"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this creature enters, for each kind of counter on target permanent, put another counter of that kind on it or remove one from it."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "244",
+        "artist": "Livia Prima",
+        "flavorText": "\"Who cares if the story's true as long as people are entertained?\"\n—Shin, Towashi street performer",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/4/b490e065-b54a-4015-9768-d0e62f0e2e84.jpg?1783923826"
+    },
+    "colorIdentityOverride": []
+}
+
 // Ecologist's Terrarium
 {
     "name": "Ecologist's Terrarium",

@@ -51,7 +51,7 @@ import com.wingedsheep.engine.core.Outcome
  *   iteration object — what `EffectTarget.IterationEntity` names (`Self` stays the source);
  *   outer collections preserved.
  * - ColorsOf: `chosenColor` set — the same channel `ChooseColorThen` feeds.
- * - CounterKindsAmong: `chosenCounterType` set; outer collections preserved.
+ * - CounterKindsAmong / CounterKindsOn: `chosenCounterType` set; outer collections preserved.
  */
 class ForEachExecutor(
     private val effectExecutor: (GameState, Effect, EffectContext) -> EffectResult,
@@ -256,6 +256,14 @@ class ForEachExecutor(
                         ?.filterValues { it > 0 }?.keys.orEmpty()
                 }
                 .distinct()
+                // Canonical id order for deterministic event sequencing.
+                .sortedBy { it.name }
+                .map { ForEachItem.OfCounterKind(it) }
+
+        is IterationSpace.CounterKindsOn ->
+            TargetResolutionUtils.resolveEntity(space.entity, context, state)
+                ?.let { state.getEntity(it)?.get<CountersComponent>()?.counters }
+                ?.filterValues { it > 0 }?.keys.orEmpty()
                 // Canonical id order for deterministic event sequencing.
                 .sortedBy { it.name }
                 .map { ForEachItem.OfCounterKind(it) }

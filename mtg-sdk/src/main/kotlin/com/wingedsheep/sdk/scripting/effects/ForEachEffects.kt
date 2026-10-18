@@ -131,6 +131,21 @@ sealed interface IterationSpace {
     @Serializable
     data class CounterKindsAmong(val filter: GroupFilter) : IterationSpace
 
+    /**
+     * Iterate each **kind of counter** on one referenced permanent — "for each kind of counter
+     * on target permanent, put another counter of that kind on it or remove one from it"
+     * (Dramatist's Puppet). The single-object sibling of [CounterKindsAmong]: the kinds are read
+     * off [entity] (its current counters, only kinds with at least one counter), snapshotted
+     * before the first iteration in canonical id order, and each is exposed through the
+     * chosen-counter-kind context exactly as [CounterKindsAmong] exposes it — so
+     * `AddCountersOfChosenKind` / `RemoveCountersOfChosenKind` with `kindFrom = ITERATION`, a
+     * `{counter}` placeholder in a body prompt or a `ChooseAction` label, all read the visited
+     * kind. An unresolvable entity or one without counters → zero iterations.
+     */
+    @SerialName("IterationSpace.CounterKindsOn")
+    @Serializable
+    data class CounterKindsOn(val entity: EffectTarget.SingleEntity) : IterationSpace
+
     fun applyTextReplacement(replacer: TextReplacer): IterationSpace = when (this) {
         is Group -> {
             val newFilter = filter.applyTextReplacement(replacer)
@@ -217,6 +232,8 @@ data class ForEachEffect(
             is IterationSpace.ColorsOf -> "for each color of ${space.source.description}, ${text(body)}"
             is IterationSpace.CounterKindsAmong ->
                 "For each kind of counter among ${space.filter.description.removePrefix("all ").trimStart()}, ${bodyClauses()}"
+            is IterationSpace.CounterKindsOn ->
+                "For each kind of counter on ${space.entity.description}, ${bodyClauses()}"
         }
     }
 
@@ -332,3 +349,12 @@ fun ForEachColorOfEffect(source: EffectTarget.SingleEntity, effect: Effect): For
 @Suppress("FunctionName")
 fun ForEachCounterKindAmongEffect(filter: GroupFilter, effect: Effect): ForEachEffect =
     ForEachEffect(IterationSpace.CounterKindsAmong(filter), effect)
+
+/**
+ * Run [effect] once per kind of counter on the referenced permanent, exposing the current kind
+ * via the chosen-counter-kind context (Dramatist's Puppet). Lowers to [ForEachEffect] over
+ * [IterationSpace.CounterKindsOn].
+ */
+@Suppress("FunctionName")
+fun ForEachCounterKindOnEffect(entity: EffectTarget.SingleEntity, effect: Effect): ForEachEffect =
+    ForEachEffect(IterationSpace.CounterKindsOn(entity), effect)

@@ -274,17 +274,20 @@ class MiscContinuationResumer(
         val kind = continuation.counterKinds.getOrNull(response.optionIndex)
             ?: return ExecutionResult.error(state, "Invalid counter kind index: ${response.optionIndex}")
 
-        val addEffect = com.wingedsheep.sdk.scripting.effects.AddCountersEffect(
-            counterType = kind,
-            count = continuation.count,
-            target = com.wingedsheep.sdk.scripting.targets.EffectTarget.SpecificEntity(continuation.recipientId)
-        )
+        val recipient = com.wingedsheep.sdk.scripting.targets.EffectTarget.SpecificEntity(continuation.recipientId)
+        val counterEffect = if (continuation.remove) {
+            com.wingedsheep.sdk.scripting.effects.RemoveCountersEffect(
+                kind, com.wingedsheep.sdk.scripting.values.DynamicAmount.Fixed(continuation.count), recipient
+            )
+        } else {
+            com.wingedsheep.sdk.scripting.effects.AddCountersEffect(kind, continuation.count, recipient)
+        }
         val addContext = EffectContext(
             sourceId = continuation.sourceId,
             objectReferences = continuation.objectReferences,
             controllerId = continuation.controllerId,
         )
-        val result = services.effectExecutorRegistry.execute(state, addEffect, addContext).toExecutionResult()
+        val result = services.effectExecutorRegistry.execute(state, counterEffect, addContext).toExecutionResult()
         if (result.outcome is Outcome.Paused) return result
 
         return checkForMore(result.state, result.events.toList())

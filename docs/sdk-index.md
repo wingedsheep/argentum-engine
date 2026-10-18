@@ -1009,6 +1009,7 @@ Families:
 - `RemoveAllCountersOfTypeEffect(counterType: CounterType, target: EffectTarget)` — Remove every counter of one specified kind from a target permanent.
 - `RemoveAnyNumberOfCountersEffect(target: EffectTarget, maxTotal: DynamicAmount?, minTotal: DynamicAmount)` — Remove counters from a target permanent.
 - `RemoveCountersEffect(counterType: CounterType, count: DynamicAmount, target: EffectTarget)` — Remove counters effect.
+- `RemoveCountersOfChosenKindEffect(target: EffectTarget, count: Int, kindFrom: CounterKindSource)` — "Remove count counter(s) of a chosen kind from target" — the removing sibling of AddCountersOfChosenKindEffect, with the same kindFrom contract.
 - `RemoveDamageShieldEffect(target: EffectTarget)` — One-shot destruction-replacement shield: the next time the target permanent would be destroyed this turn, remove all damage marked on it instead.
 - `RemoveFromCombatEffect(target: EffectTarget, unblockSoleBlockedAttackers: Boolean)` — Remove a creature from combat.
 - `RemoveKeywordEffect(keyword: String, target: EffectTarget, duration: Duration)` — Remove a keyword or ability flag from a target until end of turn.
@@ -1280,6 +1281,7 @@ Families:
 - `IterationSpace.Collection(collection: String)` — Iterate the entities in a named pipeline collection.
 - `IterationSpace.ColorsOf(source: EffectTarget.SingleEntity)` — Iterate the colors of a referenced entity in canonical WUBRG order, exposing the current color through the chosen-color context — the same channel `ChooseColorThen` feeds — so per-color atoms (`Gra…
 - `IterationSpace.CounterKindsAmong(filter: GroupFilter)` — Iterate each **kind of counter** among the battlefield permanents matching filter — "for each kind of counter among creatures you control, put a counter of that kind on …" (Exotic Pets).
+- `IterationSpace.CounterKindsOn(entity: EffectTarget.SingleEntity)` — Iterate each **kind of counter** on one referenced permanent — "for each kind of counter on target permanent, put another counter of that kind on it or remove one from it" (Dramatist's Puppet).
 - `IterationSpace.Group(filter: GroupFilter, noRegenerate: Boolean)` — Iterate battlefield permanents matching filter, snapshotted before any iteration runs (simultaneous semantics — entities destroyed during iteration stay in the list).
 - `IterationSpace.Players(players: Player)` — Iterate players matching players (e.g. `Player.Each`, `Player.EachOpponent`, `Player.ActivePlayerFirst`).
 - `IterationSpace.Targets` — Iterate the targets chosen for the spell/ability.

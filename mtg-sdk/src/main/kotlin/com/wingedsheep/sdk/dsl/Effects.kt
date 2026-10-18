@@ -2304,6 +2304,20 @@ object Effects {
         com.wingedsheep.sdk.scripting.effects.AddCountersOfChosenKindEffect(target, count, kindFrom)
 
     /**
+     * "Remove [count] counter(s) of a chosen kind from [target]" — the removing sibling of
+     * [AddCountersOfChosenKind], with the same [kindFrom] contract: the player picks among the
+     * kinds already there (no prompt when only one), or the kind an enclosing counter-kind loop
+     * is visiting. Dramatist's Puppet.
+     */
+    fun RemoveCountersOfChosenKind(
+        target: EffectTarget = EffectTarget.ContextTarget(0),
+        count: Int = 1,
+        kindFrom: com.wingedsheep.sdk.scripting.effects.CounterKindSource =
+            com.wingedsheep.sdk.scripting.effects.CounterKindSource.RECIPIENT
+    ): Effect =
+        com.wingedsheep.sdk.scripting.effects.RemoveCountersOfChosenKindEffect(target, count, kindFrom)
+
+    /**
      * Put every counter that was on the triggering source onto a target.
      * Reads the source's last-known counter map (captured on leave-battlefield),
      * not just +1/+1 counters. Use for "put its counters on target creature you
@@ -4209,6 +4223,20 @@ object Effects {
         filter: com.wingedsheep.sdk.scripting.filters.unified.GroupFilter,
         effect: Effect
     ): Effect = com.wingedsheep.sdk.scripting.effects.ForEachCounterKindAmongEffect(filter, effect)
+
+    /**
+     * Run [effect] once per **kind of counter** on [entity] (a single permanent — usually the
+     * target), with that kind exposed to [AddCountersOfChosenKind] / [RemoveCountersOfChosenKind]
+     * via `kindFrom = CounterKindSource.ITERATION` and to a `{counter}` placeholder in a
+     * `ChooseAction` label or selection prompt. "For each kind of counter on target permanent,
+     * put another counter of that kind on it or remove one from it" (Dramatist's Puppet) is a
+     * per-kind `ChooseAction` between the two. Kinds are snapshotted before the first
+     * iteration; none → zero iterations.
+     */
+    fun ForEachCounterKindOn(
+        entity: EffectTarget.SingleEntity,
+        effect: Effect
+    ): Effect = com.wingedsheep.sdk.scripting.effects.ForEachCounterKindOnEffect(entity, effect)
 
     /**
      * Grant "can't be blocked by creatures of the chosen color" to a target.

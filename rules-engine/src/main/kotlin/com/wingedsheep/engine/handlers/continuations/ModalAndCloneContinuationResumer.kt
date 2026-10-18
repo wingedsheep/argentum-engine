@@ -1682,7 +1682,8 @@ class ModalAndCloneContinuationResumer(
             controllerId = continuation.controllerId,
             targets = continuation.targets,
             triggeringEntityId = continuation.triggeringEntityId,
-            pipeline = PipelineState(namedTargets = continuation.namedTargets)
+            pipeline = PipelineState(namedTargets = continuation.namedTargets),
+            chosenCounterType = continuation.chosenCounterType
         )
 
         val result = services.effectExecutorRegistry.execute(state, chosenEffect, context).toExecutionResult()
