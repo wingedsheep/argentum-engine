@@ -6636,15 +6636,23 @@ This is the player-arm prerequisite for the planned composable mixed `TargetUnio
   to = Zone.GRAVEYARD)))` (Frostwielder, Kumano's Pupils, Kumano, Master Yamabushi) and still applies when
   the host dies simultaneously. Inert with no source context (group-static projection, granted
   sourceless replacements).
+- `.dealtDamageToSourceThisTurn()` — the active-voice mirror: the creature **dealt** damage this turn to
+  the effect's source; backed by `StatePredicate.DealtDamageToSourceThisTurn`, which reads the
+  *candidate's* own per-turn record of the creatures it damaged, so it keeps matching after the source
+  has died (and stops once the candidate itself leaves the battlefield). Brine Hag's "When this creature
+  dies, the base power and toughness of each creature that dealt damage to it this turn become 0/2" is
+  `Effects.ForEachInGroup(GroupFilter(GameObjectFilter.Creature.dealtDamageToSourceThisTurn()),
+  Effects.SetBasePowerAndToughness(0, 2, EffectTarget.IterationEntity, Duration.Permanent))`. Inert with no
+  source context; not answered by group-static projection.
 - `.wasDealtDamageThisTurnBy(sourceFilter)` — the creature was dealt damage this turn by a source
   matching `sourceFilter` **as that source stood when it dealt the damage**; backed by
   `StatePredicate.WasDealtDamageThisTurnBy`. Reads the candidate's *own* record of the sources that
   damaged it this turn (the `DamageSourceLki` snapshots Shelob's observer death trigger reads, through
   the same matcher), so a source that has since left the battlefield or changed control still counts as
   it was then — unlike `.wasDealtDamageBySourceThisTurn()`, which needs its one source to still be around.
-  The snapshot holds the source's controller, whether it was a creature and its creature subtypes, so
-  `sourceFilter` may use `youControl()` / `opponentControls()` ("you" = the effect source's controller),
-  `Creature` and `withSubtype(...)`; any other predicate fails closed. Honoured by the zone-change
+  The snapshot holds the source's controller, whether it was a creature, its creature subtypes and its
+  name, so `sourceFilter` may use `youControl()` / `opponentControls()` ("you" = the effect source's
+  controller), `Creature`, `withSubtype(...)` and `named(...)`; any other predicate fails closed. Honoured by the zone-change
   redirect path (printed and granted replacements alike), so Etching of Kumano's "if a creature dealt
   damage this turn by a source you controlled would die, exile it instead" is
   `replacementEffect(RedirectZoneChange(newDestination = Zone.EXILE, appliesTo =
@@ -15319,13 +15327,19 @@ read is available to other snapshot-backed entity references once their captured
 
 ### Last-known damage dealt to the source (dies/leaves triggers)
 
-- `LastKnownDamageDealtToSource` — the total damage dealt to the source *this turn*, read as last-known
-  information. Facade: `DynamicAmounts.lastKnownDamageDealtToSource()`. Tangled Colony: "When this
+- `LastKnownDamageDealtToSource(sourceFilter = null, excludeSelf = false)` — the damage dealt to the
+  source *this turn*, read as last-known information. Facade:
+  `DynamicAmounts.lastKnownDamageDealtToSource(sourceFilter, excludeSelf)`. Tangled Colony: "When this
   creature dies, create X 1/1 black Rat creature tokens …, where X is the amount of damage dealt to it
-  this turn." The engine already tallies damage per source-controller on every permanent it is dealt to
-  and captures that map onto the `ZoneChangeEvent` when the permanent leaves the battlefield, so the
-  value survives into the dies trigger; this node simply sums it across all controllers. The per-player
-  split is what `EachPlayerDrawsForDamageDealtToSource` (Grothama, All-Devouring) reads instead.
+  this turn." Every permanent dealt damage (combat or not) keeps a per-turn record of each source — its
+  controller, creature-ness, creature subtypes and name as it stood when it dealt the damage, with the
+  summed amount — captured onto the `ZoneChangeEvent` when the permanent leaves the battlefield, so the
+  value survives into the dies trigger. `sourceFilter` narrows the sum to matching sources (same reading
+  and fail-closed rule as `.wasDealtDamageThisTurnBy(...)`), and `excludeSelf` drops damage the source
+  dealt to itself: Blazing Effigy's "X is 3 plus the amount of damage dealt to this creature this turn by
+  other sources named Blazing Effigy" is `3 + DynamicAmounts.lastKnownDamageDealtToSource(
+  GameObjectFilter.Any.named("Blazing Effigy"), excludeSelf = true)`. The per-player split is what
+  `EachPlayerDrawsForDamageDealtToSource` (Grothama, All-Devouring) reads instead.
   Evaluates to `0` when no snapshot is present — including for a source still on the battlefield, since
   the tally is only captured on the way out. Lethal damage is not a cap: excess damage, and non-lethal
   damage the creature survived earlier in the turn, both count.

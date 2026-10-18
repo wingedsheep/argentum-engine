@@ -618,6 +618,25 @@ sealed interface StatePredicate {
     }
 
     /**
+     * **Dealt** damage this turn to the effect's *source* — the active-voice mirror of
+     * [WasDealtDamageBySourceThisTurn]: "each creature that dealt damage to it this turn" (Brine
+     * Hag). Reads the *candidate's* own per-turn record of the creatures it damaged, so it keeps
+     * matching after the source has died — which is the only time Brine Hag's dies trigger asks.
+     * The record is dropped when the candidate leaves the battlefield (CR 400.7). Source-relative
+     * and inert with no source context.
+     *
+     * Closest types: [WasDealtDamageBySourceThisTurn] is the opposite direction and reads the
+     * *source's* record, deliberately dropped when the source leaves the battlefield (Kumano's
+     * rulings need that), so a direction axis on it could not give this one the lifetime it needs;
+     * [WasDealtDamageThisTurnBy] filters the candidate's damage *sources*, not its recipients.
+     */
+    @SerialName("DealtDamageToSourceThisTurn")
+    @Serializable
+    data object DealtDamageToSourceThisTurn : History {
+        override val description: String = "that dealt damage to it this turn"
+    }
+
+    /**
      * Was dealt damage this turn by a source matching [sourceFilter], judged as that source stood
      * *when it dealt the damage* — "a creature dealt damage this turn by a source you controlled"
      * (Etching of Kumano: `GameObjectFilter.Any.youControl()`). Reads the candidate's own per-turn
@@ -625,9 +644,9 @@ sealed interface StatePredicate {
      * left the battlefield or changed control still counts as it was then. "You" in the filter is
      * the effect source's controller.
      *
-     * The record holds each source's controller, whether it was a creature, and its creature
-     * subtypes, so [sourceFilter] may use `youControl()` / `opponentControls()`, `Creature` and
-     * `withSubtype(...)` — the same reading Shelob's "dealt damage this turn by a Spider you
+     * The record holds each source's controller, whether it was a creature, its creature subtypes
+     * and its name, so [sourceFilter] may use `youControl()` / `opponentControls()`, `Creature`,
+     * `withSubtype(...)` and `named(...)` — the same reading Shelob's "dealt damage this turn by a Spider you
      * controlled" trigger gives its source filter. Anything else fails closed.
      *
      * Closest types: [WasDealtDamageBySourceThisTurn] names one specific source and reads that

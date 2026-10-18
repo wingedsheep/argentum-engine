@@ -843,21 +843,37 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
      * The total damage dealt to the ability's source this turn, read as last-known information —
      * "where X is the amount of damage dealt to it this turn" (Tangled Colony).
      *
-     * Backed by the same per-turn tally the engine already keeps on every permanent that is dealt
-     * damage (summed per source-controller and captured onto the `ZoneChangeEvent` when the
-     * permanent leaves the battlefield), so it reads correctly from a dies/leaves trigger where
-     * the entity itself is already gone. Summing that map gives the total from *all* sources; the
+     * Backed by the per-turn, per-source damage record the engine keeps on every permanent that is
+     * dealt damage (captured onto the `ZoneChangeEvent` when the permanent leaves the battlefield),
+     * so it reads correctly from a dies/leaves trigger where the entity itself is already gone. The
      * per-player split is what
      * [com.wingedsheep.sdk.scripting.effects.EachPlayerDrawsForDamageDealtToSourceEffect]
      * (Grothama, All-Devouring) uses instead.
      *
      * Evaluates to `0` when no snapshot is present — including for a source still on the
      * battlefield, since the tally is only captured on the way out.
+     *
+     * [sourceFilter] narrows the sum to damage from sources matching it, each judged as it stood
+     * when it dealt the damage (the same frozen record and reading as
+     * [com.wingedsheep.sdk.scripting.predicates.StatePredicate.WasDealtDamageThisTurnBy]: controller,
+     * creature-ness, creature subtypes and name). [excludeSelf] drops damage the source dealt to
+     * itself — the "other" of "damage dealt to this creature this turn by other sources named
+     * Blazing Effigy". With neither set it is the plain total (Tangled Colony).
      */
     @SerialName("LastKnownDamageDealtToSource")
     @Serializable
-    data object LastKnownDamageDealtToSource : DynamicAmount {
-        override val description: String = "the amount of damage dealt to it this turn"
+    data class LastKnownDamageDealtToSource(
+        val sourceFilter: GameObjectFilter? = null,
+        val excludeSelf: Boolean = false
+    ) : DynamicAmount {
+        override val description: String = buildString {
+            append("the amount of damage dealt to it this turn")
+            if (sourceFilter != null || excludeSelf) {
+                append(" by ")
+                if (excludeSelf) append("other ")
+                append(sourceFilter?.let { "${it.description} sources" } ?: "sources")
+            }
+        }
     }
 
     /**

@@ -189,7 +189,7 @@ class DynamicAmountEvaluator(
         is DynamicAmount.DistinctEntitiesInCollections,
         is DynamicAmount.Fixed,
         is DynamicAmount.LargestSharedCreatureTypeCount,
-        DynamicAmount.LastKnownDamageDealtToSource,
+        is DynamicAmount.LastKnownDamageDealtToSource,
         is DynamicAmount.LastKnownSourceCounters,
         is DynamicAmount.LifeTotal,
         is DynamicAmount.ManaOfColorSpent,
@@ -254,11 +254,18 @@ class DynamicAmountEvaluator(
                 amount.counterType?.let { snapshot[it] ?: 0 } ?: snapshot.values.sum()
             }
 
-            // Total damage dealt to the source this turn, summed across every source-controller.
-            // The per-player tally is captured onto the ZoneChangeEvent when the permanent leaves
-            // the battlefield, so a dies trigger still reads it after the entity is gone.
-            is DynamicAmount.LastKnownDamageDealtToSource ->
-                context.triggerContext?.lastKnownDamageDealtByPlayers?.values?.sum() ?: 0
+            // Damage dealt to the source this turn, summed over the per-source record captured
+            // onto the ZoneChangeEvent when the permanent left the battlefield, so a dies trigger
+            // still reads it after the entity is gone. Each source is judged as it stood when it
+            // dealt the damage; "you" in the filter is the ability's controller.
+            is DynamicAmount.LastKnownDamageDealtToSource -> {
+                val sourceFilter = amount.sourceFilter
+                context.triggerContext?.lastKnownDamageSources.orEmpty().sumOf { source ->
+                    val counted = !(amount.excludeSelf && source.sourceId == context.sourceId) &&
+                        (sourceFilter == null || source.matches(sourceFilter, context.controllerId))
+                    if (counted) source.amount else 0
+                }
+            }
 
             // The {X} this object was cast with, read off the current object regardless of zone.
             // Reads, in order: the durable CastChoicesComponent on the battlefield permanent (and

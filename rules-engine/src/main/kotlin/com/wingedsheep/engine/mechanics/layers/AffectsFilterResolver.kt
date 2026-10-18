@@ -597,6 +597,8 @@ internal class AffectsFilterResolver(
         // Source-relative too: "dealt damage by the source this turn" reads the source's per-turn
         // damaged-creature record. Only meaningful via PredicateEvaluator / the zone-change gate.
         StatePredicate.WasDealtDamageBySourceThisTurn -> false
+        // Its mirror ("dealt damage to the source this turn") is just as source-relative.
+        StatePredicate.DealtDamageToSourceThisTurn -> false
         // "By a source you controlled" needs the ability's controller, absent here too.
         is StatePredicate.WasDealtDamageThisTurnBy -> false
         // Likewise source-relative: "crewed/saddled the source this turn" needs the ability's

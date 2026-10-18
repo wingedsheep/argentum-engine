@@ -753,6 +753,14 @@ interface ObjectFilterBuilder<out Self> {
         withStatePredicate(StatePredicate.WasDealtDamageBySourceThisTurn)
 
     /**
+     * Must have **dealt** damage this turn to the effect's source — the mirror of
+     * [wasDealtDamageBySourceThisTurn], read off the candidate's own record so it still matches
+     * after the source has died. "Each creature that dealt damage to it this turn" (Brine Hag).
+     */
+    fun dealtDamageToSourceThisTurn() =
+        withStatePredicate(StatePredicate.DealtDamageToSourceThisTurn)
+
+    /**
      * Must have been dealt damage this turn by a source matching [sourceFilter] as it stood when it
      * dealt the damage — including sources that have since left the battlefield. "If a creature
      * dealt damage this turn by a source you controlled would die, exile it instead" (Etching of

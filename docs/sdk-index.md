@@ -653,7 +653,7 @@ Families:
 - `DynamicAmount.GreatestAmongPlayers(players: Player, inner: DynamicAmount)` — The largest value inner takes when measured **once per player** in players — Oracle's "the greatest number of X a player controls / an opponent controls / has".
 - `DynamicAmount.IfPositive(amount: DynamicAmount)` — Take the maximum of zero and the amount (clamp negative to zero).
 - `DynamicAmount.LargestSharedCreatureTypeCount(player: Player)` — The size of the largest creature-type tribe among the creatures player controls — i.e. "the greatest number of creatures you control that have a creature type in common." For every creature type pr…
-- `DynamicAmount.LastKnownDamageDealtToSource` — The total damage dealt to the ability's source this turn, read as last-known information — "where X is the amount of damage dealt to it this turn" (Tangled Colony).
+- `DynamicAmount.LastKnownDamageDealtToSource(sourceFilter: GameObjectFilter?, excludeSelf: Boolean)` — The total damage dealt to the ability's source this turn, read as last-known information — "where X is the amount of damage dealt to it this turn" (Tangled Colony).
 - `DynamicAmount.LastKnownSourceCounters(counterType: CounterType?)` — The number of counters matching counterType the *source* of the current ability had as it last existed on the battlefield (CR 113.7a / 608.2h last-known information).
 - `DynamicAmount.LeastAmongPlayers(players: Player, inner: DynamicAmount)` — The smallest value inner takes when measured **once per player** in players — Oracle's "the number of lands controlled by the player who controls the fewest" (Balance).
 - `DynamicAmount.LifeTotal(player: Player)` — Life total of a specific player.
@@ -1654,6 +1654,7 @@ Families:
 - `StatePredicate.CrewedOrSaddledSourceThisTurn` — Creature that crewed (CR 702.122) or saddled (CR 702.171) the effect's source permanent this turn — i.e. one of the creatures tapped to pay that permanent's Crew/Saddle cost.
 - `StatePredicate.DealtCombatDamageToSourceControllerThisTurn` — Dealt combat damage *this turn* to the player who controls the effect's source.
 - `StatePredicate.DealtDamageToSourceControllerThisTurn` — Dealt damage — combat or noncombat — *this turn* to the player who controls the effect's source: the any-damage sibling of DealtCombatDamageToSourceControllerThisTurn.
+- `StatePredicate.DealtDamageToSourceThisTurn` — **Dealt** damage this turn to the effect's *source* — the active-voice mirror of WasDealtDamageBySourceThisTurn: "each creature that dealt damage to it this turn" (Brine Hag).
 - `StatePredicate.EnteredThisTurn` — Entered the battlefield this turn (has summoning sickness if creature)
 - `StatePredicate.ExiledByYou` — The candidate card is in exile and was put there by a spell or ability controlled by the asking player (the evaluation context's controller) — "a card from exile … if it was exiled by an ability yo…
 - `StatePredicate.ExiledWithSource` — The candidate card is one this effect's source permanent exiled — i.e. its entity id is recorded in the source's `LinkedExileComponent` (the same linkage set by `RedirectZoneChange(linkToSource = t…

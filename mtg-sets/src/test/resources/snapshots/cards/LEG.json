@@ -400,6 +400,64 @@
     ]
 }
 
+// Blazing Effigy
+{
+    "name": "Blazing Effigy",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Elemental",
+    "oracleText": "When this creature dies, it deals X damage to target creature, where X is 3 plus the amount of damage dealt to this creature this turn by other sources named Blazing Effigy.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Blazing Effigy:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Add",
+                        "left": {
+                            "type": "Fixed",
+                            "amount": 3
+                        },
+                        "right": {
+                            "type": "LastKnownDamageDealtToSource",
+                            "sourceFilter": "name:Blazing Effigy",
+                            "excludeSelf": true
+                        }
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "134",
+        "artist": "Susan Van Camp",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/2/921011ff-1696-4575-9198-abe993a0ee7a.jpg?1783948060"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Boomerang
 {
     "name": "Boomerang",
@@ -430,6 +488,67 @@
         "artist": "Brian Snõddy",
         "flavorText": "\"O! call back yesterday, bid time return.\"\n—William Shakespeare, King Richard the Second",
         "imageUri": "https://cards.scryfall.io/normal/front/b/8/b8286edd-644b-4135-8dca-af97f3920de3.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Brine Hag
+{
+    "name": "Brine Hag",
+    "manaCost": "{2}{U}{U}",
+    "typeLine": "Creature — Hag",
+    "oracleText": "When this creature dies, the base power and toughness of each creature that dealt damage to it this turn become 0/2. (This effect lasts indefinitely.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Brine Hag:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ],
+                                "statePredicates": [
+                                    "DealtDamageToSourceThisTurn"
+                                ]
+                            }
+                        }
+                    },
+                    "body": {
+                        "type": "SetBaseStats",
+                        "target": "IterationEntity",
+                        "power": {
+                            "type": "Fixed",
+                            "amount": 0
+                        },
+                        "toughness": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "49",
+        "rarity": "UNCOMMON",
+        "artist": "Quinton Hoover",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/a/2a1e7796-fbfb-4976-879f-bb748429d5c7.jpg?1783948077"
     },
     "colorIdentityOverride": [
         "BLUE"

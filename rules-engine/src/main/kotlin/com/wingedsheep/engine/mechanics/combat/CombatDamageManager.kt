@@ -1690,7 +1690,10 @@ internal class CombatDamageManager(
             // Snapshot the source's last-known controller / subtypes onto the recipient so observer
             // death triggers ("a creature dealt damage this turn by a Spider you controlled dies",
             // Shelob) can match the source even after it dies in the same combat (CR 608.2h).
-            newState = DamageUtils.trackDamageSourceLki(newState, sourceId, targetId)
+            newState = DamageUtils.trackDamageSourceLki(newState, sourceId, targetId, amount)
+            // Per-player tally too (Grothama's "damage dealt to it this turn by sources they
+            // controlled") — combat damage counts as much as fight or burn damage does.
+            newState = DamageUtils.trackDamageDealtByPlayer(newState, sourceId, targetId, amount)
             newState = DamageUtils.applyDoomedRidersToDamagedCreature(newState, sourceId, targetId)
             val sourceName = newState.getEntity(sourceId)?.get<CardComponent>()?.name ?: "Creature"
             val targetName = newState.getEntity(targetId)?.get<CardComponent>()?.name ?: "Creature"

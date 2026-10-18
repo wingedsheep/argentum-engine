@@ -25,8 +25,9 @@ import io.kotest.matchers.shouldBe
  * Tests:
  * 1. Lethal damage in excess of toughness is not capped — a Lightning Bolt on a 3/2 makes 3 Rats.
  * 2. Non-lethal damage the creature survived earlier in the turn still counts toward X.
- * 3. Dying without having been dealt damage makes no tokens at all (X = 0).
- * 4. Tangled Colony itself can't block.
+ * 3. Combat damage counts — the tally is recorded on the combat-damage path too.
+ * 4. Dying without having been dealt damage makes no tokens at all (X = 0).
+ * 5. Tangled Colony itself can't block.
  */
 class TangledColonyScenarioTest : FunSpec({
 
@@ -91,6 +92,25 @@ class TangledColonyScenarioTest : FunSpec({
         driver.bothPass() // dies trigger resolves
 
         driver.ratTokens(player).size shouldBe 6
+    }
+
+    test("combat damage counts toward X") {
+        val driver = createDriver()
+        val attacker = driver.activePlayer!!
+        val defender = driver.getOpponent(attacker)
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+
+        val colony = driver.putCreatureOnBattlefield(attacker, "Tangled Colony")
+        driver.removeSummoningSickness(colony)
+        val blocker = driver.putCreatureOnBattlefield(defender, "Centaur Courser")
+
+        driver.passPriorityUntil(Step.DECLARE_ATTACKERS)
+        driver.declareAttackers(attacker, listOf(colony), defender)
+        driver.bothPass()
+        driver.declareBlockers(defender, mapOf(blocker to listOf(colony)))
+        driver.passPriorityUntil(Step.POSTCOMBAT_MAIN) // 3 combat damage kills the 3/2; trigger resolves
+
+        driver.ratTokens(attacker).size shouldBe 3
     }
 
     test("dying without being dealt damage creates no tokens") {

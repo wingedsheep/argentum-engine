@@ -605,7 +605,7 @@ object DamageUtils {
             // Track damage source for "creature dealt damage by this dies" triggers
             if (sourceId != null) {
                 newState = trackDamageDealtToCreature(newState, sourceId, targetId)
-                newState = trackDamageSourceLki(newState, sourceId, targetId)
+                newState = trackDamageSourceLki(newState, sourceId, targetId, effectiveAmount)
                 newState = applyDoomedRidersToDamagedCreature(newState, sourceId, targetId)
             }
             // Track per-player damage dealt to this entity this turn (Grothama LTB).
@@ -1336,8 +1336,10 @@ object DamageUtils {
      * observer triggers of the form "whenever another creature dealt damage this turn by [a source
      * matching a filter] dies" (Shelob). Snapshotting on the *damaged* creature means a source that
      * died in the same combat is still evaluated against its damage-time state (CR 608.2h).
+     * [amount] accumulates per source, so a dies trigger can sum the damage from matching sources
+     * ("by other sources named Blazing Effigy").
      */
-    fun trackDamageSourceLki(state: GameState, sourceId: EntityId, targetCreatureId: EntityId): GameState {
+    fun trackDamageSourceLki(state: GameState, sourceId: EntityId, targetCreatureId: EntityId, amount: Int): GameState {
         if (targetCreatureId !in state.getBattlefield()) return state
         val projected = state.projectedState
         val controllerId = projected.getController(sourceId)
@@ -1352,6 +1354,10 @@ object DamageUtils {
             sourceId = sourceId,
             sourceSubtypes = subtypes,
             sourceWasCreature = projected.isCreature(sourceId),
+            sourceName = state.getEntity(sourceId)
+                ?.takeUnless { it.has<com.wingedsheep.engine.state.components.identity.FaceDownComponent>() }
+                ?.get<CardComponent>()?.name,
+            amount = amount,
         )
         return state.updateEntity(targetCreatureId) { container ->
             val existing = container.get<DamagedBySourcesThisTurnComponent>()

@@ -715,9 +715,13 @@ object DynamicAmounts {
     /**
      * The total damage dealt to the source this turn, captured as last-known information when it
      * left the battlefield — "where X is the amount of damage dealt to it this turn" (Tangled
-     * Colony). See [DynamicAmount.LastKnownDamageDealtToSource].
+     * Colony). [sourceFilter] / [excludeSelf] narrow it to damage from matching sources — "by other
+     * sources named Blazing Effigy". See [DynamicAmount.LastKnownDamageDealtToSource].
      */
-    fun lastKnownDamageDealtToSource(): DynamicAmount = DynamicAmount.LastKnownDamageDealtToSource
+    fun lastKnownDamageDealtToSource(
+        sourceFilter: GameObjectFilter? = null,
+        excludeSelf: Boolean = false
+    ): DynamicAmount = DynamicAmount.LastKnownDamageDealtToSource(sourceFilter, excludeSelf)
 
     // =========================================================================
     // Spell-cast trigger values

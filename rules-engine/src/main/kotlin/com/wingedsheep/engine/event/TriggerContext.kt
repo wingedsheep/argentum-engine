@@ -123,6 +123,12 @@ data class TriggerContext(
      */
     val lastKnownDamageDealtByPlayers: Map<EntityId, Int>? = null,
     /**
+     * Every source that dealt damage to the triggering source this turn, each frozen as it dealt
+     * the damage and carrying its summed amount, captured at LTB time. Read by
+     * `DynamicAmount.LastKnownDamageDealtToSource` ("by other sources named Blazing Effigy").
+     */
+    val lastKnownDamageSources: Set<com.wingedsheep.engine.state.components.battlefield.DamageSourceLki>? = null,
+    /**
      * Creatures that were blocking, or blocked by, the triggering source when it left the
      * battlefield (CR 509 combat pairing), captured as last-known information. Read by
      * "destroy all creatures blocking or blocked by it" (Abu Ja'far). Null when the trigger's
@@ -349,6 +355,7 @@ data class TriggerContext(
                     lastKnownCounters = event.lastKnown?.counters?.takeIf { it.isNotEmpty() },
                     lastKnownDamageDealtByPlayers =
                         event.lastKnown?.damageDealtByPlayers?.takeIf { it.isNotEmpty() },
+                    lastKnownDamageSources = event.lastKnown?.damageSources?.takeIf { it.isNotEmpty() },
                     lastKnownBlockingOrBlockedByIds =
                         event.lastKnown?.blockingOrBlockedByIds?.takeIf { it.isNotEmpty() },
                     lastKnownAttachmentIds = event.lastKnown?.attachmentIds?.takeIf { it.isNotEmpty() },

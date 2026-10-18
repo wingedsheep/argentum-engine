@@ -2054,6 +2054,15 @@ class PredicateEvaluator(
                     ?.creatureIds?.contains(entityId) == true
             }
 
+            // Dealt damage this turn *to* the effect's source: the candidate's own per-turn record
+            // of the creatures it damaged, so it still answers after the source has died (Brine
+            // Hag's dies trigger). Inert with no source context.
+            StatePredicate.DealtDamageToSourceThisTurn -> {
+                val sourceId = context?.sourceId
+                sourceId != null && container.get<DamageDealtToCreaturesThisTurnComponent>()
+                    ?.creatureIds?.contains(sourceId) == true
+            }
+
             // Dealt damage this turn by a matching source: the candidate's own record of its damage
             // sources, each frozen as it dealt the damage. Inert with no source context.
             is StatePredicate.WasDealtDamageThisTurnBy -> {

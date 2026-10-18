@@ -1009,6 +1009,13 @@ data class DamageSourceLki(
     val sourceId: EntityId? = null,
     val sourceSubtypes: Set<com.wingedsheep.sdk.core.Subtype> = emptySet(),
     val sourceWasCreature: Boolean = true,
+    /** The source's name when it dealt the damage; null for a nameless (face-down) source. */
+    val sourceName: String? = null,
+    /**
+     * Total damage this source dealt to the bearer this turn — summed across hits by
+     * [DamagedBySourcesThisTurnComponent.adding], read by `DynamicAmount.LastKnownDamageDealtToSource`.
+     */
+    val amount: Int = 0,
 ) {
     /**
      * Does this source, as it stood when it dealt the damage, match [filter]? "You" is [youId]. The
@@ -1022,6 +1029,7 @@ data class DamageSourceLki(
             val ok = when (predicate) {
                 com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsCreature -> sourceWasCreature
                 is com.wingedsheep.sdk.scripting.predicates.CardPredicate.HasSubtype -> predicate.subtype in sourceSubtypes
+                is com.wingedsheep.sdk.scripting.predicates.CardPredicate.NameEquals -> predicate.name == sourceName
                 else -> false
             }
             if (!ok) return false
@@ -1046,8 +1054,16 @@ data class DamageSourceLki(
 data class DamagedBySourcesThisTurnComponent(
     val sources: Set<DamageSourceLki> = emptySet()
 ) : Component {
-    fun adding(source: DamageSourceLki): DamagedBySourcesThisTurnComponent =
-        copy(sources = sources + source)
+    /**
+     * Record a hit. A source already on record (same snapshot, any amount) has [source]'s amount
+     * added to its tally rather than gaining a second entry.
+     */
+    fun adding(source: DamageSourceLki): DamagedBySourcesThisTurnComponent {
+        val key = source.copy(amount = 0)
+        val existing = sources.firstOrNull { it.copy(amount = 0) == key }
+            ?: return copy(sources = sources + source)
+        return copy(sources = sources - existing + existing.copy(amount = existing.amount + source.amount))
+    }
 
     /** Whether any recorded source matches [filter], "you" being [youId]. See [DamageSourceLki.matches]. */
     fun matchesAny(filter: com.wingedsheep.sdk.scripting.GameObjectFilter, youId: EntityId): Boolean =
