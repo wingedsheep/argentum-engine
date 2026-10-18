@@ -229,7 +229,12 @@ class CleanupPhaseManager(
         }
         val remainingFloating = state.floatingEffects.filter { floatingEffect ->
             !(floatingEffect.duration is Duration.UntilYourNextTurn &&
-                floatingEffect.controllerId in activeTeam)
+                floatingEffect.controllerId in activeTeam) &&
+                // "Until its owner's next turn": keyed to the affected object's owner.
+                !(floatingEffect.duration is Duration.UntilAffectedOwnersNextTurn &&
+                    floatingEffect.effect.affectedEntities.any { affected ->
+                        state.getEntity(affected)?.get<CardComponent>()?.ownerId in activeTeam
+                    })
         }
         val remainingGlobal = state.globalGrantedTriggeredAbilities.filter { grant ->
             !(grant.duration is Duration.UntilYourNextTurn &&
@@ -358,6 +363,9 @@ class CleanupPhaseManager(
                     }
             }
         }
+        // Card-scoped hand restrictions "until that player's next turn" (Firestorm Phoenix's
+        // revealed, can't-be-played card) lapse on the same hook, keyed to their expiry player.
+        result = com.wingedsheep.engine.mechanics.HandObjectRestrictions.expireAtTurnStart(result, activeTeam)
         return result
     }
 
@@ -634,6 +642,7 @@ class CleanupPhaseManager(
                 // as a safety net for an effect created after the last combat phase of the turn.
                 is Duration.EndOfCombat -> false
                 is Duration.UntilYourNextTurn -> true  // Keep until that player's next turn
+                is Duration.UntilAffectedOwnersNextTurn -> true  // Keep until the owner's next turn
                 is Duration.EndOfYourNextTurn -> {
                     // Ends at the cleanup of the controller's next turn (CR 514.2) — see the
                     // Duration.EndOfYourNextTurn KDoc for why the window is a turn-number floor
@@ -1331,6 +1340,9 @@ class CleanupPhaseManager(
                 newState = newState.copy(delayedTriggers = remainingDelayed)
             }
         }
+
+        // Card-scoped hand restrictions lasting "this turn".
+        newState = com.wingedsheep.engine.mechanics.HandObjectRestrictions.expireAtEndOfTurn(newState)
 
         return newState
     }

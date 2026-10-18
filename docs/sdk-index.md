@@ -602,6 +602,7 @@ Families:
 - `Duration.EndOfYourNextUpkeep` — Effect lasts until the end of your next upkeep step — it outlives the upkeep it was created in (and every other player's turn) and ends as your following upkeep step ends, so it is still in force w…
 - `Duration.NextUse(sourceDescription: String)` — Effect is consumed the first time its replacement effect is applied or end of turn if not consumed.
 - `Duration.Permanent` — Effect is permanent (static abilities, auras while attached).
+- `Duration.UntilAffectedOwnersNextTurn` — Effect lasts until the beginning of the affected card's **owner's** next turn — "until that player's next turn" where "that player" is the player whose hand the card went to (Firestorm Phoenix).
 - `Duration.UntilAfterAffectedControllersNextUntap(count: Int)` — Effect lasts through the affected entity's controller's next count untap steps, then expires.
 - `Duration.UntilCondition(conditionDescription: String)` — Effect lasts until a condition is met.
 - `Duration.UntilNextEndStep` — Effect lasts until the beginning of the next end step (the *next* one — never the end step it was created in).
@@ -745,7 +746,7 @@ Families:
 - `CantBlockGroupEffect(filter: GroupFilter, duration: Duration)` — All creatures matching a filter can't block this turn.
 - `CantCastSpellsEffect(target: EffectTarget, duration: Duration, spellFilter: GameObjectFilter)` — Target player can't cast matching spells for the specified duration.
 - `CantCastSpellsFromNonHandZonesEffect(target: EffectTarget, duration: Duration)` — Target player can't cast spells from anywhere other than their **hand** for the specified duration — casts from graveyard (flashback, escape, disturb), exile (foretell, plot, a may-play permission)…
-- `CantPlayCardsFromHandEffect(target: EffectTarget, duration: Duration)` — Target player can't play cards from their hand for the specified duration.
+- `CantPlayCardsFromHandEffect(target: EffectTarget, duration: Duration)` — Cards in a hand can't be played for the specified duration — the target is either a **player** (none of the cards in their hand) or a single **card in a hand** (just that card).
 - `CantSearchLibrariesEffect(target: EffectTarget, duration: Duration)` — The target player(s) can't search libraries for the specified duration — "Players can't search libraries this turn" (Shadow of Doubt).
 - `CaptureControllersEffect(from: String, storeAs: String)` — Snapshot the current controller of each entity in a stored collection, writing the controller ids to `storedCollectionsstoreAs` as a parallel list (entry _i_ in `storeAs` is the controller of entry…
 - `CascadeEffect`
@@ -1035,6 +1036,7 @@ Families:
 - `ReturnSelfToBattlefieldAttachedEffect(target: EffectTarget, transformed: Boolean)` — Returns the source permanent (typically an Aura) from its current zone to the battlefield attached to the specified target.
 - `ReturnSpellOrPermanentToOwnersHandEffect(target: EffectTarget)` — Return a single target — which may be a **spell on the stack** or a **permanent on the battlefield** — to its owner's hand.
 - `ReturnSpellToOwnersHandEffect` — Remove a target spell from the stack and put it into its owner's hand.
+- `RevealCardInHandEffect(target: EffectTarget, duration: Duration)` — "That player plays with that card revealed in their hand" for duration — one card in a hand stays face up to every player for the whole window (Firestorm Phoenix, paired with a card-targeted CantPl…
 - `RevealCollectionEffect(from: String, revealToSelf: Boolean, fromZone: Zone?, toZone: Zone?)` — Emit a com.wingedsheep.engine.core.CardsRevealedEvent for all cards in the named stored collection.
 - `RevealFaceDownPermanentEffect(target: EffectTarget)` — Reveal a face-down permanent: make the identity of the card under a face-down permanent public (CR 708 — a face-down permanent's hidden card characteristics are shown to all players).
 - `RevealHandEffect(target: EffectTarget)` — Reveal a player's hand (publicly visible to all players).

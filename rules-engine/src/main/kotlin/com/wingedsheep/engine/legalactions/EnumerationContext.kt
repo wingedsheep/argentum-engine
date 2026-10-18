@@ -136,9 +136,10 @@ class EnumerationContext(
      * and mirrored in `PlayLandHandler` so the offered list and the handler agree.
      */
     fun cantPlayLand(cardId: EntityId): Boolean =
-        filteredLandLockPresent &&
-            com.wingedsheep.engine.legalactions.utils.LandDropUtils
-                .playerCantPlayLands(state, playerId, cardRegistry, landCardId = cardId, conditionEvaluator = conditionEvaluator)
+        com.wingedsheep.engine.mechanics.HandObjectRestrictions.isCantBePlayed(state, cardId) ||
+            (filteredLandLockPresent &&
+                com.wingedsheep.engine.legalactions.utils.LandDropUtils
+                    .playerCantPlayLands(state, playerId, cardRegistry, landCardId = cardId, conditionEvaluator = conditionEvaluator))
 
     // Cast restrictions — blanket, spell-independent locks (a Silence-style CantCastSpellsComponent
     // or a RestrictSpellsCastPerTurn per-turn limit). Cached once per enumeration pass.
@@ -182,6 +183,9 @@ class EnumerationContext(
      */
     fun cantCastSpell(cardId: EntityId): Boolean =
         cantCastSpells ||
+            // "… and can't play it" on this very hand object (Firestorm Phoenix) — one component
+            // lookup, so it stays cheap on the per-card enumeration path.
+            com.wingedsheep.engine.mechanics.HandObjectRestrictions.isCantBePlayed(state, cardId) ||
             castPermissionUtils.lacksLegendaryControlForLegendarySpell(state, playerId, cardId) ||
             (perSpellCastRestrictionPresent &&
                 castPermissionUtils.spellSpecificallyRestricted(state, playerId, cardId))

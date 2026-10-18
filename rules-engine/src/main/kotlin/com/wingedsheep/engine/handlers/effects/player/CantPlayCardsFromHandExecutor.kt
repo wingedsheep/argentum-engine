@@ -3,7 +3,9 @@ package com.wingedsheep.engine.handlers.effects.player
 import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
+import com.wingedsheep.engine.mechanics.HandObjectRestrictions
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.components.identity.HandObjectRestrictionKind
 import com.wingedsheep.engine.state.components.player.PlayerCantPlayFromHandComponent
 import com.wingedsheep.engine.state.components.player.PlayerEffectRemoval
 import com.wingedsheep.sdk.scripting.Duration
@@ -11,7 +13,8 @@ import com.wingedsheep.sdk.scripting.effects.CantPlayCardsFromHandEffect
 import kotlin.reflect.KClass
 
 /**
- * Executor for [CantPlayCardsFromHandEffect] — stamps a
+ * Executor for [CantPlayCardsFromHandEffect]. A **card** target locks just that hand object through
+ * [HandObjectRestrictions] (Firestorm Phoenix's "… can't play it"). A **player** target stamps a
  * [PlayerCantPlayFromHandComponent] on the target player for the requested duration
  * (Memory Vessel's "they can't play cards from their hand").
  *
@@ -32,7 +35,12 @@ class CantPlayCardsFromHandExecutor : EffectExecutor<CantPlayCardsFromHandEffect
             ?: return EffectResult.error(state, "No valid target for can't-play-from-hand grant")
 
         if (!state.turnOrder.contains(targetId)) {
-            return EffectResult.error(state, "CantPlayCardsFromHand target must be a player")
+            // A card target: only that object in that hand is locked ("… can't play it").
+            val (newState, events) = HandObjectRestrictions.apply(
+                state, targetId, HandObjectRestrictionKind.CANT_BE_PLAYED, effect.duration,
+                effectControllerId = context.effectControllerId ?: context.controllerId
+            ) ?: return EffectResult.error(state, "CantPlayCardsFromHand: unsupported duration ${effect.duration} for a card")
+            return EffectResult.success(newState, events)
         }
 
         val removeOn = when (effect.duration) {

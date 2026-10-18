@@ -1,5 +1,6 @@
 package com.wingedsheep.sdk.scripting.effects
 
+import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
@@ -235,5 +236,34 @@ data class RevealHandEffect(
         EffectTarget.Controller -> "Reveal your hand"
         else -> "${target.description.replaceFirstChar { it.uppercase() }} reveals their hand"
     }
+}
+
+/**
+ * "That player plays with that card revealed in their hand" for [duration] — one card in a hand
+ * stays face up to every player for the whole window (Firestorm Phoenix, paired with a card-targeted
+ * [CantPlayCardsFromHandEffect] for "… and can't play it").
+ *
+ * Unlike a one-shot reveal, the knowledge can't lapse early: the engine otherwise forgets a known
+ * card in hand once its owner plays another card with the same name (the copies become
+ * indistinguishable), but a card being *played with revealed* is still shown, so it stays known
+ * until [duration] ends. The reveal belongs to that object in that hand: when the card leaves the
+ * hand it becomes a new object (CR 400.7) and the reveal ends with it.
+ *
+ * Closest existing types, and why neither takes this: [RevealHandEffect] reveals a *player's whole
+ * hand* once, with no duration; [RevealCollectionEffect] reveals a pipeline collection once. Both are
+ * instants of knowledge — this is a continuous "plays with … revealed" state on a single card.
+ *
+ * @param target The card in hand to keep revealed.
+ * @param duration How long — [Duration.UntilAffectedOwnersNextTurn] ("until that player's next
+ *   turn"), [Duration.UntilYourNextTurn], [Duration.EndOfTurn] or [Duration.Permanent].
+ */
+@SerialName("RevealCardInHand")
+@Serializable
+data class RevealCardInHandEffect(
+    val target: EffectTarget,
+    val duration: Duration = Duration.UntilAffectedOwnersNextTurn
+) : Effect {
+    override val description: String =
+        "Its owner plays with ${target.description} revealed in their hand ${duration.description}"
 }
 

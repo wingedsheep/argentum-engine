@@ -31,6 +31,10 @@ import com.wingedsheep.sdk.model.EntityId
  *  - **Playing a same-named card from hand** — a [SpellCastEvent] whose spell was cast
  *    from hand, or a land played from hand — forgets every still-known copy of that name
  *    in the player's hand.
+ *  - **Played with revealed** — a card under a [com.wingedsheep.sdk.scripting.effects.RevealCardInHandEffect]
+ *    (see [HandObjectRestrictions]) is still being shown, so a same-named play doesn't forget it.
+ *    When that window ends it stays known like any other returned card until the next
+ *    same-named play.
  *  - **Leaving the hand** — a [ZoneChangeEvent] out of [Zone.HAND] to anywhere but a library
  *    drops that card's hand-knowledge, so it can't leak once the card is hidden again (e.g. cast
  *    face-down). A move *into* a library is left alone: `ZoneTransitionService` has already
@@ -87,6 +91,14 @@ object RevealedInHandTracker {
                 state
             }
         }
+        // Left the hand → it is a new object (CR 400.7): any restriction pinned to the hand object
+        // ("plays with that card revealed … and can't play it") ends with it.
+        val afterLeaving = if (event.fromZone == Zone.HAND && event.toZone != Zone.HAND)
+            HandObjectRestrictions.dropStale(state, event.entityId) else state
+        return onLeftHand(afterLeaving, event)
+    }
+
+    private fun onLeftHand(state: GameState, event: ZoneChangeEvent): GameState {
         // Left the hand → forget this card's hand-knowledge so it can't leak once hidden.
         //
         // A library destination is the exception, and deliberately so: ZoneTransitionService has
@@ -110,7 +122,8 @@ object RevealedInHandTracker {
     private fun onSpellCast(state: GameState, event: SpellCastEvent): GameState {
         // The card has left its hand. Dropping that hand-knowledge also stops a
         // bounced-then-cast-face-down card from leaking its real identity.
-        var newState = LibraryRevealUtils.clearReveals(state, listOf(event.spellEntityId))
+        var newState = HandObjectRestrictions.dropStale(state, event.spellEntityId)
+        newState = LibraryRevealUtils.clearReveals(newState, listOf(event.spellEntityId))
         val castFromZone = state.getEntity(event.spellEntityId)
             ?.get<SpellOnStackComponent>()?.castFromZone
         // Only a card played *from hand* makes the known copies of its name ambiguous;
@@ -129,7 +142,9 @@ object RevealedInHandTracker {
         val sameNamed = state.getHand(playerId).filter { cardId ->
             val container = state.getEntity(cardId) ?: return@filter false
             container.get<RevealedToComponent>() != null &&
-                container.get<CardComponent>()?.name == name
+                container.get<CardComponent>()?.name == name &&
+                // A card being *played with revealed* is still on show — nothing to forget.
+                !HandObjectRestrictions.isPinnedRevealed(state, cardId)
         }
         if (sameNamed.isEmpty()) return state
         return LibraryRevealUtils.clearReveals(state, sameNamed)

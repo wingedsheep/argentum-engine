@@ -183,6 +183,10 @@ class CastPermissionUtils(
         if (blockedByResolvedCastRestriction(state, action)) {
             return "You can't cast spells right now"
         }
+        // "… and can't play it" on this very hand object (Firestorm Phoenix).
+        if (com.wingedsheep.engine.mechanics.HandObjectRestrictions.isCantBePlayed(state, spellCardId)) {
+            return "That card can't be played right now"
+        }
         castFaceZoneFailure(state, action)?.let { return it }
         if (hasReachedSpellCastLimit(state, playerId)) {
             return "You can't cast another spell this turn"

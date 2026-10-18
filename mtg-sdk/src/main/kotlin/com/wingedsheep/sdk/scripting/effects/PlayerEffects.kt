@@ -626,20 +626,28 @@ data class CantSearchLibrariesEffect(
 }
 
 /**
- * Target player can't play cards from their hand for the specified [duration].
+ * Cards in a hand can't be played for the specified [duration] — the [target] is either a
+ * **player** (none of the cards in their hand) or a single **card in a hand** (just that card).
  *
- * Restricts both casting spells and playing lands, but only from the **hand** zone —
- * the player may still play cards from other zones (exile via a may-play permission,
- * graveyard via Muldrotha, etc.). This is the "they can't play cards from their hand"
- * clause of Memory Vessel, which pairs the restriction with an impulse-style grant so a
- * player swaps their hand for the top cards of their library for a turn.
+ * Restricts both casting spells and playing lands, but only from the **hand** zone.
+ *
+ *  - **Player target** — "they can't play cards from their hand" (Memory Vessel, which pairs the
+ *    restriction with an impulse-style grant so a player swaps their hand for the top cards of
+ *    their library for a turn). The player may still play cards from other zones (exile via a
+ *    may-play permission, graveyard via Muldrotha, etc.).
+ *  - **Card target** — "that player … can't play it" (Firestorm Phoenix). The restriction belongs
+ *    to that object in that hand: once the card leaves the hand it is a new object (CR 400.7) and
+ *    the restriction is gone, even if it comes straight back. Pair with
+ *    [RevealCardInHandEffect] for "plays with that card revealed in their hand".
  *
  * Distinct from [CantCastSpellsEffect], which forbids casting from *every* zone but
  * leaves land plays untouched. This effect is hand-scoped and covers lands too.
  *
- * @param target The player who can't play cards from their hand (default: controller).
+ * @param target The player whose hand is locked (default: controller), or one card in a hand.
  * @param duration How long the restriction lasts (default: until your next turn, matching
- *   the impulse window it usually accompanies).
+ *   the impulse window it usually accompanies). A card target also takes
+ *   [Duration.UntilAffectedOwnersNextTurn] ("until that player's next turn"), [Duration.EndOfTurn]
+ *   and [Duration.Permanent].
  */
 @SerialName("CantPlayCardsFromHand")
 @Serializable
@@ -648,8 +656,21 @@ data class CantPlayCardsFromHandEffect(
     val duration: Duration = Duration.UntilYourNextTurn
 ) : Effect {
     override val description: String =
-        "${target.description.replaceFirstChar { it.uppercase() }} can't play cards from their hand ${duration.description}"
+        if (target.isPlayerReference()) {
+            "${target.description.replaceFirstChar { it.uppercase() }} can't play cards from their hand ${duration.description}"
+        } else {
+            "${target.description.replaceFirstChar { it.uppercase() }} can't be played ${duration.description}"
+        }
 }
+
+/**
+ * Whether this target reads as a player for [CantPlayCardsFromHandEffect]'s text. Only the
+ * description depends on it — the executor branches on what the target resolves to. Chosen targets
+ * and bound variables may be either, and keep the player wording.
+ */
+private fun EffectTarget.isPlayerReference(): Boolean =
+    this !is EffectTarget.SingleEntity || this is EffectTarget.ContextTarget ||
+        this is EffectTarget.BoundVariable || this is EffectTarget.SpecificEntity
 
 /**
  * Target player can't cast spells from anywhere other than their **hand** for the specified

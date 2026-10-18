@@ -154,6 +154,10 @@ class PlayLandHandler(
         if (inHand && state.getEntity(action.playerId)?.has<PlayerCantPlayFromHandComponent>() == true) {
             return "You can't play cards from your hand"
         }
+        // "… and can't play it" on this very hand object (Firestorm Phoenix).
+        if (com.wingedsheep.engine.mechanics.HandObjectRestrictions.isCantBePlayed(state, action.cardId)) {
+            return "${cardComponent.name} can't be played right now"
+        }
 
         return null
     }

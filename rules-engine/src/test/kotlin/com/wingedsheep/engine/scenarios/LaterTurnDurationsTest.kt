@@ -21,6 +21,8 @@ import io.kotest.matchers.shouldBe
  *  - [Duration.EndOfAffectedControllersNextTurn] — ends at the cleanup of the affected creature's
  *    controller's next turn; the creating turn never counts, even when it is that player's own
  *    (Wall of Dust).
+ *  - [Duration.UntilAffectedOwnersNextTurn] — ends as the affected object's owner's next turn
+ *    begins, whoever created it.
  *  - [Duration.UntilAfterAffectedControllersNextUntap] with `count = 2` — counts the affected creature's
  *    controller's untap steps down, one per step (Telekinesis).
  */
@@ -52,9 +54,18 @@ class LaterTurnDurationsTest : FunSpec({
         }
     }
 
+    val ownerWindowBuff = card("Owner Window Buff") {
+        manaCost = "{0}"
+        typeLine = "Instant"
+        spell {
+            val t = target(TargetFilter.Creature)
+            effect = Effects.ModifyStats(2, 2, t, Duration.UntilAffectedOwnersNextTurn)
+        }
+    }
+
     // Built once with the spec rather than inside the first test, so loading the card corpus
     // doesn't count against that test's timeout.
-    val cards = TestCards.all + listOf(upkeepBuff, attackLock, longFreeze)
+    val cards = TestCards.all + listOf(upkeepBuff, attackLock, longFreeze, ownerWindowBuff)
 
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
@@ -175,6 +186,28 @@ class LaterTurnDurationsTest : FunSpec({
         d.passPriorityUntil(Step.UPKEEP, p1)
         d.passPriorityUntil(Step.UPKEEP, p2)
         withClue("third untap step: it untaps") { d.isTapped(bear) shouldBe false }
+    }
+
+    test("until its owner's next turn: keyed to the affected object's owner, not the effect's controller") {
+        val d = createDriver()
+        val p1 = d.player1
+        val p2 = d.player2
+        val opposingBear = d.putCreatureOnBattlefield(p2, "Grizzly Bears")
+        val ownBear = d.putCreatureOnBattlefield(p1, "Grizzly Bears")
+
+        d.castAndResolve(p1, ownerWindowBuff.name, opposingBear)
+        d.castAndResolve(p1, ownerWindowBuff.name, ownBear)
+        d.power(opposingBear) shouldBe 4
+        d.power(ownBear) shouldBe 4
+
+        d.passPriorityUntil(Step.UPKEEP, p2)
+        withClue("the opposing owner's turn ends that one, not the caster's") {
+            d.power(opposingBear) shouldBe 2
+            d.power(ownBear) shouldBe 4
+        }
+
+        d.passPriorityUntil(Step.UPKEEP, p1)
+        withClue("the caster-owned creature's lasts until its owner's next turn") { d.power(ownBear) shouldBe 2 }
     }
 
     test("the untap-step count must be positive and reads as a number of steps") {

@@ -1822,6 +1822,73 @@
     ]
 }
 
+// Firestorm Phoenix
+{
+    "name": "Firestorm Phoenix",
+    "manaCost": "{4}{R}{R}",
+    "typeLine": "Creature — Phoenix",
+    "oracleText": "Flying\nIf this creature would die, return it to its owner's hand instead. Until that player's next turn, that player plays with that card revealed in their hand and can't play it.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "RedirectZoneChangeWithEffect",
+                "newDestination": "Hand",
+                "additionalEffect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "RevealCardInHand",
+                            "target": "Self"
+                        },
+                        {
+                            "type": "CantPlayCardsFromHand",
+                            "target": "Self",
+                            "duration": "UntilAffectedOwnersNextTurn"
+                        }
+                    ]
+                },
+                "selfOnly": true,
+                "appliesTo": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "147",
+        "rarity": "RARE",
+        "artist": "Jeff A. Menges",
+        "flavorText": "\"The bird of wonder dies, the maiden phoenix,/ Her ashes new-create another heir/ As great in admiration as herself.\" —William Shakespeare, King Henry the Eighth",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/2/3247a7dd-f48c-4cb4-8475-4864acccef7a.jpg?1783948056",
+        "rulings": [
+            {
+                "date": "2009-10-01",
+                "text": "The Firestorm Phoenix you return to your hand is tracked by its ability. As long as it remains in your hand, that particular card can't be played before your next turn begins, but a different Firestorm Phoenix in your hand can."
+            },
+            {
+                "date": "2004-10-04",
+                "text": "It may not be cast again until your next turn, but it can be put onto the battlefield by other effects."
+            },
+            {
+                "date": "2004-10-04",
+                "text": "The \"rebirth\" is a replacement effect."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Flash Counter
 {
     "name": "Flash Counter",

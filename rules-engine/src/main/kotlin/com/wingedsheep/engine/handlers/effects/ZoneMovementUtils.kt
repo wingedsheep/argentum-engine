@@ -1082,7 +1082,9 @@ object ZoneMovementUtils {
      *
      * [ReplacementRiderTiming.WITH_REPLACEMENT] riders run inline, as part of the replacement, from
      * a small whitelist: TakeExtraTurnEffect (Ugin's Nexus), AddCountersEffect on the redirected card
-     * (Darigaaz Reincarnated) and a fixed GainLifeEffect (The Darkness Crystal).
+     * (Darigaaz Reincarnated), a fixed GainLifeEffect (The Darkness Crystal), the card-scoped hand
+     * restrictions CantPlayCardsFromHandEffect / RevealCardInHandEffect on the redirected card
+     * (Firestorm Phoenix), and a CompositeEffect of those.
      * [ReplacementRiderTiming.WHEN_YOU_DO] riders ("…exile it instead. When you do, create a 2/2
      * green Wolf creature token") run nothing here: they emit a [ReflexiveAbilityTriggeredEvent]
      * the settle boundary puts on the stack (CR 603.12).
@@ -1121,6 +1123,37 @@ object ZoneMovementUtils {
                     carriedTriggerContext = com.wingedsheep.engine.event.TriggerContext(triggeringEntityId = entityId)
                 )
             )
+        }
+        if (effect is com.wingedsheep.sdk.scripting.effects.CompositeEffect) {
+            // A rider of several parts ("… return it to its owner's hand instead. … that player
+            // plays with that card revealed in their hand and can't play it") runs each part in
+            // order, still as one replacement.
+            var current = state
+            val events = mutableListOf<EngineGameEvent>()
+            for (part in effect.effects) {
+                val (next, partEvents) = applyReplacementAdditionalEffect(
+                    zones, current, part, controllerId, entityId, sourceId, riderTiming
+                )
+                current = next
+                events += partEvents
+            }
+            return current to events
+        }
+        // Card-scoped hand restrictions on the redirected card (Firestorm Phoenix): it is now a new
+        // object in its owner's hand, and the restriction is pinned to that object.
+        if (entityId != null && effect is com.wingedsheep.sdk.scripting.effects.CantPlayCardsFromHandEffect) {
+            return com.wingedsheep.engine.mechanics.HandObjectRestrictions.apply(
+                state, entityId,
+                com.wingedsheep.engine.state.components.identity.HandObjectRestrictionKind.CANT_BE_PLAYED,
+                effect.duration, controllerId
+            ) ?: (state to emptyList())
+        }
+        if (entityId != null && effect is com.wingedsheep.sdk.scripting.effects.RevealCardInHandEffect) {
+            return com.wingedsheep.engine.mechanics.HandObjectRestrictions.apply(
+                state, entityId,
+                com.wingedsheep.engine.state.components.identity.HandObjectRestrictionKind.REVEALED,
+                effect.duration, controllerId, zones.cardRegistry
+            ) ?: (state to emptyList())
         }
         if (effect is com.wingedsheep.sdk.scripting.effects.TakeExtraTurnEffect) {
             // Check if extra turns are prevented by any permanent on the battlefield

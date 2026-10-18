@@ -285,6 +285,26 @@ sealed interface Duration {
     }
 
     /**
+     * Effect lasts until the beginning of the affected card's **owner's** next turn — "until that
+     * player's next turn" where "that player" is the player whose hand the card went to (Firestorm
+     * Phoenix). The affected-object mirror of [UntilYourNextTurn], which is keyed to the effect's
+     * controller: when an opponent controlled the creature that put the card there, the window still
+     * closes on the owner's turn, not the controller's. Expires on the same post-untap hook as
+     * [UntilYourNextTurn].
+     *
+     * Honoured by the card-scoped hand restrictions — a card-targeted
+     * [com.wingedsheep.sdk.scripting.effects.CantPlayCardsFromHandEffect] and
+     * [com.wingedsheep.sdk.scripting.effects.RevealCardInHandEffect] — and by floating effects,
+     * which lapse when the owner of any affected object starts a turn. The separate granted-ability
+     * records have no hook for it.
+     */
+    @SerialName("UntilAffectedOwnersNextTurn")
+    @Serializable
+    data object UntilAffectedOwnersNextTurn : Duration {
+        override val description = "until its owner's next turn"
+    }
+
+    /**
      * Effect lasts while the source permanent remains tapped. One-way (CR 611.2b): once the
      * source untaps or leaves the battlefield the effect ends for good — `EndedDurationExpiryCheck`
      * removes it, so a later re-tap does not restart it.

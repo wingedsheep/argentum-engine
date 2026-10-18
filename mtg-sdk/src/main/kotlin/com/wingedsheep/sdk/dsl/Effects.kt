@@ -889,6 +889,16 @@ object Effects {
     fun RevealHand(target: EffectTarget): Effect =
         com.wingedsheep.sdk.scripting.effects.RevealHandEffect(target)
 
+    /**
+     * The owner of the card [target] plays with it revealed in their hand for [duration] (default:
+     * until that player's next turn) — it stays face up to every player for the whole window, and
+     * ends early only if the card leaves the hand. Firestorm Phoenix; see [com.wingedsheep.sdk.scripting.effects.RevealCardInHandEffect].
+     */
+    fun RevealCardInHand(
+        target: EffectTarget,
+        duration: Duration = Duration.UntilAffectedOwnersNextTurn
+    ): Effect = com.wingedsheep.sdk.scripting.effects.RevealCardInHandEffect(target, duration)
+
     /** Look at [target] player's hand. */
     fun LookAtHand(target: EffectTarget): Effect =
         com.wingedsheep.sdk.scripting.effects.LookAtTargetHandEffect(target)
@@ -6106,6 +6116,10 @@ object Effects {
      * next turn). Blocks both casting spells and playing lands, but only from the hand —
      * cards in other zones (exile via a may-play permission, etc.) stay playable. The
      * "they can't play cards from their hand" clause of Memory Vessel.
+     *
+     * Given a **card in a hand** instead of a player, only that card is locked — "that player …
+     * can't play it" (Firestorm Phoenix, with [Duration.UntilAffectedOwnersNextTurn]). The lock
+     * ends early if the card leaves the hand (CR 400.7).
      */
     fun CantPlayCardsFromHand(
         target: EffectTarget = EffectTarget.Controller,

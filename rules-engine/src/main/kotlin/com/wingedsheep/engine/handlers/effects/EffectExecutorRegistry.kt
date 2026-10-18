@@ -79,7 +79,7 @@ class EffectExecutorRegistry(
             LibraryExecutors(::recurse, zones, cardRegistry, castSpellHandler, playLandHandler, targetFinder, legalActionEnumerator)
         )
         registerModule(StackExecutors(zones, amountEvaluator, cardRegistry, spellCounterer, targetFinder = targetFinder))
-        registerModule(InformationExecutors())
+        registerModule(InformationExecutors(cardRegistry))
         registerModule(CombatExecutors(amountEvaluator, cardRegistry))
         registerModule(ZonesExecutors(::recurse, zones, cardRegistry, targetFinder = targetFinder))
         registerModule(LinkedExileExecutors(zones))

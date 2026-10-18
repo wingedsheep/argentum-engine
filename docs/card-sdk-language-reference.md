@@ -1436,6 +1436,7 @@ serialized shape; the facade for each is:
 | `RemoveDamageShieldEffect` | `Effects.RemoveDamageShield` |
 | `RemoveFromCombatEffect` | `Effects.RemoveFromCombat` |
 | `RepeatDynamicTimesEffect` | `Effects.Repeat` |
+| `RevealCardInHandEffect` | `Effects.RevealCardInHand(target, duration)` |
 | `RevealHandEffect` | `Effects.RevealHand(target)` |
 | `SacrificeEffect` | `Effects.SacrificeOwn(filter, count, excludeSource)` / `Effects.SacrificeAnyNumber(filter)` |
 | `SacrificeTargetEffect` | `Effects.SacrificeTarget` |
@@ -3074,7 +3075,11 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   is keyed to the *affected* object's controller rather than the caster, ending at the cleanup of
   that player's next turn: "that creature can't attack during its controller's next turn" (Wall of
   Dust: `Effects.CantAttack(EffectTarget.TriggeringEntity, Duration.EndOfAffectedControllersNextTurn)`).
-  Both are floating-effect-only. For the
+  Both are floating-effect-only. **`Duration.UntilAffectedOwnersNextTurn`** is the owner-keyed mirror of
+  `UntilYourNextTurn`: it ends as the affected object's **owner**'s next turn begins, whoever created the
+  effect — "until that player's next turn" when "that player" is the owner of the card the effect names
+  (Firestorm Phoenix). Honoured by floating effects and by the card-scoped hand restrictions
+  (`CantPlayCardsFromHand` / `RevealCardInHand` on a card). For the
   "if <condition>, … **instead**" duration switch, wrap two `GainControlEffect`s that differ only in
   `duration` in one `Effects.If` — never a short steal followed by a second grab; that would
   be two control changes where the card describes one. Pair with
@@ -3395,6 +3400,19 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   may-play permission stay playable. Facade: `Effects.CantPlayCardsFromHand(target, duration)`. Pairs with an impulse
   grant (`ExilePatterns.impulse`) so a player swaps their hand for the top cards of their library for a turn
   (Memory Vessel). Distinct from `CantCastSpells` (every zone, spells only).
+  **Given a card in a hand** instead of a player, only that card is locked — "… and can't play it" (cast, cast face
+  down, or played as a land). The lock belongs to that hand object: if the card leaves the hand it is a new object
+  (CR 400.7) and the lock is gone, even when it comes straight back; a different copy of the card is unaffected.
+  Card targets take `Duration.UntilAffectedOwnersNextTurn` ("until that player's next turn"), `UntilYourNextTurn`,
+  `EndOfTurn` or `Permanent`.
+- `RevealCardInHandEffect(target, duration = UntilAffectedOwnersNextTurn)` — "that player plays with that card revealed
+  in their hand" for the duration: one card in a hand is face up to every player (a `CardsRevealedEvent` for the
+  opponents), and — unlike a one-shot reveal — the knowledge doesn't lapse when its owner plays a same-named card.
+  Same object scope and durations as a card-targeted `CantPlayCardsFromHand`. Facade:
+  `Effects.RevealCardInHand(target, duration)`. Firestorm Phoenix pairs the two as a `WITH_REPLACEMENT` rider of
+  `RedirectZoneChangeWith(newDestination = Zone.HAND, …)`:
+  `Effects.RevealCardInHand(EffectTarget.Self, Duration.UntilAffectedOwnersNextTurn) then
+  Effects.CantPlayCardsFromHand(EffectTarget.Self, Duration.UntilAffectedOwnersNextTurn)`.
 - `CantCastSpellsFromNonHandZonesEffect(target, duration = UntilYourNextTurn)` — target can't cast spells from any zone
   **other than their hand** for the duration; ordinary hand casts still resolve, but graveyard (flashback/escape),
   exile (foretell/plot/a may-play permission), library-top, and command-zone casts all become illegal. The **inverse**
@@ -17083,8 +17101,10 @@ The priority groups are (CR 616.1a–f):
   - `WITH_REPLACEMENT` (default) — the rider is part of the replacement ("instead exile it and you gain
     2 life"), applied inline through a small executor whitelist (not the full pipeline):
     `TakeExtraTurnEffect` (Ugin's Nexus), `AddCountersEffect` on the redirected card (Darigaaz
-    Reincarnated), and `GainLifeEffect` (fixed amount, gained by the replacement source's controller;
-    emits `LifeChangedEvent` so life-gain triggers fire).
+    Reincarnated), `GainLifeEffect` (fixed amount, gained by the replacement source's controller;
+    emits `LifeChangedEvent` so life-gain triggers fire), the card-scoped hand restrictions
+    `CantPlayCardsFromHandEffect` / `RevealCardInHandEffect` on the redirected card (Firestorm Phoenix),
+    and a `CompositeEffect` of whitelisted parts, run in order.
   - `WHEN_YOU_DO` — "exile it instead. When you do, …": a reflexive triggered ability (CR 603.12). Each
     time the replacement applies it emits a `ReflexiveAbilityTriggeredEvent`; the rider goes on the
     stack controlled by the replacement source's controller, with the redirected card as its

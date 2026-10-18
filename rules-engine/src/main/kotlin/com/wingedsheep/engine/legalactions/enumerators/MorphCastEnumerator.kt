@@ -57,6 +57,8 @@ class MorphCastEnumerator : ActionEnumerator {
         val hand = state.getHand(playerId)
         for (cardId in hand) {
             val cardComponent = state.getEntity(cardId)?.get<CardComponent>() ?: continue
+            // "… can't play it" covers casting it face down too.
+            if (com.wingedsheep.engine.mechanics.HandObjectRestrictions.isCantBePlayed(state, cardId)) continue
             val cardDef = context.cardRegistry.getCard(cardComponent.name) ?: continue
 
             // Check if the card can be cast face down at all (morph or disguise)
