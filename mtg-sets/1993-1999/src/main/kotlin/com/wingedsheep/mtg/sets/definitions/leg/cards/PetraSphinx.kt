@@ -47,6 +47,9 @@ val PetraSphinx = card("Petra Sphinx") {
             toHand(match, Player.TargetPlayer)
             toGraveyard(miss, Player.TargetPlayer)
         }
+        description = "{T}: Target player chooses a card name, then reveals the top card of their " +
+            "library. If that card has the chosen name, that player puts it into their hand. If it " +
+            "doesn't, the player puts it into their graveyard."
     }
 
     metadata {
