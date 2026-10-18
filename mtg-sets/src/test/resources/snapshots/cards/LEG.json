@@ -349,9 +349,9 @@
                         {
                             "type": "Compare",
                             "left": {
-                                "type": "ActivityDuringTheirLastTurn",
+                                "type": "TurnTracking",
                                 "player": "DefendingPlayer",
-                                "activity": "SPELLS_CAST"
+                                "tracker": "SPELLS_CAST_DURING_THEIR_LAST_TURN"
                             },
                             "operator": "GTE",
                             "right": {
@@ -362,9 +362,9 @@
                         {
                             "type": "Compare",
                             "left": {
-                                "type": "ActivityDuringTheirLastTurn",
+                                "type": "TurnTracking",
                                 "player": "DefendingPlayer",
-                                "activity": "NONTOKEN_PERMANENTS_PUT_ONTO_BATTLEFIELD"
+                                "tracker": "NONTOKEN_PERMANENTS_PUT_DURING_THEIR_LAST_TURN"
                             },
                             "operator": "GTE",
                             "right": {
