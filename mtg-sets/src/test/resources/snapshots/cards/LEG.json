@@ -4706,6 +4706,122 @@
     ]
 }
 
+// Takklemaggot
+{
+    "name": "Takklemaggot",
+    "manaCost": "{2}{B}{B}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nAt the beginning of the upkeep of enchanted creature's controller, put a -0/-1 counter on that creature.\nWhen enchanted creature dies, that creature's controller chooses a creature that this card could enchant. If the player does, return this card to the battlefield under your control attached to that creature. If they don't, return this card to the battlefield under your control as a non-Aura enchantment. It loses \"enchant creature\" and gains \"At the beginning of that player's upkeep, this enchantment deals 1 damage to that player.\"",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Takklemaggot:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "MINUS_ZERO_MINUS_ONE",
+                    "count": 1,
+                    "target": "EnchantedCreature"
+                }
+            },
+            {
+                "id": "Takklemaggot:3",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "SourceInZone",
+                                    "zones": [
+                                        "Graveyard"
+                                    ]
+                                }
+                            },
+                            "then": {
+                                "type": "PutOntoBattlefieldAttachedToChosen",
+                                "target": "Self",
+                                "hostFilter": {
+                                    "cardPredicates": [
+                                        "IsCreature"
+                                    ]
+                                },
+                                "chooser": "ControllerOfTriggeringEntity"
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "SourceInZone",
+                                    "zones": [
+                                        "Graveyard"
+                                    ]
+                                }
+                            },
+                            "then": {
+                                "type": "PutOntoBattlefieldAsNonAura",
+                                "grantedTriggeredAbilities": [
+                                    {
+                                        "id": "Takklemaggot:2",
+                                        "trigger": {
+                                            "type": "StepEvent",
+                                            "step": "UPKEEP",
+                                            "player": "ChosenPlayer"
+                                        },
+                                        "binding": "ANY",
+                                        "effect": {
+                                            "type": "DealDamage",
+                                            "amount": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            },
+                                            "target": {
+                                                "type": "PlayerRef",
+                                                "player": "ChosenPlayer"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "chosenPlayer": "ControllerOfTriggeringEntity"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "When enchanted creature dies, that creature's controller chooses a creature that this card could enchant. If the player does, return this card to the battlefield under your control attached to that creature. If they don't, return this card to the battlefield under your control as a non-Aura enchantment. It loses \"enchant creature\" and gains \"At the beginning of that player's upkeep, this enchantment deals 1 damage to that player.\""
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "119",
+        "rarity": "UNCOMMON",
+        "artist": "Daniel Gelon",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/8/d8f49b3d-7fcb-4169-9298-cdf7a1dbe3f5.jpg?1783948062"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Telekinesis
 {
     "name": "Telekinesis",

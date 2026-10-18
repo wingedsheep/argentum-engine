@@ -120,6 +120,7 @@ private fun ownerChooses(owner: Player, chooser: Chooser): Boolean = when (choos
     Chooser.TriggeringPlayer -> owner == Player.TriggeringPlayer
     Chooser.DefendingPlayer -> owner == Player.DefendingPlayer
     Chooser.ChosenOpponent -> owner == Player.ChosenOpponent
+    Chooser.ControllerOfTriggeringEntity -> owner == Player.ControllerOfTriggeringEntity
     Chooser.Opponent, Chooser.ControllerOfTarget -> false
 }
 

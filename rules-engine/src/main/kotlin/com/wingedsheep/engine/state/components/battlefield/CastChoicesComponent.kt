@@ -159,6 +159,10 @@ fun ChoiceValue.EntityChoice.currentIn(state: GameState): EntityId? {
 fun ComponentContainer.chosenOpponent(): EntityId? =
     (get<CastChoicesComponent>()?.chosen?.get(ChoiceSlot.OPPONENT) as? ChoiceValue.EntityChoice)?.entityId
 
+/** The player (any player) recorded as this object entered ([ChoiceSlot.PLAYER]), or null. */
+fun ComponentContainer.chosenPlayer(): EntityId? =
+    (get<CastChoicesComponent>()?.chosen?.get(ChoiceSlot.PLAYER) as? ChoiceValue.EntityChoice)?.entityId
+
 /** Whether this object was cast kicked. */
 fun ComponentContainer.wasKickedChoice(): Boolean =
     get<CastChoicesComponent>()?.chosen?.containsKey(ChoiceSlot.KICKED) == true

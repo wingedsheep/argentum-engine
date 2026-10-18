@@ -167,7 +167,12 @@ data class ZoneEntryOptions(
      * object arrives, before [auraHostId] attaches it or the entry is recorded, so "a creature
      * entered" observers never see it as a creature.
      */
-    val asAura: com.wingedsheep.engine.handlers.effects.zones.AuraEntry? = null
+    val asAura: com.wingedsheep.engine.handlers.effects.zones.AuraEntry? = null,
+    /**
+     * Enter an Aura card as a non-Aura enchantment (`PutOntoBattlefieldAsNonAuraEffect`): applied
+     * as the object arrives, like [asAura], so it is never an unattached Aura.
+     */
+    val asNonAura: com.wingedsheep.engine.handlers.effects.zones.NonAuraEntry? = null
 )
 
 /**
@@ -909,6 +914,7 @@ class ZoneTransitionService(
                         (options.entryCopy?.copiedCard != null && options.entryCopy.replacement.tappedIfCopied)), fromZone
                 )
                 if (!options.faceDown) options.asAura?.let { newState = it.apply(newState, entityId, destControllerId) }
+                if (!options.faceDown) options.asNonAura?.let { newState = it.apply(newState, entityId, destControllerId) }
                 if (!options.faceDown && options.entryChoices.isNotEmpty()) {
                     newState = newState.updateEntity(entityId) { c ->
                         val recorded = options.entryChoices.entries.fold(c) { acc, (slot, value) -> acc.withCastChoice(slot, value) }

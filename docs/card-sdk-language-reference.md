@@ -1905,10 +1905,26 @@ uses `Patterns.Exile.impulse()`; playing the card follows ordinary costs and tim
   CR 708.2). Informational only — does **not** turn it face up. Pair with
   `Conditions.TargetIsCreatureCard` + `TurnFaceUpEffect` for "Reveal target face-down permanent. If
   it's a creature card, you may turn it face up." (Hauntwoods Shrieker).
-- `PutOntoBattlefieldAttachedToChosen(target, hostFilter?)` — put a targeted Aura or Equipment onto the
-  battlefield attached to a permanent the controller chooses at resolution (default host filter: a creature
-  you control). Works for both Auras and Equipment; the host is chosen, not targeted. If no legal host exists,
-  an Equipment enters unattached while an Aura can't enter (Rule 303.4g). (One Last Job.)
+- `PutOntoBattlefieldAttachedToChosen(target, hostFilter?, chooser = Chooser.Controller)` — put a targeted
+  Aura or Equipment onto the battlefield attached to a permanent chosen at resolution (default host filter: a
+  creature you control, "you" being the effect's controller). Works for both Auras and Equipment; the host is
+  chosen, not targeted. If no legal host exists, an Equipment enters unattached while an Aura can't enter
+  (Rule 303.4g). (One Last Job.) `chooser` names who picks the host — the card still enters under the effect
+  controller's control. **Takklemaggot**'s "that creature's controller chooses a creature that this card could
+  enchant … return this card to the battlefield under your control attached to that creature":
+  `PutOntoBattlefieldAttachedToChosen(Self, GameObjectFilter.Creature, chooser = Chooser.ControllerOfTriggeringEntity)`
+  (the dead creature's last-known controller), gated on `Conditions.SourceInZone(GRAVEYARD)`.
+- `PutOntoBattlefieldAsNonAura(grantedTriggeredAbilities = [], chosenPlayer = null, target = Self,
+  fromZone = GRAVEYARD)` — "return this card to the battlefield under your control as a non-Aura
+  enchantment. It loses \"enchant creature\" and gains \"…\"", the inverse of `PutOntoBattlefieldAsAura`.
+  The card enters under the effect controller's control, unattached, with layer 4 dropping its Aura subtype
+  (card types and other subtypes stay) — so it has no enchant ability to obey and CR 704.5m never sees an
+  unattached Aura. Its printed abilities stay; the granted triggered abilities are added for as long as it
+  stays on the battlefield. `chosenPlayer` is resolved at resolution and recorded on the permanent as its
+  `ChoiceSlot.PLAYER` choice, read back as `Player.ChosenPlayer`. **Takklemaggot**'s fallback, run after the
+  attach step when the card is still in the graveyard: `PutOntoBattlefieldAsNonAura(listOf(TriggeredAbility.create(
+  Triggers.player(Player.ChosenPlayer).beginningOf(UPKEEP), Effects.DealDamage(1, PlayerRef(Player.ChosenPlayer)))),
+  chosenPlayer = EffectTarget.ControllerOfTriggeringEntity)`.
 - `ReturnSelfToBattlefieldAttached(target, transformed = false)` — return source attached to target
   (Aura recursion). [target] may resolve to a **player** as well as a permanent, and the two cases
   differ in who controls the returned Aura: a *permanent* host hands control to that permanent's
@@ -5355,6 +5371,9 @@ A resolving nonpermanent spell retains its stack instance through serialized eff
   choice flow is tracked in `backlog/multiplayer.md`. Do **not** use it where the text means
   `TargetOpponent`, `EachOpponent`, `DefendingPlayer`, or `TriggeringPlayer`.
 - `Player.ChosenOpponent` — the opponent locked into the source's `ChoiceSlot.OPPONENT` slot.
+- `Player.ChosenPlayer` — the player (any player, the source's controller included) recorded in the source's
+  `ChoiceSlot.PLAYER` slot as it entered — written by `PutOntoBattlefieldAsNonAura(chosenPlayer = …)`.
+  `StepEvent(step, Player.ChosenPlayer)` fires only on that player's step (Takklemaggot's "that player's upkeep").
 - `Player.EnchantedPlayer` — the player the source Aura is attached to ("enchant player", CR 303),
   read from the source's `AttachedToComponent` when its target is a player. Use it both for the payoff
   (`DynamicAmount.LifeTotal(EnchantedPlayer)`, `EffectTarget.PlayerRef(EnchantedPlayer)`) and to scope a

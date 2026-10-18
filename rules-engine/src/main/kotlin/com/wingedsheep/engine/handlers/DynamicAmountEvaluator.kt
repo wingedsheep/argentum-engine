@@ -1615,6 +1615,7 @@ class DynamicAmountEvaluator(
             is Player.ChosenOpponent -> listOfNotNull(
                 context.chosenOpponent(state)
             )
+            is Player.ChosenPlayer -> listOfNotNull(context.chosenPlayer(state))
             is Player.AnOpponent, is Player.DefendingPlayer, is Player.EnchantedPlayer -> listOfNotNull(
                 TargetResolutionUtils.resolvePlayerRef(player, context, state)
             )

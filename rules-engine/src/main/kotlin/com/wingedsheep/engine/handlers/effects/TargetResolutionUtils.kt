@@ -326,6 +326,7 @@ object TargetResolutionUtils {
             Player.AnOpponent -> state.getOpponents(context.controllerId).firstOrNull()
             Player.DefendingPlayer -> resolveDefendingPlayer(context, state)
             Player.ChosenOpponent -> context.chosenOpponent(state)
+            Player.ChosenPlayer -> context.chosenPlayer(state)
             Player.EnchantedPlayer -> enchantedPlayer(context, state)
             is Player.OwnerOf -> context.targets.firstOrNull()?.toEntityId()
                 ?.let { state.getEntity(it)?.get<CardComponent>()?.ownerId }

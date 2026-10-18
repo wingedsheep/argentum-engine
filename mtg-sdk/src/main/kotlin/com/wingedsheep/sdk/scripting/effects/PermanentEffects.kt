@@ -587,8 +587,8 @@ data class UnattachEquipmentEffect(
 }
 
 /**
- * Put a targeted Aura or Equipment card onto the battlefield **attached to a permanent the
- * effect's controller chooses** at resolution. The card is the [target] (e.g. a targeted
+ * Put a targeted Aura or Equipment card onto the battlefield **attached to a permanent chosen
+ * at resolution** — by the effect's controller unless [chooser] names someone else. The card is the [target] (e.g. a targeted
  * Aura/Equipment in a graveyard); the host is chosen as the effect resolves and is therefore
  * NOT a target — only the host filter constrains it ([hostFilter], default "a creature you
  * control"). Models "Return target Aura or Equipment card from your graveyard to the
@@ -603,13 +603,19 @@ data class UnattachEquipmentEffect(
  *    can't enter (it stays in its current zone — Rule 303.4g).
  *
  * @property target The Aura or Equipment card to put onto the battlefield (e.g. a graveyard target).
- * @property hostFilter Which permanents are eligible hosts (default: a creature you control).
+ * @property hostFilter Which permanents are eligible hosts (default: a creature you control),
+ *   read with "you" as the effect's controller.
+ * @property chooser Who picks the host. The card still enters under the effect controller's
+ *   control whoever picks — Takklemaggot: "that creature's controller chooses a creature …
+ *   return this card to the battlefield under your control attached to that creature"
+ *   ([Chooser.ControllerOfTriggeringEntity]).
  */
 @SerialName("PutOntoBattlefieldAttachedToChosen")
 @Serializable
 data class PutOntoBattlefieldAttachedToChosenEffect(
     val target: EffectTarget = EffectTarget.ContextTarget(0),
-    val hostFilter: GameObjectFilter = GameObjectFilter.Creature.youControl()
+    val hostFilter: GameObjectFilter = GameObjectFilter.Creature.youControl(),
+    val chooser: Chooser = Chooser.Controller,
 ) : Effect {
     override val description: String =
         "Put ${target.description} onto the battlefield attached to ${hostFilter.description}"

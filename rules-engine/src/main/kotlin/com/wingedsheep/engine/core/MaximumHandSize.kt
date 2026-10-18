@@ -8,6 +8,7 @@ import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.BattlefieldEntryTimestampComponent
 import com.wingedsheep.engine.state.components.battlefield.chosenOpponent
+import com.wingedsheep.engine.state.components.battlefield.chosenPlayer
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.player.PlayerMaximumHandSizeReductionComponent
 import com.wingedsheep.engine.state.components.player.PlayerNoMaximumHandSizeComponent
@@ -173,6 +174,7 @@ object MaximumHandSize {
             // The opponent durably chosen as the source entered (Cursed Rack), read from the
             // source's CastChoicesComponent[OPPONENT].
             Player.ChosenOpponent -> state.getEntity(sourceId)?.chosenOpponent() == playerId
+            Player.ChosenPlayer -> state.getEntity(sourceId)?.chosenPlayer() == playerId
             else -> false
         }
 }

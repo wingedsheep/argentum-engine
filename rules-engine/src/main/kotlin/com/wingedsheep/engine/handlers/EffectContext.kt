@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.handlers
 
 import com.wingedsheep.engine.state.components.battlefield.chosenOpponent
+import com.wingedsheep.engine.state.components.battlefield.chosenPlayer
 
 import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils
 import com.wingedsheep.engine.state.GameState
@@ -497,6 +498,11 @@ data class EffectContext(
         pipeline.storedCollections[RESOLUTION_CHOSEN_OPPONENT]?.firstOrNull()
             ?: sourceId?.takeIf { objectReferences.isCurrent(objectReferences.source, state) }
                 ?.let { state.getEntity(it)?.chosenOpponent() }
+
+    /** The player recorded on the source as it entered ([com.wingedsheep.sdk.scripting.ChoiceSlot.PLAYER]). */
+    fun chosenPlayer(state: GameState): EntityId? =
+        sourceId?.takeIf { objectReferences.isCurrent(objectReferences.source, state) }
+            ?.let { state.getEntity(it)?.chosenPlayer() }
 
 
     /**

@@ -18,6 +18,7 @@ import com.wingedsheep.engine.state.components.battlefield.EnteredThisTurnCompon
 import com.wingedsheep.engine.state.components.battlefield.LastKnownPermanentComponent
 import com.wingedsheep.engine.state.components.battlefield.EnteredViaAbilityComponent
 import com.wingedsheep.engine.state.components.battlefield.chosenOpponent
+import com.wingedsheep.engine.state.components.battlefield.chosenPlayer
 import com.wingedsheep.engine.state.components.battlefield.HasDealtCombatDamageToPlayerComponent
 import com.wingedsheep.engine.state.components.battlefield.CastRecordComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
@@ -1259,6 +1260,7 @@ class ConditionEvaluator(
             is Player.ChosenOpponent -> listOfNotNull(
                 ctx.sourceId?.let { state.getEntity(it)?.chosenOpponent() }
             )
+            is Player.ChosenPlayer -> listOfNotNull(ctx.sourceId?.let { state.getEntity(it)?.chosenPlayer() })
             // Defender-relative conditions (CantAttackUnless "defending player controls…"):
             // the defender is bound into the EffectContext by the attack legality check, or
             // read from the source's attack assignment once combat is underway. No defender
@@ -1492,6 +1494,7 @@ class ConditionEvaluator(
             is Player.ChosenOpponent -> ctx.sourceId?.let { sourceId ->
                 state.getEntity(sourceId)?.chosenOpponent()
             }
+            is Player.ChosenPlayer -> ctx.sourceId?.let { state.getEntity(it)?.chosenPlayer() }
             else -> null
         }
     }

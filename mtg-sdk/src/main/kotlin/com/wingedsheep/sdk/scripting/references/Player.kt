@@ -232,6 +232,22 @@ sealed interface Player {
     }
 
     /**
+     * The player — any player, the source's controller included — locked into the source's
+     * [com.wingedsheep.sdk.scripting.ChoiceSlot.PLAYER] slot, written as the permanent entered by
+     * the effect that put it there (`PutOntoBattlefieldAsNonAuraEffect.chosenPlayer`): Takklemaggot's
+     * "that player" is whoever chose not to give it a new host, possibly its own controller.
+     * Null when no player was recorded.
+     *
+     * [ChosenOpponent] is the opponent-only sibling over the `OPPONENT` slot; it can't carry this
+     * because the recorded player needn't be an opponent.
+     */
+    @SerialName("ChosenPlayer")
+    @Serializable
+    data object ChosenPlayer : Player {
+        override val description: String = "that player"
+    }
+
+    /**
      * The player enchanted by the source Aura — read from the source's
      * [com.wingedsheep.engine.state.components.battlefield.AttachedToComponent] target id when it
      * is a player. Used by "enchant player" Auras (Grievous Wound) for both the payoff target
@@ -447,6 +463,7 @@ sealed interface Player {
             Candidate -> "that player's"
             TriggeringPlayer -> "that player's"
             ChosenOpponent -> "the chosen player's"
+            ChosenPlayer -> "that player's"
             EnchantedPlayer -> "enchanted player's"
             is ControllerOf -> "its controller's"
             is OwnerOf -> "its owner's"

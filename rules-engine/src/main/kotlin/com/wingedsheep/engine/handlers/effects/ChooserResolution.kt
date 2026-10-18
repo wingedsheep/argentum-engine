@@ -153,6 +153,14 @@ object ChooserResolution {
             controller?.let { Outcome.Resolved(it) }
                 ?: Outcome.Unresolvable("No target to derive its controller from")
         }
+
+        // Last-known controller once the triggering permanent has left (CR 608.2h) — the same
+        // read as EffectTarget.ControllerOfTriggeringEntity.
+        Chooser.ControllerOfTriggeringEntity ->
+            TargetResolutionUtils.resolveTarget(
+                com.wingedsheep.sdk.scripting.targets.EffectTarget.ControllerOfTriggeringEntity, context, state
+            )?.let { Outcome.Resolved(it) }
+                ?: Outcome.Unresolvable("No triggering object to derive its controller from")
     }
 
     /**

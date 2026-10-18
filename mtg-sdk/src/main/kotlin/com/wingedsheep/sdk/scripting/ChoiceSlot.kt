@@ -238,6 +238,14 @@ enum class ChoiceSlot {
     OPPONENT,
 
     /**
+     * A player — any player, not only an opponent — recorded as the object entered, stored as a
+     * [ChoiceValue.EntityChoice] carrying the player entity id (Takklemaggot returning as a
+     * non-Aura enchantment that hurts "that player"). Read back through
+     * [com.wingedsheep.sdk.scripting.references.Player.ChosenPlayer].
+     */
+    PLAYER,
+
+    /**
      * A general-purpose chosen number stored durably on the permanent and re-settable over its
      * lifetime (e.g. Shapeshifter "as this enters and at each upkeep, choose a number between 0
      * and 7; its power is that number and its toughness is 7 minus it"). Written at entry by the

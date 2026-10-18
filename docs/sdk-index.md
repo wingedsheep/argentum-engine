@@ -994,7 +994,8 @@ Families:
 - `ProvokeEffect(target: EffectTarget)` — Provoke effect: untap target creature and force it to block the source creature if able.
 - `PutOnLibraryPositionOfChoiceEffect(target: EffectTarget, positions: List<LibraryChoicePosition>)` — The target's owner puts it into their library at one of the offered positions.
 - `PutOntoBattlefieldAsAuraEffect(enchant: GameObjectFilter, grantedStaticAbilities: List<StaticAbility>, grantedAbilities: List<ActivatedAbility>, target: EffectTarget, fromZone: Zone?)` — Put a card onto the battlefield **as an Aura** it isn't printed as: "return it to the battlefield.
-- `PutOntoBattlefieldAttachedToChosenEffect(target: EffectTarget, hostFilter: GameObjectFilter)` — Put a targeted Aura or Equipment card onto the battlefield **attached to a permanent the effect's controller chooses** at resolution.
+- `PutOntoBattlefieldAsNonAuraEffect(grantedTriggeredAbilities: List<TriggeredAbility>, chosenPlayer: EffectTarget?, target: EffectTarget, fromZone: Zone?)` — Put an Aura card onto the battlefield **as a non-Aura enchantment** — the inverse of PutOntoBattlefieldAsAuraEffect: "return this card to the battlefield under your control as a non-Aura enchantment.
+- `PutOntoBattlefieldAttachedToChosenEffect(target: EffectTarget, hostFilter: GameObjectFilter, chooser: Chooser)` — Put a targeted Aura or Equipment card onto the battlefield **attached to a permanent chosen at resolution** — by the effect's controller unless chooser names someone else.
 - `RandomizedBlockerPilesEffect(duration: Duration)` — Replace blocker declarations with optional creature piles assigned randomly to attackers.
 - `RecordChosenLinkedExileEffect(from: String)` — Records the card most recently selected from the source's linked-exile pile as its "last chosen card", stamping a `ChosenLinkedExileComponent` on the source.
 - `RecordSourceObjectsEffect(from: String, key: String)` — Append the current battlefield objects in a pipeline collection to a source-local history slot.
@@ -1437,6 +1438,7 @@ Families:
 - `Player.BoundVariable(name: String)` — The player chosen for the target declared as name — the player-typed reading of a named target handle (com.wingedsheep.sdk.scripting.targets.EffectTarget.BoundVariable).
 - `Player.Candidate` — The player currently being considered as a target (CR 115).
 - `Player.ChosenOpponent` — The opponent locked into the source's com.wingedsheep.sdk.scripting.ChoiceSlot.OPPONENT slot (set by an `EntersWithChoice(ChoiceType.OPPONENT, …)` replacement effect).
+- `Player.ChosenPlayer` — The player — any player, the source's controller included — locked into the source's com.wingedsheep.sdk.scripting.ChoiceSlot.PLAYER slot, written as the permanent entered by the effect that put it…
 - `Player.ContextPlayer(index: Int)` — A player from the context (for multi-target spells)
 - `Player.ControllerOf(targetDescription: String)` — Controller of a permanent (used with EffectTarget)
 - `Player.ControllerOfAffectedEntity` — Controller of the permanent a continuous effect is currently modifying — "enchanted creature gets -X/-0, where X is the number of cards in **its controller's** graveyard" (Disturbing Conversion).

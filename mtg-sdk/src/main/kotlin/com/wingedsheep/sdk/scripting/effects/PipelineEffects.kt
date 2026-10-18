@@ -901,6 +901,15 @@ enum class Chooser {
     ControllerOfTarget,
 
     /**
+     * The controller of the triggering object decides — read as last-known information once it
+     * has left the battlefield (CR 608.2h), the decision-side twin of
+     * [com.wingedsheep.sdk.scripting.targets.EffectTarget.ControllerOfTriggeringEntity]. For a
+     * "when enchanted creature dies, that creature's controller chooses …" trigger (Takklemaggot)
+     * this is whoever controlled the creature as it died, not the Aura's controller.
+     */
+    ControllerOfTriggeringEntity,
+
+    /**
      * The defending player (CR 802.2a) decides — the player, or the controller/protector of the
      * planeswalker or battle, that the source of the ability is attacking. For an attack trigger
      * whose payoff acts on that player's own cards, they are the one who chooses: "defending player
@@ -1256,7 +1265,7 @@ data class SelectFromCollectionEffect(
             Chooser.ChosenOpponent -> "The chosen player"
             Chooser.TargetPlayer, Chooser.TriggeringPlayer -> "That player"
             Chooser.ControllerOfSelection -> "Their controller"
-            Chooser.ControllerOfTarget -> "Its controller"
+            Chooser.ControllerOfTarget, Chooser.ControllerOfTriggeringEntity -> "Its controller"
             Chooser.DefendingPlayer -> "Defending player"
         }
         fun amount(count: DynamicAmount): String =

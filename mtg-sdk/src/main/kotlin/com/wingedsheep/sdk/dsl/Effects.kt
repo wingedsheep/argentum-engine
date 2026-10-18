@@ -1885,6 +1885,21 @@ object Effects {
     ): Effect = PutOntoBattlefieldAsAuraEffect(enchant, grantedStaticAbilities, grantedAbilities, target, fromZone)
 
     /**
+     * "Return this card to the battlefield under your control as a non-Aura enchantment. It loses
+     * \"enchant creature\" and gains \"…\"" (Takklemaggot) — the card enters unattached, no longer an
+     * Aura, keeping its other abilities. [chosenPlayer] is recorded as its `Player.ChosenPlayer`.
+     * See [com.wingedsheep.sdk.scripting.effects.PutOntoBattlefieldAsNonAuraEffect].
+     */
+    fun PutOntoBattlefieldAsNonAura(
+        grantedTriggeredAbilities: List<com.wingedsheep.sdk.scripting.TriggeredAbility> = emptyList(),
+        chosenPlayer: EffectTarget? = null,
+        target: EffectTarget = EffectTarget.Self,
+        fromZone: Zone? = Zone.GRAVEYARD,
+    ): Effect = com.wingedsheep.sdk.scripting.effects.PutOntoBattlefieldAsNonAuraEffect(
+        grantedTriggeredAbilities, chosenPlayer, target, fromZone
+    )
+
+    /**
      * Take the top card from the source's linked exile pile and put it into your hand.
      * Used by Parallel Thoughts and similar cards.
      */
@@ -6757,9 +6772,11 @@ object Effects {
     fun PutOntoBattlefieldAttachedToChosen(
         target: EffectTarget,
         hostFilter: com.wingedsheep.sdk.scripting.GameObjectFilter =
-            com.wingedsheep.sdk.scripting.GameObjectFilter.Creature.youControl()
+            com.wingedsheep.sdk.scripting.GameObjectFilter.Creature.youControl(),
+        chooser: com.wingedsheep.sdk.scripting.effects.Chooser =
+            com.wingedsheep.sdk.scripting.effects.Chooser.Controller,
     ): Effect = com.wingedsheep.sdk.scripting.effects.PutOntoBattlefieldAttachedToChosenEffect(
-        target, hostFilter
+        target, hostFilter, chooser
     )
 
     // =========================================================================

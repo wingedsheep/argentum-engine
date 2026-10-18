@@ -18,6 +18,7 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.battlefield.chosenCreatureType
 import com.wingedsheep.engine.state.components.battlefield.chosenOpponent
+import com.wingedsheep.engine.state.components.battlefield.chosenPlayer
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
@@ -2104,6 +2105,12 @@ class TriggerMatcher(
             Player.EachOpponent -> !state.isActiveTurnFor(controllerId)
             Player.ChosenOpponent -> {
                 val chosen = sourceId?.let { state.getEntity(it)?.chosenOpponent() } ?: return false
+                state.isActiveTurnFor(chosen)
+            }
+            // "At the beginning of that player's upkeep" on a permanent that recorded a player as
+            // it entered (Takklemaggot as a non-Aura enchantment).
+            Player.ChosenPlayer -> {
+                val chosen = sourceId?.let { state.getEntity(it)?.chosenPlayer() } ?: return false
                 state.isActiveTurnFor(chosen)
             }
             // "At the beginning of enchanted player's [step]" (Shadow of the Second Sun) — the

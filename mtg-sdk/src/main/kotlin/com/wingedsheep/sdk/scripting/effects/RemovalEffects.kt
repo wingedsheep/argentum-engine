@@ -543,6 +543,50 @@ data class PutOntoBattlefieldAsAuraEffect(
 }
 
 /**
+ * Put an Aura card onto the battlefield **as a non-Aura enchantment** — the inverse of
+ * [PutOntoBattlefieldAsAuraEffect]: "return this card to the battlefield under your control as a
+ * non-Aura enchantment. It loses \"enchant creature\" and gains \"At the beginning of that
+ * player's upkeep, …\"" (Takklemaggot).
+ *
+ * The card enters under the effect controller's control and attached to nothing, already without
+ * its Aura subtype (layer 4; its card types and other subtypes stay) and so without an enchant
+ * ability to obey — the unattached-Aura state-based action (CR 704.5m) never sees an Aura. Its other
+ * printed abilities stay; the [grantedTriggeredAbilities] are added for as long as it remains on
+ * the battlefield. [chosenPlayer], when set, is resolved now and recorded on the permanent as its
+ * [com.wingedsheep.sdk.scripting.ChoiceSlot.PLAYER] choice, so the granted abilities can name
+ * "that player" as [Player.ChosenPlayer].
+ *
+ * No neighbour takes this: [PutOntoBattlefieldAsAuraEffect] makes a card an Aura and strips every
+ * other ability, the opposite direction on both axes; [MoveToZoneEffect] moves an Aura card with
+ * its printed type line, so it would need a host and die to CR 704.5m without one.
+ *
+ * @property target The card to return — [EffectTarget.Self] for a trigger's own card.
+ * @property grantedTriggeredAbilities Triggered abilities it gains as that enchantment.
+ * @property chosenPlayer The player recorded as its chosen player, or null for none.
+ * @property fromZone The zone the card must still be in; a card that has left it doesn't move.
+ */
+@SerialName("PutOntoBattlefieldAsNonAura")
+@Serializable
+data class PutOntoBattlefieldAsNonAuraEffect(
+    val grantedTriggeredAbilities: List<com.wingedsheep.sdk.scripting.TriggeredAbility> = emptyList(),
+    val chosenPlayer: EffectTarget? = null,
+    val target: EffectTarget = EffectTarget.Self,
+    val fromZone: Zone? = Zone.GRAVEYARD,
+) : Effect {
+    override val description: String = buildString {
+        append("Return ${target.description} to the battlefield as a non-Aura enchantment. It loses its enchant ability")
+        if (grantedTriggeredAbilities.isNotEmpty()) {
+            append(" and gains ${grantedTriggeredAbilities.joinToString(" and ") { "\"${it.description}\"" }}")
+        }
+    }
+
+    override fun applyTextReplacement(replacer: TextReplacer): Effect {
+        val newAbilities = grantedTriggeredAbilities.map { it.applyTextReplacement(replacer) }
+        return if (newAbilities != grantedTriggeredAbilities) copy(grantedTriggeredAbilities = newAbilities) else this
+    }
+}
+
+/**
  * Exile all permanents matching a filter that the controller controls, and link them
  * to the source permanent. The exiled entity IDs are stored on the source as a
  * LinkedExileComponent, and the count is stored in the effect context as a collection

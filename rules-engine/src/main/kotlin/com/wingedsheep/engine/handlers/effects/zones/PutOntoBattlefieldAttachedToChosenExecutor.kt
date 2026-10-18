@@ -9,9 +9,11 @@ import com.wingedsheep.engine.core.PutOntoBattlefieldAttachedToChosenContinuatio
 import com.wingedsheep.engine.core.TargetRequirementInfo
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.TargetFinder
+import com.wingedsheep.engine.handlers.effects.ChooserResolution
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.handlers.effects.ZoneEntryOptions
 import com.wingedsheep.engine.handlers.effects.ZoneTransitionService
+import com.wingedsheep.engine.handlers.predicates.EnchantRestriction
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
@@ -35,7 +37,7 @@ import kotlin.reflect.KClass
  *     set is intersected with the Aura's own enchant legality ([CardScript.auraTarget], Rule
  *     303.4f — targeting restrictions like hexproof/shroud are ignored), so the Aura can only
  *     be put onto something it can legally enchant.
- *  3. If a legal host exists, pause for the controller to choose one
+ *  3. If a legal host exists, pause for the effect's chooser (the controller by default) to choose one
  *     ([ChooseTargetsDecision]) and resume via
  *     [PutOntoBattlefieldAttachedToChosenContinuation] to move-and-attach.
  *  4. If no legal host exists: an Equipment still enters the battlefield (unattached); an Aura
@@ -98,7 +100,15 @@ class PutOntoBattlefieldAttachedToChosenExecutor(
                     sourceId = cardId,
                     ignoreTargetingRestrictions = true
                 ).toSet()
-                legalHosts = legalHosts.filter { it in auraLegal }
+                // Untargeted, so hexproof/shroud don't matter — but what the Aura can't legally
+                // enchant still rules a host out: "can't be enchanted" and protection from the
+                // Aura's qualities (CR 303.4f; Takklemaggot's ruling on protection from black).
+                val projected = state.projectedState
+                legalHosts = legalHosts.filter { host ->
+                    host in auraLegal &&
+                        EnchantRestriction.hostAllowsAura(state, projected, zones.predicateEvaluator, cardId, host) &&
+                        !EnchantRestriction.hostProtectedFromAttachment(state, projected, cardRegistry, cardId, cardComponent, host)
+                }
             } else {
                 // No enchant target defined — the Aura can't be attached to anything.
                 legalHosts = emptyList()
@@ -122,7 +132,17 @@ class PutOntoBattlefieldAttachedToChosenExecutor(
             }
         }
 
-        // Pause for the controller to choose a host.
+        // Pause for the chooser (the controller unless the effect names someone else) to pick a
+        // host. Whoever picks, the card enters under the effect controller's control.
+        val chooserId = when (val outcome = ChooserResolution.resolve(state, effect.chooser, context)) {
+            is ChooserResolution.Outcome.Resolved -> outcome.playerId
+            is ChooserResolution.Outcome.NeedsOpponentPick -> return ChooserResolution.pauseForOpponentPick(
+                state, outcome.opponents, effect, context,
+                prompt = "Choose which opponent chooses what ${cardComponent.name} attaches to"
+            )
+            is ChooserResolution.Outcome.Unresolvable ->
+                return EffectResult.error(state, "PutOntoBattlefieldAttachedToChosen chooser: ${outcome.reason}")
+        }
         val cardName = cardComponent.name
         val requirementInfo = TargetRequirementInfo(
             index = 0,
@@ -132,7 +152,7 @@ class PutOntoBattlefieldAttachedToChosenExecutor(
         )
         val decision = { decisionId: String -> ChooseTargetsDecision(
             id = decisionId,
-            playerId = controllerId,
+            playerId = chooserId,
             prompt = "Choose what $cardName attaches to",
             context = DecisionContext(
                 sourceId = context.sourceId,

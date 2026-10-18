@@ -685,6 +685,11 @@ class TriggerDetector(
         for (entry in index.getEntitiesForCategory(TriggerCategory.STEP)) {
             for (ability in entry.abilities) {
                 if (Zone.BATTLEFIELD !in ability.activeZones) continue
+                // ATTACHED step triggers are timed by the enchanted permanent's controller and are
+                // detected through `aurasByTarget` below. Another step trigger on the same entity
+                // (Takklemaggot's granted "that player's upkeep") files it under STEP too, which
+                // must not fire the ATTACHED one on its own controller's step.
+                if (ability.binding == TriggerBinding.ATTACHED) continue
                 if (matcher.matchesStepTrigger(ability.trigger, step, entry.controllerId, state, entry.entityId)) {
                     triggers.add(
                         PendingTrigger(
