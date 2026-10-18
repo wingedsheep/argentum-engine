@@ -466,7 +466,7 @@ data class CantAttackGroupEffect(
  * "Attacking doesn't cause [filter] creatures to tap" for [duration] — Johan's "attacking doesn't
  * cause creatures you control to tap this combat if Johan is untapped".
  *
- * Not vigilance: the affected creatures gain no ability (CR 702.20b makes vigilance an ability a
+ * Not vigilance: the affected creatures gain no ability (CR 702.20a makes vigilance a static ability a
  * "loses all abilities" effect removes, and a "creatures with vigilance" count must not see these).
  * It is a rule-modifying effect, so — like [CantAttackGroupEffect] — it applies to every creature
  * matching [filter] when attackers are declared, including ones that arrived after it resolved
@@ -475,7 +475,7 @@ data class CantAttackGroupEffect(
  * @property filter Which creatures don't tap to attack (e.g. creatures you control)
  * @property duration How long it lasts — Johan's is [Duration.EndOfCombat]
  * @property condition When non-null, the effect only applies while it holds, re-asked when
- *   attackers are declared — Johan's "if Johan is untapped" is `Conditions.SourceIsUntapped`,
+ *   attackers are declared — Johan's "if Johan is untapped" is `Conditions.SourceMatches(GameObjectFilter.Any.untapped().onBattlefield())`,
  *   whose source is the permanent that created the effect.
  */
 @SerialName("AttacksWithoutTappingGroup")
