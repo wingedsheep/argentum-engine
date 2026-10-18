@@ -55,7 +55,10 @@ class TheDragonKamiRebornScenarioTest : ScenarioTestBase() {
                 pick.shouldBeInstanceOf<SelectCardsDecision>()
                 val bears = game.findCardsInLibrary(1, "Grizzly Bears").single()
                 game.selectCards(listOf(bears)).error shouldBe null
-                if (game.getPendingDecision() is ReorderLibraryDecision) game.keepLibraryOrder()
+                withClue("the other two go to the bottom in an order of the player's choosing") {
+                    game.getPendingDecision().shouldBeInstanceOf<ReorderLibraryDecision>()
+                }
+                game.keepLibraryOrder()
 
                 game.getLifeTotal(1) shouldBe 22
                 game.librarySize(1) shouldBe 2
@@ -96,6 +99,43 @@ class TheDragonKamiRebornScenarioTest : ScenarioTestBase() {
 
                 game.findPermanent("Grizzly Bears") shouldNotBe null
                 game.isInExile(1, "Hill Giant") shouldBe true
+            }
+
+            test("a card hatched face down by chapter I is cast when the Egg later dies") {
+                val game = scenario()
+                    .withPlayers("Player", "Opponent")
+                    .withCardInHand(1, "The Dragon-Kami Reborn")
+                    .withCardOnBattlefield(1, "Dragon-Kami's Egg")
+                    .withCardInHand(1, "Lightning Bolt")
+                    .withCardInLibrary(1, "Grizzly Bears")
+                    .withCardInLibrary(1, "Forest")
+                    .withCardInLibrary(1, "Island")
+                    .withLandsOnBattlefield(1, "Forest", 3)
+                    .withLandsOnBattlefield(1, "Mountain", 1)
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                game.castSpell(1, "The Dragon-Kami Reborn").error shouldBe null
+                game.resolveStack()
+                val bears = game.findCardsInLibrary(1, "Grizzly Bears").single()
+                game.selectCards(listOf(bears)).error shouldBe null
+                game.keepLibraryOrder()
+                val hatched = game.exiled("Grizzly Bears")
+                game.state.getEntity(hatched)!!.get<FaceDownComponent>() shouldNotBe null
+
+                game.castSpell(1, "Lightning Bolt", game.findPermanent("Dragon-Kami's Egg")!!).error shouldBe null
+                game.resolveStack()
+
+                val decision = game.getPendingDecision()
+                decision.shouldBeInstanceOf<SelectCardsDecision>()
+                withClue("the face-down hatched card is still read as a creature card") {
+                    decision.options shouldContainExactly listOf(hatched)
+                }
+                game.selectCards(listOf(hatched)).error shouldBe null
+                game.resolveStack()
+
+                game.findPermanent("Grizzly Bears") shouldNotBe null
             }
 
             test("a Dragon you control dying also triggers the Egg") {
