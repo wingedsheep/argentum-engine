@@ -6528,6 +6528,8 @@ object Effects {
     /**
      * Redirect damage that would be dealt to [protectedTargets] to [redirectTo] instead — the next
      * [amount] (or the next instance when null) under [scope] (Zealous Inquisitor, Glarecaster).
+     * [fromSource] narrows it to damage dealt by one object (Shimian Night Stalker); with it set, an
+     * empty [protectedTargets] covers every recipient (Reverberation).
      */
     fun RedirectNextDamage(
         protectedTargets: List<EffectTarget>,
@@ -6535,8 +6537,11 @@ object Effects {
         amount: Int? = null,
         scope: com.wingedsheep.sdk.scripting.effects.RedirectScope = com.wingedsheep.sdk.scripting.effects.RedirectScope.NEXT_INSTANCE,
         creaturesOnly: Boolean = false,
-        optional: Boolean = false
-    ): Effect = com.wingedsheep.sdk.scripting.effects.RedirectNextDamageEffect(protectedTargets, redirectTo, amount, scope, creaturesOnly, optional)
+        optional: Boolean = false,
+        fromSource: EffectTarget? = null
+    ): Effect = com.wingedsheep.sdk.scripting.effects.RedirectNextDamageEffect(
+        protectedTargets, redirectTo, amount, scope, creaturesOnly, optional, fromSource
+    )
 
     /** All combat damage [target] would deal this turn is dealt to its controller instead (Goblin Psychopath). */
     fun RedirectCombatDamageToController(target: EffectTarget = EffectTarget.Self): Effect =

@@ -998,7 +998,7 @@ Families:
 - `RecordSourceObjectsEffect(from: String, key: String)` — Append the current battlefield objects in a pipeline collection to a source-local history slot.
 - `RedirectCombatDamageToControllerEffect(target: EffectTarget)`
 - `RedirectDamageFromChosenSourceEffect(protectedTarget: EffectTarget, redirectTo: EffectTarget, duration: Duration)` — Choose a damage source on resolution and redirect its next damage instance to another recipient.
-- `RedirectNextDamageEffect(protectedTargets: List<EffectTarget>, redirectTo: EffectTarget, amount: Int?, scope: RedirectScope, creaturesOnly: Boolean, optional: Boolean)` — Redirect damage that would be dealt to the protected targets this turn.
+- `RedirectNextDamageEffect(protectedTargets: List<EffectTarget>, redirectTo: EffectTarget, amount: Int?, scope: RedirectScope, creaturesOnly: Boolean, optional: Boolean, fromSource: EffectTarget?)` — Redirect damage that would be dealt to the protected targets this turn.
 - `RedistributeLifeTotalsEffect` — "Redistribute any number of players' life totals." (Reverse the Sands).
 - `ReduceMaximumHandSizeEffect(amount: DynamicAmount, target: EffectTarget)` — Reduces the target player's maximum hand size by amount for the rest of the game ("your maximum hand size is reduced by three for the rest of the game" — Inspired Idea).
 - `ReflectCombatDamageEffect(target: EffectTarget)` — Creates a delayed trigger for the rest of the turn that reflects combat damage.

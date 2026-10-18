@@ -772,6 +772,12 @@ data object SwapBlockingAssignmentsEffect : Effect {
  * @property redirectTo The target that will receive the redirected damage (chosen at activation)
  * @property amount If set, only redirect up to this many damage (e.g., "the next 1 damage"). Null = redirect all.
  * @property scope When the shield is used up (only meaningful when [amount] is null). See [RedirectScope].
+ * @property fromSource Redirect only damage dealt by this one object — "all damage that would be
+ *   dealt to you this turn by target attacking creature" (Shimian Night Stalker). Resolved to that
+ *   *object* at resolution (CR 400.7: the same card returning later is a different source). With
+ *   [fromSource] set, an empty [protectedTargets] means **any recipient** — "all damage that would
+ *   be dealt this turn by target sorcery spell is dealt to that spell's controller instead"
+ *   (Reverberation). Null = damage from every source.
  */
 @SerialName("RedirectNextDamage")
 @Serializable
@@ -796,17 +802,21 @@ data class RedirectNextDamageEffect(
      * **declined** rather than redirecting silently; see
      * `com.wingedsheep.engine.handlers.effects.damage.OptionalDamageRedirect`.
      */
-    val optional: Boolean = false
+    val optional: Boolean = false,
+    val fromSource: EffectTarget? = null
 ) : Effect {
     override val description: String = buildString {
         append(if (scope == RedirectScope.CONTINUOUS) "All " else "The next ")
         if (amount != null) append("$amount ")
-        val recipients = if (creaturesOnly) {
-            "any creature"
-        } else {
-            protectedTargets.joinToString(" and/or ") { it.description }
+        val recipients = when {
+            creaturesOnly -> "any creature"
+            protectedTargets.isEmpty() -> null
+            else -> protectedTargets.joinToString(" and/or ") { it.description }
         }
-        append("damage that would be dealt to $recipients this turn")
+        append("damage that would be dealt")
+        if (recipients != null) append(" to $recipients")
+        append(" this turn")
+        if (fromSource != null) append(" by ${fromSource.description}")
         if (optional) {
             append(" may be dealt to ${redirectTo.description} instead")
         } else {

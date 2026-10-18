@@ -113,6 +113,9 @@ object OptionalDamageRedirect {
         mod: SerializableModification.RedirectNextDamage,
         targetId: EntityId
     ): Boolean {
+        // Damage already headed for the shield's own recipient has nowhere else to go. Without
+        // this an every-recipient shield (Reverberation) would redirect its redirected damage again.
+        if (targetId == mod.redirectToId) return false
         if (mod.chosenSource != null) {
             if (mod.protectedRef != null && !state.isCurrentObject(mod.protectedRef)) return false
             if (mod.redirectToRef != null && !state.isCurrentObject(mod.redirectToRef)) return false

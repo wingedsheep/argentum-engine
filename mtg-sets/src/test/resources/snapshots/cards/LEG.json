@@ -3936,6 +3936,45 @@
     ]
 }
 
+// Reverberation
+{
+    "name": "Reverberation",
+    "manaCost": "{2}{U}{U}",
+    "typeLine": "Instant",
+    "oracleText": "All damage that would be dealt this turn by target sorcery spell is dealt to that spell's controller instead.",
+    "script": {
+        "spellEffect": {
+            "type": "RedirectNextDamage",
+            "protectedTargets": [],
+            "redirectTo": "TargetController",
+            "scope": "CONTINUOUS",
+            "fromSource": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "sorcery",
+                    "zone": "Stack"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "74",
+        "rarity": "RARE",
+        "artist": "Justin Hampton",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/3/a3d1f470-058d-41b7-acaf-4f68431de9ed.jpg?1783948072"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Righteous Avengers
 {
     "name": "Righteous Avengers",
@@ -4060,6 +4099,69 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Shimian Night Stalker
+{
+    "name": "Shimian Night Stalker",
+    "manaCost": "{3}{B}{B}",
+    "typeLine": "Creature — Nightstalker",
+    "oracleText": "{B}, {T}: All damage that would be dealt to you this turn by target attacking creature is dealt to this creature instead.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Shimian Night Stalker:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{B}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "RedirectNextDamage",
+                    "protectedTargets": [
+                        "Controller"
+                    ],
+                    "redirectTo": "Self",
+                    "scope": "CONTINUOUS",
+                    "fromSource": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature attacking"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "116",
+        "rarity": "UNCOMMON",
+        "artist": "Jesper Myrfors",
+        "flavorText": "\"'Tis now the very witching time of night,/ When churchyards yawn and hell itself breathes out/ Contagion to this world.\" —William Shakespeare, Hamlet",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/e/4e04a1b9-c561-4e34-86d9-129ea0346631.jpg?1783948063"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
