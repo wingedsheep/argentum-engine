@@ -908,6 +908,67 @@
     ]
 }
 
+// Assassin's Ink
+{
+    "name": "Assassin's Ink",
+    "manaCost": "{2}{B}{B}",
+    "typeLine": "Instant",
+    "oracleText": "This spell costs {1} less to cast if you control an artifact and {1} less to cast if you control an enchantment.\nDestroy target creature or planeswalker.",
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "destination": "Graveyard",
+            "byDestruction": true
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetCreatureOrPlaneswalker",
+                "id": "t0"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "ReduceGenericBy",
+                    "source": {
+                        "type": "FixedIfControlFilter",
+                        "amount": 1,
+                        "filter": "artifact"
+                    }
+                }
+            },
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "ReduceGenericBy",
+                    "source": {
+                        "type": "FixedIfControlFilter",
+                        "amount": 1,
+                        "filter": "enchantment"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "87",
+        "rarity": "UNCOMMON",
+        "artist": "Heonhwa",
+        "flavorText": "A Reckoner always has another trick up their sleeve—or as their sleeve.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/a/5a926c10-029d-4e24-8c3f-1808025e30aa.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Atsushi, the Blazing Sky
 {
     "name": "Atsushi, the Blazing Sky",
@@ -1420,6 +1481,312 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Behold the Unspeakable
+{
+    "name": "Behold the Unspeakable",
+    "manaCost": "{3}{U}{U}",
+    "typeLine": "Enchantment — Saga",
+    "oracleText": "(As this Saga enters and after your draw step, add a lore counter.)\nI — Creatures you don't control get -2/-0 until your next turn.\nII — If you have one or fewer cards in hand, draw four cards. Otherwise, scry 2, then draw two cards.\nIII — Exile this Saga, then return it to the battlefield transformed under your control.",
+    "script": {
+        "sagaChapters": [
+            {
+                "chapter": 1,
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ],
+                                "controllerPredicate": {
+                                    "type": "ControllerNot",
+                                    "predicate": "ControlledByYou"
+                                }
+                            }
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": -2
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 0
+                        },
+                        "target": "IterationEntity",
+                        "duration": "UntilYourNextTurn"
+                    }
+                }
+            },
+            {
+                "chapter": 2,
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "Count",
+                                "player": "You",
+                                "zone": "Hand"
+                            },
+                            "operator": "LTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 4
+                        }
+                    },
+                    "otherwise": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "Scry",
+                                "count": 2
+                            },
+                            {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "chapter": 3,
+                "effect": "ExileAndReturnTransformed"
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Vision of the Unspeakable",
+        "manaCost": "",
+        "typeLine": "Enchantment Creature — Spirit",
+        "oracleText": "Flying, trample\nThis creature gets +1/+1 for each card in your hand.",
+        "creatureStats": {
+            "power": 0,
+            "toughness": 0
+        },
+        "keywords": [
+            "FLYING",
+            "TRAMPLE"
+        ],
+        "script": {
+            "staticAbilities": [
+                {
+                    "type": "GrantDynamicStats",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    },
+                    "powerBonus": {
+                        "type": "Count",
+                        "player": "You",
+                        "zone": "Hand"
+                    },
+                    "toughnessBonus": {
+                        "type": "Count",
+                        "player": "You",
+                        "zone": "Hand"
+                    }
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "48",
+            "rarity": "UNCOMMON",
+            "artist": "Ravenna Tran",
+            "flavorText": "Even as her students' minds succumbed to madness, Azami's obsession with the kami of forbidden knowledge only grew.",
+            "imageUri": "https://cards.scryfall.io/normal/back/e/4/e4d52701-e0dc-474e-b08f-88147200d210.jpg?1783923912"
+        },
+        "colorIdentityOverride": [
+            "BLUE"
+        ],
+        "colorIndicator": [
+            "BLUE"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "48",
+        "rarity": "UNCOMMON",
+        "artist": "Ravenna Tran",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/4/e4d52701-e0dc-474e-b08f-88147200d210.jpg?1783923912"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Biting-Palm Ninja
+{
+    "name": "Biting-Palm Ninja",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Human Ninja",
+    "oracleText": "Ninjutsu {2}{B} ({2}{B}, Return an unblocked attacker you control to hand: Put this card onto the battlefield from your hand tapped and attacking.)\nThis creature enters with a menace counter on it.\nWhenever this creature deals combat damage to a player, you may remove a menace counter from it. When you do, that player reveals their hand and you choose a nonland card from it. Exile that card.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "NINJUTSU"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Ninjutsu",
+            "cost": "{2}{B}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Biting-Palm Ninja:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": {
+                    "type": "ReflexiveTrigger",
+                    "action": {
+                        "type": "RemoveCounters",
+                        "counterType": "MENACE",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": "Self"
+                    },
+                    "reflexiveEffect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "RevealHand",
+                                "target": {
+                                    "type": "PlayerRef",
+                                    "player": "TriggeringPlayer"
+                                }
+                            },
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand",
+                                    "player": "TriggeringPlayer",
+                                    "filter": "nonland"
+                                },
+                                "storeAs": "chosenCardCandidates"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "chosenCardCandidates",
+                                "selection": {
+                                    "type": "ChooseExactly",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "chosenCard",
+                                "prompt": "Choose a nonland card to exile"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "chosenCard",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Exile",
+                                    "player": "TriggeringPlayer"
+                                }
+                            }
+                        ]
+                    },
+                    "descriptionOverride": "You may remove a menace counter from this creature. When you do, that player reveals their hand and you choose a nonland card from it. Exile that card."
+                },
+                "descriptionOverride": "Whenever this creature deals combat damage to a player, you may remove a menace counter from it. When you do, that player reveals their hand and you choose a nonland card from it. Exile that card."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "ninjutsu_{2}{B}",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{B}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomReturnToHand",
+                                "filter": {
+                                    "cardPredicates": [
+                                        "IsCreature"
+                                    ],
+                                    "statePredicates": [
+                                        "IsAttacking",
+                                        "IsUnblocked"
+                                    ]
+                                }
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "Self",
+                    "destination": "Battlefield",
+                    "placement": "TappedAndAttacking",
+                    "fromZone": "Hand",
+                    "attackDefender": "RETURNED_ATTACKER"
+                },
+                "activateFromZone": "Hand",
+                "descriptionOverride": "Ninjutsu {2}{B} ({2}{B}, Return an unblocked attacker you control to hand: Put this card onto the battlefield from your hand tapped and attacking.)",
+                "keyword": "NINJUTSU"
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "counterType": "MENACE",
+                "count": 1,
+                "selfOnly": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "88",
+        "rarity": "RARE",
+        "artist": "Andreas Zafiratos",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/0/3017df51-67ae-4c3d-8210-086f83bc2040.jpg?1783923890"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -2767,6 +3134,82 @@
     "colorIdentityOverride": []
 }
 
+// Clawing Torment
+{
+    "name": "Clawing Torment",
+    "manaCost": "{B}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant artifact or creature\nAs long as enchanted permanent is a creature, it gets -1/-1 and can't block.\nEnchanted permanent has \"At the beginning of your upkeep, you lose 1 life.\"",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "ModifyStats",
+                    "powerBonus": -1,
+                    "toughnessBonus": -1
+                },
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "EnchantedPermanent",
+                    "filter": "creature"
+                }
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "CantBlock",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "AttachedTo"
+                    }
+                },
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "EnchantedPermanent",
+                    "filter": "creature"
+                }
+            },
+            {
+                "type": "GrantTriggeredAbility",
+                "ability": {
+                    "id": "Clawing Torment:1",
+                    "trigger": {
+                        "type": "StepEvent",
+                        "step": "UPKEEP"
+                    },
+                    "binding": "ANY",
+                    "effect": {
+                        "type": "LoseLife",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": {
+                            "type": "PlayerRef",
+                            "player": "You"
+                        }
+                    }
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature|artifact"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "91",
+        "artist": "Rovina Cai",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/2/621fce96-5933-4e2b-98ec-2589940e24cb.jpg?1783923889"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Cloudsteel Kirin
 {
     "name": "Cloudsteel Kirin",
@@ -3290,6 +3733,136 @@
     ]
 }
 
+// Debt to the Kami
+{
+    "name": "Debt to the Kami",
+    "manaCost": "{2}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Choose one —\n• Target opponent exiles a creature they control.\n• Target opponent exiles an enchantment they control.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Battlefield",
+                                    "player": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    },
+                                    "filter": "creature"
+                                },
+                                "storeAs": "gathered0"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "gathered0",
+                                "selection": {
+                                    "type": "ChooseExactly",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "chooser": "TargetPlayer",
+                                "storeSelected": "selected1",
+                                "prompt": "Choose a creature to exile"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "selected1",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Exile",
+                                    "player": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetOpponent",
+                            "id": "t0"
+                        }
+                    ],
+                    "description": "Target opponent exiles a creature they control"
+                },
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Battlefield",
+                                    "player": {
+                                        "type": "BoundVariable",
+                                        "name": "t1"
+                                    },
+                                    "filter": "enchantment"
+                                },
+                                "storeAs": "gathered0"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "gathered0",
+                                "selection": {
+                                    "type": "ChooseExactly",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "chooser": "TargetPlayer",
+                                "storeSelected": "selected1",
+                                "prompt": "Choose an enchantment to exile"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "selected1",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Exile",
+                                    "player": {
+                                        "type": "BoundVariable",
+                                        "name": "t1"
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetOpponent",
+                            "id": "t1"
+                        }
+                    ],
+                    "description": "Target opponent exiles an enchantment they control"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "92",
+        "artist": "Jodie Muir",
+        "flavorText": "The masters weren't speaking figuratively when they said guilt could be all-consuming.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/1/c1a7e728-ba01-4e3d-b269-9e2dd85a1d1b.jpg?1783923889"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Discover the Impossible
 {
     "name": "Discover the Impossible",
@@ -3569,6 +4142,153 @@
         "artist": "Manuel Castañón",
         "flavorText": "Don't fear the blade, fear the shadows.",
         "imageUri": "https://cards.scryfall.io/normal/front/8/1/81496a81-c986-4749-a28c-45341764e28f.jpg?1783923888"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Dokuchi Silencer
+{
+    "name": "Dokuchi Silencer",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Human Ninja",
+    "oracleText": "Ninjutsu {1}{B} ({1}{B}, Return an unblocked attacker you control to hand: Put this card onto the battlefield from your hand tapped and attacking.)\nWhenever this creature deals combat damage to a player, you may discard a creature card. When you do, destroy target creature or planeswalker that player controls.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "NINJUTSU"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Ninjutsu",
+            "cost": "{1}{B}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Dokuchi Silencer:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": {
+                    "type": "ReflexiveTrigger",
+                    "action": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand",
+                                    "filter": "creature"
+                                },
+                                "storeAs": "hand"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "hand",
+                                "selection": {
+                                    "type": "ChooseExactly",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "discarded",
+                                "prompt": "Choose 1 card to discard"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "discarded",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                },
+                                "moveType": "Discard"
+                            }
+                        ]
+                    },
+                    "reflexiveEffect": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "destination": "Graveyard",
+                        "byDestruction": true
+                    },
+                    "reflexiveTargetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature|planeswalker ctrl:triggering-player"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "descriptionOverride": "You may discard a creature card. When you do, destroy target creature or planeswalker that player controls."
+                },
+                "descriptionOverride": "Whenever this creature deals combat damage to a player, you may discard a creature card. When you do, destroy target creature or planeswalker that player controls."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "ninjutsu_{1}{B}",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{B}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomReturnToHand",
+                                "filter": {
+                                    "cardPredicates": [
+                                        "IsCreature"
+                                    ],
+                                    "statePredicates": [
+                                        "IsAttacking",
+                                        "IsUnblocked"
+                                    ]
+                                }
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "Self",
+                    "destination": "Battlefield",
+                    "placement": "TappedAndAttacking",
+                    "fromZone": "Hand",
+                    "attackDefender": "RETURNED_ATTACKER"
+                },
+                "activateFromZone": "Hand",
+                "descriptionOverride": "Ninjutsu {1}{B} ({1}{B}, Return an unblocked attacker you control to hand: Put this card onto the battlefield from your hand tapped and attacking.)",
+                "keyword": "NINJUTSU"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "95",
+        "rarity": "UNCOMMON",
+        "artist": "David Rapoza",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/2/a24d5664-e214-466d-bb53-4e8f6f75a009.jpg?1783923888"
     },
     "colorIdentityOverride": [
         "BLACK"
@@ -5344,6 +6064,83 @@
     ]
 }
 
+// Go-Shintai of Hidden Cruelty
+{
+    "name": "Go-Shintai of Hidden Cruelty",
+    "manaCost": "{3}{B}",
+    "typeLine": "Legendary Enchantment Creature — Shrine",
+    "oracleText": "Deathtouch\nAt the beginning of your end step, you may pay {1}. When you do, destroy target creature with toughness X or less, where X is the number of Shrines you control.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "DEATHTOUCH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Go-Shintai of Hidden Cruelty:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ReflexiveTrigger",
+                    "action": {
+                        "type": "PayManaCost",
+                        "cost": "{1}"
+                    },
+                    "reflexiveEffect": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "destination": "Graveyard",
+                        "byDestruction": true
+                    },
+                    "reflexiveTargetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": {
+                                    "cardPredicates": [
+                                        "IsCreature",
+                                        {
+                                            "type": "CompareNumericProperty",
+                                            "property": "TOUGHNESS",
+                                            "operator": "LTE",
+                                            "amount": {
+                                                "type": "AggregateBattlefield",
+                                                "player": "You",
+                                                "filter": "Shrine"
+                                            }
+                                        }
+                                    ]
+                                }
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "descriptionOverride": "You may pay {1}. When you do, destroy target creature with toughness X or less, where X is the number of Shrines you control."
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "97",
+        "rarity": "UNCOMMON",
+        "artist": "Johannes Voss",
+        "flavorText": "It seeks those with hate in their hearts and offers vengeance.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/5/45e1ff1e-916b-4455-84cb-4125a79d76de.jpg?1783923886"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Go-Shintai of Shared Purpose
 {
     "name": "Go-Shintai of Shared Purpose",
@@ -5494,6 +6291,68 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Gravelighter
+{
+    "name": "Gravelighter",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Spirit",
+    "oracleText": "Flying\nWhen this creature enters, draw a card if a creature died this turn. Otherwise, each player sacrifices a creature of their choice.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Gravelighter:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": "CreatureDiedThisTurn"
+                    },
+                    "then": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "otherwise": {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Players",
+                            "players": "Each"
+                        },
+                        "body": {
+                            "type": "ForceSacrifice",
+                            "filter": "creature",
+                            "target": "Controller"
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "98",
+        "rarity": "UNCOMMON",
+        "artist": "Miranda Meeks",
+        "flavorText": "It appears only to those whose lives are ending, welcoming them to their fate.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/3/532c5b14-75cf-4e4c-9b80-2d56a86e2844.jpg?1783923886"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -7070,6 +7929,162 @@
     "colorIdentityOverride": [
         "RED"
     ]
+}
+
+// Kami of Restless Shadows
+{
+    "name": "Kami of Restless Shadows",
+    "manaCost": "{4}{B}",
+    "typeLine": "Creature — Spirit",
+    "oracleText": "When this creature enters, choose one —\n• Return up to one target Ninja or Rogue creature card from your graveyard to your hand.\n• Put target creature card from your graveyard on top of your library.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Kami of Restless Shadows:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "MoveToZone",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "destination": "Hand"
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetObject",
+                                    "optional": true,
+                                    "filter": {
+                                        "baseFilter": "creature Ninja|Rogue own:you",
+                                        "zone": "Graveyard"
+                                    },
+                                    "id": "t0"
+                                }
+                            ],
+                            "description": "Return up to one target Ninja or Rogue creature card from your graveyard to your hand."
+                        },
+                        {
+                            "effect": {
+                                "type": "MoveToZone",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t1"
+                                },
+                                "destination": "Library",
+                                "placement": "Top"
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": "creature own:you",
+                                        "zone": "Graveyard"
+                                    },
+                                    "id": "t1"
+                                }
+                            ],
+                            "description": "Put target creature card from your graveyard on top of your library."
+                        }
+                    ]
+                },
+                "descriptionOverride": "When this creature enters, choose one — • Return up to one target Ninja or Rogue creature card from your graveyard to your hand. • Put target creature card from your graveyard on top of your library."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "104",
+        "artist": "rk post",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/2/62d3be4a-ab4f-46ef-837c-0f7559a701fe.jpg?1783923883"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Kami of Terrible Secrets
+{
+    "name": "Kami of Terrible Secrets",
+    "manaCost": "{3}{B}",
+    "typeLine": "Creature — Spirit",
+    "oracleText": "When this creature enters, if you control an artifact and an enchantment, you draw a card and you gain 1 life.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Kami of Terrible Secrets:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    ]
+                },
+                "interveningIf": {
+                    "type": "All",
+                    "conditions": [
+                        {
+                            "type": "Exists",
+                            "player": "You",
+                            "zone": "Battlefield",
+                            "filter": "artifact"
+                        },
+                        {
+                            "type": "Exists",
+                            "player": "You",
+                            "zone": "Battlefield",
+                            "filter": "enchantment"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "105",
+        "artist": "Mark Zug",
+        "flavorText": "It feeds on things better left unknown, savoring the bitterness of lies and regrets.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/8/58f15af6-eaf5-41b8-b93d-5a90ca219478.jpg?1783923883",
+        "rulings": [
+            {
+                "date": "2022-02-18",
+                "text": "The artifact and the enchantment may be the same permanent."
+            },
+            {
+                "date": "2022-02-18",
+                "text": "If you don't control both an artifact and an enchantment at the moment Kami of Terrible Secrets enters the battlefield, its ability won't trigger at all. If the ability triggers, it will check again as it tries to resolve. If you don't control both at that time, the ability won't do anything."
+            }
+        ]
+    }
 }
 
 // Kami of Transience
@@ -10732,6 +11747,195 @@
     ]
 }
 
+// Okiba Reckoner Raid
+{
+    "name": "Okiba Reckoner Raid",
+    "manaCost": "{B}",
+    "typeLine": "Enchantment — Saga",
+    "oracleText": "(As this Saga enters and after your draw step, add a lore counter.)\nI, II — Each opponent loses 1 life and you gain 1 life.\nIII — Exile this Saga, then return it to the battlefield transformed under your control.",
+    "script": {
+        "sagaChapters": [
+            {
+                "chapter": 1,
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "EachOpponent"
+                            }
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "chapter": 2,
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "EachOpponent"
+                            }
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "chapter": 3,
+                "effect": "ExileAndReturnTransformed"
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Nezumi Road Captain",
+        "manaCost": "",
+        "typeLine": "Enchantment Creature — Rat Rogue",
+        "oracleText": "Menace\nVehicles you control have menace. (They can't be blocked except by two or more creatures.)",
+        "creatureStats": {
+            "power": 2,
+            "toughness": 2
+        },
+        "keywords": [
+            "MENACE"
+        ],
+        "script": {
+            "staticAbilities": [
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "MENACE",
+                    "filter": {
+                        "baseFilter": "Vehicle ctrl:you"
+                    }
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "117",
+            "artist": "Victor Adame Minguez",
+            "flavorText": "United by defiant pride in their outsider status, the nezumi of the Okiba Reckoners boast the most advanced cyberbikes and the best riders of all the Reckoner gangs.",
+            "imageUri": "https://cards.scryfall.io/normal/back/4/f/4f0582b4-d951-4450-b158-4a34109e48cd.jpg?1783923885"
+        },
+        "colorIdentityOverride": [
+            "BLACK"
+        ],
+        "colorIndicator": [
+            "BLACK"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "117",
+        "artist": "Victor Adame Minguez",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/f/4f0582b4-d951-4450-b158-4a34109e48cd.jpg?1783923885"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Okiba Salvage
+{
+    "name": "Okiba Salvage",
+    "manaCost": "{4}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Return target creature or Vehicle card from your graveyard to the battlefield. Then put two +1/+1 counters on that permanent if you control an artifact and an enchantment.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Battlefield",
+                    "fromZone": "Graveyard"
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "All",
+                            "conditions": [
+                                {
+                                    "type": "Exists",
+                                    "player": "You",
+                                    "zone": "Battlefield",
+                                    "filter": "artifact"
+                                },
+                                {
+                                    "type": "Exists",
+                                    "player": "You",
+                                    "zone": "Battlefield",
+                                    "filter": "enchantment"
+                                }
+                            ]
+                        }
+                    },
+                    "then": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 2,
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature|Vehicle own:you",
+                    "zone": "Graveyard"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "118",
+        "rarity": "UNCOMMON",
+        "artist": "Lie Setiawan",
+        "flavorText": "\"Some fool would rather throw a whole mech away than repair one hydraulic actuator? It must be my lucky day.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/9/d9e4485d-c208-46b4-9b5d-48e55e2ee182.jpg?1783923877"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Otawara, Soaring City
 {
     "name": "Otawara, Soaring City",
@@ -11093,6 +12297,96 @@
     ]
 }
 
+// Prosperous Thief
+{
+    "name": "Prosperous Thief",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Human Ninja",
+    "oracleText": "Ninjutsu {1}{U} ({1}{U}, Return an unblocked attacker you control to hand: Put this card onto the battlefield from your hand tapped and attacking.)\nWhenever one or more Ninja or Rogue creatures you control deal combat damage to a player, create a Treasure token. (It's an artifact with \"{T}, Sacrifice this token: Add one mana of any color.\")",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "NINJUTSU"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Ninjutsu",
+            "cost": "{1}{U}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Prosperous Thief:1",
+                "trigger": {
+                    "type": "OneOrMoreDealCombatDamageToPlayerEvent",
+                    "sourceFilter": "creature Ninja|Rogue"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Treasure"
+                },
+                "descriptionOverride": "Whenever one or more Ninja or Rogue creatures you control deal combat damage to a player, create a Treasure token."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "ninjutsu_{1}{U}",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{U}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomReturnToHand",
+                                "filter": {
+                                    "cardPredicates": [
+                                        "IsCreature"
+                                    ],
+                                    "statePredicates": [
+                                        "IsAttacking",
+                                        "IsUnblocked"
+                                    ]
+                                }
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "Self",
+                    "destination": "Battlefield",
+                    "placement": "TappedAndAttacking",
+                    "fromZone": "Hand",
+                    "attackDefender": "RETURNED_ATTACKER"
+                },
+                "activateFromZone": "Hand",
+                "descriptionOverride": "Ninjutsu {1}{U} ({1}{U}, Return an unblocked attacker you control to hand: Put this card onto the battlefield from your hand tapped and attacking.)",
+                "keyword": "NINJUTSU"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "73",
+        "rarity": "UNCOMMON",
+        "artist": "Fajareka Setiawan",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/a/da3f683e-5a28-4ae7-b53b-851b957123ba.jpg?1783923897"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Rabbit Battery
 {
     "name": "Rabbit Battery",
@@ -11271,6 +12565,175 @@
     "colorIdentityOverride": [
         "RED",
         "WHITE"
+    ]
+}
+
+// Reckoner Shakedown
+{
+    "name": "Reckoner Shakedown",
+    "manaCost": "{2}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target opponent reveals their hand. You may choose a nonland card from it. If you do, that player discards that card. If you don't, put two +1/+1 counters on a creature or Vehicle you control.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "RevealHand",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Hand",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "storeAs": "gathered1"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered1",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "filter": "nonland",
+                    "storeSelected": "selected2",
+                    "prompt": "You may choose a nonland card for that player to discard",
+                    "showAllCards": true,
+                    "alwaysPrompt": true
+                },
+                {
+                    "type": "ConditionalOnCollection",
+                    "collection": "selected2",
+                    "ifNotEmpty": {
+                        "type": "MoveCollection",
+                        "from": "selected2",
+                        "destination": {
+                            "type": "ToZone",
+                            "zone": "Graveyard",
+                            "player": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        "moveType": "Discard"
+                    },
+                    "ifEmpty": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "ControlledPermanents",
+                                    "filter": "creature|Vehicle"
+                                },
+                                "storeAs": "gathered5"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "gathered5",
+                                "selection": {
+                                    "type": "ChooseExactly",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "selected6",
+                                "prompt": "Choose a creature or Vehicle you control to put two +1/+1 counters on",
+                                "useTargetingUI": true
+                            },
+                            {
+                                "type": "AddCountersToCollection",
+                                "collectionName": "selected6",
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "count": 2
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetOpponent",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "119",
+        "artist": "Josu Hernaiz",
+        "flavorText": "\"That's a start. What else do you have for us?\"\n—Takumi, Reckoner enforcer",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/f/cf57666f-366b-43bf-95c7-39c1f7f061e2.jpg?1783923877",
+        "rulings": [
+            {
+                "date": "2022-02-18",
+                "text": "You choose the creature or Vehicle to put counters on after the target opponent reveals their hand and you've decided whether or not to choose a card."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Reckoner's Bargain
+{
+    "name": "Reckoner's Bargain",
+    "manaCost": "{1}{B}",
+    "typeLine": "Instant",
+    "oracleText": "As an additional cost to cast this spell, sacrifice an artifact or creature.\nYou gain life equal to the sacrificed permanent's mana value. Draw two cards.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": "SacrificedAsCost",
+                        "numericProperty": "ManaValue"
+                    }
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                }
+            ]
+        },
+        "additionalCosts": [
+            {
+                "type": "AdditionalAtom",
+                "atom": {
+                    "type": "AtomSacrifice",
+                    "filter": "artifact|creature"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "120",
+        "artist": "Justine Cruz",
+        "flavorText": "Restricted auctions are held once a year at the Dragon's Lair—the sacred, neutral meeting ground of all Reckoner gangs.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/3/6338942d-d650-4571-8ec6-4d658792c53e.jpg?1783923877"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
