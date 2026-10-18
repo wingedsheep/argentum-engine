@@ -7,8 +7,6 @@ import com.wingedsheep.engine.state.components.battlefield.BattlefieldEntryTimes
 import com.wingedsheep.engine.state.components.identity.TokenComponent
 import com.wingedsheep.engine.state.components.player.EnteredPermanentRecord
 import com.wingedsheep.engine.state.components.player.NontokenPermanentsPutOntoBattlefieldThisTurnComponent
-import com.wingedsheep.engine.state.components.stack.ActivatedAbilityOnStackComponent
-import com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComponent
 import com.wingedsheep.engine.state.components.player.PermanentsEnteredUnderControlThisTurnComponent
 import com.wingedsheep.sdk.core.CardType
 import com.wingedsheep.sdk.model.EntityId
@@ -110,18 +108,14 @@ object PermanentEntryTracker {
      * continuation stack until its effect is done (CR 608.2n), so the newest such frame is it.
      */
     private fun resolvingController(state: GameState): EntityId? {
-        for (frame in state.continuationStack.asReversed()) {
+        val ref = state.continuationStack.asReversed().firstNotNullOfOrNull { frame ->
             when (frame) {
                 is FinishResolvingSpellContinuation -> return frame.spellComponent.casterId
-                is FinishResolvingAbilityContinuation -> {
-                    val ability = state.getEntity(frame.abilityObject.entityId) ?: return null
-                    return ability.get<TriggeredAbilityOnStackComponent>()?.controllerId
-                        ?: ability.get<ActivatedAbilityOnStackComponent>()?.controllerId
-                }
-                else -> {}
+                is FinishResolvingAbilityContinuation -> frame.abilityObject
+                else -> null
             }
-        }
-        return null
+        } ?: return null
+        return TargetResolutionUtils.stackObjectController(state, ref.entityId)
     }
 
     private fun projectedCardTypes(state: GameState, entityId: EntityId): Set<CardType> {

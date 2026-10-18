@@ -205,7 +205,6 @@ class DynamicAmountEvaluator(
         is DynamicAmount.Speed,
         is DynamicAmount.DungeonsCompleted,
         DynamicAmount.SpellsCastLastTurn,
-        is DynamicAmount.ActivityDuringTheirLastTurn,
         is DynamicAmount.SpellsCastThisTurn,
         is DynamicAmount.StartingLifeTotal,
         DynamicAmount.StationCharge,
@@ -844,6 +843,16 @@ class DynamicAmountEvaluator(
                         playerIds.count { it in state.playersWithPermanentDealtExcessDamageThisTurn }
                     TurnTracker.DEALT_COMBAT_DAMAGE_SINCE_YOUR_LAST_TURN ->
                         playerIds.count { it in state.playersDealtCombatDamageSinceTheirLastTurn }
+                    TurnTracker.SPELLS_CAST_DURING_THEIR_LAST_TURN -> playerIds.sumOf { playerId ->
+                        state.getEntity(playerId)
+                            ?.get<com.wingedsheep.engine.state.components.player.LastTurnActivityComponent>()
+                            ?.spellsCast ?: 0
+                    }
+                    TurnTracker.NONTOKEN_PERMANENTS_PUT_DURING_THEIR_LAST_TURN -> playerIds.sumOf { playerId ->
+                        state.getEntity(playerId)
+                            ?.get<com.wingedsheep.engine.state.components.player.LastTurnActivityComponent>()
+                            ?.nontokenPermanentsPutOntoBattlefield ?: 0
+                    }
                     TurnTracker.DEALT_COMBAT_DAMAGE_BY_LEGENDARY_CREATURE -> playerIds.count { playerId ->
                         state.getEntity(playerId)
                             ?.has<com.wingedsheep.engine.state.components.player.WasDealtCombatDamageByLegendaryCreatureThisTurnComponent>() == true
@@ -1037,18 +1046,6 @@ class DynamicAmountEvaluator(
 
             DynamicAmount.SpellsCastLastTurn ->
                 state.previousTurnActiveTeamSpellCounts.values.sum()
-
-            is DynamicAmount.ActivityDuringTheirLastTurn ->
-                resolveUnifiedPlayerIds(state, amount.player, context, projectedState).sumOf { playerId ->
-                    val record = state.getEntity(playerId)
-                        ?.get<com.wingedsheep.engine.state.components.player.LastTurnActivityComponent>()
-                    when (amount.activity) {
-                        com.wingedsheep.sdk.scripting.values.LastTurnActivity.SPELLS_CAST ->
-                            record?.spellsCast ?: 0
-                        com.wingedsheep.sdk.scripting.values.LastTurnActivity.NONTOKEN_PERMANENTS_PUT_ONTO_BATTLEFIELD ->
-                            record?.nontokenPermanentsPutOntoBattlefield ?: 0
-                    }
-                }
 
             is DynamicAmount.CraftedMaterialsTotalPower -> {
                 val sourceId = context.sourceId

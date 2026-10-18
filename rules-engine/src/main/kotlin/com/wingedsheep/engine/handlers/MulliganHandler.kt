@@ -463,7 +463,13 @@ class MulliganHandler(
         turnManager: TurnManager,
         untapStep: Boolean = false,
     ): ExecutionResult {
-        var current = ControlHistory.beginTurn(state)
+        // Permanents put onto the battlefield before the game's first turn (Leylines, a Karn
+        // restart) were put there during no one's turn, so they don't open turn 1's record.
+        var current = ControlHistory.beginTurn(state.turnOrder.fold(state) { s, pid ->
+            s.updateEntity(pid) {
+                it.without<com.wingedsheep.engine.state.components.player.NontokenPermanentsPutOntoBattlefieldThisTurnComponent>()
+            }
+        })
         val stepEvents = mutableListOf<GameEvent>()
         if (untapStep) {
             val untap = turnManager.beginningPhaseManager.performUntapStep(current)

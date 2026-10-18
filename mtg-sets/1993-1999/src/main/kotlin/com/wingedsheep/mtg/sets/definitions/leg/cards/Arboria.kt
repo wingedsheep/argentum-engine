@@ -8,7 +8,6 @@ import com.wingedsheep.sdk.scripting.CantAttackUnless
 import com.wingedsheep.sdk.scripting.conditions.ComparisonOperator
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.references.Player
-import com.wingedsheep.sdk.scripting.values.LastTurnActivity
 
 /**
  * Arboria
@@ -18,7 +17,7 @@ import com.wingedsheep.sdk.scripting.values.LastTurnActivity
  * Creatures can't attack a player unless that player cast a spell or put a nontoken permanent
  * onto the battlefield during their last turn.
  *
- * "That player" is the defending player; planeswalkers stay attackable (2016 ruling). The world
+ * "That player" is the defending player; planeswalkers stay attackable (2022-12-08 ruling). The world
  * supertype puts it under the world rule (CR 704.5k).
  */
 val Arboria = card("Arboria") {
@@ -32,13 +31,11 @@ val Arboria = card("Arboria") {
         ability = CantAttackUnless(
             condition = Conditions.Any(
                 Conditions.CompareAmounts(
-                    DynamicAmounts.activityDuringTheirLastTurn(Player.DefendingPlayer, LastTurnActivity.SPELLS_CAST),
+                    DynamicAmounts.spellsCastDuringTheirLastTurn(Player.DefendingPlayer),
                     ComparisonOperator.GTE, 1
                 ),
                 Conditions.CompareAmounts(
-                    DynamicAmounts.activityDuringTheirLastTurn(
-                        Player.DefendingPlayer, LastTurnActivity.NONTOKEN_PERMANENTS_PUT_ONTO_BATTLEFIELD
-                    ),
+                    DynamicAmounts.nontokenPermanentsPutDuringTheirLastTurn(Player.DefendingPlayer),
                     ComparisonOperator.GTE, 1
                 )
             ),

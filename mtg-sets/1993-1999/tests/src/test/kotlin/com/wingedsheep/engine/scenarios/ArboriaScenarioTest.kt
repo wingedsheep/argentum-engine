@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.PlayLand
+import com.wingedsheep.engine.state.components.identity.TokenComponent
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
@@ -128,6 +129,49 @@ class ArboriaScenarioTest : ScenarioTestBase() {
                 // Returns at player 2's end step, under player 2's control, by player 1's trigger.
                 game.toPlayersAttack()
                 game.findPermanent("Grizzly Bears").shouldNotBeNull()
+
+                game.declareAttackers(mapOf("Llanowar Elves" to 2)).error.shouldNotBeNull()
+            }
+
+            test("a turn where they only created a token doesn't open them to attack") {
+                // Master of the Wild Hunt makes a Wolf at player 2's upkeep: a token's creation is
+                // not putting a nontoken permanent onto the battlefield.
+                val game = scenario()
+                    .withPlayers("Player", "Opponent")
+                    .withCardOnBattlefield(1, "Arboria")
+                    .withCardOnBattlefield(1, "Llanowar Elves")
+                    .withCardOnBattlefield(2, "Master of the Wild Hunt")
+                    .withCardInLibrary(1, "Forest")
+                    .withCardInLibrary(1, "Forest")
+                    .withCardInLibrary(2, "Forest")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.ENDING, Step.END)
+                    .build()
+                game.passUntilPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                game.resolveStack()
+                game.state.activePlayerId shouldBe game.player2Id
+                game.state.getBattlefield().count {
+                    game.state.getEntity(it)?.has<TokenComponent>() == true
+                } shouldBe 1
+                game.toPlayersAttack()
+
+                game.declareAttackers(mapOf("Llanowar Elves" to 2)).error.shouldNotBeNull()
+            }
+
+            test("a quiet turn replaces an earlier active one") {
+                val game = opponentsTurn {
+                    withCardInHand(2, "Forest")
+                    withCardInLibrary(1, "Forest")
+                    withCardInLibrary(2, "Forest")
+                }
+                val forest = game.findCardsInHand(2, "Forest").first()
+                game.execute(PlayLand(game.player2Id, forest)).error.shouldBeNull()
+                game.toPlayersAttack()
+                // Player 1 skips this attack; player 2 then takes a turn doing nothing.
+                game.passUntilPhase(Phase.ENDING, Step.END)
+                game.passUntilPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                game.state.activePlayerId shouldBe game.player2Id
+                game.toPlayersAttack()
 
                 game.declareAttackers(mapOf("Llanowar Elves" to 2)).error.shouldNotBeNull()
             }

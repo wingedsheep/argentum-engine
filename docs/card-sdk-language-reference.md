@@ -10255,8 +10255,8 @@ in the declare-blockers step, even before the turn-based block action has comple
   **a player** unless …" wording: planeswalkers and battles stay attackable. Enforced by
   `CantAttackUnlessDefenderRule`, which reads every battlefield permanent's printed statics (a
   face-down or ability-stripped holder contributes nothing). Arboria = `CantAttackUnless(Conditions.Any(
-  CompareAmounts(activityDuringTheirLastTurn(DefendingPlayer, SPELLS_CAST), GTE, 1),
-  CompareAmounts(activityDuringTheirLastTurn(DefendingPlayer, NONTOKEN_PERMANENTS_PUT_ONTO_BATTLEFIELD), GTE, 1)),
+  CompareAmounts(spellsCastDuringTheirLastTurn(DefendingPlayer), GTE, 1),
+  CompareAmounts(nontokenPermanentsPutDuringTheirLastTurn(DefendingPlayer), GTE, 1)),
   GroupFilter.AllCreatures, coversPlaneswalkers = false)`.
 - `CantAttackUnlessSacrifice(sacrificeFilter, count = 1)` — a **non-mana** attack cost, paid as
   attackers are declared: Leviathan's "this creature can't attack unless you sacrifice two Islands".
@@ -15218,16 +15218,6 @@ both spellings, and the ability its bare-noun line grants says "Regenerate this 
   models the original Innistrad werewolf front-face trigger, while `>= 2` models its back-face
   trigger. It is deliberately turn-global rather than controller-scoped, matching "no spells were
   cast last turn" and "a player cast two or more spells last turn."
-- `ActivityDuringTheirLastTurn(player, activity: LastTurnActivity)` (facade
-  `DynamicAmounts.activityDuringTheirLastTurn(player, activity)`) — how many times `player` did
-  `activity` during **their own** most recent turn: `SPELLS_CAST` (countered or not) or
-  `NONTOKEN_PERMANENTS_PUT_ONTO_BATTLEFIELD` (permanents the player *put* there — resolving their
-  permanent spell, playing a land, or an effect of a spell or ability they controlled — whoever's
-  control it entered under, and whether or not it stayed). In multiplayer "their last turn" can lie
-  several turns back; what they did during other players' turns never counts, and a player who
-  hasn't taken a turn reads 0. Snapshotted into `LastTurnActivityComponent` by `TurnManager.startTurn`
-  as the player's turn ends. Not `SpellsCastLastTurn` (the previous *game* turn, side-wide). Arboria's
-  defender-relative condition.
 - `CardsCycledThisGame(player = Player.You, cardName = null)` (facade
   `DynamicAmounts.cardsCycledThisGame(cardName, player)`) — how many times `player` has cycled a card
   **this game**, typecycling included (CR 702.29f). Counted when the card is discarded to pay the cost,
@@ -16056,6 +16046,15 @@ single* player crossed the threshold. The tracker path would instead sum every p
 damage together (`TurnTracking(Player.Each, …)` sums), which would falsely satisfy the threshold on
 the combined total. Backs Sidequest: Play Blitzball ("if a player was dealt 6 or more combat damage
 this turn").
+- `SPELLS_CAST_DURING_THEIR_LAST_TURN` / `NONTOKEN_PERMANENTS_PUT_DURING_THEIR_LAST_TURN` — what the
+  player did during **their own** most recent turn (facades `DynamicAmounts.spellsCastDuringTheirLastTurn(player)`
+  / `nontokenPermanentsPutDuringTheirLastTurn(player)`). Spells count whether or not they resolved; a
+  permanent counts for the player who *put* it onto the battlefield — resolving their permanent spell,
+  playing a land, or an effect of a spell or ability they controlled — whoever's control it entered
+  under, and whether or not it stayed; tokens don't count. In multiplayer "their last turn" can lie
+  several turns back; activity during other players' turns never counts, and a player who hasn't
+  finished a turn reads 0. Snapshotted into `LastTurnActivityComponent` by `TurnManager.startTurn` as
+  the player's turn ends. Not `SpellsCastLastTurn` (the previous *game* turn, side-wide). Arboria.
 - `COUNTERS_PUT_ON_CREATURE` — counters placed.
 - `LANDS_PLAYED` — lands the player explicitly played this turn (from-hand land drops only,
   derived from `LandDropsComponent`).

@@ -1972,7 +1972,8 @@ data class NontokenPermanentsPutOntoBattlefieldThisTurnComponent(
  * What this player did during **their own** most recent turn, snapshotted by
  * `TurnManager.startTurn` when that turn ends and kept until their next turn ends — a player's
  * record survives every other player's turn in between. Absent until the player has finished a
- * turn. Backs `DynamicAmount.ActivityDuringTheirLastTurn` (Arboria).
+ * turn. Backs `TurnTracker.SPELLS_CAST_DURING_THEIR_LAST_TURN` and
+ * `NONTOKEN_PERMANENTS_PUT_DURING_THEIR_LAST_TURN` (Arboria).
  */
 @Serializable
 data class LastTurnActivityComponent(

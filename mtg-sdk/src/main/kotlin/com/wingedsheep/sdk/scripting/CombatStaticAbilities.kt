@@ -429,7 +429,9 @@ data class CantAttackUnless(
      */
     val coversPlaneswalkers: Boolean = true
 ) : StaticAbility {
-    override val description: String = "can't attack unless ${condition.description}"
+    override val description: String =
+        if (coversPlaneswalkers) "can't attack unless ${condition.description}"
+        else "can't attack a player unless ${condition.description}"
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
         val newFilter = filter.applyTextReplacement(replacer)
         return if (newFilter !== filter) copy(filter = newFilter) else this
