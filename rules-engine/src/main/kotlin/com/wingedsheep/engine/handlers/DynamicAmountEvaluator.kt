@@ -1770,6 +1770,12 @@ class DynamicAmountEvaluator(
                 entity.get<CardComponent>()?.manaCost?.coloredSymbolCount(property.colors.toSet()) ?: 0
             }
 
+            // Per-permanent tally the counted ability bumps as it resolves; cleared at cleanup
+            // and on a zone change, so a returned permanent starts a new count.
+            is EntityNumericProperty.AbilityResolutionsThisTurn -> state.getEntity(entityId)
+                ?.get<com.wingedsheep.engine.state.components.battlefield.AbilityResolutionCountThisTurnComponent>()
+                ?.count ?: 0
+
             is EntityNumericProperty.DamageDealtThisTurn -> state.getEntity(entityId)
                 ?.get<com.wingedsheep.engine.state.components.battlefield.DamageDealtThisTurnComponent>()
                 ?.takeIf { it.turnNumber == state.turnNumber && it.sourceObject == state.objectRef(entityId) }

@@ -21084,8 +21084,17 @@
                             "gate": {
                                 "type": "Gate.WhenCondition",
                                 "condition": {
-                                    "type": "SourceAbilityResolvedNTimesThisTurn",
-                                    "count": 1
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "EntityProperty",
+                                        "entity": "Self",
+                                        "numericProperty": "AbilityResolutionsThisTurn"
+                                    },
+                                    "operator": "EQ",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
                                 }
                             },
                             "then": {
@@ -21101,8 +21110,17 @@
                             "gate": {
                                 "type": "Gate.WhenCondition",
                                 "condition": {
-                                    "type": "SourceAbilityResolvedNTimesThisTurn",
-                                    "count": 2
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "EntityProperty",
+                                        "entity": "Self",
+                                        "numericProperty": "AbilityResolutionsThisTurn"
+                                    },
+                                    "operator": "EQ",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 2
+                                    }
                                 }
                             },
                             "then": {
@@ -21122,8 +21140,17 @@
                             "gate": {
                                 "type": "Gate.WhenCondition",
                                 "condition": {
-                                    "type": "SourceAbilityResolvedNTimesThisTurn",
-                                    "count": 3
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "EntityProperty",
+                                        "entity": "Self",
+                                        "numericProperty": "AbilityResolutionsThisTurn"
+                                    },
+                                    "operator": "EQ",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 3
+                                    }
                                 }
                             },
                             "then": {

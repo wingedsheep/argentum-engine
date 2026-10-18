@@ -292,7 +292,6 @@ SacrificedPermanentHadSubtype — Condition
 SacrificedPermanentWasLegendary — Condition
 SacrificedPermanentWasSuspected — Condition
 SneakCostWasPaid — Condition
-SourceAbilityResolvedNTimesThisTurn — Condition
 SourceCastForImpending — Condition
 SourceChosenModeIs — Condition
 SourceDealtDamageToPlayerThisTurn — Condition
@@ -1650,6 +1649,7 @@ DynamicAmount.DungeonsCompleted — DynamicAmount — Nadaar, Selfless Paladin �
 DynamicAmount.ManaOfColorSpent — DynamicAmount — Bladecoil Serpent — ManaSpentOnX, SnowManaSpent — ManaSpentOnX reads only the {X} portion, from the resolution context (it also serves activated abilities); SnowManaSpent/ManaSpentFromSubtype count mana by its source, not its color
 EmitKeywordCounterEventEffect — Effect — Watchful Radstag — EmitExploitedEventEffect, EmitChampionedEventEffect — replaces EmitTrainedEventEffect with a keyword axis (TRAINING, EVOLVE) so training and evolve share one "a resolving [keyword] ability put a +1/+1 counter on this creature" emitter; the exploit and champion emitters signal a sacrifice and an exile, not a counter placement
 Enlist — StaticAbility — Benalish Faithbonder — ExertAsItAttacks, CantAttackUnlessSacrifice — optional other-creature tap with linked power trigger; exert does not choose another creature and sacrifice is mandatory
+EntityNumericProperty.AbilityResolutionsThisTurn — EntityNumericProperty — Bronze Cudgels — DamageDealtThisTurn, EnlistmentsThisCombat — reads the per-permanent ability-resolution tally, not damage or enlist history; replaces the SourceAbilityResolvedNTimesThisTurn condition (now Compare EQ over this amount), so the surface is net zero
 EntityNumericProperty.EnlistmentsThisCombat — EntityNumericProperty — Aradesh, the Founder — DamageDealtThisTurn, PermanentsSacrificedToCast — combat-scoped paid enlist history for a permanent's rules object; damage history is turn-scoped and spell-cost history is stack-scoped
 EntityNumericProperty.PermanentsSacrificedToCast — EntityNumericProperty — Plumb the Forbidden — ManaSpent, DynamicAmount.PermanentsSacrificedThisWay — PermanentsSacrificedThisWay reads the resolving object's own context, which for a cast trigger is the trigger's (empty) cost; ManaSpent is the same spell-cast-record read for a different field, and an EntityNumericProperty is a value, not an axis on it
 EventPattern.BecameCrewedEvent — EventPattern — Mobilizer Mech — EventPattern.BecameSaddledEvent, EventPattern.CrewsEvent — CrewsEvent is the crewing creature's view at activation (CR 702.122b), and BecameSaddledEvent matches a Saddle resolution; "becomes crewed" is the Vehicle's view at crew resolution (CR 702.122e), and a kind axis on the saddled pattern would make it match an event its name denies

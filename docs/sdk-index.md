@@ -412,7 +412,6 @@ Families:
 - `SacrificedPermanentWasLegendary` — Condition: "If the sacrificed permanent was legendary." Reads `EffectContext.sacrificedPermanents` (snapshots captured at cost-payment time or by a same-spell sacrifice effect like a symmetric edic…
 - `SacrificedPermanentWasSuspected` — Condition: "If the sacrificed creature was suspected." (CR 701.60a) The suspect sibling of SacrificedPermanentWasLegendary, reading the same `EffectContext.sacrificedPermanents` snapshots — here th…
 - `SneakCostWasPaid` — Condition: "If this spell's sneak cost was paid" (CR 702.190).
-- `SourceAbilityResolvedNTimesThisTurn(count: Int)` — Condition: "if this is the Nth time this ability has resolved this turn" Checks the AbilityResolutionCountThisTurnComponent on the source entity.
 - `SourceCastForImpending` — Condition: "If this permanent's impending cost was paid" (CR 702.176a).
 - `SourceChosenModeIs(modeId: String)` — Condition: "If the chosen mode is modeId".
 - `SourceDealtDamageToPlayerThisTurn(player: Player)` — Condition: the effect's source dealt damage — combat or noncombat — to player this turn.
@@ -1118,6 +1117,7 @@ Families:
 
 ## EntityNumericProperty
 
+- `EntityNumericProperty.AbilityResolutionsThisTurn` — How many times this object's counted abilities have resolved this turn — "where X is the number of times this ability has resolved this turn" (Bronze Cudgels), and, compared with `EQ`, "if this is…
 - `EntityNumericProperty.AttachmentCount(kind: AttachmentKind)` — The number of permanents attached to this entity, optionally narrowed to a single AttachmentKind.
 - `EntityNumericProperty.BasePower` — The entity's **base** power — its power after copy effects, characteristic-defining abilities and effects that set power (layers 1–7b), before counters, Auras, Equipment, anthems and any other modi…
 - `EntityNumericProperty.BaseToughness` — The entity's **base** toughness — the toughness sibling of BasePower, read the same way.

@@ -475,6 +475,85 @@
     ]
 }
 
+// Bronze Cudgels
+{
+    "name": "Bronze Cudgels",
+    "manaCost": "{1}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "{2}: Until end of turn, equipped creature gets +X/+0, where X is the number of times this ability has resolved this turn.\nEquip {1} ({1}: Attach to target creature you control. Equip only as a sorcery.)",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Bronze Cudgels:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        "IncrementAbilityResolutionCount",
+                        {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "EntityProperty",
+                                "entity": "Self",
+                                "numericProperty": "AbilityResolutionsThisTurn"
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 0
+                            },
+                            "target": "EquippedCreature"
+                        }
+                    ]
+                },
+                "descriptionOverride": "{2}: Until end of turn, equipped creature gets +X/+0, where X is the number of times this ability has resolved this turn."
+            },
+            {
+                "id": "Bronze Cudgels:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ]
+    },
+    "equipCost": "{1}",
+    "metadata": {
+        "collectorNumber": "240",
+        "rarity": "UNCOMMON",
+        "artist": "Néstor Ossandón Leal",
+        "flavorText": "\"These were made when Michiko was young. Wield them wisely.\"\n—Chiyoko, Jukai elder",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/5/45fa226c-cc31-4c22-a167-40985706557b.jpg?1783923827"
+    },
+    "colorIdentityOverride": []
+}
+
 // Brute Suit
 {
     "name": "Brute Suit",

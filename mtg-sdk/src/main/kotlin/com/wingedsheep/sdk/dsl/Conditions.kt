@@ -2341,11 +2341,17 @@ object Conditions {
         )
 
     /**
-     * If this is the Nth time this ability has resolved this turn.
+     * If this is the Nth time this ability has resolved this turn — the source's
+     * [EntityNumericProperty.AbilityResolutionsThisTurn]
+     * equals [count]. The ability runs `IncrementAbilityResolutionCountEffect` first.
      * Used for cards like Harvestrite Host.
      */
     fun SourceAbilityResolvedNTimes(count: Int): ConditionInterface =
-        com.wingedsheep.sdk.scripting.conditions.SourceAbilityResolvedNTimesThisTurn(count)
+        CompareAmounts(
+            DynamicAmount.EntityProperty(EffectTarget.Self, EntityNumericProperty.AbilityResolutionsThisTurn),
+            ComparisonOperator.EQ,
+            count,
+        )
 
     /**
      * Internal: gate on the plot mechanic's may-cast permission. True when the source

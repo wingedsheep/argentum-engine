@@ -135,7 +135,6 @@ import com.wingedsheep.sdk.scripting.conditions.TriggeringSpellHasSingleTarget
 import com.wingedsheep.sdk.scripting.conditions.CollectionContainsMatch
 import com.wingedsheep.sdk.scripting.conditions.CollectionSharesCardType
 import com.wingedsheep.sdk.scripting.conditions.IsFirstSpellPaidWithTreasureManaCastThisTurn
-import com.wingedsheep.sdk.scripting.conditions.SourceAbilityResolvedNTimesThisTurn
 import com.wingedsheep.sdk.scripting.conditions.ManaSpentToCastIncludes
 import com.wingedsheep.sdk.scripting.conditions.NoManaSpentToCast
 import com.wingedsheep.sdk.scripting.conditions.AnyEnteredOrWasCastFromExile
@@ -351,7 +350,6 @@ class ConditionEvaluator(
             SacrificedPermanentWasLegendary,
             SacrificedPermanentWasSuspected,
             SneakCostWasPaid,
-            is SourceAbilityResolvedNTimesThisTurn,
             SourceCastForImpending,
             is SourceChosenModeIs,
             SourceForetoldOnPriorTurn,
@@ -930,7 +928,6 @@ class ConditionEvaluator(
             is YouWereAttackedThisStep -> ifResolution { evaluateYouWereAttackedThisStep(state, it) }
             is IsFirstSpellPaidWithTreasureManaCastThisTurn ->
                 ifResolution { evaluateFirstSpellPaidWithTreasureMana(state, it) }
-            is SourceAbilityResolvedNTimesThisTurn -> ifResolution { evaluateSourceAbilityResolvedNTimes(state, condition, it) }
             is OpponentSpellOnStack -> ifResolution { evaluateOpponentSpellOnStack(state, it) }
             is CollectionContainsMatch -> ifResolution { evaluateCollectionContainsMatch(state, condition, it) }
             is CollectionSharesCardType -> ifResolution { evaluateCollectionSharesCardType(state, condition, it) }
@@ -2330,18 +2327,6 @@ class ConditionEvaluator(
         val records = state.spellsCastThisTurnByPlayer[context.controllerId] ?: return false
         return records.count { com.wingedsheep.sdk.core.Subtype.TREASURE in it.spentManaSubtypes } == 1 &&
             records.lastOrNull()?.spentManaSubtypes?.contains(com.wingedsheep.sdk.core.Subtype.TREASURE) == true
-    }
-
-    private fun evaluateSourceAbilityResolvedNTimes(
-        state: GameState,
-        condition: SourceAbilityResolvedNTimesThisTurn,
-        context: EffectContext
-    ): Boolean {
-        val sourceId = context.sourceId ?: return false
-        val component = state.getEntity(sourceId)
-            ?.get<com.wingedsheep.engine.state.components.battlefield.AbilityResolutionCountThisTurnComponent>()
-            ?: return false
-        return component.count == condition.count
     }
 
     private fun evaluateCollectionContainsMatch(

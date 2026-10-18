@@ -15426,6 +15426,12 @@ read is available to other snapshot-backed entity references once their captured
   (`ManaCost.coloredSymbolCount`), so they agree symbol-for-symbol and differ only in scope.
   Being `TriggeringEntity`-scoped, it is rejected by `SetBaseStatsEffect(reevaluateContinuously = true)`
   like every other context-scoped amount; read off `EffectTarget.Self` it is projector-safe.
+- `DynamicAmounts.abilityResolutionsThisTurn()` — `EntityNumericProperty.AbilityResolutionsThisTurn` read off
+  `EffectTarget.Self`: "where X is the number of times this ability has resolved this turn" (Bronze Cudgels). The
+  ability counts itself by running `IncrementAbilityResolutionCountEffect` as its first step, so the read after it
+  includes this resolution (the first resolution reads 1). The tally lives on the permanent, cleared at cleanup and on
+  a zone change (a returned permanent is a new object). `Conditions.SourceAbilityResolvedNTimes(n)` is the same read
+  compared `EQ n` ("if this is the second time this ability has resolved this turn", Harvestrite Host, Tannuk).
 - `DynamicAmounts.enlistmentsThisCombat(entity)` — `EntityNumericProperty.EnlistmentsThisCombat`
   through the existing `DynamicAmount.EntityProperty`. Counts paid enlist instances for the named
   rules object in the current combat; repeated instances count separately. Compose a numeric comparison

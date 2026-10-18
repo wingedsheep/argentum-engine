@@ -1066,6 +1066,13 @@ object DynamicAmounts {
     fun enlistmentsThisCombat(entity: EffectTarget.SingleEntity): DynamicAmount =
         propertyOf(entity, EntityNumericProperty.EnlistmentsThisCombat)
 
+    /**
+     * How many times this permanent's counted ability has resolved this turn, this resolution
+     * included once the ability has run `IncrementAbilityResolutionCountEffect` (Bronze Cudgels).
+     */
+    fun abilityResolutionsThisTurn(): DynamicAmount =
+        propertyOf(EffectTarget.Self, EntityNumericProperty.AbilityResolutionsThisTurn)
+
     /** [entity]'s power (a target handle, `EffectTarget.TriggeringEntity`, `IterationEntity`, …). */
     fun powerOf(entity: EffectTarget.SingleEntity): DynamicAmount = propertyOf(entity, EntityNumericProperty.Power)
 

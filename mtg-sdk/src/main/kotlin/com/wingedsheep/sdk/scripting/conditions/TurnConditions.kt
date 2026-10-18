@@ -549,37 +549,6 @@ data class PermanentTypePutIntoGraveyardFromBattlefieldThisTurn(
 }
 
 // =============================================================================
-// Ability Resolution Conditions
-// =============================================================================
-
-/**
- * Condition: "if this is the Nth time this ability has resolved this turn"
- * Checks the AbilityResolutionCountThisTurnComponent on the source entity.
- * Used for cards like Harvestrite Host.
- */
-@SerialName("SourceAbilityResolvedNTimesThisTurn")
-@Serializable
-data class SourceAbilityResolvedNTimesThisTurn(val count: Int) : Condition {
-    override val description: String = "if this is the ${ordinal(count)} time this ability has resolved this turn"
-
-    private fun ordinal(n: Int): String = when (n) {
-        1 -> "first"
-        2 -> "second"
-        3 -> "third"
-        else -> "$n${ordinalSuffix(n)}"
-    }
-
-    /** English ordinal suffix: 21st, 22nd, 23rd, 24th, with the 11th/12th/13th exceptions. */
-    private fun ordinalSuffix(n: Int): String =
-        if (n % 100 in 11..13) "th" else when (n % 10) {
-            1 -> "st"
-            2 -> "nd"
-            3 -> "rd"
-            else -> "th"
-        }
-}
-
-// =============================================================================
 // Void (Edge of Eternities ability word)
 // =============================================================================
 

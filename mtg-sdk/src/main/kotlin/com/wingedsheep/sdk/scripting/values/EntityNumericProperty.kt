@@ -28,6 +28,20 @@ sealed interface EntityNumericProperty {
     }
 
     /**
+     * How many times this object's counted abilities have resolved this turn — "where X is the
+     * number of times this ability has resolved this turn" (Bronze Cudgels), and, compared with
+     * `EQ`, "if this is the second time this ability has resolved this turn" (Harvestrite Host).
+     * The ability counts itself by running `IncrementAbilityResolutionCountEffect` as it resolves,
+     * so a read after that step includes the current resolution. Turn-scoped, kept per permanent
+     * object: a zone change starts a new object at zero.
+     */
+    @SerialName("AbilityResolutionsThisTurn")
+    @Serializable
+    data object AbilityResolutionsThisTurn : EntityNumericProperty {
+        override val description: String = "the number of times this ability has resolved this turn"
+    }
+
+    /**
      * Paid enlist instances for this rules object during the current combat. Unlike
      * [DamageDealtThisTurn], this is combat-scoped and records optional attack costs rather than
      * damage; [PermanentsSacrificedToCast] records spell costs, not a permanent's attack costs.
