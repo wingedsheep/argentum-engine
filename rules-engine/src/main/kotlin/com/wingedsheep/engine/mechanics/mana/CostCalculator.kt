@@ -1024,7 +1024,16 @@ class CostCalculator(
      * Price [cardDef] before its targets are chosen, against [baseCost] (its mana cost or an
      * alternative cost) and the target [requirements] the cast announces — the script's own by
      * default, or one mode's for a modal cast. A modal spell priced without a mode is priced at
-     * its cheapest mode, and carries no per-count table (each mode's offer carries its own).
+     * its cheapest mode selection — one mode for a choose-one, the cheapest reachable combination
+     * for a choose-N — and carries no per-count table (each choose-one mode's offer carries its
+     * own; a choose-N cast's targets and mana are taken server-side once the modes are submitted).
+     *
+     * [fromZone] is the zone the cast is from (commander tax, "spells cast from exile" modifiers);
+     * [card] is the whole card when [cardDef] is only the face being cast
+     * ([faceCharacteristics] — an Adventure, a split half, a modal DFC back), so the face is
+     * judged by its own characteristics while the card still owes its commander tax.
+     * [declaredCostSlot] is the optional cost the cast declares (a kicked or bargained variant),
+     * for reductions gated on that declaration.
      */
     fun priceByTargets(
         state: GameState,
@@ -1034,22 +1043,50 @@ class CostCalculator(
         baseCost: ManaCost = cardDef.manaCost,
         requirements: List<TargetRequirement>? = null,
         withTable: Boolean = true,
+        fromZone: Zone? = null,
+        card: CardDefinition = cardDef,
+        declaredCostSlot: ChoiceSlot? = null,
     ): TargetPricedCost {
         val modifiers = scanModifySpellCost(state)
-        val countsTargets = targetCountDirections(state, cardDef, casterId, modifiers).isNotEmpty()
+        val countsTargets = targetCountDirections(state, cardDef, casterId, modifiers, fromZone).isNotEmpty()
         val declared = requirements ?: castRequirements(cardDef)
-        val modes = (cardDef.script.spellEffect as? ModalEffect)?.modes
-        if (countsTargets && requirements == null && declared.isEmpty() && !modes.isNullOrEmpty()) {
-            val cheapest = modes.map {
-                priceByTargets(state, cardDef, casterId, spellId, baseCost, it.targetRequirements, withTable = false).min
+        val modal = cardDef.script.spellEffect as? ModalEffect
+        if (countsTargets && requirements == null && declared.isEmpty() && modal != null && modal.modes.isNotEmpty()) {
+            val cheapest = modeSelections(modal).map { selection ->
+                priceByTargets(
+                    state, cardDef, casterId, spellId, baseCost, selection.flatMap { modal.modes[it].targetRequirements },
+                    withTable = false, fromZone = fromZone, card = card, declaredCostSlot = declaredCostSlot,
+                ).min
             }.minBy { it.cmc }
             return TargetPricedCost(cheapest, null)
         }
-        val pricing = TargetPricing(state, cardDef, casterId, spellId, baseCost, declared, modifiers)
+        val pricing = TargetPricing(
+            state, cardDef, casterId, spellId, baseCost, declared, modifiers, fromZone, card, declaredCostSlot,
+        )
         if (!countsTargets) return TargetPricedCost(pricing.priced(pricing.optimisticTargets), null)
         val range = pricing.countRange()
         val min = listOf(range.first, range.last).map(pricing::pricedAt).minBy { it.cmc }
         return TargetPricedCost(min, if (withTable) range.associateWith(pricing::pricedAt) else null)
+    }
+
+    /**
+     * Every mode selection [modal] allows — each choosable number of modes, as index lists
+     * (non-decreasing with repeats when a mode may be chosen more than once, CR 700.2d). Only
+     * walked under a per-target modifier, where a choose-N spell's targets — and so its price —
+     * are those of the whole combination it is cast with.
+     */
+    private fun modeSelections(modal: ModalEffect): List<List<Int>> {
+        val modeCount = modal.modes.size
+        val most = if (modal.allowRepeat) modal.chooseCount else minOf(modal.chooseCount, modeCount)
+        val fewest = modal.minChooseCount.coerceIn(1, most.coerceAtLeast(1))
+        val selections = mutableListOf<List<Int>>()
+        fun extend(prefix: List<Int>, size: Int) {
+            if (prefix.size == size) { selections += prefix; return }
+            val from = prefix.lastOrNull()?.let { if (modal.allowRepeat) it else it + 1 } ?: 0
+            for (index in from until modeCount) extend(prefix + index, size)
+        }
+        for (size in fewest..most.coerceAtLeast(1)) extend(emptyList(), size)
+        return selections
     }
 
     /**
@@ -1065,6 +1102,9 @@ class CostCalculator(
         private val baseCost: ManaCost,
         private val requirements: List<TargetRequirement>,
         private val modifiers: List<Pair<EntityId, ModifySpellCost>>,
+        private val fromZone: Zone?,
+        private val card: CardDefinition,
+        private val declaredCostSlot: ChoiceSlot?,
     ) {
         private val legalByRequirement: List<List<EntityId>> by lazy {
             requirements.map { targetFinder.findLegalTargets(state, it, casterId, sourceId = spellId).distinct() }
@@ -1120,7 +1160,10 @@ class CostCalculator(
         }
 
         fun priced(targets: List<EntityId>): ManaCost =
-            calculateEffectiveCost(state, cardDef, casterId, targets, baseCost = baseCost, modifiers = modifiers)
+            calculateEffectiveCost(
+                state, cardDef, casterId, targets, fromZone, declaredCostSlot, baseCost = baseCost, card = card,
+                modifiers = modifiers,
+            )
 
         /** Priced with [count] different targets, the discount-earning ones first. */
         fun pricedAt(count: Int): ManaCost = priced((optimisticTargets + legalTargets).distinct().take(count))
@@ -1186,6 +1229,7 @@ class CostCalculator(
         cardDef: CardDefinition,
         casterId: EntityId,
         modifiers: List<Pair<EntityId, ModifySpellCost>>,
+        fromZone: Zone? = null,
     ): List<Boolean> = buildList {
         for (ability in cardDef.script.staticAbilities) {
             if (ability !is ModifySpellCost || ability.target != SpellCostTarget.SelfCast) continue
@@ -1193,7 +1237,7 @@ class CostCalculator(
         }
         for ((sourceId, ability) in modifiers) {
             val direction = targetCountDirection(ability.modification) ?: continue
-            if (targetMatchesSpell(ability.target, cardDef, casterId, sourceId, state)) add(direction)
+            if (targetMatchesSpell(ability.target, cardDef, casterId, sourceId, state, fromZone = fromZone)) add(direction)
         }
     }
 

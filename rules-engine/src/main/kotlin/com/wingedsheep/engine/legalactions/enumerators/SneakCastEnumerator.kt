@@ -57,9 +57,11 @@ class SneakCastEnumerator : ActionEnumerator {
             ) continue
 
             // Mana portion of the sneak cost (the bounce is paid separately).
-            val sneakMana = context.costCalculator.calculateEffectiveCostWithAlternativeBase(
-                state, cardDef, sneakAbility.cost, playerId
+            val sneakPricing = context.costCalculator.priceByTargets(
+                state, cardDef, playerId, cardId, baseCost = sneakAbility.cost, withTable = !context.skipAutoTapPreview,
             )
+            val sneakMana = sneakPricing.min
+            val sneakManaByTargetCount = sneakPricing.byCount?.mapValues { it.value.toString() }
             if (!context.manaSolver.canPay(state, playerId, sneakMana, precomputedSources = cachedSources)) {
                 continue
             }
@@ -111,6 +113,7 @@ class SneakCastEnumerator : ActionEnumerator {
                     targetDescription = firstReq?.description,
                     targetRequirements = targetReqInfos.surfacedRequirements(),
                     manaCostString = sneakMana.toString(),
+                    manaCostByTargetCount = sneakManaByTargetCount,
                     additionalCostInfo = bounceCostInfo,
                     autoTapPreview = autoTapPreview
                 )
@@ -134,9 +137,12 @@ class SneakCastEnumerator : ActionEnumerator {
                     )
                 ) continue
 
-                val sneakMana = context.costCalculator.calculateEffectiveCostWithAlternativeBase(
-                    state, cardDef, graveyardSneakCost, playerId
+                val sneakPricing = context.costCalculator.priceByTargets(
+                    state, cardDef, playerId, cardId, baseCost = graveyardSneakCost,
+                    withTable = !context.skipAutoTapPreview, fromZone = com.wingedsheep.sdk.core.Zone.GRAVEYARD,
                 )
+                val sneakMana = sneakPricing.min
+                val sneakManaByTargetCount = sneakPricing.byCount?.mapValues { it.value.toString() }
                 if (!context.manaSolver.canPay(state, playerId, sneakMana, precomputedSources = cachedSources)) continue
 
                 val targetReqs = buildList {
@@ -180,6 +186,7 @@ class SneakCastEnumerator : ActionEnumerator {
                         targetDescription = firstReq?.description,
                         targetRequirements = targetReqInfos.surfacedRequirements(),
                         manaCostString = sneakMana.toString(),
+                        manaCostByTargetCount = sneakManaByTargetCount,
                         additionalCostInfo = bounceCostInfo,
                         autoTapPreview = autoTapPreview
                     )

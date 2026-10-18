@@ -69,9 +69,11 @@ class WebSlingingCastEnumerator : ActionEnumerator {
 
             // Mana portion of the web-slinging cost (the bounce is paid alongside). Cost increases
             // and reductions still apply on top of the alternative cost (CR 118.9d).
-            val webSlingMana = context.costCalculator.calculateEffectiveCostWithAlternativeBase(
-                state, cardDef, webSlinging.cost, playerId
+            val webSlingPricing = context.costCalculator.priceByTargets(
+                state, cardDef, playerId, cardId, baseCost = webSlinging.cost, withTable = !context.skipAutoTapPreview,
             )
+            val webSlingMana = webSlingPricing.min
+            val webSlingManaByTargetCount = webSlingPricing.byCount?.mapValues { it.value.toString() }
             if (!context.manaSolver.canPay(state, playerId, webSlingMana, precomputedSources = cachedSources)) {
                 continue
             }
@@ -123,6 +125,7 @@ class WebSlingingCastEnumerator : ActionEnumerator {
                     targetDescription = firstReq?.description,
                     targetRequirements = targetReqInfos.surfacedRequirements(),
                     manaCostString = webSlingMana.toString(),
+                    manaCostByTargetCount = webSlingManaByTargetCount,
                     additionalCostInfo = bounceCostInfo,
                     autoTapPreview = autoTapPreview
                 )

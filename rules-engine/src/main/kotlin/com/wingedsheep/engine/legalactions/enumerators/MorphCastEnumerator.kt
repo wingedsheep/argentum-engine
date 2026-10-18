@@ -79,7 +79,12 @@ class MorphCastEnumerator : ActionEnumerator {
 
             // Check if we can afford to cast normally — if not, add unaffordable cast action
             // This ensures the player sees both options in the cast modal
-            val normalEffectiveCost = context.costCalculator.calculateEffectiveCost(state, cardDef, playerId)
+            // Priced like CastSpellEnumerator's hand cast, so the placeholder appears exactly when that
+            // offer is unaffordable.
+            val normalPricing = context.costCalculator.priceByTargets(
+                state, cardDef, playerId, cardId, withTable = !context.skipAutoTapPreview,
+            )
+            val normalEffectiveCost = normalPricing.min
             val canAffordNormal = context.manaSolver.canPay(state, playerId, normalEffectiveCost, precomputedSources = context.availableManaSources)
             if (!canAffordNormal) {
                 result.add(
@@ -88,7 +93,8 @@ class MorphCastEnumerator : ActionEnumerator {
                         description = "Cast ${cardComponent.name}",
                         action = CastSpell(playerId, cardId),
                         affordable = false,
-                        manaCostString = normalEffectiveCost.toString()
+                        manaCostString = normalEffectiveCost.toString(),
+                        manaCostByTargetCount = normalPricing.byCount?.mapValues { it.value.toString() },
                     )
                 )
             }

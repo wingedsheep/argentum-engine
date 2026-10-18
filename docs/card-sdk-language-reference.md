@@ -10520,7 +10520,15 @@ staticAbility {
   `IncreaseGenericBy(ChosenTargets())`. Before targets are chosen, enumeration prices the cheapest
   reachable count — the most different legal targets under a reduction, the fewest the spell
   requires under an increase — and sends the client every count's price
-  (`manaCostByTargetCount`) so a manual mana pick is charged for the targets actually chosen. Pair
+  (`manaCostByTargetCount`) so a manual mana pick is charged for the targets actually chosen. Every
+  paid cast offer is priced this way (`CostCalculator.priceByTargets`) — the hand cast and each
+  alternative cost, casts from the graveyard, exile, library top and command zone, Adventure / split
+  / modal-DFC faces, escape, sneak, web-slinging, kicker and the other optional-cost variants —
+  each against the target requirements that cast announces (an Adventure face's own, a kicked
+  spell's kicker targets, a splice's combined set). A choose-N modal spell is priced at its cheapest
+  reachable mode combination; its targets and mana are taken once the modes are submitted. Emerge
+  gates on the cheapest count but sends no table (its price is already keyed by the sacrificed
+  creature). Pair
   with `ReduceGenericBy` / `IncreaseGenericBy` for a generic amount or `IncreaseColoredPerUnit` for
   a colored tax. Note that a per-target *increase* survives a free cast: "without paying
   its mana cost" waives the mana cost, not the increases applied to the total cost (CR 601.2f), which

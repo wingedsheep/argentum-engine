@@ -23,6 +23,12 @@ import com.wingedsheep.sdk.scripting.SpellCostTarget
 import com.wingedsheep.sdk.scripting.effects.ModalEffect
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.TargetObject
+import com.wingedsheep.engine.legalactions.LegalAction
+import com.wingedsheep.sdk.core.Zone
+import com.wingedsheep.sdk.dsl.Costs
+import com.wingedsheep.sdk.dsl.webSlinging
+import com.wingedsheep.sdk.scripting.MayCastFromGraveyard
+import com.wingedsheep.sdk.scripting.MayCastSelfFromZones
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
@@ -118,10 +124,88 @@ class PerTargetSpellCostTest : FunSpec({
         }
     }
 
+
+    // One required target each, so a per-target modifier moves the price by exactly {1}: under a
+    // reduction the offer costs one less, under an opponent's increase one more.
+    val graveGrant = card("Grave Grant") {
+        manaCost = "{G}"
+        typeLine = "Enchantment"
+        oracleText = "You may cast instant and sorcery spells from your graveyard."
+        staticAbility { ability = MayCastFromGraveyard(filter = GameObjectFilter.InstantOrSorcery) }
+    }
+
+    val gravePump = card("Grave Pump") {
+        manaCost = "{2}{G}"
+        typeLine = "Instant"
+        oracleText = "Target creature gets +1/+1 until end of turn."
+        spell { effect = Effects.ModifyStats(1, 1, target(TargetFilter.Creature)) }
+    }
+
+    val escapePump = card("Escape Pump") {
+        manaCost = "{4}{G}"
+        typeLine = "Instant"
+        oracleText = "Target creature gets +1/+1 until end of turn.\nEscape—{2}{G}, Exile another card from your graveyard."
+        spell { effect = Effects.ModifyStats(1, 1, target(TargetFilter.Creature)) }
+        keywordAbility(KeywordAbility.escape("{2}{G}", Costs.additional.ExileOtherCards(1)))
+    }
+
+    val pumpAdventurer = card("Pump Adventurer") {
+        manaCost = "{4}{G}"
+        typeLine = "Creature — Elf"
+        power = 3
+        toughness = 3
+        adventure("Adventure Pump") {
+            manaCost = "{2}{G}"
+            typeLine = "Instant — Adventure"
+            spell { effect = Effects.ModifyStats(1, 1, target(TargetFilter.Creature)) }
+        }
+    }
+
+    val webPump = card("Web Pump") {
+        manaCost = "{4}{G}"
+        typeLine = "Instant"
+        oracleText = "Web-slinging {2}{G}\nTarget creature gets +1/+1 until end of turn."
+        webSlinging("{2}{G}")
+        spell { effect = Effects.ModifyStats(1, 1, target(TargetFilter.Creature)) }
+    }
+
+    val kickerPump = card("Kicker Pump") {
+        manaCost = "{2}{G}"
+        typeLine = "Instant"
+        oracleText = "Kicker {1}\nYou may cast this card from your graveyard.\nTarget creature gets +1/+1 until end of turn."
+        keywordAbility(KeywordAbility.OptionalAdditionalCost(ManaCost.parse("{1}")))
+        staticAbility { ability = MayCastSelfFromZones(zones = listOf(Zone.GRAVEYARD)) }
+        spell { effect = Effects.ModifyStats(1, 1, target(TargetFilter.Creature)) }
+    }
+
+    val pairCharm = card("Pair Charm") {
+        manaCost = "{3}{G}"
+        typeLine = "Sorcery"
+        oracleText = "Choose two —\n• Target creature gets +1/+1 until end of turn.\n" +
+            "• Target creature gets +1/+1 until end of turn.\n• Draw a card."
+        spell {
+            effect = ModalEffect(
+                modes = listOf(
+                    mode("Target creature gets +1/+1 until end of turn") {
+                        effect = Effects.ModifyStats(1, 1, target(TargetFilter.Creature))
+                    },
+                    mode("Another target creature gets +1/+1 until end of turn") {
+                        effect = Effects.ModifyStats(1, 1, target(TargetFilter.Creature))
+                    },
+                    mode("Draw a card") { effect = Effects.DrawCards(1) },
+                ),
+                chooseCount = 2,
+            )
+        }
+    }
+
     fun newGame(): GameTestDriver {
         val driver = GameTestDriver()
         driver.registerCards(
-            TestCards.all + listOf(discounter, taxer, twinBoost, spreadBoost, flashbackBoost, twoWayCharm, biteTest)
+            TestCards.all + listOf(
+                discounter, taxer, twinBoost, spreadBoost, flashbackBoost, twoWayCharm, biteTest,
+                graveGrant, gravePump, escapePump, pumpAdventurer, webPump, kickerPump, pairCharm,
+            )
         )
         driver.initMirrorMatch(deck = Deck.of("Forest" to 40), skipMulligans = true)
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
@@ -313,5 +397,96 @@ class PerTargetSpellCostTest : FunSpec({
                 useAlternativeCost = true, alternativeCostType = AlternativeCostType.FLASHBACK,
             )
         ).outcome shouldBe Outcome.Done
+    }
+    // Every cast offer is priced by target count — not just the hand cast and flashback. Each case
+    // sets up one offer of a spell with one required target whose base price is [base] mana.
+    data class Offer(val name: String, val base: Int, val setup: (GameTestDriver, EntityId) -> EntityId, val pick: (LegalAction) -> Boolean)
+
+    val offers = listOf(
+        Offer("a graveyard cast permission", 3, { d, me ->
+            d.putPermanentOnBattlefield(me, "Grave Grant")
+            d.putCardInGraveyard(me, "Grave Pump")
+        }, { it.actionType == "CastSpell" }),
+        Offer("escape", 3, { d, me ->
+            d.putCardInGraveyard(me, "Forest")
+            d.putCardInGraveyard(me, "Escape Pump")
+        }, { it.actionType == "CastWithEscape" }),
+        Offer("an Adventure face", 3, { d, me -> d.putCardInHand(me, "Pump Adventurer") },
+            { (it.action as CastSpell).faceIndex == 0 }),
+        Offer("web-slinging", 3, { d, me ->
+            d.tapPermanent(d.putCreatureOnBattlefield(me, "Savannah Lions"))
+            d.putCardInHand(me, "Web Pump")
+        }, { (it.action as CastSpell).alternativeCostType == AlternativeCostType.WEB_SLINGING }),
+        Offer("a kicked cast from the graveyard", 4, { d, me -> d.putCardInGraveyard(me, "Kicker Pump") },
+            { it.actionType == "CastWithKicker" }),
+    )
+
+    fun GameTestDriver.offer(me: EntityId, spell: EntityId, pick: (LegalAction) -> Boolean) =
+        legalActions(me).firstOrNull { (it.action as? CastSpell)?.cardId == spell && pick(it) }
+
+    for (o in offers) {
+        test("${o.name} is priced per target under a reduction") {
+            val driver = newGame()
+            val me = driver.activePlayer!!
+            driver.putPermanentOnBattlefield(me, "Target Discounter")
+            driver.putCreatureOnBattlefield(me, "Grizzly Bears")
+            val spell = o.setup(driver, me)
+            repeat(o.base - 1) { driver.putLandOnBattlefield(me, "Forest") }
+
+            // Only the one-target discounted price is payable.
+            val action = driver.offer(me, spell, o.pick).shouldNotBeNull()
+            action.affordable shouldBe true
+            ManaCost.parse(action.manaCostString!!).cmc shouldBe o.base - 1
+            action.manaCostByTargetCount.shouldNotBeNull().mapValues { ManaCost.parse(it.value).cmc } shouldBe
+                mapOf(1 to o.base - 1)
+        }
+
+        test("${o.name} is priced per target under an opponent's increase") {
+            val driver = newGame()
+            val me = driver.activePlayer!!
+            driver.putPermanentOnBattlefield(driver.getOpponent(me), "Target Taxer")
+            driver.putCreatureOnBattlefield(me, "Grizzly Bears")
+            val spell = o.setup(driver, me)
+            repeat(o.base) { driver.putLandOnBattlefield(me, "Forest") }
+
+            // The base price alone no longer covers the one target the spell must announce.
+            driver.offer(me, spell, o.pick)?.affordable shouldNotBe true
+            driver.putLandOnBattlefield(me, "Forest")
+            val action = driver.offer(me, spell, o.pick).shouldNotBeNull()
+            action.affordable shouldBe true
+            action.manaCostByTargetCount.shouldNotBeNull().mapValues { ManaCost.parse(it.value).cmc } shouldBe
+                mapOf(1 to o.base + 1)
+        }
+    }
+
+    fun GameTestDriver.canCastModal(me: EntityId, spell: EntityId) =
+        offer(me, spell) { it.actionType == "CastSpellModal" }?.affordable == true
+
+    test("a choose-two spell is priced at its cheapest mode combination under a reduction") {
+        val driver = newGame()
+        val me = driver.activePlayer!!
+        driver.putPermanentOnBattlefield(me, "Target Discounter")
+        driver.putCreatureOnBattlefield(me, "Grizzly Bears")
+        driver.putCreatureOnBattlefield(me, "Savannah Lions")
+        val spell = driver.putCardInHand(me, "Pair Charm")
+        repeat(2) { driver.putLandOnBattlefield(me, "Forest") }
+
+        // Both targeted modes, on two different creatures: {3}{G} less {2}. No single mode reaches it.
+        driver.canCastModal(me, spell) shouldBe true
+    }
+
+    test("a choose-two spell is priced at its cheapest mode combination under an increase") {
+        val driver = newGame()
+        val me = driver.activePlayer!!
+        driver.putPermanentOnBattlefield(driver.getOpponent(me), "Target Taxer")
+        driver.putCreatureOnBattlefield(me, "Grizzly Bears")
+        val spell = driver.putCardInHand(me, "Pair Charm")
+        repeat(4) { driver.putLandOnBattlefield(me, "Forest") }
+
+        // Any two modes include a targeted one, so {3}{G} owes at least {1} more — the untargeted
+        // mode alone, priced at {3}{G}, is not a legal selection.
+        driver.canCastModal(me, spell) shouldBe false
+        driver.putLandOnBattlefield(me, "Forest")
+        driver.canCastModal(me, spell) shouldBe true
     }
 })
