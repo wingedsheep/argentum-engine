@@ -823,16 +823,18 @@ class PipelineBuilder private constructor(private val shared: Shared) {
     /**
      * Player names a card ([ChooseOptionEffect] over [OptionType.CARD_NAME]); with
      * [excludeBasicLandNames], "choose a card name other than a basic land card name"; with
-     * [pool] = [CardNamePool.NONLAND], "choose a nonland card name".
+     * [pool] = [CardNamePool.NONLAND], "choose a nonland card name"; with [chooser] =
+     * [Chooser.TargetPlayer], "target player chooses a card name" (Petra Sphinx).
      */
     fun chooseCardName(
         prompt: String? = null,
         excludeBasicLandNames: Boolean = false,
         pool: CardNamePool = CardNamePool.ANY,
+        chooser: Chooser = Chooser.Controller,
         name: String? = null
     ): ChosenSlot {
         val slot = ChosenSlot(slotKey("cardName", nextIndex(), name))
-        steps += Effects.ChooseCardName(slot.key, prompt, excludeBasicLandNames, pool)
+        steps += Effects.ChooseCardName(slot.key, prompt, excludeBasicLandNames, pool, chooser)
         return slot
     }
 

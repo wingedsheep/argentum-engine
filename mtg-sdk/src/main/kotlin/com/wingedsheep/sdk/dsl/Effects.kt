@@ -7216,18 +7216,24 @@ object Effects {
      *   offered ("other than a basic land card name").
      * @param pool Which registered names are offered — [CardNamePool.NONLAND] for "choose a
      *   nonland card name" (Cranial Extraction), [CardNamePool.LAND] for "a land card name".
+     * @param chooser Who names the card — the controller, or e.g.
+     *   [com.wingedsheep.sdk.scripting.effects.Chooser.TargetPlayer] for "target player chooses a
+     *   card name" (Petra Sphinx).
      */
     fun ChooseCardName(
         storeAs: String = "chosenCardName",
         prompt: String? = null,
         excludeBasicLandNames: Boolean = false,
-        pool: CardNamePool = CardNamePool.ANY
+        pool: CardNamePool = CardNamePool.ANY,
+        chooser: com.wingedsheep.sdk.scripting.effects.Chooser =
+            com.wingedsheep.sdk.scripting.effects.Chooser.Controller
     ): Effect = ChooseOptionEffect(
         optionType = OptionType.CARD_NAME,
         storeAs = storeAs,
         prompt = prompt,
         excludedOptions = if (excludeBasicLandNames) BASIC_LAND_CARD_NAMES else emptyList(),
-        cardNamePool = pool
+        cardNamePool = pool,
+        chooser = chooser
     )
 
     /**

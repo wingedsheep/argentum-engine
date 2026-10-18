@@ -3259,6 +3259,98 @@
     ]
 }
 
+// Petra Sphinx
+{
+    "name": "Petra Sphinx",
+    "manaCost": "{2}{W}{W}{W}",
+    "typeLine": "Creature — Sphinx",
+    "oracleText": "{T}: Target player chooses a card name, then reveals the top card of their library. If that card has the chosen name, that player puts it into their hand. If it doesn't, the player puts it into their graveyard.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Petra Sphinx:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ChooseOption",
+                            "optionType": "CARD_NAME",
+                            "storeAs": "cardName0",
+                            "chooser": "TargetPlayer"
+                        },
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "player": "TargetPlayer"
+                            },
+                            "storeAs": "gathered1",
+                            "revealed": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered1",
+                            "selection": "SelectAll",
+                            "filter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "NameEqualsChosen",
+                                        "variableName": "cardName0"
+                                    }
+                                ]
+                            },
+                            "storeSelected": "selected2",
+                            "storeRemainder": "remainder2"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected2",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand",
+                                "player": "TargetPlayer"
+                            }
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "remainder2",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": "TargetPlayer"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetPlayer",
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "30",
+        "rarity": "RARE",
+        "artist": "Sandra Everingham",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/e/5ef99f07-c987-451a-b18a-2719eea654cd.jpg?1783948083"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Pixie Queen
 {
     "name": "Pixie Queen",
@@ -4198,6 +4290,66 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// The Abyss
+{
+    "name": "The Abyss",
+    "manaCost": "{3}{B}",
+    "typeLine": "World Enchantment",
+    "oracleText": "At the beginning of each player's upkeep, destroy target nonartifact creature that player controls of their choice. It can't be regenerated.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "The Abyss:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CantBeRegenerated",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "destination": "Graveyard",
+                            "byDestruction": true
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature nonartifact ctrl:triggering-player"
+                    },
+                    "id": "t0",
+                    "chooser": "TriggeringPlayer"
+                },
+                "descriptionOverride": "At the beginning of each player's upkeep, destroy target nonartifact creature that player controls of their choice. It can't be regenerated."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "120",
+        "rarity": "RARE",
+        "artist": "Pete Venters",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/6/86a27d68-3e58-4ade-976d-36381beed451.jpg?1783948063"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 

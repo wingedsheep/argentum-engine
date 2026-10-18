@@ -1502,6 +1502,8 @@ enum class OptionType {
  * @property cardNamePool For [OptionType.CARD_NAME], which registered names are offered —
  *   every name ([CardNamePool.ANY], "choose a card name"), or only nonland / land names
  *   ("choose a nonland card name" — Cranial Extraction). Ignored for every other option type.
+ * @property chooser Who makes the choice — the controller by default, or another player the text
+ *   names: "target player chooses a card name" (Petra Sphinx) is [Chooser.TargetPlayer].
  */
 @SerialName("ChooseOption")
 @Serializable
@@ -1510,7 +1512,8 @@ data class ChooseOptionEffect(
     val storeAs: String = "chosenOption",
     val prompt: String? = null,
     val excludedOptions: List<String> = emptyList(),
-    val cardNamePool: CardNamePool = CardNamePool.ANY
+    val cardNamePool: CardNamePool = CardNamePool.ANY,
+    val chooser: Chooser = Chooser.Controller
 ) : Effect {
     override val description: String = buildString {
         append("Choose ")
