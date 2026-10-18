@@ -1467,7 +1467,6 @@ ExtraOnceOnlyActivations — StaticAbility
 FlipAdditionalCoins — StaticAbility
 FreeFirstEquipEachTurn — StaticAbility
 GainActivatedAbilitiesOfPermanents — StaticAbility
-GainKeywordsOfGraveyardCreatureCards — StaticAbility
 GrantActivatedAbility — StaticAbility
 GrantAdditionalLandDrop — StaticAbility
 GrantAdditionalTypesToGroup — StaticAbility
@@ -1663,6 +1662,7 @@ EventPattern.MutateEvent — EventPattern — Gemrazer — EventPattern.TurnFace
 EventPattern.SurveilEvent — EventPattern — Enhanced Surveillance — EventPattern.ScryEvent, EventPattern.SurveiledEvent — the replacement-only "would surveil" announcement ModifyKeywordActionAmount needs; ScryEvent names another keyword action and SurveiledEvent is the after-the-fact trigger pattern (CR 701.25d), which a count replacement must not match
 EventPattern.VenturedIntoDungeonEvent — EventPattern — none yet in the corpus (Acererak-style "whenever you venture") — EventPattern.RingTemptedEvent, EventPattern.ScriedEvent — each names a different keyword action (CR 701.54 / 701.22); venture into the dungeon (CR 701.49) is its own action, and an action axis on either would fork their counts and bearer fields
 FlipOntoBattlefieldEffect — Effect — Chaos Orb — FlipCoinEffect, GatherCardsEffect — a coin flip yields a won/lost bit, not a set of permanents; GatherCards fills a collection from a deterministic CardSource with no player input, and neither can take a physical-landing axis without changing its decision and event contract
+GainKeywordsOfCards — StaticAbility — Cairn Wanderer — GrantKeyword, GrantProtectionFromLinkedExiledCardTypes — renames GainKeywordsOfGraveyardCreatureCards (net zero) and adds the KeywordCardPool axis (graveyard creature cards / the source's linked exile, Eater of Virtue) plus KeywordFamily replacing the anyLandwalk/anyProtection booleans; GrantKeyword grants one fixed keyword, and GrantProtectionFromLinkedExiledCardTypes derives protection qualities from card types, not keywords the exiled cards have
 GainLifeInsteadOfLosingLife — ReplacementEffect — Strong, the Brutish Thespian — ModifyLifeLoss, ReplaceLifeGainWith — ModifyLifeLoss scales a loss that still happens (clamped at 0) and can't emit a gain; ReplaceLifeGainWith replaces gains, not losses; the loss→gain swap is its own replacement keyed by LifeLossOrigin
 Goaded — StaticAbility — Martial Impetus — MustAttack, CantAttackYou — goad is a designation with a goader (CR 701.15b-c): the creature must attack and must attack a player other than each goader if able, stacking per goader; MustAttack lowers to a projected flag that can't carry who goads it or the second requirement, and CantAttackYou is an absolute restriction, not an if-able requirement that yields when the goader is the only player to attack
 GrantEscapeEffect — Effect — Desdemona, Freedom's Edge — GrantFlashbackEffect, GrantHarmonizeEffect — the single-card runtime grant of escape, the per-entity twin of GraveyardCardsHaveEscape; escape carries a non-mana half (exile N other cards) neither has, and it doesn't exile on resolution (both do), so a keyword axis on either would fork every engine read

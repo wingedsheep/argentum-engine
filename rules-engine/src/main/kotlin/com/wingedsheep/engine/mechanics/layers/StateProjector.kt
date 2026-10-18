@@ -1,7 +1,5 @@
 package com.wingedsheep.engine.mechanics.layers
 
-import com.wingedsheep.engine.mechanics.targeting.ColorProtection
-import com.wingedsheep.engine.mechanics.targeting.HexproofFromRules
 import com.wingedsheep.engine.handlers.ConditionEvaluator
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
@@ -16,9 +14,6 @@ import com.wingedsheep.engine.state.components.battlefield.chosenCreatureType
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownModeComponent
-import com.wingedsheep.engine.mechanics.targeting.SourceKindProtection
-import com.wingedsheep.engine.state.components.identity.HexproofFromComponent
-import com.wingedsheep.engine.state.components.identity.ProtectionComponent
 import com.wingedsheep.engine.state.components.identity.RingBearerComponent
 import com.wingedsheep.engine.state.components.identity.ToxicComponent
 import com.wingedsheep.engine.state.components.identity.TextChanges
@@ -137,22 +132,8 @@ class StateProjector {
                     keywords = linkedSetOf<String>().apply {
                         cardComponent.baseKeywords.forEach { add(it.name) }
                         cardComponent.baseFlags.forEach { add(it.name) }
-                        container.get<ProtectionComponent>()?.let { protection ->
-                            protection.colors.forEach { add("PROTECTION_FROM_${it.name}") }
-                            protection.subtypes.forEach { add("PROTECTION_FROM_SUBTYPE_${it.uppercase()}") }
-                            protection.supertypes.forEach { add("PROTECTION_FROM_SUPERTYPE_${it.uppercase()}") }
-                            protection.cardTypes.forEach { add("PROTECTION_FROM_CARDTYPE_$it") }
-                            protection.sourceKinds.forEach { add(SourceKindProtection.protectionKeyword(it)) }
-                            if (protection.multicolored) add(ColorProtection.PROTECTION_FROM_MULTICOLORED)
-                        }
-                        container.get<HexproofFromComponent>()?.let { hexproof ->
-                            hexproof.colors.forEach { add("HEXPROOF_FROM_${it.name}") }
-                            hexproof.cardTypes.forEach { add("HEXPROOF_FROM_CARDTYPE_$it") }
-                            hexproof.nonColors.forEach { add(HexproofFromRules.nonColorKeyword(it)) }
-                            hexproof.sourceKinds.forEach { add(SourceKindProtection.hexproofKeyword(it)) }
-                            if (hexproof.monocolored) add(HexproofFromRules.MONOCOLORED)
-                            if (hexproof.multicolored) add(HexproofFromRules.MULTICOLORED)
-                        }
+                        PrintedKeywordQualities.protections(container, this)
+                        PrintedKeywordQualities.hexproofFroms(container, this)
                         container.get<ToxicComponent>()?.let { add("TOXIC_${it.amount}") }
                         // Dash supplies haste from the live marker on every projection.
                         if (container.has<DashedComponent>()) add(Keyword.HASTE.name)

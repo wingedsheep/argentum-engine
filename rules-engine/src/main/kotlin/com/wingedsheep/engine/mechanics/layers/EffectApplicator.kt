@@ -7,15 +7,15 @@ import com.wingedsheep.engine.handlers.ConditionEvaluationContext
 import com.wingedsheep.engine.handlers.ConditionEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.linkedexile.LinkedExileLookup
-import com.wingedsheep.engine.mechanics.targeting.ColorProtection
 import com.wingedsheep.engine.state.components.identity.CardComponent
-import com.wingedsheep.engine.state.components.identity.ProtectionComponent
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.scripting.KeywordAbility
+import com.wingedsheep.sdk.scripting.KeywordCardPool
+import com.wingedsheep.sdk.scripting.KeywordFamily
 import com.wingedsheep.sdk.model.EntityId
 
 /**
@@ -367,33 +367,37 @@ internal class EffectApplicator(
                         }
                     }
                 }
-                is Modification.GrantKeywordsOfGraveyardCreatureCards -> {
-                    // Cairn Wanderer. A card in a graveyard has no projection entry and nothing on
-                    // the battlefield can grant it an ability, so its keywords are its printed ones:
-                    // the same base keywords and printed protections the projector starts a
-                    // permanent from.
-                    for (playerId in state.turnOrder) {
-                        for (cardId in state.getGraveyard(playerId)) {
-                            val container = state.getEntity(cardId) ?: continue
-                            val card = container.get<CardComponent>() ?: continue
-                            if (!card.typeLine.isCreature) continue
-                            for (keyword in card.baseKeywords) {
-                                if (keyword.name in mod.keywords ||
-                                    (mod.anyLandwalk && keyword in Keyword.LANDWALK)
-                                ) {
-                                    values.keywords.add(keyword.name)
-                                }
-                            }
-                            if (mod.anyProtection) {
-                                container.get<ProtectionComponent>()?.let { protection ->
-                                    protection.colors.forEach { values.keywords.add("PROTECTION_FROM_${it.name}") }
-                                    protection.subtypes.forEach { values.keywords.add("PROTECTION_FROM_SUBTYPE_${it.uppercase()}") }
-                                    protection.supertypes.forEach { values.keywords.add("PROTECTION_FROM_SUPERTYPE_${it.uppercase()}") }
-                                    protection.cardTypes.forEach { values.keywords.add("PROTECTION_FROM_CARDTYPE_$it") }
-                                    if (protection.multicolored) values.keywords.add(ColorProtection.PROTECTION_FROM_MULTICOLORED)
-                                }
+                is Modification.GrantKeywordsOfCards -> {
+                    // Cairn Wanderer / Eater of Virtue. A card in a graveyard or in exile has no
+                    // projection entry and nothing on the battlefield can grant it an ability, so
+                    // its keywords are its printed ones: the same base keywords and printed
+                    // protections the projector starts a permanent from.
+                    val pool: List<EntityId> = when (mod.cards) {
+                        KeywordCardPool.CREATURE_CARDS_IN_GRAVEYARDS -> state.turnOrder.flatMap { playerId ->
+                            state.getGraveyard(playerId).filter {
+                                state.getEntity(it)?.get<CardComponent>()?.typeLine?.isCreature == true
                             }
                         }
+                        KeywordCardPool.CARDS_EXILED_WITH_SOURCE ->
+                            LinkedExileLookup.exiledCards(state, effect.sourceId)
+                    }
+                    val landwalk = KeywordFamily.LANDWALK in mod.families
+                    val hexproof = KeywordFamily.HEXPROOF in mod.families
+                    for (cardId in pool) {
+                        val container = state.getEntity(cardId) ?: continue
+                        val card = container.get<CardComponent>() ?: continue
+                        for (keyword in card.baseKeywords) {
+                            if (keyword.name in mod.keywords ||
+                                (landwalk && keyword in Keyword.LANDWALK) ||
+                                (hexproof && keyword == Keyword.HEXPROOF)
+                            ) {
+                                values.keywords.add(keyword.name)
+                            }
+                        }
+                        if (KeywordFamily.PROTECTION in mod.families) {
+                            PrintedKeywordQualities.protections(container, values.keywords)
+                        }
+                        if (hexproof) PrintedKeywordQualities.hexproofFroms(container, values.keywords)
                     }
                 }
                 is Modification.CanAttackAsThoughHasty -> {

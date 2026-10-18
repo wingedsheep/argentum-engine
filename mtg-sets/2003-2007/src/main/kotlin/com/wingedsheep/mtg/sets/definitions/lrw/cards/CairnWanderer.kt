@@ -3,14 +3,15 @@ package com.wingedsheep.mtg.sets.definitions.lrw.cards
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.GainKeywordsOfGraveyardCreatureCards
+import com.wingedsheep.sdk.scripting.GainKeywordsOfCards
+import com.wingedsheep.sdk.scripting.KeywordFamily
 
 /**
  * Cairn Wanderer — Lorwyn #105
  *
  * Every graveyard counts, not just its controller's. "Landwalk" and "protection" name families:
  * Cairn Wanderer gains each landwalk and each protection (with its quality) that a creature card
- * in a graveyard has — see [GainKeywordsOfGraveyardCreatureCards].
+ * in a graveyard has — see [GainKeywordsOfCards].
  */
 val CairnWanderer = card("Cairn Wanderer") {
     manaCost = "{4}{B}"
@@ -23,7 +24,7 @@ val CairnWanderer = card("Cairn Wanderer") {
     keywords(Keyword.CHANGELING)
 
     staticAbility {
-        ability = GainKeywordsOfGraveyardCreatureCards(
+        ability = GainKeywordsOfCards(
             keywords = listOf(
                 Keyword.FLYING,
                 Keyword.FEAR,
@@ -37,8 +38,7 @@ val CairnWanderer = card("Cairn Wanderer") {
                 Keyword.SHROUD,
                 Keyword.VIGILANCE
             ),
-            anyLandwalk = true,
-            anyProtection = true
+            families = setOf(KeywordFamily.LANDWALK, KeywordFamily.PROTECTION)
         )
     }
 

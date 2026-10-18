@@ -46,31 +46,39 @@ data class GrantKeyword(
 
 /**
  * "As long as a creature card with flying is in a graveyard, this creature has flying. The same is
- * true for fear, first strike, …" — Cairn Wanderer.
+ * true for fear, first strike, …" — Cairn Wanderer; "As long as a card exiled with Eater of Virtue
+ * has flying, equipped creature has flying. The same is true for …" — Eater of Virtue.
  *
- * The affected permanents have each of [keywords] that some creature card in **any** graveyard has.
- * [anyLandwalk] and [anyProtection] are the two printed words that name a *family* rather than one
- * keyword: "landwalk" means every landwalk ability found (swampwalk, nonbasic landwalk, …) and
- * "protection" means every protection ability found, quality and all — a graveyard holding a
- * creature card with protection from red grants protection from red, not a generic "protection"
- * (the printed ruling: "It gains any landwalk abilities and any protection abilities").
+ * The affected permanents have each of [keywords] that some card in the [cards] pool has.
+ * [families] are the printed words that name a *family* rather than one keyword: "landwalk" means
+ * every landwalk ability found (swampwalk, nonbasic landwalk, …), "protection" every protection
+ * ability found, quality and all — a card with protection from red grants protection from red, not
+ * a generic "protection" — and "hexproof" every hexproof-from ability on top of plain hexproof (the
+ * printed rulings: Cairn Wanderer "gains any landwalk abilities and any protection abilities";
+ * Eater of Virtue's creature "gains any hexproof and protection abilities of cards exiled with" it).
  *
- * The graveyard is read each time characteristics are determined, so the keywords come and go as
- * cards enter and leave graveyards. A card in a graveyard has only its printed abilities (nothing
- * on the battlefield can grant it one), so the card's own keywords are what count.
+ * The pool is read each time characteristics are determined, so the keywords come and go as cards
+ * enter and leave it. A card in a graveyard or in exile has only its printed abilities (nothing on
+ * the battlefield can grant it one), so the card's own keywords are what count.
  */
-@SerialName("GainKeywordsOfGraveyardCreatureCards")
+@SerialName("GainKeywordsOfCards")
 @Serializable
-data class GainKeywordsOfGraveyardCreatureCards(
+data class GainKeywordsOfCards(
     val keywords: List<Keyword>,
-    val anyLandwalk: Boolean = false,
-    val anyProtection: Boolean = false,
+    val families: Set<KeywordFamily> = emptySet(),
+    val cards: KeywordCardPool = KeywordCardPool.CREATURE_CARDS_IN_GRAVEYARDS,
     val filter: GroupFilter = GroupFilter.source()
 ) : StaticAbility {
     override val description: String = buildString {
         val names = keywords.map { it.displayName.lowercase() } +
-            listOfNotNull("landwalk".takeIf { anyLandwalk }, "protection".takeIf { anyProtection })
-        append("As long as a creature card with ${names.firstOrNull() ?: "an ability"} is in a graveyard, ")
+            families.sortedBy { it.ordinal }.map { it.displayName }
+        val first = names.firstOrNull() ?: "an ability"
+        when (cards) {
+            KeywordCardPool.CREATURE_CARDS_IN_GRAVEYARDS ->
+                append("As long as a creature card with $first is in a graveyard, ")
+            KeywordCardPool.CARDS_EXILED_WITH_SOURCE ->
+                append("As long as a card exiled with this permanent has $first, ")
+        }
         append("${filter.description} has ${names.firstOrNull() ?: "it"}")
         if (names.size > 1) {
             append(". The same is true for ")
@@ -83,6 +91,32 @@ data class GainKeywordsOfGraveyardCreatureCards(
         val newFilter = filter.applyTextReplacement(replacer)
         return if (newFilter !== filter) copy(filter = newFilter) else this
     }
+}
+
+/** Which cards [GainKeywordsOfCards] reads keywords off. */
+@Serializable
+enum class KeywordCardPool {
+    /** Every creature card in every graveyard (Cairn Wanderer). */
+    CREATURE_CARDS_IN_GRAVEYARDS,
+
+    /**
+     * The source's linked-exile pile (CR 607 — "cards exiled with this permanent"), only the ones
+     * still in exile; a new object after a zone change starts with an empty pile (Eater of Virtue).
+     */
+    CARDS_EXILED_WITH_SOURCE
+}
+
+/** A printed word naming every keyword of a family, qualities and all — see [GainKeywordsOfCards]. */
+@Serializable
+enum class KeywordFamily(val displayName: String) {
+    /** Every landwalk ability (swampwalk, nonbasic landwalk, …). */
+    LANDWALK("landwalk"),
+
+    /** Every protection ability, with its quality. */
+    PROTECTION("protection"),
+
+    /** Plain hexproof and every "hexproof from [quality]". */
+    HEXPROOF("hexproof")
 }
 
 /**

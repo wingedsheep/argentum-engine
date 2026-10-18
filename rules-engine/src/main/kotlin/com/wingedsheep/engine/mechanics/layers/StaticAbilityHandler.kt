@@ -788,12 +788,12 @@ class StaticAbilityHandler(
                     affectsFilter = convertGroupFilter(ability.filter)
                 )
             }
-            is com.wingedsheep.sdk.scripting.GainKeywordsOfGraveyardCreatureCards -> {
+            is com.wingedsheep.sdk.scripting.GainKeywordsOfCards -> {
                 ContinuousEffectData(
-                    modification = Modification.GrantKeywordsOfGraveyardCreatureCards(
+                    modification = Modification.GrantKeywordsOfCards(
                         keywords = ability.keywords.mapTo(linkedSetOf()) { it.name },
-                        anyLandwalk = ability.anyLandwalk,
-                        anyProtection = ability.anyProtection
+                        families = ability.families,
+                        cards = ability.cards
                     ),
                     affectsFilter = convertGroupFilter(ability.filter)
                 )

@@ -148,7 +148,7 @@ Cards: Aquitect's Will, Blind-Spot Giant, Boggart Sprite-Chaser, Dauntless Dourb
 
 A creature is unblockable while its defending player controls the specified land type. Includes granted landwalk and graveyard-derived landwalk.
 
-**Engine support:** Supported: landwalk keyword variants in the keyword model; [Hillcomber Giant](../../../mtg-sets/2003-2007/src/main/kotlin/com/wingedsheep/mtg/sets/definitions/lrw/cards/HillcomberGiant.kt), [Deeptread Merrow](../../../mtg-sets/2003-2007/src/main/kotlin/com/wingedsheep/mtg/sets/definitions/lrw/cards/DeeptreadMerrow.kt) and [Streambed Aquitects](../../../mtg-sets/2003-2007/src/main/kotlin/com/wingedsheep/mtg/sets/definitions/lrw/cards/StreambedAquitects.kt). Cairn Wanderer gains graveyard landwalks via `GainKeywordsOfGraveyardCreatureCards`.
+**Engine support:** Supported: landwalk keyword variants in the keyword model; [Hillcomber Giant](../../../mtg-sets/2003-2007/src/main/kotlin/com/wingedsheep/mtg/sets/definitions/lrw/cards/HillcomberGiant.kt), [Deeptread Merrow](../../../mtg-sets/2003-2007/src/main/kotlin/com/wingedsheep/mtg/sets/definitions/lrw/cards/DeeptreadMerrow.kt) and [Streambed Aquitects](../../../mtg-sets/2003-2007/src/main/kotlin/com/wingedsheep/mtg/sets/definitions/lrw/cards/StreambedAquitects.kt). Cairn Wanderer gains graveyard landwalks via `GainKeywordsOfCards`.
 
 Cards: Bog-Strider Ash, Boggart Loggers, Cairn Wanderer, Deeptread Merrow, Hillcomber Giant, Inkfathom Divers, Merrow Harbinger, Streambed Aquitects, Sygg, River Guide
 
@@ -220,7 +220,7 @@ Cards: Cairn Wanderer, Gilt-Leaf Ambush, Lace with Moonglove, Moonglove Winnower
 
 Prevents damage, attachment, blocking and targeting from the specified quality, including creature types and a chosen color.
 
-**Engine support:** Supported: `KeywordAbility` plus `ProtectionScope`; [Nath's Buffoon](../../../mtg-sets/2003-2007/src/main/kotlin/com/wingedsheep/mtg/sets/definitions/lrw/cards/NathsBuffoon.kt) and [Sygg, River Guide](../../../mtg-sets/2003-2007/src/main/kotlin/com/wingedsheep/mtg/sets/definitions/lrw/cards/SyggRiverGuide.kt). Cairn Wanderer acquires the actual protection qualities via `GainKeywordsOfGraveyardCreatureCards(anyProtection = true)`.
+**Engine support:** Supported: `KeywordAbility` plus `ProtectionScope`; [Nath's Buffoon](../../../mtg-sets/2003-2007/src/main/kotlin/com/wingedsheep/mtg/sets/definitions/lrw/cards/NathsBuffoon.kt) and [Sygg, River Guide](../../../mtg-sets/2003-2007/src/main/kotlin/com/wingedsheep/mtg/sets/definitions/lrw/cards/SyggRiverGuide.kt). Cairn Wanderer acquires the actual protection qualities via `GainKeywordsOfCards(families = setOf(KeywordFamily.PROTECTION, …))`.
 
 Cards: Burrenton Forge-Tender, Cairn Wanderer, Favor of the Mighty, Nath's Buffoon, Sygg, River Guide, Warren-Scourge Elf
 
@@ -436,7 +436,7 @@ Cards: Deathrender, Runed Stalactite
 
 Continuously obtain each listed keyword found on a creature card in any graveyard, preserving specific landwalk and protection qualities.
 
-**Engine support:** Supported: `GainKeywordsOfGraveyardCreatureCards` (Layer 6, read over every graveyard at projection time, landwalk and protection kept with their qualities); [Cairn Wanderer](../../../mtg-sets/2003-2007/src/main/kotlin/com/wingedsheep/mtg/sets/definitions/lrw/cards/CairnWanderer.kt).
+**Engine support:** Supported: `GainKeywordsOfCards` (Layer 6, read over every graveyard at projection time, landwalk and protection kept with their qualities); [Cairn Wanderer](../../../mtg-sets/2003-2007/src/main/kotlin/com/wingedsheep/mtg/sets/definitions/lrw/cards/CairnWanderer.kt).
 
 Cards: Cairn Wanderer
 

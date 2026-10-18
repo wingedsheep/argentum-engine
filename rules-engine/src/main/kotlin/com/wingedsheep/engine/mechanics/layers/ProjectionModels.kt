@@ -5,6 +5,8 @@ import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.KeywordCardPool
+import com.wingedsheep.sdk.scripting.KeywordFamily
 import com.wingedsheep.sdk.scripting.conditions.ComparisonOperator
 import com.wingedsheep.sdk.scripting.conditions.Condition
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
@@ -641,16 +643,16 @@ sealed interface Modification {
     }
 
     /**
-     * Grants each affected entity every keyword in [keywords] — plus, when [anyLandwalk] /
-     * [anyProtection] is set, every landwalk / protection keyword — that some creature card in any
-     * graveyard has (Cairn Wanderer). Read at apply-time off the graveyard cards' own printed
-     * keywords; see [com.wingedsheep.sdk.scripting.GainKeywordsOfGraveyardCreatureCards].
+     * Grants each affected entity every keyword in [keywords] — plus every keyword of each family
+     * in [families] (landwalk, protection, hexproof — qualities kept) — that some card in the
+     * [cards] pool has (Cairn Wanderer, Eater of Virtue). Read at apply-time off the cards' own
+     * printed keywords; see [com.wingedsheep.sdk.scripting.GainKeywordsOfCards].
      */
     @Serializable
-    data class GrantKeywordsOfGraveyardCreatureCards(
+    data class GrantKeywordsOfCards(
         val keywords: Set<String>,
-        val anyLandwalk: Boolean,
-        val anyProtection: Boolean
+        val families: Set<KeywordFamily>,
+        val cards: KeywordCardPool
     ) : Modification {
         override val layer get() = Layer.ABILITY
     }

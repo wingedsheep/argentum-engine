@@ -2381,7 +2381,7 @@
     "script": {
         "staticAbilities": [
             {
-                "type": "GainKeywordsOfGraveyardCreatureCards",
+                "type": "GainKeywordsOfCards",
                 "keywords": [
                     "FLYING",
                     "FEAR",
@@ -2395,8 +2395,10 @@
                     "SHROUD",
                     "VIGILANCE"
                 ],
-                "anyLandwalk": true,
-                "anyProtection": true
+                "families": [
+                    "LANDWALK",
+                    "PROTECTION"
+                ]
             }
         ]
     },

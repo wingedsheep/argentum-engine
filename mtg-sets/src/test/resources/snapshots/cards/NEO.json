@@ -1062,6 +1062,114 @@
     "colorIdentityOverride": []
 }
 
+// Eater of Virtue
+{
+    "name": "Eater of Virtue",
+    "manaCost": "{1}",
+    "typeLine": "Legendary Artifact — Equipment",
+    "oracleText": "Whenever equipped creature dies, exile it.\nEquipped creature gets +2/+0.\nAs long as a card exiled with Eater of Virtue has flying, equipped creature has flying. The same is true for first strike, double strike, deathtouch, haste, hexproof, indestructible, lifelink, menace, protection, reach, trample, and vigilance.\nEquip {1}",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Eater of Virtue:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "TriggeringEntity",
+                    "destination": "Exile",
+                    "linkToSource": true
+                },
+                "descriptionOverride": "Whenever equipped creature dies, exile it."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Eater of Virtue:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 2,
+                "toughnessBonus": 0
+            },
+            {
+                "type": "GainKeywordsOfCards",
+                "keywords": [
+                    "FLYING",
+                    "FIRST_STRIKE",
+                    "DOUBLE_STRIKE",
+                    "DEATHTOUCH",
+                    "HASTE",
+                    "INDESTRUCTIBLE",
+                    "LIFELINK",
+                    "MENACE",
+                    "REACH",
+                    "TRAMPLE",
+                    "VIGILANCE"
+                ],
+                "families": [
+                    "HEXPROOF",
+                    "PROTECTION"
+                ],
+                "cards": "CARDS_EXILED_WITH_SOURCE",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            }
+        ]
+    },
+    "equipCost": "{1}",
+    "metadata": {
+        "collectorNumber": "245",
+        "rarity": "RARE",
+        "artist": "Tuan Duong Chu",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/4/34d92077-d7b2-4996-848f-fd4917e2fb42.jpg?1783923827",
+        "rulings": [
+            {
+                "date": "2022-02-18",
+                "text": "The Equipped creature gains any hexproof and protection abilities of cards exiled with Eater of Virtue."
+            },
+            {
+                "date": "2022-02-18",
+                "text": "If Eater of Virtue leaves the battlefield and returns to the battlefield, it will be a new object with no association to any cards it exiled from any previous times it was on the battlefield. It will have to exile new cards to grant abilities to creatures it equips from that point forward."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Ecologist's Terrarium
 {
     "name": "Ecologist's Terrarium",
