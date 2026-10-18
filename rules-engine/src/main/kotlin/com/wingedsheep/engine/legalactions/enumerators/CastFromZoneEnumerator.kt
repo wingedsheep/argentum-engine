@@ -174,7 +174,7 @@ class CastFromZoneEnumerator(
                 state, cardDef, playerId, cardId, withTable = !context.skipAutoTapPreview, fromZone = Zone.COMMAND,
             )
             val effectiveCost = pricing.min
-            val costByTargetCount = pricing.byCount?.mapValues { it.value.toString() }
+            val costByTargetCount = pricing.byCountStrings()
             val cachedSources = context.availableManaSources
             val canAfford = context.manaSolver.canPay(
                 state, playerId, effectiveCost, precomputedSources = cachedSources,
@@ -343,10 +343,11 @@ class CastFromZoneEnumerator(
                     val topPricing = topCardDef?.let {
                         context.costCalculator.priceByTargets(
                             state, it, playerId, topCardId, withTable = !context.skipAutoTapPreview,
+                            fromZone = Zone.LIBRARY,
                         )
                     }
                     val topEffectiveCost = topPricing?.min ?: topCardComponent.manaCost
-                    val topCostByTargetCount = topPricing?.byCount?.mapValues { it.value.toString() }
+                    val topCostByTargetCount = topPricing?.byCountStrings()
                     // "You can spend mana of any type to cast [these] spells" (Vizier of the
                     // Menagerie — whose own second ability is what makes a creature spell castable
                     // from here in the first place). Relaxed for payment only; the displayed
@@ -1165,7 +1166,7 @@ class CastFromZoneEnumerator(
                     )
                     val effectiveCost = pricing.min
                     val costString = effectiveCost.toString()
-                    val costByTargetCount = pricing.byCount?.mapValues { it.value.toString() }
+                    val costByTargetCount = pricing.byCountStrings()
                     val canAfford = context.manaSolver.canPay(state, playerId, effectiveCost, precomputedSources = context.availableManaSources)
 
                     if (hasCorrectTiming && meetsRestrictions && canAfford && canPayZoneAdditionalCost) {
@@ -1288,7 +1289,7 @@ class CastFromZoneEnumerator(
                 )
                 val effectiveCost = pricing.min
                 val costString = effectiveCost.toString()
-                val costByTargetCount = pricing.byCount?.mapValues { it.value.toString() }
+                val costByTargetCount = pricing.byCountStrings()
                 val canAfford = context.manaSolver.canPay(state, playerId, effectiveCost, precomputedSources = context.availableManaSources)
 
                 if (hasCorrectTiming && meetsRestrictions && canAfford) {
@@ -1433,10 +1434,11 @@ class CastFromZoneEnumerator(
             // Calculate effective flashback cost (applying cost reductions/increases)
             val pricing = context.costCalculator.priceByTargets(
                 state, cardDef, playerId, cardId, baseCost = flashback.cost, withTable = !context.skipAutoTapPreview,
+                fromZone = Zone.GRAVEYARD,
             )
             val effectiveCost = pricing.min
             val costString = effectiveCost.toString()
-            val costByTargetCount = pricing.byCount?.mapValues { it.value.toString() }
+            val costByTargetCount = pricing.byCountStrings()
             val canAfford = context.manaSolver.canPay(state, playerId, effectiveCost, precomputedSources = context.availableManaSources)
 
             // A flashback cast owes the card's printed additional costs as well as flashback's own
@@ -1577,12 +1579,13 @@ class CastFromZoneEnumerator(
             val pricing = context.costCalculator.priceByTargets(
 
                 state, cardDef, playerId, cardId, baseCost = mayhem.cost, withTable = !context.skipAutoTapPreview,
+                fromZone = Zone.GRAVEYARD,
 
             )
 
             val effectiveCost = pricing.min
             val costString = effectiveCost.toString()
-            val costByTargetCount = pricing.byCount?.mapValues { it.value.toString() }
+            val costByTargetCount = pricing.byCountStrings()
             val canAfford = context.manaSolver.canPay(state, playerId, effectiveCost, precomputedSources = context.availableManaSources)
 
             if (!canAfford) {
@@ -1720,7 +1723,7 @@ class CastFromZoneEnumerator(
                     )
                     val effectiveCost = pricing.min
                     val costString = effectiveCost.toString()
-                    val costByTargetCount = pricing.byCount?.mapValues { it.value.toString() }
+                    val costByTargetCount = pricing.byCountStrings()
                     val canAfford = context.manaSolver.canPay(state, playerId, effectiveCost, precomputedSources = context.availableManaSources)
                     val (escapeCostInfo, canPayAdditionalCost) = presentOwedCosts(
                         context, cardId, spell.script.additionalCosts + listOfNotNull(escape.additionalCost)
@@ -1831,12 +1834,13 @@ class CastFromZoneEnumerator(
             val pricing = context.costCalculator.priceByTargets(
 
                 state, cardDef, playerId, cardId, baseCost = disturb.cost, withTable = !context.skipAutoTapPreview,
+                fromZone = Zone.GRAVEYARD,
 
             )
 
             val effectiveCost = pricing.min
             val costString = effectiveCost.toString()
-            val costByTargetCount = pricing.byCount?.mapValues { it.value.toString() }
+            val costByTargetCount = pricing.byCountStrings()
             val canAfford = context.manaSolver.canPay(
                 state, playerId, effectiveCost, precomputedSources = context.availableManaSources
             )
@@ -1957,12 +1961,13 @@ class CastFromZoneEnumerator(
             val pricing = context.costCalculator.priceByTargets(
 
                 state, cardDef, playerId, cardId, baseCost = harmonize.cost, withTable = !context.skipAutoTapPreview,
+                fromZone = Zone.GRAVEYARD,
 
             )
 
             val effectiveCost = pricing.min
             val costString = effectiveCost.toString()
-            val costByTargetCount = pricing.byCount?.mapValues { it.value.toString() }
+            val costByTargetCount = pricing.byCountStrings()
             val harmonizeCreatures = context.costUtils.findHarmonizeCreatures(state, playerId)
             // Harmonize casts from the graveyard, so eligible conditional mana is judged with
             // isFromHand = false (a "cast from a non-hand zone only" restriction applies here).
@@ -2144,7 +2149,7 @@ class CastFromZoneEnumerator(
                             action = CastSpell(playerId, cardId),
                             affordable = false,
                             manaCostString = normalCost.toString(),
-                            manaCostByTargetCount = normalPricing.byCount?.mapValues { it.value.toString() },
+                            manaCostByTargetCount = normalPricing.byCountStrings(),
                         )
                     )
                 }
@@ -2153,12 +2158,13 @@ class CastFromZoneEnumerator(
             val pricing = context.costCalculator.priceByTargets(
 
                 state, cardDef, playerId, cardId, baseCost = warpAbility.cost, withTable = !context.skipAutoTapPreview,
+                fromZone = zone,
 
             )
 
             val effectiveCost = pricing.min
             val costString = effectiveCost.toString()
-            val costByTargetCount = pricing.byCount?.mapValues { it.value.toString() }
+            val costByTargetCount = pricing.byCountStrings()
             val canAfford = context.manaSolver.canPay(state, playerId, effectiveCost, precomputedSources = context.availableManaSources)
 
             if (!canAfford) {
@@ -2365,7 +2371,7 @@ class CastFromZoneEnumerator(
                         action = CastSpell(playerId, cardId),
                         affordable = false,
                         manaCostString = normalCost.toString(),
-                        manaCostByTargetCount = normalPricing.byCount?.mapValues { it.value.toString() },
+                        manaCostByTargetCount = normalPricing.byCountStrings(),
                     )
                 )
             }
@@ -2374,12 +2380,13 @@ class CastFromZoneEnumerator(
         val pricing = context.costCalculator.priceByTargets(
 
             state, cardDef, playerId, cardId, baseCost = alternativeCost, withTable = !context.skipAutoTapPreview,
+            fromZone = zone,
 
         )
 
         val effectiveCost = pricing.min
         val costString = effectiveCost.toString()
-        val costByTargetCount = pricing.byCount?.mapValues { it.value.toString() }
+        val costByTargetCount = pricing.byCountStrings()
         val canAffordMana = context.manaSolver.canPay(state, playerId, effectiveCost, precomputedSources = context.availableManaSources)
         // The alternative cost's bundled non-mana half (Tenacious Underdog's "Pay 2 life").
         val (bundledCostInfo, canPayBundled) = presentOwedCosts(context, cardId, bundledCosts)
@@ -2532,7 +2539,7 @@ class CastFromZoneEnumerator(
             )
             val effectiveCost = pricing.min
             val costString = effectiveCost.toString()
-            val costByTargetCount = pricing.byCount?.mapValues { it.value.toString() }
+            val costByTargetCount = pricing.byCountStrings()
             val affordable = context.manaSolver.canPay(state, playerId, effectiveCost, precomputedSources = context.availableManaSources)
 
             // Affordable emissions advertise the forage cost so the client lets the player pick
@@ -2771,7 +2778,7 @@ class CastFromZoneEnumerator(
                 )
                 val effectiveCost = pricing.min
                 val costString = effectiveCost.toString()
-                val costByTargetCount = pricing.byCount?.mapValues { it.value.toString() }
+                val costByTargetCount = pricing.byCountStrings()
                 val canAfford = context.manaSolver.canPay(state, playerId, effectiveCost, precomputedSources = context.availableManaSources)
 
                 if (!canAfford) {
@@ -2917,26 +2924,16 @@ class CastFromZoneEnumerator(
                     // Calculate the cost for this branch — a declaration-gated reduction ("costs {2} less
                     // to cast if it's bargained") applies only to the variant that declares it.
                     // Priced by target count against the kicked spell's own requirements.
-                    val kickerBaseReqs = if (cardDef.script.kickerTargetRequirements.isNotEmpty()) {
-                        cardDef.script.kickerTargetRequirements
-                    } else {
-                        cardDef.script.targetRequirements
-                    }
-                    val targetReqs = buildList {
-                        addAll(kickerBaseReqs)
-                        cardDef.script.castAuraTarget?.let { add(it) }
-                    }
-                    val basePricing = context.costCalculator.withOptionalPayments(emptyList()).priceByTargets(
-                        state, cardDef, playerId, cardId, requirements = targetReqs.ifEmpty { null },
-                        withTable = !context.skipAutoTapPreview, declaredCostSlot = declaredSlot,
-                    )
                     val kickedManaCost = optionalCostsManaPaid(
                         kickers.filter { it.manaCost != null && it.keyword != Keyword.OFFSPRING }, times
                     ) ?: offspringAbility?.manaCost
-                    fun kicked(baseCost: ManaCost): ManaCost = context.costCalculator.applyOptionalPayments(state, cardDef, playerId,
-                            if (kickedManaCost != null) baseCost + kickedManaCost else baseCost, declaredCostSlot = declaredSlot)
-                    val kickedCost = kicked(basePricing.min)
-                    val kickedCostByTargetCount = basePricing.byCount?.mapValues { kicked(it.value).toString() }
+                    val kickedPricing = priceKickedCast(
+                        context, cardId, cardDef, declaredSlot, kickedManaCost,
+                        fromZone = sourceZone?.let { zone -> Zone.entries.firstOrNull { it.name == zone } },
+                    )
+                    val targetReqs = kickedPricing.targetRequirements
+                    val kickedCost = kickedPricing.cost
+                    val kickedCostByTargetCount = kickedPricing.costByTargetCount
                     // This enumerator only enumerates non-hand-zone casts (command, library, exile,
                     // graveyard, …) — `sourceZone` is never "HAND" here. Mark accordingly so
                     // [ManaRestriction.CastFromNonHandOnly] mana is eligible for the kicked variant.

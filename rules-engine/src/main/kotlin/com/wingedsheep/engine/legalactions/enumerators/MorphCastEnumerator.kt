@@ -94,7 +94,7 @@ class MorphCastEnumerator : ActionEnumerator {
                         action = CastSpell(playerId, cardId),
                         affordable = false,
                         manaCostString = normalEffectiveCost.toString(),
-                        manaCostByTargetCount = normalPricing.byCount?.mapValues { it.value.toString() },
+                        manaCostByTargetCount = normalPricing.byCountStrings(),
                     )
                 )
             }

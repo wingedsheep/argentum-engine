@@ -61,7 +61,7 @@ class SneakCastEnumerator : ActionEnumerator {
                 state, cardDef, playerId, cardId, baseCost = sneakAbility.cost, withTable = !context.skipAutoTapPreview,
             )
             val sneakMana = sneakPricing.min
-            val sneakManaByTargetCount = sneakPricing.byCount?.mapValues { it.value.toString() }
+            val sneakManaByTargetCount = sneakPricing.byCountStrings()
             if (!context.manaSolver.canPay(state, playerId, sneakMana, precomputedSources = cachedSources)) {
                 continue
             }
@@ -142,7 +142,7 @@ class SneakCastEnumerator : ActionEnumerator {
                     withTable = !context.skipAutoTapPreview, fromZone = com.wingedsheep.sdk.core.Zone.GRAVEYARD,
                 )
                 val sneakMana = sneakPricing.min
-                val sneakManaByTargetCount = sneakPricing.byCount?.mapValues { it.value.toString() }
+                val sneakManaByTargetCount = sneakPricing.byCountStrings()
                 if (!context.manaSolver.canPay(state, playerId, sneakMana, precomputedSources = cachedSources)) continue
 
                 val targetReqs = buildList {

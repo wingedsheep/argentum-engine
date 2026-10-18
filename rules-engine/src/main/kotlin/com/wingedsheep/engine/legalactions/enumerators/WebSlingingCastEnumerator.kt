@@ -73,7 +73,7 @@ class WebSlingingCastEnumerator : ActionEnumerator {
                 state, cardDef, playerId, cardId, baseCost = webSlinging.cost, withTable = !context.skipAutoTapPreview,
             )
             val webSlingMana = webSlingPricing.min
-            val webSlingManaByTargetCount = webSlingPricing.byCount?.mapValues { it.value.toString() }
+            val webSlingManaByTargetCount = webSlingPricing.byCountStrings()
             if (!context.manaSolver.canPay(state, playerId, webSlingMana, precomputedSources = cachedSources)) {
                 continue
             }

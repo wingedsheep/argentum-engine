@@ -1018,7 +1018,10 @@ class CostCalculator(
      * it can be cast with. The client charges a manual mana-source pick from [byCount] once
      * targets are chosen, because [min] is only the cheapest count.
      */
-    class TargetPricedCost(val min: ManaCost, val byCount: Map<Int, ManaCost>?)
+    class TargetPricedCost(val min: ManaCost, val byCount: Map<Int, ManaCost>?) {
+        /** [byCount] as the `LegalAction.manaCostByTargetCount` payload. */
+        fun byCountStrings(): Map<Int, String>? = byCount?.mapValues { it.value.toString() }
+    }
 
     /**
      * Price [cardDef] before its targets are chosen, against [baseCost] (its mana cost or an
@@ -2224,7 +2227,8 @@ class CostCalculator(
         alternativeCost: ManaCost,
         casterId: EntityId,
         chosenTargets: List<EntityId> = emptyList(),
-    ): ManaCost = calculateEffectiveCost(state, cardDef, casterId, chosenTargets, baseCost = alternativeCost)
+        fromZone: Zone? = null,
+    ): ManaCost = calculateEffectiveCost(state, cardDef, casterId, chosenTargets, fromZone, baseCost = alternativeCost)
 
     /**
      * The mana owed by a cast "without paying its mana cost" (cascade, discover, Weftwalking, a

@@ -199,12 +199,26 @@ class PerTargetSpellCostTest : FunSpec({
         }
     }
 
+
+    // Aven Interrupter-shaped: a zone-scoped tax the offer and the cast must both see.
+    val graveyardTaxer = card("Graveyard Taxer") {
+        manaCost = "{2}"
+        typeLine = "Artifact"
+        oracleText = "Spells your opponents cast from graveyards cost {2} more to cast."
+        staticAbility {
+            ability = ModifySpellCost(
+                target = SpellCostTarget.OpponentsCastFromZones(setOf(Zone.GRAVEYARD)),
+                modification = CostModification.IncreaseGeneric(2),
+            )
+        }
+    }
+
     fun newGame(): GameTestDriver {
         val driver = GameTestDriver()
         driver.registerCards(
             TestCards.all + listOf(
                 discounter, taxer, twinBoost, spreadBoost, flashbackBoost, twoWayCharm, biteTest,
-                graveGrant, gravePump, escapePump, pumpAdventurer, webPump, kickerPump, pairCharm,
+                graveGrant, gravePump, escapePump, pumpAdventurer, webPump, kickerPump, pairCharm, graveyardTaxer,
             )
         )
         driver.initMirrorMatch(deck = Deck.of("Forest" to 40), skipMulligans = true)
@@ -488,5 +502,29 @@ class PerTargetSpellCostTest : FunSpec({
         driver.canCastModal(me, spell) shouldBe false
         driver.putLandOnBattlefield(me, "Forest")
         driver.canCastModal(me, spell) shouldBe true
+    }
+    test("a zone-scoped tax prices a flashback offer exactly as the cast is charged") {
+        val driver = newGame()
+        val me = driver.activePlayer!!
+        driver.putPermanentOnBattlefield(driver.getOpponent(me), "Graveyard Taxer")
+        val bears = driver.putCreatureOnBattlefield(me, "Grizzly Bears")
+        val spell = driver.putCardInGraveyard(me, "Flashback Boost")
+        repeat(4) { driver.putLandOnBattlefield(me, "Forest") }
+        val isFlashback: (LegalAction) -> Boolean = { it.actionType == "CastWithFlashback" }
+        fun flashback() = driver.submit(
+            CastSpell(
+                me, spell, listOf(ChosenTarget.Permanent(bears)),
+                useAlternativeCost = true, alternativeCostType = AlternativeCostType.FLASHBACK,
+            )
+        )
+
+        // {2}{G} flashback plus the {2} graveyard tax: four Forests cover neither the offer nor the cast.
+        driver.offer(me, spell, isFlashback).shouldNotBeNull().affordable shouldBe false
+        flashback().outcome shouldNotBe Outcome.Done
+        driver.putLandOnBattlefield(me, "Forest")
+        val action = driver.offer(me, spell, isFlashback).shouldNotBeNull()
+        action.affordable shouldBe true
+        ManaCost.parse(action.manaCostString!!).cmc shouldBe 5
+        flashback().outcome shouldBe Outcome.Done
     }
 })

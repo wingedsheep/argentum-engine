@@ -365,9 +365,13 @@ internal class CastCostTotaller(
         val cardId: EntityId get() = action.cardId
     }
 
+    // Priced from the zone the card is cast from, like the plain cast, so zone-scoped modifiers
+    // ("spells cast from graveyards cost {2} more") land on a flashback / mayhem / disturb cast too.
     private fun AlternativeBaseQuery.priced(base: ManaCost): ManaCost =
         costCalculator.calculateEffectiveCostWithAlternativeBase(
             state, cardDef, base, playerId, action.targets.map { it.toEntityId() },
+            fromZone = if (zoneResolver.hasCommanderCastPermission(state, playerId, cardId)) Zone.COMMAND
+                else castSourceZone(state, cardId),
         )
 
     /**

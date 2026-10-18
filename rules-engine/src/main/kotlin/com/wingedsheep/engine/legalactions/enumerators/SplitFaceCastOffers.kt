@@ -56,7 +56,7 @@ internal object SplitFaceCastOffers {
         )
         val effectiveCost = pricing?.min ?: context.costCalculator.calculateFreeCastCost(state,
             faceDef, playerId, fromZone = com.wingedsheep.sdk.core.Zone.HAND, card = cardDef)
-        val costByTargetCount = pricing?.byCount?.mapValues { it.value.toString() }
+        val costByTargetCount = pricing?.byCountStrings()
         if (!context.manaSolver.canPay(state, playerId, effectiveCost, precomputedSources = cachedSources)) return
 
         val autoTapPreview = if (context.skipAutoTapPreview) null else {
