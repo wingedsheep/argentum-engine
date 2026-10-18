@@ -2226,6 +2226,20 @@ object Conditions {
         PermanentTypeEnteredBattlefieldThisTurn(CardType.ARTIFACT)
 
     /**
+     * If a permanent of the given card type was put into the given player's graveyard from the
+     * battlefield this turn — owner-keyed turn history read off the permanent's last-known type
+     * line, so tokens and permanents that have since left the graveyard still count.
+     *
+     * Used for Kami of Transience (NEO): "if an enchantment was put into your graveyard from the
+     * battlefield this turn".
+     */
+    fun PermanentTypePutIntoGraveyardFromBattlefieldThisTurn(
+        cardType: CardType,
+        player: Player = Player.You
+    ): ConditionInterface =
+        com.wingedsheep.sdk.scripting.conditions.PermanentTypePutIntoGraveyardFromBattlefieldThisTurn(cardType, player)
+
+    /**
      * "If you've scried or surveilled this turn" — Surveillance Phantasm, Desperate Futurescribe,
      * Proctor of Potential.
      */

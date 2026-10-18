@@ -2,6 +2,7 @@ package com.wingedsheep.engine.state.components.player
 
 import com.wingedsheep.engine.state.Component
 import com.wingedsheep.sdk.core.BendType
+import com.wingedsheep.sdk.core.CardType
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.model.EntityId
@@ -2077,6 +2078,21 @@ data class PermanentsWithCountersPutIntoGraveyardThisTurnComponent(
 ) : Component {
     fun with(added: Collection<CounterType>): PermanentsWithCountersPutIntoGraveyardThisTurnComponent =
         if (kinds.containsAll(added)) this else copy(kinds = kinds + added)
+}
+
+/**
+ * The card types of permanents put into this player's graveyard from the battlefield this turn,
+ * read off each one's last-known type line. Keyed on the owner — "your graveyard" is the owner's —
+ * and tokens count (they reach the graveyard before ceasing to exist). Cleared at end of turn by
+ * CleanupPhaseManager. Backs `PermanentTypePutIntoGraveyardFromBattlefieldThisTurn` (Kami of
+ * Transience).
+ */
+@Serializable
+data class CardTypesPutIntoGraveyardFromBattlefieldThisTurnComponent(
+    val types: Set<CardType> = emptySet()
+) : Component {
+    fun with(added: Collection<CardType>): CardTypesPutIntoGraveyardFromBattlefieldThisTurnComponent =
+        if (types.containsAll(added)) this else copy(types = types + added)
 }
 
 /**

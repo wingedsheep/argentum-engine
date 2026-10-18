@@ -389,6 +389,7 @@ Families:
 - `PermanentEnteredFaceDownThisTurn(player: Player)` — Resolution condition: "if a permanent entered the battlefield face down under player's control this turn".
 - `PermanentLeftBattlefieldThisTurn(player: Player)` — Intervening-if condition: "if a permanent player controlled left the battlefield this turn".
 - `PermanentTypeEnteredBattlefieldThisTurn(cardType: CardType, player: Player)` — Condition: "If a permanent of cardType entered the battlefield under player's control this turn." Pure event tracker — the permanent does not need to still be on the battlefield, still be of that t…
+- `PermanentTypePutIntoGraveyardFromBattlefieldThisTurn(cardType: CardType, player: Player)` — Condition: "If a permanent of cardType was put into player's graveyard from the battlefield this turn." Turn history keyed on the card's owner — "your graveyard" is the owner's (CR 404.1) — and rea…
 - `PermanentWithCounterPutIntoGraveyardThisTurn(counterType: CounterType?)` — Condition: "if a permanent with a counterType counter on it was put into a graveyard this turn" — the second half of Churning Reservoir's activation gate.
 - `PlayerActivatedExhaustAbilitiesThisTurn(player: Player, atLeast: Int)` — Condition: "as long as player has activated atLeast or more exhaust abilities this turn" (CR 702.177).
 - `PlayerAttackedPlayerThisTurn(attacker: Player, defender: Player)` — Condition: "If attacker attacked defender this turn" — the attacker declared one or more creatures attacking that player directly.

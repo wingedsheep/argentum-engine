@@ -84,6 +84,7 @@ import com.wingedsheep.engine.state.components.player.CountersLockedThisTurnComp
 import com.wingedsheep.engine.state.components.player.CountersPutOnYourPermanentsThisTurnComponent
 import com.wingedsheep.engine.state.components.player.CountersRemovedFromYourPermanentsThisTurnComponent
 import com.wingedsheep.engine.state.components.player.PermanentsWithCountersPutIntoGraveyardThisTurnComponent
+import com.wingedsheep.engine.state.components.player.CardTypesPutIntoGraveyardFromBattlefieldThisTurnComponent
 import com.wingedsheep.engine.state.components.player.SacrificedArtifactThisTurnComponent
 import com.wingedsheep.engine.state.components.player.SacrificedFoodThisTurnComponent
 import com.wingedsheep.engine.state.components.player.ScriedOrSurveiledThisTurnComponent
@@ -1000,6 +1001,9 @@ class CleanupPhaseManager(
                 }
                 if (result.has<PermanentsWithCountersPutIntoGraveyardThisTurnComponent>()) {
                     result = result.without<PermanentsWithCountersPutIntoGraveyardThisTurnComponent>()
+                }
+                if (result.has<CardTypesPutIntoGraveyardFromBattlefieldThisTurnComponent>()) {
+                    result = result.without<CardTypesPutIntoGraveyardFromBattlefieldThisTurnComponent>()
                 }
                 if (result.has<WasDealtCombatDamageThisTurnComponent>()) {
                     result = result.without<WasDealtCombatDamageThisTurnComponent>()

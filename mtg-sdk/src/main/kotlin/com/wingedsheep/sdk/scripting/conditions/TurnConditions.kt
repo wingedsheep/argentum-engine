@@ -524,6 +524,30 @@ data class PermanentTypeEnteredBattlefieldThisTurn(
         if (word.firstOrNull()?.lowercaseChar() in setOf('a', 'e', 'i', 'o', 'u')) "an $word" else "a $word"
 }
 
+/**
+ * Condition: "If a permanent of [cardType] was put into [player]'s graveyard from the battlefield this turn."
+ *
+ * Turn history keyed on the card's owner — "your graveyard" is the owner's (CR 404.1) — and read
+ * off the permanent's last-known type line as it left (last-known information), so an enchantment creature
+ * counts as an enchantment and a token counts too: it is put into the graveyard before it ceases
+ * to exist (CR 111.7). The card need not still be in the graveyard when the condition is checked.
+ *
+ * Used for Kami of Transience (NEO): "At the beginning of each end step, if an enchantment was
+ * put into your graveyard from the battlefield this turn, you may return this card ..."
+ */
+@SerialName("PermanentTypePutIntoGraveyardFromBattlefieldThisTurn")
+@Serializable
+data class PermanentTypePutIntoGraveyardFromBattlefieldThisTurn(
+    val cardType: CardType,
+    val player: Player = Player.You
+) : Condition {
+    override val description: String =
+        "if ${anA(cardType.displayName)} was put into ${player.possessive} graveyard from the battlefield this turn"
+
+    private fun anA(word: String): String =
+        if (word.firstOrNull()?.lowercaseChar() in setOf('a', 'e', 'i', 'o', 'u')) "an $word" else "a $word"
+}
+
 // =============================================================================
 // Ability Resolution Conditions
 // =============================================================================

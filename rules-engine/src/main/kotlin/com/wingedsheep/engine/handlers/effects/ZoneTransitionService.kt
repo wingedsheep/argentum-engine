@@ -52,6 +52,7 @@ import com.wingedsheep.engine.state.components.player.CreatureSubtypesDiedThisTu
 import com.wingedsheep.engine.state.components.player.ArtifactsDiedThisTurnComponent
 import com.wingedsheep.engine.state.components.player.PermanentsPutIntoGraveyardFromBattlefieldThisTurnComponent
 import com.wingedsheep.engine.state.components.player.PermanentsWithCountersPutIntoGraveyardThisTurnComponent
+import com.wingedsheep.engine.state.components.player.CardTypesPutIntoGraveyardFromBattlefieldThisTurnComponent
 import com.wingedsheep.engine.state.components.player.CreaturesDiedThisTurnComponent
 import com.wingedsheep.engine.state.components.player.NonTokenCreaturesDiedThisTurnComponent
 import com.wingedsheep.engine.state.components.player.OpponentCreaturesExiledThisTurnComponent
@@ -1277,6 +1278,20 @@ class ZoneTransitionService(
                 val existing = playerContainer.get<PermanentsWithCountersPutIntoGraveyardThisTurnComponent>()
                     ?: PermanentsWithCountersPutIntoGraveyardThisTurnComponent()
                 playerContainer.with(existing.with(lastKnownCounters.keys))
+            }
+        }
+
+        // 8b1c. Track the card types of permanents put into their *owner's* graveyard from the
+        // battlefield ("if an enchantment was put into your graveyard from the battlefield this
+        // turn" — Kami of Transience). Last-known projected type line, like 8b1; tokens count.
+        if (leavingBattlefield && actualDestZone == Zone.GRAVEYARD) {
+            val leftTypes = (lastKnownTypeLine ?: cardComponent.typeLine).cardTypes
+            if (leftTypes.isNotEmpty()) {
+                newState = newState.updateEntity(ownerId) { playerContainer ->
+                    val existing = playerContainer.get<CardTypesPutIntoGraveyardFromBattlefieldThisTurnComponent>()
+                        ?: CardTypesPutIntoGraveyardFromBattlefieldThisTurnComponent()
+                    playerContainer.with(existing.with(leftTypes))
+                }
             }
         }
 

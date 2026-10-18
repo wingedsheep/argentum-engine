@@ -272,6 +272,7 @@ OpponentSpellOnStack — Condition
 PermanentEnteredFaceDownThisTurn — Condition
 PermanentLeftBattlefieldThisTurn — Condition
 PermanentTypeEnteredBattlefieldThisTurn — Condition
+PermanentTypePutIntoGraveyardFromBattlefieldThisTurn — Condition
 PermanentWithCounterPutIntoGraveyardThisTurn — Condition
 PlayerActivatedExhaustAbilitiesThisTurn — Condition
 PlayerAttackedPlayerThisTurn — Condition

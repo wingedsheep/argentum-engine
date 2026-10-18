@@ -14503,6 +14503,14 @@ default to "you" so card authors don't need to pass it explicitly.
   `PermanentsEnteredUnderControlThisTurnComponent` entry log, cleared by `CleanupPhaseManager`
   at end of turn. Every battlefield entry must go through `BattlefieldEntry.place` for this
   tracker to stay in sync. Shortcut: `Conditions.ArtifactEnteredBattlefieldThisTurn`.
+- `PermanentTypePutIntoGraveyardFromBattlefieldThisTurn(cardType, player = Player.You)` — true if
+  a permanent of `cardType` was put into `player`'s graveyard from the battlefield this turn
+  (Kami of Transience: "if an enchantment was put into your graveyard from the battlefield this
+  turn"). Keyed on the card's **owner** ("your graveyard" is the owner's, so your enchantment an
+  opponent controlled counts, theirs under your control doesn't), read off the last-known
+  projected type line (an enchantment creature counts as an enchantment), and tokens count.
+  Turn history: the card need not still be in the graveyard. Backed by the per-player
+  `CardTypesPutIntoGraveyardFromBattlefieldThisTurnComponent`, cleared at end of turn.
 - `Celebration` / `NonlandPermanentsEnteredThisTurn(atLeast = 1, player = Player.You)` — the
   **Celebration** ability word (Wilds of Eldraine; CR 207.2c — italic flavor with no rules
   meaning, so there is no keyword, only this condition): "if two or more nonland permanents
