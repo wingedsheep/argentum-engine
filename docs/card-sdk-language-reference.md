@@ -4196,6 +4196,16 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
     target becomes illegal before resolution while another remains legal, the loop still runs for
     each surviving target and rebinds it to slot 0; legality gaps from the outer spell do not leak
     into the iteration body.
+  - `Effects.ForEachTargetOf(handles, effect)` → `IterationSpace.TargetsOf(group)` — per
+    still-legal target of **one** declaration (the handles one `targets(…)` call returned), for a
+    spell that has other targets too. The visited target is bound as `EffectTarget.IterationEntity`;
+    the context's targets, named targets and collections are untouched, so the body still reads the
+    other declarations through their handles. Spinning Wheel Kick — "target creature you control
+    deals damage equal to its power to each of X target creatures and/or planeswalkers" — is
+    `ForEachTargetOf(victims, DealDamage(powerOf(kicker), IterationEntity, damageSource = kicker))`;
+    `ForEachTarget` would hit the kicker too. A cast-time-count declaration (`exactly = X`,
+    `dynamicMaxCount`, `unlimited`) is narrowed to the targets actually chosen when it is
+    announced, so the loop visits each of them wherever the declaration sits.
   - `ForEachPlayerEffect(players, effects)` → `IterationSpace.Players(players)` — per matching
     player; `controllerId` rebound so `Player.You` is the current player, `opponentId` recomputed,
     fresh `storedCollections` (Winds of Change, Bend or Break, One Ring to Rule Them All).

@@ -40,6 +40,27 @@ sealed interface IterationSpace {
     data object Targets : IterationSpace
 
     /**
+     * Iterate the targets chosen for **one** target declaration — the requirement whose handle
+     * id is [group] — while the spell or ability also has other targets: "target creature you
+     * control deals damage equal to its power to **each of X target creatures**" (Spinning Wheel
+     * Kick). Per iteration the current target is bound as [EffectTarget.IterationEntity]; the
+     * context's targets, named targets and `storedCollections` are left untouched, so the body
+     * still reads the other declarations through their handles. Only still-legal targets are
+     * visited (CR 608.2b): one that became illegal before resolution is skipped.
+     *
+     * Closest neighbours: [Targets] rebinds the whole target list to the visited target (the
+     * other declarations' handles would still resolve, but it visits every declaration's
+     * targets, the creature you control included), and [Collection] iterates a pipeline
+     * collection that no step fills with a declaration's targets.
+     *
+     * @property group The binding id the DSL minted for the declaration (`targets(…)` handles
+     *   are `group[0]`, `group[1]`, …) — build it with `Effects.ForEachTargetOf(handles, …)`.
+     */
+    @SerialName("IterationSpace.TargetsOf")
+    @Serializable
+    data class TargetsOf(val group: String) : IterationSpace
+
+    /**
      * Iterate players matching [players] (e.g. `Player.Each`, `Player.EachOpponent`,
      * `Player.ActivePlayerFirst`). Per iteration, the body's `controllerId` is rebound
      * to the current player (so `Player.You` resolves to them), `opponentId` is
@@ -183,6 +204,13 @@ data class ForEachEffect(
 
         return when (space) {
             is IterationSpace.Targets -> "For each target, ${bodyClauses()}"
+            is IterationSpace.TargetsOf -> {
+                val inner = text(body)
+                if (inner.contains(ITERATION_ENTITY_NOUN, ignoreCase = true)) {
+                    inner.replace(ITERATION_ENTITY_NOUN, "each of those targets", ignoreCase = true)
+                        .replaceFirstChar { it.uppercase() }
+                } else "For each of those targets, ${bodyClauses()}"
+            }
             is IterationSpace.Players -> "For each player, ${bodyClauses()}"
             is IterationSpace.Collection -> "For each permanent in ${space.collection}, ${bodyClauses()}"
             is IterationSpace.Group -> renderGroupDescription(text(body), space.filter, space.noRegenerate)

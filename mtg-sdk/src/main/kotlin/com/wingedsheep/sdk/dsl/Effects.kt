@@ -4501,6 +4501,25 @@ object Effects {
     fun ForEachTarget(effects: List<Effect>): Effect = com.wingedsheep.sdk.scripting.effects.ForEachTargetEffect(effects)
 
     /**
+     * Run [effect] once per still-legal target of the one declaration [group] came from — the
+     * handles `targets(…)` returned — with the visited target bound as `EffectTarget.IterationEntity`
+     * and every other declaration still readable through its own handle. For a spell with targets
+     * besides the ones it iterates: Spinning Wheel Kick's "target creature you control deals damage
+     * equal to its power to each of X target creatures and/or planeswalkers" is
+     * `ForEachTargetOf(victims, DealDamage(powerOf(attacker), IterationEntity, damageSource = attacker))`.
+     */
+    fun ForEachTargetOf(group: List<EffectTarget.BoundVariable>, effect: Effect): Effect {
+        require(group.isNotEmpty()) { "ForEachTargetOf needs the handles of a targets(…) declaration" }
+        val id = group.first().name.substringBefore('[')
+        require(group.all { it.name.substringBefore('[') == id }) {
+            "ForEachTargetOf takes the handles of one targets(…) declaration"
+        }
+        return com.wingedsheep.sdk.scripting.effects.ForEachEffect(
+            com.wingedsheep.sdk.scripting.effects.IterationSpace.TargetsOf(id), effect
+        )
+    }
+
+    /**
      * Run [body] [amount] times, the count evaluated once at resolution ("for each blight counter on
      * it, each opponent …" — Rottenmouth Viper).
      */

@@ -5276,6 +5276,80 @@
     ]
 }
 
+// Spinning Wheel Kick
+{
+    "name": "Spinning Wheel Kick",
+    "manaCost": "{X}{X}{G}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target creature you control deals damage equal to its power to each of X target creatures and/or planeswalkers.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "StoreNumber",
+                    "name": "kickPower",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "numericProperty": "Power"
+                    }
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.TargetsOf",
+                        "group": "t1"
+                    },
+                    "body": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "VariableReference",
+                            "variableName": "kickPower"
+                        },
+                        "target": "IterationEntity",
+                        "damageSource": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                },
+                "id": "t0"
+            },
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature|planeswalker"
+                },
+                "id": "t1",
+                "dynamicMaxCount": "XValue",
+                "dynamicMinCount": "XValue"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "207",
+        "rarity": "UNCOMMON",
+        "artist": "Evyn Fong",
+        "flavorText": "Members of the Order of Jukai commune with kami to enhance their martial prowess.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/f/5f36ddd7-82c1-45ef-a966-ae2a34c540e1.jpg?1783923839"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Spirited Companion
 {
     "name": "Spirited Companion",

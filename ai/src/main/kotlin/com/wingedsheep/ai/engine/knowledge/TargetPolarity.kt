@@ -215,6 +215,20 @@ object TargetPolarityAnalyzer {
                 if (requirements.size == 1) perSlot[0] += forRequirements(leaf.body, requirements, definitions)
                 continue
             }
+            // "… to each of X target creatures" (Spinning Wheel Kick) visits one declaration's
+            // targets as `IterationEntity`; the body's other references keep their own slots.
+            val space = (leaf as? ForEachEffect)?.space
+            if (space is IterationSpace.TargetsOf) {
+                val iterated = requirements.indexOfFirst { it.id == space.group }
+                for (inner in EffectWalker.leaves(leaf.body)) {
+                    for ((target, polarity) in classify(inner, definitions)) {
+                        val slot = if (target == EffectTarget.IterationEntity) iterated.takeIf { it >= 0 }
+                            else slotOf(target, requirements)
+                        slot?.let { perSlot[it] += polarity }
+                    }
+                }
+                continue
+            }
             for ((target, polarity) in classify(leaf, definitions)) {
                 val slot = slotOf(target, requirements) ?: continue
                 perSlot[slot] += polarity

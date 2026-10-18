@@ -1398,6 +1398,10 @@ object CardLinter {
                 ?.let { scope.targetRefs.add(TargetRef(type, it, null)) }
             "BoundVariable" -> (obj["name"] as? JsonPrimitive)?.contentOrNull
                 ?.let { scope.targetRefs.add(TargetRef(type, null, it)) }
+            // `ForEachTargetOf` names a whole declaration; recorded as a slot read so the
+            // unknown-binding check applies but the bare-multi-slot one doesn't.
+            "IterationSpace.TargetsOf" -> (obj["group"] as? JsonPrimitive)?.contentOrNull
+                ?.let { scope.targetRefs.add(TargetRef(type, null, "$it[*]")) }
             "EntityMatches" -> {
                 val role = when (val entity = obj["entity"]) {
                     is JsonPrimitive -> entity.contentOrNull

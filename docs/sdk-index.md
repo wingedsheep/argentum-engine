@@ -1282,6 +1282,7 @@ Families:
 - `IterationSpace.Group(filter: GroupFilter, noRegenerate: Boolean)` — Iterate battlefield permanents matching filter, snapshotted before any iteration runs (simultaneous semantics — entities destroyed during iteration stay in the list).
 - `IterationSpace.Players(players: Player)` — Iterate players matching players (e.g. `Player.Each`, `Player.EachOpponent`, `Player.ActivePlayerFirst`).
 - `IterationSpace.Targets` — Iterate the targets chosen for the spell/ability.
+- `IterationSpace.TargetsOf(group: String)` — Iterate the targets chosen for **one** target declaration — the requirement whose handle id is group — while the spell or ability also has other targets: "target creature you control deals damage e…
 
 ## KeywordAbility
 

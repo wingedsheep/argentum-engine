@@ -10,6 +10,7 @@ import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.BattlefieldFilterUtils
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils
+import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils.toEntityId
 import com.wingedsheep.engine.mechanics.layers.Layer
 import com.wingedsheep.engine.mechanics.layers.SerializableModification
 import com.wingedsheep.engine.mechanics.layers.addFloatingEffect
@@ -46,7 +47,7 @@ import com.wingedsheep.engine.core.Outcome
  *   storedCollections wiped.
  * - Players: `controllerId` rebound to the current player
  *   relative to them, storedCollections wiped.
- * - Collection / Group: the current entity bound, with its identity, as the context's
+ * - TargetsOf / Collection / Group: the current entity bound, with its identity, as the context's
  *   iteration object — what `EffectTarget.IterationEntity` names (`Self` stays the source);
  *   outer collections preserved.
  * - ColorsOf: `chosenColor` set — the same channel `ChooseColorThen` feeds.
@@ -99,7 +100,7 @@ class ForEachExecutor(
         // per-target composite still executes its instructions in sequence and must
         // finalize each move before the next instruction reads the graveyard.
         val simultaneousMove = move?.destination == Zone.GRAVEYARD && when (space) {
-            is IterationSpace.Group -> move.target == EffectTarget.IterationEntity
+            is IterationSpace.Group, is IterationSpace.TargetsOf -> move.target == EffectTarget.IterationEntity
             IterationSpace.Targets -> move.target == EffectTarget.ContextTarget(0)
             else -> false
         }
@@ -208,6 +209,24 @@ class ForEachExecutor(
     ): List<ForEachItem> = when (space) {
         is IterationSpace.Targets ->
             context.targets.map { ForEachItem.OfTarget(it) }
+
+        // One declaration's targets, in slot order: the named-target map holds only still-legal
+        // targets (it is built from the 608.2b-aligned list), so an illegal one is never visited.
+        is IterationSpace.TargetsOf -> {
+            val named = context.pipeline.namedTargets
+            val single = named[space.group]
+            if (single != null) listOf(ForEachItem.OfEntity(single.toEntityId()))
+            else {
+                val prefix = "${space.group}["
+                named.entries
+                    .mapNotNull { (key, target) ->
+                        key.takeIf { it.startsWith(prefix) && it.endsWith("]") }
+                            ?.substring(prefix.length, key.length - 1)?.toIntOrNull()?.let { it to target }
+                    }
+                    .sortedBy { it.first }
+                    .map { ForEachItem.OfEntity(it.second.toEntityId()) }
+            }
+        }
 
         is IterationSpace.Players ->
             resolvePlayers(space.players, state, context).map { ForEachItem.OfPlayer(it) }
