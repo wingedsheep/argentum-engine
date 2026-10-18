@@ -1916,7 +1916,7 @@ Families:
 - `ReduceEquipCost(amount: Int, targetFilter: GameObjectFilter?, onlyOwnEquip: Boolean, onlyOtherEquip: Boolean)` — The controller's equip abilities cost amount generic mana less to activate (Éowyn, Lady of Rohan: "Equip abilities you activate cost {1} less to activate").
 - `RemoveCardType(cardType: String, filter: GroupFilter)` — Removes a card type (e.g., "CREATURE") from the target permanent.
 - `RemoveKeywordStatic(keyword: String, filter: GroupFilter)` — Removes a keyword from the affected permanents (continuous static ability).
-- `ReplaceLandManaColor(filter: GameObjectFilter, color: Color?)`
+- `ReplaceLandManaColor(filter: GameObjectFilter, produces: ManaSymbol?, replaces: Color?)`
 - `RestrictCardsDrawnPerTurn(affected: Player, maxPerTurn: Int)` — A per-turn cap on how many cards a player can draw (CR 121.2b): "Each opponent can't draw more than one card each turn." (Narset, Parter of Veils; Leovold, Emissary of Trest), "Each player can't dr…
 - `RestrictSpellsCastPerTurn(maxPerTurn: Int, eachPlayer: Boolean, spellFilter: GameObjectFilter)` — A per-turn cap on how many spells a player can cast, scoped along a single who-axis: - eachPlayer = false (default) — the cap applies only to the permanent's **controller** ("You can't cast more th…
 - `RetainUnspentColoredMana(color: Color)` — The controller doesn't lose unspent mana of color as steps and phases end (Electro, Assaulting Battery: "You don't lose unspent red mana as steps and phases end").

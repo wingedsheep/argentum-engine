@@ -67,6 +67,33 @@ class DeepWaterScenarioTest : ScenarioTestBase() {
                 }
             }
 
+            test("auto-pay plans the Mountain as a blue source after activating") {
+                // The solver must see the replacement too: it once kept planning a matched land as
+                // its own colour, so a {U} spell off a Mountain looked unpayable.
+                val game = scenario()
+                    .withPlayers("Merfolk", "Opponent")
+                    .withCardOnBattlefield(1, "Deep Water")
+                    .withLandsOnBattlefield(1, "Island", 1)
+                    .withLandsOnBattlefield(1, "Mountain", 1)
+                    .withCardInHand(1, "Merfolk of the Pearl Trident")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                game.execute(
+                    ActivateAbility(
+                        playerId = game.player1Id,
+                        sourceId = game.findPermanent("Deep Water")!!,
+                        abilityId = deepWaterAbilityId()
+                    )
+                ).error shouldBe null
+                game.resolveStack()
+
+                withClue("the Island paid for Deep Water, so only the now-blue Mountain is left") {
+                    game.castSpell(1, "Merfolk of the Pearl Trident").error shouldBe null
+                }
+            }
+
             test("without activating, a Mountain still taps for red") {
                 // The rule is durational and opt-in — the enchantment sitting on the battlefield
                 // does nothing on its own.

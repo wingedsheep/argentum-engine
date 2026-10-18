@@ -1298,7 +1298,10 @@
                     "ability": {
                         "type": "ReplaceLandManaColor",
                         "filter": "land ctrl:you",
-                        "color": "BLUE"
+                        "produces": {
+                            "type": "com.wingedsheep.sdk.core.ManaSymbol.Colored",
+                            "color": "BLUE"
+                        }
                     },
                     "target": "Self"
                 },

@@ -4225,6 +4225,64 @@
     ]
 }
 
+// Quarum Trench Gnomes
+{
+    "name": "Quarum Trench Gnomes",
+    "manaCost": "{3}{R}",
+    "typeLine": "Creature — Gnome",
+    "oracleText": "{T}: If target Plains is tapped for mana, it produces colorless mana instead of white mana. (This effect lasts indefinitely.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Quarum Trench Gnomes:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "GrantStaticAbility",
+                    "ability": {
+                        "type": "ReplaceLandManaColor",
+                        "filter": {
+                            "cardPredicates": [
+                                "IsLand"
+                            ],
+                            "statePredicates": [
+                                "IsSource"
+                            ]
+                        },
+                        "produces": "com.wingedsheep.sdk.core.ManaSymbol.Colorless",
+                        "replaces": "WHITE"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "duration": "Permanent"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "land Plains"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{T}: If target Plains is tapped for mana, it produces colorless mana instead of white mana."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "162",
+        "rarity": "RARE",
+        "artist": "Dan Frazier",
+        "flavorText": "\"O Great Captain, all is lost. They tunneled, they burrowed, they trenched. They sapped the strength of our defenses.\"\n—Sorgus, *Chronicles of the Quarum Plains*",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/c/1c3b33bf-3074-406e-86f3-2a9843cf4862.jpg?1783948053"
+    }
+}
+
 // Raging Bull
 {
     "name": "Raging Bull",

@@ -1,6 +1,8 @@
 package com.wingedsheep.sdk.scripting
 
 import com.wingedsheep.sdk.core.Color
+import com.wingedsheep.sdk.core.ManaSymbol
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldNotContain
@@ -22,7 +24,7 @@ class ManaStaticDescriptionTest : DescribeSpec({
         it("keeps the controller clause after the noun (Deep Water)") {
             val description = ReplaceLandManaColor(
                 filter = GameObjectFilter.Land.youControl(),
-                color = Color.BLUE,
+                produces = ManaSymbol.Colored(Color.BLUE),
             ).description
 
             description shouldBe
@@ -37,8 +39,22 @@ class ManaStaticDescriptionTest : DescribeSpec({
         }
 
         it("still reads correctly with no controller clause at all") {
-            ReplaceLandManaColor(filter = GameObjectFilter.Land, color = Color.BLUE).description shouldBe
+            ReplaceLandManaColor(filter = GameObjectFilter.Land, produces = ManaSymbol.Colored(Color.BLUE)).description shouldBe
                 "If a land is tapped for mana, it produces {U} instead of any other type"
+        }
+        it("names the replaced colour and a colorless output (Quarum Trench Gnomes)") {
+            ReplaceLandManaColor(
+                filter = GameObjectFilter.Land,
+                produces = ManaSymbol.Colorless,
+                replaces = Color.WHITE,
+            ).description shouldBe
+                "If a land is tapped for mana, it produces colorless mana instead of white mana"
+        }
+
+        it("rejects a symbol that isn't one mana a land could produce") {
+            shouldThrow<IllegalArgumentException> {
+                ReplaceLandManaColor(filter = GameObjectFilter.Land, produces = ManaSymbol.Generic(2))
+            }
         }
     }
 

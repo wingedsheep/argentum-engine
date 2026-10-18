@@ -1,6 +1,7 @@
 package com.wingedsheep.mtg.sets.definitions.drk.cards
 
 import com.wingedsheep.sdk.core.Color
+import com.wingedsheep.sdk.core.ManaSymbol
 import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
@@ -19,7 +20,7 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * The rule is Pulse of Llanowar's [ReplaceLandManaColor] with two differences, and both of them
  * are the interesting part of this card:
  *
- *  - The colour is **fixed** ({U}) rather than a free choice, so the static carries a `color` and
+ *  - The colour is **fixed** ({U}) rather than a free choice, so the static carries a `produces` symbol and
  *    the mana ability's produced mana is rewritten directly instead of being routed through the
  *    any-colour choice machinery. For the mana solver that also means a matched land is *not*
  *    suddenly a five-colour source — it is a blue source.
@@ -40,7 +41,7 @@ val DeepWater = card("Deep Water") {
         effect = Effects.GrantStaticAbility(
             ability = ReplaceLandManaColor(
                 filter = GameObjectFilter.Land.youControl(),
-                color = Color.BLUE,
+                produces = ManaSymbol.Colored(Color.BLUE),
             ),
             target = EffectTarget.Self,
         )

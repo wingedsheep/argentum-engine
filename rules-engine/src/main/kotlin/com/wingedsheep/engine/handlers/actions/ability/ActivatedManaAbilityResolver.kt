@@ -24,6 +24,7 @@ import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.engine.state.components.stack.EntitySnapshot
 import com.wingedsheep.engine.state.nameVisibleToAll
 import com.wingedsheep.sdk.core.Color
+import com.wingedsheep.sdk.core.ManaSymbol
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.MultiplyManaOnSourceTap
 import com.wingedsheep.sdk.scripting.OverrideEnchantedLandManaColor
@@ -123,25 +124,12 @@ internal class ActivatedManaAbilityResolver(
         if (overrideColor != null && finalEffect is AddManaEffect) {
             finalEffect = finalEffect.copy(color = overrideColor)
         }
-        // Filter-based mana-color replacement (Pulse of Llanowar): a matched land produces
-        // one mana of a color of its controller's choice instead of its normal mana. Swapping
-        // the base effect for AddManaOfChoiceEffect routes the choice through the existing
-        // any-color machinery (action.manaColorChoice on a manual tap, or a resolution-time
-        // color decision if none was supplied).
-        val colorReplacement = manaColorReplacementFor(currentState, action.sourceId)
-        if (colorReplacement != null) {
-            val fixed = colorReplacement.color
-            finalEffect = when (val fe = finalEffect) {
-                // A *fixed* colour (Deep Water: "it produces {U} instead of any other type")
-                // needs no choice at all — rewrite the produced mana directly.
-                is AddManaEffect ->
-                    if (fixed != null) fe.copy(color = fixed)
-                    else AddManaOfChoiceEffect(ManaColorSet.AnyColor, fe.amount)
-                is AddColorlessManaEffect ->
-                    if (fixed != null) AddManaEffect(fixed, fe.amount)
-                    else AddManaOfChoiceEffect(ManaColorSet.AnyColor, fe.amount)
-                else -> finalEffect
-            }
+        // Filter-based mana replacement (Pulse of Llanowar, Deep Water, Quarum Trench Gnomes): a
+        // matched land produces other mana instead of its normal mana. Every replacement the land
+        // is subject to applies in turn, each to the previous one's output, so "colorless instead
+        // of white" still sees the white a Plains makes after an earlier rewrite left it white.
+        for (colorReplacement in manaColorReplacementsFor(currentState, action.sourceId)) {
+            finalEffect = replaceProducedMana(finalEffect, colorReplacement)
         }
         // Multiplicative mana replacement (Virtue of Strength: "If you tap a basic land for
         // mana, it produces three times as much of that mana instead"). Scaling the resolving
@@ -412,35 +400,64 @@ internal class ActivatedManaAbilityResolver(
     }
 
     /**
-     * The [ReplaceLandManaColor] static the land [landId] is subject to, if any — some permanent on
-     * the battlefield has that static and its filter matches the tapped land from the static
-     * controller's projected perspective. The land's produced mana is then replaced: with one mana
-     * of a color of its controller's choice (Pulse of Llanowar), or with the static's fixed `color`
-     * when it names one (Deep Water). Returns the static rather than a Boolean so the caller can
-     * tell those two apart.
+     * The [ReplaceLandManaColor] statics the land [landId] is subject to — every permanent on the
+     * battlefield with that static (printed or granted) whose filter matches the tapped land from
+     * the static controller's projected perspective, in battlefield order.
      */
-    private fun manaColorReplacementFor(
+    private fun manaColorReplacementsFor(
         state: GameState,
         landId: EntityId
-    ): ReplaceLandManaColor? {
+    ): List<ReplaceLandManaColor> {
+        var matched: MutableList<ReplaceLandManaColor>? = null
         val grantsByEntity = state.grantedStaticAbilities.groupBy { it.entityId }
         for (entityId in state.getBattlefield()) {
             val container = state.getEntity(entityId) ?: continue
             val card = container.get<CardComponent>() ?: continue
             val printed = cardRegistry.getCard(card.cardDefinitionId)?.script?.staticAbilities.orEmpty()
             // Granted statics too — a durational "{U}: … until end of turn" mana rule (Deep Water)
-            // lives only in `grantedStaticAbilities`, since the layer projector doesn't carry them.
+            // or an indefinite one on a targeted land (Quarum Trench Gnomes) lives only in
+            // `grantedStaticAbilities`, since the layer projector doesn't carry them.
             val granted = grantsByEntity[entityId]?.map { it.ability }.orEmpty()
             for (staticAbility in if (granted.isEmpty()) printed else printed + granted) {
                 val replacement = staticAbility as? ReplaceLandManaColor ?: continue
                 val staticController = state.projectedState.getController(entityId) ?: continue
                 val filterContext = PredicateContext(controllerId = staticController, sourceId = entityId)
                 if (predicateEvaluator.matches(state, state.projectedState, landId, replacement.filter, filterContext)) {
-                    return replacement
+                    (matched ?: mutableListOf<ReplaceLandManaColor>().also { matched = it }).add(replacement)
                 }
             }
         }
-        return null
+        return matched ?: emptyList()
+    }
+
+    /**
+     * [effect]'s produced mana after [replacement]: one mana of a color of the controller's choice
+     * when it names no symbol (Pulse of Llanowar — routed through the any-color machinery, so a
+     * manual tap prompts and the solver sees a five-colour source), the fixed colour it names (Deep
+     * Water), or colorless (Quarum Trench Gnomes). A replacement that names a [ReplaceLandManaColor.replaces]
+     * colour leaves every other kind of mana — colorless included — alone.
+     */
+    private fun replaceProducedMana(effect: Effect, replacement: ReplaceLandManaColor): Effect {
+        val replaces = replacement.replaces
+        return when (effect) {
+            is AddManaEffect -> {
+                if (replaces != null && effect.color != replaces) return effect
+                when (val produces = replacement.produces) {
+                    null -> AddManaOfChoiceEffect(ManaColorSet.AnyColor, effect.amount)
+                    is ManaSymbol.Colored -> effect.copy(color = produces.color)
+                    else -> AddColorlessManaEffect(effect.amount, effect.restriction)
+                }
+            }
+            is AddColorlessManaEffect -> {
+                if (replaces != null) return effect
+                when (val produces = replacement.produces) {
+                    null -> AddManaOfChoiceEffect(ManaColorSet.AnyColor, effect.amount)
+                    is ManaSymbol.Colored -> AddManaEffect(produces.color, effect.amount)
+                    else -> effect
+                }
+            }
+            else -> effect
+        }
     }
 
     /**
@@ -450,7 +467,7 @@ internal class ActivatedManaAbilityResolver(
      * Instances stack **multiplicatively** — two Virtues of Strength make a basic land produce nine
      * times as much, per the printed ruling — so the factors are folded with `*`.
      *
-     * Mirrors [manaColorReplacementFor]: each static's filter is evaluated from the
+     * Mirrors [manaColorReplacementsFor]: each static's filter is evaluated from the
      * *static's own* projected controller, so `.youControl()` means "controlled by the player who
      * controls the Virtue", which for a mana ability is necessarily the tapping player.
      */

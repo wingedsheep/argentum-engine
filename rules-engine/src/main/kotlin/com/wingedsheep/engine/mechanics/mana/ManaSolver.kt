@@ -1435,6 +1435,7 @@ class ManaSolver private constructor(
             // to seed the combined-ability loop below so the granted ability's colors (and any
             // restrictions/riders/activation costs) fold in correctly.
             var landSubtypeSeedColors: Set<Color>? = null
+            var landSubtypeSeedColorless = false
             if (card.typeLine.isLand) {
                 val projectedSubtypes = projected.getSubtypes(entityId)
                 val subtypeColors = mutableSetOf<Color>()
@@ -1446,21 +1447,20 @@ class ManaSolver private constructor(
 
                 if (subtypeColors.isNotEmpty()) {
                     // An attached aura may override the produced mana color
-                    // (e.g., Shimmerwilds Growth on a Mountain with Blue chosen → produces {U}).
-                    // A filter-based replacement (Pulse of Llanowar) makes a matched land produce
-                    // one mana of a color of its controller's choice — i.e. any of the five.
+                    // (e.g., Shimmerwilds Growth on a Mountain with Blue chosen → produces {U}),
+                    // and filter-based replacements then rewrite that output in turn, exactly as
+                    // the manual-tap path does: Pulse of Llanowar makes it any of the five colours,
+                    // Deep Water makes it {U}, Quarum Trench Gnomes makes a Plains' white colorless.
                     val overrideColor = manaStatics.landColorOverrideByTarget[entityId]
-                    val effectiveColors = when {
-                        landMatchesManaColorReplacement(state, entityId, manaStatics) -> Color.entries.toSet()
-                        overrideColor != null -> setOf(overrideColor)
-                        else -> subtypeColors
-                    }
+                    val (effectiveColors, effectiveColorless) = replacedLandMana(
+                        state, entityId, overrideColor?.let { setOf(it) } ?: subtypeColors, manaStatics
+                    )
                     if (staticGrantedManaAbilities.isEmpty()) {
                         return@mapNotNull ManaSource(
                             entityId = entityId,
                             name = card.name,
                             producesColors = effectiveColors,
-                            producesColorless = false,
+                            producesColorless = effectiveColorless,
                             isBasicLand = isBasicLand,
                             isLand = true,
                             isCreature = isCreature,
@@ -1471,6 +1471,7 @@ class ManaSolver private constructor(
                             exactIndependentTap = !tapBlockedBySickness
                         )
                     }
+                    landSubtypeSeedColorless = effectiveColorless
                     landSubtypeSeedColors = effectiveColors
                 }
             }
@@ -1554,7 +1555,8 @@ class ManaSolver private constructor(
             // unrestricted, free, sacrifice-free and rider-free; the granted abilities then add
             // their own colors/restrictions on top in the loop below.
             landSubtypeSeedColors?.let { seed ->
-                recordAmount(seed, colorless = false, amount = 1)
+                recordAmount(seed, colorless = landSubtypeSeedColorless, amount = 1)
+                if (landSubtypeSeedColorless) producesColorless = true
                 combinedColors.addAll(seed)
                 sacrificeFreeColors.addAll(seed)
                 for (color in seed) {
@@ -2223,35 +2225,47 @@ class ManaSolver private constructor(
     }
 
     /**
-     * True if [landId] is subject to a [com.wingedsheep.sdk.scripting.ReplaceLandManaColor] static
-     * (Pulse of Llanowar) — its produced mana becomes one mana of a color of its controller's
-     * choice, so for solving it is treated as a five-color source. Mirrors
-     * `ActivateAbilityHandler.landMatchesManaColorReplacement`.
+     * What a land whose intrinsic mana is [colors] produces after every
+     * [com.wingedsheep.sdk.scripting.ReplaceLandManaColor] static it is subject to, folded in
+     * battlefield order like `ActivatedManaAbilityResolver.replaceProducedMana`: the colours it
+     * can make, and whether it makes colorless. A free-choice replacement (Pulse of Llanowar)
+     * widens the replaced mana to all five colours; a fixed one (Deep Water) pins it; a colorless
+     * one (Quarum Trench Gnomes) turns it colorless. One that names a colour to replace leaves
+     * every other kind alone.
      *
      * The statics come from [manaStatics] rather than a battlefield walk, so a board with no
-     * Pulse of Llanowar answers in zero work instead of one scan per candidate source.
+     * replacement answers in zero work instead of one scan per candidate source.
      */
-    private fun landMatchesManaColorReplacement(
+    private fun replacedLandMana(
         state: GameState,
         landId: EntityId,
+        colors: Set<Color>,
         manaStatics: ManaStaticsIndex
-    ): Boolean {
+    ): Pair<Set<Color>, Boolean> {
+        var producedColors = colors
+        var producedColorless = false
         for (replacement in manaStatics.landColorReplacements) {
             val filterContext = PredicateContext(
                 controllerId = replacement.sourceControllerId,
                 sourceId = replacement.sourceId
             )
-            if (predicateEvaluator.matches(
+            if (!predicateEvaluator.matches(
                     state, state.projectedState, landId, replacement.static.filter, filterContext
                 )
-            ) {
-                // A fixed-colour replacement (Deep Water) does *not* make the land a five-colour
-                // source — it makes it a source of exactly that colour, which the land's own
-                // production already covers or doesn't. Only the free-choice form widens it.
-                if (replacement.static.color == null) return true
+            ) continue
+            val replaces = replacement.static.replaces
+            val replacedColors = if (replaces == null) producedColors else producedColors.filterTo(mutableSetOf()) { it == replaces }
+            val replacedColorless = producedColorless && replaces == null
+            if (replacedColors.isEmpty() && !replacedColorless) continue
+            producedColors = producedColors - replacedColors
+            if (replacedColorless) producedColorless = false
+            when (val produces = replacement.static.produces) {
+                null -> producedColors = Color.entries.toSet()
+                is ManaSymbol.Colored -> producedColors = producedColors + produces.color
+                else -> producedColorless = true
             }
         }
-        return false
+        return producedColors to producedColorless
     }
 
     /**

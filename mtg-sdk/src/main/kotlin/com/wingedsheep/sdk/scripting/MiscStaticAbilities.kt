@@ -3,6 +3,7 @@ package com.wingedsheep.sdk.scripting
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.ManaCost
+import com.wingedsheep.sdk.core.ManaSymbol
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.conditions.Condition
 import com.wingedsheep.sdk.scripting.effects.Effect
@@ -455,22 +456,42 @@ data class CreaturesDamagedBySourceAreDoomed(
 data class ReplaceLandManaColor(
     val filter: GameObjectFilter,
     /**
-     * When set, matched lands produce *this* color rather than one of the controller's choice —
-     * Deep Water's "it produces {U} instead of any other type". Null (the default) keeps Pulse of
-     * Llanowar's free choice, which the engine implements by swapping in an add-one-mana-of-any-color
-     * ability.
+     * The mana a matched land produces instead. Null (the default) keeps Pulse of Llanowar's
+     * "mana of a color of your choice", which the engine implements by swapping in an
+     * add-one-mana-of-any-color ability. [ManaSymbol.Colored] pins a colour — Deep Water's "it
+     * produces {U} instead of any other type" — and [ManaSymbol.Colorless] makes it colorless —
+     * Quarum Trench Gnomes' "it produces colorless mana instead of white mana". No other symbol
+     * names one mana a land could produce.
      */
-    val color: Color? = null
+    val produces: ManaSymbol? = null,
+    /**
+     * Only mana of this colour is replaced; the land's other output passes through untouched —
+     * Quarum Trench Gnomes replaces *white* mana, so a Plains that also taps for {G} still makes {G}.
+     * Null (the default) replaces mana of any type ("instead of any other type").
+     */
+    val replaces: Color? = null,
 ) : StaticAbility {
-    override val description: String =
+    init {
+        require(produces == null || produces is ManaSymbol.Colored || produces is ManaSymbol.Colorless) {
+            "ReplaceLandManaColor.produces must be a colored or the colorless symbol, was $produces"
+        }
+    }
+
+    override val description: String = buildString {
         // describeObjectForEvent, not filter.description: it renders the article and puts the
         // controller clause *after* the noun ("a land you control"), where the raw filter
         // description would prefix it ("a you control land").
-        if (color != null) {
-            "If ${describeObjectForEvent(filter)} is tapped for mana, it produces {${color.symbol}} instead of any other type"
-        } else {
-            "If ${describeObjectForEvent(filter)} is tapped for mana, it produces mana of a color of its controller's choice instead of any other type"
-        }
+        append("If ${describeObjectForEvent(filter)} is tapped for mana, it produces ")
+        append(
+            when (produces) {
+                null -> "mana of a color of its controller's choice"
+                is ManaSymbol.Colorless -> "colorless mana"
+                else -> produces.toString()
+            }
+        )
+        append(if (replaces != null) " instead of ${replaces.name.lowercase()} mana" else " instead of any other type")
+    }
+
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
         val newFilter = filter.applyTextReplacement(replacer)
         return if (newFilter !== filter) copy(filter = newFilter) else this
