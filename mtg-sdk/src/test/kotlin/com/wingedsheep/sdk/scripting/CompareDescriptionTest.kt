@@ -36,6 +36,13 @@ class CompareDescriptionTest : DescribeSpec({
 
     describe("Compare.description") {
 
+        it("reads the Nth-resolution comparison in Oracle's words") {
+            Conditions.SourceAbilityResolvedNTimes(2).description shouldBe
+                "if this is the second time this ability has resolved this turn"
+            Conditions.SourceAbilityResolvedNTimes(4).description shouldBe
+                "if this is the 4th time this ability has resolved this turn"
+        }
+
         it("reads as a sentence rather than an operator dump") {
             Conditions.YouControlAtLeast(3, GameObjectFilter.Creature).description shouldBe
                 "the number of creatures you control is at least 3"

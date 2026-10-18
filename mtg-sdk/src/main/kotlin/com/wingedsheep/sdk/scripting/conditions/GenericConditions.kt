@@ -5,6 +5,7 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.text.TextReplacer
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
+import com.wingedsheep.sdk.scripting.values.EntityNumericProperty
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -185,7 +186,25 @@ data class Compare(
     val operator: ComparisonOperator,
     val right: DynamicAmount
 ) : Condition {
-    override val description: String = "${left.description} is ${operator.phrase} ${right.description}"
+    override val description: String =
+        nthResolutionDescription() ?: "${left.description} is ${operator.phrase} ${right.description}"
+
+    /** Oracle's own wording for `Conditions.SourceAbilityResolvedNTimes(n)` (Harvestrite Host). */
+    private fun nthResolutionDescription(): String? {
+        val property = (left as? DynamicAmount.EntityProperty)?.numericProperty
+        val n = (right as? DynamicAmount.Fixed)?.amount
+        if (property != EntityNumericProperty.AbilityResolutionsThisTurn || operator != ComparisonOperator.EQ ||
+            n == null || n < 1
+        ) return null
+        val ordinal = when (n) {
+            1 -> "first"
+            2 -> "second"
+            3 -> "third"
+            else -> "$n" + if (n % 100 in 11..13) "th" else when (n % 10) { 1 -> "st"; 2 -> "nd"; 3 -> "rd"; else -> "th" }
+        }
+        return "if this is the $ordinal time this ability has resolved this turn"
+    }
+
     override fun applyTextReplacement(replacer: TextReplacer): Condition {
         val newLeft = left.applyTextReplacement(replacer)
         val newRight = right.applyTextReplacement(replacer)
