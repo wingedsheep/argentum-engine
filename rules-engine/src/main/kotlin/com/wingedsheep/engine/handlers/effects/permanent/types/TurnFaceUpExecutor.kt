@@ -5,6 +5,7 @@ import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.core.TurnFaceUpEvent
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
+import com.wingedsheep.engine.mechanics.layers.LayerTimestamps
 import com.wingedsheep.engine.mechanics.layers.StaticAbilityHandler
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
@@ -84,7 +85,7 @@ class TurnFaceUpExecutor(
             updated = staticAbilityHandler.addContinuousEffectComponent(updated)
             updated = staticAbilityHandler.addReplacementEffectComponent(updated)
             updated
-        }
+        }.let { LayerTimestamps.renew(it, targetId) } // CR 613.7f
 
         return EffectResult.success(
             newState,

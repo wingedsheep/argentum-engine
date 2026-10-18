@@ -4,6 +4,7 @@ import com.wingedsheep.engine.core.FinishResolvingAbilityContinuation
 import com.wingedsheep.engine.core.FinishResolvingSpellContinuation
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.BattlefieldEntryTimestampComponent
+import com.wingedsheep.engine.state.components.battlefield.TimestampComponent
 import com.wingedsheep.engine.state.components.identity.TokenComponent
 import com.wingedsheep.engine.state.components.player.EnteredPermanentRecord
 import com.wingedsheep.engine.state.components.player.NontokenPermanentsPutOntoBattlefieldThisTurnComponent
@@ -66,8 +67,11 @@ object PermanentEntryTracker {
         // stack, land plays, and similar actions do), so two back-to-back resolutions can share
         // a value — a blink resolving at the same timestamp as the original entry would collide
         // with the snapshot. Ticking here makes every entry stamp unique unconditionally.
+        // The same moment is the permanent's first layer timestamp (CR 613.7d), which its static
+        // abilities' continuous effects sort by (CR 613.7a); see LayerTimestamps for its renewals.
         val stamped = state.updateEntity(entityId) { container ->
             container.with(BattlefieldEntryTimestampComponent(state.timestamp, simultaneousEntryGroup))
+                .with(TimestampComponent(state.timestamp))
         }.tick().let { recordPut(it, putBy ?: resolvingController(it) ?: controllerId, entityId) }
         val cardTypes = projectedCardTypes(stamped, entityId)
         if (cardTypes.isEmpty()) return stamped

@@ -672,15 +672,15 @@ data class ReplacementEffectSourceComponent(
 ) : Component
 
 /**
- * Timestamp for ordering continuous effects in the layer system (Rule 613.7).
- *
- * Currently never stamped — [com.wingedsheep.engine.mechanics.layers.StateProjector]
- * falls back to the current [com.wingedsheep.engine.state.GameState.timestamp] when it
- * is absent. Conceptually this is the same moment as
- * [BattlefieldEntryTimestampComponent] (both are "when the permanent entered the
- * battlefield"), but the two stay separate: stamping this one on every entry would
- * change layer ordering engine-wide, while the entry stamp is a pure identity marker
- * with no projection impact.
+ * The permanent's layer-system timestamp (CR 613.7d): the continuous effects its static
+ * abilities generate sort by it (CR 613.7a). Stamped on battlefield entry together with
+ * [BattlefieldEntryTimestampComponent] and renewed by
+ * [com.wingedsheep.engine.mechanics.layers.LayerTimestamps] when the permanent becomes attached,
+ * turns face up or down, or transforms (CR 613.7e–g); stripped on leave. The two stay separate
+ * because the entry stamp identifies the battlefield *object* (CR 400.7) and must not move on
+ * those renewals. [com.wingedsheep.engine.mechanics.layers.StateProjector] falls back to the
+ * current [com.wingedsheep.engine.state.GameState.timestamp] for a permanent that never went
+ * through an entry (a test fixture placing it directly).
  */
 @Serializable
 data class TimestampComponent(

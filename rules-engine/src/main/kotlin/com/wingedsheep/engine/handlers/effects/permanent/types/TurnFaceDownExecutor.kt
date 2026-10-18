@@ -4,6 +4,7 @@ import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.core.TurnedFaceDownEvent
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
+import com.wingedsheep.engine.mechanics.layers.LayerTimestamps
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
@@ -43,7 +44,7 @@ class TurnFaceDownExecutor : EffectExecutor<TurnFaceDownEffect> {
 
         val newState = state.updateEntity(targetId) { c ->
             c.with(FaceDownComponent)
-        }
+        }.let { LayerTimestamps.renew(it, targetId) } // CR 613.7f
 
         return EffectResult.success(
             newState,

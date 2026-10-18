@@ -9,6 +9,7 @@ import com.wingedsheep.engine.handlers.effects.EntersWithReplacements
 import com.wingedsheep.engine.handlers.effects.ZoneEntryOptions
 import com.wingedsheep.engine.handlers.effects.ZoneTransitionResult
 import com.wingedsheep.engine.handlers.effects.ZoneTransitionService
+import com.wingedsheep.engine.mechanics.layers.LayerTimestamps
 import com.wingedsheep.engine.mechanics.layers.StaticAbilityHandler
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.ComponentContainer
@@ -107,7 +108,7 @@ class TransformEffectExecutor(
  * Flip the double-faced permanent [entityId] to its opposite face **in place** on the battlefield
  * (CR 701.27a) and return the new state paired with the [TransformedEvent] the flip emits, or `null`
  * when [entityId] is not a double-faced permanent (the caller decides whether that's a no-op or an
- * error). The entity id is stable; counters, damage, attachments, controller, and timestamp persist
+ * error). The entity id is stable; counters, damage, attachments and controller persist (it gets a new layer timestamp, CR 613.7g)
  * — only the identity characteristics change, and the new face's static/replacement effects are
  * re-registered so layer projection picks them up on the next projection.
  *
@@ -164,7 +165,8 @@ internal fun flipDfcInPlace(
         manaValueOverride = if (intoBackFace) {
             dfcBackFaceManaValue(cardRegistry.getCard(dfc.frontCardDefinitionId), currentCard.manaValue)
         } else null,
-    ) ?: return null
+    )?.let { LayerTimestamps.renew(it, entityId) } // CR 613.7g
+        ?: return null
 
     return newState to TransformedEvent(
         entityId = entityId,

@@ -2,10 +2,13 @@ package com.wingedsheep.engine.handlers.effects
 
 import com.wingedsheep.engine.state.ComponentContainer
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.mechanics.layers.LayerTimestamps
 import com.wingedsheep.engine.state.components.battlefield.BattlefieldEntryTimestampComponent
+import com.wingedsheep.engine.state.components.battlefield.TimestampComponent
 import com.wingedsheep.sdk.model.EntityId
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.longs.shouldBeGreaterThan
+import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 
 /**
@@ -53,5 +56,27 @@ class PermanentEntryTrackerStampTest : FunSpec({
         state = PermanentEntryTracker.record(state, controller, permanent)
 
         entryStamp(state, permanent)!! shouldBeGreaterThan originalStamp
+    }
+
+    fun layerStamp(state: GameState, id: EntityId): Long? =
+        state.getEntity(id)?.get<TimestampComponent>()?.timestamp
+
+    test("entry also sets the layer timestamp, which a renewal moves without touching the entry stamp") {
+        val controller = EntityId.generate()
+        val permanent = EntityId.generate()
+        var state = GameState()
+            .withEntity(controller, ComponentContainer())
+            .withEntity(permanent, ComponentContainer())
+
+        state = PermanentEntryTracker.record(state, controller, permanent)
+        val entry = entryStamp(state, permanent)!!
+        layerStamp(state, permanent) shouldBe entry
+
+        // CR 613.7e-g: becoming attached, turning face up/down or transforming renews only the
+        // layer timestamp; the battlefield object (CR 400.7) is the same one.
+        state = LayerTimestamps.renew(state, permanent)
+        layerStamp(state, permanent)!! shouldBeGreaterThan entry
+        entryStamp(state, permanent) shouldBe entry
+        state.timestamp shouldBeGreaterThan layerStamp(state, permanent)!!
     }
 })

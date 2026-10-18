@@ -4,6 +4,7 @@ import com.wingedsheep.engine.core.GameEvent
 import com.wingedsheep.engine.core.PermanentAttachedEvent
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.mechanics.layers.Layer
+import com.wingedsheep.engine.mechanics.layers.LayerTimestamps
 import com.wingedsheep.engine.mechanics.layers.SerializableModification
 import com.wingedsheep.engine.mechanics.layers.addFloatingEffect
 import com.wingedsheep.engine.handlers.PredicateContext
@@ -184,6 +185,8 @@ object AttachmentMover {
         val reconfigures = reconfiguresOnto(state, attachmentId, hostId)
 
         newState = newState.updateEntity(attachmentId) { it.with(AttachedToComponent(hostId)) }
+        // CR 613.7e — an Aura or Equipment gets a new timestamp each time it becomes attached.
+        newState = LayerTimestamps.renew(newState, attachmentId)
         newState = newState.updateEntity(hostId) { container ->
             val existing = container.get<AttachmentsComponent>()?.attachedIds ?: emptyList()
             container.with(AttachmentsComponent(existing + attachmentId))

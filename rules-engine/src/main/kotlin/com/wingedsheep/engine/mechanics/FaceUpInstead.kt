@@ -3,6 +3,7 @@ package com.wingedsheep.engine.mechanics
 import com.wingedsheep.engine.core.GameEvent
 import com.wingedsheep.engine.core.TurnFaceUpEvent
 import com.wingedsheep.engine.mechanics.layers.ContinuousEffectSourceComponent
+import com.wingedsheep.engine.mechanics.layers.LayerTimestamps
 import com.wingedsheep.engine.mechanics.layers.StaticAbilityHandler
 import com.wingedsheep.engine.state.ComponentContainer
 import com.wingedsheep.engine.state.GameState
@@ -75,7 +76,7 @@ object FaceUpInstead {
             rider.faceUpStatics?.let { updated = updated.with(it) }
             rider.faceUpReplacements?.let { updated = updated.with(it) }
             updated
-        }
+        }.let { LayerTimestamps.renew(it, entityId) } // CR 613.7f
         return newState to TurnFaceUpEvent(entityId, cardName, controllerId)
     }
 

@@ -236,6 +236,17 @@ class StateProjector(val state: GameState) {
 This effectively solves the hardest logic problem in the engine while keeping the core `GameAction` logic pure and
 simple.
 
+### Where the timestamps come from (Rule 613.7)
+
+When no dependency decides, effects apply in timestamp order. A floating effect takes
+`state.timestamp` when it is created (613.7b). A static ability's effect takes its permanent's
+`TimestampComponent` (613.7a), stamped on battlefield entry by `PermanentEntryTracker.record`
+(613.7d) and renewed by `LayerTimestamps.renew` when an Aura or Equipment becomes attached (613.7e),
+when the permanent turns face up or face down (613.7f), and when it transforms (613.7g). So an older
+Confiscate loses its layer-2 fight against a later "each player gains control of all permanents they
+own" (The Fall of Lord Konda), and a later Confiscate beats an earlier Act of Treason. A static
+ability granted by an effect takes the later of its holder's timestamp and the grant's.
+
 ### Affects-filter dependencies inside Layer 4
 
 `EffectSorter.dependsOn` compares the two effects' **already-resolved** `affectedEntities` sets, which

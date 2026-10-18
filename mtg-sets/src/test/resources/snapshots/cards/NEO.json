@@ -10593,6 +10593,115 @@
     ]
 }
 
+// The Fall of Lord Konda
+{
+    "name": "The Fall of Lord Konda",
+    "manaCost": "{2}{W}",
+    "typeLine": "Enchantment — Saga",
+    "oracleText": "(As this Saga enters and after your draw step, add a lore counter.)\nI — Exile target creature an opponent controls with mana value 4 or greater.\nII — Each player gains control of all permanents they own.\nIII — Exile this Saga, then return it to the battlefield transformed under your control.",
+    "script": {
+        "sagaChapters": [
+            {
+                "chapter": 1,
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Exile"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature mv>=4 ctrl:opponent"
+                    },
+                    "id": "t0"
+                }
+            },
+            {
+                "chapter": 2,
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "Each"
+                    },
+                    "body": {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Group",
+                            "filter": {
+                                "baseFilter": "permanent own:you"
+                            }
+                        },
+                        "body": {
+                            "type": "GainControl",
+                            "target": "IterationEntity"
+                        }
+                    }
+                }
+            },
+            {
+                "chapter": 3,
+                "effect": "ExileAndReturnTransformed"
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Fragment of Konda",
+        "manaCost": "",
+        "typeLine": "Enchantment Creature — Human Noble",
+        "oracleText": "Defender\nWhen this creature dies, draw a card.",
+        "creatureStats": {
+            "power": 1,
+            "toughness": 3
+        },
+        "keywords": [
+            "DEFENDER"
+        ],
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "Fragment of Konda:1",
+                    "trigger": {
+                        "type": "ZoneChangeEvent",
+                        "from": "Battlefield",
+                        "to": "Graveyard"
+                    },
+                    "effect": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    }
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "12",
+            "rarity": "UNCOMMON",
+            "artist": "Andrew Mar",
+            "flavorText": "For his transgressions against the kami, Lord Konda's immortal body was turned to stone, then shattered into a thousand still-living pieces.",
+            "imageUri": "https://cards.scryfall.io/normal/back/4/d/4d784409-df6d-45d4-8f8b-6e3fd57a8fde.jpg?1783923930"
+        },
+        "colorIdentityOverride": [
+            "WHITE"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "12",
+        "rarity": "UNCOMMON",
+        "artist": "Andrew Mar",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/d/4d784409-df6d-45d4-8f8b-6e3fd57a8fde.jpg?1783923930"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // The Reality Chip
 {
     "name": "The Reality Chip",
