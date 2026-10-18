@@ -622,7 +622,6 @@ Families:
 
 ## DynamicAmount
 
-- `DynamicAmount.ActivityDuringTheirLastTurn(player: Player, activity: LastTurnActivity)` — How many times player did activity during **their** most recent turn — "that player cast a spell or put a nontoken permanent onto the battlefield during their last turn" (Arboria).
 - `DynamicAmount.Add(left: DynamicAmount, right: DynamicAmount)` — Add two dynamic amounts.
 - `DynamicAmount.AggregateBattlefield(player: Player, filter: GameObjectFilter, aggregation: Aggregation, property: CardNumericProperty?, excludeSelf: Boolean, counterType: CounterType?, excludeTriggeringEntity: Boolean)` — Generic battlefield aggregation primitive.
 - `DynamicAmount.AggregateZone(player: Player, zone: Zone, filter: GameObjectFilter, aggregation: Aggregation, property: CardNumericProperty?)` — Generic zone aggregation primitive.
