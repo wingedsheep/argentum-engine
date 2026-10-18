@@ -5368,9 +5368,18 @@ object Effects {
      * [onPaid] is an optional rider that runs **only if** the spell's controller pays
      * — the "If they do, …" clause on cards like Divert Disaster (controller of the
      * counter, not of the countered spell, becomes the rider's `controllerId`).
+     *
+     * [target] widens what may be countered: `CounterTarget.SpellOrAbility` reads "Counter target
+     * spell or ability unless its controller pays {3}" (Mirrorshell Crab) — the payer is then the
+     * caster of the spell or the controller of the activated/triggered ability.
      */
-    fun CounterUnlessPays(cost: String, onPaid: Effect? = null): Effect =
-        CounterEffect(condition = CounterCondition.UnlessPaysMana(ManaCost.parse(cost), onPaid))
+    fun CounterUnlessPays(
+        cost: String,
+        onPaid: Effect? = null,
+        target: com.wingedsheep.sdk.scripting.effects.CounterTarget =
+            com.wingedsheep.sdk.scripting.effects.CounterTarget.Spell
+    ): Effect =
+        CounterEffect(target = target, condition = CounterCondition.UnlessPaysMana(ManaCost.parse(cost), onPaid))
 
     /**
      * Counter target spell unless its controller pays a dynamic generic mana cost.

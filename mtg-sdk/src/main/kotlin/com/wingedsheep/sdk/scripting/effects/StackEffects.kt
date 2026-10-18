@@ -192,6 +192,7 @@ data class CounterEffect(
                 } else {
                     append("Counter target spell or ability")
                 }
+                appendUnlessPays()
             }
             CounterTarget.Spell -> {
                 when (condition) {
@@ -204,13 +205,9 @@ data class CounterEffect(
                             append("Counter target spell")
                         }
                     }
-                    is CounterCondition.UnlessPaysMana -> {
-                        append("Counter target spell unless its controller pays ${condition.cost}")
-                        condition.onPaid?.let { append(". If they do, ${it.description.replaceFirstChar(Char::lowercase)}") }
-                    }
-                    is CounterCondition.UnlessPaysDynamic -> {
-                        append("Counter target spell unless its controller pays ${condition.amount.description}")
-                        condition.onPaid?.let { append(". If they do, ${it.description.replaceFirstChar(Char::lowercase)}") }
+                    is CounterCondition.UnlessPaysMana, is CounterCondition.UnlessPaysDynamic -> {
+                        append("Counter target spell")
+                        appendUnlessPays()
                     }
                 }
                 when (val dest = counterDestination) {
@@ -247,6 +244,16 @@ data class CounterEffect(
                 }
             }
         }
+    }
+
+    private fun StringBuilder.appendUnlessPays() {
+        val (price, onPaid) = when (condition) {
+            CounterCondition.Always -> return
+            is CounterCondition.UnlessPaysMana -> condition.cost.toString() to condition.onPaid
+            is CounterCondition.UnlessPaysDynamic -> condition.amount.description to condition.onPaid
+        }
+        append(" unless its controller pays $price")
+        onPaid?.let { append(". If they do, ${it.description.replaceFirstChar(Char::lowercase)}") }
     }
 
     override fun applyTextReplacement(replacer: TextReplacer): Effect {
