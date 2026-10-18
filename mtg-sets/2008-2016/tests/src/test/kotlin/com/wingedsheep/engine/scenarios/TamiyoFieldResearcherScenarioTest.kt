@@ -73,6 +73,39 @@ class TamiyoFieldResearcherScenarioTest : ScenarioTestBase() {
                 }
             }
 
+            test("trampling over a blocker is one combat-damage event, so one card") {
+                val game = scenario()
+                    .withPlayers("Player", "Opponent")
+                    .withCardOnBattlefield(1, "Tamiyo, Field Researcher")
+                    .withCardOnBattlefield(1, "Rampaging Baloths")
+                    .withCardOnBattlefield(2, "Grizzly Bears")
+                    .withCardInLibrary(1, "Hill Giant")
+                    .withCardInLibrary(1, "Hill Giant")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                val tamiyo = game.findPermanent("Tamiyo, Field Researcher")!!
+                setLoyalty(game, tamiyo, 4)
+                val baloths = game.findPermanent("Rampaging Baloths")!!
+
+                activate(game, tamiyo, index = 0, targets = listOf(baloths))
+                game.resolveStack()
+
+                game.advanceToPhase(Phase.COMBAT, Step.DECLARE_ATTACKERS)
+                game.declareAttackers(mapOf("Rampaging Baloths" to 2)).error shouldBe null
+                game.passUntilPhase(Phase.COMBAT, Step.DECLARE_BLOCKERS)
+                game.declareBlockers(mapOf("Grizzly Bears" to listOf("Rampaging Baloths"))).error shouldBe null
+                val libraryBefore = game.librarySize(1)
+                game.passUntilPhase(Phase.POSTCOMBAT_MAIN, Step.POSTCOMBAT_MAIN)
+                game.resolveStack()
+
+                withClue("2 to the Bears and 4 trampling over draw one card, not two") {
+                    game.getLifeTotal(2) shouldBe 16
+                    game.librarySize(1) shouldBe libraryBefore - 1
+                }
+            }
+
             test("an opponent's creature draws for you, not for them, and stops after your next untap") {
                 val game = scenario()
                     .withPlayers("Player", "Opponent")

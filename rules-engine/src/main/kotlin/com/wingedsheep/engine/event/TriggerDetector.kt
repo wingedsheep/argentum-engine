@@ -1077,6 +1077,9 @@ class TriggerDetector(
         // once even if several events in this batch match it — track which ids have already
         // produced a pending trigger this pass.
         val firedOnceIds = mutableSetOf<String>()
+        // Simultaneous combat damage folds here as on the battlefield path ("whenever either of
+        // those creatures deals combat damage" — Tamiyo, Field Researcher — triggers once on trample).
+        val combatDamageSlots = mutableMapOf<List<Any?>, Int>()
         for ((eventIndex, event) in events.withIndex()) {
             for (delayed in eventBased) {
                 fun referencesFor(id: EntityId?): com.wingedsheep.engine.handlers.ObjectReferenceEnvironment {
@@ -1220,28 +1223,27 @@ class TriggerDetector(
                 val watchedTriggering = delayed.watchedEntityId
                     .takeUnless { specEvent is com.wingedsheep.sdk.scripting.EventPattern.SpellCastEvent }
                 if (delayed.fireOnce) firedOnceIds.add(delayed.id)
-                triggers.add(
-                    PendingTrigger(
-                        ability = TriggeredAbility.create(
-                            id = AbilityId("delayed_${delayed.id}"),
-                            trigger = spec.event,
-                            binding = spec.binding,
-                            effect = delayed.effect,
-                            targetRequirement = delayed.targetRequirement,
-                            additionalTargetRequirements = delayed.additionalTargetRequirements
-                        ),
-                        sourceId = delayed.sourceId,
-                objectReferences = referencesFor(watchedTriggering ?: TriggerContext.fromEvent(event).triggeringEntityId),
-                        sourceName = delayed.sourceName,
-                        controllerId = delayed.controllerId,
-                        triggerContext = TriggerContext.fromEvent(event).copy(
-                            triggeringEntityId = watchedTriggering
-                                ?: TriggerContext.fromEvent(event).triggeringEntityId
-                        ).withAttackersAgainstYou(specEvent, event, delayed.controllerId, state),
-                        consumesDelayedTriggerId = if (delayed.fireOnce) delayed.id else null,
-                        carriedPipeline = delayed.carriedPipelineFor(state)
-                    )
+                val pending = PendingTrigger(
+                    ability = TriggeredAbility.create(
+                        id = AbilityId("delayed_${delayed.id}"),
+                        trigger = spec.event,
+                        binding = spec.binding,
+                        effect = delayed.effect,
+                        targetRequirement = delayed.targetRequirement,
+                        additionalTargetRequirements = delayed.additionalTargetRequirements
+                    ),
+                    sourceId = delayed.sourceId,
+                    objectReferences = referencesFor(watchedTriggering ?: TriggerContext.fromEvent(event).triggeringEntityId),
+                    sourceName = delayed.sourceName,
+                    controllerId = delayed.controllerId,
+                    triggerContext = TriggerContext.fromEvent(event).copy(
+                        triggeringEntityId = watchedTriggering
+                            ?: TriggerContext.fromEvent(event).triggeringEntityId
+                    ).withAttackersAgainstYou(specEvent, event, delayed.controllerId, state),
+                    consumesDelayedTriggerId = if (delayed.fireOnce) delayed.id else null,
+                    carriedPipeline = delayed.carriedPipelineFor(state)
                 )
+                triggers.addAll(foldSimultaneousDamage(listOf(pending), event, triggers, combatDamageSlots))
             }
         }
     }
