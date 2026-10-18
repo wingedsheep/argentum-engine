@@ -1,3 +1,240 @@
+// Acquisition Octopus
+{
+    "name": "Acquisition Octopus",
+    "manaCost": "{2}{U}",
+    "typeLine": "Artifact Creature — Equipment Octopus",
+    "oracleText": "Whenever this creature or equipped creature deals combat damage to a player, draw a card.\nReconfigure {2} ({2}: Attach to target creature you control; or unattach from a creature. Reconfigure only as a sorcery. While attached, this isn't a creature.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "RECONFIGURE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Acquisition Octopus:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            },
+            {
+                "id": "Acquisition Octopus:2",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Acquisition Octopus:3",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "another creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you",
+                            "excludeSelf": true
+                        },
+                        "id": "another creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "descriptionOverride": "Reconfigure {2}: Attach to target creature you control"
+            },
+            {
+                "id": "Acquisition Octopus:4",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}"
+                    }
+                },
+                "effect": "UnattachEquipment",
+                "timing": "SorcerySpeed",
+                "restrictions": [
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": "Self",
+                            "filter": {
+                                "statePredicates": [
+                                    {
+                                        "type": "IsAttachedTo",
+                                        "filter": "creature"
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                ],
+                "descriptionOverride": "Reconfigure {2}: Unattach from the creature"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "44",
+        "rarity": "UNCOMMON",
+        "artist": "Francisco Miyara",
+        "flavorText": "You can never have too many arms.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/e/8e971a72-31db-4b7e-b9b9-9f45e8c3f87e.jpg?1783923908"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Armguard Familiar
+{
+    "name": "Armguard Familiar",
+    "manaCost": "{1}{U}",
+    "typeLine": "Artifact Creature — Equipment Beast",
+    "oracleText": "Ward {2} (Whenever this permanent becomes the target of a spell or ability an opponent controls, counter it unless that player pays {2}.)\nEquipped creature gets +2/+1 and has ward {2}.\nReconfigure {4} ({4}: Attach to target creature you control; or unattach from a creature. Reconfigure only as a sorcery. While attached, this isn't a creature.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "RECONFIGURE",
+        "WARD"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Ward",
+            "cost": {
+                "type": "WardCost.Mana",
+                "manaCost": "{2}"
+            }
+        }
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Armguard Familiar:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{4}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "another creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you",
+                            "excludeSelf": true
+                        },
+                        "id": "another creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "descriptionOverride": "Reconfigure {4}: Attach to target creature you control"
+            },
+            {
+                "id": "Armguard Familiar:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{4}"
+                    }
+                },
+                "effect": "UnattachEquipment",
+                "timing": "SorcerySpeed",
+                "restrictions": [
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": "Self",
+                            "filter": {
+                                "statePredicates": [
+                                    {
+                                        "type": "IsAttachedTo",
+                                        "filter": "creature"
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                ],
+                "descriptionOverride": "Reconfigure {4}: Unattach from the creature"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 2,
+                "toughnessBonus": 1
+            },
+            {
+                "type": "GrantWard",
+                "cost": {
+                    "type": "WardCost.Mana",
+                    "manaCost": "{2}"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "46",
+        "artist": "Joshua Raphael",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/4/7497f147-146d-4a76-b670-bd84e07352b3.jpg?1783923907"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Atsushi, the Blazing Sky
 {
     "name": "Atsushi, the Blazing Sky",
@@ -130,6 +367,117 @@
         "imageUri": "https://cards.scryfall.io/normal/front/b/8/b8c30ffb-b4f5-40b0-87b8-800a42bded2b.jpg?1783923828"
     },
     "colorIdentityOverride": []
+}
+
+// Blade of the Oni
+{
+    "name": "Blade of the Oni",
+    "manaCost": "{1}{B}",
+    "typeLine": "Artifact Creature — Equipment Demon",
+    "oracleText": "Menace\nEquipped creature has base power and toughness 5/5, has menace, and is a black Demon in addition to its other colors and types.\nReconfigure {2}{B}{B} ({2}{B}{B}: Attach to target creature you control; or unattach from a creature. Reconfigure only as a sorcery. While attached, this isn't a creature.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "keywords": [
+        "MENACE",
+        "RECONFIGURE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Blade of the Oni:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{B}{B}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "another creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you",
+                            "excludeSelf": true
+                        },
+                        "id": "another creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "descriptionOverride": "Reconfigure {2}{B}{B}: Attach to target creature you control"
+            },
+            {
+                "id": "Blade of the Oni:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{B}{B}"
+                    }
+                },
+                "effect": "UnattachEquipment",
+                "timing": "SorcerySpeed",
+                "restrictions": [
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": "Self",
+                            "filter": {
+                                "statePredicates": [
+                                    {
+                                        "type": "IsAttachedTo",
+                                        "filter": "creature"
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                ],
+                "descriptionOverride": "Reconfigure {2}{B}{B}: Unattach from the creature"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "SetBasePowerToughnessStatic",
+                "power": 5,
+                "toughness": 5
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "MENACE"
+            },
+            {
+                "type": "GrantColor",
+                "color": "BLACK"
+            },
+            {
+                "type": "GrantSubtype",
+                "subtype": "Demon",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "89",
+        "rarity": "MYTHIC",
+        "artist": "Jason A. Engle",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/6/b6bc3f71-b4ce-4c05-be3c-7a0faad476c3.jpg?1783923890"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
 }
 
 // Blade-Blizzard Kitsune
@@ -554,6 +902,105 @@
     "colorIdentityOverride": []
 }
 
+// Bronzeplate Boar
+{
+    "name": "Bronzeplate Boar",
+    "manaCost": "{2}{R}",
+    "typeLine": "Artifact Creature — Equipment Boar",
+    "oracleText": "Trample\nEquipped creature gets +3/+2 and has trample.\nReconfigure {5} ({5}: Attach to target creature you control; or unattach from a creature. Reconfigure only as a sorcery. While attached, this isn't a creature.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "TRAMPLE",
+        "RECONFIGURE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Bronzeplate Boar:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{5}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "another creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you",
+                            "excludeSelf": true
+                        },
+                        "id": "another creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "descriptionOverride": "Reconfigure {5}: Attach to target creature you control"
+            },
+            {
+                "id": "Bronzeplate Boar:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{5}"
+                    }
+                },
+                "effect": "UnattachEquipment",
+                "timing": "SorcerySpeed",
+                "restrictions": [
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": "Self",
+                            "filter": {
+                                "statePredicates": [
+                                    {
+                                        "type": "IsAttachedTo",
+                                        "filter": "creature"
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                ],
+                "descriptionOverride": "Reconfigure {5}: Unattach from the creature"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 3,
+                "toughnessBonus": 2
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "TRAMPLE"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "135",
+        "rarity": "UNCOMMON",
+        "artist": "Campbell White",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/c/7c8f5da8-13a8-4b39-8ddc-7661892924af.jpg?1783923871"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Brute Suit
 {
     "name": "Brute Suit",
@@ -582,6 +1029,133 @@
         "imageUri": "https://cards.scryfall.io/normal/front/3/6/363cb43a-e358-4380-a42f-9b095ca522c6.jpg?1783923827"
     },
     "colorIdentityOverride": []
+}
+
+// Chainflail Centipede
+{
+    "name": "Chainflail Centipede",
+    "manaCost": "{2}{B}",
+    "typeLine": "Artifact Creature — Equipment Insect",
+    "oracleText": "Whenever this creature or equipped creature attacks, it gets +2/+0 until end of turn.\nReconfigure {2} ({2}: Attach to target creature you control; or unattach from a creature. Reconfigure only as a sorcery. While attached, this isn't a creature.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "RECONFIGURE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Chainflail Centipede:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": "Self"
+                }
+            },
+            {
+                "id": "Chainflail Centipede:2",
+                "trigger": "AttackEvent",
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": "TriggeringEntity"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Chainflail Centipede:3",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "another creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you",
+                            "excludeSelf": true
+                        },
+                        "id": "another creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "descriptionOverride": "Reconfigure {2}: Attach to target creature you control"
+            },
+            {
+                "id": "Chainflail Centipede:4",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}"
+                    }
+                },
+                "effect": "UnattachEquipment",
+                "timing": "SorcerySpeed",
+                "restrictions": [
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": "Self",
+                            "filter": {
+                                "statePredicates": [
+                                    {
+                                        "type": "IsAttachedTo",
+                                        "filter": "creature"
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                ],
+                "descriptionOverride": "Reconfigure {2}: Unattach from the creature"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "90",
+        "artist": "Viko Menezes",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/4/24b8efe0-2f7b-4ada-a1b9-9c5f9e6a114d.jpg?1783923888",
+        "rulings": [
+            {
+                "date": "2022-02-18",
+                "text": "If the equipped creature is the one that attacks, it gets +2/+0 until end of turn, not Chainflail Centipede. This is true even if Chainflail Centipede is no longer attached to it by the time the ability resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
 }
 
 // Circuit Mender
@@ -3101,6 +3675,100 @@
     ]
 }
 
+// Leech Gauntlet
+{
+    "name": "Leech Gauntlet",
+    "manaCost": "{1}{B}",
+    "typeLine": "Artifact Creature — Equipment Leech",
+    "oracleText": "Lifelink\nEquipped creature has lifelink.\nReconfigure {4} ({4}: Attach to target creature you control; or unattach from a creature. Reconfigure only as a sorcery. While attached, this isn't a creature.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "LIFELINK",
+        "RECONFIGURE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Leech Gauntlet:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{4}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "another creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you",
+                            "excludeSelf": true
+                        },
+                        "id": "another creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "descriptionOverride": "Reconfigure {4}: Attach to target creature you control"
+            },
+            {
+                "id": "Leech Gauntlet:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{4}"
+                    }
+                },
+                "effect": "UnattachEquipment",
+                "timing": "SorcerySpeed",
+                "restrictions": [
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": "Self",
+                            "filter": {
+                                "statePredicates": [
+                                    {
+                                        "type": "IsAttachedTo",
+                                        "filter": "creature"
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                ],
+                "descriptionOverride": "Reconfigure {4}: Unattach from the creature"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "LIFELINK"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "106",
+        "rarity": "UNCOMMON",
+        "artist": "Robin Olausson",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/7/97986b67-5ae4-492f-a9e0-81f57a829d86.jpg?1783923882"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Lethal Exploit
 {
     "name": "Lethal Exploit",
@@ -3570,6 +4238,104 @@
     ]
 }
 
+// March of Burgeoning Life
+{
+    "name": "March of Burgeoning Life",
+    "manaCost": "{X}{G}",
+    "typeLine": "Instant",
+    "oracleText": "As an additional cost to cast this spell, you may exile any number of green cards from your hand. This spell costs {2} less to cast for each card exiled this way.\nChoose target creature with mana value less than X. Search your library for a creature card with the same name as that creature, put it onto the battlefield tapped, then shuffle.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Library",
+                        "filter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                {
+                                    "type": "SharesNameWith",
+                                    "entity": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "storeAs": "searchable",
+                    "search": true
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "searchable",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "storeSelected": "found",
+                    "prompt": "Search your library for a creature card with the same name as target creature with mana value less than X to put onto the battlefield tapped",
+                    "selectedLabel": "Put onto the battlefield tapped"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "found",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Battlefield",
+                        "placement": "Tapped"
+                    }
+                },
+                "ShuffleLibrary",
+                "EmitLibrarySearchedEvent"
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "CompareNumericProperty",
+                                "property": "MANA_VALUE",
+                                "operator": "LT",
+                                "amount": "XValue"
+                            }
+                        ]
+                    }
+                },
+                "id": "t0"
+            }
+        ],
+        "additionalCosts": [
+            {
+                "type": "AnyNumberForCostReduction",
+                "action": "EXILE",
+                "filter": "green",
+                "reductionPerUnit": 2,
+                "fromZone": "HAND"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "201",
+        "rarity": "RARE",
+        "artist": "Wylie Beckert",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/e/0e223d99-408a-413d-abb1-cb2f11ae521d.jpg?1783923843"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // March of Otherworldly Light
 {
     "name": "March of Otherworldly Light",
@@ -3688,6 +4454,107 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// March of Swirling Mist
+{
+    "name": "March of Swirling Mist",
+    "manaCost": "{X}{U}",
+    "typeLine": "Instant",
+    "oracleText": "As an additional cost to cast this spell, you may exile any number of blue cards from your hand. This spell costs {2} less to cast for each card exiled this way.\nUp to X target creatures phase out. (While they're phased out, they're treated as though they don't exist. Each one phases in before its controller untaps during their next untap step.)",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": "IterationSpace.Targets",
+            "body": {
+                "type": "PhaseOut",
+                "target": {
+                    "type": "ContextTarget",
+                    "index": 0
+                }
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "optional": true,
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0",
+                "dynamicMaxCount": "XValue"
+            }
+        ],
+        "additionalCosts": [
+            {
+                "type": "AnyNumberForCostReduction",
+                "action": "EXILE",
+                "filter": "blue",
+                "reductionPerUnit": 2,
+                "fromZone": "HAND"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "61",
+        "rarity": "RARE",
+        "artist": "Iris Compiet",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/0/100171d8-7436-44c8-b4cb-0101ffa05c25.jpg?1783923901"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// March of Wretched Sorrow
+{
+    "name": "March of Wretched Sorrow",
+    "manaCost": "{X}{B}",
+    "typeLine": "Instant",
+    "oracleText": "As an additional cost to cast this spell, you may exile any number of black cards from your hand. This spell costs {2} less to cast for each card exiled this way.\nMarch of Wretched Sorrow deals X damage to target creature or planeswalker and you gain X life.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DealDamage",
+                    "amount": "XValue",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "GainLife",
+                    "amount": "XValue"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetCreatureOrPlaneswalker",
+                "id": "t0"
+            }
+        ],
+        "additionalCosts": [
+            {
+                "type": "AnyNumberForCostReduction",
+                "action": "EXILE",
+                "filter": "black",
+                "reductionPerUnit": 2,
+                "fromZone": "HAND"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "111",
+        "rarity": "RARE",
+        "artist": "Tyler Jacobson",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/5/050a604e-6146-4e2e-88a5-863ecb3dfa1f.jpg?1783923880"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -5019,6 +5886,105 @@
     ]
 }
 
+// Rabbit Battery
+{
+    "name": "Rabbit Battery",
+    "manaCost": "{R}",
+    "typeLine": "Artifact Creature — Equipment Rabbit",
+    "oracleText": "Haste\nEquipped creature gets +1/+1 and has haste.\nReconfigure {R} ({R}: Attach to target creature you control; or unattach from a creature. Reconfigure only as a sorcery. While attached, this isn't a creature.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "HASTE",
+        "RECONFIGURE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Rabbit Battery:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{R}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "another creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you",
+                            "excludeSelf": true
+                        },
+                        "id": "another creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "descriptionOverride": "Reconfigure {R}: Attach to target creature you control"
+            },
+            {
+                "id": "Rabbit Battery:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{R}"
+                    }
+                },
+                "effect": "UnattachEquipment",
+                "timing": "SorcerySpeed",
+                "restrictions": [
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": "Self",
+                            "filter": {
+                                "statePredicates": [
+                                    {
+                                        "type": "IsAttachedTo",
+                                        "filter": "creature"
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                ],
+                "descriptionOverride": "Reconfigure {R}: Unattach from the creature"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "HASTE"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "157",
+        "rarity": "UNCOMMON",
+        "artist": "Justyna Dura",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/d/5d33a5b7-797b-4079-8d62-edd124c0fb5a.jpg?1783923861"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Repel the Vile
 {
     "name": "Repel the Vile",
@@ -5712,6 +6678,141 @@
     "colorIdentityOverride": [
         "BLUE",
         "BLACK"
+    ]
+}
+
+// Simian Sling
+{
+    "name": "Simian Sling",
+    "manaCost": "{R}",
+    "typeLine": "Artifact Creature — Equipment Monkey",
+    "oracleText": "Equipped creature gets +1/+1.\nWhenever this creature or equipped creature becomes blocked, it deals 1 damage to defending player.\nReconfigure {2} ({2}: Attach to target creature you control; or unattach from a creature. Reconfigure only as a sorcery. While attached, this isn't a creature.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "RECONFIGURE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Simian Sling:1",
+                "trigger": "BecomesBlockedEvent",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "DefendingPlayer"
+                    }
+                },
+                "descriptionOverride": "Whenever this creature becomes blocked, it deals 1 damage to defending player."
+            },
+            {
+                "id": "Simian Sling:2",
+                "trigger": "BecomesBlockedEvent",
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "DefendingPlayer"
+                    },
+                    "damageSource": "TriggeringEntity"
+                },
+                "descriptionOverride": "Whenever equipped creature becomes blocked, it deals 1 damage to defending player."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Simian Sling:3",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "another creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you",
+                            "excludeSelf": true
+                        },
+                        "id": "another creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "descriptionOverride": "Reconfigure {2}: Attach to target creature you control"
+            },
+            {
+                "id": "Simian Sling:4",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}"
+                    }
+                },
+                "effect": "UnattachEquipment",
+                "timing": "SorcerySpeed",
+                "restrictions": [
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": "Self",
+                            "filter": {
+                                "statePredicates": [
+                                    {
+                                        "type": "IsAttachedTo",
+                                        "filter": "creature"
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                ],
+                "descriptionOverride": "Reconfigure {2}: Unattach from the creature"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "163",
+        "artist": "Nicholas Elias",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/7/37a00f95-d563-4d51-a5f2-af139261921a.jpg?1783923860",
+        "rulings": [
+            {
+                "date": "2022-02-18",
+                "text": "If Simian Sling becomes blocked, Simian Sling deals the damage. If the equipped creature becomes blocked, that creature deals the damage, not Simian Sling."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -6886,6 +7987,115 @@
     ]
 }
 
+// The Reality Chip
+{
+    "name": "The Reality Chip",
+    "manaCost": "{1}{U}",
+    "typeLine": "Legendary Artifact Creature — Equipment Jellyfish",
+    "oracleText": "You may look at the top card of your library any time.\nAs long as The Reality Chip is attached to a creature, you may play lands and cast spells from the top of your library.\nReconfigure {2}{U} ({2}{U}: Attach to target creature you control; or unattach from a creature. Reconfigure only as a sorcery. While attached, this isn't a creature.)",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 4
+    },
+    "keywords": [
+        "RECONFIGURE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "The Reality Chip:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{U}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "another creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you",
+                            "excludeSelf": true
+                        },
+                        "id": "another creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "descriptionOverride": "Reconfigure {2}{U}: Attach to target creature you control"
+            },
+            {
+                "id": "The Reality Chip:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{U}"
+                    }
+                },
+                "effect": "UnattachEquipment",
+                "timing": "SorcerySpeed",
+                "restrictions": [
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": "Self",
+                            "filter": {
+                                "statePredicates": [
+                                    {
+                                        "type": "IsAttachedTo",
+                                        "filter": "creature"
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                ],
+                "descriptionOverride": "Reconfigure {2}{U}: Unattach from the creature"
+            }
+        ],
+        "staticAbilities": [
+            "LookAtTopOfLibrary",
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "PlayLandsAndCastFilteredFromTopOfLibrary",
+                    "spellFilter": {}
+                },
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": {
+                        "statePredicates": [
+                            {
+                                "type": "IsAttachedTo",
+                                "filter": "creature"
+                            }
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "74",
+        "rarity": "RARE",
+        "artist": "Campbell White",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/8/d859de3a-0be1-4e66-b438-1c3d4ee756cd.jpg?1783923896"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // The Wandering Emperor
 {
     "name": "The Wandering Emperor",
@@ -7365,5 +8575,104 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Webspinner Cuff
+{
+    "name": "Webspinner Cuff",
+    "manaCost": "{2}{G}",
+    "typeLine": "Artifact Creature — Equipment Spider",
+    "oracleText": "Reach\nEquipped creature gets +1/+4 and has reach.\nReconfigure {4} ({4}: Attach to target creature you control; or unattach from a creature. Reconfigure only as a sorcery. While attached, this isn't a creature.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 4
+    },
+    "keywords": [
+        "REACH",
+        "RECONFIGURE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Webspinner Cuff:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{4}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "another creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you",
+                            "excludeSelf": true
+                        },
+                        "id": "another creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "descriptionOverride": "Reconfigure {4}: Attach to target creature you control"
+            },
+            {
+                "id": "Webspinner Cuff:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{4}"
+                    }
+                },
+                "effect": "UnattachEquipment",
+                "timing": "SorcerySpeed",
+                "restrictions": [
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": "Self",
+                            "filter": {
+                                "statePredicates": [
+                                    {
+                                        "type": "IsAttachedTo",
+                                        "filter": "creature"
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                ],
+                "descriptionOverride": "Reconfigure {4}: Unattach from the creature"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 4
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "REACH"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "214",
+        "rarity": "UNCOMMON",
+        "artist": "Andrew Mar",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/7/e73cc6a7-0a18-488c-b52a-787da95a2e6b.jpg?1783923837"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
