@@ -939,6 +939,81 @@
     "colorIdentityOverride": []
 }
 
+// Bamboo Grove Archer
+{
+    "name": "Bamboo Grove Archer",
+    "manaCost": "{1}{G}",
+    "typeLine": "Enchantment Creature — Snake Archer",
+    "oracleText": "Defender, reach\nChannel — {4}{G}, Discard this card: Destroy target creature with flying.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "DEFENDER",
+        "REACH"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Bamboo Grove Archer:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{4}{G}"
+                            }
+                        },
+                        "CostDiscardSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature kw:flying"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "activateFromZone": "Hand",
+                "descriptionOverride": "Channel — {4}{G}, Discard this card: Destroy target creature with flying."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "173",
+        "artist": "Steve Prescott",
+        "flavorText": "\"Do not mistake tranquility for domestication. This land is wild, and will always remain so.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/b/8b43bb9f-1b84-41cc-a4f9-5875ae6d207c.jpg?1783923854",
+        "rulings": [
+            {
+                "date": "2022-02-18",
+                "text": "Discarding the card is part of the cost to activate a channel ability."
+            },
+            {
+                "date": "2022-02-18",
+                "text": "If a channel ability requires a target, you may not activate it without a target just to discard the card."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Banishing Slash
 {
     "name": "Banishing Slash",
@@ -1363,6 +1438,106 @@
     ]
 }
 
+// Blossom Prancer
+{
+    "name": "Blossom Prancer",
+    "manaCost": "{3}{G}{G}",
+    "typeLine": "Creature — Spirit",
+    "oracleText": "Reach\nWhen this creature enters, look at the top five cards of your library. You may reveal a creature or enchantment card from among them and put it into your hand. Put the rest on the bottom of your library in a random order. If you didn't put a card into your hand this way, you gain 4 life.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "REACH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Blossom Prancer:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 5
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "filter": "creature|enchantment",
+                            "storeSelected": "selected1",
+                            "storeRemainder": "remainder1",
+                            "prompt": "You may reveal a creature or enchantment card and put it into your hand",
+                            "selectedLabel": "Put in hand",
+                            "remainderLabel": "Put on bottom",
+                            "showAllCards": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            },
+                            "revealed": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "remainder1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Bottom"
+                            },
+                            "order": "Random"
+                        },
+                        {
+                            "type": "ConditionalOnCollection",
+                            "collection": "selected1",
+                            "ifNotEmpty": {
+                                "type": "Composite",
+                                "effects": []
+                            },
+                            "ifEmpty": {
+                                "type": "GainLife",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 4
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "175",
+        "rarity": "UNCOMMON",
+        "artist": "Ryan Yee",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/2/d26abdf2-efd7-40e5-bfc6-d75fcadd26f8.jpg?1783923854"
+    }
+}
+
 // Boon of Boseiju
 {
     "name": "Boon of Boseiju",
@@ -1538,6 +1713,133 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Boseiju Reaches Skyward
+{
+    "name": "Boseiju Reaches Skyward",
+    "manaCost": "{3}{G}",
+    "typeLine": "Enchantment — Saga",
+    "oracleText": "(As this Saga enters and after your draw step, add a lore counter.)\nI — Search your library for up to two basic Forest cards, reveal them, put them into your hand, then shuffle.\nII — Put up to one target land card from your graveyard on top of your library.\nIII — Exile this Saga, then return it to the battlefield transformed under your control.",
+    "script": {
+        "sagaChapters": [
+            {
+                "chapter": 1,
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Library",
+                                "filter": "basicland Forest"
+                            },
+                            "storeAs": "searchable",
+                            "search": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "searchable",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
+                            },
+                            "storeSelected": "found",
+                            "prompt": "Search your library for up to two basic Forest cards to put into your hand",
+                            "selectedLabel": "Put into your hand"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "found",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            },
+                            "revealed": true
+                        },
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
+                    ]
+                }
+            },
+            {
+                "chapter": 2,
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Library",
+                    "placement": "Top"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "land own:you",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                }
+            },
+            {
+                "chapter": 3,
+                "effect": "ExileAndReturnTransformed"
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Branch of Boseiju",
+        "manaCost": "",
+        "typeLine": "Enchantment Creature — Plant",
+        "oracleText": "Reach\nThis creature gets +1/+1 for each land you control.",
+        "creatureStats": {
+            "power": {
+                "type": "Dynamic",
+                "source": {
+                    "type": "AggregateBattlefield",
+                    "player": "You",
+                    "filter": "land"
+                }
+            },
+            "toughness": {
+                "type": "Dynamic",
+                "source": {
+                    "type": "AggregateBattlefield",
+                    "player": "You",
+                    "filter": "land"
+                }
+            }
+        },
+        "keywords": [
+            "REACH"
+        ],
+        "metadata": {
+            "collectorNumber": "177",
+            "rarity": "UNCOMMON",
+            "artist": "Zezhou Chen",
+            "flavorText": "Though they razed the surrounding forest, the builders of Towashi left Boseiju unscathed, shaping the city around the ancient tree.",
+            "imageUri": "https://cards.scryfall.io/normal/back/1/1/1144014b-f13b-4397-97ed-a8de46371a2c.jpg?1783923858"
+        },
+        "colorIdentityOverride": [
+            "GREEN"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "177",
+        "rarity": "UNCOMMON",
+        "artist": "Zezhou Chen",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/1/1144014b-f13b-4397-97ed-a8de46371a2c.jpg?1783923858"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -1980,6 +2282,134 @@
     "colorIdentityOverride": []
 }
 
+// Careful Cultivation
+{
+    "name": "Careful Cultivation",
+    "manaCost": "{2}{G}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant artifact or creature\nAs long as enchanted permanent is a creature, it gets +1/+3 and has reach and \"{T}: Add {G}{G}.\"\nChannel — {1}{G}, Discard this card: Create a 1/1 green Human Monk creature token with \"{T}: Add {G}.\"",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Careful Cultivation:3",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{G}"
+                            }
+                        },
+                        "CostDiscardSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Human",
+                        "Monk"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/8/6/86dd086e-c757-4a6a-8838-51860f2095f8.jpg?1783923713",
+                    "activatedAbilities": [
+                        {
+                            "id": "Careful Cultivation:2",
+                            "cost": "CostTap",
+                            "effect": {
+                                "type": "AddMana",
+                                "color": "GREEN"
+                            },
+                            "timing": "ManaAbility",
+                            "isManaAbility": true,
+                            "descriptionOverride": "{T}: Add {G}."
+                        }
+                    ]
+                },
+                "activateFromZone": "Hand",
+                "descriptionOverride": "Channel — {1}{G}, Discard this card: Create a 1/1 green Human Monk creature token with \"{T}: Add {G}.\""
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "ModifyStats",
+                    "powerBonus": 1,
+                    "toughnessBonus": 3
+                },
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "EnchantedPermanent",
+                    "filter": "creature"
+                }
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "REACH"
+                },
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "EnchantedPermanent",
+                    "filter": "creature"
+                }
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantActivatedAbility",
+                    "ability": {
+                        "id": "Careful Cultivation:1",
+                        "cost": "CostTap",
+                        "effect": {
+                            "type": "AddMana",
+                            "color": "GREEN",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        },
+                        "timing": "ManaAbility",
+                        "isManaAbility": true
+                    }
+                },
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "EnchantedPermanent",
+                    "filter": "creature"
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature|artifact"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "178",
+        "artist": "A. M. Sartor",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/e/9e2ebad5-0a56-4166-80af-7ebd20ae565a.jpg?1783923852",
+        "rulings": [
+            {
+                "date": "2022-02-18",
+                "text": "Discarding the card is part of the cost to activate a channel ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Chainflail Centipede
 {
     "name": "Chainflail Centipede",
@@ -2271,6 +2701,193 @@
     "colorIdentityOverride": [
         "WHITE"
     ]
+}
+
+// Coiling Stalker
+{
+    "name": "Coiling Stalker",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Snake Ninja",
+    "oracleText": "Ninjutsu {1}{G} ({1}{G}, Return an unblocked attacker you control to hand: Put this card onto the battlefield from your hand tapped and attacking.)\nWhenever this creature deals combat damage to a player, put a +1/+1 counter on target creature you control that doesn't have a +1/+1 counter on it.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "NINJUTSU"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Ninjutsu",
+            "cost": "{1}{G}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Coiling Stalker:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsCreature"
+                            ],
+                            "statePredicates": [
+                                {
+                                    "type": "StateNot",
+                                    "predicate": {
+                                        "type": "HasCounter",
+                                        "counterType": "PLUS_ONE_PLUS_ONE"
+                                    }
+                                }
+                            ],
+                            "controllerPredicate": "ControlledByYou"
+                        }
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Whenever this creature deals combat damage to a player, put a +1/+1 counter on target creature you control that doesn't have a +1/+1 counter on it."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "ninjutsu_{1}{G}",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{G}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomReturnToHand",
+                                "filter": {
+                                    "cardPredicates": [
+                                        "IsCreature"
+                                    ],
+                                    "statePredicates": [
+                                        "IsAttacking",
+                                        "IsUnblocked"
+                                    ]
+                                }
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "Self",
+                    "destination": "Battlefield",
+                    "placement": "TappedAndAttacking",
+                    "fromZone": "Hand",
+                    "attackDefender": "RETURNED_ATTACKER"
+                },
+                "activateFromZone": "Hand",
+                "descriptionOverride": "Ninjutsu {1}{G} ({1}{G}, Return an unblocked attacker you control to hand: Put this card onto the battlefield from your hand tapped and attacking.)",
+                "keyword": "NINJUTSU"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "179",
+        "artist": "Svetlin Velinov",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/e/6eba24f6-8a9c-4398-b2ab-3924b107c7b7.jpg?1783923853"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Commune with Spirits
+{
+    "name": "Commune with Spirits",
+    "manaCost": "{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Look at the top four cards of your library. You may reveal an enchantment or land card from among them and put it into your hand. Put the rest on the bottom of your library in a random order.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "TopOfLibrary",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 4
+                        }
+                    },
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered0",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "filter": "enchantment|land",
+                    "storeSelected": "selected1",
+                    "storeRemainder": "remainder1",
+                    "prompt": "You may reveal an enchantment or land card and put it into your hand",
+                    "selectedLabel": "Put in hand",
+                    "remainderLabel": "Put on bottom",
+                    "showAllCards": true
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "selected1",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    },
+                    "revealed": true
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "remainder1",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Library",
+                        "placement": "Bottom"
+                    },
+                    "order": "Random"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "180",
+        "artist": "Aurore Folny",
+        "flavorText": "The kami of Jukai Forest accept only the most respectful petitioners.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/3/a35ff4dd-bad3-4496-82b3-8253f48af06d.jpg?1783923852"
+    }
 }
 
 // Crackling Emergence
@@ -3629,6 +4246,125 @@
     ]
 }
 
+// Favor of Jukai
+{
+    "name": "Favor of Jukai",
+    "manaCost": "{3}{G}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant artifact or creature\nAs long as enchanted permanent is a creature, it gets +3/+3 and has reach.\nChannel — {1}{G}, Discard this card: Target creature gets +3/+3 and gains reach until end of turn.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Favor of Jukai:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{G}"
+                            }
+                        },
+                        "CostDiscardSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": 3
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 3
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "REACH",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "activateFromZone": "Hand",
+                "descriptionOverride": "Channel — {1}{G}, Discard this card: Target creature gets +3/+3 and gains reach until end of turn."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "ModifyStats",
+                    "powerBonus": 3,
+                    "toughnessBonus": 3
+                },
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "EnchantedPermanent",
+                    "filter": "creature"
+                }
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "REACH"
+                },
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "EnchantedPermanent",
+                    "filter": "creature"
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature|artifact"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "184",
+        "artist": "Howard Lyon",
+        "flavorText": "The land chooses its own champions.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/0/1013266a-81f4-4441-8dcf-2764d14afceb.jpg?1783923850",
+        "rulings": [
+            {
+                "date": "2022-02-18",
+                "text": "Discarding the card is part of the cost to activate a channel ability."
+            },
+            {
+                "date": "2022-02-18",
+                "text": "If a channel ability requires a target, you may not activate it without a target just to discard the card."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Flame Discharge
 {
     "name": "Flame Discharge",
@@ -4052,6 +4788,83 @@
     ]
 }
 
+// Go-Shintai of Boundless Vigor
+{
+    "name": "Go-Shintai of Boundless Vigor",
+    "manaCost": "{1}{G}",
+    "typeLine": "Legendary Enchantment Creature — Shrine",
+    "oracleText": "Trample\nAt the beginning of your end step, you may pay {1}. When you do, put a +1/+1 counter on target Shrine for each Shrine you control.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Go-Shintai of Boundless Vigor:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ReflexiveTrigger",
+                    "action": {
+                        "type": "PayManaCost",
+                        "cost": "{1}"
+                    },
+                    "reflexiveEffect": {
+                        "type": "AddDynamicCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "amount": {
+                            "type": "AggregateBattlefield",
+                            "player": "You",
+                            "filter": "Shrine"
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "reflexiveTargetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "permanent Shrine"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "descriptionOverride": "You may pay {1}. When you do, put a +1/+1 counter on target Shrine for each Shrine you control."
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "187",
+        "rarity": "UNCOMMON",
+        "artist": "Johannes Voss",
+        "flavorText": "It seeks those with untamed spirits and offers wild strength.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/9/691016a1-8630-423c-9a57-061593d170fd.jpg?1783923848",
+        "rulings": [
+            {
+                "date": "2022-02-18",
+                "text": "Go-Shintai of Boundless Vigor's reflexive triggered ability may target a Shrine which isn't currently a creature."
+            },
+            {
+                "date": "2022-02-18",
+                "text": "Count the number of Shrines you control as the reflexive triggered ability resolves to determine how many +1/+1 counters to put on the target Shrine."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Go-Shintai of Shared Purpose
 {
     "name": "Go-Shintai of Shared Purpose",
@@ -4135,6 +4948,165 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Grafted Growth
+{
+    "name": "Grafted Growth",
+    "manaCost": "{2}{G}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant land\nWhen this Aura enters, put a +1/+1 counter on target creature or Vehicle you control.\nEnchanted land has \"{T}: Add two mana of any one color.\"",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Grafted Growth:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature|Vehicle ctrl:you"
+                    },
+                    "id": "t0"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantActivatedAbility",
+                "ability": {
+                    "id": "Grafted Growth:2",
+                    "cost": "CostTap",
+                    "effect": {
+                        "type": "AddManaOfChoice",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    },
+                    "timing": "ManaAbility",
+                    "isManaAbility": true
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "land"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "188",
+        "artist": "Piotr Dura",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/7/e7a15010-1b70-4b4f-8b5d-cb2d764a1799.jpg?1783923849"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Greater Tanuki
+{
+    "name": "Greater Tanuki",
+    "manaCost": "{4}{G}{G}",
+    "typeLine": "Enchantment Creature — Dog",
+    "oracleText": "Trample\nChannel — {2}{G}, Discard this card: Search your library for a basic land card, put it onto the battlefield tapped, then shuffle.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 5
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Greater Tanuki:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{G}"
+                            }
+                        },
+                        "CostDiscardSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Library",
+                                "filter": "basicland"
+                            },
+                            "storeAs": "searchable",
+                            "search": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "searchable",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "found",
+                            "prompt": "Search your library for a basic land card to put onto the battlefield tapped",
+                            "selectedLabel": "Put onto the battlefield tapped"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "found",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield",
+                                "placement": "Tapped"
+                            }
+                        },
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
+                    ]
+                },
+                "activateFromZone": "Hand",
+                "descriptionOverride": "Channel — {2}{G}, Discard this card: Search your library for a basic land card, put it onto the battlefield tapped, then shuffle."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "189",
+        "artist": "Ilse Gort",
+        "flavorText": "The kami permit few mortals to dwell in Jukai Forest, but the clever, playful tanuki are welcomed as friends and guardians.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/4/b4fbaee3-a10f-4b2d-b07e-d041a96a7e27.jpg?1783923849",
+        "rulings": [
+            {
+                "date": "2022-02-18",
+                "text": "Discarding the card is part of the cost to activate a channel ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -4295,6 +5267,49 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Heir of the Ancient Fang
+{
+    "name": "Heir of the Ancient Fang",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Snake Samurai",
+    "oracleText": "This creature enters with a +1/+1 counter on it if you control a modified creature. (Equipment, Auras you control, and counters are modifications.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "count": 1,
+                "selfOnly": true,
+                "condition": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "statePredicates": [
+                            "IsModified"
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "191",
+        "artist": "Joseph Weston",
+        "flavorText": "On the last day of a Jukai agent's training, they are bequeathed a powerful relic blessed by the kami.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/4/d45daa56-6ad8-4df7-9d81-3193fd32e574.jpg?1783923848"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -5290,6 +6305,150 @@
     ]
 }
 
+// Jukai Preserver
+{
+    "name": "Jukai Preserver",
+    "manaCost": "{3}{G}",
+    "typeLine": "Enchantment Creature — Human Druid",
+    "oracleText": "When this creature enters, put a +1/+1 counter on target creature you control.\nChannel — {2}{G}, Discard this card: Put a +1/+1 counter on each of up to two target creatures you control.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Jukai Preserver:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this creature enters, put a +1/+1 counter on target creature you control."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Jukai Preserver:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{G}"
+                            }
+                        },
+                        "CostDiscardSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": "IterationSpace.Targets",
+                    "body": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        }
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "count": 2,
+                        "optional": true,
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "t1"
+                    }
+                ],
+                "activateFromZone": "Hand",
+                "descriptionOverride": "Channel — {2}{G}, Discard this card: Put a +1/+1 counter on each of up to two target creatures you control."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "195",
+        "artist": "Donato Giancola",
+        "flavorText": "\"The kami grant you this boon, not I.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/6/e66120a5-95a3-4d15-873c-cfba221a2299.jpg?1783923846",
+        "rulings": [
+            {
+                "date": "2022-02-18",
+                "text": "Discarding the card is part of the cost to activate a channel ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Jukai Trainee
+{
+    "name": "Jukai Trainee",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Human Samurai",
+    "oracleText": "Whenever this creature blocks or becomes blocked, it gets +1/+1 until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Jukai Trainee:1",
+                "trigger": {
+                    "type": "BlocksOrBecomesBlockedByEvent",
+                    "oncePerCombat": true
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": "Self"
+                },
+                "descriptionOverride": "Whenever this creature blocks or becomes blocked, it gets +1/+1 until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "196",
+        "artist": "Francisco Miyara",
+        "flavorText": "\"The Order of Jukai accepts only the strongest of body and spirit. I will train until I meet their expectations.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/b/8be526cd-1480-4661-a05b-e004d7b4656c.jpg?1783923845"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Kami of Industry
 {
     "name": "Kami of Industry",
@@ -5586,6 +6745,126 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Kodama of the West Tree
+{
+    "name": "Kodama of the West Tree",
+    "manaCost": "{2}{G}",
+    "typeLine": "Legendary Creature — Spirit",
+    "oracleText": "Reach\nModified creatures you control have trample. (Equipment, Auras you control, and counters are modifications.)\nWhenever a modified creature you control deals combat damage to a player, search your library for a basic land card, put it onto the battlefield tapped, then shuffle.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "REACH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Kodama of the West Tree:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    },
+                    "sourceFilter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "statePredicates": [
+                            "IsModified"
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Library",
+                                "filter": "basicland"
+                            },
+                            "storeAs": "searchable",
+                            "search": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "searchable",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "found",
+                            "prompt": "Search your library for a basic land card to put onto the battlefield tapped",
+                            "selectedLabel": "Put onto the battlefield tapped"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "found",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield",
+                                "placement": "Tapped"
+                            }
+                        },
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
+                    ]
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "TRAMPLE",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "statePredicates": [
+                            "IsModified"
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "199",
+        "rarity": "MYTHIC",
+        "artist": "Daarken",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/f/ef1e1dff-b559-441d-8df3-b6a418066aca.jpg?1783923845",
+        "rulings": [
+            {
+                "date": "2022-02-18",
+                "text": "An Aura controlled by an opponent does not cause a creature you control to be modified."
+            },
+            {
+                "date": "2022-02-18",
+                "text": "A creature with a counter on it is considered modified no matter what kind of counter it is or which player put it on that creature."
+            },
+            {
+                "date": "2022-02-18",
+                "text": "A creature that is equipped is considered modified no matter who controls the Equipment that's attached to it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -9392,6 +10671,121 @@
         "imageUri": "https://cards.scryfall.io/normal/front/8/0/8002de90-93fb-48ea-a849-40fdad0aef5a.jpg?1783923816"
     },
     "colorIdentityOverride": []
+}
+
+// Roaring Earth
+{
+    "name": "Roaring Earth",
+    "manaCost": "{1}{G}",
+    "typeLine": "Enchantment",
+    "oracleText": "Landfall — Whenever a land you control enters, put a +1/+1 counter on target creature or Vehicle you control.\nChannel — {X}{G}{G}, Discard this card: Put X +1/+1 counters on target land you control. It becomes a 0/0 green Spirit creature with haste. It's still a land.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Roaring Earth:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "land ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature|Vehicle ctrl:you"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Landfall — Whenever a land you control enters, put a +1/+1 counter on target creature or Vehicle you control."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Roaring Earth:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{X}{G}{G}"
+                            }
+                        },
+                        "CostDiscardSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddDynamicCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "amount": "XValue",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t1"
+                            }
+                        },
+                        {
+                            "type": "BecomeCreature",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t1"
+                            },
+                            "power": {
+                                "type": "Fixed",
+                                "amount": 0
+                            },
+                            "toughness": {
+                                "type": "Fixed",
+                                "amount": 0
+                            },
+                            "keywords": [
+                                "HASTE"
+                            ],
+                            "creatureTypes": [
+                                "Spirit"
+                            ],
+                            "colors": [
+                                "GREEN"
+                            ],
+                            "duration": "Permanent"
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "land ctrl:you"
+                        },
+                        "id": "t1"
+                    }
+                ],
+                "activateFromZone": "Hand",
+                "descriptionOverride": "Channel — {X}{G}{G}, Discard this card: Put X +1/+1 counters on target land you control. It becomes a 0/0 green Spirit creature with haste. It's still a land."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "204",
+        "rarity": "UNCOMMON",
+        "artist": "Tuan Duong Chu",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/c/8cbdd88e-c532-4fc0-a1fe-8aa0c26d1092.jpg?1783923842"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
 }
 
 // Satoru Umezawa
