@@ -158,7 +158,7 @@ class CounterTypeTest : DescribeSpec({
             CounterType.ICE to "ice", CounterType.PLAN to "plan", CounterType.INVASION to "invasion",
             CounterType.UNLOCK to "unlock", CounterType.JUDGMENT to "judgment",
             CounterType.BRAIN to "brain", CounterType.HATCHING to "hatching",
-            CounterType.INTERVENTION to "intervention"
+            CounterType.INTERVENTION to "intervention", CounterType.MINUS_ZERO_MINUS_TWO to "-0/-2"
         )
     }
 }

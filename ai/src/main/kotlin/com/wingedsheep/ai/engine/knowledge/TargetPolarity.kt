@@ -330,16 +330,22 @@ object TargetPolarityAnalyzer {
      * other kind — charge, time, loyalty, the bespoke ones — means whatever its card makes of it,
      * and stays unread.
      */
-    private fun counterPolarity(type: CounterType): TargetPolarity? = when (type) {
-        in BENEFICIAL_COUNTERS -> TargetPolarity.BENEFICIAL
-        in HARMFUL_COUNTERS -> TargetPolarity.HARMFUL
-        else -> null
+    private fun counterPolarity(type: CounterType): TargetPolarity? {
+        type.ptDelta?.let { (power, toughness) ->
+            return when {
+                power >= 0 && toughness >= 0 -> TargetPolarity.BENEFICIAL
+                power <= 0 && toughness <= 0 -> TargetPolarity.HARMFUL
+                else -> null
+            }
+        }
+        return when (type) {
+            in BENEFICIAL_COUNTERS -> TargetPolarity.BENEFICIAL
+            in HARMFUL_COUNTERS -> TargetPolarity.HARMFUL
+            else -> null
+        }
     }
 
     private val BENEFICIAL_COUNTERS = setOf(
-        CounterType.PLUS_ONE_PLUS_ONE, CounterType.PLUS_ONE_PLUS_ZERO, CounterType.PLUS_ZERO_PLUS_ONE,
-        CounterType.PLUS_TWO_PLUS_ZERO, CounterType.PLUS_ZERO_PLUS_TWO, CounterType.PLUS_ONE_PLUS_TWO,
-        CounterType.PLUS_TWO_PLUS_TWO,
         CounterType.SHIELD,
         CounterType.FLYING, CounterType.FIRST_STRIKE, CounterType.DOUBLE_STRIKE, CounterType.VIGILANCE,
         CounterType.LIFELINK, CounterType.INDESTRUCTIBLE, CounterType.DEATHTOUCH, CounterType.TRAMPLE,
@@ -347,8 +353,6 @@ object TargetPolarityAnalyzer {
     )
 
     private val HARMFUL_COUNTERS = setOf(
-        CounterType.MINUS_ONE_MINUS_ONE, CounterType.MINUS_ONE_MINUS_ZERO, CounterType.MINUS_ZERO_MINUS_ONE,
-        CounterType.MINUS_TWO_MINUS_TWO,
         CounterType.STUN, CounterType.FINALITY,
     )
 

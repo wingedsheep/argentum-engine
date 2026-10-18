@@ -20,8 +20,8 @@ class CounterTypeStatCoverageTest : DescribeSpec({
 
     describe("the stat counters") {
 
-        it("finds all eleven by their printed shape") {
-            statKinds.size shouldBe 11
+        it("finds all twelve by their printed shape") {
+            statKinds.size shouldBe 12
             statKinds shouldContainAll listOf(CounterType.PLUS_ONE_PLUS_ONE, CounterType.MINUS_TWO_MINUS_TWO)
         }
 
@@ -34,6 +34,22 @@ class CounterTypeStatCoverageTest : DescribeSpec({
             CounterType.of("+0/+2") shouldBe CounterType.PLUS_ZERO_PLUS_TWO
             CounterType.of("-1/-0") shouldBe CounterType.MINUS_ONE_MINUS_ZERO
             CounterType.MINUS_ZERO_MINUS_ONE.printed shouldBe "-0/-1"
+            CounterType.of("-0/-2") shouldBe CounterType.MINUS_ZERO_MINUS_TWO
+        }
+
+        it("gives every stat kind the delta its printed spelling names") {
+            statKinds.filter { kind ->
+                val (p, t) = kind.printed.split('/').map { it.toInt() }
+                kind.ptDelta != (p to t)
+            }.shouldBeEmpty()
+            CounterType.MINUS_ZERO_MINUS_TWO.ptDelta shouldBe (0 to -2)
+            CounterType.PLUS_ONE_PLUS_TWO.ptDelta shouldBe (1 to 2)
+        }
+
+        it("gives non-stat kinds no delta") {
+            CounterType.CHARGE.ptDelta shouldBe null
+            CounterType.FIRST_STRIKE.ptDelta shouldBe null
+            CounterType.of("study").ptDelta shouldBe null
         }
     }
 })

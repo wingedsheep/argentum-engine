@@ -2268,9 +2268,11 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   counters), and `CounterType.PLUS_TWO_PLUS_ZERO` (`+2/+0`) / `CounterType.PLUS_ZERO_PLUS_TWO` (`+0/+2`) are the
   two-step versions of those (Frankenstein's Monster). `CounterType.PLUS_ONE_PLUS_TWO` (`+1/+2`, Armor Thrull),
   `CounterType.PLUS_TWO_PLUS_TWO` (`+2/+2`, Soul Exchange) and `CounterType.MINUS_TWO_MINUS_TWO` (`-2/-2`, Ebon
-  Praetor) round out the Fallen Empires sizes. CR 122.1a defines a `+X/+Y` counter generally — X to power,
-  Y to toughness, applied in layer 7c per CR 613.4c — but the engine enumerates the kinds it can sum, so
-  **each printed size needs its own constant** in `CounterType`. Its printed spelling is derived from the
+  Praetor) round out the Fallen Empires sizes, and `CounterType.MINUS_ZERO_MINUS_TWO` (`-0/-2`, Spirit Shackle)
+  is Legends'. CR 122.1a defines a `+X/+Y` counter generally — X to power, Y to toughness, applied in layer 7c
+  per CR 613.4c — and `applyCounters` sums every kind's `CounterType.ptDelta` (derived from the id's shape,
+  `MINUS_ZERO_MINUS_TWO` → `0 to -2`; `null` for non-stat kinds), so a new printed size needs only its constant
+  in `CounterType` (for `KNOWN` and the client mirror), never an engine change. Its printed spelling is derived from the
   id's shape (`PLUS_TWO_PLUS_ZERO` ↔ `+2/+0`), which `CounterTypeStatCoverageTest` pins. Only `+1/+1` and
   `-1/-1` annihilate each other as a state-based action (CR 122.3); the asymmetric counters never cancel.
 - `DoubleCounters(type?, target?)` — one-shot doubling of the `type` counters (default `+1/+1`) already on the

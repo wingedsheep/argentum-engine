@@ -2513,6 +2513,7 @@ const passiveCounterPalette: Record<string, CounterBadgePalette> = {
   INTERVENTION: { bg: 'rgba(50, 46, 30, 0.95)', border: 'rgba(240, 220, 150, 0.75)', color: '#f6ecc4', glow: 'rgba(240, 220, 150, 0.55)' },
   TRAINING: { bg: 'rgba(48, 40, 22, 0.95)', border: 'rgba(214, 170, 90, 0.7)', color: '#ecd09a' },
   MINUS_ZERO_MINUS_ONE: { bg: 'rgba(60, 20, 20, 0.95)', border: 'rgba(220, 120, 120, 0.7)', color: '#e09c9c' },
+  MINUS_ZERO_MINUS_TWO: { bg: 'rgba(60, 20, 20, 0.95)', border: 'rgba(220, 120, 120, 0.7)', color: '#e09c9c' },
 }
 
 /**

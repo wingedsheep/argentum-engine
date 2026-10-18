@@ -42,6 +42,19 @@ value class CounterType(val name: String) {
             "${SIGNS.getValue(sign1)}${NUMBERS.indexOf(n1)}/${SIGNS.getValue(sign2)}${NUMBERS.indexOf(n2)}"
         } ?: name.lowercase().replace('_', ' ')
 
+    /**
+     * What this counter adds to power and toughness (CR 122.1a — a `+X/+Y` counter adds X to power
+     * and Y to toughness), derived from the id's shape: `MINUS_ZERO_MINUS_TWO` is `0 to -2`. `null`
+     * for every kind that isn't a stat counter. The layer system sums this over a permanent's
+     * counters, so a new printed size only needs its constant, never an engine change.
+     */
+    val ptDelta: Pair<Int, Int>?
+        get() = PT_DELTAS.getOrPut(name) {
+            STAT_ID.matchEntire(name)?.destructured?.let { (sign1, n1, sign2, n2) ->
+                signed(sign1, NUMBERS.indexOf(n1)) to signed(sign2, NUMBERS.indexOf(n2))
+            } ?: NOT_A_STAT
+        }.takeIf { it !== NOT_A_STAT }
+
     override fun toString(): String = name
 
     companion object {
@@ -60,9 +73,12 @@ value class CounterType(val name: String) {
         val MINUS_ONE_MINUS_ZERO = CounterType("MINUS_ONE_MINUS_ZERO")
         val MINUS_ZERO_MINUS_ONE = CounterType("MINUS_ZERO_MINUS_ONE")
 
+        /** -0/-2 counter (LEG — Spirit Shackle: one each time the enchanted creature becomes tapped). */
+        val MINUS_ZERO_MINUS_TWO = CounterType("MINUS_ZERO_MINUS_TWO")
+
         /**
-         * The Fallen Empires stat counters. CR 122.1a defines a +X/+Y counter generally, but the engine
-         * enumerates the kinds it can sum, so each printed size needs its own constant:
+         * The Fallen Empires stat counters. CR 122.1a defines a +X/+Y counter generally and the layer
+         * system sums any stat-shaped id through [ptDelta]; the constants exist so [KNOWN] lists them:
          * `+1/+2` (Armor Thrull), `+2/+2` (Soul Exchange), `-2/-2` (Ebon Praetor).
          */
         val PLUS_ONE_PLUS_TWO = CounterType("PLUS_ONE_PLUS_TWO")
@@ -769,6 +785,7 @@ value class CounterType(val name: String) {
             PLUS_ZERO_PLUS_TWO,
             MINUS_ONE_MINUS_ZERO,
             MINUS_ZERO_MINUS_ONE,
+            MINUS_ZERO_MINUS_TWO,
             PLUS_ONE_PLUS_TWO,
             PLUS_TWO_PLUS_TWO,
             MINUS_TWO_MINUS_TWO,
@@ -914,6 +931,9 @@ value class CounterType(val name: String) {
         private val SIGNS = mapOf("PLUS" to "+", "MINUS" to "-")
         private val SIGN_WORDS = SIGNS.entries.associate { (word, sign) -> sign to word }
         private val STAT_ID = NUMBERS.joinToString("|").let { n -> Regex("""(PLUS|MINUS)_($n)_(PLUS|MINUS)_($n)""") }
+        private val NOT_A_STAT = 0 to 0
+        private val PT_DELTAS = java.util.concurrent.ConcurrentHashMap<String, Pair<Int, Int>>()
+        private fun signed(sign: String, n: Int) = if (sign == "MINUS") -n else n
         private val STAT_PRINTED = Regex("""([+-])(\d)/([+-])(\d)""")
     }
 }

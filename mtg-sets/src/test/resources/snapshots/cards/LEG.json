@@ -5181,6 +5181,43 @@
     ]
 }
 
+// Spirit Shackle
+{
+    "name": "Spirit Shackle",
+    "manaCost": "{B}{B}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nWhenever enchanted creature becomes tapped, put a -0/-2 counter on it.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Spirit Shackle:1",
+                "trigger": "TapEvent",
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "MINUS_ZERO_MINUS_TWO",
+                    "count": 1,
+                    "target": "EnchantedCreature"
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "117",
+        "artist": "Edward P. Beard, Jr.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/3/a30bb266-5bd1-4998-ae94-56f0f3354167.jpg?1783948063"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Storm World
 {
     "name": "Storm World",

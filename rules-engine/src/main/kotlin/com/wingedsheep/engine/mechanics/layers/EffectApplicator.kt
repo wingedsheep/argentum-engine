@@ -11,7 +11,6 @@ import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
-import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.KeywordCardPool
@@ -485,31 +484,16 @@ internal class EffectApplicator(
 
             val values = projectedValues.getOrPut(entityId) { MutableProjectedValues() }
 
-            val plusOneCounters = counters.getCount(CounterType.PLUS_ONE_PLUS_ONE)
-            val minusOneCounters = counters.getCount(CounterType.MINUS_ONE_MINUS_ONE)
-
-            // Asymmetric P/T counters (CR 122.1a — a +X/+Y counter adds X to power and Y to
-            // toughness; see rule 613.4c for the layer) — +1/+0, +0/+1, -1/-0, -0/-1.
-            val plusOnePlusZero = counters.getCount(CounterType.PLUS_ONE_PLUS_ZERO)
-            val plusZeroPlusOne = counters.getCount(CounterType.PLUS_ZERO_PLUS_ONE)
-            val minusOneMinusZero = counters.getCount(CounterType.MINUS_ONE_MINUS_ZERO)
-            val minusZeroMinusOne = counters.getCount(CounterType.MINUS_ZERO_MINUS_ONE)
-            // Frankenstein's Monster's +2/+0 and +0/+2 — a distinct counter kind, not two +1/+0s.
-            val plusTwoPlusZero = counters.getCount(CounterType.PLUS_TWO_PLUS_ZERO)
-            val plusZeroPlusTwo = counters.getCount(CounterType.PLUS_ZERO_PLUS_TWO)
-
-            // The Fallen Empires sizes — +1/+2 (Armor Thrull), +2/+2 (Soul Exchange),
-            // -2/-2 (Ebon Praetor). Same rule (CR 122.1a), different X and Y.
-            val plusOnePlusTwo = counters.getCount(CounterType.PLUS_ONE_PLUS_TWO)
-            val plusTwoPlusTwo = counters.getCount(CounterType.PLUS_TWO_PLUS_TWO)
-            val minusTwoMinusTwo = counters.getCount(CounterType.MINUS_TWO_MINUS_TWO)
-
-            val powerMod = (plusOneCounters - minusOneCounters) +
-                plusOnePlusZero - minusOneMinusZero + (2 * plusTwoPlusZero) +
-                plusOnePlusTwo + (2 * plusTwoPlusTwo) - (2 * minusTwoMinusTwo)
-            val toughnessMod = (plusOneCounters - minusOneCounters) +
-                plusZeroPlusOne - minusZeroMinusOne + (2 * plusZeroPlusTwo) +
-                (2 * plusOnePlusTwo) + (2 * plusTwoPlusTwo) - (2 * minusTwoMinusTwo)
+            // Stat counters (CR 122.1a — a +X/+Y counter adds X to power and Y to toughness; layer
+            // 7c per CR 613.4c). Every printed size sums the same way, so read each kind's delta off
+            // its id rather than enumerating them: -0/-2 is a distinct kind from two -0/-1s.
+            var powerMod = 0
+            var toughnessMod = 0
+            for ((type, count) in counters.counters) {
+                val (power, toughness) = type.ptDelta ?: continue
+                powerMod += power * count
+                toughnessMod += toughness * count
+            }
 
             if (powerMod != 0) {
                 values.power = (values.power ?: 0) + powerMod

@@ -831,6 +831,7 @@ export const PASSIVE_COUNTER_TYPES: readonly CounterType[] = [
   CounterType.PLUS_ZERO_PLUS_TWO,
   CounterType.MINUS_ONE_MINUS_ZERO,
   CounterType.MINUS_ZERO_MINUS_ONE,
+  CounterType.MINUS_ZERO_MINUS_TWO,
   // Fallen Empires. Tide is the one that most needs a badge: Homarid's whole clock is the exact
   // count, switching at one and at three and shedding all at four, so a player who can't read it
   // off the board can't play the card.
