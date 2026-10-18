@@ -24,14 +24,10 @@
     "exclusion only ever removes a card from the denominator while it is still missing."
   ],
   "reasons": {
-    "ante": "Playing for ante is supported, but this card's ante effect isn't implemented yet.",
-    "dexterity": "Requires physical dexterity with a real card that the table-flip mini-game (built for Chaos Orb) doesn't cover yet."
+    "ante": "Playing for ante is supported, but this card's ante effect isn't implemented yet."
   },
   "cards": [
     { "name": "Amulet of Quoz", "reason": "ante" },
-    { "name": "Rebirth", "reason": "ante" },
-    { "name": "Tempest Efreet", "reason": "ante" },
-    { "name": "Timmerian Fiends", "reason": "ante" },
-    { "name": "Falling Star", "reason": "dexterity" }
+    { "name": "Timmerian Fiends", "reason": "ante" }
   ]
 }

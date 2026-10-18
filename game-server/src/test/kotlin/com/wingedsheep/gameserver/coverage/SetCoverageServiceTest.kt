@@ -142,28 +142,39 @@ class SetCoverageServiceTest : FunSpec({
 
     context("cards we've decided never to implement") {
         test("drop out of the denominator, so a set's total counts only what we intend to build") {
-            // Legends excuses Falling Star (dexterity) plus Rebirth and Tempest Efreet (ante
-            // effects). Left in the total they would peg LEG three short forever; excluded, its
-            // total is every draft card we do intend to build.
-            val leg = coverage.find { it.code == "LEG" }.shouldNotBeNull()
-            leg.notPlanned shouldBe 3
-            val detail = service.detail("LEG").shouldNotBeNull()
-            leg.total shouldBe detail.draft.size - 3
+            // Homelands excuses Timmerian Fiends (its ante effect isn't built). Left in the total it
+            // would peg HML one short forever; excluded, its total is every draft card we do
+            // intend to build.
+            val hml = coverage.find { it.code == "HML" }.shouldNotBeNull()
+            hml.notPlanned shouldBe 1
+            val detail = service.detail("HML").shouldNotBeNull()
+            hml.total shouldBe detail.draft.size - 1
         }
 
         test("are still listed in the detail view, each carrying its reason") {
-            val detail = service.detail("LEG").shouldNotBeNull()
-            val star = detail.draft.find { it.name == "Falling Star" }.shouldNotBeNull()
-            star.implemented shouldBe false
-            star.notPlanned.shouldNotBeNull().kind shouldBe "dexterity"
+            val detail = service.detail("HML").shouldNotBeNull()
+            val fiends = detail.draft.find { it.name == "Timmerian Fiends" }.shouldNotBeNull()
+            fiends.implemented shouldBe false
+            fiends.notPlanned.shouldNotBeNull().kind shouldBe "ante"
             // Exclusion is carried as its reason, so a flagged card can never lack an explanation.
-            star.notPlanned.shouldNotBeNull().why.shouldNotBeEmpty()
-            detail.notPlanned shouldBe 3
+            fiends.notPlanned.shouldNotBeNull().why.shouldNotBeEmpty()
+            detail.notPlanned shouldBe 1
             detail.total shouldBe detail.draft.count { it.notPlanned == null }
             // A set always names what it isn't counting, so a set that reads 100% can say which
             // cards it excused to get there.
             detail.draft.filter { it.notPlanned != null }.map { it.name }.toSet() shouldBe
-                setOf("Falling Star", "Rebirth", "Tempest Efreet")
+                setOf("Timmerian Fiends")
+        }
+
+        test("Legends excuses nothing once Falling Star's flip and its ante cards are built") {
+            val leg = coverage.find { it.code == "LEG" }.shouldNotBeNull()
+            leg.notPlanned shouldBe 0
+            val draft = service.detail("LEG").shouldNotBeNull().draft
+            for (name in listOf("Falling Star", "Rebirth", "Tempest Efreet")) {
+                val card = draft.find { it.name == name }.shouldNotBeNull()
+                card.implemented shouldBe true
+                card.notPlanned shouldBe null
+            }
         }
 
         test("Chaos Orb stops being excused once its table-flip is built — Alpha is complete") {

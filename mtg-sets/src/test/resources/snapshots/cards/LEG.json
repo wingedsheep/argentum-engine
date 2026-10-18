@@ -1698,6 +1698,80 @@
     ]
 }
 
+// Falling Star
+{
+    "name": "Falling Star",
+    "manaCost": "{2}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Flip Falling Star onto the playing area from a height of at least one foot. Falling Star deals 3 damage to each creature it lands on. Tap all creatures dealt damage by Falling Star. If Falling Star doesn't turn completely over at least once during the flip, it has no effect.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "FlipOntoBattlefield",
+                    "storeTouchedAs": "touched0",
+                    "filter": "creature"
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Collection",
+                        "collection": "touched0"
+                    },
+                    "body": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 3
+                        },
+                        "target": "IterationEntity"
+                    }
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ],
+                                "statePredicates": [
+                                    "WasDealtDamageBySourceThisTurn"
+                                ]
+                            }
+                        }
+                    },
+                    "body": {
+                        "type": "TapUntap",
+                        "target": "IterationEntity"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "145",
+        "rarity": "RARE",
+        "artist": "Douglas Shuler",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/2/f2b9983e-20d4-4d12-9e2c-ec6d9a345787.jpg?1783948056",
+        "rulings": [
+            {
+                "date": "2004-10-04",
+                "text": "It must flip like a coin and not like a Frisbee."
+            },
+            {
+                "date": "2004-10-04",
+                "text": "Only cards touched when it stops moving are affected. Not ones touched while it is moving."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Fire Sprites
 {
     "name": "Fire Sprites",
@@ -4126,6 +4200,84 @@
     ]
 }
 
+// Rebirth
+{
+    "name": "Rebirth",
+    "manaCost": "{3}{G}{G}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Remove this card from your deck before playing if you're not playing for ante.\nEach player may ante the top card of their library. If a player does, that player's life total becomes 20.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": {
+                "type": "IterationSpace.Players",
+                "players": "ActivePlayerFirst"
+            },
+            "body": {
+                "type": "Gated",
+                "gate": {
+                    "type": "Gate.MayDecide",
+                    "prompt": "Ante the top card of your library to have your life total become 20?",
+                    "feasibility": {
+                        "type": "HasCardsInZone",
+                        "zone": "Library"
+                    }
+                },
+                "then": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "ConditionalOnCollection",
+                            "collection": "gathered0",
+                            "ifNotEmpty": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "gathered0",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Ante"
+                                        }
+                                    },
+                                    {
+                                        "type": "SetLifeTotal",
+                                        "amount": {
+                                            "type": "Fixed",
+                                            "amount": 20
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "decisionMaker": "Controller"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "200",
+        "rarity": "RARE",
+        "artist": "Mark Tedin",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/0/a0d3ce01-e344-4608-b709-320be3600019.jpg?1783948045"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Relic Barrier
 {
     "name": "Relic Barrier",
@@ -4980,6 +5132,157 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Tempest Efreet
+{
+    "name": "Tempest Efreet",
+    "manaCost": "{1}{R}{R}{R}",
+    "typeLine": "Creature — Efreet",
+    "oracleText": "Remove this card from your deck before playing if you're not playing for ante.\n{T}, Sacrifice this creature: Target opponent may pay 10 life. If that player doesn't, they reveal a card at random from their hand. Exchange ownership of the revealed card and Tempest Efreet. Put the revealed card into your hand and Tempest Efreet from anywhere into that player's graveyard. This change in ownership is permanent.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Tempest Efreet:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "PayOrSuffer",
+                    "cost": {
+                        "type": "PayAtom",
+                        "atom": {
+                            "type": "AtomPayLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 10
+                            }
+                        }
+                    },
+                    "suffer": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand",
+                                    "player": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    }
+                                },
+                                "storeAs": "gathered0"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "gathered0",
+                                "selection": {
+                                    "type": "Random",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "selected1"
+                            },
+                            {
+                                "type": "RevealCollection",
+                                "from": "selected1"
+                            },
+                            {
+                                "type": "ConditionalOnCollection",
+                                "collection": "selected1",
+                                "ifNotEmpty": {
+                                    "type": "Gated",
+                                    "gate": {
+                                        "type": "Gate.WhenCondition",
+                                        "condition": {
+                                            "type": "EntityMatches",
+                                            "entity": "Self",
+                                            "filter": {}
+                                        }
+                                    },
+                                    "then": {
+                                        "type": "Composite",
+                                        "effects": [
+                                            {
+                                                "type": "ChangeOwnership",
+                                                "card": {
+                                                    "type": "PipelineTarget",
+                                                    "collectionName": "selected1"
+                                                },
+                                                "newOwner": {
+                                                    "type": "PlayerRef",
+                                                    "player": "OwnerOfSource"
+                                                }
+                                            },
+                                            {
+                                                "type": "ChangeOwnership",
+                                                "card": "Self",
+                                                "newOwner": {
+                                                    "type": "BoundVariable",
+                                                    "name": "t0"
+                                                }
+                                            },
+                                            {
+                                                "type": "Gated",
+                                                "gate": {
+                                                    "type": "Gate.WhenCondition",
+                                                    "condition": {
+                                                        "type": "Not",
+                                                        "condition": {
+                                                            "type": "SourceInZone",
+                                                            "zones": [
+                                                                "Graveyard"
+                                                            ]
+                                                        }
+                                                    }
+                                                },
+                                                "then": {
+                                                    "type": "MoveToZone",
+                                                    "target": "Self",
+                                                    "destination": "Graveyard"
+                                                }
+                                            }
+                                        ]
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    "player": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetOpponent",
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{T}, Sacrifice this creature: Target opponent may pay 10 life. If that player doesn't, they reveal a card at random from their hand. Exchange ownership of the revealed card and Tempest Efreet. Put the revealed card into your hand and Tempest Efreet from anywhere into that player's graveyard."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "166",
+        "rarity": "RARE",
+        "artist": "NéNé Thomas",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/b/eb562143-fdf0-4eed-83ac-551627c576d2.jpg?1783948052"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 

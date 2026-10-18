@@ -14,6 +14,7 @@ import com.wingedsheep.engine.state.FACE_DOWN_DISPLAY_NAME
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ObjectRef
 import com.wingedsheep.engine.state.ZoneKey
+import com.wingedsheep.engine.state.components.battlefield.DamageDealtToCreaturesThisTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.ReplacementEffectSourceComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.DoubleFacedComponent
@@ -138,8 +139,10 @@ internal class SpellCaster(
 
         // Remove from current zone (typically hand). The spell is a new object (CR 400.7): a grant
         // left on the card by an earlier stack life that never resolved (a countered spell whose
-        // cast trigger gave it an ability) must not follow it back onto the stack.
+        // cast trigger gave it an ability) must not follow it back onto the stack. Nor may the
+        // creatures an earlier stack life of this card damaged this turn.
         var newState = removeFromCurrentZone(state, cardId, casterId).withoutObjectGrants(cardId).withoutEscapeGrants(cardId)
+            .updateEntity(cardId) { it.without<DamageDealtToCreaturesThisTurnComponent>() }
         if (castFaceDown) {
             newState = clearRevealedMorphsInHand(newState, casterId)
         }

@@ -3303,7 +3303,9 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   off the table stores an empty collection. The flipped card is the effect's source and is never on
   the table itself. "If this is on the battlefield" is the card's own `Effects.If(SourceInZone(…))`.
   Chaos Orb: `If(SourceInZone(BATTLEFIELD), Pipeline { destroy(flipOntoBattlefield(Permanent.nontoken())) })`
-  then `Destroy(Self)`. A `CardFlippedOntoBattlefieldEvent` carries the table and landing so every
+  then `Destroy(Self)`. A spell can be the flipped card too — Falling Star, thrown from the stack:
+  `Pipeline { ForEachInCollection(flipOntoBattlefield(Creature), DealDamage(3, IterationEntity)) }` then
+  `ForEachInGroup(Creature.wasDealtDamageBySourceThisTurn(), Tap(IterationEntity))`. A `CardFlippedOntoBattlefieldEvent` carries the table and landing so every
   client replays the flight; the engine AI aims with `FlipAim`.
 - `Effects.SkipNextStepOrPhase(part, target = Controller)` (`SkipStepOrPhaseEffect(part, SkipDuration.NEXT, target)`, `part` = `TurnPart.UNTAP_STEP` | `DRAW_STEP`; other parts are rejected at construction) — a one-shot marker: the target skips their **next** instance of `part`, consumed by the step it skips.
   - `DRAW_STEP` adds the `SkipDrawStepComponent` marker consumed by `DrawPhaseManager.performDrawStep` (Elfhame Sanctuary's "you skip your draw step this turn", Fasting).
@@ -6677,8 +6679,10 @@ This is the player-arm prerequisite for the planned composable mixed `TargetUnio
 - `.wasDealtDamageBySourceThisTurn()` — the creature was dealt damage this turn by the effect's
   **source**; backed by `StatePredicate.WasDealtDamageBySourceThisTurn`, which reads the source's per-turn
   damaged-creature record (the one the "a creature dealt damage by this creature this turn dies" trigger
-  reads). The record is dropped when the source leaves the battlefield (CR 400.7), so the filter stops
-  matching then. Also honoured by the zone-change redirect path, which answers it off the replacement's
+  reads). A spell on the stack keeps one too, so a resolving spell can ask which creatures it has dealt
+  damage to (Falling Star's "tap all creatures dealt damage by Falling Star"). The record is dropped when a
+  permanent source leaves the battlefield, and a spell's when the card is cast again (CR 400.7), so the
+  filter stops matching then. Also honoured by the zone-change redirect path, which answers it off the replacement's
   host as it stood when an SBA batch began — so the printed replacement "if a creature dealt damage by
   this creature this turn would die, exile it instead" is
   `replacementEffect(RedirectZoneChange(newDestination = Zone.EXILE, appliesTo = EventPattern.ZoneChangeEvent(

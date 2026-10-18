@@ -1142,6 +1142,11 @@ data class AiProfile(
      *   own, which is all the leaf saw. [com.wingedsheep.ai.engine.knowledge.TargetlessEntry] floors
      *   a noncreature, nonland permanent whose only abilities are a targeted entry trigger (and the
      *   linked-exile return that undoes it) when a required target slot has no legal target.
+     * - **An Aura whose entry is gated on a creature it isn't cast onto.** Earthbind ("if enchanted
+     *   creature has flying, …") cast on a non-flyer: the intervening-if is false on entry and the
+     *   Aura does nothing. [com.wingedsheep.ai.engine.knowledge.UnmetAuraEntry] floors an Aura whose
+     *   only abilities are entry triggers gated on the enchanted permanent, aimed at a creature that
+     *   fails every gate.
      * - **An end-of-turn shrink with no fight to shrink.** `3f847e6d` turn 8: Proft, Sinister
      *   Mastermind discarded from hand in our own declare-attackers step after we declared no attack,
      *   to give an opposing 2/4 -3/-1 until end of turn. [com.wingedsheep.ai.engine.knowledge.ExpiringGrantWindow]

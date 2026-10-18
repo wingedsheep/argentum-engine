@@ -1267,11 +1267,14 @@ object DamageUtils {
     /**
      * Track that [sourceId] dealt damage to [targetCreatureId] this turn.
      * Updates the DamageDealtToCreaturesThisTurnComponent on the source entity.
-     * Used for triggers like Soul Collector's "whenever a creature dealt damage by this creature this turn dies".
+     * Used for triggers like Soul Collector's "whenever a creature dealt damage by this creature this turn dies",
+     * and by a resolving spell's own "creatures dealt damage by this" (Falling Star). A spell's record
+     * belongs to that stack object: [com.wingedsheep.engine.mechanics.stack.SpellCaster] drops it when
+     * the card is cast again (CR 400.7).
      */
     fun trackDamageDealtToCreature(state: GameState, sourceId: EntityId, targetCreatureId: EntityId): GameState {
-        // Only track if source is still on the battlefield
-        if (sourceId !in state.getBattlefield()) return state
+        // Only a source still on the battlefield, or a spell on the stack, keeps the record
+        if (sourceId !in state.getBattlefield() && sourceId !in state.stack) return state
         return state.updateEntity(sourceId) { container ->
             val existing = container.get<DamageDealtToCreaturesThisTurnComponent>()
                 ?: DamageDealtToCreaturesThisTurnComponent()

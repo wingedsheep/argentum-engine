@@ -172,12 +172,14 @@ class HoldPolicy(
 
         val intent = intents.forName(cardName) ?: return TimingVerdict.Neutral
 
-        // A permanent whose entry has nothing to point at does nothing in any window.
+        // A permanent whose entry has nothing to point at — or an Aura whose entry is gated on a
+        // creature it is not being cast onto — does nothing in any window.
         if (refuseWastedPayoffs && cast != null) {
             val definition = intents.definition(cardName)
             val predicates = intents.predicates
             if (definition != null && predicates != null &&
-                TargetlessEntry.holds(state, playerId, definition, cast.cardId, predicates)
+                (TargetlessEntry.holds(state, playerId, definition, cast.cardId, predicates) ||
+                    UnmetAuraEntry.holds(state, playerId, definition, cast.cardId, cast.targets, predicates))
             ) {
                 return TimingVerdict.NoWindow
             }

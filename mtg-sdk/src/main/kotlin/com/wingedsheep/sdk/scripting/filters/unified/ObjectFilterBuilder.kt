@@ -754,8 +754,9 @@ interface ObjectFilterBuilder<out Self> {
 
     /**
      * Must have been dealt damage this turn by the effect's source. Source-relative; stops matching
-     * once the source leaves the battlefield. Used by "if a creature dealt damage by this creature
-     * this turn would die, exile it instead" (Frostwielder, Kumano).
+     * once a permanent source leaves the battlefield, or a spell source is cast again. Used by "if a
+     * creature dealt damage by this creature this turn would die, exile it instead" (Frostwielder,
+     * Kumano) and by a resolving spell's "creatures dealt damage by this" (Falling Star).
      */
     fun wasDealtDamageBySourceThisTurn() =
         withStatePredicate(StatePredicate.WasDealtDamageBySourceThisTurn)

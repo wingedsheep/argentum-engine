@@ -52,7 +52,7 @@ function tremorAt(elapsed: number): Point {
 }
 
 /**
- * The Chaos Orb mini-game, thrower's side: aim over the engine's table, press and hold to swing,
+ * The dexterity-flip mini-game (Chaos Orb, Falling Star), thrower's side: aim over the engine's table, press and hold to swing,
  * let go with the meter in the gold. The table is the server's; the throw is the player's; where
  * it lands is rolled by the server when it receives the throw.
  */
@@ -63,6 +63,10 @@ export function FlipDecisionOverlay({ decision }: { decision: FlipOntoBattlefiel
   const { table, release } = decision
   const view = useMemo(() => makeFlipView(table, false), [table])
   const sourceName = decision.context.sourceName ?? 'Chaos Orb'
+  // The card says what the flip does (destroy, deal damage, …); the table only says what it touches.
+  const sourceId = decision.context.sourceId
+  const rulesText = (sourceId ? gameState?.cards[sourceId]?.oracleText : null) ||
+    'If it turns over completely, it affects what it lands on — yours too.'
   const orbImage = getCardImageUrl(sourceName, decision.flippedImageUri)
 
   const [aim, setAim] = useState<Point | null>(null)
@@ -259,7 +263,7 @@ export function FlipDecisionOverlay({ decision }: { decision: FlipOntoBattlefiel
   const chips = useMemo(() => {
     const m = new Map<EntityId, { text: string; tone: 'danger' | 'warn' | 'calm' }>()
     for (const c of covered) {
-      if (!c.eligible) m.set(c.entityId, { text: c.isToken ? 'Token · safe' : 'Safe', tone: 'calm' })
+      if (!c.eligible) m.set(c.entityId, { text: 'Safe', tone: 'calm' })
       else if (c.controllerId === viewerId) m.set(c.entityId, { text: 'Yours', tone: 'warn' })
     }
     return m
@@ -268,7 +272,7 @@ export function FlipDecisionOverlay({ decision }: { decision: FlipOntoBattlefiel
   const aimLabel = (() => {
     if (!aim || swinging) return null
     const hits = covered.filter((c) => c.eligible)
-    if (hits.length === 0) return covered.length > 0 ? 'Only tokens here' : 'Bare felt'
+    if (hits.length === 0) return covered.length > 0 ? `Nothing ${sourceName} affects here` : 'Bare felt'
     return hits.map((c) => (c.name ?? 'Face-down permanent') + (c.controllerId === viewerId ? ' (yours)' : '')).join(' · ')
   })()
 
@@ -292,9 +296,7 @@ export function FlipDecisionOverlay({ decision }: { decision: FlipOntoBattlefiel
         <div className={styles.headerArt} style={{ backgroundImage: `url("${orbImage}")` }} />
         <div className={styles.headerText}>
           <div className={styles.title}>Flip {sourceName}</div>
-          <div className={styles.subtitle}>
-            If it turns over completely, it destroys every nontoken permanent it touches — yours too. Then it's destroyed.
-          </div>
+          <div className={styles.subtitle}>{rulesText}</div>
         </div>
         <div className={styles.headerSpacer} />
         <button className={styles.ghostButton} onClick={() => setHidden(true)} disabled={swinging}>

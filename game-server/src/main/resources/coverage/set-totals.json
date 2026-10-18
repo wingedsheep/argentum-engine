@@ -217212,11 +217212,7 @@
       },
       {
         "name": "Falling Star",
-        "img": "https://cards.scryfall.io/normal/front/f/2/f2b9983e-20d4-4d12-9e2c-ec6d9a345787.jpg",
-        "notPlanned": {
-          "kind": "dexterity",
-          "why": "Requires physical dexterity with a real card that the table-flip mini-game (built for Chaos Orb) doesn't cover yet."
-        }
+        "img": "https://cards.scryfall.io/normal/front/f/2/f2b9983e-20d4-4d12-9e2c-ec6d9a345787.jpg"
       },
       {
         "name": "Feint",
@@ -217740,11 +217736,7 @@
       },
       {
         "name": "Rebirth",
-        "img": "https://cards.scryfall.io/normal/front/a/0/a0d3ce01-e344-4608-b709-320be3600019.jpg",
-        "notPlanned": {
-          "kind": "ante",
-          "why": "Playing for ante is supported, but this card's ante effect isn't implemented yet."
-        }
+        "img": "https://cards.scryfall.io/normal/front/a/0/a0d3ce01-e344-4608-b709-320be3600019.jpg"
       },
       {
         "name": "Recall",
@@ -217932,11 +217924,7 @@
       },
       {
         "name": "Tempest Efreet",
-        "img": "https://cards.scryfall.io/normal/front/e/b/eb562143-fdf0-4eed-83ac-551627c576d2.jpg",
-        "notPlanned": {
-          "kind": "ante",
-          "why": "Playing for ante is supported, but this card's ante effect isn't implemented yet."
-        }
+        "img": "https://cards.scryfall.io/normal/front/e/b/eb562143-fdf0-4eed-83ac-551627c576d2.jpg"
       },
       {
         "name": "Tetsuo Umezawa",

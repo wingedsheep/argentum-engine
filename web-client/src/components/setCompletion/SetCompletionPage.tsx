@@ -22,6 +22,10 @@ import styles from './SetCompletionPage.module.css'
 type SortKey = 'newest' | 'percent' | 'implemented' | 'assayReady' | 'name'
 type Filter = 'all' | 'standard' | 'inProgress' | 'complete'
 type KindFilter = 'all' | SetKind
+
+// The page opens on main sets: they're what people draft and build from, and the Commander and
+// precon long tail would otherwise bury them. Every other type is one chip away.
+const DEFAULT_KIND: KindFilter = 'main'
 type Tab = 'sets' | 'explorer'
 
 const SORT_LABELS: Record<SortKey, string> = {
@@ -129,12 +133,12 @@ export function SetCompletionPage() {
   const query = params.get('q') ?? ''
   const sort = oneOf(params.get('sort'), Object.keys(SORT_LABELS) as SortKey[], 'newest')
   const filter = oneOf(params.get('status'), Object.keys(FILTER_LABELS) as Filter[], 'all')
-  const kind = oneOf(params.get('type'), ['all', ...SET_KIND_ORDER] as KindFilter[], 'all')
+  const kind = oneOf(params.get('type'), ['all', ...SET_KIND_ORDER] as KindFilter[], DEFAULT_KIND)
   const openCode = params.get('set')
   const setQuery = useCallback((q: string) => setParam('q', q || null), [setParam])
   const setSort = useCallback((k: SortKey) => setParam('sort', k === 'newest' ? null : k), [setParam])
   const setFilter = useCallback((f: Filter) => setParam('status', f === 'all' ? null : f), [setParam])
-  const setKindFilter = useCallback((k: KindFilter) => setParam('type', k === 'all' ? null : k), [setParam])
+  const setKindFilter = useCallback((k: KindFilter) => setParam('type', k === DEFAULT_KIND ? null : k), [setParam])
   const setOpenCode = useCallback((code: string | null) => setParam('set', code), [setParam])
   const clearFilters = useCallback(
     () =>
@@ -376,7 +380,7 @@ function SetsTab({
   onOpen: (code: string) => void
   onShowProgress: () => void
 }) {
-  const narrowed = query.trim() !== '' || filter !== 'all' || kind !== 'all'
+  const narrowed = query.trim() !== '' || filter !== 'all' || kind !== DEFAULT_KIND
   return (
     <>
       {totals && (

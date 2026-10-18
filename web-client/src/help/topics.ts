@@ -1059,17 +1059,17 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
   {
     id: 'dexterity-flips',
     section: 'playing',
-    title: 'Flipping Chaos Orb',
+    title: 'Flipping cards (Chaos Orb, Falling Star)',
     summary:
-      'Chaos Orb is played for real: the battlefield is laid out as a card table, you aim, press and hold to swing, and let go with the needle on the gold line. Your aim and your timing decide what it destroys.',
+      'Cards that tell you to flip them onto the table — Chaos Orb, Falling Star — are played for real: the battlefield is laid out as a card table, you aim, press and hold to swing, and let go with the needle on the gold line. Your aim and your timing decide what it lands on.',
     body: [
-      { kind: 'p', text: 'When Chaos Orb’s ability resolves, a table opens with every permanent lying where it would on a paper battlefield — creatures in front, lands at the back, tapped cards sideways, Auras and Equipment peeking out from behind what they’re attached to. Your side is at the bottom; the Orb sits in your hand at the edge.' },
+      { kind: 'p', text: 'When Chaos Orb’s ability or a Falling Star spell resolves, a table opens with every permanent lying where it would on a paper battlefield — creatures in front, lands at the back, tapped cards sideways, Auras and Equipment peeking out from behind what they’re attached to. Your side is at the bottom; the card sits in your hand at the edge, and the card’s text is shown above the table.' },
       { kind: 'ol', items: [
-        'Aim — move over the table. The crosshair is your aim and the dashed card shows where a perfect release lands; anything under it lights up red, your own permanents amber, and tokens grey (Chaos Orb can’t destroy tokens). A clean flip lands within a few millimetres of your aim, so aim carefully.',
-        'Swing — press and hold. The swing starts the moment you press, so aim first. The needle swings up and down the gauge, and the dashed card slides with it: below the gold line the Orb falls short, back towards your own permanents; above it, it sails long. Your hand also sways left and right — the dot under the Orb — pulling the flip to that side, so let go with it centred. Every swing is quicker than the last, and hold too long and your hand starts to shake.',
-        'Let go — release with the needle on the gold line to land on your aim. Let go far too low and the Orb won’t turn over completely, which means it does nothing.',
+        'Aim — move over the table. The crosshair is your aim and the dashed card shows where a perfect release lands; anything it would affect lights up red, your own permanents amber, and what it can’t affect grey (Chaos Orb spares tokens; Falling Star only hits creatures). A clean flip lands within a few millimetres of your aim, so aim carefully.',
+        'Swing — press and hold. The swing starts the moment you press, so aim first. The needle swings up and down the gauge, and the dashed card slides with it: below the gold line the card falls short, back towards your own permanents; above it, it sails long. Your hand also sways left and right — the dot under the card — pulling the flip to that side, so let go with it centred. Every swing is quicker than the last, and hold too long and your hand starts to shake.',
+        'Let go — release with the needle on the gold line to land on your aim. Let go far too low and the card won’t turn over completely, which means it does nothing.',
       ] },
-      { kind: 'p', text: 'The server decides where it lands from your aim and release, so every player sees the same flight. Everything the Orb touches is destroyed if it turned over — yours included — and then the Orb itself is destroyed. Your opponent watches the same flip from their side of the table.' },
+      { kind: 'p', text: 'The server decides where it lands from your aim and release, so every player sees the same flight. If it turned over, it affects everything it came to rest on, yours included: Chaos Orb destroys each nontoken permanent it touches and then itself; Falling Star deals 3 damage to each creature it lands on and taps them. Your opponent watches the same flip from their side of the table.' },
       { kind: 'tip', text: 'Aim at the seam between two cards to take both — a precise aim and a clean release can. Your first swing is the slowest, so it’s usually the one to take. Space works as the swing button too, and Esc stops a swing without throwing.' },
     ],
     related: ['decisions', 'game-table'],
@@ -1579,7 +1579,7 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
       { kind: 'ul', items: [
         'The banner counts distinct cards implemented, printings, complete sets and cards not planned; View progress charts implementation over time.',
         'Filter sets by name or code, and by All, Standard, In progress or Complete.',
-        'Narrow by set type: Main sets, Commander, Supplemental (Masters, Modern Horizons, Jumpstart, starter sets), Decks & boxes (Duel Decks, Planechase, From the Vault) or Un-sets. Each chip counts the sets it would show with your other filters applied.',
+        'The list opens on Main sets. Switch with the type chips — All types, Commander, Supplemental (Masters, Modern Horizons, Jumpstart, starter sets), Decks & boxes (Duel Decks, Planechase, From the Vault) or Un-sets. Each chip counts the sets it would show with your other filters applied.',
         'Sets outside the main line carry a coloured badge naming their exact type and a matching stripe down the left edge, so a Commander product stands out in the grid.',
         'Once you narrow the list, a line above the grid totals the sets in view. The filters, sort and the open set live in the address bar, so a filtered view can be bookmarked or shared.',
         'Sort by Newest, Most complete, Most cards done, Most Assay-ready or A–Z.',

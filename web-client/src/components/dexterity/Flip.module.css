@@ -221,8 +221,9 @@
   box-shadow: 0 0 0 1.5px rgba(200, 210, 220, 0.6);
 }
 
+/* Struck and still standing: the impact glow without the destroyed card's crack and fade. */
 .cardHit .cardFace {
-  box-shadow: 0 0 0 2px #fff, 0 0 18px 4px rgba(255, 255, 255, 0.8);
+  box-shadow: 0 0 0 2px #ff3b30, 0 0 22px 6px rgba(255, 50, 40, 0.85);
 }
 
 .cardDestroyed .cardFace {
