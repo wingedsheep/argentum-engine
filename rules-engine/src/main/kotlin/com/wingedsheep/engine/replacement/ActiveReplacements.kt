@@ -87,4 +87,16 @@ object ActiveReplacements {
 
         return results
     }
+
+    /**
+     * Drop every one-shot ([com.wingedsheep.sdk.scripting.Duration.NextUse]) grant that has
+     * modified an event. Called at event boundaries — after each effect instruction finishes and
+     * when an action settles — so a grant spent by the first of several objects entering
+     * simultaneously still applies to the rest of them, and never to a later event. Returns the
+     * same instance when nothing is spent (the common case: this runs on every instruction).
+     */
+    fun purgeSpent(state: GameState): GameState {
+        if (state.grantedReplacementEffects.none { it.spent }) return state
+        return state.copy(grantedReplacementEffects = state.grantedReplacementEffects.filterNot { it.spent })
+    }
 }

@@ -5494,6 +5494,93 @@
     ]
 }
 
+// Storyweave
+{
+    "name": "Storyweave",
+    "manaCost": "{2}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Choose one —\n• Put two +1/+1 counters on target creature you control.\n• Put two lore counters on target Saga you control. The next time one or more enchantment creatures you control enter this turn, each enters with two additional +1/+1 counters on it.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 2,
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature ctrl:you"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "description": "Put two +1/+1 counters on target creature you control"
+                },
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "AddCounters",
+                                "counterType": "LORE",
+                                "count": 2,
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t1"
+                                }
+                            },
+                            {
+                                "type": "GrantReplacementEffect",
+                                "replacement": {
+                                    "type": "EntersWithCounters",
+                                    "count": 2,
+                                    "appliesTo": {
+                                        "type": "ZoneChangeEvent",
+                                        "filter": "creature enchantment ctrl:you",
+                                        "to": "Battlefield"
+                                    }
+                                },
+                                "duration": {
+                                    "type": "NextUse",
+                                    "sourceDescription": "one or more enchantment creatures you control enter"
+                                }
+                            }
+                        ]
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "enchantment Saga ctrl:you"
+                            },
+                            "id": "t1"
+                        }
+                    ],
+                    "description": "Put two lore counters on target Saga you control; the next enchantment creatures you control to enter this turn get two +1/+1 counters"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "209",
+        "rarity": "UNCOMMON",
+        "artist": "Rovina Cai",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/0/50a77eed-aa03-43b7-b3c8-6aee4c96c648.jpg?1783923840"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Takenuma, Abandoned Mire
 {
     "name": "Takenuma, Abandoned Mire",

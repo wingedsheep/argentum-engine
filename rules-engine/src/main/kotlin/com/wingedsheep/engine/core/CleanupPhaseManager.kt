@@ -1224,10 +1224,10 @@ class CleanupPhaseManager(
         }
 
         // 7a-i. Expire granted replacement effects (e.g. Forgotten Cellar's "exile instead of
-        // graveyard this turn") with EndOfTurn duration.
+        // graveyard this turn") with EndOfTurn duration, and one-shot NextUse grants never used.
         if (newState.grantedReplacementEffects.isNotEmpty()) {
             val remainingGrants = newState.grantedReplacementEffects.filter { grant ->
-                grant.duration !is Duration.EndOfTurn
+                grant.duration !is Duration.EndOfTurn && grant.duration !is Duration.NextUse
             }
             newState = newState.copy(grantedReplacementEffects = remainingGrants)
         }

@@ -453,10 +453,17 @@ object EntersWithReplacements {
                 }
             }
         }
+        // Durational grants ("the next time one or more enchantment creatures you control enter
+        // this turn, each enters with two additional +1/+1 counters" — Storyweave) stand on their
+        // own once granted: "you" is the granting player and the anchor may be long gone.
+        for ((index, grant) in sourceState.grantedReplacementEffects.withIndex()) {
+            sources.add(GlobalReplacementSource(grant.entityId, grant.controllerId, listOf(grant.replacement), grantIndex = index))
+        }
 
-        for ((sourceId, sourceControllerId, effects) in sources) {
+        for (source in sources) {
+            val (sourceId, sourceControllerId, effects) = source
             for (effect in effects) {
-                when (effect) {
+                val applied = when (effect) {
                     is EntersWithCounters -> {
                         if (effect.selfOnly) continue
                         if (!matchesEnterFilter(effect.appliesTo, enteringEntityId, sourceId, sourceControllerId, newState, predicateEvaluator = predicateEvaluator)) continue
@@ -476,6 +483,7 @@ object EntersWithReplacements {
                         val counterType = effect.counterType
                         if (counterTotals != null) {
                             counterTotals[counterType] = (counterTotals[counterType] ?: 0) + effect.count
+                            newState = spendGrant(newState, source)
                             continue
                         }
                         val modifiedCount = ReplacementEffectUtils.applyCounterPlacementModifiers(
@@ -491,6 +499,7 @@ object EntersWithReplacements {
                         )
                         newState = afterMark
                         events.add(CountersAddedEvent(enteringEntityId, counterType, modifiedCount, entityName, firstThisTurn, firstOfTypeThisTurn = firstOfTypeThisTurn, placedBy = enteringControllerId))
+                        true
                     }
                     is EntersWithDynamicCounters -> {
                         if (!effect.otherOnly) continue
@@ -515,6 +524,7 @@ object EntersWithReplacements {
                         if (count > 0) {
                             if (counterTotals != null) {
                                 counterTotals[counterType] = (counterTotals[counterType] ?: 0) + count
+                                newState = spendGrant(newState, source)
                                 continue
                             }
                             val modifiedCount = ReplacementEffectUtils.applyCounterPlacementModifiers(
@@ -531,6 +541,7 @@ object EntersWithReplacements {
                             newState = afterMark
                             events.add(CountersAddedEvent(enteringEntityId, counterType, modifiedCount, entityName, firstThisTurn, firstOfTypeThisTurn = firstOfTypeThisTurn, placedBy = enteringControllerId))
                         }
+                        count > 0
                     }
                     is EntersWithKeywords -> {
                         if (effect.selfOnly) continue
@@ -554,12 +565,30 @@ object EntersWithReplacements {
                         val (grantState, grantEvents) = grantKeywords(newState, effect, enteringEntityId, entityName, grantContext)
                         newState = grantState
                         events.addAll(grantEvents)
+                        true
                     }
-                    else -> { /* Other replacement effects handled elsewhere */ }
+                    else -> false /* Other replacement effects handled elsewhere */
                 }
+                if (applied) newState = spendGrant(newState, source)
             }
         }
         return newState to events
+    }
+
+    /**
+     * Mark a one-shot ([Duration.NextUse]) grant as spent once it has modified an entry. It keeps
+     * applying to the objects entering simultaneously with this one and is purged at the next
+     * event boundary ([com.wingedsheep.engine.replacement.ActiveReplacements.purgeSpent]).
+     */
+    private fun spendGrant(state: GameState, source: GlobalReplacementSource): GameState {
+        val index = source.grantIndex ?: return state
+        val grant = state.grantedReplacementEffects.getOrNull(index) ?: return state
+        if (grant.duration !is Duration.NextUse || grant.spent || grant.replacement !in source.effects) return state
+        return state.copy(
+            grantedReplacementEffects = state.grantedReplacementEffects.toMutableList().also {
+                it[index] = grant.copy(spent = true)
+            }
+        )
     }
 
     /**
@@ -574,6 +603,8 @@ object EntersWithReplacements {
         val sourceId: EntityId,
         val sourceControllerId: EntityId,
         val effects: List<com.wingedsheep.sdk.scripting.ReplacementEffect>,
+        /** Index into [GameState.grantedReplacementEffects] when this source is a durational grant. */
+        val grantIndex: Int? = null,
     )
 
     /**

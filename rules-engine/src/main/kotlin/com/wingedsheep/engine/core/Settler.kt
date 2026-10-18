@@ -95,7 +95,12 @@ class Settler(
         val raw = runReplacementRiders(endTheTurnIfRequested(current))
         val result = com.wingedsheep.engine.mechanics.GraveyardOrdering.finish(raw)
         if (result.outcome is Outcome.Rejected) return result
-        val state = result.state
+        // An action that entered permanents outside an effect instruction (a resolving permanent
+        // spell, a land play) is one event: a "the next time …" grant it spent is done. A paused
+        // action may still be mid-event, so its grants wait for the answer to settle.
+        val state = if (result.state.pendingDecision == null) {
+            com.wingedsheep.engine.replacement.ActiveReplacements.purgeSpent(result.state)
+        } else result.state
         // A lone priority pass changes nothing on the board, so there is nothing to detect,
         // check, or put on the stack. Skip the full SBA and poll sweep on the engine's most
         // frequent action.

@@ -174,7 +174,12 @@ class EffectExecutorRegistry(
         val references = instructionContext.objectReferences.authorize(result.events)
         val finished = result.copy(state = com.wingedsheep.engine.handlers.continuations.propagateObjectReferences(result.state, references))
         val recorded = finished.copy(state = com.wingedsheep.engine.core.ControlHistory.record(finished.state, finished.events))
-        val completed = runReplacementRiders(recorded, context)
+        val completed = runReplacementRiders(recorded, context).let { done ->
+            // An instruction is one event for "the next time …" replacement grants: one it spent
+            // has done its job once the instruction is over (see ActiveReplacements.purgeSpent).
+            if (done.outcome is Outcome.Done) done.copy(state = com.wingedsheep.engine.replacement.ActiveReplacements.purgeSpent(done.state))
+            else done
+        }
         return if (context.deferGraveyardOrdering) completed
             else com.wingedsheep.engine.mechanics.GraveyardOrdering.finish(completed, context.sourceId)
     }
