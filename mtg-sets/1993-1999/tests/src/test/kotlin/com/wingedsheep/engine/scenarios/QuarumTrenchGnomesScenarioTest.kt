@@ -8,6 +8,7 @@ import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.AbilityId
 import io.kotest.assertions.withClue
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
@@ -72,6 +73,84 @@ class QuarumTrenchGnomesScenarioTest : ScenarioTestBase() {
                 game.tapForMana(other, "Plains")
                 withClue("the untargeted Plains is unaffected") {
                     game.manaPool().getAmount(Color.WHITE) shouldBe 1
+                }
+            }
+
+            test("only white mana is replaced: a Savannah still taps for green") {
+                // The card's ruling: only white mana becomes colorless. Savannah (Forest Plains)
+                // is a legal target and keeps its {G}.
+                fun savannahGame() = scenario()
+                    .withPlayers("Gnomes", "Opponent")
+                    .withCardOnBattlefield(1, "Quarum Trench Gnomes")
+                    .withCardOnBattlefield(1, "Savannah")
+                    .withCardInHand(1, "Savannah Lions")
+                    .withCardInHand(1, "Llanowar Elves")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+                    .also { it.activateGnomesOn(it.findPermanent("Savannah")!!) }
+
+                fun ScenarioTestBase.TestGame.tapSavannahFor(color: Char) {
+                    execute(
+                        ActivateAbility(
+                            playerId = player1Id,
+                            sourceId = findPermanent("Savannah")!!,
+                            abilityId = AbilityId.intrinsicMana(color),
+                        )
+                    ).error shouldBe null
+                }
+
+                val white = savannahGame()
+                white.tapSavannahFor('W')
+                withClue("its {W} ability produced {C}") {
+                    white.manaPool().colorless shouldBe 1
+                    white.manaPool().getAmount(Color.WHITE) shouldBe 0
+                }
+
+                val green = savannahGame()
+                green.tapSavannahFor('G')
+                withClue("its {G} ability is untouched") {
+                    green.manaPool().getAmount(Color.GREEN) shouldBe 1
+                    green.manaPool().colorless shouldBe 0
+                }
+
+                val autoPay = savannahGame()
+                withClue("auto-pay sees a green-or-colorless source: no {W} spell, but a {G} one") {
+                    autoPay.castSpell(1, "Savannah Lions").error shouldNotBe null
+                    autoPay.castSpell(1, "Llanowar Elves").error shouldBe null
+                }
+            }
+
+            test("under Pulse of Llanowar the affected Plains still taps for any colour, on both paths") {
+                // Pulse is a free-choice replacement and applies after the Gnomes' fixed one, so the
+                // land can still make {W}; manual tap and auto-pay must agree on that.
+                fun pulseGame() = scenario()
+                    .withPlayers("Gnomes", "Opponent")
+                    .withCardOnBattlefield(1, "Pulse of Llanowar")
+                    .withCardOnBattlefield(1, "Quarum Trench Gnomes")
+                    .withLandsOnBattlefield(1, "Plains", 1)
+                    .withCardInHand(1, "Savannah Lions")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+                    .also { it.activateGnomesOn(it.findPermanent("Plains")!!) }
+
+                val manual = pulseGame()
+                manual.execute(
+                    ActivateAbility(
+                        playerId = manual.player1Id,
+                        sourceId = manual.findPermanent("Plains")!!,
+                        abilityId = cardRegistry.getCard("Plains")!!.script.activatedAbilities[0].id,
+                        manaColorChoice = Color.WHITE,
+                    )
+                ).error shouldBe null
+                withClue("Pulse's choice is offered last, so white is still available") {
+                    manual.manaPool().getAmount(Color.WHITE) shouldBe 1
+                    manual.manaPool().colorless shouldBe 0
+                }
+
+                withClue("auto-pay agrees: the Plains can pay {W}") {
+                    pulseGame().castSpell(1, "Savannah Lions").error shouldBe null
                 }
             }
 

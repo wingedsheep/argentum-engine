@@ -373,23 +373,6 @@ enum class TappedForManaType {
 }
 
 /**
- * Lands matching [filter] produce one mana of a color of their controller's choice instead of
- * their normal mana ("instead of any other type"). The land still taps as a mana ability; only
- * the produced mana's color is replaced, and the controller chooses the color each time.
- *
- * Used by Pulse of Llanowar ("If a basic land you control is tapped for mana, it produces mana of
- * a color of your choice instead of any other type") with `filter = GameObjectFilter.BasicLand.youControl()`.
- *
- * This is a global mana-production replacement: it is checked whenever a land's mana ability
- * resolves (manual taps) and is honored by the [com.wingedsheep] ManaSolver when auto-tapping for
- * costs (a matched land is treated as a five-color source). Unlike [OverrideEnchantedLandManaColor]
- * (a per-aura fixed-color override) this is filter-based and the color is a free choice.
- *
- * @property filter Which lands have their produced mana color replaced (matched via projected
- *   state from the land controller's perspective, so `youControl()` means "you, the controller of
- *   this static, control the land").
- */
-/**
  * Creatures dealt damage by this permanent are doomed for the rest of the turn: they can't be
  * regenerated, and if they would die they are exiled instead. Runesword's two riders, which the
  * printed card states as separate sentences but which key off the same event and name the same
@@ -451,6 +434,28 @@ data class CreaturesDamagedBySourceAreDoomed(
     }
 }
 
+/**
+ * Lands matching [filter] produce other mana instead of their normal mana — a replacement on the
+ * land's mana ability's output (the land still taps as a mana ability). Three shapes:
+ *
+ * - **Pulse of Llanowar** — "If a basic land you control is tapped for mana, it produces mana of a
+ *   color of your choice instead of any other type": `filter = GameObjectFilter.BasicLand.youControl()`,
+ *   [produces] null. The controller chooses the colour each time.
+ * - **Deep Water** — "it produces {U} instead of any other type": `produces = ManaSymbol.Colored(BLUE)`,
+ *   granted for a turn.
+ * - **Quarum Trench Gnomes** — "it produces colorless mana instead of white mana":
+ *   `produces = ManaSymbol.Colorless, replaces = WHITE`, granted to the targeted land forever.
+ *
+ * Checked whenever a land's mana ability resolves (manual taps) and honoured by the ManaSolver when
+ * auto-tapping for costs, both folding every matching replacement the same way: fixed ones in
+ * battlefield order, free-choice ones last (so a land under both Pulse and the Gnomes can still make
+ * any colour — the order its controller would pick, since it offers every other order's options).
+ * Unlike [OverrideEnchantedLandManaColor] (a per-aura override) this is filter-based.
+ *
+ * @property filter Which lands have their produced mana replaced (matched via projected state from
+ *   the static controller's perspective, so `youControl()` means "you, the controller of this
+ *   static, control the land").
+ */
 @SerialName("ReplaceLandManaColor")
 @Serializable
 data class ReplaceLandManaColor(

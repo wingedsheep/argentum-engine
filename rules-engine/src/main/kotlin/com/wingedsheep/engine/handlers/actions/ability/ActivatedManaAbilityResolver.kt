@@ -126,9 +126,10 @@ internal class ActivatedManaAbilityResolver(
         }
         // Filter-based mana replacement (Pulse of Llanowar, Deep Water, Quarum Trench Gnomes): a
         // matched land produces other mana instead of its normal mana. Every replacement the land
-        // is subject to applies in turn, each to the previous one's output, so "colorless instead
-        // of white" still sees the white a Plains makes after an earlier rewrite left it white.
-        for (colorReplacement in manaColorReplacementsFor(currentState, action.sourceId)) {
+        // is subject to applies in turn, each to the previous one's output — fixed ones in
+        // battlefield order, free-choice ones last (ManaSolver.replacedLandMana folds the same way),
+        // so Pulse of Llanowar over a Gnomes-hit Plains still offers every colour.
+        for (colorReplacement in manaColorReplacementsFor(currentState, action.sourceId).sortedBy { it.produces == null }) {
             finalEffect = replaceProducedMana(finalEffect, colorReplacement)
         }
         // Multiplicative mana replacement (Virtue of Strength: "If you tap a basic land for
@@ -445,14 +446,19 @@ internal class ActivatedManaAbilityResolver(
                 when (val produces = replacement.produces) {
                     null -> AddManaOfChoiceEffect(ManaColorSet.AnyColor, effect.amount)
                     is ManaSymbol.Colored -> effect.copy(color = produces.color)
-                    else -> AddColorlessManaEffect(effect.amount, effect.restriction)
+                    else -> AddColorlessManaEffect(
+                        effect.amount, effect.restriction, riders = effect.riders, expiry = effect.expiry
+                    )
                 }
             }
             is AddColorlessManaEffect -> {
                 if (replaces != null) return effect
                 when (val produces = replacement.produces) {
                     null -> AddManaOfChoiceEffect(ManaColorSet.AnyColor, effect.amount)
-                    is ManaSymbol.Colored -> AddManaEffect(produces.color, effect.amount)
+                    is ManaSymbol.Colored -> AddManaEffect(
+                        produces.color, effect.amount, effect.restriction,
+                        expiry = effect.expiry, riders = effect.riders
+                    )
                     else -> effect
                 }
             }

@@ -1449,7 +1449,7 @@ class ManaSolver private constructor(
                     // An attached aura may override the produced mana color
                     // (e.g., Shimmerwilds Growth on a Mountain with Blue chosen → produces {U}),
                     // and filter-based replacements then rewrite that output in turn, exactly as
-                    // the manual-tap path does: Pulse of Llanowar makes it any of the five colours,
+                    // the manual-tap path does for these basic-land-type abilities: Pulse of Llanowar makes it any of the five colours,
                     // Deep Water makes it {U}, Quarum Trench Gnomes makes a Plains' white colorless.
                     val overrideColor = manaStatics.landColorOverrideByTarget[entityId]
                     val (effectiveColors, effectiveColorless) = replacedLandMana(
@@ -2244,7 +2244,9 @@ class ManaSolver private constructor(
     ): Pair<Set<Color>, Boolean> {
         var producedColors = colors
         var producedColorless = false
-        for (replacement in manaStatics.landColorReplacements) {
+        // Free-choice replacements last, as ActivatedManaAbilityResolver folds them.
+        val ordered = manaStatics.landColorReplacements
+        for (replacement in if (ordered.size > 1) ordered.sortedBy { it.static.produces == null } else ordered) {
             val filterContext = PredicateContext(
                 controllerId = replacement.sourceControllerId,
                 sourceId = replacement.sourceId
