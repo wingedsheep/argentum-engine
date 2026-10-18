@@ -219,10 +219,10 @@ class PredicateEvaluator(
      * [com.wingedsheep.engine.state.components.stack.captureEntitySnapshots] overload** (the
      * `(ids, state)` one), and populate [EntitySnapshot.typeLine] and [EntitySnapshot.keywords] on
      * top of it. The unanswerable-reports-null discipline above cannot cover
-     * [EntitySnapshot.wasToken], [EntitySnapshot.keywords], [EntitySnapshot.wasAttacking],
+     * [EntitySnapshot.wasToken], [EntitySnapshot.wasFaceDown], [EntitySnapshot.keywords], [EntitySnapshot.wasAttacking],
      * [EntitySnapshot.wasBlocking] or [EntitySnapshot.wasModified]: each defaults to a *legitimate* value
      * (`false` / empty) with no "was never captured" state, so a snapshot taken by the projection-
-     * only overload answers `IsToken` false, `IsNontoken` true and every `HasKeyword` false with
+     * only overload answers `IsToken` false, `IsNontoken` true, `IsFaceDown` false and every `HasKeyword` false with
      * full confidence rather than reporting unknown. There is one caller today
      * ([CardPredicate.AbilitySourceMatches] against
      * [com.wingedsheep.engine.state.components.stack.ActivatedAbilityOnStackComponent.lastKnownSourceSnapshot],
@@ -325,6 +325,8 @@ class PredicateEvaluator(
             StatePredicate.IsAttacking -> snapshot.wasAttacking
             StatePredicate.IsBlocking -> snapshot.wasBlocking
             StatePredicate.IsModified -> snapshot.wasModified
+            StatePredicate.IsFaceDown -> snapshot.wasFaceDown
+            StatePredicate.IsFaceUp -> !snapshot.wasFaceDown
             is StatePredicate.Not -> matchesSnapshotState(snapshot, predicate.predicate)?.not()
             is StatePredicate.And -> {
                 val results = predicate.predicates.map { matchesSnapshotState(snapshot, it) }
@@ -368,6 +370,11 @@ class PredicateEvaluator(
                 typeLine?.hasSubtype(predicate.subtype)
                     ?: snapshot.subtypes.any { it.equals(predicate.subtype.value, ignoreCase = true) }
             is CardPredicate.HasKeyword -> snapshot.keywords.containsKeyword(predicate.keyword)
+            CardPredicate.PowerGreaterThanBase -> {
+                val power = snapshot.power
+                val basePower = snapshot.basePower
+                if (power == null || basePower == null) null else power > basePower
+            }
             is CardPredicate.Not -> matchesSnapshotPredicate(snapshot, predicate.predicate)?.not()
             is CardPredicate.And -> {
                 val results = predicate.predicates.map { matchesSnapshotPredicate(snapshot, it) }
@@ -448,7 +455,6 @@ class PredicateEvaluator(
             is CardPredicate.PowerEquals,
             is CardPredicate.PowerEqualsDynamic,
             is CardPredicate.PowerAtMostDynamic,
-            CardPredicate.PowerGreaterThanBase,
             is CardPredicate.BasePowerEquals,
             is CardPredicate.BaseToughnessEquals,
             is CardPredicate.PowerGreaterThanEntity,

@@ -3573,7 +3573,7 @@ class TriggerDetector(
             val onBattlefield = event.sourceId in state.getBattlefield()
             val lastKnown = if (onBattlefield) null else event.sourceLastKnown
             val controller = if (onBattlefield) {
-                state.getEntity(event.sourceId)?.get<ControllerComponent>()?.playerId
+                projected.getController(event.sourceId)
             } else {
                 lastKnown?.controllerId
             } ?: continue

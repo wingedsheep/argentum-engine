@@ -15,6 +15,7 @@ import com.wingedsheep.mtg.sets.definitions.blb.cards.CamelliaTheSeedmiser
 import com.wingedsheep.mtg.sets.definitions.blb.cards.DourPortMage
 import com.wingedsheep.mtg.sets.definitions.blb.cards.KastralTheWindcrested
 import com.wingedsheep.mtg.sets.definitions.ktk.cards.SidisiBroodTyrant
+import com.wingedsheep.mtg.sets.definitions.lci.cards.KutzilMalametExemplar
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.core.Zone
@@ -597,6 +598,24 @@ class TriggerDetectorBatchTriggerTest : FunSpec({
             triggers.filter {
                 it.ability.trigger is EventPattern.OneOrMoreDealCombatDamageToPlayerEvent
             }.shouldBeEmpty()
+        }
+
+        test("a pumped creature that died is matched on its last-known power (Kutzil, Malamet Exemplar)") {
+            val driver = createDriver(KutzilMalametExemplar)
+            driver.putCreatureOnBattlefield(driver.player1, "Kutzil, Malamet Exemplar")
+            val bears = driver.putCreatureOnBattlefield(driver.player1, "Grizzly Bears")
+            val unpumped = captureLastKnown(driver.state, bears)
+            driver.moveToGraveyard(bears)
+            val detector = detectorFor(driver)
+            fun fired(lastKnown: com.wingedsheep.engine.state.components.stack.EntitySnapshot) =
+                detector.detectTriggers(
+                    driver.state,
+                    listOf(DamageDealtEvent(bears, driver.player2, 4, isCombatDamage = true, targetIsPlayer = true, sourceLastKnown = lastKnown))
+                ).count { it.ability.trigger is EventPattern.OneOrMoreDealCombatDamageToPlayerEvent }
+
+            // Power 4 over a base 2 at the instant of damage: "power greater than its base power".
+            fired(unpumped.copy(power = 4)) shouldBe 1
+            fired(unpumped) shouldBe 0
         }
 
         test("a dead attacker still fires \"one or more creatures deal combat damage to you\"") {
