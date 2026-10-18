@@ -3657,6 +3657,9 @@ internal fun describeObjectForEvent(filter: GameObjectFilter): String {
         return "a card or permanent$controllerSuffix"
     }
 
+    // "this land" (StatePredicate.IsSource) is already determined — no article in front of it.
+    if (baseParts.startsWith("this ")) return "$baseParts$controllerSuffix"
+
     val article = if (baseParts.first().lowercaseChar() in "aeiou") "an" else "a"
 
     return "$article $baseParts$controllerSuffix"

@@ -51,6 +51,15 @@ class ManaStaticDescriptionTest : DescribeSpec({
                 "If a land is tapped for mana, it produces colorless mana instead of white mana"
         }
 
+        it("reads a rule bound to one land without an article (granted by Quarum Trench Gnomes)") {
+            ReplaceLandManaColor(
+                filter = GameObjectFilter.Land.sourceItself(),
+                produces = ManaSymbol.Colorless,
+                replaces = Color.WHITE,
+            ).description shouldBe
+                "If this land is tapped for mana, it produces colorless mana instead of white mana"
+        }
+
         it("rejects a symbol that isn't one mana a land could produce") {
             shouldThrow<IllegalArgumentException> {
                 ReplaceLandManaColor(filter = GameObjectFilter.Land, produces = ManaSymbol.Generic(2))
