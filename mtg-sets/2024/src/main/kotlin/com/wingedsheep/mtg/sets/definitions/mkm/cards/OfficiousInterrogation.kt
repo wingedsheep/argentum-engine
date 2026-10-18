@@ -43,10 +43,9 @@ import com.wingedsheep.sdk.scripting.targets.TargetPlayer
  *
  * *A free cast still owes the tax.* "Costs {W}{U} more" is a cost *increase*, and an alternative
  * cost or a "without paying its mana cost" permission waives the mana cost, not the increases
- * applied to the total cost (CR 601.2f) — the card's own ruling says so outright. The ordinary cast
- * path prices this inside `CostCalculator.calculateEffectiveCost`, which those branches never
- * reach, so `CostCalculator.selfPerTargetTax` is added on top of them in both the validate and the
- * execute half of the cast pipeline.
+ * applied to the total cost (CR 601.2f) — the card's own ruling says so outright. A free cast is
+ * priced as a {0} base through the same modifier pipeline (`CostCalculator.calculateFreeCastCost`),
+ * so the tax lands on it as on any other cast.
  *
  * `unlimited = true` is the right target shape for "any number of target players" — not
  * `count = <n>, optional = true`, which caps at a magic number, and not a `dynamicMaxCount`, which

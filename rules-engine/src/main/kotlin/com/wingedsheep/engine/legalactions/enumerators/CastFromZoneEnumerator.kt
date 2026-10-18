@@ -348,7 +348,9 @@ class CastFromZoneEnumerator(
                     val topPayableCost = context.castPermissionUtils
                         .relaxSpellCostColorsIfAny(state, playerId, topCardId, topEffectiveCost)
                     val cachedSources = context.availableManaSources
-                    val canAfford = (freeCastFromTop ||
+                    // A free cast still owes the cost increases (CR 601.2f).
+                    val topFreeCost = context.freeCastCost(topCardDef, Zone.LIBRARY)
+                    val canAfford = (if (freeCastFromTop) context.canPayMana(topFreeCost) else
                         context.manaSolver.canPay(state, playerId, topPayableCost, precomputedSources = cachedSources)) &&
                         lifeAffordable && canPayGrantCost
                     // A battlefield `MayCastWithoutPayingManaCost` source whose zones include the
@@ -356,7 +358,7 @@ class CastFromZoneEnumerator(
                     // (CR 118.9a) alongside the pay path; X is treated as 0 (CR 107.3b). Not stacked
                     // on a top-of-library alternative cost, which is already the cast's alternative.
                     val freeCastFromSource = topAltCost == null &&
-                        context.freeCastPermissionFor(topCardId, Zone.LIBRARY)
+                        context.freeCastPermissionFor(topCardId, Zone.LIBRARY) && context.canPayMana(topFreeCost)
                     val targetReqs = buildList {
                         addAll(topCardDef?.script?.targetRequirements ?: emptyList())
                         topCardDef?.script?.castAuraTarget?.let { add(it) }
@@ -412,7 +414,7 @@ class CastFromZoneEnumerator(
                     }
 
                     if (canAfford && targetsSatisfied) {
-                        val manaCostString = if (freeCastFromTop) "0" else topEffectiveCost.toString()
+                        val manaCostString = if (freeCastFromTop) freeCostString(topFreeCost) else topEffectiveCost.toString()
                         val hasXCost = topEffectiveCost.hasX
                         val maxAffordableX: Int? = if (hasXCost) {
                             val availableSources = context.manaSolver.getAvailableManaCount(state, playerId, precomputedSources = cachedSources)
@@ -421,13 +423,14 @@ class CastFromZoneEnumerator(
                             ((availableSources - fixedCost) / xSymbolCount).coerceAtLeast(0)
                         } else null
                         val autoTapPreview = if (context.skipAutoTapPreview) null else {
-                            context.manaSolver.solve(state, playerId, topPayableCost, precomputedSources = cachedSources)
+                            context.manaSolver.solve(state, playerId, if (freeCastFromTop) topFreeCost else topPayableCost, precomputedSources = cachedSources)
                                 ?.sources?.map { it.entityId }
                         }
                         result.add(castAction(free = false, manaCostString, hasXCost, maxAffordableX, autoTapPreview))
                     }
                     if (freeCastFromSource && canPayGrantCost && targetsSatisfied) {
-                        result.add(castAction(free = true, "{0}", hasXCost = false, maxAffordableX = null, autoTapPreview = null))
+                        result.add(castAction(free = true, freeCostString(topFreeCost), hasXCost = false, maxAffordableX = null,
+                            autoTapPreview = freeCostPreview(context, topFreeCost)))
                     }
                 }
             }
@@ -561,7 +564,14 @@ class CastFromZoneEnumerator(
                     val hasCorrectTiming = isInstant || grantsFlashTiming || context.canPlaySorcerySpeed
                     val castRestrictions = effectiveScript?.castRestrictions ?: emptyList()
                     val meetsRestrictions = context.legality.castRestrictionsMet(state, playerId, castRestrictions)
-                    val baseEffectiveCost = if (cardDef != null && prepareFace != null) {
+                    val castZone = if (sourceZoneLabel == "EXILE") Zone.EXILE else Zone.GRAVEYARD
+                    // A free cast still owes the cost increases (CR 601.2f).
+                    val baseEffectiveCost = if (playForFree) {
+                        context.freeCastCost(
+                            if (cardDef != null && prepareFace != null) context.costCalculator.faceCharacteristics(cardDef, prepareFace) else cardDef,
+                            castZone,
+                        )
+                    } else if (cardDef != null && prepareFace != null) {
                         context.costCalculator.calculateFaceCastCost(state, cardDef, prepareFace, playerId)
                     } else if (cardDef != null) {
                         context.costCalculator.calculateEffectiveCost(state, cardDef, playerId)
@@ -593,7 +603,7 @@ class CastFromZoneEnumerator(
                     if (!playForFree && runtimeCostIncrease != null) {
                         effectiveCost = effectiveCost + runtimeCostIncrease.cost
                     }
-                    val costString = if (playForFree) "{0}" else effectiveCost.toString()
+                    val costString = if (playForFree) freeCostString(effectiveCost) else effectiveCost.toString()
                     // Hama, the Bloodbender: the fixed alternative cost is a *waterbend* cost, so its
                     // whole generic can be paid by tapping artifacts/creatures. Fold the tap help into
                     // affordability (CR 701.67); the tap metadata is attached to the emitted actions
@@ -611,7 +621,7 @@ class CastFromZoneEnumerator(
                     ) {
                         context.costUtils.findConvokeCreatures(state, playerId).also { convokeByCard[cardId] = it }
                     } else emptyList()
-                    val canAfford = playForFree ||
+                    val canAfford = if (playForFree) context.canPayMana(effectiveCost, spellContext) else
                         context.manaSolver.canPay(
                             state, playerId, effectiveCost,
                             precomputedSources = context.availableManaSources, spellContext = spellContext
@@ -665,10 +675,11 @@ class CastFromZoneEnumerator(
                     // (Warped Space) lets this exile spell be cast for {0}. Offered as its own
                     // variant (CR 118.9a) alongside the pay path; X is treated as 0 (CR 107.3b).
                     // Excludes prepare-spell copies and cards already granted a free play.
+                    val freeFromExileCost = context.freeCastCost(cardDef, Zone.EXILE)
                     val freeCastFromExile = !playForFree &&
                         prepareCopyFaceIndex == null &&
                         hasCorrectTiming && meetsRestrictions && canPayAdditionalCost &&
-                        context.freeCastPermissionFor(cardId, Zone.EXILE)
+                        context.freeCastPermissionFor(cardId, Zone.EXILE) && context.canPayMana(freeFromExileCost, spellContext)
 
                     if (hasCorrectTiming && meetsRestrictions && canAfford && canPayAdditionalCost) {
                         val targetReqs = buildList {
@@ -808,7 +819,8 @@ class CastFromZoneEnumerator(
                                         minTargets = firstReq.effectiveMinCount,
                                         targetDescription = firstReq.description,
                                         targetRequirements = freeTargetInfos.surfacedRequirements(),
-                                        manaCostString = "{0}",
+                                        manaCostString = freeCostString(freeFromExileCost),
+                                        autoTapPreview = freeCostPreview(context, freeFromExileCost),
                                         sourceZone = sourceZoneLabel
                                     )
                                 )
@@ -819,7 +831,8 @@ class CastFromZoneEnumerator(
                                     actionType = "CastSpell",
                                     description = "Cast ${castName} (Free)",
                                     action = CastSpell(playerId, cardId, faceIndex = prepareCopyFaceIndex, useWithoutPayingManaCost = true),
-                                    manaCostString = "{0}",
+                                    manaCostString = freeCostString(freeFromExileCost),
+                                    autoTapPreview = freeCostPreview(context, freeFromExileCost),
                                     sourceZone = sourceZoneLabel
                                 )
                             )
@@ -3086,6 +3099,16 @@ class CastFromZoneEnumerator(
             }
         }
         return true
+    }
+
+    /** A free cast's price as the client shows it: "{0}", or the increases it still owes. */
+    private fun freeCostString(cost: ManaCost): String = cost.toString().ifEmpty { "{0}" }
+
+    /** The auto-tap preview for a free cast — nothing to tap unless an increase applies. */
+    private fun freeCostPreview(context: EnumerationContext, cost: ManaCost): List<EntityId>? = when {
+        cost.isEmpty() || context.skipAutoTapPreview -> null
+        else -> context.manaSolver.solve(context.state, context.playerId, cost, precomputedSources = context.availableManaSources)
+            ?.sources?.map { it.entityId }
     }
 }
 

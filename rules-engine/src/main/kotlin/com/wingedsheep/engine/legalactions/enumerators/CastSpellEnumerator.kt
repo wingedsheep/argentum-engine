@@ -525,7 +525,11 @@ class CastSpellEnumerator(
             // A `MayCastWithoutPayingManaCost` battlefield permission (e.g. Weftwalking) makes the
             // spell affordable for {0} when its gates are open. Emitted by its own branch below;
             // don't continue out before reaching it.
-            val canAffordFreeCast = context.freeCastPermissionFor(cardId)
+            // A free cast still owes the cost increases (CR 601.2f), so price it before offering it.
+            val freeCastCost = if (context.freeCastPermissionFor(cardId)) {
+                context.freeCastCost(cardDef, com.wingedsheep.sdk.core.Zone.HAND)
+            } else null
+            val canAffordFreeCast = freeCastCost != null && context.canPayMana(freeCastCost, spellContext)
             if (!canAfford && !canAffordAlternative && !canAffordSelfAlternative && !canAffordEvoke && !canAffordImpending && !canAffordCleave && !canAffordOverload && !canAffordBlightPath && !canAffordOrPayPath && !canAffordFreeCast) {
                 // The primary face can't be paid for by any path. Normally we skip it entirely.
                 // But if this is an Adventure/Omen/modal-DFC card whose *secondary* face is
@@ -861,10 +865,12 @@ class CastSpellEnumerator(
             // evoke, impending) when both are legal (CR 118.9a — only one alternative cost may
             // apply to a cast, and which one is the player's choice). Routes through
             // [CastSpell.useWithoutPayingManaCost].
-            val freeCastResult = if (context.freeCastPermissionFor(cardId)) {
+            val freeCastResult = if (freeCastCost != null && canAffordFreeCast) {
                 SelfAltCostResult(
-                    manaCostString = "{0}",
-                    autoTapPreview = if (context.skipAutoTapPreview) null else emptyList(),
+                    manaCostString = freeCastCost.toString().ifEmpty { "{0}" },
+                    autoTapPreview = if (context.skipAutoTapPreview) null else if (freeCastCost.isEmpty()) emptyList() else
+                        context.manaSolver.solve(state, playerId, freeCastCost, spellContext = spellContext, precomputedSources = cachedSources)
+                            ?.sources?.map { it.entityId },
                     additionalCostInfo = null
                 )
             } else null

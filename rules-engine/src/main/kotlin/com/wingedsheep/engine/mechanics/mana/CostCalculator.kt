@@ -1162,39 +1162,6 @@ class CostCalculator(
     }
 
     /**
-     * The per-target tax this card levies on its own cast — the mana owed for [chosenTargets] by
-     * every self-cast [ModifySpellCost] increase counted by [CostReductionSource.ChosenTargets].
-     * [ManaCost.ZERO] for cards that have none.
-     *
-     * Split out from [calculateEffectiveCost] because it must be charged **even on a free cast**:
-     * "without paying its mana cost" waives the mana cost, not the increases applied to the total
-     * cost (CR 601.2f), and Officious Interrogation's 2024-02-02 ruling says so in as many words —
-     * "you must still pay the additional cost for any targets beyond the first". The free-cast
-     * branch never reaches [calculateEffectiveCost] at all, so the cast pipeline adds this on top.
-     */
-    fun selfPerTargetTax(cardDef: CardDefinition, chosenTargets: List<EntityId>): ManaCost {
-        var tax = ManaCost.ZERO
-        for (ability in cardDef.script.staticAbilities) {
-            if (ability !is ModifySpellCost) continue
-            if (ability.target != SpellCostTarget.SelfCast) continue
-            val (perTarget, counted) = perTargetIncrease(ability.modification) ?: continue
-            val units = (chosenTargets.distinct().size - counted.beyond).coerceAtLeast(0)
-            repeat(units) { tax = tax + ManaCost.parse(perTarget) }
-        }
-        return tax
-    }
-
-    /** The mana [modification] adds per counted target, with its count source; null otherwise. */
-    private fun perTargetIncrease(modification: CostModification): Pair<String, CostReductionSource.ChosenTargets>? =
-        when (modification) {
-            is CostModification.IncreaseColoredPerUnit ->
-                (modification.countSource as? CostReductionSource.ChosenTargets)?.let { modification.symbols to it }
-            is CostModification.IncreaseGenericBy ->
-                (modification.source as? CostReductionSource.ChosenTargets)?.let { "{1}" to it }
-            else -> null
-        }
-
-    /**
      * Whether [modification] is priced by the spell's target count ([CostReductionSource.ChosenTargets]),
      * and in which direction: true for a reduction, false for an increase, null when it doesn't count
      * targets.
@@ -2214,6 +2181,26 @@ class CostCalculator(
         casterId: EntityId,
         chosenTargets: List<EntityId> = emptyList(),
     ): ManaCost = calculateEffectiveCost(state, cardDef, casterId, chosenTargets, baseCost = alternativeCost)
+
+    /**
+     * The mana owed by a cast "without paying its mana cost" (cascade, discover, Weftwalking, a
+     * free-cast permission). That wording is an alternative cost of {0} (CR 118.9): it waives only
+     * the mana cost, so the cost increases still land on it and the reductions then take them off
+     * again (CR 601.2f) — Thalia, a Sphere of Resistance or Hinata's per-target tax make a free
+     * spell cost {1}, a commander cast for free from the command zone still owes its tax. {0} on an
+     * empty board.
+     */
+    fun calculateFreeCastCost(
+        state: GameState,
+        cardDef: CardDefinition,
+        casterId: EntityId,
+        chosenTargets: List<EntityId> = emptyList(),
+        fromZone: Zone? = null,
+        declaredCostSlot: ChoiceSlot? = null,
+        card: CardDefinition = cardDef,
+    ): ManaCost = calculateEffectiveCost(
+        state, cardDef, casterId, chosenTargets, fromZone, declaredCostSlot, baseCost = ManaCost.ZERO, card = card,
+    )
 
     /**
      * Calculate the additional life [casterId] must pay as part of casting a spell with

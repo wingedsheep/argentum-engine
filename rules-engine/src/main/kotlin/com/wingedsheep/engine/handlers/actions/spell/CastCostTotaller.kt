@@ -95,17 +95,6 @@ internal class CastCostTotaller(
             }
         }
 
-        // "This spell costs {W}{U} more to cast for each target beyond the first" (Officious
-        // Interrogation). A free cast's base skips the modifier pipeline, but a cost *increase* is
-        // not part of the cost "without paying its mana cost" waives (CR 601.2f) — the card's own
-        // ruling spells it out: a free cast still owes the tax for targets beyond the first. Every
-        // other base, alternative costs included, was priced with the chosen targets already.
-        if (cardDef != null && playForFree) {
-            effectiveCost = effectiveCost + costCalculator.selfPerTargetTax(
-                cardDef, action.targets.map { it.toEntityId() }
-            )
-        }
-
         // Per-mode additional mana cost (e.g., Feed the Cycle "pay {B}" mode). With choose-N
         // (rule 700.2h), the additional mana cost of every chosen mode stacks, and escalate's
         // per-extra-mode mana (CR 702.120a) is added for each mode beyond the first.
@@ -293,6 +282,17 @@ internal class CastCostTotaller(
         // normal cast of that face: its own mana cost, with every modifier judged against it.
         val castFace = action.faceIndex?.let { idx -> cardDef?.cardFaces?.getOrNull(idx) }
         return when {
+            // "Without paying its mana cost" is a {0} alternative cost (CR 118.9): increases still
+            // land on it, and reductions then take them back off (CR 601.2f).
+            playForFree && cardDef != null -> costCalculator.calculateFreeCastCost(
+                state,
+                castFace?.let { costCalculator.faceCharacteristics(cardDef, it) } ?: cardDef,
+                action.playerId,
+                action.targets.map { it.toEntityId() },
+                fromZone = if (castingFromCommandZone) Zone.COMMAND else castSourceZone(state, action.cardId),
+                declaredCostSlot = action.declaredCostSlot,
+                card = cardDef,
+            )
             playForFree -> ManaCost.ZERO
             action.useAlternativeCost && action.alternativeCostType == AlternativeCostType.ESCAPE && cardDef != null -> {
                 val escape = EscapeCasts.effectiveEscape(

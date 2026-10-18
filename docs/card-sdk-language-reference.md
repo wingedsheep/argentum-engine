@@ -10522,10 +10522,11 @@ staticAbility {
   requires under an increase — and sends the client every count's price
   (`manaCostByTargetCount`) so a manual mana pick is charged for the targets actually chosen. Pair
   with `ReduceGenericBy` / `IncreaseGenericBy` for a generic amount or `IncreaseColoredPerUnit` for
-  a colored tax. Note that a self-cast per-target *increase* survives a free cast: "without paying
+  a colored tax. Note that a per-target *increase* survives a free cast: "without paying
   its mana cost" waives the mana cost, not the increases applied to the total cost (CR 601.2f), which
-  Officious Interrogation's 2024-02-02 ruling states outright — the cast pipeline adds
-  `CostCalculator.selfPerTargetTax` on top of the free-cast branch. The life-cost sibling for the
+  Officious Interrogation's 2024-02-02 ruling states outright — a free cast is priced as a {0} base
+  through the whole modifier pipeline (`CostCalculator.calculateFreeCastCost`), so every increase,
+  self or battlefield, still applies. The life-cost sibling for the
   same wording is `AdditionalCost.PayLifePerTarget`, Phyrexian Purge),
   `FixedIfCreatureDiedThisTurn(amount)` (the morbid discount — "costs {N} less to cast if a creature
   died this turn", Dreaded Bat-Cloud. Reads the same per-player `CreaturesDiedThisTurnComponent`
@@ -11703,7 +11704,12 @@ riders, matching how the engine already treats e.g. City of Brass's damage durin
   spellFilter = GameObjectFilter.Creature.manaValueAtMost(3), asThoughFlash = true)`. Like every
   granted alternative cost it is offered for casts from hand only.
 - `MayCastWithoutPayingManaCost(controllerOnly = false, firstSpellOfTurnOnly = false, spellFilter = Any, oncePerTurn = false, fromZones = null)` — a
-  battlefield permission to cast a spell without paying its mana cost (CR 118.9). Composable
+  battlefield permission to cast a spell without paying its mana cost (CR 118.9). Like every
+  "without paying its mana cost" cast (cascade, discover, `PlayWithoutPayingCostComponent`
+  permissions), it is priced as a {0} base through the full cost-modifier pipeline
+  (`CostCalculator.calculateFreeCastCost`): cost increases (Thalia, Sphere of Resistance) still
+  apply and reductions then offset them (CR 601.2f), so the offer shows and charges that mana, and
+  a server-initiated free cast the caster can't pay simply isn't cast. Composable
   gates: `controllerOnly = true` restricts the benefit to the source's controller ("you" wording);
   `firstSpellOfTurnOnly = true` requires the caster to be the active player and to have cast
   zero spells this turn; `oncePerTurn = true` allows one free cast during each of the caster's own

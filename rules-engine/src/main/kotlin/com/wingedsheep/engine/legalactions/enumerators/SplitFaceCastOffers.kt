@@ -49,9 +49,9 @@ internal object SplitFaceCastOffers {
         val cachedSources = context.availableManaSources
         val free = useWithoutPayingManaCost || state.getEntity(cardId)?.has<com.wingedsheep.engine.state.components.identity.PlayWithoutPayingCostComponent>() == true
         val effectiveCost = if (free) {
-            context.costCalculator.calculateEffectiveCost(state,
+            context.costCalculator.calculateFreeCastCost(state,
                 context.costCalculator.faceCharacteristics(cardDef, face), playerId,
-                fromZone = com.wingedsheep.sdk.core.Zone.HAND, baseCost = com.wingedsheep.sdk.core.ManaCost.ZERO)
+                fromZone = com.wingedsheep.sdk.core.Zone.HAND, card = cardDef)
         } else context.costCalculator.calculateFaceCastCost(state, cardDef, face, playerId)
         if (!context.manaSolver.canPay(state, playerId, effectiveCost, precomputedSources = cachedSources)) return
 

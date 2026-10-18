@@ -213,6 +213,24 @@ class EnumerationContext(
         return costCalculator.hasFreeCastPermission(state, playerId, cardDef, castFromZone)
     }
 
+    /**
+     * The mana a cast of [cardDef] "without paying its mana cost" from [fromZone] still owes: {0}
+     * unless a cost increase applies to it (CR 601.2f) — see [CostCalculator.calculateFreeCastCost].
+     */
+    fun freeCastCost(
+        cardDef: com.wingedsheep.sdk.model.CardDefinition?,
+        fromZone: com.wingedsheep.sdk.core.Zone,
+    ): com.wingedsheep.sdk.core.ManaCost =
+        cardDef?.let { costCalculator.calculateFreeCastCost(state, it, playerId, fromZone = fromZone) }
+            ?: com.wingedsheep.sdk.core.ManaCost.ZERO
+
+    /** Whether the player can pay [cost] from their available sources — trivially true for {0}. */
+    fun canPayMana(
+        cost: com.wingedsheep.sdk.core.ManaCost,
+        spellContext: com.wingedsheep.engine.mechanics.mana.SpellPaymentContext? = null,
+    ): Boolean = cost.isEmpty() ||
+        manaSolver.canPay(state, playerId, cost, spellContext = spellContext, precomputedSources = availableManaSources)
+
     // Alternative casting costs from battlefield permanents (e.g., Jodah's WUBRG, or Conspiracy
     // Unraveler's "collect evidence 10" in the grant's non-mana half).
     val alternativeCastingCosts: List<CostCalculator.AlternativeCastingCostGrant> by lazy {
