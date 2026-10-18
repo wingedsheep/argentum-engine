@@ -38,6 +38,7 @@ private fun spiritToken() = Effects.CreateToken(
 
 private val ArchitectOfRestoration = card("Architect of Restoration") {
     manaCost = ""
+    colorIndicator = "W"
     colorIdentity = "W"
     typeLine = "Enchantment Creature — Fox Monk"
     oracleText = "Vigilance\nWhenever this creature attacks or blocks, create a 1/1 colorless Spirit creature token."

@@ -34,6 +34,7 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  */
 private val FragmentOfKonda = card("Fragment of Konda") {
     manaCost = ""
+    colorIndicator = "W"
     colorIdentity = "W"
     typeLine = "Enchantment Creature — Human Noble"
     oracleText = "Defender\nWhen this creature dies, draw a card."

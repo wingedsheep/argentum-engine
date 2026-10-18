@@ -38,6 +38,7 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  */
 private val EtchingOfKumano = card("Etching of Kumano") {
     manaCost = ""
+    colorIndicator = "R"
     colorIdentity = "R"
     typeLine = "Enchantment Creature — Human Shaman"
     oracleText = "Haste\n" +

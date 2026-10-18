@@ -27,6 +27,7 @@ import com.wingedsheep.sdk.scripting.references.Player
  */
 private val PortraitOfMichiko = card("Portrait of Michiko") {
     manaCost = ""
+    colorIndicator = "W"
     colorIdentity = "W"
     typeLine = "Enchantment Creature — Human Noble"
     oracleText = "This creature gets +1/+1 for each artifact and/or enchantment you control."

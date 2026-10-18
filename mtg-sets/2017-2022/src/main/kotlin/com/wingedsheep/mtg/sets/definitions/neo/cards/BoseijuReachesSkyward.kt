@@ -29,6 +29,7 @@ import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
  */
 private val BranchOfBoseiju = card("Branch of Boseiju") {
     manaCost = ""
+    colorIndicator = "G"
     colorIdentity = "G"
     typeLine = "Enchantment Creature — Plant"
     oracleText = "Reach\nThis creature gets +1/+1 for each land you control."

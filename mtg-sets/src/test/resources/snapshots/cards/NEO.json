@@ -1830,6 +1830,9 @@
         "colorIdentityOverride": [
             "GREEN"
         ],
+        "colorIndicator": [
+            "GREEN"
+        ],
         "hasNoManaCost": true
     },
     "metadata": {
@@ -6988,6 +6991,9 @@
         "colorIdentityOverride": [
             "RED"
         ],
+        "colorIndicator": [
+            "RED"
+        ],
         "hasNoManaCost": true
     },
     "metadata": {
@@ -8469,6 +8475,9 @@
             "imageUri": "https://cards.scryfall.io/normal/back/7/4/74f12c23-5c15-4ae6-8f4d-c5e6c1878817.jpg?1783923921"
         },
         "colorIdentityOverride": [
+            "WHITE"
+        ],
+        "colorIndicator": [
             "WHITE"
         ],
         "hasNoManaCost": true
@@ -13246,6 +13255,9 @@
         "colorIdentityOverride": [
             "WHITE"
         ],
+        "colorIndicator": [
+            "WHITE"
+        ],
         "hasNoManaCost": true
     },
     "metadata": {
@@ -13538,6 +13550,9 @@
             "imageUri": "https://cards.scryfall.io/normal/back/a/1/a11a33ae-e7fa-4bd4-8cd8-3a3239a29bcc.jpg?1783923920"
         },
         "colorIdentityOverride": [
+            "WHITE"
+        ],
+        "colorIndicator": [
             "WHITE"
         ],
         "hasNoManaCost": true
