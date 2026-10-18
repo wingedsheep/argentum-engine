@@ -68,6 +68,7 @@ import com.wingedsheep.sdk.scripting.effects.GrantFlashbackEffect
 import com.wingedsheep.sdk.scripting.effects.GrantEscapeEffect
 import com.wingedsheep.sdk.scripting.effects.GrantHarmonizeEffect
 import com.wingedsheep.sdk.scripting.effects.CantAttackGroupEffect
+import com.wingedsheep.sdk.scripting.effects.AttacksWithoutTappingGroupEffect
 import com.wingedsheep.sdk.scripting.effects.CantAttackEffect
 import com.wingedsheep.sdk.scripting.effects.CantBlockEffect
 import com.wingedsheep.sdk.scripting.effects.GoadEffect
@@ -5951,6 +5952,16 @@ object Effects {
      */
     fun CantAttackGroup(filter: GroupFilter, duration: Duration = Duration.EndOfTurn): Effect =
         CantAttackGroupEffect(filter, duration)
+
+    /**
+     * "Attacking doesn't cause [filter] creatures to tap" for [duration], optionally only while
+     * [condition] holds (Johan). A rule modification, not vigilance — see [AttacksWithoutTappingGroupEffect].
+     */
+    fun AttacksWithoutTappingGroup(
+        filter: GroupFilter,
+        duration: Duration = Duration.EndOfCombat,
+        condition: Condition? = null
+    ): Effect = AttacksWithoutTappingGroupEffect(filter, duration, condition)
 
     /**
      * All creatures matching a filter can't block this turn.

@@ -56,7 +56,7 @@ internal class CardActiveEffectsProjector(
         val effects = mutableListOf<ClientCardEffect>()
         effects += textReplacementBadges(state, entityId)
         effects += outgoingDamageDoublerBadges(state, entityId)
-        effects += floatingEffectBadges(state, entityId)
+        effects += floatingEffectBadges(state, entityId, projectedState)
         effects += temporaryEffectBadges(state, entityId)
         effects += damageShieldBadges(state, entityId)
         effects += combatRequirementBadges(state, entityId)
@@ -159,12 +159,33 @@ internal class CardActiveEffectsProjector(
         }
 
     /**
+     * A dynamic-group floating effect locks no entity set, so whether it reaches this card is read
+     * off the projection — which also honours its condition (Johan's "if Johan is untapped").
+     * Only modifications with a projected flag of their own can be answered this way.
+     */
+    private fun appliesThroughDynamicGroup(
+        floating: ActiveFloatingEffect,
+        entityId: EntityId,
+        projectedState: ProjectedState?
+    ): Boolean {
+        if (floating.effect.dynamicGroupFilter == null || projectedState == null) return false
+        return when (floating.effect.modification) {
+            is SerializableModification.SetAttacksWithoutTapping -> projectedState.attacksWithoutTapping(entityId)
+            else -> false
+        }
+    }
+
+    /**
      * One badge per restriction, requirement or redirection on this card. The same restriction
      * applied twice is one badge listing each ending, so every badge keeps a distinct effectId.
      */
-    private fun floatingEffectBadges(state: GameState, entityId: EntityId): List<ClientCardEffect> =
+    private fun floatingEffectBadges(
+        state: GameState,
+        entityId: EntityId,
+        projectedState: ProjectedState?
+    ): List<ClientCardEffect> =
         state.floatingEffects
-            .filter { entityId in it.effect.affectedEntities }
+            .filter { entityId in it.effect.affectedEntities || appliesThroughDynamicGroup(it, entityId, projectedState) }
             .mapNotNull { floating ->
                 modificationBadge(state, floating.effect.modification)?.let { it to durationPhrase(state, floating) }
             }
@@ -322,6 +343,12 @@ internal class CardActiveEffectsProjector(
             name = "Can't Attack",
             description = "This creature can't attack",
             icon = "cant-attack"
+        )
+        is SerializableModification.SetAttacksWithoutTapping -> ClientCardEffect(
+            effectId = "attacks_without_tapping",
+            name = "Won't Tap",
+            description = "Attacking doesn't cause this creature to tap",
+            icon = "condition-met"
         )
         is SerializableModification.AdaptAsThoughNoCountersShield -> ClientCardEffect(
             effectId = "adapt_as_though_no_counters",

@@ -406,6 +406,9 @@ internal class EffectApplicator(
                 is Modification.SetCantAttack -> {
                     values.cantAttack = true
                 }
+                is Modification.SetAttacksWithoutTapping -> {
+                    values.attacksWithoutTapping = true
+                }
                 is Modification.SetSuspected -> {
                     values.isSuspected = true
                 }

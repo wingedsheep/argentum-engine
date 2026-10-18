@@ -3,6 +3,7 @@ package com.wingedsheep.sdk.scripting.effects
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.conditions.Condition
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.references.Player
@@ -454,6 +455,42 @@ data class CantAttackGroupEffect(
     val duration: Duration = Duration.EndOfTurn
 ) : Effect {
     override val description: String = "${filter.description} can't attack this turn"
+
+    override fun applyTextReplacement(replacer: TextReplacer): Effect {
+        val newFilter = filter.applyTextReplacement(replacer)
+        return if (newFilter !== filter) copy(filter = newFilter) else this
+    }
+}
+
+/**
+ * "Attacking doesn't cause [filter] creatures to tap" for [duration] — Johan's "attacking doesn't
+ * cause creatures you control to tap this combat if Johan is untapped".
+ *
+ * Not vigilance: the affected creatures gain no ability (CR 702.20b makes vigilance an ability a
+ * "loses all abilities" effect removes, and a "creatures with vigilance" count must not see these).
+ * It is a rule-modifying effect, so — like [CantAttackGroupEffect] — it applies to every creature
+ * matching [filter] when attackers are declared, including ones that arrived after it resolved
+ * (CR 611.2c). It is read at the one place declaring attackers taps them, next to the vigilance check.
+ *
+ * @property filter Which creatures don't tap to attack (e.g. creatures you control)
+ * @property duration How long it lasts — Johan's is [Duration.EndOfCombat]
+ * @property condition When non-null, the effect only applies while it holds, re-asked when
+ *   attackers are declared — Johan's "if Johan is untapped" is `Conditions.SourceIsUntapped`,
+ *   whose source is the permanent that created the effect.
+ */
+@SerialName("AttacksWithoutTappingGroup")
+@Serializable
+data class AttacksWithoutTappingGroupEffect(
+    val filter: GroupFilter,
+    val duration: Duration = Duration.EndOfCombat,
+    val condition: Condition? = null
+) : Effect {
+    override val description: String = buildString {
+        append("attacking doesn't cause ${filter.description} to tap")
+        if (duration.description.isNotEmpty()) append(" ${duration.description}")
+        // Condition descriptions usually carry their own "if" ("if this is untapped").
+        condition?.description?.let { append(if (it.startsWith("if ")) " $it" else " if $it") }
+    }
 
     override fun applyTextReplacement(replacer: TextReplacer): Effect {
         val newFilter = filter.applyTextReplacement(replacer)

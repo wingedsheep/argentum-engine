@@ -665,6 +665,10 @@ sealed interface Modification {
     data object SetCantBlock : Modification {
         override val layer get() = Layer.ABILITY
     }
+    @Serializable
+    data object SetAttacksWithoutTapping : Modification {
+        override val layer get() = Layer.ABILITY
+    }
 
     /**
      * Marks a permanent as suspected — the first-class named status for the suspect mechanic.
@@ -856,6 +860,7 @@ internal data class MutableProjectedValues(
     var isFaceDown: Boolean = false,
     var isSuspected: Boolean = false,
     var cantAttack: Boolean = false,
+    var attacksWithoutTapping: Boolean = false,
     var canAttackAsThoughHasty: Boolean = false,
     var cantBlock: Boolean = false,
     var cantBeTurnedFaceUp: Boolean = false,

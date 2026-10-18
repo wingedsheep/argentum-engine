@@ -473,6 +473,13 @@ sealed interface SerializableModification {
     data object SetCantBlock : SerializableModification
 
     /**
+     * Attacking doesn't cause the creature to tap (AttacksWithoutTappingGroupEffect, Johan).
+     * A rule modification, not vigilance: read beside the vigilance check when attackers are declared.
+     */
+    @Serializable
+    data object SetAttacksWithoutTapping : SerializableModification
+
+    /**
      * Blocking requirement: creature blocks this turn if able (Culvert Ambusher).
      *
      * Floating counterpart of the static [com.wingedsheep.sdk.scripting.MustBlock] (Grand Melee);
@@ -902,6 +909,7 @@ fun SerializableModification.toModification(): Modification = when (this) {
     is SerializableModification.SetCantBeTurnedFaceUp -> Modification.SetCantBeTurnedFaceUp
     // SetCantBlock maps to the layer modification for "can't block" projection
     is SerializableModification.SetCantBlock -> Modification.SetCantBlock
+    is SerializableModification.SetAttacksWithoutTapping -> Modification.SetAttacksWithoutTapping
     // SetMustBlock maps to the layer modification for the "must block" requirement projection
     is SerializableModification.SetMustBlock -> Modification.SetMustBlock
     // SetSuspected maps to the layer modification for the "suspected" status projection

@@ -560,6 +560,7 @@ class StateProjector {
                 isFaceDown = v.isFaceDown,
                 isSuspected = v.isSuspected,
                 cantAttack = v.cantAttack,
+                attacksWithoutTapping = v.attacksWithoutTapping,
                 canAttackAsThoughHasty = v.canAttackAsThoughHasty,
                 cantBlock = v.cantBlock,
                 cantBeTurnedFaceUp = v.cantBeTurnedFaceUp,

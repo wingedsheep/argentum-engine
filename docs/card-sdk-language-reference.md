@@ -3147,6 +3147,16 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   declaration, because a per-blocker projected flag can't express a pair.
 - `CantAttackGroupEffect(filter, condition?)` — group-scoped can't-attack.
 - `CantBlockGroupEffect(filter, condition?)` — group-scoped can't-block.
+- `Effects.AttacksWithoutTappingGroup(filter, duration = EndOfCombat, condition = null)`
+  (`AttacksWithoutTappingGroupEffect`) — "attacking doesn't cause [filter] to tap" (Johan:
+  `AttacksWithoutTappingGroup(GroupFilter.AllCreaturesYouControl, EndOfCombat,
+  Conditions.SourceMatches(GameObjectFilter.Any.untapped().onBattlefield()))`). Not vigilance: it
+  grants no ability, so a "creatures with vigilance" count doesn't see it and a "loses all abilities"
+  effect doesn't stop it. A dynamic-group floating effect like the can't-attack/can't-block pair
+  (CR 611.2c covers creatures arriving later), projected as `attacksWithoutTapping` and read beside
+  the vigilance check when attackers are declared. `condition` is re-asked on every projection
+  against the effect's source, so "if Johan is untapped" is checked when attackers are declared;
+  add `onBattlefield()` when the source leaving should switch it off.
 - `Effects.CantBeBlockedGroup(filter, duration = EndOfTurn)` (`CantBeBlockedGroupEffect`) — "[filter]
   can't be blocked this turn" (Jace, Arcane Strategist's −7: `CantBeBlockedGroup(GroupFilter.AllCreaturesYouControl)`).
   A floating `CANT_BE_BLOCKED` grant whose group is re-resolved on every projection, like the two

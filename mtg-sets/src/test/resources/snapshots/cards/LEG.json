@@ -2963,6 +2963,70 @@
     ]
 }
 
+// Johan
+{
+    "name": "Johan",
+    "manaCost": "{3}{R}{G}{W}",
+    "typeLine": "Legendary Creature — Human Wizard",
+    "oracleText": "At the beginning of combat on your turn, you may have Johan gain \"Johan can't attack\" until end of combat. If you do, attacking doesn't cause creatures you control to tap this combat if Johan is untapped.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Johan:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "BEGIN_COMBAT"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayDecide",
+                        "prompt": "Have Johan gain \"Johan can't attack\" until end of combat? If you do, attacking doesn't cause creatures you control to tap this combat while Johan is untapped."
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "CantAttack",
+                                "target": "Self",
+                                "duration": "EndOfCombat"
+                            },
+                            {
+                                "type": "AttacksWithoutTappingGroup",
+                                "filter": {
+                                    "baseFilter": "creature ctrl:you"
+                                },
+                                "condition": {
+                                    "type": "EntityMatches",
+                                    "entity": "Self",
+                                    "filter": {
+                                        "statePredicates": [
+                                            "IsUntapped",
+                                            "IsOnBattlefield"
+                                        ]
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                },
+                "descriptionOverride": "At the beginning of combat on your turn, you may have Johan gain \"Johan can't attack\" until end of combat. If you do, attacking doesn't cause creatures you control to tap this combat if Johan is untapped."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "236",
+        "rarity": "RARE",
+        "artist": "Mark Tedin",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/8/b851d5b4-7991-49d4-8a52-bf233f960cbf.jpg?1783948038"
+    }
+}
+
 // Kasimir the Lone Wolf
 {
     "name": "Kasimir the Lone Wolf",

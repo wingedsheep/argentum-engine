@@ -76,6 +76,8 @@ data class ProjectedValues(
     val isFaceDown: Boolean = false,
     val isSuspected: Boolean = false,
     val cantAttack: Boolean = false,
+    /** Attacking doesn't cause it to tap — a rule modification, not vigilance (Johan). */
+    val attacksWithoutTapping: Boolean = false,
     val canAttackAsThoughHasty: Boolean = false,
     val cantBlock: Boolean = false,
     val cantBeTurnedFaceUp: Boolean = false,
@@ -272,6 +274,8 @@ class ProjectedState(
 
     fun cantAttack(entityId: EntityId): Boolean = projectedValues[entityId]?.cantAttack == true
 
+    fun attacksWithoutTapping(entityId: EntityId): Boolean = projectedValues[entityId]?.attacksWithoutTapping == true
+
     fun cantBlock(entityId: EntityId): Boolean = projectedValues[entityId]?.cantBlock == true
 
     fun cantBeTurnedFaceUp(entityId: EntityId): Boolean =
@@ -355,6 +359,7 @@ internal fun buildIntermediateProjectedState(
             isFaceDown = v.isFaceDown,
             isSuspected = v.isSuspected,
             cantAttack = v.cantAttack,
+            attacksWithoutTapping = v.attacksWithoutTapping,
             canAttackAsThoughHasty = v.canAttackAsThoughHasty,
             cantBlock = v.cantBlock,
             cantBeTurnedFaceUp = v.cantBeTurnedFaceUp,

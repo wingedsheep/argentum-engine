@@ -184,7 +184,8 @@ internal class AttackPhaseManager(
         var tappedState = state
         val events = mutableListOf<GameEvent>()
         for (attacker in attackers.keys) {
-            if (!projected.hasKeyword(attacker, Keyword.VIGILANCE)) {
+            // Vigilance, or a rule modification saying attacking doesn't tap it (Johan).
+            if (!projected.hasKeyword(attacker, Keyword.VIGILANCE) && !projected.attacksWithoutTapping(attacker)) {
                 val (next, tapped) = tap(tappedState, attacker)
                 tappedState = next
                 events.addAll(tapped)
