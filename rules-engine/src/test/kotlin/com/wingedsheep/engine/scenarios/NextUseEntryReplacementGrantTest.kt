@@ -17,6 +17,7 @@ import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.EntersWithCounters
 import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldBeEmpty
@@ -53,10 +54,17 @@ class NextUseEntryReplacementGrantTest : FunSpec({
         }
     }
 
-    fun spiritToken(count: Int) = Effects.CreateToken(
+    fun spiritToken(count: Int, controller: EffectTarget? = null) = Effects.CreateToken(
         power = 1, toughness = 1, colors = setOf(Color.WHITE), creatureTypes = setOf("Spirit"),
-        count = count, enchantmentToken = true
+        count = count, controller = controller, enchantmentToken = true
     )
+
+    val spiritGift = card("Test Spirit Gift") {
+        manaCost = "{G}"
+        typeLine = "Sorcery"
+        oracleText = "Each opponent creates a 1/1 white Spirit enchantment creature token."
+        spell { effect = spiritToken(1, EffectTarget.PlayerRef(Player.EachOpponent)) }
+    }
 
     val twinSpirits = card("Test Twin Spirits") {
         manaCost = "{G}"
@@ -83,7 +91,7 @@ class NextUseEntryReplacementGrantTest : FunSpec({
 
     fun setup(): Setup {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(weave, twinSpirits, spiritThenSpirit, gladeSpirit))
+        driver.registerCards(TestCards.all + listOf(weave, twinSpirits, spiritThenSpirit, gladeSpirit, spiritGift))
         driver.initMirrorMatch(deck = Deck.of("Forest" to 40), startingLife = 20)
         val me = driver.activePlayer!!
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
@@ -148,11 +156,14 @@ class NextUseEntryReplacementGrantTest : FunSpec({
     test("an opponent's enchantment creature neither gets it nor uses it up") {
         val (driver, me, opponent) = setup()
         driver.cast(me, "Test Weave")
-        val theirs = driver.putCreatureOnBattlefield(opponent, "Test Glade Spirit")
+        driver.cast(me, "Test Spirit Gift")
+        val theirs = driver.spirits().single()
+        driver.state.projectedState.getController(theirs) shouldBe opponent
         driver.plusOnes(theirs) shouldBe 0
 
         driver.cast(me, "Test Twin Spirits")
-        driver.spirits().map { driver.plusOnes(it) } shouldBe listOf(2, 2)
+        driver.spirits().filter { driver.state.projectedState.getController(it) == me }
+            .map { driver.plusOnes(it) } shouldBe listOf(2, 2)
     }
 
     test("unused, it ends with the turn") {
