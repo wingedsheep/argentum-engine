@@ -160,12 +160,16 @@ class FireballScenarioTest : ScenarioTestBase() {
                 game.isInGraveyard(1, "Fireball") shouldBe true
             }
 
-            test("the enumerated action advertises the {1} increment per extra target") {
+            test("the enumerated action prices each target count {1} apart beyond the first") {
                 val game = board(mountains = 4).build()
 
                 val action = game.getLegalActions(1).firstOrNull { it.description.contains("Fireball") }
                 action.shouldNotBeNull()
-                action.manaCostPerExtraTarget shouldBe "{1}"
+                val byCount = action.manaCostByTargetCount.shouldNotBeNull()
+                val cmc = byCount.mapValues { com.wingedsheep.sdk.core.ManaCost.parse(it.value).cmc }
+                cmc.getValue(1) shouldBe cmc.getValue(0)
+                cmc.getValue(2) shouldBe cmc.getValue(1) + 1
+                cmc.getValue(3) shouldBe cmc.getValue(1) + 2
             }
         }
     }

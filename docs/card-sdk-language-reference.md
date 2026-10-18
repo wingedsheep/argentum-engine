@@ -10397,8 +10397,8 @@ staticAbility {
   appends one copy of `symbols` per unit of `countSource`. Unlike the reduction side there is no
   overflow question — added pips always land. Officious Interrogation's "This spell costs {W}{U}
   more to cast for each target beyond the first" is
-  `SelfCast` + `IncreaseColoredPerUnit("{W}{U}", ChosenTargetsBeyondTheFirst)`; Fireball's generic
-  "{1} more … for each target beyond the first" is `IncreaseGenericBy(ChosenTargetsBeyondTheFirst)`),
+  `SelfCast` + `IncreaseColoredPerUnit("{W}{U}", ChosenTargets(beyond = 1))`; Fireball's generic
+  "{1} more … for each target beyond the first" is `IncreaseGenericBy(ChosenTargets(beyond = 1))`),
   `IncreaseGenericPerOtherSpellThisTurn(amountPerSpell)`,
   `IncreaseGenericIfAnyTargetMatches(amount, filter)` (target-gated tax — "{N} more if it targets
   a Dragon", Dragon's Prey; the increase analogue of the `FixedIfAnyTargetMatches` reduction;
@@ -10448,15 +10448,22 @@ staticAbility {
   cast that target enchanted creature cost {3} less" is `ModifySpellCost(YouCast(Aura),
   ReduceGenericBy(FixedIfAnyTargetMatches(3, GameObjectFilter.Creature.attachedToBySource())))`, and
   enumeration offers it whenever a legal target matches),
-  `ChosenTargetsBeyondTheFirst` (the count of the spell's chosen targets minus one — "for each
-  target beyond the first". Only meaningful on a `SelfCast` modifier, since only that path is priced
-  with the caster's own chosen targets; before targets are chosen it reads 0, which is also the right
-  answer for affordability enumeration because one target is the cheapest legal cast. Pair with
-  `IncreaseColoredPerUnit` for a colored tax or `IncreaseGenericBy` for a generic one. Note that a
-  per-target *increase* survives a free cast: "without paying its mana cost" and alternative costs
-  waive the mana cost, not the increases applied to the total cost (CR 601.2f), which
+  `ChosenTargets(beyond = 0)` (the number of *different* players and objects the spell targets,
+  less `beyond` — "for each target" is `ChosenTargets()`, "for each target beyond the first" is
+  `ChosenTargets(beyond = 1)`. It counts targets, not uses of the word "target": three "target
+  creature" phrases aimed at one creature are one target (Hinata's ruling). It reads the spell's own
+  chosen targets on a `SelfCast` modifier and on a battlefield one alike — Hinata, Dawn-Crowned's
+  "Spells you cast cost {1} less to cast for each target" is `ModifySpellCost(YouCast(Any),
+  ReduceGenericBy(ChosenTargets()))`, and its opponents' tax is `OpponentsCast(Any)` +
+  `IncreaseGenericBy(ChosenTargets())`. Before targets are chosen, enumeration prices the cheapest
+  reachable count — the most different legal targets under a reduction, the fewest the spell
+  requires under an increase — and sends the client every count's price
+  (`manaCostByTargetCount`) so a manual mana pick is charged for the targets actually chosen. Pair
+  with `ReduceGenericBy` / `IncreaseGenericBy` for a generic amount or `IncreaseColoredPerUnit` for
+  a colored tax. Note that a per-target *increase* survives a free cast: "without paying its mana
+  cost" waives the mana cost, not the increases applied to the total cost (CR 601.2f), which
   Officious Interrogation's 2024-02-02 ruling states outright — the cast pipeline adds
-  `CostCalculator.selfPerTargetTax` on top of exactly those branches. The life-cost sibling for the
+  `CostCalculator.selfPerTargetTax` on top of the free-cast branch. The life-cost sibling for the
   same wording is `AdditionalCost.PayLifePerTarget`, Phyrexian Purge),
   `FixedIfCreatureDiedThisTurn(amount)` (the morbid discount — "costs {N} less to cast if a creature
   died this turn", Dreaded Bat-Cloud. Reads the same per-player `CreaturesDiedThisTurnComponent`

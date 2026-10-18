@@ -4,6 +4,7 @@ import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.support.ScenarioTestBase
+import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.model.EntityId
@@ -22,7 +23,7 @@ import io.kotest.matchers.shouldBe
  * built to catch:
  *
  *  - **the per-target tax** (`CostModification.IncreaseColoredPerUnit` over
- *    `CostReductionSource.ChosenTargetsBeyondTheFirst`). A tax that never applied would look exactly
+ *    `CostReductionSource.ChosenTargets(beyond = 1)`). A tax that never applied would look exactly
  *    like a working card in a test that only checks the Clue count, so the price is pinned from both
  *    sides: two targets must be *rejected* on one-target mana, and accepted on two-target mana.
  *  - **the plural target reference** (`Player.EachTargetedPlayer`). `Player.TargetPlayer` resolves to
@@ -31,8 +32,9 @@ import io.kotest.matchers.shouldBe
  *    which is neither player's own count.
  *
  * The client contract is checked too — the enumerated action must advertise the *one-target minimum*
- * as its `manaCostString` plus the increment as `manaCostPerExtraTarget`, because that pair is what
- * lets the web client defer its mana-source step past targeting instead of under-tapping.
+ * as its `manaCostString` plus the price of every target count as `manaCostByTargetCount`, because
+ * that pair is what lets the web client defer its mana-source step past targeting instead of
+ * under-tapping.
  */
 class OfficiousInterrogationScenarioTest : ScenarioTestBase() {
 
@@ -144,7 +146,7 @@ class OfficiousInterrogationScenarioTest : ScenarioTestBase() {
                 }
             }
 
-            test("the enumerated action advertises the one-target minimum plus the increment") {
+            test("the enumerated action advertises the one-target minimum plus every count's price") {
                 val game = scenario()
                     .withPlayers("Detective", "Suspect")
                     .withCardInHand(1, "Officious Interrogation")
@@ -161,8 +163,11 @@ class OfficiousInterrogationScenarioTest : ScenarioTestBase() {
                 withClue("enumeration prices it with no targets, i.e. the cheapest legal cast") {
                     action.manaCostString shouldBe "{W}{U}"
                 }
-                withClue("the client needs the increment to price its own mana-source step") {
-                    action.manaCostPerExtraTarget shouldBe "{W}{U}"
+                withClue("the client needs each target count's price for its own mana-source step") {
+                    val byCount = action.manaCostByTargetCount.shouldNotBeNull()
+                    byCount.keys shouldBe setOf(0, 1, 2)
+                    ManaCost.parse(byCount.getValue(1)).cmc shouldBe 2
+                    ManaCost.parse(byCount.getValue(2)).cmc shouldBe 4
                 }
             }
         }

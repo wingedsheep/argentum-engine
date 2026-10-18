@@ -40,6 +40,8 @@ import com.wingedsheep.sdk.scripting.GrantAlternativeCastingCost
 import com.wingedsheep.sdk.scripting.MayCastWithoutPayingManaCost
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.ModifySpellCost
+import com.wingedsheep.sdk.scripting.effects.ModalEffect
+import com.wingedsheep.sdk.scripting.targets.TargetRequirement
 import com.wingedsheep.sdk.scripting.SpellCostTarget
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.filters.unified.Scope
@@ -646,11 +648,11 @@ class CostCalculator(
                 else if (anyTargetMatchesFilter(state, playerId, chosenTargets, source.filter, abilitySourceId)) source.amount
                 else 0
             }
-            // "for each target beyond the first" — 0 while targets are still unchosen, which is
-            // also the right answer for affordability enumeration (one target is the cheapest
-            // legal cast, so the unmodified cost is the true minimum).
-            CostReductionSource.ChosenTargetsBeyondTheFirst ->
-                (chosenTargets.size - 1).coerceAtLeast(0)
+            // "for each target [beyond the first]" — different players and objects, not uses of
+            // the word "target" (Hinata's ruling). 0 while targets are still unchosen;
+            // [calculateMinPossibleCost] prices the cheapest reachable count for affordability.
+            is CostReductionSource.ChosenTargets ->
+                (chosenTargets.distinct().size - source.beyond).coerceAtLeast(0)
             is CostReductionSource.FixedIfCreatureAttackingYou -> {
                 if (isAnyCreatureAttacking(state, playerId)) source.amount else 0
             }
@@ -987,6 +989,11 @@ class CostCalculator(
      * discounted target in the graveyard. A spell whose targets aren't declared on the script
      * (modal modes) falls back to any matching battlefield permanent.
      *
+     * A modifier counted per target ([CostReductionSource.ChosenTargets] — Hinata, Dawn-Crowned,
+     * Fireball) is priced at whichever end of the spell's reachable target counts is cheaper: the
+     * most different legal targets under a reduction, the fewest the spell requires under an
+     * increase.
+     *
      * Used by CastSpellEnumerator so spells like Dire Downdraft show as castable when a
      * discounted target exists, even though the actual cost is locked from chosen targets
      * at cast time. [spellId] is the card being cast, so targeting restrictions that read the
@@ -999,34 +1006,76 @@ class CostCalculator(
         spellId: EntityId,
         baseCost: ManaCost = cardDef.manaCost,
     ): ManaCost {
-        val optimisticTargets = mutableListOf<EntityId>()
-        var legalTargets: List<EntityId>? = null
-        fun addOptimisticMatch(src: CostReductionSource.FixedIfAnyTargetMatches, modifierSourceId: EntityId?) {
-            val match = if (cardDef.script.targetRequirements.isEmpty() && cardDef.script.castAuraTarget == null) {
-                findAnyBattlefieldMatch(state, casterId, src.filter, modifierSourceId)
-            } else {
-                val candidates = legalTargets ?: spellLegalTargets(state, cardDef, casterId, spellId)
-                    .also { legalTargets = it }
-                findAnyMatch(state, casterId, candidates, src.filter, modifierSourceId)
+        val pricing = TargetPricing(state, cardDef, casterId, spellId, baseCost)
+        val range = pricing.countRange ?: return pricing.priced(pricing.optimisticTargets)
+        return listOf(range.first, range.last).map(pricing::pricedAt).minBy { it.cmc }
+    }
+
+    /**
+     * What the spell costs for each number of different targets it can be cast with — only for a
+     * spell some applicable modifier prices per target ([CostReductionSource.ChosenTargets]), null
+     * for every other. The client charges a manual mana-source pick from this once targets are
+     * chosen, because the advertised cost is only the cheapest reachable count.
+     */
+    fun costsByTargetCount(
+        state: GameState,
+        cardDef: CardDefinition,
+        casterId: EntityId,
+        spellId: EntityId,
+        baseCost: ManaCost = cardDef.manaCost,
+    ): Map<Int, ManaCost>? {
+        val pricing = TargetPricing(state, cardDef, casterId, spellId, baseCost)
+        val range = pricing.countRange ?: return null
+        return range.associateWith(pricing::pricedAt)
+    }
+
+    /**
+     * The optimistic, pre-target pricing of one spell: the discount-earning target the
+     * target-conditional reductions assume, and — when a modifier counts targets — the range of
+     * different-target counts to price over, padded from the spell's legal targets.
+     */
+    private inner class TargetPricing(
+        private val state: GameState,
+        private val cardDef: CardDefinition,
+        private val casterId: EntityId,
+        private val spellId: EntityId,
+        private val baseCost: ManaCost,
+    ) {
+        private val modifiers = scanModifySpellCost(state)
+        private val legalTargets: List<EntityId> by lazy { spellLegalTargets(state, cardDef, casterId, spellId) }
+        val optimisticTargets: List<EntityId> = buildList {
+            fun addOptimisticMatch(src: CostReductionSource.FixedIfAnyTargetMatches, modifierSourceId: EntityId?) {
+                val match = if (cardDef.script.targetRequirements.isEmpty() && cardDef.script.castAuraTarget == null) {
+                    findAnyBattlefieldMatch(state, casterId, src.filter, modifierSourceId)
+                } else {
+                    findAnyMatch(state, casterId, legalTargets, src.filter, modifierSourceId)
+                }
+                if (match != null) add(match)
             }
-            if (match != null) optimisticTargets += match
+            for (ability in cardDef.script.staticAbilities) {
+                if (ability !is ModifySpellCost) continue
+                if (ability.target != SpellCostTarget.SelfCast) continue
+                val src = sourceFromModification(ability.modification)
+                if (src is CostReductionSource.FixedIfAnyTargetMatches) addOptimisticMatch(src, null)
+            }
+            // A permanent's target-conditional discount (Strong Back: "Aura spells you cast that target
+            // enchanted creature cost {3} less") is just as unknowable before targets are chosen.
+            for ((sourceId, ability) in modifiers) {
+                val src = sourceFromModification(ability.modification) as? CostReductionSource.FixedIfAnyTargetMatches
+                    ?: continue
+                if (!targetMatchesSpell(ability.target, cardDef, casterId, sourceId, state)) continue
+                addOptimisticMatch(src, sourceId)
+            }
         }
-        for (ability in cardDef.script.staticAbilities) {
-            if (ability !is ModifySpellCost) continue
-            if (ability.target != SpellCostTarget.SelfCast) continue
-            val src = sourceFromModification(ability.modification)
-            if (src is CostReductionSource.FixedIfAnyTargetMatches) addOptimisticMatch(src, null)
-        }
-        // A permanent's target-conditional discount (Strong Back: "Aura spells you cast that target
-        // enchanted creature cost {3} less") is just as unknowable before targets are chosen.
-        val modifiers = scanModifySpellCost(state)
-        for ((sourceId, ability) in modifiers) {
-            val src = sourceFromModification(ability.modification) as? CostReductionSource.FixedIfAnyTargetMatches
-                ?: continue
-            if (!targetMatchesSpell(ability.target, cardDef, casterId, sourceId, state)) continue
-            addOptimisticMatch(src, sourceId)
-        }
-        return calculateEffectiveCost(state, cardDef, casterId, optimisticTargets, baseCost = baseCost, modifiers = modifiers)
+        val countRange: IntRange? =
+            if (targetCountDirections(state, cardDef, casterId, modifiers).isEmpty()) null
+            else targetCountRange(cardDef, legalTargets)
+
+        fun priced(targets: List<EntityId>): ManaCost =
+            calculateEffectiveCost(state, cardDef, casterId, targets, baseCost = baseCost, modifiers = modifiers)
+
+        /** Priced with [count] different targets, the discount-earning ones first. */
+        fun pricedAt(count: Int): ManaCost = priced((optimisticTargets + legalTargets).distinct().take(count))
     }
 
     /**
@@ -1063,8 +1112,17 @@ class CostCalculator(
     ): List<EntityId> =
         // An Aura's enchant target is declared apart from its other requirements; include it so a
         // discount for "Aura spells that target X" is only offered when the Aura can target X.
-        (cardDef.script.targetRequirements + listOfNotNull(cardDef.script.castAuraTarget))
+        pricingRequirements(cardDef)
             .flatMap { targetFinder.findLegalTargets(state, it, casterId, sourceId = spellId) }
+
+    /**
+     * The target requirements a cast of [cardDef] may announce — the script's own plus an Aura's
+     * enchant target, or, for a modal spell (which declares targets per mode), every mode's.
+     */
+    private fun pricingRequirements(cardDef: CardDefinition): List<TargetRequirement> =
+        (cardDef.script.targetRequirements + listOfNotNull(cardDef.script.castAuraTarget)).ifEmpty {
+            (cardDef.script.spellEffect as? ModalEffect)?.modes?.flatMap { it.targetRequirements }.orEmpty()
+        }
 
     private fun sourceFromModification(modification: CostModification): CostReductionSource? = when (modification) {
         is CostModification.ReduceGenericBy -> modification.source
@@ -1073,44 +1131,92 @@ class CostCalculator(
     }
 
     /**
-     * The per-target tax this card levies on its own cast — the mana owed for
-     * [chosenTargets] beyond the first by every self-cast [ModifySpellCost] whose count source is
-     * [CostReductionSource.ChosenTargetsBeyondTheFirst]. [ManaCost.ZERO] for cards that have none.
+     * The per-target tax this card levies on its own cast — the mana owed for [chosenTargets] by
+     * every self-cast [ModifySpellCost] increase counted by [CostReductionSource.ChosenTargets].
+     * [ManaCost.ZERO] for cards that have none.
      *
      * Split out from [calculateEffectiveCost] because it must be charged **even on a free cast**:
      * "without paying its mana cost" waives the mana cost, not the increases applied to the total
      * cost (CR 601.2f), and Officious Interrogation's 2024-02-02 ruling says so in as many words —
      * "you must still pay the additional cost for any targets beyond the first". The free-cast
-     * branches never reach [calculateEffectiveCost] at all, so the cast pipeline adds this on top.
+     * branch never reaches [calculateEffectiveCost] at all, so the cast pipeline adds this on top.
      */
     fun selfPerTargetTax(cardDef: CardDefinition, chosenTargets: List<EntityId>): ManaCost {
-        val extraTargets = (chosenTargets.size - 1).coerceAtLeast(0)
-        if (extraTargets == 0) return ManaCost.ZERO
         var tax = ManaCost.ZERO
         for (ability in cardDef.script.staticAbilities) {
             if (ability !is ModifySpellCost) continue
             if (ability.target != SpellCostTarget.SelfCast) continue
-            val perTarget = perExtraTargetCost(ability.modification) ?: continue
-            repeat(extraTargets) { tax = tax + ManaCost.parse(perTarget) }
+            val (perTarget, counted) = perTargetIncrease(ability.modification) ?: continue
+            val units = (chosenTargets.distinct().size - counted.beyond).coerceAtLeast(0)
+            repeat(units) { tax = tax + ManaCost.parse(perTarget) }
         }
         return tax
     }
 
+    /** The mana [modification] adds per counted target, with its count source; null otherwise. */
+    private fun perTargetIncrease(modification: CostModification): Pair<String, CostReductionSource.ChosenTargets>? =
+        when (modification) {
+            is CostModification.IncreaseColoredPerUnit ->
+                (modification.countSource as? CostReductionSource.ChosenTargets)?.let { modification.symbols to it }
+            is CostModification.IncreaseGenericBy ->
+                (modification.source as? CostReductionSource.ChosenTargets)?.let { "{1}" to it }
+            else -> null
+        }
+
     /**
-     * The mana [modification] adds for each target the spell has beyond the first, as a cost
-     * string (`"{W}{U}"`, `"{1}"`), or null if it does not price the spell's own chosen targets.
-     *
-     * The enumerator sends this to the client so the mana-source picker can charge the real price
-     * once targets are chosen — the advertised `manaCostString` is priced with no targets and is
-     * therefore only the one-target minimum.
+     * Whether [modification] is priced by the spell's target count ([CostReductionSource.ChosenTargets]),
+     * and in which direction: true for a reduction, false for an increase, null when it doesn't count
+     * targets.
      */
-    fun perExtraTargetCost(modification: CostModification): String? = when {
-        modification is CostModification.IncreaseColoredPerUnit &&
-            modification.countSource == CostReductionSource.ChosenTargetsBeyondTheFirst ->
-            modification.symbols
-        modification is CostModification.IncreaseGenericBy &&
-            modification.source == CostReductionSource.ChosenTargetsBeyondTheFirst -> "{1}"
-        else -> null
+    private fun targetCountDirection(modification: CostModification): Boolean? {
+        val source = sourceFromModification(modification) ?: when (modification) {
+            is CostModification.IncreaseGenericBy -> modification.source
+            is CostModification.IncreaseColoredPerUnit -> modification.countSource
+            else -> null
+        }
+        if (source !is CostReductionSource.ChosenTargets) return null
+        return modification is CostModification.ReduceGenericBy || modification is CostModification.ReduceColoredPerUnit
+    }
+
+    /**
+     * Every target-count-priced modifier that would apply to [cardDef] cast by [casterId] — its own
+     * self-cast ones and the battlefield's — as reduction (true) / increase (false) flags. Empty for
+     * nearly every spell, which is what keeps the per-count pricing below off the hot path.
+     */
+    private fun targetCountDirections(
+        state: GameState,
+        cardDef: CardDefinition,
+        casterId: EntityId,
+        modifiers: List<Pair<EntityId, ModifySpellCost>>,
+    ): List<Boolean> = buildList {
+        for (ability in cardDef.script.staticAbilities) {
+            if (ability !is ModifySpellCost || ability.target != SpellCostTarget.SelfCast) continue
+            targetCountDirection(ability.modification)?.let(::add)
+        }
+        for ((sourceId, ability) in modifiers) {
+            val direction = targetCountDirection(ability.modification) ?: continue
+            if (targetMatchesSpell(ability.target, cardDef, casterId, sourceId, state)) add(direction)
+        }
+    }
+
+    /**
+     * The numbers of different targets [cardDef] can be cast with, as far as pricing goes: from
+     * the fewest its requirements force (each requirement's own targets are different objects, but
+     * two requirements may share one) to the most its requirements allow, capped by how many
+     * different legal targets exist. A modal spell declares its targets per mode, so it reads
+     * every mode's requirements as one pool and is never forced to target — the cast still prices
+     * the targets actually chosen.
+     */
+    private fun targetCountRange(
+        cardDef: CardDefinition,
+        legalTargets: List<EntityId>,
+    ): IntRange {
+        val requirements = cardDef.script.targetRequirements + listOfNotNull(cardDef.script.castAuraTarget)
+        val pool = pricingRequirements(cardDef)
+        val fewest = requirements.maxOfOrNull { it.effectiveMinCount } ?: 0
+        val available = legalTargets.distinct().size
+        val most = if (pool.any { it.unlimited }) available else minOf(pool.sumOf { it.count }, available)
+        return fewest.coerceAtMost(most)..most
     }
 
     /**
@@ -2085,13 +2191,17 @@ class CostCalculator(
         return oncePerTurnCandidate
     }
 
-    /** Price an alternative mana cost with the same increases and reductions as a normal cast. */
+    /**
+     * Price an alternative mana cost with the same increases and reductions as a normal cast —
+     * including the ones that read the spell's [chosenTargets] (Hinata, Dawn-Crowned).
+     */
     fun calculateEffectiveCostWithAlternativeBase(
         state: GameState,
         cardDef: CardDefinition,
         alternativeCost: ManaCost,
         casterId: EntityId,
-    ): ManaCost = calculateEffectiveCost(state, cardDef, casterId, baseCost = alternativeCost)
+        chosenTargets: List<EntityId> = emptyList(),
+    ): ManaCost = calculateEffectiveCost(state, cardDef, casterId, chosenTargets, baseCost = alternativeCost)
 
     /**
      * Calculate the additional life [casterId] must pay as part of casting a spell with

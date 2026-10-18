@@ -159,12 +159,13 @@ data class LegalActionInfo(
     val validHarmonizeCreatures: List<HarmonizeCreatureInfo>? = null,
     val manaCostString: String? = null,
     /**
-     * Mana added to this spell's cost per target beyond the first, so [manaCostString] above is
-     * only the one-target minimum and the real price is settled by targeting. Mirrors
-     * [com.wingedsheep.engine.legalactions.LegalAction.manaCostPerExtraTarget]; the client uses it
+     * This spell's cost for each number of different targets, when a modifier prices it per
+     * target, so [manaCostString] above is only the cheapest reachable count and the real price
+     * is settled by targeting. Mirrors
+     * [com.wingedsheep.engine.legalactions.LegalAction.manaCostByTargetCount]; the client uses it
      * to run targeting before a manual mana-source pick, and to price that pick.
      */
-    val manaCostPerExtraTarget: String? = null,
+    val manaCostByTargetCount: Map<Int, String>? = null,
     /**
      * The cheapest [manaCostString] can end up being once the alternative payments this action
      * already offers are used to the maximum — convoke taps (CR 702.51a), delve exiles (CR 702.66a),

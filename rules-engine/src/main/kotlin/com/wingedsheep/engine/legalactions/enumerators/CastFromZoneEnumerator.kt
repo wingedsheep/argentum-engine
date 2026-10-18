@@ -1119,7 +1119,7 @@ class CastFromZoneEnumerator(
                     val meetsRestrictions = context.legality.castRestrictionsMet(state, playerId, castRestrictions)
                     // A permission that names its own price pays it rather than the mana cost.
                     val effectiveCost = zoneCastAbility.alternativeManaCost
-                        ?.let { context.costCalculator.calculateEffectiveCostWithAlternativeBase(state, cardDef, it, playerId) }
+                        ?.let { context.costCalculator.calculateMinPossibleCost(state, cardDef, playerId, cardId, baseCost = it) }
                         ?: context.costCalculator.calculateEffectiveCost(state, cardDef, playerId, fromZone = zone)
                     val costString = effectiveCost.toString()
                     val canAfford = context.manaSolver.canPay(state, playerId, effectiveCost, precomputedSources = context.availableManaSources)
@@ -1377,9 +1377,7 @@ class CastFromZoneEnumerator(
             if (!context.legality.castRestrictionsMet(state, playerId, castRestrictions)) continue
 
             // Calculate effective flashback cost (applying cost reductions/increases)
-            val effectiveCost = context.costCalculator.calculateEffectiveCostWithAlternativeBase(
-                state, cardDef, flashback.cost, playerId
-            )
+            val effectiveCost = context.costCalculator.calculateMinPossibleCost(state, cardDef, playerId, cardId, baseCost = flashback.cost)
             val costString = effectiveCost.toString()
             val canAfford = context.manaSolver.canPay(state, playerId, effectiveCost, precomputedSources = context.availableManaSources)
 
@@ -1515,9 +1513,7 @@ class CastFromZoneEnumerator(
             val castRestrictions = cardDef.script.castRestrictions
             if (!context.legality.castRestrictionsMet(state, playerId, castRestrictions)) continue
 
-            val effectiveCost = context.costCalculator.calculateEffectiveCostWithAlternativeBase(
-                state, cardDef, mayhem.cost, playerId
-            )
+            val effectiveCost = context.costCalculator.calculateMinPossibleCost(state, cardDef, playerId, cardId, baseCost = mayhem.cost)
             val costString = effectiveCost.toString()
             val canAfford = context.manaSolver.canPay(state, playerId, effectiveCost, precomputedSources = context.availableManaSources)
 
@@ -1756,9 +1752,7 @@ class CastFromZoneEnumerator(
             // face's script exactly as a normal cast of this card would.
             if (!context.legality.castRestrictionsMet(state, playerId, cardDef.script.castRestrictions)) continue
 
-            val effectiveCost = context.costCalculator.calculateEffectiveCostWithAlternativeBase(
-                state, cardDef, disturb.cost, playerId
-            )
+            val effectiveCost = context.costCalculator.calculateMinPossibleCost(state, cardDef, playerId, cardId, baseCost = disturb.cost)
             val costString = effectiveCost.toString()
             val canAfford = context.manaSolver.canPay(
                 state, playerId, effectiveCost, precomputedSources = context.availableManaSources
@@ -1874,9 +1868,7 @@ class CastFromZoneEnumerator(
             val castRestrictions = cardDef.script.castRestrictions
             if (!context.legality.castRestrictionsMet(state, playerId, castRestrictions)) continue
 
-            val effectiveCost = context.costCalculator.calculateEffectiveCostWithAlternativeBase(
-                state, cardDef, harmonize.cost, playerId
-            )
+            val effectiveCost = context.costCalculator.calculateMinPossibleCost(state, cardDef, playerId, cardId, baseCost = harmonize.cost)
             val costString = effectiveCost.toString()
             val harmonizeCreatures = context.costUtils.findHarmonizeCreatures(state, playerId)
             // Harmonize casts from the graveyard, so eligible conditional mana is judged with
@@ -2056,9 +2048,7 @@ class CastFromZoneEnumerator(
                 }
             }
 
-            val effectiveCost = context.costCalculator.calculateEffectiveCostWithAlternativeBase(
-                state, cardDef, warpAbility.cost, playerId
-            )
+            val effectiveCost = context.costCalculator.calculateMinPossibleCost(state, cardDef, playerId, cardId, baseCost = warpAbility.cost)
             val costString = effectiveCost.toString()
             val canAfford = context.manaSolver.canPay(state, playerId, effectiveCost, precomputedSources = context.availableManaSources)
 
@@ -2263,9 +2253,7 @@ class CastFromZoneEnumerator(
             }
         }
 
-        val effectiveCost = context.costCalculator.calculateEffectiveCostWithAlternativeBase(
-            state, cardDef, alternativeCost, playerId
-        )
+        val effectiveCost = context.costCalculator.calculateMinPossibleCost(state, cardDef, playerId, cardId, baseCost = alternativeCost)
         val costString = effectiveCost.toString()
         val canAffordMana = context.manaSolver.canPay(state, playerId, effectiveCost, precomputedSources = context.availableManaSources)
         // The alternative cost's bundled non-mana half (Tenacious Underdog's "Pay 2 life").

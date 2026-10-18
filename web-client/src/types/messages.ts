@@ -1150,16 +1150,17 @@ export interface LegalActionInfo {
    */
   readonly minimumManaCostString?: string
   /**
-   * Mana this spell adds to its own cost per target beyond the first — Officious Interrogation
-   * ("This spell costs {W}{U} more to cast for each target beyond the first") sends `'{W}{U}'`.
-   * Absent for every spell that doesn't tax itself per target.
+   * What this spell costs for each number of *different* targets it can be cast with, keyed by
+   * that count — present only when a cost modifier is priced per target: Officious Interrogation
+   * ("costs {W}{U} more to cast for each target beyond the first"), Hinata, Dawn-Crowned ("spells
+   * you cast cost {1} less to cast for each target"). Absent for every other spell.
    *
-   * When set, `manaCostString` is only the one-target minimum, so targeting has to be settled
-   * before the player can sensibly pick mana sources by hand: `computePhases` orders `targeting`
-   * ahead of `manaSource`, and `startManaSelection` scales the cost it charges by the targets
-   * actually picked.
+   * When set, `manaCostString` is only the cheapest reachable count, so targeting has to be
+   * settled before the player can sensibly pick mana sources by hand: `computePhases` orders
+   * `targeting` ahead of `manaSource`, and `startManaSelection` charges the entry for the targets
+   * actually picked. The prices are the server's; the client only looks one up.
    */
-  readonly manaCostPerExtraTarget?: string
+  readonly manaCostByTargetCount?: Readonly<Record<number, string>>
   /** Whether this spell requires damage distribution at cast time (for DividedDamageEffect) */
   readonly requiresDamageDistribution?: boolean
   /** Total damage to distribute for DividedDamageEffect spells */
@@ -1389,7 +1390,7 @@ export interface AdditionalCostInfo {
    * Its presence says the threshold isn't final and the picker has to wait: `exileMinTotalWeight`
    * carries only the part already known, and the real floor is that plus these weights summed over
    * whatever the caster targets. So the cost-payment step runs *after* the targeting step for this
-   * cost — the same deferral `manaCostPerExtraTarget` already does for mana sources. Like every
+   * cost — the same deferral `manaCostByTargetCount` already does for mana sources. Like every
    * other weight here, the numbers are the server's, not the client's.
    */
   readonly exileWeightPerTarget?: Readonly<Record<EntityId, number>>

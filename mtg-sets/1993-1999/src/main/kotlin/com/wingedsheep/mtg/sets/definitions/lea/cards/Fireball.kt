@@ -20,7 +20,7 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * Fireball deals X damage divided evenly, rounded down, among any number of targets.
  *
  * *The tax* is the generic sibling of Officious Interrogation's: a self-cast [ModifySpellCost]
- * whose count source is [CostReductionSource.ChosenTargetsBeyondTheFirst]. It is a cost increase,
+ * whose count source is [CostReductionSource.ChosenTargets]. It is a cost increase,
  * so a free cast still owes it (CR 601.2f), and it never touches the mana value.
  *
  * *The division* happens on resolution with no choices: each target still legal then takes
@@ -41,7 +41,7 @@ val Fireball = card("Fireball") {
     staticAbility {
         ability = ModifySpellCost(
             target = SpellCostTarget.SelfCast,
-            modification = CostModification.IncreaseGenericBy(CostReductionSource.ChosenTargetsBeyondTheFirst)
+            modification = CostModification.IncreaseGenericBy(CostReductionSource.ChosenTargets(beyond = 1))
         )
     }
 

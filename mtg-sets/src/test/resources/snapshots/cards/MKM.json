@@ -16004,7 +16004,10 @@
                 "modification": {
                     "type": "IncreaseColoredPerUnit",
                     "symbols": "{W}{U}",
-                    "countSource": "ChosenTargetsBeyondTheFirst"
+                    "countSource": {
+                        "type": "ChosenTargets",
+                        "beyond": 1
+                    }
                 }
             }
         ]

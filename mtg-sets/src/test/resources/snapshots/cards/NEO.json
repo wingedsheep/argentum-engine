@@ -2029,6 +2029,57 @@
     "colorIdentityOverride": []
 }
 
+// Hinata, Dawn-Crowned
+{
+    "name": "Hinata, Dawn-Crowned",
+    "manaCost": "{1}{U}{R}{W}",
+    "typeLine": "Legendary Creature — Kirin Spirit",
+    "oracleText": "Flying, trample\nSpells you cast cost {1} less to cast for each target.\nSpells your opponents cast cost {1} more to cast for each target.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING",
+        "TRAMPLE"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": {
+                    "type": "YouCast",
+                    "filter": {}
+                },
+                "modification": {
+                    "type": "ReduceGenericBy",
+                    "source": "ChosenTargets"
+                }
+            },
+            {
+                "type": "ModifySpellCost",
+                "target": "OpponentsCast",
+                "modification": {
+                    "type": "IncreaseGenericBy",
+                    "source": "ChosenTargets"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "222",
+        "rarity": "RARE",
+        "artist": "Alexander Mokhov",
+        "flavorText": "Hope races on sunlit hooves.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/2/f25aff90-56fd-4f70-bb3b-cabf2900c391.jpg?1783923834"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED",
+        "WHITE"
+    ]
+}
+
 // Hotshot Mechanic
 {
     "name": "Hotshot Mechanic",

@@ -395,7 +395,7 @@ sealed interface CostModification {
      *
      * Used for Officious Interrogation ("This spell costs {W}{U} more to cast for each target
      * beyond the first") as
-     * `IncreaseColoredPerUnit("{W}{U}", CostReductionSource.ChosenTargetsBeyondTheFirst)`.
+     * `IncreaseColoredPerUnit("{W}{U}", CostReductionSource.ChosenTargets(beyond = 1))`.
      *
      * Unlike the reduction side there is no overflow question: added symbols always land, so a
      * count of N simply appends N copies of [symbols].
@@ -635,22 +635,30 @@ sealed interface CostReductionSource {
     }
 
     /**
-     * The number of targets the spell has beyond the first — "for each target beyond the first"
-     * (Officious Interrogation, and the classic Phyrexian Purge / Fireball wording). Counts the
-     * spell's chosen targets, so it is 0 for a single-target cast and never negative.
+     * The number of different players and objects the spell targets, less [beyond] — "for each
+     * target" (Hinata, Dawn-Crowned: `ChosenTargets()`) and "for each target beyond the first"
+     * (Officious Interrogation, Fireball: `ChosenTargets(beyond = 1)`). Never negative.
      *
-     * Only meaningful on a **self**-cast modifier ([SpellCostTarget.SelfCast]): "beyond the first"
-     * is a property of the spell being cast, and only the self path is priced with the caster's own
-     * chosen targets. Before targets are chosen (affordability enumeration) it reads 0, which is
-     * correct — one target is the cheapest legal cast, so the base cost is the true minimum.
+     * Counts *targets*, not uses of the word "target": a spell that targets the same creature with
+     * two "target creature" phrases has one target (Hinata's ruling).
      *
-     * Pair with [CostModification.IncreaseColoredPerUnit] for a colored per-target tax and with
-     * [CostModification.IncreaseGenericBy] for a generic one.
+     * The count is the spell's own, so it means something wherever the spell's chosen targets are
+     * known: on a self-cast modifier ([SpellCostTarget.SelfCast]) and on a battlefield modifier
+     * pricing other spells ([SpellCostTarget.YouCast], [SpellCostTarget.OpponentsCast]). Before
+     * targets are chosen, affordability prices the cheapest reachable count — the most distinct
+     * legal targets under a reduction, the fewest the spell requires under an increase.
+     *
+     * Pair with [CostModification.ReduceGenericBy] / [CostModification.IncreaseGenericBy] for a
+     * generic amount per target and with [CostModification.IncreaseColoredPerUnit] for a colored one.
      */
-    @SerialName("ChosenTargetsBeyondTheFirst")
+    @SerialName("ChosenTargets")
     @Serializable
-    data object ChosenTargetsBeyondTheFirst : CostReductionSource {
-        override val description: String = "each target beyond the first"
+    data class ChosenTargets(val beyond: Int = 0) : CostReductionSource {
+        override val description: String = when (beyond) {
+            0 -> "each target"
+            1 -> "each target beyond the first"
+            else -> "each target beyond the first $beyond"
+        }
     }
 
     /**

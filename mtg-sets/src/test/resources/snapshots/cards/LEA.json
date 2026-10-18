@@ -4524,7 +4524,10 @@
                 "target": "SelfCast",
                 "modification": {
                     "type": "IncreaseGenericBy",
-                    "source": "ChosenTargetsBeyondTheFirst"
+                    "source": {
+                        "type": "ChosenTargets",
+                        "beyond": 1
+                    }
                 }
             }
         ]

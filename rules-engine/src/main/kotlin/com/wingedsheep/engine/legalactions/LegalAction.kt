@@ -107,17 +107,18 @@ data class LegalAction(
     // Costs
     val manaCostString: String? = null,
     /**
-     * The mana this spell adds to its own cost for each target beyond the first — "This spell
-     * costs {W}{U} more to cast for each target beyond the first" (Officious Interrogation) sends
-     * `"{W}{U}"`. Null for every spell that does not tax itself per target.
+     * What this spell costs for each number of different targets it can be cast with — keyed by
+     * that count, present only when a cost modifier is priced per target: "This spell costs {W}{U}
+     * more to cast for each target beyond the first" (Officious Interrogation), "Spells you cast
+     * cost {1} less to cast for each target" (Hinata, Dawn-Crowned). Null for every other spell.
      *
-     * When set, [manaCostString] is the *one-target minimum*, not the final price: the real cost
-     * is settled by targeting. The client must therefore run its targeting phase **before** any
-     * manual mana-source phase (the same way an X cost forces `xSelection` first) and scale the
-     * cost it charges there by the number of targets picked. Under auto-tap none of this shows —
-     * the server prices the submitted targets itself and solves.
+     * When set, [manaCostString] is only the cheapest reachable count, not the final price: the
+     * real cost is settled by targeting. The client must therefore run its targeting phase
+     * **before** any manual mana-source phase (the same way an X cost forces `xSelection` first)
+     * and charge the entry for the number of different targets picked. Under auto-tap none of
+     * this shows — the server prices the submitted targets itself and solves.
      */
-    val manaCostPerExtraTarget: String? = null,
+    val manaCostByTargetCount: Map<Int, String>? = null,
     /**
      * The caster announces an X for this action. Usually that X is generic mana in the cost, but it
      * can be announced without being paid as mana (casualty X), so mana-side consumers must check
@@ -548,7 +549,7 @@ data class AdditionalCostData(
      * whatever the caster actually chooses. And **the picker runs after targeting** — a cost
      * determined at CR 601.2f cannot be paid before the targets are announced at 601.2c, so the
      * client moves its cost-payment step behind the targeting step for exactly these costs, the
-     * way `manaCostPerExtraTarget` already defers mana-source selection.
+     * way `manaCostByTargetCount` already defers mana-source selection.
      *
      * A map rather than a boolean because the client must be able to *price* a selection, not just
      * know that it is deferred, and shipping the weights keeps the one sum-gated picker: the same

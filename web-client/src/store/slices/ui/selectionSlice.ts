@@ -4,6 +4,7 @@
  */
 import { compatibleSelectionPool } from '@/utils/selectionGroups'
 import { decisionInteractionEpoch } from '@/network/liveAction'
+import { targetEntityId } from './pipelinePhases'
 import type {
   SliceCreator,
   EntityId,
@@ -21,7 +22,7 @@ import type {
   ManaSelectionState,
   ConvokeCreatureSelection,
 } from '../types'
-import type { LegalActionInfo } from '@/types'
+import type { ChosenTarget, LegalActionInfo } from '@/types'
 import {
   parseManaCost as parseManaCostUtil,
   getRemainingCostSymbols,
@@ -661,7 +662,7 @@ export const createSelectionSlice: SliceCreator<SelectionSlice> = (set, get) => 
     // sources to also cover xValue * (number of {X} symbols).
     const action = actionInfo.action as {
       xValue?: number
-      targets?: readonly unknown[]
+      targets?: readonly ChosenTarget[]
       alternativePayment?: { harmonizeCreature?: EntityId | null }
       additionalCostPayment?: { sacrificedPermanents?: readonly EntityId[] }
     }
@@ -673,17 +674,16 @@ export const createSelectionSlice: SliceCreator<SelectionSlice> = (set, get) => 
     const emergeCost = emergeSacrifice
       ? actionInfo.additionalCostInfo?.costAfterSacrifice?.[emergeSacrifice]
       : undefined
-    // "This spell costs {W}{U} more to cast for each target beyond the first" (Officious
-    // Interrogation): the server advertises the one-target minimum, because it prices the cost
-    // before any target exists. `computePhases` puts targeting ahead of this step precisely so the
-    // tax is knowable here — append one copy of the increment per target beyond the first. Same
-    // shape as the emerge/harmonize adjustments around it: the server owns the rule, the client
-    // only applies the choice the player has since made.
-    const perExtraTarget = actionInfo.manaCostPerExtraTarget
-    const extraTargets = Math.max(0, (action.targets?.length ?? 0) - 1)
-    const targetTax =
-      perExtraTarget && extraTargets > 0 ? perExtraTarget.repeat(extraTargets) : ''
-    const manaCost = (emergeCost ?? actionInfo.manaCostString ?? '') + targetTax
+    // A spell priced per target — Officious Interrogation's "{W}{U} more for each target beyond
+    // the first", Hinata's "{1} less for each target": the server advertises the cheapest target
+    // count, because it prices the cost before any target exists, and sends the price of every
+    // count beside it. `computePhases` puts targeting ahead of this step precisely so the count is
+    // knowable here — look up the price for the different targets chosen. Same shape as the
+    // emerge/harmonize adjustments around it: the server owns the rule, the client only applies
+    // the choice the player has since made.
+    const distinctTargets = new Set((action.targets ?? []).map(targetEntityId)).size
+    const targetPricedCost = actionInfo.manaCostByTargetCount?.[distinctTargets]
+    const manaCost = emergeCost ?? targetPricedCost ?? actionInfo.manaCostString ?? ''
     // A preceding delve or convoke phase materializes {X} as generic in the cost it hands on, so
     // its exiles/taps can pay the X down (CR 601.2f). Once that has happened the X is already in
     // [manaCost] and must not be added on top of it again.

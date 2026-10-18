@@ -70,9 +70,7 @@ class EmergeCastEnumerator : ActionEnumerator {
 
             // Base emerge cost through the battlefield cost-modifier pipeline (a Thalia-style tax
             // applies on top of an alternative cost — CR 601.2f).
-            val baseCost = context.costCalculator.calculateEffectiveCostWithAlternativeBase(
-                state, cardDef, emerge.cost, playerId
-            )
+            val baseCost = context.costCalculator.calculateMinPossibleCost(state, cardDef, playerId, cardId, baseCost = emerge.cost)
 
             // Only creatures whose mana value leaves the reduced cost payable may be offered.
             // Cheapest-first so the AI's "take the first candidate" pick spends the least valuable

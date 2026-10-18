@@ -40,7 +40,7 @@ import type {
 const CARD_TARGET_ZONES = new Set(['Graveyard', 'Exile', 'Hand', 'Library', 'Command', 'Ante'])
 
 /** The entity a chosen target points at, whichever arm of the union it is. */
-function targetEntityId(target: ChosenTarget): EntityId {
+export function targetEntityId(target: ChosenTarget): EntityId {
   switch (target.type) {
     case 'Player':
       return target.playerId
@@ -249,12 +249,13 @@ export function computePhases(actionInfo: LegalActionInfo, options?: ComputePhas
     (p) => p.type === 'delve' || p.type === 'convoke',
   )
   const hasPhyrexianMana = (actionInfo.manaCostString ?? '').includes('/P}')
-  //    A spell that taxes itself per target ("costs {W}{U} more for each target beyond the first")
-  //    advertises only its one-target minimum, so picking sources before targeting would always
-  //    under-tap and the server would reject the cast. Defer the manaSource step past targeting,
-  //    exactly as an X cost puts `xSelection` before it. Under auto-tap neither phase runs and the
-  //    server prices the submitted targets itself, so this only bites manual tappers.
-  const manaAfterTargeting = actionInfo.manaCostPerExtraTarget != null
+  //    A spell priced per target ("costs {W}{U} more for each target beyond the first"; Hinata's
+  //    "{1} less for each target") advertises only its cheapest target count, so picking sources
+  //    before targeting would mis-tap and the server would reject the cast. Defer the manaSource
+  //    step past targeting, exactly as an X cost puts `xSelection` before it. Under auto-tap
+  //    neither phase runs and the server prices the submitted targets itself, so this only bites
+  //    manual tappers.
+  const manaAfterTargeting = actionInfo.manaCostByTargetCount != null
   const needsManaSource =
     ((actionInfo.availableManaSources?.length ?? 0) > 0 || hasPhyrexianMana) &&
     (hasAlternativePaymentPhase || hasPhyrexianMana || !options?.autoTapEnabled)
@@ -264,7 +265,7 @@ export function computePhases(actionInfo: LegalActionInfo, options?: ComputePhas
 
   // A cost priced off the spell's targets can't be paid before they're chosen — the engine
   // determines it at CR 601.2f, after targets are announced at 601.2c. `exileWeightPerTarget`
-  // carries the per-target prices *and* is the signal to defer, exactly as `manaCostPerExtraTarget`
+  // carries the per-target prices *and* is the signal to defer, exactly as `manaCostByTargetCount`
   // defers the manaSource step above. Urgent Necropsy: "collect evidence X, where X is the total
   // mana value of the permanents this spell targets."
   const costAfterTargeting =

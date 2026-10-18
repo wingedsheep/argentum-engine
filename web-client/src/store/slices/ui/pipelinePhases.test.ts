@@ -401,7 +401,7 @@ describe('computePhases — per-target mana tax (Officious Interrogation)', () =
   }
 
   it('defers the manaSource phase past targeting when the cost scales with targets', () => {
-    const phases = computePhases(interrogation({ manaCostPerExtraTarget: '{W}{U}' }), {
+    const phases = computePhases(interrogation({ manaCostByTargetCount: { 1: '{W}{U}', 2: '{W}{U}{W}{U}' } }), {
       autoTapEnabled: false,
     })
     expect(phases).toEqual([{ type: 'targeting' }, { type: 'manaSource' }])
@@ -413,7 +413,7 @@ describe('computePhases — per-target mana tax (Officious Interrogation)', () =
   })
 
   it('runs no manaSource phase at all under auto-tap — the server prices the targets', () => {
-    const phases = computePhases(interrogation({ manaCostPerExtraTarget: '{W}{U}' }), {
+    const phases = computePhases(interrogation({ manaCostByTargetCount: { 1: '{W}{U}', 2: '{W}{U}{W}{U}' } }), {
       autoTapEnabled: true,
     })
     expect(phases).toEqual([{ type: 'targeting' }])

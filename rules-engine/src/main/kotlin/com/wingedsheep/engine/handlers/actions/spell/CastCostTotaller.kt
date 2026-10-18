@@ -96,13 +96,11 @@ internal class CastCostTotaller(
         }
 
         // "This spell costs {W}{U} more to cast for each target beyond the first" (Officious
-        // Interrogation). Charged outside every `playForFree` / alternative-cost / face-down base,
-        // because a cost *increase* is not part of the cost those bases waive or replace
-        // (CR 601.2f) — the card's own ruling spells it out: a free cast still owes the tax for
-        // targets beyond the first. `calculateEffectiveCost` already applied it on the ordinary
-        // path, so only the bases that bypassed it are topped up here.
-        if (cardDef != null && !com.wingedsheep.engine.mechanics.BestowCasts.selected(action) &&
-            (playForFree || action.useAlternativeCost || action.castFaceDown)) {
+        // Interrogation). A free cast's base skips the modifier pipeline, but a cost *increase* is
+        // not part of the cost "without paying its mana cost" waives (CR 601.2f) — the card's own
+        // ruling spells it out: a free cast still owes the tax for targets beyond the first. Every
+        // other base, alternative costs included, was priced with the chosen targets already.
+        if (cardDef != null && playForFree) {
             effectiveCost = effectiveCost + costCalculator.selfPerTargetTax(
                 cardDef, action.targets.map { it.toEntityId() }
             )
@@ -367,7 +365,9 @@ internal class CastCostTotaller(
     }
 
     private fun AlternativeBaseQuery.priced(base: ManaCost): ManaCost =
-        costCalculator.calculateEffectiveCostWithAlternativeBase(state, cardDef, base, playerId)
+        costCalculator.calculateEffectiveCostWithAlternativeBase(
+            state, cardDef, base, playerId, action.targets.map { it.toEntityId() },
+        )
 
     /**
      * The alternative costs that can replace a spell's mana cost (CR 118.9), in the order they are
