@@ -11,6 +11,7 @@ import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils
 import com.wingedsheep.engine.mechanics.mana.ManaSolver
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.LifePaymentPurpose
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.sdk.model.EntityId
@@ -426,13 +427,20 @@ class SelectFromCollectionExecutor(
                 is SelectionRestriction.MaxAffordablePayment -> {
                     // Cap at what the payer could actually pay for: floor(available / per-card).
                     // Available mana counts floating mana plus untapped sources, matching the
-                    // affordability pre-pass of the downstream Gate.MayPay.
+                    // affordability pre-pass of the downstream Gate.MayPay. The life axis caps at
+                    // floor(life / per-card) — payable down to 0 (CR 119.4), never while the
+                    // payer can't pay life (CR 119.8).
                     val payerId = TargetResolutionUtils
                         .resolvePlayerTarget(EffectTarget.PlayerRef(restriction.payer), context, state)
                         ?: context.controllerId
-                    val available = manaSolver.getAvailableManaCount(state, payerId)
-                    if (restriction.manaPerSelected <= 0) Int.MAX_VALUE
-                    else available / restriction.manaPerSelected
+                    val manaCap = if (restriction.manaPerSelected <= 0) Int.MAX_VALUE
+                        else manaSolver.getAvailableManaCount(state, payerId) / restriction.manaPerSelected
+                    val lifeCap = when {
+                        restriction.lifePerSelected <= 0 -> Int.MAX_VALUE
+                        state.isLifePaymentBlocked(payerId, LifePaymentPurpose.OTHER) -> 0
+                        else -> maxOf(0, state.lifeTotal(payerId)) / restriction.lifePerSelected
+                    }
+                    minOf(manaCap, lifeCap)
                 }
             }
             if (limit < ceiling) ceiling = limit

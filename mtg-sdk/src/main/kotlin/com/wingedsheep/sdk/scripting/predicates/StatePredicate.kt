@@ -866,6 +866,22 @@ sealed interface StatePredicate {
     }
 
     /**
+     * This card is currently in a hand *and* got there by being drawn (CR 121.1) this turn —
+     * Sylvan Library's "choose two cards in your hand drawn this turn". A card put into a hand any
+     * other way (a bounce, a tutor, a replaced draw) doesn't count, and neither does a drawn card
+     * that left the hand and came back (CR 400.7 — it is a new object).
+     *
+     * The hand-side sibling of [MilledThisTurn]: a per-card `DrawnThisTurnComponent` stamped by
+     * every draw, stripped when the card leaves its hand and wiped from every card at the start of
+     * each turn.
+     */
+    @SerialName("DrawnThisTurn")
+    @Serializable
+    data object DrawnThisTurn : History {
+        override val description: String = "drawn this turn"
+    }
+
+    /**
      * This creature blocked, or was blocked by, a legendary creature at some point during the
      * current turn. Used as a target predicate:
      *

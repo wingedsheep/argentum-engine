@@ -379,13 +379,16 @@ class BeginningPhaseManager(
         // Wipe "put into a graveyard this turn" markers on every turn boundary so the
         // predicates (Abyssal Harvester — FDN; Samwise, Lobelia — LTR) match only cards
         // that arrived in a graveyard this turn, not last turn. Scans all entities (the
-        // marker lives on graveyard cards, not battlefield permanents).
+        // marker lives on graveyard cards, not battlefield permanents). The "drawn this turn"
+        // stamps on hand cards (Sylvan Library) share the scan and the turn boundary.
         val stampedThisTurn = newState.entities.filter { (_, container) ->
-            container.has<com.wingedsheep.engine.state.components.identity.PutIntoGraveyardThisTurnComponent>()
+            container.has<com.wingedsheep.engine.state.components.identity.PutIntoGraveyardThisTurnComponent>() ||
+                container.has<com.wingedsheep.engine.state.components.identity.DrawnThisTurnComponent>()
         }.keys
         for (entityId in stampedThisTurn) {
             newState = newState.updateEntity(entityId) {
                 it.without<com.wingedsheep.engine.state.components.identity.PutIntoGraveyardThisTurnComponent>()
+                    .without<com.wingedsheep.engine.state.components.identity.DrawnThisTurnComponent>()
             }
         }
 
@@ -540,6 +543,8 @@ class BeginningPhaseManager(
         StatePredicate.SharesNameWithSpellCastThisTurn -> false
         StatePredicate.PutIntoGraveyardThisTurn -> false
         StatePredicate.MilledThisTurn -> false
+        // Hand-only predicate; untap candidates are battlefield permanents.
+        StatePredicate.DrawnThisTurn -> false
         StatePredicate.PutIntoGraveyardFromBattlefieldThisTurn -> false
         // Combat-partner history is cleared at cleanup, so nothing has blocked anything yet this turn.
         is StatePredicate.BlockPairedWithEntityThisTurn -> false

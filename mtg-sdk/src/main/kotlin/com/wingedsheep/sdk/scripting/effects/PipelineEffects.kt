@@ -821,6 +821,12 @@ sealed interface SelectionRestriction {
      * payment and silently forfeit the payoff ("pay {4} for each creature chosen
      * this way" — Magnetic Mountain).
      *
+     * [lifePerSelected] is the life axis of the same cap: `floor(payer's life / lifePerSelected)`
+     * (CR 119.4 — life can be paid down to exactly 0), or 0 when the payer can't pay life at all
+     * (CR 119.8). Pair it with one `PayLife(lifePerSelected)` per selected card ("for each of those
+     * cards, pay 4 life or put the card on top of your library" — Sylvan Library). When both rates
+     * are set, the smaller cap wins.
+     *
      * A cap of zero suppresses the selection prompt entirely (nothing is selected).
      * Unlike the per-card restrictions above, this one needs no response-order
      * trimming: the cap is folded into the decision's `maxSelections` at
@@ -830,10 +836,16 @@ sealed interface SelectionRestriction {
     @SerialName("MaxAffordablePayment")
     @Serializable
     data class MaxAffordablePayment(
-        val manaPerSelected: Int,
-        val payer: Player = Player.You
+        val manaPerSelected: Int = 0,
+        val payer: Player = Player.You,
+        val lifePerSelected: Int = 0
     ) : SelectionRestriction {
-        override val description: String = "at most as many as can be paid {$manaPerSelected} for"
+        override val description: String = when {
+            lifePerSelected > 0 && manaPerSelected > 0 ->
+                "at most as many as can be paid {$manaPerSelected} and $lifePerSelected life for"
+            lifePerSelected > 0 -> "at most as many as can be paid $lifePerSelected life for"
+            else -> "at most as many as can be paid {$manaPerSelected} for"
+        }
     }
 }
 

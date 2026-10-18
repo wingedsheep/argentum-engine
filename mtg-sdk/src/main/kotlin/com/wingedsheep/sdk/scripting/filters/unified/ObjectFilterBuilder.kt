@@ -942,6 +942,12 @@ interface ObjectFilterBuilder<out Self> {
      */
     fun milledThisTurn() = withStatePredicate(StatePredicate.MilledThisTurn)
 
+    /**
+     * Must currently be in a hand *and* have been drawn this turn (Sylvan Library). See
+     * [StatePredicate.DrawnThisTurn].
+     */
+    fun drawnThisTurn() = withStatePredicate(StatePredicate.DrawnThisTurn)
+
     /** Must be saddled (CR 702.171b) */
     fun saddled() = withStatePredicate(StatePredicate.IsSaddled)
 

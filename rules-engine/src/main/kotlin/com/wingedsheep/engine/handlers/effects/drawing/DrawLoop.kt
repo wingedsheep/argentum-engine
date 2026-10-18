@@ -4,6 +4,8 @@ import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.identity.DrawnThisTurnComponent
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 
 /**
@@ -131,6 +133,18 @@ object DrawLoop {
     }
 
     /**
+     * Pin each drawn card's [DrawnThisTurnComponent] to the object it is now in its hand
+     * (`StatePredicate.DrawnThisTurn`). A card no longer in a hand by now — moved on by a pause's
+     * own effects — is skipped, since it already stopped being the drawn object.
+     */
+    private fun stampDrawnThisTurn(state: GameState, drawnCards: List<EntityId>): GameState =
+        drawnCards.fold(state) { acc, cardId ->
+            val ref = acc.objectRef(cardId)
+            if (ref == null || acc.logicalZone(cardId)?.zoneType != Zone.HAND) acc
+            else acc.updateEntity(cardId) { it.with(DrawnThisTurnComponent(ref.generation)) }
+        }
+
+    /**
      * Build a success result with a prepended [CardsDrawnEvent] aggregating
      * every card drawn in this loop invocation. Matches the historical
      * [DrawCardsExecutor] ordering, where the aggregate event comes first
@@ -148,9 +162,9 @@ object DrawLoop {
         if (drawnCards.isNotEmpty()) {
             val cardNames = drawnCards.map { newState.getEntity(it)?.get<CardComponent>()?.name ?: "Card" }
             events.add(CardsDrawnEvent(playerId, drawnCards.size, drawnCards, cardNames, setOf(state.actorFor(playerId)) - playerId))
-            newState = newState.copy(
+            newState = stampDrawnThisTurn(newState.copy(
                 lastCardDrawnThisTurnByPlayer = newState.lastCardDrawnThisTurnByPlayer + (playerId to drawnCards.last())
-            )
+            ), drawnCards)
         }
         events.addAll(perCardEvents)
         return EffectResult.success(newState, events)
@@ -174,9 +188,9 @@ object DrawLoop {
         if (drawnCards.isNotEmpty()) {
             val cardNames = drawnCards.map { state.getEntity(it)?.get<CardComponent>()?.name ?: "Card" }
             allEvents.add(CardsDrawnEvent(playerId, drawnCards.size, drawnCards.toList(), cardNames, setOf(state.actorFor(playerId)) - playerId))
-            pausedState = pausedState.copy(
+            pausedState = stampDrawnThisTurn(pausedState.copy(
                 lastCardDrawnThisTurnByPlayer = pausedState.lastCardDrawnThisTurnByPlayer + (playerId to drawnCards.last())
-            )
+            ), drawnCards)
         }
         allEvents.addAll(perCardEvents)
         allEvents.addAll(pauseResult.events)

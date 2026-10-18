@@ -172,6 +172,10 @@
             "com.wingedsheep.engine.state.components.identity.ControllerComponent": {
                 "type": "com.wingedsheep.engine.state.components.identity.ControllerComponent",
                 "playerId": "player-1"
+            },
+            "com.wingedsheep.engine.state.components.identity.DrawnThisTurnComponent": {
+                "type": "com.wingedsheep.engine.state.components.identity.DrawnThisTurnComponent",
+                "generation": 7
             }
         },
         "card-1006": {

@@ -7309,6 +7309,12 @@ work for abilities-on-stack (which carry no `CardComponent`).
   was cast for its warp cost (CR 702.185). Pair with
   `Conditions.TargetMatchesFilter(GameObjectFilter.Creature.castForWarp(), …)` to
   branch on whether a target was warp-cast (e.g., Full Bore).
+- `DrawnThisTurn` (filter builder `drawnThisTurn()`) — card currently in a hand that got there by
+  being drawn this turn (CR 121.1): Sylvan Library's "choose two cards in your hand drawn this turn"
+  (`gather(CardSource.FromZone(Zone.HAND, Player.You, GameObjectFilter.Any.drawnThisTurn()))`). A card
+  put into a hand any other way, or a drawn card that left the hand and came back, doesn't count.
+  Backed by a per-card `DrawnThisTurnComponent` stamped by `DrawLoop`, stripped when the card leaves
+  its hand and wiped from every card in each untap step.
 - `MilledThisTurn` (filter builder `milledThisTurn()`) — card currently in a graveyard that got
   there by being milled this turn (CR 701.17): Raul, Trouble Shooter; Tato Farmer ("target land card
   in a graveyard that was milled this turn"). Surveil or an unworded "put the top card into your
@@ -17911,7 +17917,7 @@ Counter effects live in §4 (`AddCounters`, `RemoveCounters`, `Proliferate`, `Mo
   `DynamicAmount.XValue` for "with total mana value X or less"; the executor resolves it to a fixed cap up front so every
   downstream consumer sees an integer — The Rise of Sozin // Fire Lord Sozin),
   `TotalPowerAtMost(max)`, `OnePerBasicLandType`, `ReducedMinimumIfMatches(reducedMinimum, filter, requiredMatches?)`, and
-  `MaxAffordablePayment(manaPerSelected, payer?)`. `TotalPowerAtMost(max)` caps the sum of selected creatures'
+  `MaxAffordablePayment(manaPerSelected?, payer?, lifePerSelected?)`. `TotalPowerAtMost(max)` caps the sum of selected creatures'
   **projected** power at `max` (a creature with undefined power contributes 0); it is the power analogue of
   `TotalManaValueAtMost` and surfaces `maxTotalPower` on `SelectCardsDecision` so the UI shows a running "Total power: X / N"
   and disables over-cap picks while the server trims oversubmits in response order — used for "choose any number of
@@ -17930,6 +17936,9 @@ Counter effects live in §4 (`AddCounters`, `RemoveCounters`, `Proliferate`, `Mo
   `Gate.MayPay` over `PayDynamicMana` at the same rate so a player can never select a set whose total cost is
   unpayable and silently forfeit the payoff; a cap of zero (under `ChooseAnyNumber`) skips the selection prompt
   entirely (Magnetic Mountain: "choose any number … and pay {4} for each creature chosen this way").
+  `lifePerSelected` is the life axis of the same cap — `floor(payer's life / lifePerSelected)` (payable down to 0,
+  CR 119.4; 0 while the payer can't pay life, CR 119.8) — paired with one `PayLife(lifePerSelected)` per selected card
+  (Sylvan Library: "for each of those cards, pay 4 life or put the card on top of your library").
   - `chooser` (`Chooser`, default `Controller`) — who makes the selection: `Controller`, `Opponent`, `TargetPlayer`
     (`context.targets[0]` treated as the player), `TriggeringPlayer`, `SourceController` (the source's controller,
     ignoring per-iteration swaps), `ControllerOfSelection` (the controller of the cards in `from` — resolved from the

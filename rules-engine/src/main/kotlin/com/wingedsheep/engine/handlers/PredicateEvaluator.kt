@@ -54,6 +54,7 @@ import com.wingedsheep.engine.state.components.identity.HasMorphAbilityComponent
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.identity.MorphDataComponent
 import com.wingedsheep.engine.state.components.identity.PutIntoGraveyardThisTurnComponent
+import com.wingedsheep.engine.state.components.identity.DrawnThisTurnComponent
 import com.wingedsheep.engine.state.components.identity.TokenComponent
 import com.wingedsheep.sdk.core.CardType
 import com.wingedsheep.sdk.core.Color
@@ -2199,6 +2200,14 @@ class PredicateEvaluator(
             // Farmer — PIP). Flagged by ZoneTransitionService.trackMill after the mill's move.
             StatePredicate.MilledThisTurn -> {
                 container.get<PutIntoGraveyardThisTurnComponent>()?.milled == true
+            }
+
+            // "Cards in your hand drawn this turn" (Sylvan Library). The stamp names the hand
+            // object the draw produced; any later zone change mints a new generation (CR 400.7).
+            StatePredicate.DrawnThisTurn -> {
+                val stamp = container.get<DrawnThisTurnComponent>()
+                stamp != null && state.logicalZone(entityId)?.zoneType == com.wingedsheep.sdk.core.Zone.HAND &&
+                    state.objectRef(entityId)?.generation == stamp.generation
             }
 
             // "Blocked or was blocked by a legendary creature this turn" (You Cannot Pass! — LTR).

@@ -1599,7 +1599,7 @@ Families:
 
 ## SelectionRestriction
 
-- `SelectionRestriction.MaxAffordablePayment(manaPerSelected: Int, payer: Player)` — The selection is capped at the number of cards payer can afford to pay manaPerSelected generic mana for: `floor(availableMana / manaPerSelected)`, where available mana counts floating mana plus unt…
+- `SelectionRestriction.MaxAffordablePayment(manaPerSelected: Int, payer: Player, lifePerSelected: Int)` — The selection is capped at the number of cards payer can afford to pay manaPerSelected generic mana for: `floor(availableMana / manaPerSelected)`, where available mana counts floating mana plus unt…
 - `SelectionRestriction.OnePerBasicLandType` — At most one land of each basic land type (Plains/Island/Swamp/Mountain/Forest) may be selected.
 - `SelectionRestriction.OnePerCardName` — At most one card of each name may be selected.
 - `SelectionRestriction.OnePerCardType` — At most one card of each card type may be selected.
@@ -1667,6 +1667,7 @@ Families:
 - `StatePredicate.DealtCombatDamageToSourceControllerThisTurn` — Dealt combat damage *this turn* to the player who controls the effect's source.
 - `StatePredicate.DealtDamageToSourceControllerThisTurn` — Dealt damage — combat or noncombat — *this turn* to the player who controls the effect's source: the any-damage sibling of DealtCombatDamageToSourceControllerThisTurn.
 - `StatePredicate.DealtDamageToSourceThisTurn` — **Dealt** damage this turn to the effect's *source* — the active-voice mirror of WasDealtDamageBySourceThisTurn: "each creature that dealt damage to it this turn" (Brine Hag).
+- `StatePredicate.DrawnThisTurn` — This card is currently in a hand *and* got there by being drawn (CR 121.1) this turn — Sylvan Library's "choose two cards in your hand drawn this turn".
 - `StatePredicate.EnteredThisTurn` — Entered the battlefield this turn (has summoning sickness if creature)
 - `StatePredicate.ExiledByYou` — The candidate card is in exile and was put there by a spell or ability controlled by the asking player (the evaluation context's controller) — "a card from exile … if it was exiled by an ability yo…
 - `StatePredicate.ExiledWithSource` — The candidate card is one this effect's source permanent exiled — i.e. its entity id is recorded in the source's `LinkedExileComponent` (the same linkage set by `RedirectZoneChange(linkToSource = t…

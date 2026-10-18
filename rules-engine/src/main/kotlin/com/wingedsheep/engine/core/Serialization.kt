@@ -563,6 +563,7 @@ val engineSerializersModule = SerializersModule {
         subclass(CantBeCounteredComponent::class)
         subclass(CantBeCopiedComponent::class)
         subclass(PutIntoGraveyardThisTurnComponent::class)
+        subclass(DrawnThisTurnComponent::class)
         subclass(EmblemSourceComponent::class)
         subclass(EmblemActivatedAbilityComponent::class)
         subclass(EmblemStaticAbilityComponent::class)

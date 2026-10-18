@@ -5308,6 +5308,117 @@
     ]
 }
 
+// Sylvan Library
+{
+    "name": "Sylvan Library",
+    "manaCost": "{1}{G}",
+    "typeLine": "Enchantment",
+    "oracleText": "At the beginning of your draw step, you may draw two additional cards. If you do, choose two cards in your hand drawn this turn. For each of those cards, pay 4 life or put the card on top of your library.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sylvan Library:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "DRAW"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayDecide",
+                        "prompt": "Draw two additional cards with Sylvan Library?"
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
+                            },
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand",
+                                    "filter": {
+                                        "statePredicates": [
+                                            "DrawnThisTurn"
+                                        ]
+                                    }
+                                },
+                                "storeAs": "gathered1"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "gathered1",
+                                "selection": {
+                                    "type": "ChooseExactly",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 2
+                                    }
+                                },
+                                "storeSelected": "selected2",
+                                "prompt": "Choose two cards in your hand drawn this turn"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "selected2",
+                                "selection": "ChooseAnyNumber",
+                                "storeSelected": "selected3",
+                                "storeRemainder": "remainder3",
+                                "prompt": "Pay 4 life for each card you keep; the rest go on top of your library",
+                                "selectedLabel": "Keep (pay 4 life each)",
+                                "remainderLabel": "Put on top of your library",
+                                "restrictions": [
+                                    {
+                                        "type": "MaxAffordablePayment",
+                                        "lifePerSelected": 4
+                                    }
+                                ]
+                            },
+                            {
+                                "type": "ForEach",
+                                "space": {
+                                    "type": "IterationSpace.Collection",
+                                    "collection": "selected3"
+                                },
+                                "body": {
+                                    "type": "PayLife",
+                                    "amount": 4
+                                }
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "remainder3",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Library",
+                                    "placement": "Top"
+                                },
+                                "order": "ControllerChooses"
+                            }
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "207",
+        "rarity": "UNCOMMON",
+        "artist": "Harold McNeill",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/4/f486df00-7c4a-4ff0-bb0b-c8b5432ac742.jpg?1783948043"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Syphon Soul
 {
     "name": "Syphon Soul",
