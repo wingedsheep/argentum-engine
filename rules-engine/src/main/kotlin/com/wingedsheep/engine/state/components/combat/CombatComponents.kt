@@ -65,17 +65,23 @@ data class BlockedComponent(
 data object BlockedOrWasBlockedByLegendaryThisTurnComponent : Component
 
 /**
- * The creatures this creature blocked, or was blocked by, at any point during the current turn.
- * Stamped on **both** creatures of each blocking pair at block-declaration time and cleared at
- * end-of-turn cleanup, so the history survives the pairing ending (a partner dying, removal from
- * combat, the combat phase ending) and a second combat in the same turn adds to it. Backs
- * [com.wingedsheep.sdk.scripting.predicates.StatePredicate.BlockedOrWasBlockedByEntityThisTurn]
- * (Gaze of the Gorgon).
+ * The creatures this creature blocked ([blockedIds]) and was blocked by ([blockedByIds]) at any
+ * point during the current turn. Stamped on **both** creatures of each blocking pair at
+ * block-declaration time — the blocker records the attacker in [blockedIds], the attacker records
+ * the blocker in [blockedByIds] — and cleared at end-of-turn cleanup, so the history survives the
+ * pairing ending (a partner dying, removal from combat, the combat phase ending) and a second
+ * combat in the same turn adds to it. Backs
+ * [com.wingedsheep.sdk.scripting.predicates.StatePredicate.BlockPairedWithEntityThisTurn]
+ * (Gaze of the Gorgon, Glyph of Doom).
  */
 @Serializable
 data class CombatPartnersThisTurnComponent(
-    val partnerIds: Set<EntityId>
-) : Component
+    val blockedIds: Set<EntityId> = emptySet(),
+    val blockedByIds: Set<EntityId> = emptySet()
+) : Component {
+    /** Every creature this one was paired with in a block this turn, either way round. */
+    val partnerIds: Set<EntityId> get() = blockedIds + blockedByIds
+}
 
 /**
  * Marks a creature that was declared as an attacker at least once during the current combat

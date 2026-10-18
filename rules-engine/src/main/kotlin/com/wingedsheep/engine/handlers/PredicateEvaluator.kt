@@ -69,6 +69,7 @@ import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
 import com.wingedsheep.sdk.scripting.predicates.evaluateWith
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.events.Recipient
+import com.wingedsheep.sdk.scripting.predicates.BlockDirection
 import com.wingedsheep.sdk.scripting.predicates.StatePredicate
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
@@ -2173,14 +2174,18 @@ class PredicateEvaluator(
                 container.has<com.wingedsheep.engine.state.components.combat.BlockedOrWasBlockedByLegendaryThisTurnComponent>()
             }
 
-            // "…that blocked or were blocked by it this turn" (Gaze of the Gorgon) — the candidate's
-            // own turn-scoped partner record, so it still matches after the referenced creature
-            // has left the battlefield.
-            is StatePredicate.BlockedOrWasBlockedByEntityThisTurn -> {
+            // "…that blocked or were blocked by it this turn" (Gaze of the Gorgon) / "…that were
+            // blocked by that creature this turn" (Glyph of Doom) — the candidate's own turn-scoped
+            // partner record, so it still matches after the referenced creature has left the
+            // battlefield.
+            is StatePredicate.BlockPairedWithEntityThisTurn -> {
                 val referenced = resolveEntity(state, predicate.reference, context, projected)
-                referenced != null &&
-                    container.get<com.wingedsheep.engine.state.components.combat.CombatPartnersThisTurnComponent>()
-                        ?.partnerIds?.contains(referenced) == true
+                val partners = container.get<com.wingedsheep.engine.state.components.combat.CombatPartnersThisTurnComponent>()
+                referenced != null && partners != null && when (predicate.direction) {
+                    BlockDirection.BLOCKED -> referenced in partners.blockedIds
+                    BlockDirection.BLOCKED_BY -> referenced in partners.blockedByIds
+                    BlockDirection.EITHER -> referenced in partners.blockedIds || referenced in partners.blockedByIds
+                }
             }
 
             // Face-down state

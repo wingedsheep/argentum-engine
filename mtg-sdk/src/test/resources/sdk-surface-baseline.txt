@@ -1318,7 +1318,7 @@ StatePredicate.AttackedLastTurn — StatePredicate
 StatePredicate.AttackedThisCombat — StatePredicate
 StatePredicate.AttackedThisTurn — StatePredicate
 StatePredicate.BecameTappedOnlyOnceThisTurn — StatePredicate
-StatePredicate.BlockedOrWasBlockedByEntityThisTurn — StatePredicate
+StatePredicate.BlockPairedWithEntityThisTurn — StatePredicate
 StatePredicate.BlockedOrWasBlockedByLegendaryThisTurn — StatePredicate
 StatePredicate.BlockedThisCombat — StatePredicate
 StatePredicate.BlockedThisTurn — StatePredicate

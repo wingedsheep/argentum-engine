@@ -849,24 +849,37 @@ sealed interface StatePredicate {
     }
 
     /**
-     * This creature blocked, or was blocked by, the creature [reference] names at some point
-     * during the current turn — "destroy all creatures that blocked or were blocked by **it** this
-     * turn" (Gaze of the Gorgon). The relational sibling of [BlockedOrWasBlockedByLegendaryThisTurn].
+     * This creature was paired in a block with the creature [reference] names at some point during
+     * the current turn, in the given [direction] — the relational sibling of
+     * [BlockedOrWasBlockedByLegendaryThisTurn]:
+     *
+     *  - [BlockDirection.EITHER] — "all creatures that blocked or were blocked by **it** this turn"
+     *    (Gaze of the Gorgon).
+     *  - [BlockDirection.BLOCKED_BY] — "all creatures that were blocked by **that creature** this
+     *    turn" (Glyph of Doom), "target creature that **target Wall** blocked this turn" (Glyph of
+     *    Delusion).
+     *  - [BlockDirection.BLOCKED] — "creatures that blocked **it** this turn".
      *
      * Backed by the turn-scoped `CombatPartnersThisTurnComponent`, stamped on both creatures of a
-     * blocking pair at block declaration and cleared at end-of-turn cleanup, so it covers blocks
-     * made before the spell was cast and keeps matching after the referenced creature has left the
-     * battlefield (the card's own ruling). A reference that resolves to nothing matches nothing.
+     * blocking pair at block declaration (each side recording which way the block went) and cleared
+     * at end-of-turn cleanup, so it covers blocks made before the spell was cast and keeps matching
+     * after the referenced creature has left the battlefield. A reference that resolves to nothing
+     * matches nothing.
      *
      * In a delayed trigger, [EffectTarget.TriggeringEntity] names the trigger's watched entity — a
      * step-based `CreateDelayedTriggerEffect` exposes its baked `watchedTarget` that way.
      */
-    @SerialName("BlockedOrWasBlockedByEntityThisTurn")
+    @SerialName("BlockPairedWithEntityThisTurn")
     @Serializable
-    data class BlockedOrWasBlockedByEntityThisTurn(
-        val reference: com.wingedsheep.sdk.scripting.targets.EffectTarget.SingleEntity
+    data class BlockPairedWithEntityThisTurn(
+        val reference: com.wingedsheep.sdk.scripting.targets.EffectTarget.SingleEntity,
+        val direction: BlockDirection = BlockDirection.EITHER
     ) : History {
-        override val description: String = "that blocked or was blocked by ${reference.description} this turn"
+        override val description: String = when (direction) {
+            BlockDirection.EITHER -> "that blocked or was blocked by ${reference.description} this turn"
+            BlockDirection.BLOCKED -> "that blocked ${reference.description} this turn"
+            BlockDirection.BLOCKED_BY -> "that was blocked by ${reference.description} this turn"
+        }
     }
 
     // =============================================================================
@@ -1543,4 +1556,20 @@ sealed interface StatePredicate {
     data class Not(val predicate: StatePredicate) : StatePredicate {
         override val description: String = "not ${predicate.description}"
     }
+}
+
+/**
+ * Which way a block went, read from the candidate creature's side of the pair — the axis of
+ * [StatePredicate.BlockPairedWithEntityThisTurn].
+ */
+@Serializable
+enum class BlockDirection {
+    /** The candidate blocked the referenced creature. */
+    BLOCKED,
+
+    /** The candidate was blocked by the referenced creature. */
+    BLOCKED_BY,
+
+    /** Either way round — the candidate blocked, or was blocked by, the referenced creature. */
+    EITHER
 }

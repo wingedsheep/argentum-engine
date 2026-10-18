@@ -7220,13 +7220,16 @@ work for abilities-on-stack (which carry no `CardComponent`).
   legendary-ness (per the card's ruling). Cleared at end-of-turn cleanup. Distinct from the
   combat-only `IsBlocking`/`IsBlocked`, which only hold during the combat phase. Used by
   You Cannot Pass! (LTR) on a `TargetCreature` filter.
-- `BlockedOrWasBlockedByEntityThisTurn(reference: EffectTarget.SingleEntity)` (filter builder
-  `blockedOrWasBlockedByThisTurn(reference)`) — the relational sibling: the creature blocked, or was
-  blocked by, the entity `reference` names at some point this turn. Backed by the turn-scoped
-  `CombatPartnersThisTurnComponent` (partner ids stamped on both sides at block declaration, cleared
-  at cleanup), so it covers blocks made before the effect existed and still matches after the
-  referenced creature has left the battlefield. Gaze of the Gorgon: a step-based delayed trigger with
-  `watchedTarget = <target>` and `DestroyAll(Creature.blockedOrWasBlockedByThisTurn(EffectTarget.TriggeringEntity))`.
+- `BlockPairedWithEntityThisTurn(reference: EffectTarget.SingleEntity, direction: BlockDirection = EITHER)`
+  (filter builders `blockedOrWasBlockedByThisTurn(reference)` for `EITHER`, `wasBlockedByThisTurn(reference)`
+  for `BLOCKED_BY`) — the relational sibling: the creature was paired in a block with the entity
+  `reference` names at some point this turn, read from the candidate's side — `BLOCKED` (it blocked
+  the reference), `BLOCKED_BY` (the reference blocked it), or `EITHER`. Backed by the turn-scoped
+  `CombatPartnersThisTurnComponent` (`blockedIds` / `blockedByIds`, stamped on both sides at block
+  declaration, cleared at cleanup), so it covers blocks made before the effect existed and still
+  matches after the referenced creature has left the battlefield. Gaze of the Gorgon (`EITHER`) and
+  Glyph of Doom (`BLOCKED_BY`): a step-based delayed trigger with `watchedTarget = <target>` and
+  `DestroyAll(Creature.<builder>(EffectTarget.TriggeringEntity))`.
 
 ### `AffectsFilter` — static-ability target shapes
 

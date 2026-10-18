@@ -1697,6 +1697,76 @@
     ]
 }
 
+// Glyph of Doom
+{
+    "name": "Glyph of Doom",
+    "manaCost": "{B}",
+    "typeLine": "Instant",
+    "oracleText": "Choose target Wall creature. At this turn's next end of combat, destroy all creatures that were blocked by that creature this turn.",
+    "script": {
+        "spellEffect": {
+            "type": "CreateDelayedTrigger",
+            "step": "END_COMBAT",
+            "effect": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "GatherCards",
+                        "source": {
+                            "type": "BattlefieldMatching",
+                            "filter": {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ],
+                                "statePredicates": [
+                                    {
+                                        "type": "BlockPairedWithEntityThisTurn",
+                                        "reference": "TriggeringEntity",
+                                        "direction": "BLOCKED_BY"
+                                    }
+                                ]
+                            }
+                        },
+                        "storeAs": "destroyAll_gathered"
+                    },
+                    {
+                        "type": "MoveCollection",
+                        "from": "destroyAll_gathered",
+                        "destination": {
+                            "type": "ToZone",
+                            "zone": "Graveyard"
+                        },
+                        "moveType": "Destroy"
+                    }
+                ]
+            },
+            "watchedTarget": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "timing": "ThisTurnOnly"
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature Wall"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "100",
+        "artist": "Susan Van Camp",
+        "flavorText": "\"He knows he has a short span of life, that the day will come when he must pass through the wall of oblivion . . .\"\n—William Faulkner",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/3/332bfce9-052d-42e9-a407-4a1dd59e0f2a.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Gravity Sphere
 {
     "name": "Gravity Sphere",

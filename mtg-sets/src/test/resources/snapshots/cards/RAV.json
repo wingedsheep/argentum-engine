@@ -6974,7 +6974,7 @@
                                         ],
                                         "statePredicates": [
                                             {
-                                                "type": "BlockedOrWasBlockedByEntityThisTurn",
+                                                "type": "BlockPairedWithEntityThisTurn",
                                                 "reference": "TriggeringEntity"
                                             }
                                         ]

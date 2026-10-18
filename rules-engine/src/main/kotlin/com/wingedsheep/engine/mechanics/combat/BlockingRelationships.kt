@@ -12,19 +12,19 @@ internal object BlockingRelationships {
         for ((blocker, attackers) in pairs) {
             val existing = result.getEntity(blocker)?.get<BlockingComponent>()?.blockedAttackerIds.orEmpty()
             result = result.updateEntity(blocker) { c ->
-                val partners = c.get<CombatPartnersThisTurnComponent>()?.partnerIds.orEmpty()
+                val partners = c.get<CombatPartnersThisTurnComponent>() ?: CombatPartnersThisTurnComponent()
                 c.with(BlockingComponent((existing + attackers).distinct()))
                     .with(BlockedThisCombatComponent).with(BlockedThisTurnComponent)
-                    .with(CombatPartnersThisTurnComponent(partners + attackers))
+                    .with(partners.copy(blockedIds = partners.blockedIds + attackers))
             }
             val blockerRef = state.objectRef(blocker)
             for (attacker in attackers) {
                 result = result.updateEntity(attacker) { c ->
                     val blockers = c.get<BlockedComponent>()?.blockerIds.orEmpty()
                     val history = c.get<BlockersThisCombatComponent>()?.blockers.orEmpty()
-                    val partners = c.get<CombatPartnersThisTurnComponent>()?.partnerIds.orEmpty()
+                    val partners = c.get<CombatPartnersThisTurnComponent>() ?: CombatPartnersThisTurnComponent()
                     var updated = c.with(BlockedComponent((blockers + blocker).distinct()))
-                        .with(CombatPartnersThisTurnComponent(partners + blocker))
+                        .with(partners.copy(blockedByIds = partners.blockedByIds + blocker))
                     if (blockerRef != null) updated = updated.with(BlockersThisCombatComponent(history + blockerRef))
                     if (projected.isLegendary(blocker)) updated = updated.with(BlockedOrWasBlockedByLegendaryThisTurnComponent)
                     updated

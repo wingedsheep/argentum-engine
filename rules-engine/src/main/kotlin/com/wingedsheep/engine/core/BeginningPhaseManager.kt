@@ -542,7 +542,7 @@ class BeginningPhaseManager(
         StatePredicate.MilledThisTurn -> false
         StatePredicate.PutIntoGraveyardFromBattlefieldThisTurn -> false
         // Combat-partner history is cleared at cleanup, so nothing has blocked anything yet this turn.
-        is StatePredicate.BlockedOrWasBlockedByEntityThisTurn -> false
+        is StatePredicate.BlockPairedWithEntityThisTurn -> false
         is StatePredicate.IsBlockingEntity -> false
         // Untap candidates are battlefield permanents, so back face up is the whole CR 701.27g test.
         StatePredicate.IsTransformed ->

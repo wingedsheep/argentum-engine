@@ -6,6 +6,7 @@ import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.events.DamageType
+import com.wingedsheep.sdk.scripting.predicates.BlockDirection
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
 import com.wingedsheep.sdk.scripting.predicates.StatePredicate
@@ -1029,7 +1030,15 @@ interface ObjectFilterBuilder<out Self> {
      * creatures that blocked or were blocked by it this turn" (Gaze of the Gorgon).
      */
     fun blockedOrWasBlockedByThisTurn(reference: EffectTarget.SingleEntity) =
-        withStatePredicate(StatePredicate.BlockedOrWasBlockedByEntityThisTurn(reference))
+        withStatePredicate(StatePredicate.BlockPairedWithEntityThisTurn(reference, BlockDirection.EITHER))
+
+    /**
+     * Must have been blocked by the creature [reference] names this turn — "all creatures that were
+     * blocked by that creature this turn" (Glyph of Doom), "target creature that target Wall blocked
+     * this turn" (Glyph of Delusion).
+     */
+    fun wasBlockedByThisTurn(reference: EffectTarget.SingleEntity) =
+        withStatePredicate(StatePredicate.BlockPairedWithEntityThisTurn(reference, BlockDirection.BLOCKED_BY))
 
     /** Must have at least one Equipment attached */
     fun equipped() = withStatePredicate(StatePredicate.IsEquipped)
