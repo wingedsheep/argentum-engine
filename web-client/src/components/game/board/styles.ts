@@ -2509,6 +2509,7 @@ const passiveCounterPalette: Record<string, CounterBadgePalette> = {
   PHYRESIS: { bg: 'rgba(24, 28, 30, 0.95)', border: 'rgba(150, 170, 160, 0.7)', color: '#c8d6cf' },
   MUSTER: { bg: 'rgba(52, 22, 18, 0.95)', border: 'rgba(210, 120, 90, 0.7)', color: '#eab49c' },
   BRAIN: { bg: 'rgba(44, 20, 48, 0.95)', border: 'rgba(200, 120, 210, 0.7)', color: '#ecb8f2' },
+  HATCHING: { bg: 'rgba(22, 44, 26, 0.95)', border: 'rgba(130, 200, 120, 0.7)', color: '#b8e6ae' },
   TRAINING: { bg: 'rgba(48, 40, 22, 0.95)', border: 'rgba(214, 170, 90, 0.7)', color: '#ecd09a' },
   MINUS_ZERO_MINUS_ONE: { bg: 'rgba(60, 20, 20, 0.95)', border: 'rgba(220, 120, 120, 0.7)', color: '#e09c9c' },
 }

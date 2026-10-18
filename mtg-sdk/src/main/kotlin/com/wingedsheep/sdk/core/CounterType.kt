@@ -746,6 +746,12 @@ value class CounterType(val name: String) {
          */
         val BRAIN = CounterType("BRAIN")
 
+        /**
+         * Hatching counter (NEO — The Dragon-Kami Reborn). A pure marker on a face-down card in exile:
+         * Dragon-Kami's Egg lets its owner cast a creature spell from among the exiled cards that have one.
+         */
+        val HATCHING = CounterType("HATCHING")
+
         /** Every counter kind the SDK names, in declaration order. */
         val KNOWN: List<CounterType> = listOf(
             PLUS_ONE_PLUS_ONE,
@@ -877,6 +883,7 @@ value class CounterType(val name: String) {
             PHYRESIS,
             MUSTER,
             BRAIN,
+            HATCHING,
         )
 
         /**

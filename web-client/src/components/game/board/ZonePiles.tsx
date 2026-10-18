@@ -2,7 +2,7 @@ import React, { useState, useEffect, useLayoutEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { useGameStore } from '@/store/gameStore.ts'
 import { useZoneCards, useStackCards, useZone, useCard, selectGameState, librarySlots } from '@/store/selectors.ts'
-import { graveyard, exile, library, sideboard, CounterType } from '@/types'
+import { graveyard, exile, library, sideboard, CounterType, CounterTypeDisplayNames } from '@/types'
 import type { ClientCard, ClientDeckCard, ClientPlayer } from '@/types'
 import { CARD_BACK_IMAGE_URL } from '@/utils/cardImages.ts'
 import { getCardImageUrl } from '@/utils/cardImages.ts'
@@ -17,6 +17,8 @@ import { GraveyardTargetCallout } from './GraveyardTargetCallout'
 const EMPTY_DECK: readonly ClientDeckCard[] = []
 
 const CARD_RATIO = 1.4
+/** Counters that only mark a card in exile for some effect, badged in the exile browser. */
+const EXILE_MARKER_COUNTERS = [CounterType.BRAIN, CounterType.HATCHING] as const
 const LABEL_HEIGHT = 14
 // Deck + Graveyard + Exile are always present; extra "Plotted", "Paradigm", and "Suspended"
 // piles appear only when the player has those cards in exile (see `pileCount` below).
@@ -746,17 +748,18 @@ function ExileBrowser({ cards, ownerLabel, onClose }: { cards: readonly ClientCa
                   <i className={`ms ms-${counterManaClass.STASH}`} /> {getStashCounters(card)}
                 </div>
               )}
-              {/* Brain counters mark the exiled cards Rex, Cyber-Hound borrows activated abilities
-                  from, so the exile browser is where a player checks which ones count. Bottom-left,
-                  clear of the plotted and stash badges. */}
-              {getCounterCount(card, CounterType.BRAIN) > 0 && (
+              {/* Exile-marker counters (brain: Rex, Cyber-Hound's ability donors; hatching: the
+                  cards Dragon-Kami's Egg can cast) say which exiled cards count, so the exile browser
+                  is where a player checks them. Bottom-left, clear of the plotted and stash badges. */}
+              {EXILE_MARKER_COUNTERS.filter((type) => getCounterCount(card, type) > 0).map((type) => (
                 <div
-                  title="Brain counter"
-                  style={{ ...passiveCounterBadgeStyle(CounterType.BRAIN), top: 'auto', right: 'auto', bottom: 4, left: 4, padding: '2px 6px', fontSize: 11, pointerEvents: 'none' }}
+                  key={type}
+                  title={`${CounterTypeDisplayNames[type]} counter`}
+                  style={{ ...passiveCounterBadgeStyle(type), top: 'auto', right: 'auto', bottom: 4, left: 4, padding: '2px 6px', fontSize: 11, pointerEvents: 'none' }}
                 >
-                  <i className={`ms ms-${counterManaClass.BRAIN}`} /> {getCounterCount(card, CounterType.BRAIN)}
+                  <i className={`ms ms-${counterManaClass[type]}`} /> {getCounterCount(card, type)}
                 </div>
-              )}
+              ))}
             </div>
           ))}
         </div>

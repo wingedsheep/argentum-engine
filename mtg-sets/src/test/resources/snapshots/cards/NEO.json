@@ -5960,6 +5960,302 @@
     ]
 }
 
+// The Dragon-Kami Reborn
+{
+    "name": "The Dragon-Kami Reborn",
+    "manaCost": "{2}{G}",
+    "typeLine": "Enchantment — Saga",
+    "oracleText": "(As this Saga enters and after your draw step, add a lore counter.)\nI, II — You gain 2 life. Look at the top three cards of your library. Exile one of them face down with a hatching counter on it, then put the rest on the bottom of your library in any order.\nIII — Exile this Saga, then return it to the battlefield transformed under your control.",
+    "script": {
+        "sagaChapters": [
+            {
+                "chapter": 1,
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "TopOfLibrary",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 3
+                                        }
+                                    },
+                                    "storeAs": "gathered0"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "gathered0",
+                                    "selection": {
+                                        "type": "ChooseExactly",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeSelected": "selected1",
+                                    "storeRemainder": "remainder1",
+                                    "selectedLabel": "Exile face down with a hatching counter",
+                                    "remainderLabel": "Put on the bottom of your library"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "selected1",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Exile"
+                                    },
+                                    "faceDown": "HIDDEN",
+                                    "lookableInExile": true,
+                                    "addCounterType": "HATCHING"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "remainder1",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Library",
+                                        "placement": "Bottom"
+                                    },
+                                    "order": "ControllerChooses"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+            {
+                "chapter": 2,
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "TopOfLibrary",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 3
+                                        }
+                                    },
+                                    "storeAs": "gathered0"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "gathered0",
+                                    "selection": {
+                                        "type": "ChooseExactly",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeSelected": "selected1",
+                                    "storeRemainder": "remainder1",
+                                    "selectedLabel": "Exile face down with a hatching counter",
+                                    "remainderLabel": "Put on the bottom of your library"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "selected1",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Exile"
+                                    },
+                                    "faceDown": "HIDDEN",
+                                    "lookableInExile": true,
+                                    "addCounterType": "HATCHING"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "remainder1",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Library",
+                                        "placement": "Bottom"
+                                    },
+                                    "order": "ControllerChooses"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+            {
+                "chapter": 3,
+                "effect": "ExileAndReturnTransformed"
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Dragon-Kami's Egg",
+        "manaCost": "",
+        "typeLine": "Enchantment Creature — Egg",
+        "oracleText": "Whenever this creature or a Dragon you control dies, you may cast a creature spell from among cards you own in exile with hatching counters on them without paying its mana cost.",
+        "creatureStats": {
+            "power": 0,
+            "toughness": 1
+        },
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "Dragon-Kami's Egg:1",
+                    "trigger": {
+                        "type": "ZoneChangeEvent",
+                        "from": "Battlefield",
+                        "to": "Graveyard"
+                    },
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Exile",
+                                    "filter": {
+                                        "cardPredicates": [
+                                            "IsCreature"
+                                        ],
+                                        "statePredicates": [
+                                            {
+                                                "type": "HasCounter",
+                                                "counterType": "HATCHING"
+                                            }
+                                        ]
+                                    }
+                                },
+                                "storeAs": "gathered0"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "gathered0",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "selected1",
+                                "selectedLabel": "Cast without paying its mana cost"
+                            },
+                            {
+                                "type": "CastFromCollectionWithoutPayingCost",
+                                "from": "selected1"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "id": "Dragon-Kami's Egg:2",
+                    "trigger": {
+                        "type": "ZoneChangeEvent",
+                        "filter": "creature Dragon ctrl:you",
+                        "from": "Battlefield",
+                        "to": "Graveyard"
+                    },
+                    "binding": "ANY",
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Exile",
+                                    "filter": {
+                                        "cardPredicates": [
+                                            "IsCreature"
+                                        ],
+                                        "statePredicates": [
+                                            {
+                                                "type": "HasCounter",
+                                                "counterType": "HATCHING"
+                                            }
+                                        ]
+                                    }
+                                },
+                                "storeAs": "gathered0"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "gathered0",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "selected1",
+                                "selectedLabel": "Cast without paying its mana cost"
+                            },
+                            {
+                                "type": "CastFromCollectionWithoutPayingCost",
+                                "from": "selected1"
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "181",
+            "rarity": "RARE",
+            "artist": "Alix Branwyn",
+            "imageUri": "https://cards.scryfall.io/normal/back/2/5/2534caaa-a793-415f-977f-1d0fac3642ab.jpg?1783923856"
+        },
+        "colorIdentityOverride": [
+            "GREEN"
+        ],
+        "colorIndicator": [
+            "GREEN"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "181",
+        "rarity": "RARE",
+        "artist": "Alix Branwyn",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/5/2534caaa-a793-415f-977f-1d0fac3642ab.jpg?1783923856",
+        "rulings": [
+            {
+                "date": "2022-02-18",
+                "text": "You may look at the cards you exile with The Dragon-Kami Reborn's first two chapter abilities, and you may continue to do so after it has left the battlefield."
+            },
+            {
+                "date": "2022-02-18",
+                "text": "If Dragon-Kami's Egg and one or more Dragons you control die at the same time, the ability of Dragon-Kami's Egg will trigger once for each of them. Each time one of those abilities resolves, you'll be able to cast a creature spell from among cards you own in exile with hatchling counters on them."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // The Wandering Emperor
 {
     "name": "The Wandering Emperor",
