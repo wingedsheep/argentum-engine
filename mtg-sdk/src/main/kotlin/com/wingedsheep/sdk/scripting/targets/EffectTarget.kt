@@ -308,7 +308,7 @@ sealed interface EffectTarget {
      * TARGETING SOURCE: "that spell or ability" in a becomes-the-target trigger — the object on the
      * stack that did the targeting, not the permanent it targeted (that one is [TriggeringEntity]).
      * Only meaningful inside a [com.wingedsheep.sdk.scripting.EventPattern.BecomesTargetEvent]
-     * trigger; the object sibling of [com.wingedsheep.sdk.scripting.references.Player.ControllerOfTargetingSource].
+     * trigger; the object sibling of [com.wingedsheep.sdk.scripting.references.Player.ControllerOfCause].
      *
      * Mirror-Shield Hoplite: "…becomes the target of a backup ability, copy that ability" is
      * `CopyTargetTriggeredAbility(TargetingSource)`.

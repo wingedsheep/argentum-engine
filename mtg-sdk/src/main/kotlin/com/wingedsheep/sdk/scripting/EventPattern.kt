@@ -958,7 +958,17 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
          * discarded first doesn't close a nonland window. Batch-only: no printed card pairs it with
          * the per-card wording.
          */
-        val firstTimeEachTurn: Boolean = false
+        val firstTimeEachTurn: Boolean = false,
+        /**
+         * What must have caused the discard. [ZoneChangeCause.Any] (the default) is every discard;
+         * [ZoneChangeCause.DiscardedByOpponentEffect] is "when a spell or ability an opponent controls
+         * causes you to discard this card" (Psychic Purge) — a discard caused by a resolving spell or
+         * ability whose controller is an opponent of the discarding player, never a cost, never the
+         * cleanup-step hand-size discard. The causing controller is "that player" in the effect:
+         * [com.wingedsheep.sdk.scripting.references.Player.ControllerOfCause]. Trigger-only — the
+         * replacement form of the same qualifier is `RedirectZoneChange.requiredCause`.
+         */
+        val cause: ZoneChangeCause = ZoneChangeCause.Any
     ) : EventPattern {
         init {
             require(!firstTimeEachTurn || batch) {
@@ -967,8 +977,14 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
         }
 
         override val description: String = buildString {
-            append(player.description)
-            append(" would discard ")
+            if (cause == ZoneChangeCause.DiscardedByOpponentEffect) {
+                append("a spell or ability an opponent controls causes ")
+                append(player.description)
+                append(" to discard ")
+            } else {
+                append(player.description)
+                append(" would discard ")
+            }
             if (batch) append("one or more ")
             if (cardFilter != null) {
                 append(cardFilter.description)

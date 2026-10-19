@@ -1168,9 +1168,9 @@ Player.ChosenOpponent — Player
 Player.ContextPlayer — Player
 Player.ControllerOf — Player
 Player.ControllerOfAffectedEntity — Player
+Player.ControllerOfCause — Player
 Player.ControllerOfIterationEntity — Player
 Player.ControllerOfSource — Player
-Player.ControllerOfTargetingSource — Player
 Player.ControllerOfTriggeringEntity — Player
 Player.DefendingPlayer — Player
 Player.Each — Player

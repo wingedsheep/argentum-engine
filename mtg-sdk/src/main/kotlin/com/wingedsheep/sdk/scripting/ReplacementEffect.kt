@@ -59,7 +59,8 @@ import kotlinx.serialization.Serializable
  * ```
  */
 /**
- * Extra qualifier on *why* a card is changing zones, for replacement effects that only apply to a
+ * Extra qualifier on *why* a card is changing zones, for replacement effects (`RedirectZoneChange
+ * .requiredCause`) and discard triggers (`EventPattern.DiscardEvent.cause`) that only apply to a
  * particular cause rather than to every move into the destination.
  *
  * The zone-change event itself carries the from/to zones; the cause is the piece the zones can't
@@ -68,7 +69,7 @@ import kotlinx.serialization.Serializable
  */
 @Serializable
 enum class ZoneChangeCause {
-    /** No extra requirement — the replacement applies however the card got there. */
+    /** No extra requirement — it applies however the card got there. */
     Any,
 
     /**

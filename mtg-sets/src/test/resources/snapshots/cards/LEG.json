@@ -4909,6 +4909,61 @@
     ]
 }
 
+// Psychic Purge
+{
+    "name": "Psychic Purge",
+    "manaCost": "{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Psychic Purge deals 1 damage to any target.\nWhen a spell or ability an opponent controls causes you to discard this card, that player loses 5 life.",
+    "script": {
+        "spellEffect": {
+            "type": "DealDamage",
+            "amount": {
+                "type": "Fixed",
+                "amount": 1
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "AnyTarget",
+                "id": "t0"
+            }
+        ],
+        "triggeredAbilities": [
+            {
+                "id": "Psychic Purge:1",
+                "trigger": {
+                    "type": "DiscardEvent",
+                    "cause": "DiscardedByOpponentEffect"
+                },
+                "effect": {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 5
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "ControllerOfCause"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "68",
+        "artist": "Susan Van Camp",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/1/b1103d4d-b50a-4e2c-b18a-a181bc819881.jpg?1783948073"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Quagmire
 {
     "name": "Quagmire",

@@ -5286,7 +5286,7 @@ A resolving nonpermanent spell retains its stack instance through serialized eff
 - `EffectTarget.TriggeringEntity` — the entity that caused the trigger to fire.
 - `EffectTarget.TargetingSource` — "that spell or ability" in a becomes-the-target trigger: the stack
   object that did the targeting (`TriggerContext.targetingSourceEntityId`), where `TriggeringEntity` is
-  the permanent it targeted. The object sibling of `Player.ControllerOfTargetingSource`. Mirror-Shield
+  the permanent it targeted. The object sibling of `Player.ControllerOfCause`. Mirror-Shield
   Hoplite copies it with `CopyTargetTriggeredAbility(TargetingSource)`.
 - `EffectTarget.DamageSource` — "it" in a deals-damage trigger: the object that dealt the damage
   (`TriggerContext.damageSourceId`), where `TriggeringEntity` is the damage's recipient. Fixed when the
@@ -5486,18 +5486,22 @@ A resolving nonpermanent spell retains its stack instance through serialized eff
   resolves to nothing — never "all players" — when the pile is empty. Unidentified Hovership ("the
   exiled card's owner manifests dread", CR 701.62) = `ForEachPlayer(Player.OwnersOfLinkedExile,
   Patterns.Library.manifestDread().effects)`.
-- `Player.ControllerOfTargetingSource` — the controller of the spell or ability that **targeted**
-  the source: the other end of a `Triggers.self.becomesTarget()*` trigger, read off
-  `TriggerContext.targetingSourceEntityId` (the same field ward uses). Nothing else reaches it — a
-  becomes-target trigger binds the *targeted object* as its triggering entity, so
-  `Player.TriggeringPlayer` is null unless the thing targeted was itself a player, and
-  `EffectTarget.ControllerOfTriggeringEntity` names the *victim's* controller. Resolves through the
-  stack object's own controller field (a spell's caster, an activated/triggered ability's
-  controller), falling back to last-known information and finally the owner if that object was
-  countered in response (CR 608.2h). Fractured Loyalty ("whenever enchanted creature becomes the
-  target of a spell or ability, that spell or ability's controller gains control of that creature")
-  = `GiveControlToTargetPlayerEffect(permanent = EffectTarget.TriggeringEntity, newController =
-  EffectTarget.PlayerRef(Player.ControllerOfTargetingSource))`.
+- `Player.ControllerOfCause` — the controller of the spell or ability that **caused** the
+  triggering event — "that spell or ability's controller" / "that player":
+  - the other end of a `Triggers.self.becomesTarget()*` trigger, read off
+    `TriggerContext.targetingSourceEntityId` (the same field ward uses). A becomes-target trigger
+    binds the *targeted object* as its triggering entity, so `Player.TriggeringPlayer` is null unless
+    the thing targeted was itself a player, and `EffectTarget.ControllerOfTriggeringEntity` names the
+    *victim's* controller. Resolves through the stack object's own controller field, falling back to
+    last-known information and finally the owner if that object was countered in response
+    (CR 608.2h). Fractured Loyalty = `GiveControlToTargetPlayerEffect(permanent =
+    EffectTarget.TriggeringEntity, newController = EffectTarget.PlayerRef(Player.ControllerOfCause))`.
+  - the opponent behind a `Triggers.self.isDiscarded(cause = ZoneChangeCause.DiscardedByOpponentEffect)`
+    trigger: `CardsDiscardedEvent.causeControllerId` stamps the causing controller at the discard
+    (the sorcery or ability has usually left the stack by resolution). Psychic Purge ("when a spell
+    or ability an opponent controls causes you to discard this card, that player loses 5 life") =
+    `Effects.LoseLife(5, EffectTarget.PlayerRef(Player.ControllerOfCause))`.
+  Null when the event had no spell or ability cause (a cost, the cleanup-step discard).
 - `Player.ControllerOfTriggeringEntity` — the controller of the **triggering entity**: the `Player`
   half of `EffectTarget.ControllerOfTriggeringEntity`, for the places keyed by `Player` rather than
   `EffectTarget`. The zone pipelines are exactly those places — `CardSource.TopOfLibrary` and
@@ -8202,6 +8206,12 @@ captured collection (`CollectionSlot.TriggerCaptured`), the "them" of the payoff
 
 - `Triggers.anOpponent.discards()` — whenever an opponent discards a card. (Entropic Battlecruiser.)
 - `Triggers.you.discards()` — whenever you discard a card.
+- `Triggers.self.isDiscarded(cause = ZoneChangeCause.DiscardedByOpponentEffect)` — "when a spell or
+  ability an opponent controls causes you to discard this card" (Psychic Purge): `DiscardEvent.cause`
+  admits only a discard whose stamped cause controller is an opponent of the discarder — never a
+  discard paid as a cost, the cleanup-step hand-size discard, or your own discard spell. "That
+  player" is `Player.ControllerOfCause`. The replacement form of the same qualifier is
+  `RedirectZoneChange.requiredCause` (Obstinate Baloth).
 - `Triggers.self.isDiscarded()` — **self-bound**: "when *you* discard **this** card" (Edgar's Awakening). The
   ability functions in hand and fires as the card is discarded, wherever the discard sends it —
   graveyard normally, exile if the card also has madness. Detected on the discarded card itself

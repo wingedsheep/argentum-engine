@@ -1560,7 +1560,8 @@ class ZoneTransitionService(
         val priorDiscards = discardsThisTurn(newState, playerId)
         newState = trackDiscard(newState, playerId, cardIds)
         val discardEvent = CardsDiscardedEvent(
-            playerId, cardIds, cardNames, asCyclingCost = asCyclingCost, priorDiscardsThisTurn = priorDiscards
+            playerId, cardIds, cardNames, asCyclingCost = asCyclingCost, priorDiscardsThisTurn = priorDiscards,
+            causeControllerId = causedByControllerId
         )
         return ZoneTransitionResult(newState, listOf(discardEvent) + moveEvents, transitions = transitions)
     }
@@ -1885,6 +1886,18 @@ class ZoneTransitionService(
          * Pass null — or skip the call — for discards with no spell/ability cause: the CR 514.1
          * hand-size discard, and discards made to pay a cost.
          */
+        /**
+         * `ZoneChangeCause.DiscardedByOpponentEffect`'s one test, shared by the replacement
+         * (Wilt-Leaf Liege) and trigger (Psychic Purge) readers: a spell or ability caused the
+         * discard and its controller is an opponent of the discarding player — never a teammate.
+         */
+        fun isDiscardCausedByOpponent(
+            state: GameState,
+            causeControllerId: EntityId?,
+            discardingPlayerId: EntityId?
+        ): Boolean = causeControllerId != null && discardingPlayerId != null &&
+            state.isOpponentOf(causeControllerId, discardingPlayerId)
+
         fun markDiscardCause(
             state: GameState,
             cardIds: List<EntityId>,

@@ -1856,6 +1856,15 @@ data class CardsDiscardedEvent(
      */
     @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
     val priorDiscardsThisTurn: Int = 0,
+    /**
+     * Controller of the spell or ability that caused this discard — null for a discard paid as a
+     * cost and for the cleanup-step hand-size discard (CR 514.1), neither of which a spell or
+     * ability causes. Read by `EventPattern.DiscardEvent.cause` and, as "that player", by
+     * `Player.ControllerOfCause` (Psychic Purge). Stamped here rather than looked up later because
+     * the cause has usually left the stack by the time the trigger resolves.
+     */
+    @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
+    val causeControllerId: EntityId? = null,
 ) : GameEvent
 
 /**

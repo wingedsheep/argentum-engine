@@ -36,7 +36,7 @@ import com.wingedsheep.sdk.scripting.targets.TargetObject
  *   enchanted creature to name — while "that creature" is still on the battlefield and still
  *   changes hands, which is what the printed text says happens.
  *
- * The new controller is [Player.ControllerOfTargetingSource], the reference this card motivated:
+ * The new controller is [Player.ControllerOfCause], the reference this card motivated:
  * a becomes-target trigger binds the *targeted* object as its triggering entity, so nothing in the
  * existing player vocabulary could reach back to the other end of the targeting.
  */
@@ -54,7 +54,7 @@ val FracturedLoyalty = card("Fractured Loyalty") {
         trigger = Triggers.a(GameObjectFilter.Creature.attachedToBySource()).becomesTarget()
         effect = Effects.GiveControl(
             permanent = EffectTarget.TriggeringEntity,
-            newController = EffectTarget.PlayerRef(Player.ControllerOfTargetingSource)
+            newController = EffectTarget.PlayerRef(Player.ControllerOfCause)
         )
         description = "Whenever enchanted creature becomes the target of a spell or ability, " +
             "that spell or ability's controller gains control of that creature."

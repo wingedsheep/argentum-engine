@@ -914,7 +914,7 @@ Also (1–2 cards each): `ArtifactsYouControl`, `AttachedPermanentProperty`, `Ca
 | `InCollection` | 3 | Tempt with Bunnies; Tempt with Discovery; Plaguecrafter |
 | `OwnerOfSource` | 3 | Hanabi Blast; Petals of Insight; Gandalf, Wandering Wizard |
 
-Also (1–2 cards each): `Candidate`, `ControllerOfAffectedEntity`, `ControllerOfIterationEntity`, `ControllerOfTargetingSource`, `EachTargetedPlayer`, `OwnersOfLinkedExile`
+Also (1–2 cards each): `Candidate`, `ControllerOfAffectedEntity`, `ControllerOfIterationEntity`, `ControllerOfCause`, `EachTargetedPlayer`, `OwnersOfLinkedExile`
 
 ### `Duration` — 15 gap subtypes
 
