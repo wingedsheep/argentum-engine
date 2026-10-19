@@ -32,6 +32,9 @@ import com.wingedsheep.sdk.scripting.GrantKeyword
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.GrantWard
 import com.wingedsheep.sdk.scripting.ModifyStats
+import com.wingedsheep.sdk.scripting.ModifySpellCost
+import com.wingedsheep.sdk.scripting.SpellCostTarget
+import com.wingedsheep.sdk.scripting.CostModification
 import com.wingedsheep.sdk.scripting.MustAttack
 import com.wingedsheep.sdk.scripting.SetBasePowerToughnessStatic
 import com.wingedsheep.sdk.scripting.effects.WardCost
@@ -1247,6 +1250,32 @@ object PredefinedTokens {
     }
 
     /**
+     * Tamiyo's Notebook — a legendary colorless Book artifact token with
+     * "Spells you cast cost {2} less to cast" and "{T}: Draw a card."
+     * Created by Tamiyo, Compleated Sage's −7.
+     */
+    val TamiyosNotebook = card("Tamiyo's Notebook") {
+        typeLine = "Legendary Artifact — Book"
+        oracleText = "Spells you cast cost {2} less to cast.\n{T}: Draw a card."
+
+        staticAbility {
+            ability = ModifySpellCost(
+                target = SpellCostTarget.YouCast(GameObjectFilter.Any),
+                modification = CostModification.ReduceGeneric(2),
+            )
+        }
+
+        activatedAbility {
+            cost = Costs.Tap
+            effect = Effects.DrawCards(1)
+        }
+
+        metadata {
+            imageUri = "https://cards.scryfall.io/normal/front/9/9/992cb1e0-e846-4710-b49e-a748e4ebffa5.jpg?1783923709"
+        }
+    }
+
+    /**
      * All predefined token definitions.
      * Register these in the CardRegistry so token abilities are resolved.
      */
@@ -1313,6 +1342,7 @@ object PredefinedTokens {
         Lotus,
         ForestTentacle,
         ForestDryad,
-        Powerstone
+        Powerstone,
+        TamiyosNotebook
     )
 }

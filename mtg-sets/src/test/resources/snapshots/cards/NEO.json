@@ -20605,6 +20605,148 @@
     ]
 }
 
+// Tamiyo, Compleated Sage
+{
+    "name": "Tamiyo, Compleated Sage",
+    "manaCost": "{2}{G}{G/U/P}{U}",
+    "typeLine": "Legendary Planeswalker — Tamiyo",
+    "oracleText": "Compleated ({G/U/P} can be paid with {G}, {U}, or 2 life. If life was paid, this planeswalker enters with two fewer loyalty counters.)\n+1: Tap up to one target artifact or creature. It doesn't untap during its controller's next untap step.\n−X: Exile target nonland permanent card with mana value X from your graveyard. Create a token that's a copy of that card.\n−7: Create Tamiyo's Notebook, a legendary colorless Book artifact token with \"Spells you cast cost {2} less to cast\" and \"{T}: Draw a card.\"",
+    "keywords": [
+        "COMPLEATED"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Tamiyo, Compleated Sage:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "TapUntap",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "DOESNT_UNTAP",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "duration": "UntilAfterAffectedControllersNextUntap"
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "optional": true,
+                        "filter": {
+                            "baseFilter": "creature|artifact"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Tamiyo, Compleated Sage:2",
+                "cost": "CostLoyaltyX",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t1"
+                            },
+                            "destination": "Exile"
+                        },
+                        {
+                            "type": "CreateTokenCopyOfTarget",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t1"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsNonland",
+                                    "IsPermanent",
+                                    {
+                                        "type": "CompareNumericProperty",
+                                        "property": "MANA_VALUE",
+                                        "operator": "EQ",
+                                        "amount": "XValue"
+                                    }
+                                ],
+                                "controllerPredicate": "OwnedByYou"
+                            },
+                            "zone": "Graveyard"
+                        },
+                        "id": "t1"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Exile target nonland permanent card with mana value X from your graveyard. Create a token that's a copy of that card."
+            },
+            {
+                "id": "Tamiyo, Compleated Sage:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -7
+                },
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Tamiyo's Notebook"
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "238",
+        "rarity": "MYTHIC",
+        "artist": "Chris Rahn",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/2/222a736e-d819-452d-aeda-eb848c4b2302.jpg?1783923828",
+        "rulings": [
+            {
+                "date": "2022-02-18",
+                "text": "A hybrid Phyrexian mana symbol is counted the same way as a normal mana symbol when determining the mana value of a card. Specifically, Tamiyo's mana value is always 5, even if you pay {2}{G}{U} and 2 life to cast her."
+            },
+            {
+                "date": "2022-02-18",
+                "text": "Compleated is a replacement effect, and it applies only to a permanent that is entering the battlefield with loyalty counters. Any other replacement effect that would apply to the number of loyalty counters it enters the battlefield with will apply as normal."
+            },
+            {
+                "date": "2022-02-18",
+                "text": "The compleated ability looks only at whether a player chose to pay 2 life for a Phyrexian mana symbol as they were casting the spell. If a player paid life for some other reason while casting the spell, that will not reduce the number of loyalty counters the planeswalker enters the battlefield with."
+            }
+        ]
+    },
+    "startingLoyalty": 5,
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ]
+}
+
 // Tatsunari, Toad Rider
 {
     "name": "Tatsunari, Toad Rider",
@@ -21650,6 +21792,211 @@
     ]
 }
 
+// The Kami War
+{
+    "name": "The Kami War",
+    "manaCost": "{1}{W}{U}{B}{R}{G}",
+    "typeLine": "Enchantment — Saga",
+    "oracleText": "(As this Saga enters and after your draw step, add a lore counter.)\nI — Exile target nonland permanent an opponent controls.\nII — Return up to one other target nonland permanent to its owner's hand. Then each opponent discards a card.\nIII — Exile this Saga, then return it to the battlefield transformed under your control.",
+    "script": {
+        "sagaChapters": [
+            {
+                "chapter": 1,
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Exile"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "nonland permanent ctrl:opponent"
+                    },
+                    "id": "t0"
+                }
+            },
+            {
+                "chapter": 2,
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t1"
+                            },
+                            "destination": "Hand"
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Players",
+                                "players": "EachOpponent"
+                            },
+                            "body": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Hand"
+                                        },
+                                        "storeAs": "hand"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "hand",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "discarded"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "discarded",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Graveyard"
+                                        },
+                                        "moveType": "Discard"
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "nonland permanent",
+                        "excludeSelf": true
+                    },
+                    "id": "t1"
+                }
+            },
+            {
+                "chapter": 3,
+                "effect": "ExileAndReturnTransformed"
+            }
+        ]
+    },
+    "backFace": {
+        "name": "O-Kagachi Made Manifest",
+        "manaCost": "",
+        "typeLine": "Enchantment Creature — Dragon Spirit",
+        "oracleText": "O-Kagachi Made Manifest is all colors.\nFlying, trample\nWhenever this creature attacks, defending player chooses a nonland card in your graveyard. Return that card to your hand. This creature gets +X/+0 until end of turn, where X is the mana value of that card.",
+        "creatureStats": {
+            "power": 6,
+            "toughness": 6
+        },
+        "keywords": [
+            "FLYING",
+            "TRAMPLE"
+        ],
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "O-Kagachi Made Manifest:1",
+                    "trigger": "AttackEvent",
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Graveyard"
+                                },
+                                "storeAs": "gathered0"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "gathered0",
+                                "selection": {
+                                    "type": "ChooseExactly",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "chooser": "DefendingPlayer",
+                                "filter": "nonland",
+                                "storeSelected": "selected1",
+                                "prompt": "Choose a nonland card for the attacking player to return to their hand"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "selected1",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Hand"
+                                }
+                            },
+                            {
+                                "type": "ModifyStats",
+                                "powerModifier": {
+                                    "type": "StoredCardManaValue",
+                                    "collectionName": "selected1"
+                                },
+                                "toughnessModifier": {
+                                    "type": "Fixed",
+                                    "amount": 0
+                                },
+                                "target": "Self"
+                            }
+                        ]
+                    },
+                    "descriptionOverride": "Whenever this creature attacks, defending player chooses a nonland card in your graveyard. Return that card to your hand. This creature gets +X/+0 until end of turn, where X is the mana value of that card."
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "227",
+            "rarity": "MYTHIC",
+            "artist": "Kieran Yanner",
+            "imageUri": "https://cards.scryfall.io/normal/back/3/6/36052532-5028-43a8-9fc4-56221ec867fd.jpg?1783923839"
+        },
+        "colorIdentityOverride": [
+            "WHITE",
+            "BLUE",
+            "BLACK",
+            "RED",
+            "GREEN"
+        ],
+        "colorIndicator": [
+            "WHITE",
+            "BLUE",
+            "BLACK",
+            "RED",
+            "GREEN"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "227",
+        "rarity": "MYTHIC",
+        "artist": "Kieran Yanner",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/6/36052532-5028-43a8-9fc4-56221ec867fd.jpg?1783923839"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE",
+        "BLACK",
+        "RED",
+        "GREEN"
+    ]
+}
+
 // The Long Reach of Night
 {
     "name": "The Long Reach of Night",
@@ -22213,6 +22560,120 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// The Shattered States Era
+{
+    "name": "The Shattered States Era",
+    "manaCost": "{4}{R}",
+    "typeLine": "Enchantment — Saga",
+    "oracleText": "(As this Saga enters and after your draw step, add a lore counter.)\nI — Gain control of target creature until end of turn. Untap it. It gains haste until end of turn.\nII — Creatures you control get +1/+0 until end of turn.\nIII — Exile this Saga, then return it to the battlefield transformed under your control.",
+    "script": {
+        "sagaChapters": [
+            {
+                "chapter": 1,
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GainControl",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "duration": "EndOfTurn"
+                        },
+                        {
+                            "type": "TapUntap",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "tap": false
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "HASTE",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                }
+            },
+            {
+                "chapter": 2,
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 0
+                        },
+                        "target": "IterationEntity"
+                    }
+                }
+            },
+            {
+                "chapter": 3,
+                "effect": "ExileAndReturnTransformed"
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Nameless Conqueror",
+        "manaCost": "",
+        "typeLine": "Enchantment Creature — Human Samurai",
+        "oracleText": "Trample, haste",
+        "creatureStats": {
+            "power": 3,
+            "toughness": 3
+        },
+        "keywords": [
+            "TRAMPLE",
+            "HASTE"
+        ],
+        "metadata": {
+            "collectorNumber": "162",
+            "artist": "David Gaillet",
+            "flavorText": "\"In the wake of the Kami War, Kamigawa descended into a state of constant warfare. Even with Kyodai's wisdom guiding them, it took the first Imperials decades of work and bloodshed to subdue the clans and bring peace to the land.\"\n—History of the Empire",
+            "imageUri": "https://cards.scryfall.io/normal/back/5/1/517392f6-d3fd-4c59-8317-2a3595ab7562.jpg?1783923865"
+        },
+        "colorIdentityOverride": [
+            "RED"
+        ],
+        "colorIndicator": [
+            "RED"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "162",
+        "artist": "David Gaillet",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/1/517392f6-d3fd-4c59-8317-2a3595ab7562.jpg?1783923865"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
