@@ -26,11 +26,11 @@ import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.PredicateContext
-import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.sdk.scripting.BlockerCountLimit
 import com.wingedsheep.sdk.scripting.CanBlockAnyNumber
 import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.MustBeBlocked
 import com.wingedsheep.sdk.scripting.StaticAbility
 import com.wingedsheep.engine.mechanics.durations.GrantDurationGate
@@ -1208,10 +1208,8 @@ internal class BlockPhaseManager(
      */
     private inner class ByAllRequirement(private val gates: List<MustBeBlockedHit>) {
         fun binds(state: GameState, blockerId: EntityId): Boolean = gates.any { gate ->
-            val filter = gate.blockers
-            val context = gate.context
-            filter == null || context == null ||
-                predicateEvaluator.matches(state, state.projectedState, blockerId, filter, context)
+            val gateFilter = gate.blockers ?: return@any true
+            predicateEvaluator.matches(state, state.projectedState, blockerId, gateFilter.filter, gateFilter.context)
         }
     }
 
@@ -1237,13 +1235,12 @@ internal class BlockPhaseManager(
 
     /**
      * One attacker bound by a must-be-blocked requirement, with the blocker filter that requirement
-     * carries and the static holder's [context] it is evaluated in (no filter: binds every blocker).
+     * carries (none: binds every blocker).
      */
-    private data class MustBeBlockedHit(
-        val attacker: EntityId,
-        val blockers: GameObjectFilter? = null,
-        val context: PredicateContext? = null,
-    )
+    private data class MustBeBlockedHit(val attacker: EntityId, val blockers: BlockerGate? = null)
+
+    /** A [MustBeBlocked.blockers] filter with the static holder's context it is evaluated in. */
+    private data class BlockerGate(val filter: GameObjectFilter, val context: PredicateContext)
 
     /**
      * Attackers that carry a [MustBeBlocked] static ability (matching [allCreatures]), including the
@@ -1281,7 +1278,9 @@ internal class BlockPhaseManager(
                 // The Masamune's "equipped creature ... must be blocked if able".
                 resolveFilteredAttackers(state, projected, holder, controller, filter, attackerSet)
             }
-            bound.mapTo(result) { MustBeBlockedHit(it, unwrapped.blockers, PredicateContext(sourceId = holder, controllerId = controller)) }
+            bound.mapTo(result) { MustBeBlockedHit(it, unwrapped.blockers?.let { f ->
+                BlockerGate(f, PredicateContext(sourceId = holder, controllerId = controller))
+            }) }
         }
 
         for (holder in battlefield) {
