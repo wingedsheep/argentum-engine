@@ -1893,7 +1893,7 @@ Families:
 - `ModifyUnlockCost(target: UnlockCostTarget, modification: CostModification)` — Static ability that modifies the cost of the **door-unlock** special action (CR 709.5e).
 - `MultiplyManaOnSourceTap(sourceFilter: GameObjectFilter, multiplier: Int)` — Multiplies the mana a permanent matching sourceFilter produces when it is **tapped** for mana: "it produces multiplier times as much of that mana instead".
 - `MustAttack(filter: GroupFilter, defender: MustAttackDefender)` — Forces the affected permanents to attack each combat if able.
-- `MustBeBlocked(allCreatures: Boolean, filter: GroupFilter?)` — Static counterpart of com.wingedsheep.sdk.scripting.effects.MustBeBlockedEffect: the source creature must be blocked while this ability is active.
+- `MustBeBlocked(allCreatures: Boolean, filter: GroupFilter?, blockers: GameObjectFilter?)` — Static counterpart of com.wingedsheep.sdk.scripting.effects.MustBeBlockedEffect: the source creature must be blocked while this ability is active.
 - `MustBlock(filter: GroupFilter)` — Forces the affected permanents to block each combat if able.
 - `MustBlockEachAttacker(filter: GroupFilter)` — Each attacking creature creates a separate blocking requirement for matching blockers.
 - `NoMaximumHandSize` — Removes the maximum hand size limit for the controller.

@@ -171,14 +171,30 @@ data class MustBlock(
  * least one creature able to block it must do so ("must be blocked if able" — Frodo Baggins); with
  * true, every creature able to block it must (Lure-style). Typically wrapped in a
  * [com.wingedsheep.sdk.scripting.ConditionalStaticAbility] (e.g. gated on `SourceIsRingBearer`).
+ *
+ * [blockers] narrows which potential blockers the all-creatures requirement binds, evaluated with
+ * the static's holder as the predicate source: "All Walls able to block this creature do so"
+ * (Marble Priest) is `MustBeBlocked(allCreatures = true, blockers = GameObjectFilter.Creature.withSubtype("Wall"))`.
+ * A blocker outside it stays free to block anything. Only meaningful with [allCreatures].
  */
 @SerialName("MustBeBlockedStatic")
 @Serializable
 data class MustBeBlocked(
     val allCreatures: Boolean = false,
-    val filter: GroupFilter? = null
+    val filter: GroupFilter? = null,
+    val blockers: GameObjectFilter? = null,
 ) : StaticAbility {
+    init {
+        require(blockers == null || allCreatures) { "MustBeBlocked.blockers needs allCreatures = true" }
+    }
+
     override val description: String = buildString {
+        if (blockers != null) {
+            append("All ${blockers.permanentNounPhrase(plural = true)} able to block ")
+            append(if (filter == null) "this creature" else filter.description)
+            append(" do so")
+            return@buildString
+        }
         append(if (filter == null) "This creature" else filter.description)
         append(
             if (allCreatures) " must be blocked by all creatures able to block it"
@@ -187,7 +203,8 @@ data class MustBeBlocked(
     }
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
         val newFilter = filter?.applyTextReplacement(replacer)
-        return if (newFilter !== filter) copy(filter = newFilter) else this
+        val newBlockers = blockers?.applyTextReplacement(replacer)
+        return if (newFilter !== filter || newBlockers !== blockers) copy(filter = newFilter, blockers = newBlockers) else this
     }
 }
 

@@ -26,6 +26,7 @@ import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.PredicateContext
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.sdk.scripting.BlockerCountLimit
 import com.wingedsheep.sdk.scripting.CanBlockAnyNumber
@@ -450,10 +451,11 @@ internal class BlockPhaseManager(
         }
 
         // 2. MustBeBlockedByAll (Taunting Elf, Alluring Scent)
-        val mustBeBlockedAttackers = findMustBeBlockedAttackers(state)
-        for (attackerId in mustBeBlockedAttackers) {
+        val mustBeBlockedByAll = findMustBeBlockedByAll(state)
+        for ((attackerId, requirement) in mustBeBlockedByAll) {
             for (blockerId in potentialBlockers) {
-                if (canCreatureBlockAttacker(state, blockerId, attackerId, blockingPlayer, projected)) {
+                if (requirement.binds(state, blockerId) &&
+                    canCreatureBlockAttacker(state, blockerId, attackerId, blockingPlayer, projected)) {
                     result.getOrPut(blockerId) { mutableListOf() }.add(attackerId)
                 }
             }
@@ -481,8 +483,8 @@ internal class BlockPhaseManager(
         for (blocker in potential) if (state.projectedState.mustBlock(blocker)) {
             demands.add(Demand(blocker = blocker))
         }
-        for (attacker in findMustBeBlockedAttackers(state)) for (blocker in potential) {
-            demands.add(Demand(blocker, attacker))
+        for ((attacker, requirement) in findMustBeBlockedByAll(state)) for (blocker in potential) {
+            if (requirement.binds(state, blocker)) demands.add(Demand(blocker, attacker))
         }
         for (attacker in findMustBeBlockedIfAbleAttackers(state)) {
             demands.add(Demand(attacker = attacker))
@@ -1033,21 +1035,26 @@ internal class BlockPhaseManager(
         }
 
         // 1. "Must be blocked by all" (Lure/Taunting Elf): every blocker that CAN block it MUST block it
-        val mustBeBlockedByAllAttackers = findMustBeBlockedAttackers(state)
-        if (mustBeBlockedByAllAttackers.isNotEmpty()) {
+        val mustBeBlockedByAll = findMustBeBlockedByAll(state)
+        // The Lure-style attackers each potential blocker is bound to: able to block it, and inside
+        // the requirement's blocker filter (Marble Priest binds only Walls).
+        fun lureAttackersBinding(blockerId: EntityId): List<EntityId> =
+            mustBeBlockedByAll.filter { (attackerId, requirement) ->
+                requirement.binds(state, blockerId) &&
+                    canCreatureBlockAttacker(state, blockerId, attackerId, blockingPlayer, projected)
+            }.keys.toList()
+        if (mustBeBlockedByAll.isNotEmpty()) {
             val blockerToAttackers = blockers.mapValues { it.value.toSet() }
 
             for (blockerId in potentialBlockers) {
-                val canBlockThese = mustBeBlockedByAllAttackers.filter { attackerId ->
-                    canCreatureBlockAttacker(state, blockerId, attackerId, blockingPlayer, projected)
-                }
+                val canBlockThese = lureAttackersBinding(blockerId)
 
                 if (canBlockThese.isEmpty()) {
                     continue
                 }
 
                 val actuallyBlocking = blockerToAttackers[blockerId] ?: emptySet()
-                val blockingMustBeBlocked = actuallyBlocking.intersect(mustBeBlockedByAllAttackers.toSet())
+                val blockingMustBeBlocked = actuallyBlocking.intersect(canBlockThese.toSet())
 
                 if (blockingMustBeBlocked.isEmpty()) {
                     val blockerCard = state.getEntity(blockerId)?.get<CardComponent>()
@@ -1086,11 +1093,7 @@ internal class BlockPhaseManager(
                 }
                 .groupBy({ it.first }, { it.second })
                 .mapValues { it.value.toSet() }
-            val lureClaimedBlockers = potentialBlockers.filter { blockerId ->
-                mustBeBlockedByAllAttackers.any { attackerId ->
-                    canCreatureBlockAttacker(state, blockerId, attackerId, blockingPlayer, projected)
-                }
-            }.toSet()
+            val lureClaimedBlockers = potentialBlockers.filter { lureAttackersBinding(it).isNotEmpty() }.toSet()
 
             fun canHypotheticallyBlock(blockerId: EntityId, attackerId: EntityId): Boolean {
                 if (blockerId in lureClaimedBlockers) return false
@@ -1198,9 +1201,25 @@ internal class BlockPhaseManager(
     // =========================================================================
 
     /**
-     * Find all attackers that have "must be blocked by all" requirement active (Lure effects).
+     * Which potential blockers a "must be blocked by all" requirement on one attacker binds. Every
+     * creature for a plain Lure; only those matching a [MustBeBlocked.blockers] filter (evaluated
+     * with the static's holder as source) for the filtered form. Several requirements on the same
+     * attacker bind the union of their blockers.
      */
-    private fun findMustBeBlockedAttackers(state: GameState): List<EntityId> {
+    private inner class ByAllRequirement(private val gates: List<MustBeBlockedHit>) {
+        fun binds(state: GameState, blockerId: EntityId): Boolean = gates.any { gate ->
+            val filter = gate.blockers
+            val context = gate.context
+            filter == null || context == null ||
+                predicateEvaluator.matches(state, state.projectedState, blockerId, filter, context)
+        }
+    }
+
+    /**
+     * Every attacker with a "must be blocked by all" requirement active (Lure effects), mapped to
+     * the blockers that requirement binds.
+     */
+    private fun findMustBeBlockedByAll(state: GameState): Map<EntityId, ByAllRequirement> {
         val attackers = state.findEntitiesWith<AttackingComponent>().map { it.first }.toSet()
 
         val fromFloating = state.floatingEffects
@@ -1209,9 +1228,22 @@ internal class BlockPhaseManager(
             }
             .flatMap { floatingEffect ->
                 floatingEffect.effect.affectedEntities.filter { it in attackers }
+                    .map { MustBeBlockedHit(it) }
             }
-        return (fromFloating + attackersWithMustBeBlockedStatic(state, allCreatures = true)).distinct()
+        return (fromFloating + attackersWithMustBeBlockedStatic(state, allCreatures = true))
+            .groupBy { it.attacker }
+            .mapValues { (_, hits) -> ByAllRequirement(hits) }
     }
+
+    /**
+     * One attacker bound by a must-be-blocked requirement, with the blocker filter that requirement
+     * carries and the static holder's [context] it is evaluated in (no filter: binds every blocker).
+     */
+    private data class MustBeBlockedHit(
+        val attacker: EntityId,
+        val blockers: GameObjectFilter? = null,
+        val context: PredicateContext? = null,
+    )
 
     /**
      * Attackers that carry a [MustBeBlocked] static ability (matching [allCreatures]), including the
@@ -1223,13 +1255,13 @@ internal class BlockPhaseManager(
      * imposes the requirement. Runtime grants ([GameState.grantedStaticAbilities]) are read alongside
      * the printed ones, as the granted "can't be blocked by more than N" form is.
      */
-    private fun attackersWithMustBeBlockedStatic(state: GameState, allCreatures: Boolean): List<EntityId> {
+    private fun attackersWithMustBeBlockedStatic(state: GameState, allCreatures: Boolean): List<MustBeBlockedHit> {
         val attackers = state.findEntitiesWith<AttackingComponent>().map { it.first }
         if (attackers.isEmpty()) return emptyList()
         val projected = state.projectedState
         val attackerSet = attackers.toSet()
         val battlefield = state.getBattlefield()
-        val result = mutableSetOf<EntityId>()
+        val result = mutableSetOf<MustBeBlockedHit>()
 
         fun apply(holder: EntityId, ability: StaticAbility) {
             val unwrapped = if (ability is ConditionalStaticAbility) ability.ability else ability
@@ -1241,14 +1273,15 @@ internal class BlockPhaseManager(
                 )
             ) return
             val filter = unwrapped.filter
-            if (filter == null) {
+            val bound = if (filter == null) {
                 // Source-scoped: the holder itself must be blocked (Goblin Fire Fiend, Frodo Baggins).
-                if (holder in attackerSet) result.add(holder)
+                listOf(holder).filter { it in attackerSet }
             } else {
                 // Projected onto other creatures via a filter, resolved relative to the holder - e.g.
                 // The Masamune's "equipped creature ... must be blocked if able".
-                result.addAll(resolveFilteredAttackers(state, projected, holder, controller, filter, attackerSet))
+                resolveFilteredAttackers(state, projected, holder, controller, filter, attackerSet)
             }
+            bound.mapTo(result) { MustBeBlockedHit(it, unwrapped.blockers, PredicateContext(sourceId = holder, controllerId = controller)) }
         }
 
         for (holder in battlefield) {
@@ -1313,7 +1346,7 @@ internal class BlockPhaseManager(
             .flatMap { floatingEffect ->
                 floatingEffect.effect.affectedEntities.filter { it in attackers }
             }
-        return (fromFloating + attackersWithMustBeBlockedStatic(state, allCreatures = false)).distinct()
+        return (fromFloating + attackersWithMustBeBlockedStatic(state, allCreatures = false).map { it.attacker }).distinct()
     }
 
     /**

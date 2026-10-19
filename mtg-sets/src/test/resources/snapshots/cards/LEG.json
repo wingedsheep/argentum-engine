@@ -4127,6 +4127,67 @@
     ]
 }
 
+// Marble Priest
+{
+    "name": "Marble Priest",
+    "manaCost": "{5}",
+    "typeLine": "Artifact Creature — Cleric",
+    "oracleText": "All Walls able to block this creature do so.\nPrevent all combat damage that would be dealt to this creature by Walls.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "MustBeBlockedStatic",
+                "allCreatures": true,
+                "blockers": {
+                    "cardPredicates": [
+                        "IsCreature",
+                        {
+                            "type": "HasSubtype",
+                            "subtype": "Wall"
+                        }
+                    ]
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "PreventDamage",
+                "appliesTo": {
+                    "type": "DamageEvent",
+                    "recipient": {
+                        "type": "RecipientObject",
+                        "filter": {
+                            "statePredicates": [
+                                "IsSource"
+                            ]
+                        }
+                    },
+                    "source": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "HasSubtype",
+                                "subtype": "Wall"
+                            }
+                        ]
+                    },
+                    "damageType": "DamageCombat"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "286",
+        "rarity": "UNCOMMON",
+        "artist": "Melissa A. Benson",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/5/459b71d7-34c1-43b9-93ff-364f95aa4789.jpg?1783948026"
+    }
+}
+
 // Marhault Elsdragon
 {
     "name": "Marhault Elsdragon",

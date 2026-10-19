@@ -10032,7 +10032,7 @@ gate with a defending-player creature target and the two end-of-turn grants. It 
 in the declare-blockers step, even before the turn-based block action has completed.
 
 - `MustBlock(filter = source())` — matching creatures must block each combat if able (Grand Melee).
-- `MustBeBlocked(allCreatures = false, filter = null)` — static: a creature must be blocked while
+- `MustBeBlocked(allCreatures = false, filter = null, blockers = null)` — static: a creature must be blocked while
   active — "if able" (≥1 blocker, default) or by **all** able blockers (`allCreatures = true`,
   Lure-style). Static counterpart of `MustBeBlockedEffect`; `BlockPhaseManager` honors it alongside
   the floating must-be-blocked modifications. With `filter = null` (default) the requirement applies
@@ -10043,7 +10043,11 @@ in the declare-blockers step, even before the turn-based block action has comple
   uses `MustBeBlocked(filter = GroupFilter.attachedCreature())`. Source-relative scopes
   (`attachedCreature()`, `source()`) resolve correctly; a `Battlefield`-scope filter matches every
   attacker. No separate "while attacking" gate is needed — must-be-blocked only bites while the
-  creature attacks.
+  creature attacks. `blockers` (a `GameObjectFilter`, `allCreatures = true` only) narrows which
+  potential blockers the Lure binds, read with the static's holder as source: "All Walls able to
+  block this creature do so" (Marble Priest) is
+  `MustBeBlocked(allCreatures = true, blockers = GameObjectFilter.Creature.withSubtype("Wall"))` —
+  every other creature stays free.
 - `CantBeBlockedWhilePropertyAtMost(maxValue, properties = {Power, Toughness}, filter = GroupFilter.AllCreaturesYouControl)`
   — "creatures … with power or toughness N or less can't be blocked". One ability for both printed
   scopes: the defaults are **Tetsuko Umezawa, Fugitive** (a lord over its controller's creatures,
