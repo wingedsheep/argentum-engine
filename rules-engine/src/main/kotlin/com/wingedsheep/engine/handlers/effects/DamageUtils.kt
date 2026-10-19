@@ -621,7 +621,13 @@ object DamageUtils {
         }
 
         newState = newState.updateEntity(targetId) { WasDealtDamageThisTurnComponent.markedOn(it, isCombatDamage) }
-        newState = trackDamageDealt(newState, sourceId, effectiveAmount, isCombatDamage)
+        // Excess redirected to the creature's controller (below) is dealt — and tallied — by that
+        // recursive call, so only the part kept by the creature is counted here.
+        val excessRedirected = excessToController && projected.isCreature(targetId) &&
+            projected.getController(targetId) != null
+        newState = trackDamageDealt(
+            newState, sourceId, if (excessRedirected) effectiveAmount - creatureExcessDamage else effectiveAmount, isCombatDamage
+        )
         // Record the source on its controller's per-turn set of damage sources. Unlike the stamp
         // above this is not battlefield-only: a resolving burn spell is a source that dealt damage
         // just as much as a creature is (Case of the Burning Masks).

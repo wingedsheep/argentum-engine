@@ -77,6 +77,32 @@ class BackdraftScenarioTest : ScenarioTestBase() {
                 game.getLifeTotal(2) shouldBe 17
             }
 
+            test("excess damage redirected to a controller counts once") {
+                val game = scenario()
+                    .withPlayers("Player1", "Player2")
+                    .withCardInHand(1, "Backdraft")
+                    .withLandsOnBattlefield(1, "Mountain", 2)
+                    .withCardOnBattlefield(1, "Grizzly Bears")
+                    .withCardInHand(2, "Gandalf's Sanction")
+                    .apply { repeat(5) { withCardInGraveyard(2, "Lightning Bolt") } }
+                    .withLandsOnBattlefield(2, "Island", 1)
+                    .withLandsOnBattlefield(2, "Mountain", 2)
+                    .withActivePlayer(2)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+                game.castSpell(2, "Gandalf's Sanction", game.findPermanent("Grizzly Bears")!!).error shouldBe null
+                game.resolveStack()
+                withClue("2 to Grizzly Bears, the 3 excess to Player 1") {
+                    game.getLifeTotal(1) shouldBe 17
+                }
+
+                game.castBackdraft()
+
+                withClue("Gandalf's Sanction dealt 5 in all, so Backdraft deals 2") {
+                    game.getLifeTotal(2) shouldBe 18
+                }
+            }
+
             test("on the stack, the damage isn't stated before a spell is chosen") {
                 val game = board("Lava Axe")
                 game.castSpellTargetingPlayer(2, "Lava Axe", 1).error shouldBe null
