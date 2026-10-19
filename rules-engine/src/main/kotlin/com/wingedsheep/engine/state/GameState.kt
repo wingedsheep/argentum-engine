@@ -1352,7 +1352,8 @@ data class GameState(
         requireDetachedForInsertion(entityId)
         return enterObjectZone(ZoneKey(entityId, Zone.STACK), entityId).copy(
             stack = stack + entityId,
-            // A spell cast again is a new object (CR 400.7); its old departure no longer applies.
+            // A spell cast again is a new object (CR 400.7) and the live spell is what copy paths
+            // read from here on, so its old departure is dropped rather than kept beside it.
             departedSpells = if (entityId in departedSpells) departedSpells - entityId else departedSpells,
         )
     }

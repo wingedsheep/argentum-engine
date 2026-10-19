@@ -13,6 +13,7 @@ import com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComp
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.effects.CopyExceptions
 import com.wingedsheep.sdk.scripting.effects.CopyTargetSpellEffect
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import kotlin.reflect.KClass
 
 /**
@@ -41,7 +42,7 @@ class CopyTargetSpellExecutor(
         // it last existed on the stack (CR 608.2h).
         val spellEntityId = context.resolveTarget(effect.target)
             ?: context.objectReferences.triggering
-                ?.takeIf { effect.target == com.wingedsheep.sdk.scripting.targets.EffectTarget.TriggeringEntity }
+                ?.takeIf { effect.target == EffectTarget.TriggeringEntity }
                 ?.let(state::departedSpellEntity)
             ?: return EffectResult.error(state, "No target spell to copy")
 
