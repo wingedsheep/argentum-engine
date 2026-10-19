@@ -260,6 +260,14 @@ internal class CardActiveEffectsProjector(
         is SerializableModification.SwitchPowerToughness -> "power and toughness switched"
         is SerializableModification.GrantKeyword -> keywordName(modification.keyword)
         is SerializableModification.RemoveKeyword -> "loses ${keywordName(modification.keyword)}"
+        // A prevent-all shield's temporary badge says what it shields against (Indestructible
+        // Aura, Fleeting Flight, Silhouette's targeted-cause form).
+        is SerializableModification.PreventAllDamageTo -> when {
+            modification.onlyCausedByObjectTargetingIt ->
+                "damage from spells and abilities that target it is prevented"
+            modification.combatOnly -> "combat damage to it is prevented"
+            else -> "damage to it is prevented"
+        }
         else -> null
     }
 

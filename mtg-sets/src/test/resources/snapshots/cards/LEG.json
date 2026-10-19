@@ -5227,6 +5227,42 @@
     ]
 }
 
+// Silhouette
+{
+    "name": "Silhouette",
+    "manaCost": "{1}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Choose target creature. If a spell or ability that targets that creature would cause a source to deal damage to that creature this turn, prevent that damage.",
+    "script": {
+        "spellEffect": {
+            "type": "PreventDamageShield",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "sourceFilter": "PreventFromTargetingRecipient"
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "77",
+        "rarity": "UNCOMMON",
+        "artist": "Kaja Foglio",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/6/e6d6fac6-9a23-465f-a813-92e1ed1cd742.jpg?1783948071"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Sir Shandlar of Eberyn
 {
     "name": "Sir Shandlar of Eberyn",

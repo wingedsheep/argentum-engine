@@ -360,10 +360,17 @@ sealed interface SerializableModification {
     /**
      * Damage prevention: prevent all damage that would be dealt to the affected entities.
      * With [combatOnly] set, only combat damage is prevented ("prevent all combat damage
-     * that would be dealt to it this turn" — Fleeting Flight).
+     * that would be dealt to it this turn" — Fleeting Flight). With [onlyCausedByObjectTargetingIt]
+     * set, only damage the innermost resolving spell or ability causes while it has the recipient
+     * among its targets is prevented (Silhouette, `PreventionSourceFilter.TargetingRecipient`).
      */
     @Serializable
-    data class PreventAllDamageTo(val combatOnly: Boolean = false) : SerializableModification
+    data class PreventAllDamageTo(
+        val combatOnly: Boolean = false,
+        @OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
+        @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
+        val onlyCausedByObjectTargetingIt: Boolean = false,
+    ) : SerializableModification
 
     /**
      * Regeneration shield: the next time the target permanent would be destroyed this turn,

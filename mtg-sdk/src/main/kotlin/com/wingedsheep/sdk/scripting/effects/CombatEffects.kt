@@ -80,6 +80,18 @@ sealed interface PreventionSourceFilter {
      */
     @SerialName("PreventFromThisSource") @Serializable
     data object ThisSource : PreventionSourceFilter
+
+    /**
+     * Only damage that a spell or ability targeting the recipient would cause a source to deal —
+     * "If a spell or ability that targets that creature would cause a source to deal damage to
+     * that creature this turn, prevent that damage" (Silhouette). The test is on the *cause*, not
+     * the source: the resolving spell or ability must have the recipient among its targets, while
+     * the damage may come from another object (a creature told to deal damage by an ability).
+     * Combat damage and damage from untargeted spells ("each creature") are never covered.
+     * Needs a single recipient, all damage, no amount.
+     */
+    @SerialName("PreventFromTargetingRecipient") @Serializable
+    data object TargetingRecipient : PreventionSourceFilter
 }
 
 /**
@@ -243,6 +255,7 @@ data class PreventDamageEffect(
             is PreventionSourceFilter.Matching ->
                 append(" by ${sourceFilter.filter.description.replaceFirstChar { it.lowercase() }}")
             PreventionSourceFilter.ThisSource -> append(" by this source")
+            PreventionSourceFilter.TargetingRecipient -> append(" by spells or abilities that target it")
         }
         append(" this turn")
         onPrevented?.let { append(". When damage is prevented this way, ${it.description}") }
@@ -271,7 +284,8 @@ data class PreventDamageEffect(
                 val newObjFilter = sourceFilter.eligible.applyTextReplacement(replacer)
                 if (newObjFilter !== sourceFilter.eligible) PreventionSourceFilter.Chosen(newObjFilter) else sourceFilter
             }
-            PreventionSourceFilter.AnySource, PreventionSourceFilter.ThisSource -> sourceFilter
+            PreventionSourceFilter.AnySource, PreventionSourceFilter.ThisSource,
+            PreventionSourceFilter.TargetingRecipient -> sourceFilter
         }
         val newOnPrevented = onPrevented?.applyTextReplacement(replacer)
         val newRecipientGroup = recipientGroup?.applyTextReplacement(replacer)

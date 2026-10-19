@@ -137,7 +137,8 @@ internal class PlayerActiveEffectsProjector(
             if (playerId !in floatingEffect.effect.affectedEntities) continue
             when (modification) {
                 is SerializableModification.PreventAllDamageTo -> {
-                    tally.preventsAllDamage = true
+                    // A Silhouette-style shield covers only targeted damage, not "all damage".
+                    if (!modification.onlyCausedByObjectTargetingIt) tally.preventsAllDamage = true
                 }
                 is SerializableModification.PreventNextDamage -> {
                     tally.preventNext += durationPhrase(state, floatingEffect) to modification.remainingAmount
