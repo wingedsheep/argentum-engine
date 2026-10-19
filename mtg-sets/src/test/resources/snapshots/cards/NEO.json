@@ -5730,6 +5730,188 @@
     ]
 }
 
+// Fable of the Mirror-Breaker
+{
+    "name": "Fable of the Mirror-Breaker",
+    "manaCost": "{2}{R}",
+    "typeLine": "Enchantment — Saga",
+    "oracleText": "(As this Saga enters and after your draw step, add a lore counter.)\nI — Create a 2/2 red Goblin Shaman creature token with \"Whenever this token attacks, create a Treasure token.\"\nII — You may discard up to two cards. If you do, draw that many cards.\nIII — Exile this Saga, then return it to the battlefield transformed under your control.",
+    "script": {
+        "sagaChapters": [
+            {
+                "chapter": 1,
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 2,
+                    "toughness": 2,
+                    "colors": [
+                        "RED"
+                    ],
+                    "creatureTypes": [
+                        "Goblin",
+                        "Shaman"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/0/d/0d9461c3-f545-4efb-926e-759961db0495.jpg?1783923713",
+                    "triggeredAbilities": [
+                        {
+                            "id": "Fable of the Mirror-Breaker:1",
+                            "trigger": "AttackEvent",
+                            "effect": {
+                                "type": "CreatePredefinedToken",
+                                "tokenType": "Treasure"
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "chapter": 2,
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand"
+                            },
+                            "storeAs": "discarded_candidates"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "discarded_candidates",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
+                            },
+                            "storeSelected": "discarded",
+                            "prompt": "Discard up to 2 cards"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "discarded",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Discard"
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "VariableReference",
+                                "variableName": "discarded_count"
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "chapter": 3,
+                "effect": "ExileAndReturnTransformed"
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Reflection of Kiki-Jiki",
+        "manaCost": "",
+        "typeLine": "Enchantment Creature — Goblin Shaman",
+        "oracleText": "{1}, {T}: Create a token that's a copy of another target nonlegendary creature you control, except it has haste. Sacrifice it at the beginning of the next end step.",
+        "creatureStats": {
+            "power": 2,
+            "toughness": 2
+        },
+        "script": {
+            "activatedAbilities": [
+                {
+                    "id": "Reflection of Kiki-Jiki:1",
+                    "cost": {
+                        "type": "CostComposite",
+                        "costs": [
+                            {
+                                "type": "CostAtomWrapper",
+                                "atom": {
+                                    "type": "AtomMana",
+                                    "cost": "{1}"
+                                }
+                            },
+                            "CostTap"
+                        ]
+                    },
+                    "effect": {
+                        "type": "CreateTokenCopyOfTarget",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "addedKeywords": [
+                            "HASTE"
+                        ],
+                        "sacrificeAtStep": "END"
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": {
+                                    "cardPredicates": [
+                                        "IsCreature",
+                                        "IsNonlegendary"
+                                    ],
+                                    "controllerPredicate": "ControlledByYou"
+                                },
+                                "excludeSelf": true
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "descriptionOverride": "{1}, {T}: Create a token that's a copy of another target nonlegendary creature you control, except it has haste. Sacrifice it at the beginning of the next end step."
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "141",
+            "rarity": "RARE",
+            "artist": "Joseph Meehan",
+            "flavorText": "Blessed by Keiga, the Tide Star, Kiki-Jiki would one day master the art of duplication.",
+            "imageUri": "https://cards.scryfall.io/normal/back/2/4/24c0d87b-0049-4beb-b9cb-6f813b7aa7dc.jpg?1783923875",
+            "rulings": [
+                {
+                    "date": "2022-02-18",
+                    "text": "The token created by Reflection of Kiki-Jiki copies exactly what was printed on the original creature (except that the copy also has haste) and nothing else (unless it's copying a creature that's a token or that's copying something else). It doesn't copy whether the creature is tapped or untapped, whether it has any counters on it or Auras and/or Equipment attached to it, or any non-copy effects that changed its power, toughness, types, color, and so on. Most notably, if the target creature isn't normally a creature, the copy won't be a creature."
+                },
+                {
+                    "date": "2022-02-18",
+                    "text": "If another creature becomes a copy of, or enters the battlefield as a copy of, the token, that creature will copy the creature card the token is copying, except it will also have haste. However, you won't sacrifice the new copy at the beginning of the next end step."
+                },
+                {
+                    "date": "2022-02-18",
+                    "text": "If Reflection of Kiki-Jiki's ability creates multiple tokens due to a replacement effect (such as the one Doubling Season creates), you'll sacrifice each of them."
+                }
+            ]
+        },
+        "colorIdentityOverride": [
+            "RED"
+        ],
+        "colorIndicator": [
+            "RED"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "141",
+        "rarity": "RARE",
+        "artist": "Joseph Meehan",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/4/24c0d87b-0049-4beb-b9cb-6f813b7aa7dc.jpg?1783923875"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Fang of Shigeki
 {
     "name": "Fang of Shigeki",
@@ -6112,6 +6294,93 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Futurist Operative
+{
+    "name": "Futurist Operative",
+    "manaCost": "{3}{U}",
+    "typeLine": "Creature — Human Ninja",
+    "oracleText": "As long as this creature is tapped, it's a Human Citizen with base power and toughness 1/1 and can't be blocked.\n{2}{U}: Untap this creature.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Futurist Operative:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{U}"
+                    }
+                },
+                "effect": {
+                    "type": "TapUntap",
+                    "target": "Self",
+                    "tap": false
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "CompositeStaticAbility",
+                    "abilities": [
+                        {
+                            "type": "TransformPermanent",
+                            "setSubtypes": [
+                                "Human",
+                                "Citizen"
+                            ],
+                            "filter": {
+                                "baseFilter": "permanent",
+                                "scope": "Self"
+                            }
+                        },
+                        {
+                            "type": "SetBasePowerToughnessStatic",
+                            "power": 1,
+                            "toughness": 1,
+                            "filter": {
+                                "baseFilter": "permanent",
+                                "scope": "Self"
+                            }
+                        },
+                        "CantBeBlocked"
+                    ]
+                },
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": "tapped"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "53",
+        "rarity": "UNCOMMON",
+        "artist": "Justine Cruz",
+        "flavorText": "\"The Imperials can't arrest you for illegal tech if you never even existed.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/5/c5858176-9f85-403c-8338-48eb55db5c3d.jpg?1783923904",
+        "rulings": [
+            {
+                "date": "2022-02-18",
+                "text": "Effects that set a creature's power, toughness, or creature types will be applied in timestamp order. The timestamp of Futurist Operative's first ability is when it entered the battlefield, not when it became tapped. Notably, this means the ability will not overwrite any effects that set its power and toughness to specific numbers after it entered the battlefield. Effects that otherwise modify its power and toughness will still apply no matter when they took effect. The same is true for +1/+1 counters."
+            },
+            {
+                "date": "2022-02-18",
+                "text": "Untapping Futurist Operative once it's been declared as an attacker won't remove it from combat."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -6643,6 +6912,91 @@
     ]
 }
 
+// Go-Shintai of Lost Wisdom
+{
+    "name": "Go-Shintai of Lost Wisdom",
+    "manaCost": "{1}{U}",
+    "typeLine": "Legendary Enchantment Creature — Shrine",
+    "oracleText": "Flying\nAt the beginning of your end step, you may pay {1}. When you do, target player mills X cards, where X is the number of Shrines you control. (To mill a card, a player puts the top card of their library into their graveyard.)",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Go-Shintai of Lost Wisdom:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ReflexiveTrigger",
+                    "action": {
+                        "type": "PayManaCost",
+                        "cost": "{1}"
+                    },
+                    "reflexiveEffect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "TopOfLibrary",
+                                    "count": {
+                                        "type": "AggregateBattlefield",
+                                        "player": "You",
+                                        "filter": "Shrine"
+                                    },
+                                    "player": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    },
+                                    "isMill": true
+                                },
+                                "storeAs": "milled"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "milled",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard",
+                                    "player": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    "reflexiveTargetRequirements": [
+                        {
+                            "type": "TargetPlayer",
+                            "id": "t0"
+                        }
+                    ],
+                    "descriptionOverride": "You may pay {1}. When you do, target player mills X cards, where X is the number of Shrines you control."
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "55",
+        "rarity": "UNCOMMON",
+        "artist": "Johannes Voss",
+        "flavorText": "It seeks those driven by curiosity and offers enlightenment.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/e/7ec1192c-25b8-4975-ae6c-86be28ac1840.jpg?1783923903"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Go-Shintai of Shared Purpose
 {
     "name": "Go-Shintai of Shared Purpose",
@@ -6726,6 +7080,116 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Goro-Goro, Disciple of Ryusei
+{
+    "name": "Goro-Goro, Disciple of Ryusei",
+    "manaCost": "{1}{R}",
+    "typeLine": "Legendary Creature — Goblin Samurai",
+    "oracleText": "{R}: Creatures you control gain haste until end of turn.\n{3}{R}{R}: Create a 5/5 red Dragon Spirit creature token with flying. Activate only if you control an attacking modified creature. (Equipment, Auras you control, and counters are modifications.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Goro-Goro, Disciple of Ryusei:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{R}"
+                    }
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "GrantKeyword",
+                        "keyword": "HASTE",
+                        "target": "IterationEntity"
+                    }
+                },
+                "descriptionOverride": "Creatures you control gain haste until end of turn."
+            },
+            {
+                "id": "Goro-Goro, Disciple of Ryusei:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}{R}{R}"
+                    }
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 5,
+                    "toughness": 5,
+                    "colors": [
+                        "RED"
+                    ],
+                    "creatureTypes": [
+                        "Dragon",
+                        "Spirit"
+                    ],
+                    "keywords": [
+                        "FLYING"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/a/4/a4c06e08-2026-471d-a6d0-bbb0f040420a.jpg?1783923715"
+                },
+                "restrictions": [
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "Exists",
+                            "player": "You",
+                            "zone": "Battlefield",
+                            "filter": {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ],
+                                "statePredicates": [
+                                    "IsAttacking",
+                                    "IsModified"
+                                ]
+                            }
+                        }
+                    }
+                ],
+                "descriptionOverride": "Create a 5/5 red Dragon Spirit creature token with flying. Activate only if you control an attacking modified creature."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "145",
+        "rarity": "RARE",
+        "artist": "Mike Jordana",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/c/1ca736c7-35a9-48c7-b5a9-69b2a6e33ad0.jpg?1783923865",
+        "rulings": [
+            {
+                "date": "2022-02-18",
+                "text": "An Aura controlled by an opponent does not cause a creature you control to be modified."
+            },
+            {
+                "date": "2022-02-18",
+                "text": "A creature with a counter on it is considered modified no matter what kind of counter it is or which player put it on that creature."
+            },
+            {
+                "date": "2022-02-18",
+                "text": "A creature that is equipped is considered modified no matter who controls the Equipment that's attached to it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -6854,6 +7318,117 @@
         "imageUri": "https://cards.scryfall.io/normal/front/5/3/532c5b14-75cf-4e4c-9b80-2d56a86e2844.jpg?1783923886"
     },
     "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Greasefang, Okiba Boss
+{
+    "name": "Greasefang, Okiba Boss",
+    "manaCost": "{1}{W}{B}",
+    "typeLine": "Legendary Creature — Rat Pilot",
+    "oracleText": "At the beginning of combat on your turn, return target Vehicle card from your graveyard to the battlefield. It gains haste. Return it to its owner's hand at the beginning of your next end step.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Greasefang, Okiba Boss:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "BEGIN_COMBAT"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "ChosenTargets",
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            },
+                            "storeMovedAs": "greasefangReturned"
+                        },
+                        {
+                            "type": "ConditionalOnCollection",
+                            "collection": "greasefangReturned",
+                            "ifNotEmpty": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GrantKeyword",
+                                        "keyword": "HASTE",
+                                        "target": {
+                                            "type": "PipelineTarget",
+                                            "collectionName": "greasefangReturned"
+                                        },
+                                        "duration": "Permanent"
+                                    },
+                                    {
+                                        "type": "CreateDelayedTrigger",
+                                        "step": "END",
+                                        "effect": {
+                                            "type": "Composite",
+                                            "effects": [
+                                                {
+                                                    "type": "MoveCollection",
+                                                    "from": "greasefangReturned",
+                                                    "destination": {
+                                                        "type": "ToZone",
+                                                        "zone": "Hand"
+                                                    }
+                                                }
+                                            ]
+                                        },
+                                        "timing": "NextEndStep",
+                                        "fireOnPlayer": {
+                                            "type": "PlayerRef",
+                                            "player": "You"
+                                        },
+                                        "carryCollections": [
+                                            "greasefangReturned"
+                                        ]
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "Vehicle own:you",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "220",
+        "rarity": "RARE",
+        "artist": "Victor Adame Minguez",
+        "flavorText": "It's hard to say which is more deadly: her bike or her bite.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/6/56a0d43b-4d38-40a7-be6c-8324ab3bf773.jpg?1783923836",
+        "rulings": [
+            {
+                "date": "2022-02-18",
+                "text": "A Vehicle with haste must still be crewed (or become a creature some other way) before it can attack."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
         "BLACK"
     ]
 }
@@ -7358,6 +7933,146 @@
             {
                 "date": "2022-02-18",
                 "text": "If Vessel of the All-Consuming is dealt lethal damage at the same time it deals damage, it will be destroyed before the first triggered ability resolves, so the +1/+1 counter won't be put on it in time to potentially save it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
+    ]
+}
+
+// Hidetsugu, Devouring Chaos
+{
+    "name": "Hidetsugu, Devouring Chaos",
+    "manaCost": "{3}{B}",
+    "typeLine": "Legendary Creature — Ogre Demon",
+    "oracleText": "{B}, Sacrifice a creature: Scry 2.\n{2}{R}, {T}: Exile the top card of your library. You may play that card this turn. When you exile a nonland card this way, Hidetsugu deals damage equal to the exiled card's mana value to any target.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Hidetsugu, Devouring Chaos:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{B}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "creature"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "Scry",
+                    "count": 2
+                }
+            },
+            {
+                "id": "Hidetsugu, Devouring Chaos:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{R}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeAs": "hidetsuguExiled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "hidetsuguExiled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        },
+                        {
+                            "type": "GrantMayPlayFromExile",
+                            "from": "hidetsuguExiled"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "CollectionContainsMatch",
+                                    "collection": "hidetsuguExiled",
+                                    "filter": "nonland"
+                                }
+                            },
+                            "then": {
+                                "type": "ReflexiveTrigger",
+                                "action": {
+                                    "type": "Composite",
+                                    "effects": []
+                                },
+                                "optional": false,
+                                "reflexiveEffect": {
+                                    "type": "DealDamage",
+                                    "amount": {
+                                        "type": "StoredCardManaValue",
+                                        "collectionName": "hidetsuguExiled"
+                                    },
+                                    "target": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    }
+                                },
+                                "reflexiveTargetRequirements": [
+                                    {
+                                        "type": "AnyTarget",
+                                        "id": "t0"
+                                    }
+                                ],
+                                "descriptionOverride": "Hidetsugu deals damage equal to the exiled card's mana value to any target."
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Exile the top card of your library. You may play that card this turn. When you exile a nonland card this way, Hidetsugu deals damage equal to the exiled card's mana value to any target."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "99",
+        "rarity": "RARE",
+        "artist": "Isis",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/f/6f4142d3-f7ca-4613-a6e5-528cf1f22383.jpg?1783923885",
+        "rulings": [
+            {
+                "date": "2022-02-18",
+                "text": "You must still pay all costs and follow all normal timing rules when playing a card this way. For example, you may play a land this way only during one of your own main phases while the stack is empty, and only if you haven't previously played a land this turn."
             }
         ]
     },
@@ -8544,6 +9259,65 @@
     ]
 }
 
+// Invoke the Winds
+{
+    "name": "Invoke the Winds",
+    "manaCost": "{1}{U}{U}{U}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Gain control of target artifact or creature. Untap it.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GainControl",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "tap": false
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature|artifact"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "58",
+        "rarity": "RARE",
+        "artist": "Olivier Bernard",
+        "flavorText": "\"Are you seriously telling me your heavy combat mech . . . blew away?\"\n—Risona, leader of the Asari Uprisers",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/d/ad7b423a-bfd1-47aa-bd2c-64a169b96924.jpg?1783923902",
+        "rulings": [
+            {
+                "date": "2022-02-18",
+                "text": "You will not be able to attack with the creature you gain control of or use its activated abilities with {T} in the cost unless it has haste."
+            },
+            {
+                "date": "2022-02-18",
+                "text": "Gaining control of a permanent doesn't cause you to gain control of any Auras or Equipment attached to that permanent."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Iron Apprentice
 {
     "name": "Iron Apprentice",
@@ -8682,6 +9456,45 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Isshin, Two Heavens as One
+{
+    "name": "Isshin, Two Heavens as One",
+    "manaCost": "{R}{W}{B}",
+    "typeLine": "Legendary Creature — Human Samurai",
+    "oracleText": "If a creature attacking causes a triggered ability of a permanent you control to trigger, that ability triggers an additional time.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "script": {
+        "staticAbilities": [
+            "AdditionalAttackTriggers"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "224",
+        "rarity": "RARE",
+        "artist": "Ryan Pancoast",
+        "flavorText": "Trained by the Imperials but disillusioned by their rigidity, he gave his heart—and his swords—to the Asari Uprising.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/0/a062a004-984e-4b62-960c-af7288f7a3e9.jpg?1783923833",
+        "rulings": [
+            {
+                "date": "2022-02-18",
+                "text": "Isshin, Two Heavens as One's ability affects only triggered abilities with conditions that are directly related to attacking, such as \"whenever [this creature] attacks\" or \"whenever you attack with one or more creatures.\" It does not affect triggered abilities with other trigger conditions, such as \"whenever [this creature] becomes tapped.\""
+            },
+            {
+                "date": "2022-02-18",
+                "text": "Isshin's effect doesn't copy the triggered ability; it just causes the ability to trigger twice. Any choices made as you put the ability onto the stack, such as modes and targets, are made separately for each instance of the ability. Any choices made on resolution are also made individually."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE",
+        "BLACK"
     ]
 }
 
@@ -9230,6 +10043,239 @@
         "imageUri": "https://cards.scryfall.io/normal/front/9/0/9033cf27-d9e6-49b8-8ee1-c1f38c9680b9.jpg?1783923885"
     },
     "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Kaito Shizuki
+{
+    "name": "Kaito Shizuki",
+    "manaCost": "{1}{U}{B}",
+    "typeLine": "Legendary Planeswalker — Kaito",
+    "oracleText": "At the beginning of your end step, if Kaito entered this turn, he phases out.\n+1: Draw a card. Then discard a card unless you attacked this turn.\n−2: Create a 1/1 blue Ninja creature token with \"This token can't be blocked.\"\n−7: You get an emblem with \"Whenever a creature you control deals combat damage to a player, search your library for a blue or black creature card, put it onto the battlefield, then shuffle.\"",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Kaito Shizuki:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": "PhaseOut",
+                "interveningIf": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": {
+                        "statePredicates": [
+                            "EnteredThisTurn"
+                        ]
+                    }
+                },
+                "descriptionOverride": "At the beginning of your end step, if Kaito entered this turn, he phases out."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Kaito Shizuki:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Not",
+                                    "condition": {
+                                        "type": "Compare",
+                                        "left": {
+                                            "type": "TurnTracking",
+                                            "player": "You",
+                                            "tracker": "PLAYER_ATTACKED"
+                                        },
+                                        "operator": "GTE",
+                                        "right": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    }
+                                }
+                            },
+                            "then": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Hand"
+                                        },
+                                        "storeAs": "hand"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "hand",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "discarded",
+                                        "prompt": "Choose 1 card to discard"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "discarded",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Graveyard"
+                                        },
+                                        "moveType": "Discard"
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Draw a card. Then discard a card unless you attacked this turn."
+            },
+            {
+                "id": "Kaito Shizuki:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -2
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "BLUE"
+                    ],
+                    "creatureTypes": [
+                        "Ninja"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/1/4/14eb629e-f09f-4deb-b434-7615a3010a4d.jpg?1783923717",
+                    "staticAbilities": [
+                        "CantBeBlocked"
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Create a 1/1 blue Ninja creature token with \"This token can't be blocked.\""
+            },
+            {
+                "id": "Kaito Shizuki:5",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -7
+                },
+                "effect": {
+                    "type": "CreateGlobalTriggeredAbility",
+                    "ability": {
+                        "id": "Kaito Shizuki:4",
+                        "trigger": {
+                            "type": "DealsDamageEvent",
+                            "damageType": "DamageCombat",
+                            "recipient": {
+                                "type": "RecipientPlayer",
+                                "player": "Any"
+                            },
+                            "sourceFilter": "creature ctrl:you"
+                        },
+                        "binding": "ANY",
+                        "effect": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Library",
+                                        "filter": "creature blue|black"
+                                    },
+                                    "storeAs": "searchable",
+                                    "search": true
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "searchable",
+                                    "selection": {
+                                        "type": "ChooseUpTo",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeSelected": "found",
+                                    "prompt": "Search your library for a creature blue or black card to put onto the battlefield",
+                                    "selectedLabel": "Put onto the battlefield"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "found",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Battlefield"
+                                    }
+                                },
+                                "ShuffleLibrary",
+                                "EmitLibrarySearchedEvent"
+                            ]
+                        },
+                        "descriptionOverride": "Whenever a creature you control deals combat damage to a player, search your library for a blue or black creature card, put it onto the battlefield, then shuffle."
+                    },
+                    "descriptionOverride": "Whenever a creature you control deals combat damage to a player, search your library for a blue or black creature card, put it onto the battlefield, then shuffle."
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "You get an emblem with \"Whenever a creature you control deals combat damage to a player, search your library for a blue or black creature card, put it onto the battlefield, then shuffle.\""
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "226",
+        "rarity": "MYTHIC",
+        "artist": "Yongjae Choi",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/d/2d35a710-3008-4e27-8afd-6e83329f9917.jpg?1783923832",
+        "rulings": [
+            {
+                "date": "2022-02-18",
+                "text": "Phased out permanents are treated as though they don't exist. They can't be the target of spells or abilities, their static abilities have no effect on the game, their triggered abilities can't trigger, they can't attack or block, and so on."
+            },
+            {
+                "date": "2022-02-18",
+                "text": "As Kaito Shizuki phases out, Auras attached to him also phase out at the same time. Those Auras will phase in at the same time Kaito does, and they'll phase in still attached to Kaito."
+            },
+            {
+                "date": "2022-02-18",
+                "text": "Permanents phase back in during their controller's untap step, immediately before that player untaps their permanents. Kaito phases back in with the same number of loyalty counters that he phased out with."
+            },
+            {
+                "date": "2022-02-18",
+                "text": "Phasing out doesn't cause permanents to leave or re-enter the battlefield, so no \"leaves the battlefield\" or \"enters the battlefield\" abilities will trigger, and Kaito's first ability won't trigger again at the end of a turn in which he phased in."
+            }
+        ]
+    },
+    "startingLoyalty": 3,
+    "colorIdentityOverride": [
+        "BLUE",
         "BLACK"
     ]
 }
@@ -10028,6 +11074,183 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Kotose, the Silent Spider
+{
+    "name": "Kotose, the Silent Spider",
+    "manaCost": "{3}{U}{B}",
+    "typeLine": "Legendary Creature — Human Ninja",
+    "oracleText": "When Kotose enters, exile target card other than a basic land card from an opponent's graveyard. Search that player's graveyard, hand, and library for any number of cards with the same name as that card and exile them. Then that player shuffles. For as long as you control Kotose, you may play one of the exiled cards, and you may spend mana as though it were mana of any color to cast it.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Kotose, the Silent Spider:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "ChosenTargets",
+                            "storeAs": "kotoseTarget"
+                        },
+                        {
+                            "type": "StoreCardName",
+                            "from": "kotoseTarget",
+                            "storeAs": "kotoseName"
+                        },
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromMultipleZones",
+                                "zones": [
+                                    "Graveyard",
+                                    "Hand",
+                                    "Library"
+                                ],
+                                "player": {
+                                    "type": "OwnerOf",
+                                    "targetDescription": "target card"
+                                },
+                                "filter": {
+                                    "cardPredicates": [
+                                        {
+                                            "type": "NameEqualsChosen",
+                                            "variableName": "kotoseName"
+                                        }
+                                    ]
+                                }
+                            },
+                            "storeAs": "kotoseMatches",
+                            "search": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "kotoseTarget",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile",
+                                "player": {
+                                    "type": "OwnerOf",
+                                    "targetDescription": "target card"
+                                }
+                            }
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "kotoseMatches",
+                            "collectionFilter": {
+                                "type": "ExcludeOtherCollection",
+                                "otherCollectionName": "kotoseTarget"
+                            },
+                            "storeMatching": "kotoseCopies"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "kotoseCopies",
+                            "selection": "ChooseAnyNumber",
+                            "storeSelected": "kotoseSelected",
+                            "storeRemainder": "kotoseLeft",
+                            "prompt": "Choose any number of cards with that name to exile",
+                            "selectedLabel": "Exile",
+                            "showAllCards": true,
+                            "alwaysPrompt": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "kotoseSelected",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile",
+                                "player": {
+                                    "type": "OwnerOf",
+                                    "targetDescription": "target card"
+                                }
+                            }
+                        },
+                        {
+                            "type": "ShuffleLibrary",
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": {
+                                    "type": "OwnerOf",
+                                    "targetDescription": "target card"
+                                }
+                            }
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "kotoseMatches",
+                            "collectionFilter": {
+                                "type": "ExcludeOtherCollection",
+                                "otherCollectionName": "kotoseLeft"
+                            },
+                            "storeMatching": "kotoseExiled"
+                        },
+                        {
+                            "type": "GrantMayPlayFromExile",
+                            "from": "kotoseExiled",
+                            "expiry": {
+                                "type": "WhileYouControlSource",
+                                "sourceDescription": "Kotose"
+                            },
+                            "withAnyManaColor": true,
+                            "maxPlays": 1
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                {
+                                    "type": "Not",
+                                    "predicate": "IsBasicLand"
+                                }
+                            ],
+                            "controllerPredicate": "OwnedByOpponent"
+                        },
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "When Kotose enters, exile target card other than a basic land card from an opponent's graveyard. Search that player's graveyard, hand, and library for any number of cards with the same name as that card and exile them. Then that player shuffles. For as long as you control Kotose, you may play one of the exiled cards, and you may spend mana as though it were mana of any color to cast it."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "228",
+        "rarity": "RARE",
+        "artist": "Marta Nael",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/1/314e97b5-cd43-4f5e-acdd-a107208e061c.jpg?1783923832",
+        "rulings": [
+            {
+                "date": "2022-02-18",
+                "text": "You may play exactly one of the exiled cards. Once you play one of them, the others will remain in exile."
+            },
+            {
+                "date": "2022-02-18",
+                "text": "You may leave any cards with the same name as the target card in the zones they're in if you want."
+            },
+            {
+                "date": "2022-02-18",
+                "text": "If another player gains control of Kotose, the Silent Spider, you won't be able to play any of the exiled cards, even if you later regain control of it. Similarly, if Kotose leaves the battlefield and later returns, you won't be able to play the cards that were exiled the first time it was on the battlefield."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
     ]
 }
 
@@ -15032,6 +16255,86 @@
     ]
 }
 
+// Reality Heist
+{
+    "name": "Reality Heist",
+    "manaCost": "{5}{U}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Affinity for artifacts (This spell costs {1} less to cast for each artifact you control.)\nLook at the top seven cards of your library. You may reveal up to two artifact cards from among them and put them into your hand. Put the rest on the bottom of your library in a random order.",
+    "keywords": [
+        "AFFINITY"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Affinity",
+            "forType": "ARTIFACT"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "TopOfLibrary",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 7
+                        }
+                    },
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered0",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    },
+                    "filter": "artifact",
+                    "storeSelected": "selected1",
+                    "storeRemainder": "remainder1",
+                    "prompt": "You may reveal up to two artifact cards to put into your hand.",
+                    "showAllCards": true
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "selected1",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    },
+                    "revealed": true
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "remainder1",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Library",
+                        "placement": "Bottom"
+                    },
+                    "order": "Random"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "75",
+        "rarity": "UNCOMMON",
+        "artist": "Mila Pesic",
+        "flavorText": "Kaito grabbed the chip, hoping it held answers.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/b/5bc954d7-322a-45b8-9e25-6e9a97fbde61.jpg?1783923895"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Reckoner Bankbuster
 {
     "name": "Reckoner Bankbuster",
@@ -15665,6 +16968,58 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Replication Specialist
+{
+    "name": "Replication Specialist",
+    "manaCost": "{4}{U}",
+    "typeLine": "Creature — Moonfolk Artificer",
+    "oracleText": "Flying\nWhenever a nontoken artifact you control enters, you may pay {1}{U}. If you do, create a token that's a copy of that artifact.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Replication Specialist:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "artifact nontoken ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayManaCost",
+                            "cost": "{1}{U}"
+                        }
+                    },
+                    "then": {
+                        "type": "CreateTokenCopyOfTarget",
+                        "target": "TriggeringEntity"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "76",
+        "rarity": "UNCOMMON",
+        "artist": "Cristi Balanescu",
+        "flavorText": "\"Step one is innovation. Step two is production. Sometimes step one is optional.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/7/475bb3b5-b648-460c-b0ea-89ecfe0ff226.jpg?1783923895"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -18632,6 +19987,233 @@
     ]
 }
 
+// Tales of Master Seshiro
+{
+    "name": "Tales of Master Seshiro",
+    "manaCost": "{4}{G}",
+    "typeLine": "Enchantment — Saga",
+    "oracleText": "(As this Saga enters and after your draw step, add a lore counter.)\nI, II — Put a +1/+1 counter on target creature or Vehicle you control. It gains vigilance until end of turn.\nIII — Exile this Saga, then return it to the battlefield transformed under your control.",
+    "script": {
+        "sagaChapters": [
+            {
+                "chapter": 1,
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 1,
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "VIGILANCE",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature|Vehicle ctrl:you"
+                    },
+                    "id": "t0"
+                }
+            },
+            {
+                "chapter": 2,
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 1,
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t1"
+                            }
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "VIGILANCE",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t1"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature|Vehicle ctrl:you"
+                    },
+                    "id": "t1"
+                }
+            },
+            {
+                "chapter": 3,
+                "effect": "ExileAndReturnTransformed"
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Seshiro's Living Legacy",
+        "manaCost": "",
+        "typeLine": "Enchantment Creature — Snake Warrior",
+        "oracleText": "Vigilance, haste",
+        "creatureStats": {
+            "power": 5,
+            "toughness": 5
+        },
+        "keywords": [
+            "VIGILANCE",
+            "HASTE"
+        ],
+        "metadata": {
+            "collectorNumber": "210",
+            "artist": "Olena Richards",
+            "flavorText": "\"In times of strife, the foolish make a fist while the wise make a friend.\"\n—First Address of Seshiro the Anointed as Broodmaster of the Orochi Colonies",
+            "imageUri": "https://cards.scryfall.io/normal/back/5/1/512bc867-3a86-4da2-93f0-dd76d6a6f30d.jpg?1783923845"
+        },
+        "colorIdentityOverride": [
+            "GREEN"
+        ],
+        "colorIndicator": [
+            "GREEN"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "210",
+        "artist": "Olena Richards",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/1/512bc867-3a86-4da2-93f0-dd76d6a6f30d.jpg?1783923845"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Tameshi, Reality Architect
+{
+    "name": "Tameshi, Reality Architect",
+    "manaCost": "{2}{U}",
+    "typeLine": "Legendary Creature — Moonfolk Wizard",
+    "oracleText": "Whenever one or more noncreature permanents are returned to hand, draw a card. This ability triggers only once each turn.\n{X}{W}, Return a land you control to its owner's hand: Return target artifact or enchantment card with mana value X or less from your graveyard to the battlefield. Activate only as a sorcery.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Tameshi, Reality Architect:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "noncreature permanent",
+                    "from": "Battlefield",
+                    "to": "Hand"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "oncePerTurn": true
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Tameshi, Reality Architect:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{X}{W}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomReturnToHand",
+                                "filter": "land"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Battlefield",
+                    "fromZone": "Graveyard"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "Or",
+                                        "predicates": [
+                                            "IsArtifact",
+                                            "IsEnchantment"
+                                        ]
+                                    },
+                                    {
+                                        "type": "CompareNumericProperty",
+                                        "property": "MANA_VALUE",
+                                        "operator": "LTE",
+                                        "amount": "XValue"
+                                    }
+                                ],
+                                "controllerPredicate": "OwnedByYou"
+                            },
+                            "zone": "Graveyard"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "descriptionOverride": "{X}{W}, Return a land you control to its owner's hand: Return target artifact or enchantment card with mana value X or less from your graveyard to the battlefield."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "82",
+        "rarity": "RARE",
+        "artist": "Scott M. Fischer",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/6/26594b52-3e9c-4cde-88df-1f4e9e16676e.jpg?1783923894",
+        "rulings": [
+            {
+                "date": "2022-02-18",
+                "text": "Tameshi's first ability triggers only whenever one or more noncreature permanents are returned to hand from the battlefield. Noncreature permanent cards returned to hand from other zones do not cause this ability to trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
+    ]
+}
+
 // Tamiyo's Compleation
 {
     "name": "Tamiyo's Compleation",
@@ -20534,6 +22116,130 @@
     "startingLoyalty": 3,
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Thousand-Faced Shadow
+{
+    "name": "Thousand-Faced Shadow",
+    "manaCost": "{U}",
+    "typeLine": "Creature — Human Ninja",
+    "oracleText": "Ninjutsu {2}{U}{U} ({2}{U}{U}, Return an unblocked attacker you control to hand: Put this card onto the battlefield from your hand tapped and attacking.)\nFlying\nWhen this creature enters from your hand, if it's attacking, create a token that's a copy of another target attacking creature. The token enters tapped and attacking.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING",
+        "NINJUTSU"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Ninjutsu",
+            "cost": "{2}{U}{U}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Thousand-Faced Shadow:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Hand",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateTokenCopyOfTarget",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "tapped": true,
+                    "attacking": true,
+                    "attackDefender": "CONTROLLER_CHOOSES"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature attacking",
+                        "excludeSelf": true
+                    },
+                    "id": "t0"
+                },
+                "interveningIf": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": "attacking"
+                },
+                "descriptionOverride": "When this creature enters from your hand, if it's attacking, create a token that's a copy of another target attacking creature. The token enters tapped and attacking."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "ninjutsu_{2}{U}{U}",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{U}{U}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomReturnToHand",
+                                "filter": {
+                                    "cardPredicates": [
+                                        "IsCreature"
+                                    ],
+                                    "statePredicates": [
+                                        "IsAttacking",
+                                        "IsUnblocked"
+                                    ]
+                                }
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "Self",
+                    "destination": "Battlefield",
+                    "placement": "TappedAndAttacking",
+                    "fromZone": "Hand",
+                    "attackDefender": "RETURNED_ATTACKER"
+                },
+                "activateFromZone": "Hand",
+                "descriptionOverride": "Ninjutsu {2}{U}{U} ({2}{U}{U}, Return an unblocked attacker you control to hand: Put this card onto the battlefield from your hand tapped and attacking.)",
+                "keyword": "NINJUTSU"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "86",
+        "rarity": "RARE",
+        "artist": "Ekaterina Burmak",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/9/89a698a5-f4ac-4b04-96dc-32e1eeef6ac7.jpg?1783923891",
+        "rulings": [
+            {
+                "date": "2022-02-18",
+                "text": "You choose which opponent or opposing planeswalker the token is attacking as you put it onto the battlefield. It doesn't have to be the same player or planeswalker Thousand-Faced Shadow is attacking."
+            },
+            {
+                "date": "2022-02-18",
+                "text": "Although the token is attacking, it was never declared as an attacking creature (for purposes of abilities that trigger whenever a creature attacks, for example)."
+            },
+            {
+                "date": "2022-02-18",
+                "text": "The token copies exactly what was printed on the original creature and nothing else (unless that permanent is copying something else or is a token). It doesn't copy counters, Auras, Equipment, or non-copy effects. If the token isn't a creature as it enters the battlefield, it won't be attacking."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 

@@ -83,6 +83,8 @@ class FacadeBoundaryTest : FunSpec({
             "CreateDelayedTriggerEffect.carryCollections names the collections the delayed trigger remembers",
         "dmu/cards/JayaFieryNegotiator.kt" to
             "CreateDelayedTriggerEffect.carryCollections names the collections the delayed trigger remembers",
+        "neo/cards/GreasefangOkibaBoss.kt" to
+            "CreateDelayedTriggerEffect.carryCollections names the collections the delayed trigger remembers",
         "mh3/cards/WheelOfPotential.kt" to
             "the per-player May runs its own pipeline, so its tracked move names the slot the enclosing " +
                 "forEachPlayerCollecting aggregates — a handle minted inside the May lambda can't be returned out of it",
