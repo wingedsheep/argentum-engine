@@ -588,6 +588,56 @@
     ]
 }
 
+// Old Gnawbone
+{
+    "name": "Old Gnawbone",
+    "manaCost": "{5}{G}{G}",
+    "typeLine": "Legendary Creature — Dragon",
+    "oracleText": "Flying\nWhenever a creature you control deals combat damage to a player, create that many Treasure tokens.",
+    "creatureStats": {
+        "power": 7,
+        "toughness": 7
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Old Gnawbone:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    },
+                    "sourceFilter": "creature ctrl:you"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Treasure",
+                    "dynamicCount": {
+                        "type": "ContextProperty",
+                        "key": "TRIGGER_DAMAGE_AMOUNT"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "197",
+        "rarity": "MYTHIC",
+        "artist": "Filip Burburan",
+        "flavorText": "The ancient green dragon Claugiyliamatar is often seen with a mangled corpse dangling from her mouth.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/7/77ceba8b-de19-4db8-b5a7-f5df49bf241f.jpg?1783926458"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Priest of Ancient Lore
 {
     "name": "Priest of Ancient Lore",
