@@ -37,6 +37,7 @@ internal fun AnswerContinuation.objectReferences(): ObjectReferenceEnvironment? 
     is AddCountersUpToContinuation -> objectReferences
     is AddCountersOfChosenKindContinuation -> objectReferences
     is PayCountersContinuation -> objectReferences
+    is ChooseSpellCastThisTurnContinuation -> objectReferences
     is MoveChosenCountersToTargetContinuation -> objectReferences
     is AmassContinuation -> objectReferences
     is StormCopyTargetContinuation -> objectReferences
@@ -158,6 +159,7 @@ internal fun AnswerContinuation.withObjectReferences(refs: ObjectReferenceEnviro
     is AddCountersUpToContinuation -> copy(objectReferences = refs)
     is AddCountersOfChosenKindContinuation -> copy(objectReferences = refs)
     is PayCountersContinuation -> copy(objectReferences = refs)
+    is ChooseSpellCastThisTurnContinuation -> copy(objectReferences = refs)
     is MoveChosenCountersToTargetContinuation -> copy(objectReferences = refs)
     is AmassContinuation -> copy(objectReferences = refs)
     is StormCopyTargetContinuation -> copy(objectReferences = refs)

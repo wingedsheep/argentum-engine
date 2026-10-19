@@ -236,6 +236,20 @@ data class PayCountersContinuation(
 ) : AnswerContinuation
 
 /**
+ * Resume after the controller picks one of a player's spells cast this turn for
+ * `ChooseSpellCastThisTurnEffect` (Backdraft). [damageByOption] is aligned with the decision's
+ * options; the picked spell's damage is stored in the next frame's pipeline under [storeAs].
+ */
+@Serializable
+data class ChooseSpellCastThisTurnContinuation(
+    val playerId: EntityId,
+    val storeAs: String,
+    val damageByOption: List<Int>,
+    val sourceId: EntityId?,
+    val objectReferences: com.wingedsheep.engine.handlers.ObjectReferenceEnvironment = com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(),
+) : AnswerContinuation
+
+/**
  * Resume after the controller picks how many counters of one kind to move from a
  * [sourceId] permanent onto a [destinationId] permanent. The executor for
  * `MoveChosenCountersToTargetEffect` issues one decision per counter kind on the source;

@@ -2073,6 +2073,16 @@ object Conditions {
         trackerAtLeast(com.wingedsheep.sdk.scripting.values.TurnTracker.LIFE_LOST, player = Player.Candidate)
 
     /**
+     * Candidate restriction: the player being considered has cast [atLeast] or more spells matching
+     * [filter] this turn. Backs "choose a player who cast one or more sorcery spells this turn"
+     * (Backdraft) — pair it with a non-targeting `selectTarget` and a `descriptionOverride`.
+     */
+    fun candidateCastSpellsThisTurn(
+        filter: com.wingedsheep.sdk.scripting.GameObjectFilter,
+        atLeast: Int = 1,
+    ): ConditionInterface = PlayerCastSpellsThisTurn(Player.Candidate, filter, atLeast)
+
+    /**
      * Candidate-target restriction: this ability's source dealt damage to the player being targeted
      * this turn. Backs "target player dealt damage by this creature this turn" (Wicked Akuba). Pair
      * with a `descriptionOverride` on the `TargetPlayer`.

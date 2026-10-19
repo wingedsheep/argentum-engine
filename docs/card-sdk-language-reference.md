@@ -5001,6 +5001,7 @@ with cards):
 | `gatherSubtypes(from)` | `GatherSubtypesEffect` |
 | `storeCardName(from)` | `StoreCardNameEffect` |
 | `storeNumber(amount)` | `StoreNumberEffect` |
+| `runStoringNumber { Effects.ChooseSpellCastThisTurn(caster, spellFilter, it) }` → the damage dealt by the spell the controller picks among `caster`'s matching spells cast this turn (its cast record's total over every recipient while it was a spell; no prompt when they all dealt the same, 0 with none). Backdraft: `selectTarget(TargetPlayer(restriction = Conditions.candidateCastSpellsThisTurn(Sorcery)), nonTargeting = true)`, then this, then `DealDamage(damage.amount / 2, player.asTarget)` | `ChooseSpellCastThisTurnEffect` |
 | `storePlayer(player = You, onlyIf?)` → the players recorded (a `CollectionSlot`; with `onlyIf`, only when the condition holds then). Inside `forEachPlayerCollecting` it records the iterated player, so the aggregate is "each player who …" snapshotted before anyone acts — Plaguecrafter: `forEachPlayerCollecting(ActivePlayerFirst) { listOf(storePlayer(onlyIf = YouControl(CreatureOrPlaneswalker, negate = true))) }` then sacrifice, then `ForEachPlayer(cant.asPlayers, discard)` | `StorePlayerEffect` (wrapped in `Effects.If` for `onlyIf`) |
 | `chooseOption(optionType, …)` / `chooseCardName(prompt?, excludeBasicLandNames?, pool?, chooser?)` / `noteCreatureType(…)` | `ChooseOptionEffect` / `NoteCreatureTypeEffect` |
 | `choosePile(a, b, chooser?, …)` → `(chosen, other)` | `ChoosePileEffect` |
@@ -6050,6 +6051,7 @@ Author the restriction through the `Conditions.candidate*` facade (never hand-wr
 
 - `Conditions.candidateLostLifeThisTurn()` — the targeted player lost life this turn (Rix Maadi Guildmage).
 - `Conditions.candidateLifeAtMost(n)` — the targeted player has `n` or less life.
+- `Conditions.candidateCastSpellsThisTurn(filter, atLeast = 1)` — the candidate player cast `atLeast` or more spells matching `filter` this turn (`PlayerCastSpellsThisTurn(Player.Candidate, …)`). With a non-targeting `selectTarget` it backs "choose a player who cast one or more sorcery spells this turn" (Backdraft).
 - `Conditions.candidateHasMostLife()` — the candidate player has the most life or is tied for the most (`PlayerHasMostLife(Player.Candidate)`). With a non-targeting `selectTarget` it backs "choose a player with the most life or tied for most life" (The Black Gate); a lone candidate is chosen without a prompt.
 - `Conditions.candidateWasDealtDamageBySourceThisTurn()` — this ability's **source** dealt damage (combat
   or noncombat) to the targeted player this turn; backed by `SourceDealtDamageToPlayerThisTurn(player)`,

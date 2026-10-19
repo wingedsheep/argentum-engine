@@ -1880,7 +1880,10 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
         val denominator: DynamicAmount,
         val roundUp: Boolean = true
     ) : DynamicAmount {
-        override val description: String = "${numerator.description} / ${denominator.description}"
+        // "half that much (rounded down)" reads as the printed halving; other divisors stay symbolic.
+        override val description: String =
+            if (denominator == Fixed(2)) "half ${numerator.description} (rounded ${if (roundUp) "up" else "down"})"
+            else "${numerator.description} / ${denominator.description}"
         override fun applyTextReplacement(replacer: TextReplacer): DynamicAmount {
             val newNumerator = numerator.applyTextReplacement(replacer)
             val newDenominator = denominator.applyTextReplacement(replacer)

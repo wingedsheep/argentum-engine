@@ -2341,6 +2341,36 @@ data class StorePlayerEffect(
 }
 
 /**
+ * "one of those [spellFilter] spells [caster] cast this turn" — the controller chooses one of the
+ * spells the player [caster] resolves to has cast this turn that match [spellFilter], and the
+ * damage that spell dealt this turn is stored under [storeDamageDealtAs] in pipeline
+ * `storedNumbers`, for a later step to read through
+ * [com.wingedsheep.sdk.scripting.values.DynamicAmount.VariableReference]. Backdraft: "deals damage
+ * to that player equal to half the damage dealt by one of those sorcery spells this turn, rounded
+ * down".
+ *
+ * The cast history is the per-turn cast record, so a spell still counts after it resolved, was
+ * countered or left the stack; the damage is the total the spell dealt as its own source while it
+ * was a spell (a copy is never cast, so it is not one of "those spells"). When the matching spells
+ * all dealt the same damage the choice is immaterial and made without a prompt; with no matching
+ * spell the stored number is 0.
+ *
+ * Closest neighbours: [StoreNumberEffect] stores a [DynamicAmount] but can't let a player pick
+ * among the spells, and [ChooseOptionEffect] picks from a fixed option family into `chosenValues`
+ * strings, not from a player's cast history into a number.
+ */
+@SerialName("ChooseSpellCastThisTurn")
+@Serializable
+data class ChooseSpellCastThisTurnEffect(
+    val caster: EffectTarget,
+    val spellFilter: GameObjectFilter,
+    val storeDamageDealtAs: String,
+) : Effect {
+    override val description: String =
+        "Choose one of the ${spellFilter.description} spells ${caster.description} cast this turn"
+}
+
+/**
  * Read the name of the first card in a stored collection and store it under [storeAs] in
  * pipeline `chosenValues`. Subsequent effects can match cards against it via
  * [com.wingedsheep.sdk.scripting.predicates.CardPredicate.NameEqualsChosen] (e.g.

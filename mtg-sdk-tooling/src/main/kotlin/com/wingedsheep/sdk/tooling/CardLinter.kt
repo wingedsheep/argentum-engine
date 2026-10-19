@@ -731,6 +731,7 @@ object CardLinter {
         put("DealDamage" to "damageDealtVariable", write(Space.NUMBER))
         put("PayCounters" to "storeAmountAs", write(Space.NUMBER))
         put("CollectEvidenceChosenAmount" to "storeAmountAs", write(Space.NUMBER))
+        put("ChooseSpellCastThisTurn" to "storeDamageDealtAs", write(Space.NUMBER))
         put("PayManaCostRepeatedly" to "storeCountAs", write(Space.NUMBER))
         put("ChooseOption" to "storeAs", write(Space.CHOSEN))
         put("NoteCreatureType" to "storeAs", write(Space.CHOSEN))

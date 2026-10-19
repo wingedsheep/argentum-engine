@@ -7309,6 +7309,18 @@ object Effects {
         com.wingedsheep.sdk.scripting.effects.StoreNumberEffect(name, amount)
 
     /**
+     * "one of those [spellFilter] spells [caster] cast this turn": the controller picks one, and
+     * the damage it dealt this turn is stored as [storeDamageDealtAs] for
+     * [DynamicAmount.VariableReference] (Backdraft). See
+     * [com.wingedsheep.sdk.scripting.effects.ChooseSpellCastThisTurnEffect].
+     */
+    fun ChooseSpellCastThisTurn(
+        caster: EffectTarget,
+        spellFilter: com.wingedsheep.sdk.scripting.GameObjectFilter,
+        storeDamageDealtAs: String,
+    ): Effect = com.wingedsheep.sdk.scripting.effects.ChooseSpellCastThisTurnEffect(caster, spellFilter, storeDamageDealtAs)
+
+    /**
      * Generic pipeline step: choose an option from a set (creature type, color, etc.)
      * and store the result in EffectContext.chosenValues[storeAs].
      */

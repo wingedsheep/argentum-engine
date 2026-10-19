@@ -1222,7 +1222,8 @@ object DamageUtils {
         val onBattlefield = sourceId in state.getBattlefield()
         if (!onBattlefield && sourceId !in state.stack) return state
         val sourceObject = state.objectRef(sourceId) ?: return state
-        return state.updateEntity(sourceId) { container ->
+        val tallied = if (onBattlefield) state else tallyCastSpellDamage(state, sourceId, amount)
+        return tallied.updateEntity(sourceId) { container ->
             val previous = container.get<DamageDealtThisTurnComponent>()
             val priorAmount = previous?.takeIf {
                 it.turnNumber == state.turnNumber && it.sourceObject == sourceObject
@@ -1243,6 +1244,22 @@ object DamageUtils {
                 updated
             }
         }
+    }
+
+    /**
+     * Add [amount] to the cast record of the spell [spellId] — "the damage dealt by one of those
+     * sorcery spells this turn" (Backdraft). Matched by the record's stack entity id, so a copy
+     * (never cast, no record) and an ability's damage leave every record alone. A card keeps its
+     * entity id across zones, so one recast this turn (flashback) has two records; the newest is
+     * the spell on the stack now.
+     */
+    private fun tallyCastSpellDamage(state: GameState, spellId: EntityId, amount: Int): GameState {
+        val casterId = state.getEntity(spellId)?.get<SpellOnStackComponent>()?.casterId ?: return state
+        val records = state.spellsCastThisTurnByPlayer[casterId] ?: return state
+        val index = records.indexOfLast { it.sourceEntityId == spellId }
+        if (index < 0) return state
+        val updated = records.toMutableList().also { it[index] = it[index].copy(damageDealt = it[index].damageDealt + amount) }
+        return state.copy(spellsCastThisTurnByPlayer = state.spellsCastThisTurnByPlayer + (casterId to updated))
     }
 
     /**

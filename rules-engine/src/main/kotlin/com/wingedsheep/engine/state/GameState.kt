@@ -1833,6 +1833,13 @@ data class CastSpellRecord(
      * treat a missing name as unknown (NameEquals fails, so its negation matches).
      */
     val name: String? = null,
+    /**
+     * Damage this spell has dealt as its own source this turn — every point it dealt while it was
+     * a spell on the stack, summed over all its recipients ([com.wingedsheep.engine.handlers.effects.DamageUtils.trackDamageDealt]).
+     * Read by `ChooseSpellCastThisTurnEffect` ("the damage dealt by one of those sorcery spells
+     * this turn" — Backdraft).
+     */
+    val damageDealt: Int = 0,
 )
 
 /**

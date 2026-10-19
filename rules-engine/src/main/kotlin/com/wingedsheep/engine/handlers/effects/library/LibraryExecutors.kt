@@ -66,6 +66,7 @@ class LibraryExecutors(
         CaptureControllersExecutor(),
         ChooseCreatureTypePipelineExecutor(),
         ChooseOptionPipelineExecutor(cardRegistry = cardRegistry),
+        ChooseSpellCastThisTurnExecutor(zones.predicateEvaluator),
         NoteCreatureTypePipelineExecutor(),
         GatherCardsExecutor(zones.predicateEvaluator),
         RecordSourceObjectsExecutor(),

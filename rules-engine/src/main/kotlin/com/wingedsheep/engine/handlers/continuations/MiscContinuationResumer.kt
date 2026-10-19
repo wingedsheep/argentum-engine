@@ -58,6 +58,7 @@ class MiscContinuationResumer(
         resumer(com.wingedsheep.engine.core.PayAnyAmountOfLifeAsEntersContinuation::class, ::resumePayAnyAmountOfLifeAsEnters),
         resumer(MayPayLifeXContinuation::class, ::resumeMayPayLifeX),
         resumer(PayCountersContinuation::class, ::resumePayCounters),
+        resumer(ChooseSpellCastThisTurnContinuation::class, ::resumeChooseSpellCastThisTurn),
         resumer(ConvertCountersToTokensContinuation::class, ::resumeConvertCountersToTokens),
         resumer(MoveChosenCountersToTargetContinuation::class, ::resumeMoveChosenCountersToTarget),
         resumer(ProliferateContinuation::class, ::resumeProliferate),
@@ -360,6 +361,22 @@ class MiscContinuationResumer(
             return effectResult.copy(events = payEvents + effectResult.events)
         }
         return checkForMore(effectResult.state, payEvents + effectResult.events)
+    }
+
+    private fun resumeChooseSpellCastThisTurn(
+        state: GameState,
+        continuation: ChooseSpellCastThisTurnContinuation,
+        response: DecisionResponse,
+        checkForMore: CheckForMore
+    ): ExecutionResult {
+        if (response !is OptionChosenResponse) {
+            return ExecutionResult.error(state, "Expected option choice response for choosing a spell cast this turn")
+        }
+        val damage = continuation.damageByOption.getOrNull(response.optionIndex)
+            ?: return ExecutionResult.error(state, "Invalid spell index: ${response.optionIndex}")
+        val stored = com.wingedsheep.engine.handlers.effects.drawing.DrawUpToExecutor
+            .injectStoredNumber(state, continuation.storeAs, damage)
+        return checkForMore(stored.newState, emptyList())
     }
 
     private fun resumePayCounters(

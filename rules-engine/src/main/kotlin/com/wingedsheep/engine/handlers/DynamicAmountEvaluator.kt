@@ -217,9 +217,16 @@ class DynamicAmountEvaluator(
         is DynamicAmount.TurnTracking,
         is DynamicAmount.UnlockedDoors,
         is DynamicAmount.UnspentMana,
-        is DynamicAmount.VariableReference,
         DynamicAmount.XValue,
         DynamicAmount.YourLifeTotal -> true
+
+        // A pipeline number a step writes during resolution isn't there while the spell or
+        // ability waits on the stack; [evaluate] would read the missing slot as 0, so the text
+        // keeps "that much" until the slot is bound (Backdraft, Galvanic Discharge).
+        is DynamicAmount.VariableReference -> amount.variableName.let { name ->
+            if (name.endsWith("_count")) name.removeSuffix("_count") in context.pipeline.storedCollections
+            else name in context.pipeline.storedNumbers
+        }
     }
 
     /**

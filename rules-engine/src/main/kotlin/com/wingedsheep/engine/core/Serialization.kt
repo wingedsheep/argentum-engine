@@ -490,6 +490,7 @@ val engineSerializersModule = SerializersModule {
         subclass(AddCountersUpToContinuation::class)
         subclass(AddCountersOfChosenKindContinuation::class)
         subclass(PayCountersContinuation::class)
+        subclass(ChooseSpellCastThisTurnContinuation::class)
         subclass(MoveChosenCountersToTargetContinuation::class)
         subclass(ProliferateContinuation::class)
         subclass(RingTemptContinuation::class)
