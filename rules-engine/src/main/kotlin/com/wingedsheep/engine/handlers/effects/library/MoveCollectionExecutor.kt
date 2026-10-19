@@ -867,9 +867,13 @@ class MoveCollectionExecutor(
         // a card's own zone-change replacement can key off it (Wilt-Leaf Liege: "if a spell or
         // ability an opponent controls causes you to discard this card…"). Consumed per card by
         // ZoneTransitionService.moveToZone.
-        var newState = if (moveType == MoveType.Discard && !context.discardIsCost) {
+        // Inside a "for each player" loop `controllerId` is the player being iterated — the
+        // discarder — so the cause is the effect's real controller, kept in `effectControllerId`.
+        val discardCauseControllerId = (context.effectControllerId ?: context.controllerId)
+            .takeUnless { context.discardIsCost }
+        var newState = if (moveType == MoveType.Discard && discardCauseControllerId != null) {
             com.wingedsheep.engine.handlers.effects.ZoneTransitionService
-                .markDiscardCause(state, cards, context.controllerId)
+                .markDiscardCause(state, cards, discardCauseControllerId)
         } else {
             state
         }
@@ -1099,7 +1103,7 @@ class MoveCollectionExecutor(
                 events.add(CardsDiscardedEvent(discarderId, discarded, discardNames,
                     undefinedCharacteristics = undefined,
                     priorDiscardsThisTurn = zones.discardsThisTurn(newState, discarderId),
-                    causeControllerId = context.controllerId.takeUnless { context.discardIsCost }))
+                    causeControllerId = discardCauseControllerId))
                 newState = zones.trackDiscard(newState, discarderId, discarded, undefined)
             }
         }

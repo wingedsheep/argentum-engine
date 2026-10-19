@@ -1158,7 +1158,7 @@ class TriggerMatcher(
         state: GameState
     ): List<EntityId> {
         if (!matchesPlayer(state, trigger.player, event.playerId, controllerId)) return emptyList()
-        if (!discardCauseMatches(trigger.cause, event)) return emptyList()
+        if (!discardCauseMatches(state, trigger.cause, event)) return emptyList()
         val filter = trigger.cardFilter
         val predicateContext = PredicateContext(controllerId = controllerId, sourceId = sourceId)
         val matching = if (filter == null) event.cardIds else event.cardIds.filter { cardId ->
@@ -1179,13 +1179,14 @@ class TriggerMatcher(
     /**
      * Whether [event] was caused the way a discard trigger's [cause] asks — the trigger-side twin
      * of the replacement check in `ZoneMovementUtils`. An opponent's effect means a stamped cause
-     * controller who isn't the discarding player; costs and the cleanup discard carry none.
+     * controller who is an opponent of the discarding player; costs and the cleanup discard carry none.
      */
-    fun discardCauseMatches(cause: ZoneChangeCause, event: CardsDiscardedEvent): Boolean = when (cause) {
-        ZoneChangeCause.Any -> true
-        ZoneChangeCause.DiscardedByOpponentEffect ->
-            event.causeControllerId != null && event.causeControllerId != event.playerId
-    }
+    fun discardCauseMatches(state: GameState, cause: ZoneChangeCause, event: CardsDiscardedEvent): Boolean =
+        when (cause) {
+            ZoneChangeCause.Any -> true
+            ZoneChangeCause.DiscardedByOpponentEffect -> com.wingedsheep.engine.handlers.effects.ZoneTransitionService
+                .isDiscardCausedByOpponent(state, event.causeControllerId, event.playerId)
+        }
 
     /** A discarded card with undefined characteristics can satisfy only a filter's characteristic-free branches. */
     private fun discardedCardMatches(

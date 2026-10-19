@@ -7,6 +7,7 @@ import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.dsl.Effects
+import com.wingedsheep.sdk.dsl.Patterns
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Deck
@@ -45,11 +46,18 @@ class OpponentCausedDiscardTriggerTest : FunSpec({
         }
     }
 
+    val eachOpponentDiscards = card("Each Opponent Discards Test") {
+        manaCost = "{B}"
+        typeLine = "Sorcery"
+        spell { effect = Patterns.Hand.eachOpponentDiscards(1) }
+    }
+
     fun newDriver(): GameTestDriver {
         val driver = GameTestDriver()
         driver.registerCards(TestCards.all)
         driver.registerCard(purgeLike)
         driver.registerCard(anyDiscard)
+        driver.registerCard(eachOpponentDiscards)
         driver.initMirrorMatch(deck = Deck.of("Island" to 40), skipMulligans = true, startingPlayer = 0)
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
         return driver
@@ -69,6 +77,24 @@ class OpponentCausedDiscardTriggerTest : FunSpec({
         driver.submitCardSelection(foe, listOf(punisher, filler))
 
         // Mind Rot is in its owner's graveyard; only the trigger remains, controlled by the discarder.
+        driver.state.stack.size shouldBe 1
+        driver.bothPass()
+        driver.getLifeTotal(me) shouldBe 15
+        driver.getLifeTotal(foe) shouldBe 20
+    }
+
+    test("an opponent's \"each opponent discards\" names its caster, not the iterated discarder") {
+        val driver = newDriver()
+        val me = driver.player1
+        val foe = driver.player2
+        val punisher = driver.putCardInHand(foe, purgeLike.name)
+
+        val spell = driver.putCardInHand(me, eachOpponentDiscards.name)
+        driver.giveMana(me, Color.BLACK, 1)
+        driver.castSpell(me, spell).outcome shouldBe Outcome.Done
+        driver.bothPass()
+        (driver.pendingDecision as? SelectCardsDecision)?.let { driver.submitCardSelection(foe, listOf(punisher)) }
+
         driver.state.stack.size shouldBe 1
         driver.bothPass()
         driver.getLifeTotal(me) shouldBe 15

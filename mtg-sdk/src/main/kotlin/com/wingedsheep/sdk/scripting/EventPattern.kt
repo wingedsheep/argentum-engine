@@ -976,12 +976,15 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
             }
         }
 
-        override val description: String = if (cause == ZoneChangeCause.DiscardedByOpponentEffect) {
-            "a spell or ability an opponent controls causes ${player.description} to discard " +
-                (cardFilter?.description ?: "a card")
-        } else buildString {
-            append(player.description)
-            append(" would discard ")
+        override val description: String = buildString {
+            if (cause == ZoneChangeCause.DiscardedByOpponentEffect) {
+                append("a spell or ability an opponent controls causes ")
+                append(player.description)
+                append(" to discard ")
+            } else {
+                append(player.description)
+                append(" would discard ")
+            }
             if (batch) append("one or more ")
             if (cardFilter != null) {
                 append(cardFilter.description)
