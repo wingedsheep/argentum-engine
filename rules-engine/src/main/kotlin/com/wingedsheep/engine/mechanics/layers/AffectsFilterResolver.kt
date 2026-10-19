@@ -570,6 +570,8 @@ internal class AffectsFilterResolver(
         // group-static projection. Only meaningful in target/group-damage contexts via
         // PredicateEvaluator. Never match here.
         StatePredicate.IsBlockingSource -> false
+        // The reverse direction ("creatures it's blocking") — same: no source permanent here.
+        StatePredicate.IsBlockedBySource -> false
         // Same reasoning for the both-directions live pairing — no source permanent here.
         StatePredicate.IsCombatPairedWithSource -> false
         // Loop-relative; only meaningful inside a ForEach at resolution, never in projection.

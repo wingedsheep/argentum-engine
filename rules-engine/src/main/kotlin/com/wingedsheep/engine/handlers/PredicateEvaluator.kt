@@ -1893,6 +1893,16 @@ class PredicateEvaluator(
                     container.get<BlockingComponent>()?.blockedAttackerIds?.contains(sourceId) == true
             }
 
+            // Attacker the effect's source is blocking (CR 509) — IsBlockingSource reversed: the
+            // candidate is in the source's blocked-attacker set. Live, so it stops matching once the
+            // source leaves combat. Inert with no source.
+            StatePredicate.IsBlockedBySource -> {
+                val sourceId = context?.sourceId
+                sourceId != null &&
+                    state.getEntity(sourceId)?.get<BlockingComponent>()
+                        ?.blockedAttackerIds?.contains(entityId) == true
+            }
+
             // Creature blocking the effect's source OR blocked by it (CR 509), read live from
             // combat state in both directions: either the candidate blocks the source, or the
             // source blocks the candidate. Source-relative; inert with no source.

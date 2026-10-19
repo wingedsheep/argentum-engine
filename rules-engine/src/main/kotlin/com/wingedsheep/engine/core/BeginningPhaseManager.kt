@@ -634,6 +634,7 @@ class BeginningPhaseManager(
         StatePredicate.IsUnblocked,
         StatePredicate.InSameBandAsSource,
         StatePredicate.IsBlockingSource,
+        StatePredicate.IsBlockedBySource,
         StatePredicate.IsCombatPairedWithSource,
         StatePredicate.IsBlockingIterationEntity,
         StatePredicate.CreatedBySource,

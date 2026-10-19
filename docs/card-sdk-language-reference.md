@@ -7066,6 +7066,13 @@ work for abilities-on-stack (which carry no `CardComponent`).
   for "Whenever this becomes blocked, it deals N damage to each creature blocking it" (Battle-Scarred
   Goblin). Resolves in resolution-time effect contexts (where the source is carried); inert in
   group/projection, untap, and trigger-gating contexts.
+- `IsBlockedBySource` (filter builder `blockedBySource()`) — the reverse of `IsBlockingSource`
+  (CR 509): matches an attacker in the effect source's own blocked-attacker set, read live, so it
+  stops matching once the source leaves combat. As the `source` of a static `PreventDamage`'s
+  `EventPattern.DamageEvent(recipient = Recipient.Self, source = GameObjectFilter.Creature.blockedBySource())`
+  it is "Prevent all damage that would be dealt to this creature by creatures it's blocking" (Wall
+  of Vapor, Wall of Shadows) — the damage-replacement path supplies the host as the source. Inert in
+  group/projection, untap, and trigger-gating contexts.
 - `IsBlockingIterationEntity` (filter builder `blockingIterationEntity()`) — blocking the entity an
   enclosing `ForEachInGroup` is **currently iterating over**, rather than the effect's source:
   "creatures you control blocking **that creature**" (Tidal Flats), where "that creature" is the loop's

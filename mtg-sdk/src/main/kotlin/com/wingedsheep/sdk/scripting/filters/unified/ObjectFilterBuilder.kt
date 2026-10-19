@@ -811,6 +811,12 @@ interface ObjectFilterBuilder<out Self> {
     fun blockingSource() = withStatePredicate(StatePredicate.IsBlockingSource)
 
     /**
+     * Must be an attacker the effect's source is blocking (CR 509) — the reverse of
+     * [blockingSource]. Source-relative. "…by creatures it's blocking" (Wall of Vapor).
+     */
+    fun blockedBySource() = withStatePredicate(StatePredicate.IsBlockedBySource)
+
+    /**
      * Must be blocking the effect's source **or** blocked by it (CR 509), read live from combat
      * state. Source-relative. "Each creature blocking or blocked by this creature" (Spitting Slug).
      */

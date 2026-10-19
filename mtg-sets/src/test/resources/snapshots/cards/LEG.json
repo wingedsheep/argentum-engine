@@ -7461,6 +7461,114 @@
     ]
 }
 
+// Wall of Shadows
+{
+    "name": "Wall of Shadows",
+    "manaCost": "{1}{B}{B}",
+    "typeLine": "Creature — Wall",
+    "oracleText": "Defender (This creature can't attack.)\nPrevent all damage that would be dealt to this creature by creatures it's blocking.\nThis creature can't be the target of spells that can target only Walls or of abilities that can target only Walls.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 1
+    },
+    "keywords": [
+        "DEFENDER"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CantBeTargetedBy",
+                "quality": {
+                    "type": "UntargetableBy.TargetingOnly",
+                    "subtype": "Wall"
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "PreventDamage",
+                "appliesTo": {
+                    "type": "DamageEvent",
+                    "recipient": {
+                        "type": "RecipientObject",
+                        "filter": {
+                            "statePredicates": [
+                                "IsSource"
+                            ]
+                        }
+                    },
+                    "source": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "statePredicates": [
+                            "IsBlockedBySource"
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "128",
+        "artist": "Pete Venters",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/b/eb351900-cffd-4d23-b82f-5fb12a4874d9.jpg?1783948060"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Wall of Vapor
+{
+    "name": "Wall of Vapor",
+    "manaCost": "{3}{U}",
+    "typeLine": "Creature — Wall",
+    "oracleText": "Defender (This creature can't attack.)\nPrevent all damage that would be dealt to this creature by creatures it's blocking.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 1
+    },
+    "keywords": [
+        "DEFENDER"
+    ],
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "PreventDamage",
+                "appliesTo": {
+                    "type": "DamageEvent",
+                    "recipient": {
+                        "type": "RecipientObject",
+                        "filter": {
+                            "statePredicates": [
+                                "IsSource"
+                            ]
+                        }
+                    },
+                    "source": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "statePredicates": [
+                            "IsBlockedBySource"
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "84",
+        "artist": "Richard Thomas",
+        "flavorText": "\"Walls of a castle are made out of stone,/ Walls of a house out of bricks or of wood./ My walls are made out of magic alone,/ Stronger than any that ever have stood.\"\n—Chrysoberyl Earthsdaughter, Incantations",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/a/6a6c0a27-d410-4ded-a842-70e1656ea21e.jpg?1783948070"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Winds of Change
 {
     "name": "Winds of Change",

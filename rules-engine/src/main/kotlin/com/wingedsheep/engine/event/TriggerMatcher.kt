@@ -2794,6 +2794,7 @@ class TriggerMatcher(
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsUnblocked,
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.InSameBandAsSource,
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsBlockingSource,
+        com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsBlockedBySource,
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsCombatPairedWithSource,
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsBlockingIterationEntity,
         // CreatedBySource stays in the fail-open bucket only for the paths that reach here without a

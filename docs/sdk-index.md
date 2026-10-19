@@ -1704,6 +1704,7 @@ Families:
 - `StatePredicate.IsAttackingPlayer(player: EffectTarget)` — Attacking player themself — "target nontoken creature that's attacking **that player**" (Echoing Assault, with `PlayerRef(Player.TriggeringPlayer)` bound by a per-attacked-player `YouAttackEvent`).
 - `StatePredicate.IsAttackingYouOrYourPlaneswalkers`
 - `StatePredicate.IsBlocked` — Attacker with blocked status, even after all its blockers leave combat
+- `StatePredicate.IsBlockedBySource` — Creature the effect's source is blocking — an attacker in the source's blocked-attacker set, read live from combat state (CR 509).
 - `StatePredicate.IsBlocking`
 - `StatePredicate.IsBlockingEntity(reference: EffectTarget.SingleEntity)` — Blocking the creature reference names, read live from combat state (CR 509) — "each creature blocking **it**", where "it" is a role the ability names rather than its source or a loop variable: Ib H…
 - `StatePredicate.IsBlockingIterationEntity` — Blocking the entity an enclosing `ForEachInGroup` is iterating over — "creatures you control blocking **that creature**" (Tidal Flats), where "that creature" is the loop's current attacker rather t…

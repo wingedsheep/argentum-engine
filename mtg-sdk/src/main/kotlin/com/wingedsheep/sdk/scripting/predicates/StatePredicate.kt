@@ -288,6 +288,19 @@ sealed interface StatePredicate {
     }
 
     /**
+     * Creature the effect's source is blocking — an attacker in the source's blocked-attacker set,
+     * read live from combat state (CR 509). The reverse direction of [IsBlockingSource].
+     * Source-relative; yields false with no source context, outside combat, or once the source
+     * stops blocking. "Prevent all damage that would be dealt to this creature by creatures it's
+     * blocking" (Wall of Vapor, Wall of Shadows) as the source filter of a static `PreventDamage`.
+     */
+    @SerialName("IsBlockedBySource")
+    @Serializable
+    data object IsBlockedBySource : Entity {
+        override val description: String = "this creature is blocking"
+    }
+
+    /**
      * Creature that is blocking the effect's source **or** being blocked by it — the live CR 509
      * pairing in either direction, read off the blocked-attacker sets rather than a snapshot.
      * Source-relative; yields false with no source context or outside combat.
