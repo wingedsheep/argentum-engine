@@ -67,6 +67,20 @@ class PutOntoBattlefieldThenTest : ScenarioTestBase() {
         metadata { rarity = Rarity.COMMON }
     }
 
+    private val testDoubleRamp = card("Test Double Ramp") {
+        manaCost = "{G}"
+        typeLine = "Sorcery"
+        oracleText = "Search your library for up to two basic land cards, put them onto the battlefield, then shuffle."
+        spell {
+            effect = com.wingedsheep.sdk.dsl.Patterns.Library.searchLibrary(
+                filter = GameObjectFilter.BasicLand,
+                count = 2,
+                destination = com.wingedsheep.sdk.scripting.effects.SearchDestination.BATTLEFIELD
+            )
+        }
+        metadata { rarity = Rarity.COMMON }
+    }
+
     private val testHeraldLand = card("Test Herald Land") {
         typeLine = "Land"
         oracleText = "When this land enters, you gain 3 life."
@@ -94,7 +108,7 @@ class PutOntoBattlefieldThenTest : ScenarioTestBase() {
         }
 
     init {
-        listOf(testEquilibrium, testRamp, testHeraldLand).forEach(cardRegistry::register)
+        listOf(testEquilibrium, testRamp, testDoubleRamp, testHeraldLand).forEach(cardRegistry::register)
 
         test("an opponent with at least as many lands plays a land, then sacrifices one — and may pick the new land") {
             val game = board(youLands = 2, theirLands = 2, "Mountain")
@@ -156,6 +170,26 @@ class PutOntoBattlefieldThenTest : ScenarioTestBase() {
             game.selectCards(listOf(forest)).error shouldBe null
             game.isOnBattlefield("Plains") shouldBe true
             game.lands(2) shouldBe 2
+        }
+
+        test("lands entering together are counted against the board before the whole event") {
+            // 2 Forests vs 3 Islands: neither fetched Plains is on the board when the other would enter.
+            val game = scenario()
+                .withPlayers("Player", "Opponent")
+                .withCardOnBattlefield(1, "Test Equilibrium")
+                .withLandsOnBattlefield(1, "Island", 3)
+                .withLandsOnBattlefield(2, "Forest", 2)
+                .withCardInHand(2, "Test Double Ramp")
+                .withCardInLibrary(2, "Plains")
+                .withCardInLibrary(2, "Plains")
+                .withActivePlayer(2)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+            game.castSpell(2, "Test Double Ramp").error shouldBe null
+            game.resolveStack()
+            game.selectCards(game.findCardsInLibrary(2, "Plains")).error shouldBe null
+            game.hasPendingDecision() shouldBe false
+            game.lands(2) shouldBe 4
         }
 
         test("the land still entered, so its enter trigger fires after the sacrifice") {

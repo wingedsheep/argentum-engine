@@ -6,8 +6,8 @@ import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.replacement.PendingReplacementRider
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
+import com.wingedsheep.engine.state.components.battlefield.BattlefieldEntryTimestampComponent
 import com.wingedsheep.engine.state.components.battlefield.ReplacementEffectSourceComponent
-import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.EventPattern
@@ -38,6 +38,10 @@ object EntryRiderReplacements {
      * controls at least as many lands as you do would put a land" is asked before the land arrives —
      * by evaluating them against [state] with the entering permanent taken off the battlefield.
      * The filter reads the entering permanent as it is entering (its controller and face).
+     *
+     * [predicateEvaluator] may be built without a card registry (the entry tracker has none), so a
+     * filter or gate that reads a printed script — rather than components, counts and projected
+     * characteristics — fails closed here.
      */
     fun queue(
         state: GameState,
@@ -50,7 +54,7 @@ object EntryRiderReplacements {
             if (sourceId == enteringEntityId) continue
             val container = state.getEntity(sourceId) ?: continue
             val replacements = container.get<ReplacementEffectSourceComponent>() ?: continue
-            val sourceControllerId = container.get<ControllerComponent>()?.playerId ?: continue
+            val sourceControllerId = state.projectedState.getController(sourceId) ?: continue
             for (effect in replacements.replacementEffects) {
                 if (effect !is PutOntoBattlefieldThen) continue
                 if (!matchesPutter(state, effect.putter, putterId, sourceControllerId)) continue
@@ -84,11 +88,20 @@ object EntryRiderReplacements {
             else -> false
         }
 
-    /** [state] as it was before [entityId] arrived on the battlefield, for the pre-entry gates. */
-    private fun withoutEntering(state: GameState, entityId: EntityId): GameState =
-        state.copy(zones = state.zones.mapValues { (key: ZoneKey, ids) ->
-            if (key.zoneType == Zone.BATTLEFIELD && entityId in ids) ids - entityId else ids
+    /**
+     * [state] as it was before the entry event that brought [entityId], for the pre-entry gates:
+     * without it, and without every permanent entering in the same simultaneous event (two lands
+     * fetched by one search arrive together, so neither is on the board when the other would enter).
+     */
+    private fun withoutEntering(state: GameState, entityId: EntityId): GameState {
+        val group = state.getEntity(entityId)?.get<BattlefieldEntryTimestampComponent>()?.simultaneousEntryGroup
+        val entering = if (group == null) setOf(entityId) else state.getBattlefield().filterTo(mutableSetOf(entityId)) {
+            state.getEntity(it)?.get<BattlefieldEntryTimestampComponent>()?.simultaneousEntryGroup == group
+        }
+        return state.copy(zones = state.zones.mapValues { (key: ZoneKey, ids) ->
+            if (key.zoneType == Zone.BATTLEFIELD && ids.any { it in entering }) ids - entering else ids
         })
+    }
 
     private fun matchesEnterFilter(
         event: EventPattern,
